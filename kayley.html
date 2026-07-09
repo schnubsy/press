@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kayley · 2-Week Upskilling Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c2025;
+    --ink-soft:#4a525e;
+    --paper:#faf7f2;
+    --card:#ffffff;
+    --line:#e7e1d6;
+    --teal:#0f6e63;
+    --teal-deep:#0a4f47;
+    --teal-wash:#e4f0ed;
+    --coral:#e8603c;
+    --gold:#d9a441;
+    --green:#3f8a4f;
+    --amber:#c08a1e;
+    --shadow:0 1px 2px rgba(28,32,37,.04),0 8px 24px rgba(28,32,37,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 24px}
+
+  /* ---------- HERO ---------- */
+  header{
+    background:
+      radial-gradient(1200px 400px at 85% -10%, rgba(15,110,99,.18), transparent 60%),
+      radial-gradient(900px 380px at 5% 0%, rgba(232,96,60,.12), transparent 55%),
+      linear-gradient(180deg,#0a4f47 0%, #0f6e63 100%);
+    color:#fff;
+    padding:64px 0 120px;
+    position:relative;
+    overflow:hidden;
+  }
+  header .wrap{position:relative;z-index:2}
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+    color:#9fd9cf;margin-bottom:18px;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(38px,7vw,68px);
+    line-height:1.02;
+    letter-spacing:-.02em;
+    margin-bottom:18px;
+  }
+  h1 em{font-style:italic;color:var(--gold)}
+  .lede{font-size:18px;max-width:560px;color:#e6f2ef;font-weight:400}
+  .meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+  .chip{
+    background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.22);
+    padding:7px 14px;border-radius:999px;font-size:13px;font-weight:500;
+    backdrop-filter:blur(4px);
+  }
+  .hero-deco{position:absolute;right:-40px;top:0;height:100%;width:340px;opacity:.5;z-index:1}
+
+  /* ---------- PROGRESS BAR (sticky) ---------- */
+  .progress-dock{
+    position:sticky;top:0;z-index:50;
+    background:rgba(250,247,242,.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    margin-top:-72px;
+  }
+  .progress-inner{display:flex;align-items:center;gap:18px;padding:14px 0}
+  .ring{position:relative;width:52px;height:52px;flex:none}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .pct{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--teal-deep);
+  }
+  .progress-text{flex:1}
+  .progress-text b{font-family:'Fraunces',serif;font-size:18px;font-weight:600}
+  .progress-text span{display:block;font-size:13px;color:var(--ink-soft)}
+  .reset{
+    font-size:12px;color:var(--ink-soft);background:none;border:1px solid var(--line);
+    padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;transition:.15s;
+  }
+  .reset:hover{border-color:var(--coral);color:var(--coral)}
+
+  /* ---------- SECTIONS ---------- */
+  main{padding:48px 0 80px}
+  .section-label{
+    font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--teal);margin-bottom:8px;
+  }
+  h2{font-family:'Fraunces',serif;font-weight:600;font-size:28px;letter-spacing:-.01em;margin-bottom:6px}
+  .section-sub{color:var(--ink-soft);margin-bottom:24px;font-size:15px}
+  .block{margin-bottom:56px}
+
+  /* ---------- TIMELINE ---------- */
+  .timeline{position:relative;padding-left:8px}
+  .day{
+    position:relative;
+    display:grid;grid-template-columns:64px 1fr;gap:20px;
+    padding-bottom:28px;
+  }
+  .day:not(:last-child)::before{
+    content:"";position:absolute;left:31px;top:54px;bottom:-6px;width:2px;
+    background:linear-gradient(var(--line),var(--line));
+  }
+  .day.done:not(:last-child)::before{background:var(--teal)}
+  .daymark{
+    width:54px;height:54px;border-radius:14px;flex:none;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:var(--card);border:2px solid var(--line);
+    font-family:'Fraunces',serif;font-weight:600;line-height:1;
+    transition:.25s;z-index:2;
+  }
+  .daymark .d{font-size:11px;color:var(--ink-soft);font-family:'JetBrains Mono',monospace;letter-spacing:.05em;text-transform:uppercase}
+  .daymark .n{font-size:22px;color:var(--ink)}
+  .day.done .daymark{background:var(--teal);border-color:var(--teal);box-shadow:0 6px 16px rgba(15,110,99,.3)}
+  .day.done .daymark .n,.day.done .daymark .d{color:#fff}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:22px 24px;box-shadow:var(--shadow);transition:.2s;
+  }
+  .card:hover{border-color:#d7cfbf}
+  .card-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+  .card-title{font-family:'Fraunces',serif;font-size:20px;font-weight:600}
+  .tag{
+    font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;
+    padding:4px 9px;border-radius:6px;white-space:nowrap;
+    background:var(--teal-wash);color:var(--teal-deep);
+  }
+  .tag.practice{background:#fdeee8;color:var(--coral)}
+  .card-note{font-size:13px;color:var(--ink-soft);margin-bottom:14px}
+
+  /* ---------- CHECK ITEMS ---------- */
+  .check{
+    display:flex;gap:12px;align-items:flex-start;padding:9px 0;cursor:pointer;
+    border-top:1px solid #f1ece3;
+  }
+  .check:first-of-type{border-top:none}
+  .box{
+    width:20px;height:20px;border-radius:6px;border:2px solid #c9bfac;
+    flex:none;margin-top:2px;position:relative;transition:.18s;
+  }
+  .check:hover .box{border-color:var(--teal)}
+  .check input{position:absolute;opacity:0;pointer-events:none}
+  .check.checked .box{background:var(--teal);border-color:var(--teal)}
+  .check.checked .box::after{
+    content:"";position:absolute;left:5.5px;top:1.5px;width:5px;height:10px;
+    border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg);
+  }
+  .check .label{font-size:15px;transition:.18s}
+  .check.checked .label{color:#9aa1ab;text-decoration:line-through}
+  .check a{color:var(--teal);font-weight:600;text-decoration:none;border-bottom:1.5px solid var(--teal-wash)}
+  .check a:hover{border-color:var(--teal)}
+  .sub{font-size:12.5px;color:var(--ink-soft);font-style:italic;padding:2px 0 8px 32px}
+
+  /* ---------- GENERIC LIST CARD ---------- */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px 26px;box-shadow:var(--shadow)}
+  .panel + .panel{margin-top:16px}
+  .donewhen{
+    margin-top:14px;padding:12px 16px;border-radius:10px;
+    background:#eef6f0;border:1px solid #cfe6d5;font-size:14px;
+  }
+  .donewhen b{color:var(--green)}
+
+  /* ---------- PM CARDS ---------- */
+  .pm{display:grid;gap:14px}
+  .pmcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .pmcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px}
+  .pmcard.rec::before{background:var(--green)}
+  .pmcard.later::before{background:var(--gold)}
+  .pmcard h3{font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .dot.g{background:var(--green)}.dot.a{background:var(--gold)}
+  .pmcard .recbadge{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);font-weight:600;margin-left:auto}
+  .pmgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px;font-size:14px}
+  .pmgrid h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:5px;font-family:'JetBrains Mono',monospace}
+  .pmgrid ul{list-style:none}
+  .pmgrid li{padding-left:16px;position:relative;margin-bottom:5px;color:var(--ink-soft)}
+  .pmgrid .pros li::before{content:"+";position:absolute;left:0;color:var(--green);font-weight:700}
+  .pmgrid .cons li::before{content:"\2013";position:absolute;left:0;color:var(--coral);font-weight:700}
+
+  /* ---------- NOTES ---------- */
+  .notes{display:grid;gap:12px}
+  .note{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow)}
+  .note .ic{font-size:20px;flex:none;line-height:1.2}
+  .note b{font-family:'Fraunces',serif;font-weight:600}
+  .note p{font-size:14px;color:var(--ink-soft);margin-top:2px}
+
+  footer{border-top:1px solid var(--line);padding:32px 0 60px;text-align:center;color:var(--ink-soft);font-size:13px}
+  footer .done-cta{font-family:'Fraunces',serif;font-size:18px;color:var(--ink);margin-bottom:8px}
+  footer a{color:var(--teal);text-decoration:none}
+
+  @media(max-width:560px){
+    .day{grid-template-columns:46px 1fr;gap:14px}
+    .day:not(:last-child)::before{left:22px}
+    .daymark{width:46px;height:46px}
+    .pmgrid{grid-template-columns:1fr}
+    header{padding:48px 0 110px}
+  }
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <svg class="hero-deco" viewBox="0 0 340 600" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M60 -20 Q200 120 120 260 T220 540 Q260 620 160 660" stroke="#ffffff" stroke-width="2" stroke-dasharray="2 10" stroke-linecap="round"/>
+    <circle cx="120" cy="260" r="6" fill="#d9a441"/>
+    <circle cx="60" cy="40" r="6" fill="#e8603c"/>
+    <circle cx="200" cy="450" r="6" fill="#9fd9cf"/>
+  </svg>
+  <div class="wrap">
+    <div class="eyebrow">Internship Prep · Summer 2026</div>
+    <h1>Two weeks to<br><em>job-ready.</em></h1>
+    <p class="lede">A focused plan to get genuinely skilled in Excel, AI, the Microsoft suite, and project management — before day one on Michelle's team.</p>
+    <div class="meta">
+      <span class="chip">⏱ 5 hours / day</span>
+      <span class="chip">💸 ~$0 · LinkedIn Learning + free tools</span>
+      <span class="chip">📜 Certificates included</span>
+    </div>
+  </div>
+</header>
+
+<div class="progress-dock">
+  <div class="wrap progress-inner">
+    <div class="ring">
+      <svg width="52" height="52" viewBox="0 0 52 52">
+        <circle cx="26" cy="26" r="22" stroke="#e7e1d6" stroke-width="6" fill="none"/>
+        <circle id="ringFill" cx="26" cy="26" r="22" stroke="#0f6e63" stroke-width="6" fill="none"
+          stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="138.2"/>
+      </svg>
+      <div class="pct" id="pctText">0%</div>
+    </div>
+    <div class="progress-text">
+      <b id="progTitle">Let's get started</b>
+      <span id="progCount">0 of 0 tasks complete</span>
+    </div>
+    <button class="reset" id="resetBtn">Reset</button>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <section class="block">
+    <div class="section-label">Read first</div>
+    <h2>How this works</h2>
+    <div class="panel" style="margin-top:14px">
+      <div class="check" data-id="how1"><input type="checkbox"><span class="box"></span><span class="label"><b>Taught content is done in 5 days.</b> Days 6–10 are deliberate practice — that's where skills actually stick.</span></div>
+      <div class="check" data-id="how2"><input type="checkbox"><span class="box"></span><span class="label"><b>The order is intentional:</b> Excel → Claude → Office apps → Copilot → PM. Learn the apps before the AI that speeds them up.</span></div>
+      <div class="check" data-id="how3"><input type="checkbox"><span class="box"></span><span class="label"><b>Add each certificate to LinkedIn</b> under "Licenses &amp; Certifications" as you finish.</span></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="section-label">Day 0 · ~15 min</div>
+    <h2>Before you start</h2>
+    <div class="panel" style="margin-top:14px">
+      <div class="check" data-id="d0a"><input type="checkbox"><span class="box"></span><span class="label">Log in to LinkedIn Learning with the family business account and confirm access.</span></div>
+      <div class="check" data-id="d0b"><input type="checkbox"><span class="box"></span><span class="label">Create a free Anthropic Academy account at <a href="https://anthropic.skilljar.com" target="_blank" rel="noopener">anthropic.skilljar.com</a> — email only, no subscription.</span></div>
+      <div class="check" data-id="d0c"><input type="checkbox"><span class="box"></span><span class="label">Confirm Microsoft 365 is installed (Excel, Word, PowerPoint, Teams) so you can practice in the real apps.</span></div>
+      <div class="check" data-id="d0d"><input type="checkbox"><span class="box"></span><span class="label">Make an "Internship Prep" folder for practice files and course downloads.</span></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="section-label">The plan · 10 days</div>
+    <h2>Your learning path</h2>
+    <p class="section-sub">Five study days, then five days putting it all to work. Check items off — the path fills in as you go.</p>
+
+    <div class="timeline">
+
+      <div class="day" data-day="1">
+        <div class="daymark"><span class="d">Day</span><span class="n">1</span></div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Excel — the foundation</span><span class="tag">~3h + practice</span></div>
+          <p class="card-note">Your weakest, most-used tool. Start here.</p>
+          <div class="check" data-id="d1a"><input type="checkbox"><span class="box"></span><span class="label">Complete <a href="https://www.linkedin.com/learning/excel-essential-training-microsoft-365-25302368" target="_blank" rel="noopener">Excel Essential Training (Microsoft 365)</a> — Dennis Taylor</span></div>
+          <div class="sub">Interface, data entry, formulas &amp; functions, formatting, charts, PivotTables.</div>
+          <div class="check" data-id="d1b"><input type="checkbox"><span class="box"></span><span class="label">Rebuild one exercise from scratch without the video playing.</span></div>
+          <div class="check" data-id="d1c"><input type="checkbox"><span class="box"></span><span class="label">Add the completion certificate to LinkedIn.</span></div>
+        </div>
+      </div>
+
+      <div class="day" data-day="2">
+        <div class="daymark"><span class="d">Day</span><span class="n">2</span></div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">AI with Claude</span><span class="tag">~4h + practice</span></div>
+          <p class="card-note">General AI fluency — no app dependency, sets up everything after.</p>
+          <div class="check" data-id="d2a"><input type="checkbox"><span class="box"></span><span class="label">Complete <a href="https://anthropic.skilljar.com" target="_blank" rel="noopener">AI Fluency: Frameworks &amp; Foundations</a> (Anthropic Academy)</span></div>
+          <div class="check" data-id="d2b"><input type="checkbox"><span class="box"></span><span class="label">Complete <a href="https://anthropic.skilljar.com" target="_blank" rel="noopener">Claude 101</a></span></div>
+          <div class="check" data-id="d2c"><input type="checkbox"><span class="box"></span><span class="label">Practice: use Claude to summarize an article and draft a short email.</span></div>
+        </div>
+      </div>
+
+      <div class="day" data-day="3">
+        <div class="daymark"><span class="d">Day</span><span class="n">3</span></div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">The Office apps</span><span class="tag">~5h</span></div>
+          <p class="card-note">Brush-ups — skim what you already know. Pick the newest dated version of each.</p>
+          <div class="check" data-id="d3a"><input type="checkbox"><span class="box"></span><span class="label"><a href="https://www.linkedin.com/learning/topics/microsoft-word" target="_blank" rel="noopener">Word Essential Training (M365)</a> — styles, templates, collaboration</span></div>
+          <div class="check" data-id="d3b"><input type="checkbox"><span class="box"></span><span class="label"><a href="https://www.linkedin.com/learning/powerpoint-essential-training-microsoft-365-26213209" target="_blank" rel="noopener">PowerPoint Essential Training (M365)</a> — slides, layouts, design</span></div>
+          <div class="check" data-id="d3c"><input type="checkbox"><span class="box"></span><span class="label"><a href="https://www.linkedin.com/learning/topics/microsoft-teams" target="_blank" rel="noopener">Microsoft Teams Essential Training</a> — chat, channels, meetings, files</span></div>
+        </div>
+      </div>
+
+      <div class="day" data-day="4">
+        <div class="daymark"><span class="d">Day</span><span class="n">4</span></div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Copilot — the efficiency layer</span><span class="tag">~5h</span></div>
+          <p class="card-note">Now you know the apps, so you know what you're accelerating.</p>
+          <div class="check" data-id="d4a"><input type="checkbox"><span class="box"></span><span class="label">Complete <a href="https://www.linkedin.com/learning/paths/microsoft-copilot-for-productivity-by-microsoft-and-linkedin" target="_blank" rel="noopener">Microsoft Copilot for Productivity</a> path</span></div>
+          <div class="sub">Prompt-writing + Copilot inside Word, Excel, PowerPoint, Teams, Outlook.</div>
+          <div class="check" data-id="d4b"><input type="checkbox"><span class="box"></span><span class="label">Redo a Day-3 task using Copilot — notice the time saved.</span></div>
+        </div>
+      </div>
+
+      <div class="day" data-day="5">
+        <div class="daymark"><span class="d">Day</span><span class="n">5</span></div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Project management foundations</span><span class="tag">~3h + practice</span></div>
+          <p class="card-note">Ties the whole workflow together.</p>
+          <div class="check" data-id="d5a"><input type="checkbox"><span class="box"></span><span class="label">Complete <a href="https://www.linkedin.com/learning/project-management-foundations-15528659" target="_blank" rel="noopener">Project Management Foundations</a> — Bonnie Biafore, PMP</span></div>
+          <div class="sub">Goals, plan, scope, schedule, budget, resources, risk, tracking, closing.</div>
+          <div class="check" data-id="d5b"><input type="checkbox"><span class="box"></span><span class="label">Take the chapter quizzes — they reinforce retention.</span></div>
+          <div class="check" data-id="d5c"><input type="checkbox"><span class="box"></span><span class="label">Note where AI could speed up each PM step.</span></div>
+        </div>
+      </div>
+
+      <div class="day" data-day="6">
+        <div class="daymark"><span class="d">Days</span><span class="n">6–10</span></div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Applied project — the keystone</span><span class="tag practice">5h / day</span></div>
+          <p class="card-note">Build a fictional marketing campaign end-to-end. Rehearses the exact workflow you'll hit on the team.</p>
+          <div class="check" data-id="d6a"><input type="checkbox"><span class="box"></span><span class="label"><b>Excel</b> — project plan (tasks, timeline, owner, status), budget tracker, a PivotTable summary.</span></div>
+          <div class="check" data-id="d6b"><input type="checkbox"><span class="box"></span><span class="label"><b>Word + Copilot</b> — draft a 1-page campaign brief; Copilot drafts, you refine.</span></div>
+          <div class="check" data-id="d6c"><input type="checkbox"><span class="box"></span><span class="label"><b>PowerPoint + Copilot</b> — turn the brief into a 6-slide pitch.</span></div>
+          <div class="check" data-id="d6d"><input type="checkbox"><span class="box"></span><span class="label"><b>Claude</b> — pressure-test the plan, draft stakeholder comms, summarize progress.</span></div>
+          <div class="check" data-id="d6e"><input type="checkbox"><span class="box"></span><span class="label"><b>Teams</b> — set up a channel, post the files, mock the collaboration flow.</span></div>
+          <div class="check" data-id="d6f"><input type="checkbox"><span class="box"></span><span class="label"><b>PM wrap-up</b> — write a status update and a short project-closing note.</span></div>
+          <div class="donewhen"><b>Done when:</b> you can walk someone through the plan, brief, deck, and status update — without notes.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="section-label">Going deeper, later</div>
+    <h2>Project management: your options</h2>
+    <p class="section-sub">For the sprint, Option 1 is the pick. Consider the others only if PM becomes your direction after the internship — Dad's PMP means he can mentor you straight toward CAPM.</p>
+    <div class="pm">
+      <div class="pmcard rec">
+        <h3><span class="dot g"></span>PM Foundations · LinkedIn Learning<span class="recbadge">Recommended</span></h3>
+        <div class="pmgrid">
+          <div class="pros"><h4>Pros</h4><ul><li>Free on your account</li><li>~3h fits the sprint</li><li>Recognized beginner standard, PMBOK-aligned</li><li>LinkedIn-postable certificate</li></ul></div>
+          <div class="cons"><h4>Cons</h4><ul><li>Completion certificate, not a formal credential</li><li>No exam rigor or formal PMI recognition</li></ul></div>
+        </div>
+      </div>
+      <div class="pmcard later">
+        <h3><span class="dot a"></span>Google PM Certificate · Coursera</h3>
+        <div class="pmgrid">
+          <div class="pros"><h4>Pros</h4><ul><li>Strong brand; deep Agile/Scrum content</li><li>Earns 100+ PMI education hours toward CAPM/PMP</li><li>Built with PMI input</li></ul></div>
+          <div class="cons"><h4>Cons</h4><ul><li>~$49/mo (~$294 over ~6 months)</li><li>Far longer than 2 weeks; overkill for a ramp</li><li>Not a PMI certification itself</li></ul></div>
+        </div>
+      </div>
+      <div class="pmcard later">
+        <h3><span class="dot a"></span>CAPM · PMI certification</h3>
+        <div class="pmgrid">
+          <div class="pros"><h4>Pros</h4><ul><li>Real, globally recognized PMI credential</li><li>Strongest entry-level employer signal</li><li>PMBOK-based</li></ul></div>
+          <div class="cons"><h4>Cons</h4><ul><li>Proctored exam + 23 education hours</li><li>Weeks of prep; ~$225–300 exam fee</li><li>Genuinely hard for a true beginner — wrong level now</li></ul></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="section-label">Keep in mind</div>
+    <h2>Notes &amp; gotchas</h2>
+    <div class="notes">
+      <div class="note"><span class="ic">🆕</span><div><b>Pick the newest version.</b><p>LinkedIn often lists 2–3 versions of a course — always choose the most recent release date.</p></div></div>
+      <div class="note"><span class="ic">📜</span><div><b>Certificate ≠ certification.</b><p>LinkedIn &amp; Anthropic give completion certificates — perfect for a ramp. CAPM is a formal certification for later.</p></div></div>
+      <div class="note"><span class="ic">🛠️</span><div><b>Doing beats watching.</b><p>If a course feels passive, pause and replicate the exercise in the real app. Retention comes from reps, not runtime.</p></div></div>
+      <div class="note"><span class="ic">⚡</span><div><b>AI is a speed boost, not a crutch.</b><p>Let Copilot/Claude draft, then make sure you understand and can defend the output yourself.</p></div></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <div class="done-cta" id="footerMsg">Ten days. Five tools. One confident start.</div>
+  Progress syncs across all your devices automatically. · <a href="./">Mark's Press</a>
+</footer>
+
+<script>
+  // ---- The Press · Supabase config (publishable key; table uses open RLS) ----
+  const SB_URL  = 'https://eepjhpyziczrxvirczio.supabase.co';
+  const SB_KEY  = 'sb_publishable__iv3bI7xDAsOdHUlXzbVZQ_2yyFS4uX';
+  const PAGE    = 'kayley';
+  const REST    = SB_URL + '/rest/v1/press_state';
+  const HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
+  const LKEY    = 'press:kayley';   // local mirror for instant paint / offline
+
+  const checks = Array.from(document.querySelectorAll('.check'));
+  const total = checks.length;
+  const ringFill = document.getElementById('ringFill');
+  const pctText = document.getElementById('pctText');
+  const progCount = document.getElementById('progCount');
+  const progTitle = document.getElementById('progTitle');
+  const footerMsg = document.getElementById('footerMsg');
+  const CIRC = 2 * Math.PI * 22;
+
+  const sync = document.createElement('div');
+  sync.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:99;font:500 12px/1 "JetBrains Mono",monospace;'
+    + 'padding:8px 12px;border-radius:999px;background:#0f6e63;color:#fff;opacity:0;transition:.3s;box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none';
+  document.body.appendChild(sync);
+  let pillTimer;
+  function flash(msg, color){
+    sync.textContent = msg; sync.style.background = color || '#0f6e63'; sync.style.opacity = '1';
+    clearTimeout(pillTimer); pillTimer = setTimeout(()=>{ sync.style.opacity='0'; }, 1600);
+  }
+
+  let state = {};
+  try { state = JSON.parse(localStorage.getItem(LKEY)) || {}; } catch(e){ state = {}; }
+  function saveLocal(){ try { localStorage.setItem(LKEY, JSON.stringify(state)); } catch(e){} }
+
+  function titleFor(p){
+    if(p===0) return "Let's get started";
+    if(p<25) return "You're moving";
+    if(p<50) return "Building momentum";
+    if(p<75) return "More than halfway";
+    if(p<100) return "Almost there";
+    return "Done — nicely played";
+  }
+
+  function render(){
+    let done = 0;
+    checks.forEach(c=>{
+      const id = c.dataset.id;
+      const on = !!state[id];
+      c.classList.toggle('checked', on);
+      c.querySelector('input').checked = on;
+      if(on) done++;
+    });
+    document.querySelectorAll('.day').forEach(day=>{
+      const items = day.querySelectorAll('.check');
+      const allDone = items.length>0 && Array.from(items).every(i=>state[i.dataset.id]);
+      day.classList.toggle('done', allDone);
+    });
+    const pct = total ? Math.round(done/total*100) : 0;
+    ringFill.style.strokeDashoffset = CIRC * (1 - done/total);
+    pctText.textContent = pct + '%';
+    progCount.textContent = done + ' of ' + total + ' tasks complete';
+    progTitle.textContent = titleFor(pct);
+    footerMsg.textContent = pct===100
+      ? "All done. Go be brilliant on day one. 🎉"
+      : "Ten days. Five tools. One confident start.";
+  }
+
+  async function loadFromCloud(){
+    try {
+      const res = await fetch(REST + '?page=eq.' + PAGE + '&select=item_id,checked', { headers: HEADERS });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const rows = await res.json();
+      const cloud = {};
+      rows.forEach(r => { cloud[r.item_id] = r.checked; });
+      state = cloud;                       // cloud is source of truth
+      saveLocal(); render();
+      flash('Synced', '#0f6e63');
+    } catch(e){
+      render();
+      flash('Offline · local only', '#c08a1e');
+    }
+  }
+
+  async function pushItem(id, checked){
+    try {
+      const res = await fetch(REST + '?on_conflict=page,item_id', {
+        method: 'POST',
+        headers: Object.assign({}, HEADERS, { 'Prefer': 'resolution=merge-duplicates' }),
+        body: JSON.stringify({ page: PAGE, item_id: id, checked: checked, updated_at: new Date().toISOString() })
+      });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      flash('Saved', '#0f6e63');
+    } catch(e){
+      flash('Save failed · kept locally', '#e8603c');
+    }
+  }
+
+  checks.forEach(c=>{
+    c.addEventListener('click', e=>{
+      if(e.target.tagName === 'A') return;
+      const id = c.dataset.id;
+      state[id] = !state[id];
+      saveLocal(); render();
+      pushItem(id, state[id]);
+    });
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', async ()=>{
+    if(!confirm('Clear all progress for everyone (this syncs across devices)?')) return;
+    state = {}; saveLocal(); render();
+    try {
+      const res = await fetch(REST + '?page=eq.' + PAGE, { method: 'DELETE', headers: HEADERS });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      flash('Reset', '#0f6e63');
+    } catch(e){ flash('Reset failed online', '#e8603c'); }
+  });
+
+  render();          // instant paint from local mirror
+  loadFromCloud();   // then reconcile with the cloud
+</script>
+</body>
+</html>
