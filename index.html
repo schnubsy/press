@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mark's Press</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c2025;
+    --ink-soft:#4a525e;
+    --paper:#faf7f2;
+    --card:#ffffff;
+    --line:#e7e1d6;
+    --teal:#0f6e63;
+    --teal-deep:#0a4f47;
+    --teal-wash:#e4f0ed;
+    --coral:#e8603c;
+    --gold:#d9a441;
+    --shadow:0 1px 2px rgba(28,32,37,.04),0 8px 24px rgba(28,32,37,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--paper);color:var(--ink);
+    line-height:1.55;-webkit-font-smoothing:antialiased;
+    min-height:100vh;display:flex;flex-direction:column;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 24px;width:100%}
+
+  /* ---------- MASTHEAD ---------- */
+  header{
+    background:
+      radial-gradient(1100px 380px at 88% -20%, rgba(217,164,65,.20), transparent 60%),
+      radial-gradient(800px 340px at 0% 0%, rgba(232,96,60,.14), transparent 55%),
+      linear-gradient(180deg,#0a4f47 0%, #0f6e63 100%);
+    color:#fff;padding:56px 0 64px;position:relative;overflow:hidden;
+  }
+  header .wrap{position:relative;z-index:2}
+  .rule{height:1px;background:rgba(255,255,255,.28);margin:0 0 18px}
+  .rule.thin{margin:18px 0 0}
+  .masthead-top{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-family:'JetBrains Mono',monospace;font-size:11px;
+    letter-spacing:.2em;text-transform:uppercase;color:#9fd9cf;
+    margin-bottom:16px;gap:12px;flex-wrap:wrap;
+  }
+  h1{
+    font-family:'Fraunces',serif;font-weight:600;
+    font-size:clamp(44px,9vw,86px);line-height:.95;
+    letter-spacing:-.03em;margin:6px 0 14px;
+  }
+  h1 em{font-style:italic;color:var(--gold)}
+  .tagline{font-size:17px;color:#e6f2ef;max-width:520px}
+
+  /* decorative press-mark */
+  .deco{position:absolute;right:-30px;bottom:-60px;width:280px;opacity:.16;z-index:1}
+
+  /* ---------- BODY ---------- */
+  main{padding:44px 0 70px;flex:1}
+  .section-label{
+    font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--teal);margin-bottom:8px;
+  }
+  h2{font-family:'Fraunces',serif;font-weight:600;font-size:26px;letter-spacing:-.01em}
+  .section-sub{color:var(--ink-soft);font-size:15px;margin-bottom:22px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+
+  .tool{
+    display:block;text-decoration:none;color:inherit;
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:22px 24px;box-shadow:var(--shadow);
+    transition:transform .18s, border-color .18s, box-shadow .18s;
+    position:relative;overflow:hidden;
+  }
+  .tool::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:4px;
+    background:var(--teal);opacity:0;transition:.18s;
+  }
+  .tool:hover{transform:translateY(-2px);border-color:#d3caba;box-shadow:0 4px 8px rgba(28,32,37,.05),0 14px 34px rgba(28,32,37,.09)}
+  .tool:hover::before{opacity:1}
+  .tool:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+
+  .tool .kicker{
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;
+  }
+  .tool h3{font-family:'Fraunces',serif;font-size:21px;font-weight:600;margin-bottom:6px;letter-spacing:-.01em}
+  .tool p{font-size:13.5px;color:var(--ink-soft)}
+  .tool .go{
+    margin-top:14px;font-size:13px;font-weight:600;color:var(--teal);
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .tool .go svg{transition:transform .18s}
+  .tool:hover .go svg{transform:translateX(3px)}
+
+  /* states */
+  .msg{
+    background:var(--card);border:1px dashed var(--line);border-radius:16px;
+    padding:28px 24px;text-align:center;color:var(--ink-soft);font-size:14px;
+  }
+  .msg b{display:block;font-family:'Fraunces',serif;font-size:17px;color:var(--ink);margin-bottom:4px;font-weight:600}
+  .skeleton{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:22px 24px;box-shadow:var(--shadow);
+  }
+  .bar{height:11px;border-radius:6px;background:#efe9de;margin-bottom:10px;animation:pulse 1.4s ease-in-out infinite}
+  .bar.s{width:38%;height:8px}
+  .bar.m{width:72%}
+  .bar.l{width:90%;height:8px;margin-bottom:0}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+  footer{border-top:1px solid var(--line);padding:26px 0 46px;text-align:center;color:var(--ink-soft);font-size:12.5px}
+  footer .mark{font-family:'Fraunces',serif;font-style:italic;color:var(--ink);font-size:15px;margin-bottom:6px}
+  footer a{color:var(--teal);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+
+  @media(max-width:560px){
+    header{padding:44px 0 52px}
+    .grid{grid-template-columns:1fr}
+  }
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <svg class="deco" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect x="30" y="30" width="140" height="140" rx="8" stroke="#fff" stroke-width="3"/>
+    <rect x="52" y="52" width="96" height="96" rx="4" stroke="#fff" stroke-width="2"/>
+    <line x1="100" y1="8" x2="100" y2="30" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+    <line x1="100" y1="170" x2="100" y2="192" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="100" cy="100" r="18" stroke="#fff" stroke-width="2"/>
+  </svg>
+  <div class="wrap">
+    <div class="masthead-top">
+      <span>Published by Mark</span>
+      <span id="dateline">—</span>
+    </div>
+    <div class="rule"></div>
+    <h1>Mark's <em>Press</em></h1>
+    <p class="tagline">Tools, checklists, and references — set in type and sent out to the web. Quick to publish, quick to use, anywhere.</p>
+    <div class="rule thin"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="section-label">In print</div>
+  <h2>Everything on the press</h2>
+  <p class="section-sub">Live pages, listed automatically. Add a page to the repo and it appears here.</p>
+
+  <div class="grid" id="grid">
+    <div class="skeleton"><div class="bar s"></div><div class="bar m"></div><div class="bar l"></div></div>
+    <div class="skeleton"><div class="bar s"></div><div class="bar m"></div><div class="bar l"></div></div>
+    <div class="skeleton"><div class="bar s"></div><div class="bar m"></div><div class="bar l"></div></div>
+  </div>
+</main>
+
+<footer class="wrap">
+  <div class="mark">Set, inked, and pressed.</div>
+  <a href="https://github.com/schnubsy/press" target="_blank" rel="noopener">github.com/schnubsy/press</a>
+</footer>
+
+<script>
+  const OWNER = 'schnubsy';
+  const REPO  = 'press';
+  const API   = 'https://api.github.com/repos/' + OWNER + '/' + REPO + '/contents';
+  const CACHE = 'press:index:v1';
+  const grid  = document.getElementById('grid');
+
+  // dateline
+  document.getElementById('dateline').textContent =
+    new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+
+  // Turn "kayley.html" into "Kayley"; "reading-log.html" into "Reading Log"
+  function titleize(filename){
+    return filename
+      .replace(/\.html?$/i,'')
+      .replace(/[-_]+/g,' ')
+      .replace(/\s+/g,' ')
+      .trim()
+      .replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  function fmtDate(iso){
+    if(!iso) return '';
+    return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  }
+
+  const ARROW = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+
+  function card(file){
+    const a = document.createElement('a');
+    a.className = 'tool';
+    a.href = './' + file.name;
+    a.innerHTML =
+      '<div class="kicker">' + (file.sizeLabel || 'Page') + '</div>' +
+      '<h3>' + titleize(file.name) + '</h3>' +
+      '<p>' + file.name + '</p>' +
+      '<span class="go">Open ' + ARROW + '</span>';
+    return a;
+  }
+
+  function renderList(files){
+    grid.innerHTML = '';
+    if(!files.length){
+      grid.innerHTML = '<div class="msg"><b>Nothing in print yet</b>Push an HTML page to the repo and it will show up here.</div>';
+      return;
+    }
+    files.forEach(f => grid.appendChild(card(f)));
+  }
+
+  function fallback(){
+    // Cached list, or a hardcoded minimum so the portal is never empty.
+    let cached = null;
+    try { cached = JSON.parse(localStorage.getItem(CACHE)); } catch(e){}
+    if(cached && cached.length){ renderList(cached); return; }
+    renderList([{ name:'kayley.html' }]);
+  }
+
+  async function load(){
+    try {
+      const res = await fetch(API);
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const items = await res.json();
+      const files = items
+        .filter(i => i.type === 'file' && /\.html?$/i.test(i.name) && i.name.toLowerCase() !== 'index.html')
+        .map(i => ({ name: i.name }))
+        .sort((a,b) => a.name.localeCompare(b.name));
+      try { localStorage.setItem(CACHE, JSON.stringify(files)); } catch(e){}
+      renderList(files);
+    } catch(e){
+      fallback();
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>
