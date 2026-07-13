@@ -3,241 +3,283 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mark's Press</title>
+<title>The Marquee</title>
+<meta name="page-title" content="The Marquee">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,600;1,6..96,400;1,6..96,500&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ink:#1c2025;
-    --ink-soft:#4a525e;
-    --paper:#faf7f2;
-    --card:#ffffff;
-    --line:#e7e1d6;
-    --teal:#0f6e63;
-    --teal-deep:#0a4f47;
-    --teal-wash:#e4f0ed;
-    --coral:#e8603c;
-    --gold:#d9a441;
-    --shadow:0 1px 2px rgba(28,32,37,.04),0 8px 24px rgba(28,32,37,.06);
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    font-family:'Inter',system-ui,sans-serif;
-    background:var(--paper);color:var(--ink);
-    line-height:1.55;-webkit-font-smoothing:antialiased;
-    min-height:100vh;display:flex;flex-direction:column;
-  }
-  .wrap{max-width:880px;margin:0 auto;padding:0 24px;width:100%}
+/* ============================================================================
+   PRESS — TWILIGHT CUT · design tokens (inlined from tokens.css — self-contained page)
+   Winner: Direction 04 "Twilight Cut" (Calm · Anaya Shrestha), .mk-tw skin,
+   grafted with Premiere's marquee bulbs retimed to Calm's tempo.
+   ============================================================================ */
+:root {
+  /* palette */
+  --tw-stage:  #100C1E;
+  --tw-ink:    #EDE7F2;
+  --tw-violet: #8E7BE8;
+  --tw-rose:   #E7A6C7;
+  --tw-muted:  #9E97AE;
+  --tw-faint:  #6a6478;
+  /* dusk gradient */
+  --tw-dusk-1: #151029;
+  --tw-dusk-2: #100C1E;
+  --tw-dusk-3: #0E0A18;
+  --tw-stage-gradient: linear-gradient(165deg, var(--tw-dusk-1), var(--tw-dusk-2) 55%, var(--tw-dusk-3));
+  /* glass */
+  --tw-glass-card: linear-gradient(160deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+  --tw-glass-doc:  linear-gradient(160deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
+  --tw-glass-arch: linear-gradient(160deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
+  --tw-border-card: rgba(255,255,255,.10);
+  --tw-border-doc:  rgba(255,255,255,.09);
+  --tw-border-arch: rgba(142,123,232,.26);
+  --tw-hairline:    rgba(255,255,255,.06);
+  /* type */
+  --tw-font-display: 'Bodoni Moda', Georgia, 'Times New Roman', serif;
+  --tw-font-body:    'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --tw-font-meta:    'Space Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --tw-h1:34px; --tw-h2-doc:34px; --tw-card-title:21px; --tw-arch-title:20px;
+  --tw-sec:18px; --tw-body:14.5px; --tw-body-sm:13px; --tw-meta:11px;
+  --tw-eyebrow:10px; --tw-track-eyebrow:.16em;
+  /* radii */
+  --tw-radius-card:22px; --tw-radius-doc:20px; --tw-radius-pill:100px; --tw-radius-round:50%;
+  /* blur */
+  --tw-blur-card:16px; --tw-blur-doc:12px;
+  /* glow / shadow */
+  --tw-shadow-card:       0 10px 34px rgba(10,7,22,.5), inset 0 1px 0 rgba(255,255,255,.12);
+  --tw-shadow-card-hover: 0 12px 40px rgba(142,123,232,.28), inset 0 1px 0 rgba(255,255,255,.16);
+  --tw-glow-dot:   0 0 16px 3px rgba(142,123,232,.7);
+  --tw-glow-check: 0 0 14px rgba(142,123,232,.55);
+  --tw-glow-ring:  drop-shadow(0 0 6px rgba(142,123,232,.5));
+  /* aurora */
+  --tw-aurora-field: radial-gradient(520px 340px at 30% -8%, rgba(142,123,232,.4), transparent 62%),
+                     radial-gradient(440px 320px at 92% 20%, rgba(231,166,199,.2), transparent 60%);
+  --tw-aurora-opacity:.6; --tw-aurora-cycle:32s; --tw-aurora-ease:ease-in-out;
+  --tw-aurora-opacity-lo:.5; --tw-aurora-opacity-hi:.72; --tw-aurora-drift:-2%;
+  /* retimed marquee bulbs (Calm tempo) */
+  --tw-bulb-color:#8E7BE8;
+  --tw-bulb-glow:0 0 10px rgba(142,123,232,.6);
+  --tw-bulb-size:6px; --tw-bulb-gap:10px;
+  --tw-bulb-cycle:7s; --tw-bulb-stagger:.5s; --tw-bulb-ease:ease-in-out;
+  --tw-bulb-opacity-floor:.55; --tw-bulb-opacity-peak:.9; --tw-bulb-opacity-reduced:.7;
+  /* transitions */
+  --tw-transition-card:.24s;
+}
+@keyframes twBreath {
+  0%   { opacity: var(--tw-aurora-opacity-lo, .5);  transform: translateY(0); }
+  100% { opacity: var(--tw-aurora-opacity-hi, .72); transform: translateY(var(--tw-aurora-drift, -2%)); }
+}
+@keyframes twBulb {
+  0%, 100% { opacity: var(--tw-bulb-opacity-floor, .55); }
+  50%      { opacity: var(--tw-bulb-opacity-peak,  .9);  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tw-aurora { animation: none !important; }
+  .tw-bulbs i { animation: none !important; opacity: var(--tw-bulb-opacity-reduced, .7) !important; }
+}
 
-  /* ---------- MASTHEAD ---------- */
-  header{
-    background:
-      radial-gradient(1100px 380px at 88% -20%, rgba(217,164,65,.20), transparent 60%),
-      radial-gradient(800px 340px at 0% 0%, rgba(232,96,60,.14), transparent 55%),
-      linear-gradient(180deg,#0a4f47 0%, #0f6e63 100%);
-    color:#fff;padding:56px 0 64px;position:relative;overflow:hidden;
-  }
-  header .wrap{position:relative;z-index:2}
-  .rule{height:1px;background:rgba(255,255,255,.28);margin:0 0 18px}
-  .rule.thin{margin:18px 0 0}
-  .masthead-top{
-    display:flex;justify-content:space-between;align-items:baseline;
-    font-family:'JetBrains Mono',monospace;font-size:11px;
-    letter-spacing:.2em;text-transform:uppercase;color:#9fd9cf;
-    margin-bottom:16px;gap:12px;flex-wrap:wrap;
-  }
-  h1{
-    font-family:'Fraunces',serif;font-weight:600;
-    font-size:clamp(44px,9vw,86px);line-height:.95;
-    letter-spacing:-.03em;margin:6px 0 14px;
-  }
-  h1 em{font-style:italic;color:var(--gold)}
-  .tagline{font-size:17px;color:#e6f2ef;max-width:520px}
-
-  /* decorative press-mark */
-  .deco{position:absolute;right:-30px;bottom:-60px;width:280px;opacity:.16;z-index:1}
-
-  /* ---------- BODY ---------- */
-  main{padding:44px 0 70px;flex:1}
-  .section-label{
-    font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.18em;
-    text-transform:uppercase;color:var(--teal);margin-bottom:8px;
-  }
-  h2{font-family:'Fraunces',serif;font-weight:600;font-size:26px;letter-spacing:-.01em}
-  .section-sub{color:var(--ink-soft);font-size:15px;margin-bottom:22px}
-
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
-
-  .tool{
-    display:block;text-decoration:none;color:inherit;
-    background:var(--card);border:1px solid var(--line);border-radius:16px;
-    padding:22px 24px;box-shadow:var(--shadow);
-    transition:transform .18s, border-color .18s, box-shadow .18s;
-    position:relative;overflow:hidden;
-  }
-  .tool::before{
-    content:"";position:absolute;left:0;top:0;bottom:0;width:4px;
-    background:var(--teal);opacity:0;transition:.18s;
-  }
-  .tool:hover{transform:translateY(-2px);border-color:#d3caba;box-shadow:0 4px 8px rgba(28,32,37,.05),0 14px 34px rgba(28,32,37,.09)}
-  .tool:hover::before{opacity:1}
-  .tool:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
-
-  .tool .kicker{
-    font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;
-    text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;
-  }
-  .tool h3{font-family:'Fraunces',serif;font-size:21px;font-weight:600;margin-bottom:6px;letter-spacing:-.01em}
-  .tool p{font-size:13.5px;color:var(--ink-soft)}
-  .tool .go{
-    margin-top:14px;font-size:13px;font-weight:600;color:var(--teal);
-    display:inline-flex;align-items:center;gap:6px;
-  }
-  .tool .go svg{transition:transform .18s}
-  .tool:hover .go svg{transform:translateX(3px)}
-
-  /* states */
-  .msg{
-    background:var(--card);border:1px dashed var(--line);border-radius:16px;
-    padding:28px 24px;text-align:center;color:var(--ink-soft);font-size:14px;
-  }
-  .msg b{display:block;font-family:'Fraunces',serif;font-size:17px;color:var(--ink);margin-bottom:4px;font-weight:600}
-  .skeleton{
-    background:var(--card);border:1px solid var(--line);border-radius:16px;
-    padding:22px 24px;box-shadow:var(--shadow);
-  }
-  .bar{height:11px;border-radius:6px;background:#efe9de;margin-bottom:10px;animation:pulse 1.4s ease-in-out infinite}
-  .bar.s{width:38%;height:8px}
-  .bar.m{width:72%}
-  .bar.l{width:90%;height:8px;margin-bottom:0}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
-
-  footer{border-top:1px solid var(--line);padding:26px 0 46px;text-align:center;color:var(--ink-soft);font-size:12.5px}
-  footer .mark{font-family:'Fraunces',serif;font-style:italic;color:var(--ink);font-size:15px;margin-bottom:6px}
-  footer a{color:var(--teal);text-decoration:none}
-  footer a:hover{text-decoration:underline}
-
-  @media(max-width:560px){
-    header{padding:44px 0 52px}
-    .grid{grid-template-columns:1fr}
-  }
-  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* ── component CSS ─────────────────────────────────────────────────────────*/
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body.tw-page{background:var(--tw-stage-gradient);color:var(--tw-ink);font-family:var(--tw-font-body);
+  -webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden;min-height:100vh}
+.tw-aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;opacity:var(--tw-aurora-opacity);
+  background:var(--tw-aurora-field);animation:twBreath var(--tw-aurora-cycle) var(--tw-aurora-ease) infinite alternate}
+.tw-in{position:relative;z-index:3;max-width:560px;margin:0 auto;padding:26px 26px 40px}
+/* THE GRAFT — retimed marquee bulbs */
+.tw-bulbs{display:flex;gap:var(--tw-bulb-gap);justify-content:center;margin-bottom:18px}
+.tw-bulbs i{width:var(--tw-bulb-size);height:var(--tw-bulb-size);border-radius:50%;background:var(--tw-bulb-color);
+  box-shadow:var(--tw-bulb-glow);opacity:var(--tw-bulb-opacity-floor);
+  animation:twBulb var(--tw-bulb-cycle) var(--tw-bulb-ease) infinite}
+.tw-bulbs i:nth-child(2){animation-delay:calc(var(--tw-bulb-stagger)*1)}
+.tw-bulbs i:nth-child(3){animation-delay:calc(var(--tw-bulb-stagger)*2)}
+.tw-bulbs i:nth-child(4){animation-delay:calc(var(--tw-bulb-stagger)*3)}
+.tw-bulbs i:nth-child(5){animation-delay:calc(var(--tw-bulb-stagger)*4)}
+.tw-bulbs i:nth-child(6){animation-delay:calc(var(--tw-bulb-stagger)*5)}
+.tw-bulbs i:nth-child(7){animation-delay:calc(var(--tw-bulb-stagger)*6)}
+.tw-top{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--tw-muted)}
+.tw-top b{color:var(--tw-ink);font-weight:600;letter-spacing:.02em}
+.tw-stale{font-size:10.5px;color:var(--tw-faint);margin-top:6px}
+h2.tw-title{font-family:var(--tw-font-display);font-weight:400;font-size:var(--tw-h1);line-height:1.02;
+  letter-spacing:-.01em;margin:18px 0 6px}
+h2.tw-title em{font-style:italic;color:var(--tw-violet)}
+.tw-dek{font-size:var(--tw-body-sm);color:var(--tw-muted);max-width:360px;margin-bottom:20px}
+.tw-card{position:relative;display:block;text-decoration:none;color:inherit;padding:18px 20px;margin-bottom:14px;
+  border-radius:var(--tw-radius-card);background:var(--tw-glass-card);border:1px solid var(--tw-border-card);
+  backdrop-filter:blur(var(--tw-blur-card));-webkit-backdrop-filter:blur(var(--tw-blur-card));
+  box-shadow:var(--tw-shadow-card);cursor:pointer;transition:var(--tw-transition-card)}
+.tw-card:hover{box-shadow:var(--tw-shadow-card-hover);border-color:rgba(142,123,232,.4)}
+.tw-card:focus-visible{outline:2px solid var(--tw-violet);outline-offset:3px}
+.tw-card .k{font-size:var(--tw-eyebrow);letter-spacing:var(--tw-track-eyebrow);text-transform:uppercase;
+  color:var(--tw-rose);margin-bottom:6px}
+.tw-card h3{font-family:var(--tw-font-display);font-weight:500;font-size:var(--tw-card-title);margin-bottom:2px}
+.tw-card .fn{font-family:var(--tw-font-meta);font-size:10.5px;color:var(--tw-muted)}
+.tw-card .glowdot{position:absolute;right:20px;top:20px;width:10px;height:10px;border-radius:50%;
+  background:var(--tw-violet);box-shadow:var(--tw-glow-dot)}
+.tw-arch{position:relative;display:block;text-decoration:none;color:inherit;padding:20px 22px;margin-top:6px;
+  border-radius:var(--tw-radius-card);
+  background:radial-gradient(140px 90px at 88% 30%, rgba(142,123,232,.16), transparent 70%),var(--tw-glass-arch);
+  border:1px solid var(--tw-border-arch);cursor:pointer;transition:var(--tw-transition-card);overflow:hidden}
+.tw-arch::after{content:"";position:absolute;right:22px;top:20px;width:26px;height:26px;border-radius:50%;
+  box-shadow:inset -7px -3px 0 0 rgba(142,123,232,.6)}
+.tw-arch:hover{border-color:rgba(142,123,232,.5)}
+.tw-arch:focus-visible{outline:2px solid var(--tw-violet);outline-offset:3px}
+.tw-arch .k{font-size:var(--tw-eyebrow);letter-spacing:var(--tw-track-eyebrow);text-transform:uppercase;
+  color:var(--tw-violet);margin-bottom:6px}
+.tw-arch h3{font-family:var(--tw-font-display);font-weight:500;font-style:italic;font-size:var(--tw-arch-title)}
+.tw-arch p{font-size:12px;color:var(--tw-muted);margin-top:6px;max-width:280px}
+.tw-arch .ct{position:absolute;right:22px;bottom:18px;font-family:var(--tw-font-meta);font-size:var(--tw-meta);
+  color:var(--tw-violet)}
+.tw-auto{font-size:10.5px;color:var(--tw-faint);margin-top:16px;text-align:center}
+.tw-back{display:inline-flex;align-items:center;gap:7px;font-family:var(--tw-font-meta);font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);
+  padding:6px 12px;border-radius:var(--tw-radius-pill);text-decoration:none;margin-bottom:14px}
+/* states */
+.tw-skel{padding:18px 20px;margin-bottom:14px;border-radius:var(--tw-radius-card);background:var(--tw-glass-card);
+  border:1px solid var(--tw-border-card);height:78px;position:relative;overflow:hidden}
+.tw-skel::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);animation:twShimmer 1.8s ease-in-out infinite}
+@keyframes twShimmer{100%{transform:translateX(100%)}}
+.tw-empty,.tw-error{padding:22px 22px;border-radius:var(--tw-radius-card);background:var(--tw-glass-card);
+  border:1px solid var(--tw-border-card);text-align:center}
+.tw-empty h3,.tw-error h3{font-family:var(--tw-font-display);font-weight:500;font-size:20px;margin-bottom:6px}
+.tw-empty p,.tw-error p{font-size:13px;color:var(--tw-muted)}
+.tw-error .tw-retry{margin-top:14px;display:inline-block;cursor:pointer;font-family:var(--tw-font-meta);font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);
+  padding:7px 14px;border-radius:var(--tw-radius-pill)}
+@media (prefers-reduced-motion:reduce){.tw-skel::after{animation:none}}
 </style>
 </head>
-<body>
-
-<header>
-  <svg class="deco" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <rect x="30" y="30" width="140" height="140" rx="8" stroke="#fff" stroke-width="3"/>
-    <rect x="52" y="52" width="96" height="96" rx="4" stroke="#fff" stroke-width="2"/>
-    <line x1="100" y1="8" x2="100" y2="30" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-    <line x1="100" y1="170" x2="100" y2="192" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-    <circle cx="100" cy="100" r="18" stroke="#fff" stroke-width="2"/>
-  </svg>
-  <div class="wrap">
-    <div class="masthead-top">
-      <span>Published by Mark</span>
-      <span id="dateline">—</span>
-    </div>
-    <div class="rule"></div>
-    <h1>Mark's <em>Press</em></h1>
-    <p class="tagline">Tools, checklists, and references — set in type and sent out to the web. Quick to publish, quick to use, anywhere.</p>
-    <div class="rule thin"></div>
+<body class="tw-page">
+  <div class="tw-aurora"></div>
+  <div class="tw-in">
+    <div id="tw-root"></div>
   </div>
-</header>
-
-<main class="wrap">
-  <div class="section-label">In print</div>
-  <h2>Everything on the press</h2>
-  <p class="section-sub">Live pages, listed automatically. Add a page to the repo and it appears here.</p>
-
-  <div class="grid" id="grid">
-    <div class="skeleton"><div class="bar s"></div><div class="bar m"></div><div class="bar l"></div></div>
-    <div class="skeleton"><div class="bar s"></div><div class="bar m"></div><div class="bar l"></div></div>
-    <div class="skeleton"><div class="bar s"></div><div class="bar m"></div><div class="bar l"></div></div>
-  </div>
-</main>
-
-<footer class="wrap">
-  <div class="mark">Set, inked, and pressed.</div>
-  <a href="https://github.com/schnubsy/press" target="_blank" rel="noopener">github.com/schnubsy/press</a>
-</footer>
-
 <script>
-  const OWNER = 'schnubsy';
-  const REPO  = 'press';
-  const API   = 'https://api.github.com/repos/' + OWNER + '/' + REPO + '/contents';
-  const CACHE = 'press:index:v1';
-  const grid  = document.getElementById('grid');
+const OWNER='schnubsy', REPO='press';
+const API=`https://api.github.com/repos/${OWNER}/${REPO}/contents`;
+const RAW=`https://raw.githubusercontent.com/${OWNER}/${REPO}/main`;
+const KICKERS=[[/council/,'Reference'],[/checklist|prep|kayley/,'Checklist'],
+  [/log|notes|journal/,'Notes'],[/guide|how-?to|readme/,'Guide']];
+const kicker=f=>{for(const[re,k]of KICKERS)if(re.test(f))return k;return 'Page';};
+const titleize=f=>f.replace(/\.html$/,'').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-  // dateline
-  document.getElementById('dateline').textContent =
-    new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+async function ghJson(url){const r=await fetch(url,{headers:{'Accept':'application/vnd.github+json'}});
+  if(!r.ok)throw new Error('GitHub '+r.status);return r.json();}
+async function listPages(dir){ // dir '' = root, 'archive' = archive/
+  const url = dir?`${API}/${dir}?ref=main`:`${API}?ref=main`;
+  const items = await ghJson(url);
+  return items.filter(x=>x.type==='file'&&x.name.endsWith('.html')&&x.name!=='index.html').map(x=>x.name);
+}
+async function loadManifest(dir){
+  const path = dir?`${dir}/pages.json`:'pages.json';
+  try{const r=await fetch(`${RAW}/${path}`);if(!r.ok)return null;return await r.json();}catch(e){return null;}
+}
+/* ── cache fallback (correction #1): last good marquee list survives an outage ── */
+const CACHE_KEY='press:marquee:v2';
+function cacheSave(files, man){ try{ localStorage.setItem(CACHE_KEY, JSON.stringify({files, man})); }catch(e){} }
+function cacheLoad(){ try{ return JSON.parse(localStorage.getItem(CACHE_KEY)||'null'); }catch(e){ return null; } }
 
-  // Turn "kayley.html" into "Kayley"; "reading-log.html" into "Reading Log"
-  function titleize(filename){
-    return filename
-      .replace(/\.html?$/i,'')
-      .replace(/[-_]+/g,' ')
-      .replace(/\s+/g,' ')
-      .trim()
-      .replace(/\b\w/g, c => c.toUpperCase());
+function order(files, man){ // newest-first (manifest insertion order reversed); disk-only pages appended A→Z
+  if(!man) return {ordered:[...files].sort(), newest:null};
+  const manKeys = Object.keys(man).filter(k=>files.includes(k));
+  const rest = files.filter(f=>!manKeys.includes(f)).sort();
+  return {ordered:[...manKeys.slice().reverse(), ...rest],
+          newest: manKeys.length?manKeys[manKeys.length-1]:null};
+}
+function titleOf(f, man){ return (man&&man[f]&&man[f].title) ? man[f].title : titleize(f); }
+
+function cardHTML(f, man, isNewest){
+  return `<a class="tw-card" href="${esc(f)}">${isNewest?'<span class="glowdot"></span>':''}`+
+    `<div class="k">${esc(kicker(f))}</div><h3>${esc(titleOf(f,man))}</h3>`+
+    `<div class="fn">${esc(f)}</div></a>`;
+}
+function archiveCardHTML(count){
+  return `<a class="tw-arch" href="./?view=archive"><div class="k">▤ The Archive</div>`+
+    `<h3>Resting pages</h3><p>Everything eased off the marquee — nothing lost, just at rest.</p>`+
+    `<span class="ct">${count} →</span></a>`;
+}
+const bulbsHTML=`<div class="tw-bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>`;
+const skelHTML=`${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>loading…</span></div>`+
+  `<h2 class="tw-title">On the <em>marquee</em>, softly.</h2>`+
+  `<div class="tw-skel"></div><div class="tw-skel"></div><div class="tw-skel"></div>`;
+
+function paintMarquee(root, files, man, archiveCount, stale){
+  const {ordered, newest} = order(files, man);
+  if(!ordered.length){
+    root.innerHTML = `${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>at dusk</span></div>`+
+      `<h2 class="tw-title">On the <em>marquee</em>, softly.</h2>`+
+      `<div class="tw-empty"><h3>Nothing on the marquee yet</h3>`+
+      `<p>Published pages appear here automatically.</p></div>`;
+    return;
   }
+  const cards = ordered.map(f=>cardHTML(f, man, f===newest)).join('');
+  const staleNote = stale
+    ? `<div class="tw-stale">showing your last saved list — GitHub was unreachable</div>` : '';
+  root.innerHTML =
+    `${bulbsHTML}`+
+    `<div class="tw-top"><span>The <b>Marquee</b></span><span>${ordered.length} showing · at dusk</span></div>`+
+    staleNote +
+    `<h2 class="tw-title">On the <em>marquee</em>, softly.</h2>`+
+    `<div class="tw-dek">The latest, set out and gently lit. Older pages rest in the archive so the front stays calm.</div>`+
+    cards + archiveCardHTML(archiveCount) +
+    `<div class="tw-auto">↻ auto-listed from the repository root</div>`;
+}
 
-  function fmtDate(iso){
-    if(!iso) return '';
-    return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+async function renderMarquee(root){
+  root.innerHTML = skelHTML;
+  try{
+    const [files, man] = await Promise.all([listPages(''), loadManifest('')]);
+    let archiveCount = 0; try{ archiveCount=(await listPages('archive')).length; }catch(e){}
+    cacheSave(files, man);                       // persist last good list
+    paintMarquee(root, files, man, archiveCount, false);
+  }catch(e){
+    const cached = cacheLoad();                  // outage → show last good list, not the error
+    if(cached && Array.isArray(cached.files) && cached.files.length){
+      paintMarquee(root, cached.files, cached.man, 0, true);
+    } else {
+      root.innerHTML = `${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>at dusk</span></div>`+
+        `<h2 class="tw-title">On the <em>marquee</em>, softly.</h2>`+
+        `<div class="tw-error"><h3>Couldn't reach the marquee</h3>`+
+        `<p>GitHub didn't answer — this usually clears in a minute.</p>`+
+        `<span class="tw-retry" onclick="location.reload()">Retry</span></div>`;
+    }
   }
-
-  const ARROW = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
-
-  function card(file){
-    const a = document.createElement('a');
-    a.className = 'tool';
-    a.href = './' + file.name;
-    a.innerHTML =
-      '<div class="kicker">' + (file.sizeLabel || 'Page') + '</div>' +
-      '<h3>' + titleize(file.name) + '</h3>' +
-      '<p>' + file.name + '</p>' +
-      '<span class="go">Open ' + ARROW + '</span>';
-    return a;
-  }
-
-  function renderList(files){
-    grid.innerHTML = '';
+}
+async function renderArchive(root){
+  root.innerHTML = `<a class="tw-back" href="index.html">← the marquee</a>`+
+    `<div class="tw-top"><span>The <b>Archive</b></span><span>resting pages</span></div>`+
+    `<h2 class="tw-title">At <em>rest</em>.</h2><div class="tw-skel"></div><div class="tw-skel"></div>`;
+  try{
+    const [files, man] = await Promise.all([listPages('archive'), loadManifest('archive')]);
+    const back = `<a class="tw-back" href="index.html">← the marquee</a>`;
     if(!files.length){
-      grid.innerHTML = '<div class="msg"><b>Nothing in print yet</b>Push an HTML page to the repo and it will show up here.</div>';
-      return;
+      root.innerHTML = back +
+        `<div class="tw-top"><span>The <b>Archive</b></span><span>resting pages</span></div>`+
+        `<h2 class="tw-title">At <em>rest</em>.</h2>`+
+        `<div class="tw-empty"><h3>The archive is empty</h3>`+
+        `<p>Pages you archive will rest here.</p></div>`; return;
     }
-    files.forEach(f => grid.appendChild(card(f)));
+    const cards = [...files].sort().map(f=>`<a class="tw-card" href="archive/${esc(f)}">`+
+      `<div class="k">${esc(kicker(f))}</div><h3>${esc(titleOf(f,man))}</h3>`+
+      `<div class="fn">archive/${esc(f)}</div></a>`).join('');
+    root.innerHTML = back +
+      `<div class="tw-top"><span>The <b>Archive</b></span><span>${files.length} resting</span></div>`+
+      `<h2 class="tw-title">At <em>rest</em>.</h2>`+
+      `<div class="tw-dek">Everything eased off the marquee. Nothing lost.</div>`+ cards;
+  }catch(e){
+    root.innerHTML = `<a class="tw-back" href="index.html">← the marquee</a>`+
+      `<div class="tw-error"><h3>Couldn't reach the archive</h3>`+
+      `<p>GitHub didn't answer — try again shortly.</p>`+
+      `<span class="tw-retry" onclick="location.reload()">Retry</span></div>`;
   }
-
-  function fallback(){
-    // Cached list, or a hardcoded minimum so the portal is never empty.
-    let cached = null;
-    try { cached = JSON.parse(localStorage.getItem(CACHE)); } catch(e){}
-    if(cached && cached.length){ renderList(cached); return; }
-    renderList([{ name:'kayley.html' }]);
-  }
-
-  async function load(){
-    try {
-      const res = await fetch(API);
-      if(!res.ok) throw new Error('HTTP ' + res.status);
-      const items = await res.json();
-      const files = items
-        .filter(i => i.type === 'file' && /\.html?$/i.test(i.name) && i.name.toLowerCase() !== 'index.html')
-        .map(i => ({ name: i.name }))
-        .sort((a,b) => a.name.localeCompare(b.name));
-      try { localStorage.setItem(CACHE, JSON.stringify(files)); } catch(e){}
-      renderList(files);
-    } catch(e){
-      fallback();
-    }
-  }
-
-  load();
+}
+const params = new URLSearchParams(location.search);
+const isArchive = params.get('view')==='archive' || location.hash==='#archive';
+const root = document.getElementById('tw-root');
+(isArchive ? renderArchive : renderMarquee)(root);
 </script>
 </body>
 </html>
