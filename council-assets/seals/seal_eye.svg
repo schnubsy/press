@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Official Eye seal — The Standard (final), v2.2.1. Concentric aperture, 6px stroke, neon glow. Transparent bg for the midnight guide. -->
+  <defs>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(64,64)" filter="url(#glow)">
+    <circle r="44" fill="none" stroke="#A78BDB" stroke-width="6"/>
+    <circle r="24" fill="none" stroke="#A78BDB" stroke-width="6"/>
+    <circle r="8" fill="#A78BDB"/>
+  </g>
+</svg>

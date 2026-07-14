@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Official Hand seal — The Standard (final), v2.2.1. Five fingers: thumb/index/middle/ring/pinky, uniform 6px stroke, 88px span = Eye outer diameter. -->
+  <defs>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(64,64)" filter="url(#glow)" stroke="#C97F52" stroke-width="6" stroke-linecap="round">
+    <line x1="-44" y1="44" x2="-44" y2="16"/>
+    <line x1="-22" y1="44" x2="-22" y2="-31"/>
+    <line x1="0"   y1="44" x2="0"   y2="-44"/>
+    <line x1="22"  y1="44" x2="22"  y2="-35"/>
+    <line x1="44"  y1="44" x2="44"  y2="-17"/>
+  </g>
+</svg>
