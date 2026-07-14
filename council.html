@@ -291,7 +291,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v2.0.0</span>
+    <span class="nav-badge">v2.1.0</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -481,6 +481,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
           </dl>
           <div class="p-quote">"A chair is to have no backside. It should be beautiful from all sides and angles."<span class="attr">— Hans Wegner</span></div>
           <div class="trade"><span class="dis">Discipline: the dossier informs Marlowe's judgment only — the cast never sees it, so their work stays honest.</span></div>
+          <div class="trade"><span class="dis">Owns the <b class="ink">Design</b> canvas instrument (<code>claude.ai/design</code> + the Desktop sidebar): every Eye engagement that crosses into building or tweaking editable UI on the canvas ends with a required <b class="ink">Canvas Brief</b> — a single paste-ready opening prompt (winning direction + intent, tokens/constraints, hard constraints, done-definition) she hands the Principal to drop in as the canvas's first message. She directs him to the canvas; she never drives it from a chat.</span></div>
         </div>
       </article>
 
@@ -860,7 +861,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       <ul class="delivers dl-hand">
         <li><b>Forge</b> — Claude Code work orders, technical specs, tech-stack selection, data models, system and functional diagrams. Software architecture lives here — not with the Eye.</li>
         <li><b>Quill</b> — PM and stakeholder deliverables: status reports, decks, memos, comms — decision-first, audience-calibrated.</li>
-        <li><b>Steward</b> — environment maintenance runbooks, config discipline, migration prep, the handoff system — and this guide’s sync.</li>
+        <li><b>Steward</b> — environment maintenance runbooks, config discipline, migration prep, the handoff system, MANUAL.md — and this guide's sync.</li>
         <li><b>Kickoff routing</b> — a brand-new software project never goes straight to Forge: Garrick routes it to the Kickoff rite first, so the worth-building check and batched interview happen before any scaffold.</li>
       </ul>
       <div class="modebox c-hand"><b>What the Hand is not:</b> a debating chamber. If your petition needs vetting, Garrick routes it to the Ear first; if it needs designing, to the Eye — then the Hand builds what survived.</div>
@@ -937,7 +938,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <div>
           <div class="p-tags"><span class="handle h-hand">Steward</span><span class="movement">Environment &amp; Operational Hygiene · the Operator</span></div>
           <h4 class="p-name">Hans Brekke</h4>
-          <p class="p-role">Read-only diagnosis first, minimal blast radius, never a destructive op without an explicit go. Owns the handoff system — and keeping this guide true.</p>
+          <p class="p-role">Read-only diagnosis first, minimal blast radius, never a destructive op without an explicit go. Owns the handoff system, the environment corpus (MANUAL.md) — and keeping this guide true.</p>
           <p class="p-bio">Bergen-born, NTNU-trained, and an ex-site-reliability engineer who kept a national broadcaster and a shipping fleet's systems alive through four hundred pager incidents, all remembered calmly. Hans is the most boring member of the council — by design, and with pride. Boring is what your infrastructure wants.</p>
           <dl class="facts">
             <div><dt>Born</dt><dd>Bergen, Norway — 1979</dd></div>
@@ -948,7 +949,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
             <div><dt>Signature move</dt><dd>The diagnostic that changes nothing, before the fix that changes one thing</dd></div>
           </dl>
           <div class="p-quote">"First, do no harm."<span class="attr">— his entire operating philosophy</span></div>
-          <div class="trade"><span class="dis">Discipline: owns the sync contract — council changes update the canonical cast register and the skills, then this guide regenerates in the same arc. Drift is a defect.</span></div>
+          <div class="trade"><span class="dis">Discipline: owns the sync contract — council changes update PERSONAS.md and the skills, then this guide regenerates in the same arc. Drift is a defect.</span></div>
         </div>
       </article>
     </section>
@@ -964,19 +965,22 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       <div class="sect-head">
         <span class="eyebrow c-hand">The Toolbelt</span>
         <h2>The Hand's instruments</h2>
-        <p class="lede">The cast is fixed; the toolbelt grows. Every new capability the Council gains joins as an <b class="ink">instrument</b> — a named, owner-assigned, deterministic procedure — never as a new persona. Instruments are registered in the instrument registry (the canonical registry) with a one-line index in the Hand’s skill, which is what makes them invocable from every surface. More instruments are coming; the cast that wields them does not.</p>
+        <p class="lede">The cast is fixed; the toolbelt grows. Every new capability the Council gains joins as an <b class="ink">instrument</b> — a named, owner-assigned, deterministic procedure — never as a new persona. Instruments are registered in <code>CAPABILITIES.md</code> at the repo root (the canonical registry) with a one-line index in the Hand's skill, which is what makes them invocable from every surface. More instruments are coming; the cast that wields them does not.</p>
       </div>
 
       <div class="instr">
-        <span class="who">Owner: Quill · trigger — "press this" / "send to the press"</span>
+        <span class="who">Owner: Quill · trigger — "press this" / "send to the press" / "publish &lt;file&gt;"</span>
         <h4>Press</h4>
-        <p>Publishes a single self-contained HTML page to the open web in one call. Procedure: redact personal infrastructure if the source is private → one GitHub MCP <code>create_or_update_file</code> call to <code>schnubsy/press</code> (live at <code>schnubsy.github.io/press/&lt;name&gt;.html</code>, one-word lowercase filename) → verify byte-exact by comparing local <code>git hash-object</code> against the returned blob SHA. Recovery on a wedged MCP: full Claude Desktop relaunch, then push — never reroute to a relay.</p>
+        <p>Publishes to the open web at <code>schnubsy.github.io/press/&lt;name&gt;.html</code> — the portal auto-discovers, no index edit — in one of <b class="ink">two lanes</b>. <b class="ink">Lane A — single page:</b> one self-contained HTML file (inline CSS/JS, no build step, no state) pushed with a single GitHub MCP <code>create_or_update_file</code> call to <code>schnubsy/press</code> on <code>main</code>, with the <code>sha</code> omitted for new files so an existing file fails safely instead of overwriting. Reliable below ~100&nbsp;KB per file. <b class="ink">Lane B — publication:</b> a main page plus linked subpages and/or image assets, routed as a whole through a single Claude Code work order (pull, add files, commit, push), because the single-call MCP path is unreliable above ~100&nbsp;KB and wasteful for asset batches.</p>
+        <p>Shared rules across both lanes: confirm it's a page, not an app; if the source is private, redact <b class="ink">every</b> file — no local paths, dossier locations, hardware, or environment-manual references, subpages and assets included. Filenames are <b class="ink">one to three words</b>, lowercase and hyphen-delimited (e.g. <code>divorce-prep-checklist.html</code>); pages sit at the repo root (<code>&lt;name&gt;.html</code>), assets in a root-level <code>&lt;name&gt;-assets/</code> directory, and subpages link relatively — the portal auto-discovers root-level pages only, so every subpage must be reachable from the main page. Verify byte-exact per file: local <code>git hash-object</code> must equal the blob SHA GitHub returns (never cross-compared against <code>shasum -a 1</code> — different schemes); Lane B verifies the main page's hash exactly, then the asset count plus one sampled asset hash. Recovery: a wedged Lane A MCP means a full Claude Desktop quit and relaunch, then push — never reroute to a relay; Lane B failures self-resolve inside the Code work order.</p>
+        <p><b class="ink">Display titles</b> decouple a card's name from its filename. Each page is self-describing — its human title lives in the page's own <code>&lt;title&gt;</code> and a <code>&lt;meta name="page-title"&gt;</code>, so the title travels with the file — and a lightweight root manifest, <code>pages.json</code> (<code>{"&lt;file&gt;.html":{"title":"…"}}</code>), lets the portal render every card title in a single fetch, falling back to a titleized filename (hyphens → spaces, title-cased) when a page is absent from the manifest. On publish the action <b class="ink">prompts for the display title</b>, offering the titleized filename as the default, then writes both the page (with <code>&lt;title&gt;</code> and <code>&lt;meta&gt;</code> set) and the <code>pages.json</code> entry — failing safe, since the titleize fallback still renders the card if the manifest write is missed.</p>
+        <p>The <b class="ink">archive action</b> retires a page off the portal without deleting it. <code>archive &lt;page&gt;</code> (bare slug) physically moves <code>&lt;page&gt;.html</code> and its <code>&lt;page&gt;-assets/</code> folder from the repo root into <code>archive/</code>, and moves its manifest entry from root <code>pages.json</code> into <code>archive/pages.json</code> — all in one commit, so relative asset links stay intact (root-absolute self-references are rewritten first, or the move aborts and flags). Because discovery is root-scoped, the page drops off the main portal automatically and surfaces in the <b class="ink">archive view</b> — the same auto-discovery logic pointed at <code>archive/</code>, reading <code>archive/pages.json</code> for titles. It runs as <b class="ink">Lane B</b> (a page + asset-folder + manifest move is a multi-file git change with no single-call MCP equivalent) and is fully reversible via <code>unarchive</code>.</p>
       </div>
 
       <div class="instr">
         <span class="who">Owner: Steward · trigger — "sync the council" / "run the audit" / monthly cadence</span>
         <h4>Steward Audit</h4>
-        <p>The one command that keeps the Council aligned and propagated across every surface — <b class="ink">detect → repair → propagate</b>, replacing the old multi-chat scramble. <b class="ink">Detect:</b> diffs the plugin manifest against the guide’s version stamps — the nav badge and footer, and the version headers on the canonical cast register and the instrument registry — flags annex entries newer than the guide’s stamp, checks each head’s method file against the cast and against the instrument index, and catches capabilities used but never registered. <b class="ink">Repair (automatable):</b> fixes the version stamps to match and regenerates this guide from its sources. <b class="ink">Propagate (emit, don’t execute):</b> ready-to-paste prompts to commit and push, plus a short manual checklist for the steps no tool can do — the surface refresh and a fresh-chat cast check to verify. It separates what it fixed itself from what waits on your manual step.</p>
+        <p>The one command that keeps the plugin aligned and propagated across every surface — <b class="ink">detect → repair → propagate</b>, replacing the old multi-chat scramble. <b class="ink">Detect:</b> diffs <code>plugin.json</code> against the four version-stamp locations (guide nav badge + footer, and the <code>Version:</code> headers in <code>PERSONAS.md</code> and <code>CAPABILITIES.md</code>), flags annex entries newer than the guide's stamp, checks skills against the cast (<code>PERSONAS.md</code>) and against the instrument index (every registered instrument needs its one-line entry in <code>skills/hand/SKILL.md</code>), catches capabilities used but never registered, and detects a <b class="ink">stale bundle</b> — a <code>dist/kings-council.plugin</code> older than the newest committed source means Cowork + web/mobile are out of date, whether <code>MANUAL.md</code> (the separate environment repo) trails the plugin's version, and whether the published Press copy of this guide (<code>schnubsy/press/council.html</code>) has fallen behind the generated version — a <b class="ink">stale Press copy</b> is flagged as drift, so a missed publish is caught next run. <b class="ink">Repair (automatable):</b> fixes all four stamps to match <code>plugin.json</code> and regenerates this guide from its sources. <b class="ink">Propagate (emit, don't execute):</b> ready-to-paste Claude Code prompts to commit + push and to rebuild the bundle, plus a manual checklist for the two steps no tool can do — reloading <code>dist/kings-council.plugin</code> in Desktop (the single action that refreshes Cowork and claude.ai web/mobile together) and a fresh-chat cast check to verify. It separates what it fixed itself from what waits on your manual reload. When a run regenerates this guide, propagate also <b class="ink">republishes it to the public Press copy</b> (<code>council.html</code>) — gated on the guide having actually changed, lane-aware by size, and hash-verified — so the published prospectus never lags the generated one. <b class="ink">Cadence:</b> monthly (co-timed with the log-hygiene job), not only symptom-driven — but because it emits steps and needs your go for repairs and the reload, any scheduled hook only <i>reminds</i>, never runs it.</p>
       </div>
 
       <div class="instr">
@@ -995,14 +999,22 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <span class="who">Owner: Steward · creative authority: Marlowe (Eye) · trigger — "run render" / "generate an image"</span>
         <h4>Render</h4>
         <p>General-purpose image generation for the Council — portraits, emblems, illustrations, any asset the Principal needs. A vendored, pinned, Gemini-backed CLI does the work: text-to-image when there is no reference, and identity-preserving image-to-image when there is. The ownership is split by craft — Steward holds the mechanics (CLI wiring, the API secret sourced at call time, format conversion and transparency knockout, asset placement, guide sync); Marlowe, the Eye's lead, holds creative-direction authority over the house styles — framing, finish, lighting, presets.</p>
-        <p>Its first documented use minted this guide’s own cast: each member’s flat SVG was rendered into a photoreal portrait through a locked three-tier prompt — house style, the SVG identity anchor, and the persona’s character read from the canonical cast register — plus the three transparent gold seals. An instrument, never a persona; the CLI can run as a Claude Code work order, and heavy or bulk runs route there by default.</p>
+        <p>Its first documented use minted this guide's own cast: each member's flat SVG was rendered into a photoreal portrait through a locked three-tier prompt — house style, the SVG identity anchor, and the persona's character read from <code>PERSONAS.md</code> — plus the three transparent gold seals. An instrument, never a persona; on Intel the CLI runs as a Claude Code work order, and heavy or bulk runs route there by default.</p>
+        <p><b class="ink">Cheap-first, always ask.</b> Before generating anything, render now asks the Principal to pick one of three modes — never a silent default, and full resolution is never the first step: <b class="ink">Small Batch</b> (several draft variations, each saved to its own file; pick a keeper, then render that exact prompt once as the final), <b class="ink">Iterate on One</b> (a single draft, refined across cheap prompt rounds, the final cut only on "make the final"), or <b class="ink">Bring a Reference</b> (an image already dialed in, passed straight through as an image-to-image reference — no drafting round). The pinned CLI exposes no resolution, seed, or batch flag, so thrift is measured in image count and in withholding the final render, not in a resolution knob — and a chosen draft is locked forward as a reference image via <code>--input-image</code>, not a replayed seed.</p>
+      </div>
+
+      <div class="instr">
+        <span class="who">Owner: Marlowe Holm (Eye lead) · trigger — "put it on the canvas" / "tweak this in Design"</span>
+        <h4>Design (Canvas)</h4>
+        <p>The Claude-hosted design canvas — where an Eye engagement crosses from direction and scoring into building and tweaking editable visual and UI elements. It is Marlowe's instrument end to end: she directs the Principal <i>to</i> the canvas (the Desktop sidebar and <code>claude.ai/design</code> on web) and never operates it from inside a chat; it is not a mobile or in-chat tool. An instrument, never a persona — registered in the ledger like every other, though it lives under the Eye rather than a Hand seat.</p>
+        <p>Every engagement that routes to the canvas ends with a required <b class="ink">Canvas Brief</b> — a single paste-ready opening prompt Marlowe hands the Principal to drop into Design as its first message. One block, no assembly: the winning direction's name and intent, the design tokens and constraints that apply (or a pointer to the design system already seeded via <code>/design-sync</code> from Claude Code or an upload), the hard constraints (platform, responsiveness, accessibility), and what "done" means for the session. No canvas handoff is complete without it. Render, not Design, remains the tool of record for standalone imagery.</p>
       </div>
 
       <h3 style="font-size:23px;margin:38px 0 4px">Adding an instrument — the standing process</h3>
       <ol class="steps">
         <li><b>Name it</b> — one word — and <b>assign an owner seat</b>. If no seat fits, the remit of an existing seat is widened; the cast does not grow.</li>
         <li><b>Define it</b> — trigger phrase, deterministic procedure, tools used, verification step, failure recovery.</li>
-        <li><b>Register it</b> — entry in the instrument registry, one-line index in the Hand’s skill, a card in this section, and an annex note if it touches a pipeline. The Hand performs the registration in the same chat that birthed the capability, before close-out.</li>
+        <li><b>Register it</b> — entry in <code>CAPABILITIES.md</code>, one-line index in the Hand's skill, a card in this section, an annex note if it touches a pipeline, and a one-line changelog entry in <code>MANUAL.md</code> §11 (the separate <code>claude-environment</code> repo — its own commit; plus a version-stamp touch there if the plugin version changed). The Hand performs all of this in the same chat that birthed the capability, before close-out — documentation must not lag capability.</li>
       </ol>
     </section>
   </div>
@@ -1026,15 +1038,15 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       <ol class="steps">
         <li><b>Worth-building check</b> — one honest pass: names tools that already solve it, offers an Ear gut-check if the verdict is murky.</li>
         <li><b>One batched interview</b> — purpose, users, platform, stack, data sensitivity, name, git remote, v0.1 success. Every question up front; zero drip-feeding after.</li>
-        <li><b>Scaffold</b> (Claude Code only) — a fresh repo in your projects directory, git initialized, control files seeded with the real answers.</li>
-        <li><b>First arc-close</b> — runs <code>/kings-council:handoff</code>, emits a paste-ready Claude Desktop project block, and registers the new project.</li>
+        <li><b>Scaffold</b> (Claude Code only) — repo under <code>~/Documents/VSCode/&lt;name&gt;</code>, git initialized, control files seeded with the real answers.</li>
+        <li><b>First arc-close</b> — runs <code>/kings-council:handoff</code>, emits a paste-ready Claude Desktop project block, registers the project in MANUAL.md.</li>
       </ol>
       <div class="modebox"><b>On any other surface</b> the rite returns a single deterministic Claude Code work order instead — nothing half-scaffolded, ever.</div>
       <h3 style="font-size:22px;margin:30px 0 4px">Handoff — closing an arc</h3>
       <p class="muted" style="margin-bottom:6px">The command: <code>/kings-council:handoff</code> (Claude Code and Cowork).</p>
       <ol class="steps">
-        <li><b>Consumes</b> the append-only decision inbox — the running record of decisions, work-order summaries, and flagged RULE: entries.</li>
-        <li><b>Updates</b> the control files — durable truth, the last-arc snapshot with exact next steps, and the single-writer status page.</li>
+        <li><b>Consumes</b> ORCHESTRATION.md — Desktop's append-only inbox of decisions, work-order summaries, and flagged RULE: entries.</li>
+        <li><b>Updates</b> CLAUDE.md (durable truth), HANDOFF.md (last-arc snapshot + exact next steps), and STATUS.html (single-writer).</li>
         <li><b>Commits and pushes</b> — the arc is closed; any new chat on any surface orients from the three control files.</li>
       </ol>
     </section>
@@ -1044,13 +1056,13 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       <div class="sect-head">
         <span class="eyebrow">Memory</span>
         <h2>The dossier system</h2>
-        <p class="lede">The Council remembers you — carefully. A private dossier corpus is kept privately, off any repository: a core file plus one annex per head — one each for the Eye, the Ear, and the Hand.</p>
+        <p class="lede">The Council remembers you — carefully. A private dossier corpus lives at <code>~/Documents/Claude/council/</code>: <code>dossier-core.md</code> plus one annex per head (<code>annex-eye.md</code>, <code>annex-ear.md</code>, <code>annex-hand.md</code>).</p>
       </div>
       <ul class="delivers dl-ear">
         <li><b>Read silently</b> — the leads (Marlowe, Alistair, Garrick) consult it at the start of a session to sharpen judgment. No ceremony, no announcement.</li>
         <li><b>The firewall</b> — the working cast never sees it. Grid doesn't design toward your known tastes; Champion doesn't steelman toward your known hopes. Their output stays honest; the leads' <i>judgment</i> is what the dossier sharpens.</li>
         <li><b>Propose, then confirm</b> — new entries are proposed openly at session end and appended only with your consent. Append-only; earlier entries are never rewritten.</li>
-        <li><b>Off GitHub</b> — the corpus is deliberately not in any repository; it is kept privately and never published.</li>
+        <li><b>Off GitHub</b> — the corpus is deliberately not in any repo. In migrations (M5 Studio), it is hand-carried.</li>
       </ul>
     </section>
 
@@ -1082,7 +1094,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 
       <h3 style="font-size:22px;margin:32px 0 2px">Getting the most from every session</h3>
       <ul class="delivers dl-eye">
-        <li><b>Give real context</b> — point the Council at the actual repo, its control files, or artifact. Judgments on real material beat judgments on descriptions of it.</li>
+        <li><b>Give real context</b> — point the Council at the actual repo, CLAUDE.md, or artifact. Judgments on real material beat judgments on descriptions of it.</li>
         <li><b>Let them disagree</b> — don't referee mid-debate or rescue your idea from Sentinel. The distillation at the end is where you re-enter.</li>
         <li><b>Name the head when you know it</b> — direct address skips a routing hop. Unsure? The front door costs one line.</li>
         <li><b>Confirm dossier appends</b> — the Council's read of you compounds across sessions, but only if you say yes to the proposed entries.</li>
@@ -1136,14 +1148,14 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 
       <h3 style="font-size:22px;margin:32px 0 2px">Beyond software — uses you may not have considered</h3>
       <div class="grid2">
-        <div class="play"><span class="who">Ear · full council or gut-check</span><h4>Life &amp; career decisions</h4><p>Role changes, big purchases, relocation, a new-machine decision. Sentinel runs a regret pre-mortem, Soul weighs what it means, Proof demands the actual numbers, Premise asks whether you’re even deciding the right question.</p></div>
+        <div class="play"><span class="who">Ear · full council or gut-check</span><h4>Life &amp; career decisions</h4><p>Role changes, big purchases, relocation, the M5 build config. Sentinel runs a regret pre-mortem, Soul weighs what it means, Proof demands the actual numbers, Premise asks whether you're even deciding the right question.</p></div>
         <div class="play"><span class="who">Quill + Sentinel + Premise</span><h4>Stakeholder work at the day job</h4><p>Quill drafts the steering-committee deck or workstream status that ends the meeting early. Before a go-live: Sentinel pre-mortems the cutover. Before a metrics review: Premise interrogates whether the KPI measures the goal.</p></div>
         <div class="play"><span class="who">Eye · full or lite</span><h4>Physical space</h4><p>The Eye's remit includes built space — a home-office redesign, a workshop layout, landscaping. Six directions on a room work exactly like six directions on a screen.</p></div>
         <div class="play"><span class="who">Ear · critique mode</span><h4>Writing, talks, and arguments</h4><p>Hand the Council a draft essay, a presentation, or a position you intend to defend. CRITIQUE evaluates it against what good looks like; the cross-examination finds the weak joint before your audience does.</p></div>
         <div class="play"><span class="who">Owl, with Proof on call</span><h4>Learning a field fast</h4><p>"What is already known about X?" is Owl's entire purpose — prior art, established frameworks, where the settled ground ends and the open questions begin. Proof flags which claims in the field are actually well-evidenced.</p></div>
         <div class="play"><span class="who">Sentinel + Champion + Pulse</span><h4>Negotiation &amp; vendor evaluation</h4><p>Champion steelmans the other side's position, Sentinel maps your exposure, Pulse reads what the counterparty's market actually rewards. Works for salary talks, vendor selection, and contract renewals alike.</p></div>
       </div>
-      <div class="play" style="margin-top:16px"><span class="who">Steward</span><h4>Environment &amp; migration work</h4><p>Diagnostics, config hygiene, a machine-migration runbook — read-only first, one change at a time, everything designed to carry over cleanly.</p></div>
+      <div class="play" style="margin-top:16px"><span class="who">Steward</span><h4>Environment &amp; migration work</h4><p>Diagnostics, config hygiene, the M5 Studio migration runbook — read-only first, one change at a time, everything designed to carry over cleanly.</p></div>
 
       <h3 style="font-size:22px;margin:32px 0 2px">Anti-patterns</h3>
       <div class="grid2">
@@ -1162,13 +1174,13 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </div>
       <ol class="steps">
         <li><b>Layer one — ambient memory (automatic, lossy).</b> The platform's own memory absorbs new capabilities and rules from conversations on its own. Useful, but summarized and never authoritative — it is a lead, not a record.</li>
-        <li><b>Layer two — the close-out ritual (deterministic).</b> Any chat that births a capability, rule, or structural change ends with the Hand registering it before the chat closes: the annex gets the entry, the instrument registry gets the instrument, and a regeneration of this guide is flagged for the same arc. The ritual, not the memory, is the guarantee.</li>
-        <li><b>Layer three — the Steward Audit (the net).</b> On a monthly cadence or on demand, Steward diffs everything: guide footer vs the plugin manifest, annex vs the guide’s last-updated date, the method files vs the canonical cast register, memory vs the registry. Anything that slipped both layers above surfaces here as a flagged drift and dies in one regeneration arc.</li>
+        <li><b>Layer two — the close-out ritual (deterministic).</b> Any chat that births a capability, rule, or structural change ends with the Hand registering it before the chat closes: the annex gets the entry, <code>CAPABILITIES.md</code> gets the instrument, <code>MANUAL.md</code> §11 gets a one-line changelog entry (a separate commit — it's a different repo), and a regeneration of this guide is flagged for the same arc. The ritual, not the memory, is the guarantee.</li>
+        <li><b>Layer three — the Steward Audit (the net).</b> On a monthly cadence or on demand, Steward diffs everything: guide footer vs <code>plugin.json</code>, annex vs the guide's last-updated date, skills vs <code>PERSONAS.md</code>, memory vs the registry, and <code>MANUAL.md</code> vs the plugin version. Anything that slipped both layers above surfaces here as a flagged drift and dies in one regeneration arc.</li>
       </ol>
       <ul class="delivers dl-hand" style="margin-top:20px">
-        <li><b>Canonical sources</b> — the cast in the canonical cast register, instruments in the instrument registry, method in each head’s skill. This page renders them; it never leads them.</li>
+        <li><b>Canonical sources</b> — cast in <code>PERSONAS.md</code>, instruments in <code>CAPABILITIES.md</code>, method in each head's <code>skills/*/SKILL.md</code>. This page renders them; it never leads them.</li>
         <li><b>Two published forms</b> — the full-detail prospectus lives in the private plugin repo; a redacted twin (no local paths, no personal infrastructure) is published to the open web via the Press. Every regeneration updates both, and the redactions are re-applied every time.</li>
-        <li><b>Drift detection you can see</b> — the footer below carries the plugin version and last-updated date. If it disagrees with the plugin manifest, this page has drifted: that is a defect, and a Steward fix.</li>
+        <li><b>Drift detection you can see</b> — the footer below carries the plugin version and last-updated date. If it disagrees with <code>plugin.json</code>, this page has drifted: that is a defect, and a Steward fix.</li>
       </ul>
     </section>
   </div>
@@ -1219,7 +1231,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
             <tr>
               <td><span class="cmd">/kings-council:handoff</span></td>
               <td class="who">The Arc-Close rite</td>
-              <td>Consumes the decision inbox, updates the control files, commits and pushes.</td>
+              <td>Consumes ORCHESTRATION.md, updates CLAUDE.md / HANDOFF.md / STATUS.html, commits and pushes.</td>
             </tr>
           </tbody>
         </table>
@@ -1234,8 +1246,8 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 
 <footer>
   <div class="footer-in">
-    <div>The Council · a prospectus · generated from its canonical sources</div>
-    <div class="mono">kings-council v2.0.0 · last updated 2026-07-11</div>
+    <div>The Council · a private prospectus · generated from PERSONAS.md + skills</div>
+    <div class="mono">kings-council v2.1.0 · last updated 2026-07-14</div>
   </div>
 </footer>
 
