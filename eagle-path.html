@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brandon's Eagle Path · Saturday Check-In</title>
+<meta name="page-title" content="Brandon's Eagle Path · Saturday Check-In">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================================
+   Brandon's Eagle Path — Saturday Check-In (Lane 2: rich tasks)
+   Replatformed from elevate-collab. Apple-clean / Elevate brand (light, Inter,
+   #0071e3). Data-driven: renders public.press_tasks (page='eagle-path') from
+   the press Supabase DB via PostgREST; goal status persists via REST PATCH on
+   (page,item_id); localStorage mirror for instant paint + offline. No login
+   (Lane 1/2 posture — open RLS, Mark's explicit decision).
+   ============================================================================ */
+:root{
+  --background:#fbfbfd; --foreground:#1d1d1f; --surface:#ffffff;
+  --border:#d2d2d7; --muted:#f3f3f5; --muted-foreground:#6c757d;
+  --primary:#0071e3;
+  --status-confirmed:#6c8e7c;   /* done — muted sage */
+  --status-flagged:#d97706;     /* carried forward — amber */
+  --status-rejected:#b04040;    /* blocked — muted red */
+  --status-pending:#6c757d;
+  --radius:14px;
+  --font:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--font);background:var(--background);color:var(--foreground);
+  line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
+.wrap{max-width:768px;margin:0 auto;padding:0 20px}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* header */
+header{padding:40px 0 8px}
+.back{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;
+  letter-spacing:.02em;color:var(--muted-foreground);border:1px solid var(--border);
+  padding:6px 12px;border-radius:999px;margin-bottom:22px}
+.back:hover{border-color:var(--primary);color:var(--primary);text-decoration:none}
+h1{font-size:clamp(26px,5vw,34px);font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.how{margin-top:12px}
+.how summary{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;
+  color:var(--muted-foreground);list-style:none}
+.how summary::-webkit-details-marker{display:none}
+.how summary svg{width:12px;height:12px;transition:transform .2s}
+.how[open] summary svg{transform:rotate(90deg)}
+.how .body{margin-top:8px;font-size:14px;color:var(--foreground);max-width:640px}
+.how .body b{font-weight:600}
+
+/* cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;margin-bottom:16px}
+@media(min-width:640px){.card{padding:22px}}
+.eyebrow{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted-foreground)}
+.h2{font-size:18px;font-weight:600;letter-spacing:-.01em}
+.h3{font-size:14px;font-weight:600}
+
+/* summary tile */
+.summary{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+@media(min-width:640px){.summary{grid-template-columns:repeat(5,1fr)}}
+.cell{display:flex;flex-direction:column;align-items:center;text-align:center}
+.cell .n{font-size:30px;font-weight:600;letter-spacing:-.02em}
+.cell .l{margin-top:2px;font-size:11px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted-foreground)}
+
+/* blocked box */
+.blocked{border-color:var(--status-rejected);background:rgba(176,64,64,.05)}
+.blocked .h2{display:flex;align-items:center;gap:8px;color:var(--status-rejected)}
+.blocked .sub{margin-top:2px;font-size:12px;color:var(--muted-foreground)}
+.bgroup{margin-top:14px}
+.bgroup h3{font-size:14px;font-weight:600}
+.bgroup h3 span{font-weight:400;color:var(--muted-foreground)}
+.brow{display:flex;gap:10px;align-items:flex-start;padding:8px 0}
+.bicon{flex:none;color:var(--status-rejected);margin-top:1px}
+.brow .txt{flex:1}
+.brow .reason{margin-top:2px;font-size:12.5px;color:var(--muted-foreground)}
+.age{display:inline-block;margin-top:6px;padding:2px 8px;border-radius:999px;font-size:11px;
+  font-weight:500;font-variant-numeric:tabular-nums;background:var(--muted);color:var(--status-rejected)}
+.age.stale{background:var(--status-rejected);color:#fff}
+
+/* this saturday */
+.today .eyebrow{margin-bottom:2px}
+.today .wk{font-size:20px;font-weight:600;letter-spacing:-.01em;margin-top:2px}
+.today .phase{font-size:13px;color:var(--muted-foreground);margin-top:1px}
+.today .focus{font-size:14px;font-weight:500;margin-top:4px}
+.carried{margin-top:16px;border:1px dashed rgba(217,119,6,.5);background:rgba(217,119,6,.06);
+  border-radius:12px;padding:14px}
+.carried h3{font-size:14px;font-weight:600}
+.subsec{margin-top:16px}
+.subsec .lbl{font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted-foreground);margin-bottom:8px}
+.ctx{border-left:2px solid var(--status-flagged);padding-left:14px;margin-top:16px}
+.ctx.esc{border-left-color:var(--status-rejected)}
+.ctx h3{font-size:14px;font-weight:600}
+.ctx ul{list-style:none;margin-top:6px}
+.ctx li{font-size:14px;color:var(--foreground);padding:3px 0}
+
+/* goal rows (checkable) */
+.goals{list-style:none;margin-top:6px}
+.goal{display:flex;gap:10px;align-items:flex-start;padding:9px 0;cursor:pointer;
+  border-top:1px solid var(--border)}
+.goal:first-child{border-top:none}
+.goal.readonly{cursor:default}
+.box{width:20px;height:20px;flex:none;margin-top:1px;border:1.5px solid var(--border);
+  border-radius:6px;position:relative;transition:.15s;background:var(--surface)}
+.goal:not(.readonly):hover .box{border-color:var(--primary)}
+.goal.done .box{background:var(--status-confirmed);border-color:var(--status-confirmed)}
+.goal.done .box::after{content:"";position:absolute;left:6.5px;top:3px;width:5px;height:9px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.goal .label{font-size:14.5px;line-height:1.5}
+.goal.done .label{color:var(--muted-foreground);text-decoration:line-through}
+.goal .src{font-size:11.5px;color:var(--muted-foreground);margin-top:1px}
+
+/* all weeks accordion */
+.week{border-bottom:1px solid var(--border)}
+.week:last-child{border-bottom:none}
+.week>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 2px;cursor:pointer;font-size:14px;font-weight:500;list-style:none}
+.week>summary::-webkit-details-marker{display:none}
+.week.current>summary{background:var(--muted);border-radius:8px;padding-left:8px;padding-right:8px}
+.week .meta{display:flex;align-items:center;gap:12px}
+.week .date{font-size:12px;color:var(--muted-foreground)}
+.chip{padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;font-variant-numeric:tabular-nums;
+  background:var(--muted);color:var(--muted-foreground)}
+.chip.done{background:var(--status-confirmed);color:#fff}
+.chip.late{background:var(--status-flagged);color:#fff}
+.week .content{padding:4px 2px 16px}
+.week .content .phase{font-size:12px;color:var(--muted-foreground)}
+.week .content .focus{font-size:14px;margin-top:4px}
+
+/* states */
+.state{text-align:center;padding:40px 20px;color:var(--muted-foreground)}
+.state h3{font-size:18px;font-weight:600;color:var(--foreground);margin-bottom:6px}
+.skel{height:120px;border-radius:var(--radius);background:linear-gradient(90deg,var(--muted),#e9e9ee,var(--muted));
+  background-size:200% 100%;animation:sh 1.4s ease-in-out infinite;margin-bottom:16px}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* sync pill */
+.pill{position:fixed;bottom:16px;right:16px;z-index:99;font-size:12px;font-weight:500;
+  padding:8px 14px;border-radius:999px;background:var(--status-confirmed);color:#fff;opacity:0;
+  transition:opacity .3s;box-shadow:0 4px 14px rgba(0,0,0,.12);pointer-events:none}
+
+footer{border-top:1px solid var(--border);margin-top:32px;padding:24px 0 60px;text-align:center;
+  font-size:13px;color:var(--muted-foreground)}
+
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <a class="back" href="./">← The Marquee</a>
+  <h1>Saturday Check-In</h1>
+  <details class="how">
+    <summary>
+      <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 3L8 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      How this works
+    </summary>
+    <div class="body">Each Saturday, work through this week's checklist. <b>Goals</b> are checkable items. <b>Heads up</b> lists context to watch for. <b>Escalate if</b> lists triggers that need action right away. Goals that aren't done in their week roll forward as <b>carried forward</b> items; goals stuck on someone else are pulled into the <b>blocked</b> box up top.</div>
+  </details>
+</header>
+
+<main class="wrap" id="root">
+  <div class="skel"></div>
+  <div class="skel"></div>
+</main>
+
+<footer class="wrap">
+  Your progress syncs automatically. · <a href="./">Mark's Press</a>
+</footer>
+
+<script>
+/* ---- press · Supabase (publishable key; press_tasks uses open RLS) ---- */
+const SB_URL = 'https://eepjhpyziczrxvirczio.supabase.co';
+const SB_KEY = 'sb_publishable__iv3bI7xDAsOdHUlXzbVZQ_2yyFS4uX';
+const PAGE   = 'eagle-path';
+const REST   = SB_URL + '/rest/v1/press_tasks';
+const HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
+const LKEY   = 'press:eagle-path';
+const STALE_BLOCK_DAYS = 10;
+
+const root = document.getElementById('root');
+
+/* ---- sync pill ---- */
+const pill = document.createElement('div'); pill.className = 'pill'; document.body.appendChild(pill);
+let pillTimer;
+function flash(msg, ok = true){
+  pill.textContent = msg;
+  pill.style.background = ok ? 'var(--status-confirmed)' : 'var(--status-rejected)';
+  pill.style.opacity = '1';
+  clearTimeout(pillTimer); pillTimer = setTimeout(() => { pill.style.opacity = '0'; }, 1600);
+}
+
+/* ---- today's-Saturday in America/Chicago (mirrors app/lib/checklist/dates.ts) ---- */
+const SAT_OFFSET = { Sat:0, Sun:1, Mon:2, Tue:3, Wed:4, Thu:5, Fri:6 };
+function todaysSaturday(now = new Date()){
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Chicago', year:'numeric', month:'2-digit', day:'2-digit', weekday:'short'
+  }).formatToParts(now);
+  const g = t => parts.find(p => p.type === t).value;
+  const y = +g('year'), m = +g('month'), d = +g('day');
+  const off = SAT_OFFSET[g('weekday')] ?? 0;
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() - off);
+  return dt.toISOString().slice(0, 10);
+}
+const TODAY_SAT = todaysSaturday();
+
+/* ---- local mirror ---- */
+let rows = [];
+try { rows = JSON.parse(localStorage.getItem(LKEY)) || []; } catch(e) { rows = []; }
+function saveLocal(){ try { localStorage.setItem(LKEY, JSON.stringify(rows)); } catch(e){} }
+
+/* ---- helpers ---- */
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function ex(r, k){ return r.extras ? r.extras[k] : undefined; }
+function blockedDays(iso){
+  if(!iso) return 0;
+  const a = Date.parse(iso.slice(0,10) + 'T00:00:00Z');
+  const b = Date.parse(TODAY_SAT + 'T00:00:00Z');
+  if(isNaN(a) || isNaN(b)) return 0;
+  const d = Math.floor((b - a) / 86400000);
+  return d < 0 ? 0 : d;
+}
+
+/* ---- build the week model from flat rows ---- */
+function model(){
+  const weeks = new Map();
+  for(const r of rows){
+    const wn = ex(r, 'week_number');
+    if(!weeks.has(wn)) weeks.set(wn, {
+      weekNumber: wn, weekLabel: ex(r,'week_label'), weekStartDate: r.week,
+      phase: ex(r,'phase'), focus: ex(r,'focus'), goals:[], watchouts:[], escalations:[]
+    });
+    const w = weeks.get(wn);
+    if(r.category === 'goal') w.goals.push(r);
+    else if(r.category === 'watchout') w.watchouts.push(r);
+    else if(r.category === 'escalation') w.escalations.push(r);
+  }
+  const list = [...weeks.values()].sort((a,b) => a.weekNumber - b.weekNumber);
+  for(const w of list){
+    const cmp = (a,b) => (a.position - b.position) || String(a.item_id).localeCompare(b.item_id);
+    w.goals.sort(cmp); w.watchouts.sort(cmp); w.escalations.sort(cmp);
+  }
+  // current week: latest with weekStartDate <= today's-Saturday
+  let current = null;
+  for(const w of list){ if(w.weekStartDate <= TODAY_SAT) current = w; else break; }
+  const currentNum = current ? current.weekNumber : null;
+  const past = list.filter(w => currentNum != null && w.weekNumber < currentNum).sort((a,b) => b.weekNumber - a.weekNumber);
+  const upcoming = list.filter(w => currentNum == null || w.weekNumber > currentNum);
+
+  const goals = rows.filter(r => r.category === 'goal');
+  const carried = goals.filter(r => r.status === 'pending' && r.week < TODAY_SAT)
+    .sort((a,b) => String(a.week).localeCompare(b.week) || (a.position - b.position));
+  const blocked = goals.filter(r => r.status === 'blocked')
+    .sort((a,b) => String(ex(a,'blocked_at')||'').localeCompare(String(ex(b,'blocked_at')||'')) || String(a.item_id).localeCompare(b.item_id));
+
+  const rollup = {
+    total: goals.length,
+    done: goals.filter(r => r.status === 'done').length,
+    carried: carried.length,
+    remainingFuture: goals.filter(r => r.status === 'pending' && r.week >= TODAY_SAT).length,
+    blocked: blocked.length
+  };
+  return { list, current, currentNum, past, upcoming, carried, blocked, rollup };
+}
+
+/* ---- renderers ---- */
+function goalRow(r, { readonly = false, showSource = false } = {}){
+  const done = r.status === 'done';
+  const cls = 'goal' + (done ? ' done' : '') + (readonly ? ' readonly' : '');
+  const src = showSource ? `<div class="src">from ${esc(ex(r,'week_label'))}</div>` : '';
+  return `<li class="${cls}" data-id="${esc(r.item_id)}"${readonly?'':' role="checkbox" aria-checked="'+done+'" tabindex="0"'}>`
+    + `<span class="box"></span><div><span class="label">${esc(r.title)}</span>${src}</div></li>`;
+}
+function roList(title, items){
+  if(!items.length) return '';
+  return `<div class="subsec"><div class="lbl">${esc(title)}</div><ul class="goals">`
+    + items.map(r => `<li class="goal readonly"><span class="box" style="visibility:hidden"></span>`
+      + `<span class="label">${esc(r.title)}</span></li>`).join('') + `</ul></div>`;
+}
+function ctxList(title, items, esc2){
+  if(!items.length) return '';
+  return `<div class="ctx ${esc2}"><h3>${esc(title)}</h3><ul>`
+    + items.map(r => `<li>${esc(r.title)}</li>`).join('') + `</ul></div>`;
+}
+
+function summaryCard(m){
+  const cell = (n, l, tone) => {
+    const active = tone && n !== 0;
+    const color = !active ? 'var(--foreground)' : (tone === 'amber' ? 'var(--status-flagged)' : 'var(--status-rejected)');
+    return `<div class="cell"><span class="n" style="color:${color}">${n}</span><span class="l">${l}</span></div>`;
+  };
+  return `<section class="card"><div class="summary">`
+    + cell(m.rollup.total,'Total goals') + cell(m.rollup.done,'Done')
+    + cell(m.rollup.carried,'Carried forward','amber') + cell(m.rollup.remainingFuture,'Remaining future')
+    + cell(m.rollup.blocked,'Blocked','red') + `</div></section>`;
+}
+
+function blockedCard(m){
+  if(!m.blocked.length) return '';
+  const groups = new Map();
+  for(const r of m.blocked){ const k = ex(r,'blocked_on') || ''; (groups.get(k) || groups.set(k,[]).get(k)).push(r); }
+  const people = [...groups.keys()].filter(k => k !== '').sort((a,b)=>a.localeCompare(b));
+  const keys = [...people, ...(groups.has('') ? [''] : [])];
+  const warn = `<svg class="bicon" width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3L18 16.5H2L10 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><line x1="10" y1="8" x2="10" y2="11.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="14" r="0.9" fill="currentColor"/></svg>`;
+  const rowHTML = r => {
+    const days = blockedDays(ex(r,'blocked_at'));
+    const stale = days >= STALE_BLOCK_DAYS;
+    const reason = ex(r,'blocked_reason') ? `<div class="reason">${esc(ex(r,'blocked_reason'))}</div>` : '';
+    const ageTxt = days === 0 ? 'blocked today' : ('blocked ' + days + 'd');
+    return `<div class="brow">${warn}<div class="txt"><div class="label">${esc(r.title)}</div>${reason}`
+      + `<span class="age${stale?' stale':''}">${ageTxt}</span></div></div>`;
+  };
+  const groupsHTML = keys.map(k => {
+    const items = groups.get(k);
+    const heading = k === '' ? 'Other blocks' : k;
+    return `<div class="bgroup"><h3>${esc(heading)} <span>(${items.length})</span></h3>${items.map(rowHTML).join('')}</div>`;
+  }).join('');
+  return `<section class="card blocked"><div class="h2">${warn}Blocked — needs attention</div>`
+    + `<p class="sub">${m.blocked.length} ${m.blocked.length===1?'goal is':'goals are'} stuck. Grouped by who can unstick them.</p>`
+    + groupsHTML + `</section>`;
+}
+
+function todayCard(m){
+  const w = m.current;
+  if(!w && !m.carried.length){
+    return `<section class="card today"><div class="h2">Nothing scheduled</div>`
+      + `<p class="phase">${m.upcoming.length ? 'Starts on ' + esc(m.upcoming[0].weekStartDate) + '.' : 'All weeks complete — well done.'}</p></section>`;
+  }
+  let html = `<section class="card today"><div class="eyebrow">This Saturday — ${esc(TODAY_SAT)}</div>`;
+  if(w) html += `<div class="wk">${esc(w.weekLabel)}</div><div class="phase">${esc(w.phase)}</div><div class="focus">${esc(w.focus)}</div>`;
+  if(m.carried.length){
+    html += `<div class="carried"><h3>Still open from earlier weeks</h3><ul class="goals">`
+      + m.carried.map(r => goalRow(r, { showSource:true })).join('') + `</ul></div>`;
+  }
+  if(w){
+    const active = w.goals.filter(r => r.status !== 'blocked');
+    const allDone = active.length > 0 && active.every(r => r.status === 'done');
+    html += `<div class="subsec"><div class="lbl">This week's goals</div>`;
+    if(!active.length) html += `<p class="phase">No goals this week.</p>`;
+    else if(allDone) html += `<p class="phase">All goals complete for this week — well done.</p>`;
+    else html += `<ul class="goals">` + active.map(r => goalRow(r)).join('') + `</ul>`;
+    html += `</div>`;
+    html += ctxList('Heads up — watch for these', w.watchouts, '');
+    html += ctxList('Escalate if', w.escalations, 'esc');
+  }
+  return html + `</section>`;
+}
+
+function weeksCard(m){
+  const all = [...m.upcoming.slice().reverse(), ...(m.current ? [m.current] : []), ...m.past];
+  if(!all.length) return '';
+  const weekHTML = w => {
+    const total = w.goals.length;
+    const done = w.goals.filter(r => r.status === 'done').length;
+    const isPast = w.weekStartDate < TODAY_SAT;
+    const allDone = total > 0 && done === total;
+    const chipCls = allDone ? 'chip done' : (isPast && total > 0 ? 'chip late' : 'chip');
+    const isCurrent = w.weekNumber === m.currentNum;
+    const goalsHTML = w.goals.length
+      ? `<div class="subsec"><div class="lbl">Goals</div><ul class="goals">`
+        + w.goals.map(r => r.status === 'blocked'
+            ? goalRow(r, { readonly:true })
+            : goalRow(r)).join('') + `</ul></div>`
+      : '';
+    return `<details class="week${isCurrent?' current':''}"${isCurrent?' open':''}>`
+      + `<summary><span>${esc(w.weekLabel)}</span><span class="meta"><span class="date">${esc(w.weekStartDate)}</span>`
+      + `<span class="${chipCls}" aria-label="${done} of ${total} goals done">${done} / ${total}</span></span></summary>`
+      + `<div class="content"><div class="phase">${esc(w.phase)}</div><div class="focus">${esc(w.focus)}</div>`
+      + goalsHTML + roList('Heads up', w.watchouts) + roList('Escalate if', w.escalations) + `</div></details>`;
+  };
+  return `<section class="card"><div class="h2" style="margin-bottom:6px">All weeks</div>` + all.map(weekHTML).join('') + `</section>`;
+}
+
+function render(){
+  if(!rows.length){
+    root.innerHTML = `<section class="card"><div class="state"><h3>Nothing to show yet</h3>`
+      + `<p>This checklist hasn't loaded. If you're offline, it'll appear once you reconnect.</p></div></section>`;
+    return;
+  }
+  const m = model();
+  root.innerHTML = summaryCard(m) + blockedCard(m) + todayCard(m) + weeksCard(m);
+  bindToggles();
+}
+
+/* ---- persistence ---- */
+async function loadFromCloud(){
+  try{
+    const res = await fetch(REST + '?page=eq.' + PAGE + '&select=*', { headers: HEADERS });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const cloud = await res.json();
+    rows = cloud;                    // cloud is source of truth
+    saveLocal(); render();
+    flash('Synced');
+  }catch(e){
+    render();
+    flash('Offline · local only', false);
+  }
+}
+
+async function patchStatus(itemId, status){
+  const now = new Date().toISOString();
+  try{
+    const res = await fetch(REST + '?page=eq.' + PAGE + '&item_id=eq.' + encodeURIComponent(itemId), {
+      method: 'PATCH',
+      headers: Object.assign({}, HEADERS, { 'Prefer': 'return=minimal' }),
+      body: JSON.stringify({ status: status, updated_at: now })
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    flash('Saved');
+  }catch(e){
+    flash('Save failed · kept locally', false);
+  }
+}
+
+function toggle(itemId){
+  const r = rows.find(x => x.item_id === itemId);
+  if(!r || r.category !== 'goal' || r.status === 'blocked') return;
+  r.status = (r.status === 'done') ? 'pending' : 'done';
+  r.updated_at = new Date().toISOString();
+  saveLocal(); render();
+  patchStatus(itemId, r.status);
+}
+
+function bindToggles(){
+  root.querySelectorAll('.goal[data-id]:not(.readonly)').forEach(el => {
+    const id = el.getAttribute('data-id');
+    el.addEventListener('click', () => toggle(id));
+    el.addEventListener('keydown', e => {
+      if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); toggle(id); }
+    });
+  });
+}
+
+render();          // instant paint from local mirror
+loadFromCloud();   // then reconcile with the cloud
+</script>
+</body>
+</html>

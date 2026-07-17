@@ -160,7 +160,7 @@ h2.tw-title em{font-style:italic;color:var(--tw-violet)}
 const OWNER='schnubsy', REPO='press';
 const API=`https://api.github.com/repos/${OWNER}/${REPO}/contents`;
 const RAW=`https://raw.githubusercontent.com/${OWNER}/${REPO}/main`;
-const KICKERS=[[/council/,'Reference'],[/checklist|prep|kayley/,'Checklist'],
+const KICKERS=[[/council/,'Reference'],[/checklist|prep|kayley|eagle/,'Checklist'],
   [/log|notes|journal/,'Notes'],[/guide|how-?to|readme/,'Guide']];
 const kicker=f=>{for(const[re,k]of KICKERS)if(re.test(f))return k;return 'Page';};
 const titleize=f=>f.replace(/\.html$/,'').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
