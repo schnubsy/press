@@ -13,9 +13,13 @@
    Brandon's Eagle Path — Saturday Check-In (Lane 2: rich tasks)
    Replatformed from elevate-collab. Apple-clean / Elevate brand (light, Inter,
    #0071e3). Data-driven: renders public.press_tasks (page='eagle-path') from
-   the press Supabase DB via PostgREST; goal status persists via REST PATCH on
-   (page,item_id); localStorage mirror for instant paint + offline. No login
-   (Lane 1/2 posture — open RLS, Mark's explicit decision).
+   the press Supabase DB via PostgREST; goal status / block state persists via
+   REST PATCH on (page,item_id); notes persist to public.press_notes.
+   localStorage mirror for instant paint + offline. No login — note attribution
+   is an honour-system display name kept in localStorage (Mark's decision).
+   Aggregate logic (week chips, summary, blocked box) mirrors elevate's
+   getChecklistView EXACTLY: blocked goals are pulled OUT of the per-week goal
+   lists so a week chip counts non-blocked goals only.
    ============================================================================ */
 :root{
   --background:#fbfbfd; --foreground:#1d1d1f; --surface:#ffffff;
@@ -61,12 +65,33 @@ h1{font-size:clamp(26px,5vw,34px);font-weight:600;letter-spacing:-.02em;line-hei
 .h2{font-size:18px;font-weight:600;letter-spacing:-.01em}
 .h3{font-size:14px;font-weight:600}
 
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-family:inherit;
+  font-size:14px;font-weight:500;line-height:1;padding:10px 16px;border-radius:10px;
+  border:1px solid transparent;cursor:pointer;transition:.15s;background:transparent;color:var(--foreground)}
+.btn:hover{text-decoration:none}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:#005bb8}
+.btn-outline{border-color:var(--border);background:var(--surface)}
+.btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+.btn-ghost{color:var(--muted-foreground);padding:10px 10px}
+.btn-ghost:hover{color:var(--foreground)}
+.btn-danger{background:var(--status-rejected);color:#fff}
+.btn-sm{font-size:12.5px;padding:7px 12px;border-radius:8px}
+.btn-block{color:var(--status-rejected);border-color:var(--border)}
+.btn-block:hover{border-color:var(--status-rejected)}
+.btn-unblock{color:var(--status-rejected);border-color:var(--status-rejected);background:var(--surface)}
+
 /* summary tile */
 .summary{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
 @media(min-width:640px){.summary{grid-template-columns:repeat(5,1fr)}}
 .cell{display:flex;flex-direction:column;align-items:center;text-align:center}
 .cell .n{font-size:30px;font-weight:600;letter-spacing:-.02em}
 .cell .l{margin-top:2px;font-size:11px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted-foreground)}
+
+/* add-task strip */
+.addstrip{display:flex;justify-content:flex-end;margin-bottom:16px}
 
 /* blocked box */
 .blocked{border-color:var(--status-rejected);background:rgba(176,64,64,.05)}
@@ -79,6 +104,7 @@ h1{font-size:clamp(26px,5vw,34px);font-weight:600;letter-spacing:-.02em;line-hei
 .bicon{flex:none;color:var(--status-rejected);margin-top:1px}
 .brow .txt{flex:1}
 .brow .reason{margin-top:2px;font-size:12.5px;color:var(--muted-foreground)}
+.brow .bactions{display:flex;gap:6px;align-items:center;flex:none}
 .age{display:inline-block;margin-top:6px;padding:2px 8px;border-radius:999px;font-size:11px;
   font-weight:500;font-variant-numeric:tabular-nums;background:var(--muted);color:var(--status-rejected)}
 .age.stale{background:var(--status-rejected);color:#fff}
@@ -102,19 +128,24 @@ h1{font-size:clamp(26px,5vw,34px);font-weight:600;letter-spacing:-.02em;line-hei
 
 /* goal rows (checkable) */
 .goals{list-style:none;margin-top:6px}
-.goal{display:flex;gap:10px;align-items:flex-start;padding:9px 0;cursor:pointer;
+.goal{display:flex;gap:10px;align-items:flex-start;padding:9px 0;
   border-top:1px solid var(--border)}
 .goal:first-child{border-top:none}
-.goal.readonly{cursor:default}
+.goal .checkwrap{flex:none;cursor:pointer;padding:1px 0}
+.goal.readonly .checkwrap,.goal.disabled .checkwrap{cursor:default}
 .box{width:20px;height:20px;flex:none;margin-top:1px;border:1.5px solid var(--border);
   border-radius:6px;position:relative;transition:.15s;background:var(--surface)}
-.goal:not(.readonly):hover .box{border-color:var(--primary)}
+.goal:not(.readonly):not(.disabled) .checkwrap:hover .box{border-color:var(--primary)}
 .goal.done .box{background:var(--status-confirmed);border-color:var(--status-confirmed)}
 .goal.done .box::after{content:"";position:absolute;left:6.5px;top:3px;width:5px;height:9px;
   border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.goal.skipped .box{border-style:dashed}
+.goal .main{flex:1;min-width:0}
 .goal .label{font-size:14.5px;line-height:1.5}
 .goal.done .label{color:var(--muted-foreground);text-decoration:line-through}
+.goal.skipped .label{color:var(--muted-foreground)}
 .goal .src{font-size:11.5px;color:var(--muted-foreground);margin-top:1px}
+.goal .rowactions{flex:none;display:flex;gap:4px;align-items:center}
 
 /* all weeks accordion */
 .week{border-bottom:1px solid var(--border)}
@@ -141,9 +172,63 @@ h1{font-size:clamp(26px,5vw,34px);font-weight:600;letter-spacing:-.02em;line-hei
 @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 /* sync pill */
-.pill{position:fixed;bottom:16px;right:16px;z-index:99;font-size:12px;font-weight:500;
+.pill{position:fixed;bottom:16px;right:16px;z-index:120;font-size:12px;font-weight:500;
   padding:8px 14px;border-radius:999px;background:var(--status-confirmed);color:#fff;opacity:0;
   transition:opacity .3s;box-shadow:0 4px 14px rgba(0,0,0,.12);pointer-events:none}
+
+/* modal / overlay */
+.overlay{position:fixed;inset:0;z-index:100;background:rgba(20,20,25,.4);
+  display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto}
+.overlay[hidden]{display:none}
+.modal{background:var(--surface);border-radius:var(--radius);width:100%;max-width:560px;
+  margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  padding:20px 20px 0}
+.modal-title{font-size:18px;font-weight:600;letter-spacing:-.01em;line-height:1.25}
+.modal-desc{font-size:13px;color:var(--muted-foreground);margin-top:4px}
+.modal-x{flex:none;border:none;background:transparent;color:var(--muted-foreground);cursor:pointer;
+  font-size:22px;line-height:1;padding:2px 6px;border-radius:8px}
+.modal-x:hover{color:var(--foreground);background:var(--muted)}
+.modal-body{padding:16px 20px 20px}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;
+  font-weight:500;text-transform:uppercase;letter-spacing:.03em;color:#fff}
+.field{display:flex;flex-direction:column;gap:6px;margin-top:14px}
+.field label{font-size:13px;font-weight:500}
+.field .opt{color:var(--muted-foreground);font-weight:400}
+textarea,input[type=text],select{font-family:inherit;font-size:14px;color:var(--foreground);
+  background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:9px 11px;width:100%}
+textarea:focus,input:focus,select:focus{outline:none;border-color:var(--primary)}
+textarea{resize:vertical;min-height:70px}
+.modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.err{font-size:13px;color:var(--status-rejected);margin-top:10px}
+
+/* status control */
+.statusctl{display:flex;flex-wrap:wrap;gap:8px}
+.statusctl .btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.section-label{font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted-foreground);margin-bottom:8px}
+.detail-block{border:1px solid var(--status-rejected);background:rgba(176,64,64,.05);
+  border-radius:10px;padding:12px;margin-top:14px}
+.detail-block .k{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-foreground)}
+.detail-block .v{font-size:14px;margin-top:2px}
+
+/* notes */
+.notes{margin-top:20px;border-top:1px solid var(--border);padding-top:16px}
+.notes-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.notes-head .who{font-size:12px;color:var(--muted-foreground)}
+.notes-head .who b{color:var(--foreground);font-weight:600}
+.linkbtn{border:none;background:none;color:var(--primary);cursor:pointer;font-size:12px;font-family:inherit;padding:0}
+.linkbtn:hover{text-decoration:underline}
+.notelist{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:14px}
+.note{font-size:14px}
+.note .nhead{display:flex;align-items:center;gap:8px}
+.avatar{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;flex:none;
+  border-radius:999px;background:var(--muted);color:var(--foreground);font-size:10px;font-weight:600}
+.note .nname{font-weight:600;font-size:13px}
+.note .ntime{font-size:11.5px;color:var(--muted-foreground)}
+.note .nbody{margin-top:4px;white-space:pre-wrap;color:var(--foreground);line-height:1.5}
+.note .ndel{margin-top:4px}
+.empty-notes{font-size:13px;color:var(--muted-foreground);margin-top:12px;text-align:center;padding:8px 0}
 
 footer{border-top:1px solid var(--border);margin-top:32px;padding:24px 0 60px;text-align:center;
   font-size:13px;color:var(--muted-foreground)}
@@ -160,7 +245,7 @@ footer{border-top:1px solid var(--border);margin-top:32px;padding:24px 0 60px;te
       <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 3L8 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       How this works
     </summary>
-    <div class="body">Each Saturday, work through this week's checklist. <b>Goals</b> are checkable items. <b>Heads up</b> lists context to watch for. <b>Escalate if</b> lists triggers that need action right away. Goals that aren't done in their week roll forward as <b>carried forward</b> items; goals stuck on someone else are pulled into the <b>blocked</b> box up top.</div>
+    <div class="body">Each Saturday, work through this week's checklist. <b>Goals</b> are checkable items — open <b>Details</b> to change status or add notes. <b>Heads up</b> lists context to watch for. <b>Escalate if</b> lists triggers that need action right away. Goals that aren't done in their week roll forward as <b>carried forward</b> items; goals stuck on someone else can be <b>blocked</b> so they surface in the red box up top.</div>
   </details>
 </header>
 
@@ -173,17 +258,29 @@ footer{border-top:1px solid var(--border);margin-top:32px;padding:24px 0 60px;te
   Your progress syncs automatically. · <a href="./">Mark's Press</a>
 </footer>
 
+<div class="overlay" id="overlay" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+
 <script>
-/* ---- press · Supabase (publishable key; press_tasks uses open RLS) ---- */
+/* ---- press · Supabase (publishable key; press_tasks/press_notes use open RLS) ---- */
 const SB_URL = 'https://eepjhpyziczrxvirczio.supabase.co';
 const SB_KEY = 'sb_publishable__iv3bI7xDAsOdHUlXzbVZQ_2yyFS4uX';
 const PAGE   = 'eagle-path';
-const REST   = SB_URL + '/rest/v1/press_tasks';
+const REST_TASKS = SB_URL + '/rest/v1/press_tasks';
+const REST_NOTES = SB_URL + '/rest/v1/press_notes';
 const HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
 const LKEY   = 'press:eagle-path';
+const NAME_KEY = 'press:eagle-path:name';
+const OPTS_KEY = 'press:eagle-path:blocked-on-options';
 const STALE_BLOCK_DAYS = 10;
 
+/* "Waiting on whom" picker options carried from elevate's
+   checklist_blocked_on_options for this activity (Arc 2b). Users can add more
+   inline; additions persist in localStorage and stay reusable. */
+const SEED_BLOCKED_ON_OPTIONS = ['Beneficiary','Committee','Counselor','District','Mr. Lindell'];
+
 const root = document.getElementById('root');
+const overlay = document.getElementById('overlay');
+const modal = document.getElementById('modal');
 
 /* ---- sync pill ---- */
 const pill = document.createElement('div'); pill.className = 'pill'; document.body.appendChild(pill);
@@ -192,7 +289,7 @@ function flash(msg, ok = true){
   pill.textContent = msg;
   pill.style.background = ok ? 'var(--status-confirmed)' : 'var(--status-rejected)';
   pill.style.opacity = '1';
-  clearTimeout(pillTimer); pillTimer = setTimeout(() => { pill.style.opacity = '0'; }, 1600);
+  clearTimeout(pillTimer); pillTimer = setTimeout(() => { pill.style.opacity = '0'; }, 1800);
 }
 
 /* ---- today's-Saturday in America/Chicago (mirrors app/lib/checklist/dates.ts) ---- */
@@ -215,9 +312,34 @@ let rows = [];
 try { rows = JSON.parse(localStorage.getItem(LKEY)) || []; } catch(e) { rows = []; }
 function saveLocal(){ try { localStorage.setItem(LKEY, JSON.stringify(rows)); } catch(e){} }
 
+/* ---- identity (honour-system display name) ---- */
+function getName(){ try { return localStorage.getItem(NAME_KEY) || ''; } catch(e){ return ''; } }
+function setName(n){ try { n ? localStorage.setItem(NAME_KEY, n) : localStorage.removeItem(NAME_KEY); } catch(e){} }
+
+/* ---- blocked-on options (seed + user additions) ---- */
+function getBlockedOnOptions(){
+  let extra = [];
+  try { extra = JSON.parse(localStorage.getItem(OPTS_KEY)) || []; } catch(e){ extra = []; }
+  const set = new Set([...SEED_BLOCKED_ON_OPTIONS, ...extra]);
+  return [...set].sort((a,b) => a.localeCompare(b));
+}
+function addBlockedOnOption(label){
+  const l = label.trim(); if(!l) return;
+  let extra = [];
+  try { extra = JSON.parse(localStorage.getItem(OPTS_KEY)) || []; } catch(e){ extra = []; }
+  if(!SEED_BLOCKED_ON_OPTIONS.includes(l) && !extra.includes(l)){ extra.push(l); }
+  try { localStorage.setItem(OPTS_KEY, JSON.stringify(extra)); } catch(e){}
+}
+
 /* ---- helpers ---- */
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function ex(r, k){ return r.extras ? r.extras[k] : undefined; }
+function initials(name){
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if(!parts.length) return '??';
+  if(parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+  return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+}
 function blockedDays(iso){
   if(!iso) return 0;
   const a = Date.parse(iso.slice(0,10) + 'T00:00:00Z');
@@ -226,8 +348,21 @@ function blockedDays(iso){
   const d = Math.floor((b - a) / 86400000);
   return d < 0 ? 0 : d;
 }
+function fmtDate(iso){
+  const d = new Date(iso); if(isNaN(d)) return '';
+  return d.toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
+}
+function relTime(iso){
+  const t = Date.parse(iso); if(isNaN(t)) return '';
+  const s = Math.floor((Date.now() - t) / 1000);
+  if(s < 60) return 'just now';
+  const m = Math.floor(s/60); if(m < 60) return m + 'm ago';
+  const h = Math.floor(m/60); if(h < 24) return h + 'h ago';
+  const d = Math.floor(h/24); if(d < 7) return d + 'd ago';
+  return fmtDate(iso);
+}
 
-/* ---- build the week model from flat rows ---- */
+/* ---- build the week model from flat rows (mirrors elevate getChecklistView) ---- */
 function model(){
   const weeks = new Map();
   for(const r of rows){
@@ -237,7 +372,10 @@ function model(){
       phase: ex(r,'phase'), focus: ex(r,'focus'), goals:[], watchouts:[], escalations:[]
     });
     const w = weeks.get(wn);
-    if(r.category === 'goal') w.goals.push(r);
+    // Elevate parity (getChecklistView / groupTasksByWeek): blocked goals are
+    // pulled OUT of the per-week goal list and surfaced only in the red box, so
+    // the week chip denominator counts NON-blocked goals.
+    if(r.category === 'goal'){ if(r.status !== 'blocked') w.goals.push(r); }
     else if(r.category === 'watchout') w.watchouts.push(r);
     else if(r.category === 'escalation') w.escalations.push(r);
   }
@@ -270,18 +408,23 @@ function model(){
 }
 
 /* ---- renderers ---- */
-function goalRow(r, { readonly = false, showSource = false } = {}){
-  const done = r.status === 'done';
-  const cls = 'goal' + (done ? ' done' : '') + (readonly ? ' readonly' : '');
-  const src = showSource ? `<div class="src">from ${esc(ex(r,'week_label'))}</div>` : '';
-  return `<li class="${cls}" data-id="${esc(r.item_id)}"${readonly?'':' role="checkbox" aria-checked="'+done+'" tabindex="0"'}>`
-    + `<span class="box"></span><div><span class="label">${esc(r.title)}</span>${src}</div></li>`;
+function rowActions(r, { canBlock }){
+  const blockBtn = canBlock
+    ? `<button class="btn btn-outline btn-sm btn-block" data-block="${esc(r.item_id)}" aria-label="Block: ${esc(r.title)}">Block</button>`
+    : '';
+  const details = `<button class="btn btn-ghost btn-sm" data-details="${esc(r.item_id)}" aria-label="Open details for ${esc(r.title)}">Details</button>`;
+  return `<div class="rowactions">${blockBtn}${details}</div>`;
 }
-function roList(title, items){
-  if(!items.length) return '';
-  return `<div class="subsec"><div class="lbl">${esc(title)}</div><ul class="goals">`
-    + items.map(r => `<li class="goal readonly"><span class="box" style="visibility:hidden"></span>`
-      + `<span class="label">${esc(r.title)}</span></li>`).join('') + `</ul></div>`;
+function goalRow(r, { interactive = false, showSource = false, canBlock = false } = {}){
+  const done = r.status === 'done';
+  const skipped = r.status === 'skipped';
+  const cls = 'goal' + (done ? ' done' : '') + (skipped ? ' skipped' : '') + (interactive ? '' : ' disabled');
+  const src = showSource ? `<div class="src">From ${esc(ex(r,'week_label'))}</div>` : '';
+  const checkAttrs = interactive ? ` data-id="${esc(r.item_id)}" role="checkbox" aria-checked="${done}" tabindex="0"` : ' aria-hidden="true"';
+  return `<li class="${cls}">`
+    + `<span class="checkwrap"${checkAttrs}><span class="box"></span></span>`
+    + `<div class="main"><span class="label">${esc(r.title)}</span>${src}</div>`
+    + rowActions(r, { canBlock }) + `</li>`;
 }
 function ctxList(title, items, esc2){
   if(!items.length) return '';
@@ -301,29 +444,38 @@ function summaryCard(m){
     + cell(m.rollup.blocked,'Blocked','red') + `</div></section>`;
 }
 
+const WARN_SVG = `<svg class="bicon" width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3L18 16.5H2L10 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><line x1="10" y1="8" x2="10" y2="11.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="14" r="0.9" fill="currentColor"/></svg>`;
+
 function blockedCard(m){
   if(!m.blocked.length) return '';
   const groups = new Map();
-  for(const r of m.blocked){ const k = ex(r,'blocked_on') || ''; (groups.get(k) || groups.set(k,[]).get(k)).push(r); }
+  for(const r of m.blocked){ const k = ex(r,'blocked_on') || ''; if(!groups.has(k)) groups.set(k, []); groups.get(k).push(r); }
   const people = [...groups.keys()].filter(k => k !== '').sort((a,b)=>a.localeCompare(b));
   const keys = [...people, ...(groups.has('') ? [''] : [])];
-  const warn = `<svg class="bicon" width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3L18 16.5H2L10 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><line x1="10" y1="8" x2="10" y2="11.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="14" r="0.9" fill="currentColor"/></svg>`;
   const rowHTML = r => {
     const days = blockedDays(ex(r,'blocked_at'));
     const stale = days >= STALE_BLOCK_DAYS;
     const reason = ex(r,'blocked_reason') ? `<div class="reason">${esc(ex(r,'blocked_reason'))}</div>` : '';
     const ageTxt = days === 0 ? 'blocked today' : ('blocked ' + days + 'd');
-    return `<div class="brow">${warn}<div class="txt"><div class="label">${esc(r.title)}</div>${reason}`
-      + `<span class="age${stale?' stale':''}">${ageTxt}</span></div></div>`;
+    return `<div class="brow"><span class="bicon">${WARN_SVG}</span><div class="txt"><div class="label">${esc(r.title)}</div>${reason}`
+      + `<span class="age${stale?' stale':''}">${ageTxt}</span></div>`
+      + `<div class="bactions">`
+      + `<button class="btn btn-outline btn-sm btn-unblock" data-unblock="${esc(r.item_id)}" aria-label="Unblock: ${esc(r.title)}">Unblock</button>`
+      + `<button class="btn btn-ghost btn-sm" data-details="${esc(r.item_id)}" aria-label="Details for ${esc(r.title)}">Details</button>`
+      + `</div></div>`;
   };
   const groupsHTML = keys.map(k => {
     const items = groups.get(k);
     const heading = k === '' ? 'Other blocks' : k;
     return `<div class="bgroup"><h3>${esc(heading)} <span>(${items.length})</span></h3>${items.map(rowHTML).join('')}</div>`;
   }).join('');
-  return `<section class="card blocked"><div class="h2">${warn}Blocked — needs attention</div>`
+  return `<section class="card blocked"><div class="h2">${WARN_SVG}Blocked — needs attention</div>`
     + `<p class="sub">${m.blocked.length} ${m.blocked.length===1?'goal is':'goals are'} stuck. Grouped by who can unstick them.</p>`
     + groupsHTML + `</section>`;
+}
+
+function addTaskStrip(){
+  return `<div class="addstrip"><button class="btn btn-primary" id="addtask">Add task</button></div>`;
 }
 
 function todayCard(m){
@@ -336,15 +488,15 @@ function todayCard(m){
   if(w) html += `<div class="wk">${esc(w.weekLabel)}</div><div class="phase">${esc(w.phase)}</div><div class="focus">${esc(w.focus)}</div>`;
   if(m.carried.length){
     html += `<div class="carried"><h3>Still open from earlier weeks</h3><ul class="goals">`
-      + m.carried.map(r => goalRow(r, { showSource:true })).join('') + `</ul></div>`;
+      + m.carried.map(r => goalRow(r, { interactive:true, showSource:true, canBlock: r.status === 'pending' })).join('') + `</ul></div>`;
   }
   if(w){
-    const active = w.goals.filter(r => r.status !== 'blocked');
-    const allDone = active.length > 0 && active.every(r => r.status === 'done');
+    const active = w.goals; // already excludes blocked
+    const allDone = active.length > 0 && active.every(r => r.status === 'done' || r.status === 'skipped');
     html += `<div class="subsec"><div class="lbl">This week's goals</div>`;
     if(!active.length) html += `<p class="phase">No goals this week.</p>`;
     else if(allDone) html += `<p class="phase">All goals complete for this week — well done.</p>`;
-    else html += `<ul class="goals">` + active.map(r => goalRow(r)).join('') + `</ul>`;
+    else html += `<ul class="goals">` + active.map(r => goalRow(r, { interactive:true, canBlock: r.status === 'pending' })).join('') + `</ul>`;
     html += `</div>`;
     html += ctxList('Heads up — watch for these', w.watchouts, '');
     html += ctxList('Escalate if', w.escalations, 'esc');
@@ -362,11 +514,11 @@ function weeksCard(m){
     const allDone = total > 0 && done === total;
     const chipCls = allDone ? 'chip done' : (isPast && total > 0 ? 'chip late' : 'chip');
     const isCurrent = w.weekNumber === m.currentNum;
+    // Elevate parity: only the current week's goals are interactive in the
+    // accordion; past/future weeks are read-only (Details still available).
     const goalsHTML = w.goals.length
       ? `<div class="subsec"><div class="lbl">Goals</div><ul class="goals">`
-        + w.goals.map(r => r.status === 'blocked'
-            ? goalRow(r, { readonly:true })
-            : goalRow(r)).join('') + `</ul></div>`
+        + w.goals.map(r => goalRow(r, { interactive: isCurrent, canBlock: isCurrent && r.status === 'pending' })).join('') + `</ul></div>`
       : '';
     return `<details class="week${isCurrent?' current':''}"${isCurrent?' open':''}>`
       + `<summary><span>${esc(w.weekLabel)}</span><span class="meta"><span class="date">${esc(w.weekStartDate)}</span>`
@@ -376,6 +528,12 @@ function weeksCard(m){
   };
   return `<section class="card"><div class="h2" style="margin-bottom:6px">All weeks</div>` + all.map(weekHTML).join('') + `</section>`;
 }
+function roList(title, items){
+  if(!items.length) return '';
+  return `<div class="subsec"><div class="lbl">${esc(title)}</div><ul class="goals">`
+    + items.map(r => `<li class="goal readonly"><span class="checkwrap"><span class="box" style="visibility:hidden"></span></span>`
+      + `<div class="main"><span class="label">${esc(r.title)}</span></div></li>`).join('') + `</ul></div>`;
+}
 
 function render(){
   if(!rows.length){
@@ -384,14 +542,15 @@ function render(){
     return;
   }
   const m = model();
-  root.innerHTML = summaryCard(m) + blockedCard(m) + todayCard(m) + weeksCard(m);
+  root.innerHTML = summaryCard(m) + blockedCard(m) + addTaskStrip() + todayCard(m) + weeksCard(m);
   bindToggles();
+  bindActions();
 }
 
-/* ---- persistence ---- */
+/* ---- persistence: tasks ---- */
 async function loadFromCloud(){
   try{
-    const res = await fetch(REST + '?page=eq.' + PAGE + '&select=*', { headers: HEADERS });
+    const res = await fetch(REST_TASKS + '?page=eq.' + PAGE + '&select=*', { headers: HEADERS });
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const cloud = await res.json();
     rows = cloud;                    // cloud is source of truth
@@ -403,32 +562,139 @@ async function loadFromCloud(){
   }
 }
 
-async function patchStatus(itemId, status){
+async function patchTask(itemId, body){
+  const res = await fetch(REST_TASKS + '?page=eq.' + PAGE + '&item_id=eq.' + encodeURIComponent(itemId), {
+    method: 'PATCH',
+    headers: Object.assign({}, HEADERS, { 'Prefer': 'return=minimal' }),
+    body: JSON.stringify(body)
+  });
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+}
+
+// Local mutation of a row's status + extras, mirroring elevate semantics.
+function applyStatusLocal(r, status){
   const now = new Date().toISOString();
-  try{
-    const res = await fetch(REST + '?page=eq.' + PAGE + '&item_id=eq.' + encodeURIComponent(itemId), {
-      method: 'PATCH',
-      headers: Object.assign({}, HEADERS, { 'Prefer': 'return=minimal' }),
-      body: JSON.stringify({ status: status, updated_at: now })
-    });
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    flash('Saved');
-  }catch(e){
-    flash('Save failed · kept locally', false);
-  }
+  r.status = status;
+  r.updated_at = now;
+  r.extras = Object.assign({}, r.extras);
+  if(status === 'done' || status === 'skipped'){ r.extras.completed_at = now; r.extras.completed_by = null; }
+  else { r.extras.completed_at = null; r.extras.completed_by = null; }
+  // Moving a blocked task to any non-blocked status doubles as unblock.
+  r.extras.blocked_at = null; r.extras.blocked_reason = null; r.extras.blocked_on = null;
+  return { status: r.status, extras: r.extras, updated_at: now };
+}
+
+async function setStatus(itemId, status){
+  const r = rows.find(x => x.item_id === itemId);
+  if(!r || r.category !== 'goal') return;
+  const body = applyStatusLocal(r, status);
+  saveLocal(); render(); syncModalIfOpen(itemId);
+  try { await patchTask(itemId, body); flash('Saved'); }
+  catch(e){ flash('Save failed · kept locally', false); }
 }
 
 function toggle(itemId){
   const r = rows.find(x => x.item_id === itemId);
   if(!r || r.category !== 'goal' || r.status === 'blocked') return;
-  r.status = (r.status === 'done') ? 'pending' : 'done';
-  r.updated_at = new Date().toISOString();
-  saveLocal(); render();
-  patchStatus(itemId, r.status);
+  setStatus(itemId, r.status === 'done' ? 'pending' : 'done');
 }
 
+async function blockTask(itemId, reason, blockedOn){
+  const r = rows.find(x => x.item_id === itemId);
+  if(!r || r.category !== 'goal') return;
+  const now = new Date().toISOString();
+  r.status = 'blocked';
+  r.updated_at = now;
+  r.extras = Object.assign({}, r.extras, {
+    blocked_at: now, blocked_reason: reason.trim(), blocked_on: blockedOn || null,
+    completed_at: null, completed_by: null
+  });
+  saveLocal(); render();
+  try { await patchTask(itemId, { status:'blocked', extras:r.extras, updated_at:now }); flash('Blocked'); }
+  catch(e){ flash('Save failed · kept locally', false); }
+}
+
+async function unblockTask(itemId){
+  // Unblock returns the task to pending and clears the block fields.
+  await setStatus(itemId, 'pending');
+  flash('Unblocked');
+}
+
+async function addTask({ text, weekNumber, category }){
+  const template = rows.find(r => ex(r,'week_number') === weekNumber);
+  if(!template) throw new Error('Unknown week');
+  // position = max(position) + 1 across the same (week, category).
+  const peers = rows.filter(r => ex(r,'week_number') === weekNumber && r.category === category);
+  const position = peers.length ? Math.max(...peers.map(r => r.position || 0)) + 1 : 0;
+  const item_id = 'manual-' + (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.round(Math.random()*1e9)));
+  const now = new Date().toISOString();
+  const rec = {
+    page: PAGE, item_id, title: text.trim(), status: 'pending', category, week: template.week,
+    position,
+    extras: {
+      focus: ex(template,'focus'), phase: ex(template,'phase'), source_id: null,
+      blocked_at: null, blocked_on: null, week_label: ex(template,'week_label'),
+      week_number: weekNumber, completed_at: null, completed_by: null, blocked_reason: null,
+      source_activity_id: ex(template,'source_activity_id') || null, original_week_number: null
+    },
+    created_at: now, updated_at: now
+  };
+  const res = await fetch(REST_TASKS, {
+    method: 'POST',
+    headers: Object.assign({}, HEADERS, { 'Prefer': 'return=representation' }),
+    body: JSON.stringify(rec)
+  });
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  const inserted = await res.json();
+  const saved = Array.isArray(inserted) ? inserted[0] : inserted;
+  rows.push(saved || rec);
+  saveLocal(); render();
+  flash('Task added');
+  return saved || rec;
+}
+
+async function removeTask(itemId){
+  const res = await fetch(REST_TASKS + '?page=eq.' + PAGE + '&item_id=eq.' + encodeURIComponent(itemId), {
+    method: 'DELETE', headers: Object.assign({}, HEADERS, { 'Prefer': 'return=minimal' })
+  });
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  rows = rows.filter(r => r.item_id !== itemId);
+  saveLocal(); render();
+}
+
+/* ---- persistence: notes (press_notes) ---- */
+async function fetchNotes(itemId){
+  const res = await fetch(REST_NOTES + '?page=eq.' + PAGE + '&item_id=eq.' + encodeURIComponent(itemId)
+    + '&select=*&order=created_at.desc', { headers: HEADERS });
+  if(!res.ok){
+    const err = new Error('HTTP ' + res.status);
+    err.status = res.status;
+    throw err;
+  }
+  return res.json();
+}
+async function addNote(itemId, body, authorName){
+  const note_id = crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.round(Math.random()*1e9));
+  const res = await fetch(REST_NOTES, {
+    method: 'POST',
+    headers: Object.assign({}, HEADERS, { 'Prefer': 'return=representation' }),
+    body: JSON.stringify({ page: PAGE, item_id: itemId, note_id, body: body, author_name: authorName || null })
+  });
+  if(!res.ok){ const e = new Error('HTTP ' + res.status); e.status = res.status; throw e; }
+  const d = await res.json();
+  return Array.isArray(d) ? d[0] : d;
+}
+async function deleteNote(itemId, noteId){
+  const res = await fetch(REST_NOTES + '?page=eq.' + PAGE + '&item_id=eq.' + encodeURIComponent(itemId)
+    + '&note_id=eq.' + encodeURIComponent(noteId), {
+    method: 'DELETE', headers: Object.assign({}, HEADERS, { 'Prefer': 'return=minimal' })
+  });
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+}
+
+/* ---- event binding ---- */
 function bindToggles(){
-  root.querySelectorAll('.goal[data-id]:not(.readonly)').forEach(el => {
+  root.querySelectorAll('.goal .checkwrap[data-id]').forEach(el => {
     const id = el.getAttribute('data-id');
     el.addEventListener('click', () => toggle(id));
     el.addEventListener('keydown', e => {
@@ -436,9 +702,283 @@ function bindToggles(){
     });
   });
 }
+function bindActions(){
+  root.querySelectorAll('[data-details]').forEach(el =>
+    el.addEventListener('click', () => openDetails(el.getAttribute('data-details'))));
+  root.querySelectorAll('[data-block]').forEach(el =>
+    el.addEventListener('click', () => openBlock(el.getAttribute('data-block'))));
+  root.querySelectorAll('[data-unblock]').forEach(el =>
+    el.addEventListener('click', () => unblockTask(el.getAttribute('data-unblock'))));
+  const add = document.getElementById('addtask');
+  if(add) add.addEventListener('click', openAddTask);
+}
+
+/* ---- modal plumbing ---- */
+let openModalItemId = null;
+let openModalKind = null;
+function openOverlay(html, itemId, kind){
+  modal.innerHTML = html;
+  overlay.hidden = false;
+  openModalItemId = itemId || null;
+  openModalKind = kind || null;
+  const x = modal.querySelector('.modal-x');
+  if(x) x.addEventListener('click', closeOverlay);
+  document.body.style.overflow = 'hidden';
+  const focusable = modal.querySelector('textarea, input, select, button:not(.modal-x)');
+  if(focusable) try { focusable.focus(); } catch(e){}
+}
+function closeOverlay(){
+  overlay.hidden = true; modal.innerHTML = '';
+  openModalItemId = null; openModalKind = null;
+  document.body.style.overflow = '';
+}
+overlay.addEventListener('click', e => { if(e.target === overlay) closeOverlay(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && !overlay.hidden) closeOverlay(); });
+function syncModalIfOpen(itemId){
+  if(openModalKind === 'details' && openModalItemId === itemId) openDetails(itemId, { keepNotes:true });
+}
+
+/* ---- Details modal ---- */
+const CAT_META = {
+  goal: { label:'Goal', bg:'var(--status-confirmed)' },
+  watchout: { label:'Heads up', bg:'var(--status-flagged)' },
+  escalation: { label:'Escalate if', bg:'var(--status-rejected)' }
+};
+function openDetails(itemId, opts = {}){
+  const r = rows.find(x => x.item_id === itemId);
+  if(!r) return;
+  const cat = CAT_META[r.category] || CAT_META.goal;
+  const blockInfo = r.status === 'blocked'
+    ? `<div class="detail-block"><div class="k">Blocked</div>`
+      + `<div class="v">${esc(ex(r,'blocked_reason') || '(no reason given)')}</div>`
+      + (ex(r,'blocked_on') ? `<div class="k" style="margin-top:8px">Waiting on</div><div class="v">${esc(ex(r,'blocked_on'))}</div>` : '')
+      + `</div>`
+    : '';
+  let statusSection = '';
+  if(r.category === 'goal'){
+    const done = ex(r,'completed_at');
+    const doneLine = (r.status === 'done' || r.status === 'skipped') && done
+      ? `<p class="ntime" style="margin-top:10px">${r.status === 'done' ? 'Done' : 'Skipped'} on ${esc(fmtDate(done))}</p>` : '';
+    const btn = s => `<button class="btn btn-outline btn-sm${r.status===s?' active':''}" data-setstatus="${s}">${s[0].toUpperCase()+s.slice(1)}</button>`;
+    statusSection = `<div class="section-label" style="margin-top:16px">Status</div>`
+      + `<div class="statusctl">${btn('pending')}${btn('done')}${btn('skipped')}</div>${doneLine}`;
+  } else {
+    statusSection = `<p class="modal-desc" style="margin-top:14px">${r.category === 'watchout'
+      ? 'Watchouts are read-only context — nothing to check off. Use notes to record what you saw.'
+      : 'Escalation triggers are read-only. If one has fired, act right away. Use notes to record what happened.'}</p>`;
+  }
+  const html = `<div class="modal-head"><div>`
+    + `<div class="modal-title">${esc(r.title)}</div>`
+    + `<div class="modal-desc">${esc(ex(r,'week_label'))}</div>`
+    + `<div style="margin-top:8px"><span class="badge" style="background:${cat.bg}">${cat.label}</span> `
+    + `<span class="ntime">${esc(ex(r,'phase'))}</span></div>`
+    + `</div><button class="modal-x" aria-label="Close">&times;</button></div>`
+    + `<div class="modal-body">${blockInfo}${statusSection}`
+    + `<div class="notes" id="notes-panel"><div class="empty-notes">Loading notes…</div></div>`
+    + `</div>`;
+  openOverlay(html, itemId, 'details');
+  modal.querySelectorAll('[data-setstatus]').forEach(b =>
+    b.addEventListener('click', () => setStatus(itemId, b.getAttribute('data-setstatus'))));
+  renderNotesPanel(itemId, opts.knownNotes);
+}
+
+async function renderNotesPanel(itemId, known){
+  const panel = modal.querySelector('#notes-panel');
+  if(!panel) return;
+  const name = getName();
+  const whoBar = name
+    ? `<span class="who">Posting as <b>${esc(name)}</b> · <button class="linkbtn" id="change-name">Not you? Change name</button></span>`
+    : `<span class="who"><button class="linkbtn" id="change-name">Set your name to post notes</button></span>`;
+  panel.innerHTML = `<div class="notes-head"><h3 class="h3">Notes</h3>${whoBar}</div>`
+    + `<div class="field"><textarea id="note-input" rows="3" maxlength="4000" placeholder="Add a note…"></textarea></div>`
+    + `<div class="modal-foot" style="margin-top:10px"><button class="btn btn-primary btn-sm" id="post-note">Post note</button></div>`
+    + `<div class="err" id="note-err" hidden></div>`
+    + `<ul class="notelist" id="notelist"></ul>`;
+  const cn = panel.querySelector('#change-name');
+  if(cn) cn.addEventListener('click', () => promptName(() => renderNotesPanel(itemId)));
+  panel.querySelector('#post-note').addEventListener('click', () => submitNote(itemId));
+  panel.querySelector('#note-input').addEventListener('keydown', e => {
+    if(e.key === 'Enter' && (e.metaKey || e.ctrlKey)){ e.preventDefault(); submitNote(itemId); }
+  });
+  // Load notes
+  let notes = known;
+  const listEl = panel.querySelector('#notelist');
+  if(!notes){
+    try { notes = await fetchNotes(itemId); }
+    catch(e){
+      listEl.innerHTML = `<li class="empty-notes">${e.status === 404 || e.status === 400
+        ? 'Notes aren\'t available yet — the notes table is being set up.'
+        : 'Couldn\'t load notes right now.'}</li>`;
+      return;
+    }
+  }
+  paintNotes(itemId, notes);
+}
+function paintNotes(itemId, notes){
+  const listEl = modal.querySelector('#notelist');
+  if(!listEl) return;
+  if(!notes.length){ listEl.innerHTML = `<li class="empty-notes">No notes yet.</li>`; return; }
+  const me = getName();
+  listEl.innerHTML = notes.map(n => {
+    const nm = n.author_name || 'Someone';
+    const mine = me && n.author_name === me;
+    const del = mine ? `<div class="ndel"><button class="linkbtn" data-delnote="${esc(n.note_id)}">Delete</button></div>` : '';
+    return `<li class="note"><div class="nhead"><span class="avatar">${esc(initials(nm))}</span>`
+      + `<span class="nname">${esc(nm)}</span><span class="ntime">· ${esc(relTime(n.created_at))}</span></div>`
+      + `<div class="nbody">${esc(n.body)}</div>${del}</li>`;
+  }).join('');
+  listEl.querySelectorAll('[data-delnote]').forEach(b => b.addEventListener('click', async () => {
+    const nid = b.getAttribute('data-delnote');
+    try { await deleteNote(itemId, nid); flash('Note deleted'); renderNotesPanel(itemId); }
+    catch(e){ flash('Delete failed', false); }
+  }));
+}
+async function submitNote(itemId){
+  const input = modal.querySelector('#note-input');
+  const errEl = modal.querySelector('#note-err');
+  const body = (input.value || '').trim();
+  errEl.hidden = true;
+  if(!body){ errEl.textContent = 'Write something first.'; errEl.hidden = false; return; }
+  let name = getName();
+  if(!name){ promptName(() => submitNote(itemId)); return; }
+  try {
+    await addNote(itemId, body, name);
+    input.value = '';
+    flash('Note posted');
+    renderNotesPanel(itemId);
+  } catch(e){
+    if(e.status === 404 || e.status === 400){
+      errEl.textContent = 'Notes aren\'t available yet — the notes table is being set up. Try again soon.';
+    } else { errEl.textContent = 'Could not post the note. It may be a connection issue.'; }
+    errEl.hidden = false;
+    flash('Note not saved', false);
+  }
+}
+
+/* ---- name prompt ---- */
+function promptName(after){
+  const cur = getName();
+  const html = `<div class="modal-head"><div><div class="modal-title">Your name</div>`
+    + `<div class="modal-desc">Shown on notes you post. Honour-system only — no login.</div></div>`
+    + `<button class="modal-x" aria-label="Close">&times;</button></div>`
+    + `<div class="modal-body"><div class="field"><label for="name-input">Display name</label>`
+    + `<input type="text" id="name-input" maxlength="80" value="${esc(cur)}" placeholder="e.g. Brandon G."></div>`
+    + `<div class="err" id="name-err" hidden></div>`
+    + `<div class="modal-foot">${cur ? '<button class="btn btn-ghost btn-sm" id="clear-name">Clear name</button>' : ''}`
+    + `<button class="btn btn-outline btn-sm" id="name-cancel">Cancel</button>`
+    + `<button class="btn btn-primary btn-sm" id="name-save">Save</button></div></div>`;
+  openOverlay(html, null, 'name');
+  const input = modal.querySelector('#name-input');
+  modal.querySelector('#name-save').addEventListener('click', () => {
+    const v = (input.value || '').trim();
+    if(!v){ const e = modal.querySelector('#name-err'); e.textContent = 'Enter a name, or Cancel.'; e.hidden = false; return; }
+    setName(v); closeOverlay(); if(after) after();
+  });
+  modal.querySelector('#name-cancel').addEventListener('click', closeOverlay);
+  const clr = modal.querySelector('#clear-name');
+  if(clr) clr.addEventListener('click', () => { setName(''); closeOverlay(); if(after) after(); });
+  input.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); modal.querySelector('#name-save').click(); } });
+}
+
+/* ---- Block dialog ---- */
+function openBlock(itemId){
+  const r = rows.find(x => x.item_id === itemId);
+  if(!r) return;
+  const options = getBlockedOnOptions();
+  const html = `<div class="modal-head"><div><div class="modal-title">Block this goal</div>`
+    + `<div class="modal-desc">Blocked goals move to the red box at the top and leave the weekly goal list until you unblock them.</div></div>`
+    + `<button class="modal-x" aria-label="Close">&times;</button></div>`
+    + `<div class="modal-body"><p style="font-size:14px">${esc(r.title)}</p>`
+    + `<div class="field"><label for="blk-reason">Why is it stuck?</label>`
+    + `<textarea id="blk-reason" rows="3" maxlength="500" placeholder="e.g. Waiting on the merit-badge counselor to schedule a sit-down."></textarea></div>`
+    + `<div class="field"><label for="blk-on">Waiting on <span class="opt">(optional)</span></label>`
+    + `<select id="blk-on"><option value="">No one specific</option>`
+    + options.map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join('') + `</select>`
+    + `<button class="linkbtn" id="blk-add" style="margin-top:6px;align-self:flex-start">+ Add someone</button>`
+    + `<div id="blk-addrow" hidden style="display:flex;gap:8px;margin-top:6px">`
+    + `<input type="text" id="blk-newname" maxlength="100" placeholder="Add a person">`
+    + `<button class="btn btn-outline btn-sm" id="blk-addsave">Add</button></div></div>`
+    + `<div class="err" id="blk-err" hidden></div>`
+    + `<div class="modal-foot"><button class="btn btn-outline btn-sm" id="blk-cancel">Cancel</button>`
+    + `<button class="btn btn-primary btn-sm" id="blk-save">Block goal</button></div></div>`;
+  openOverlay(html, itemId, 'block');
+  const sel = modal.querySelector('#blk-on');
+  modal.querySelector('#blk-add').addEventListener('click', () => {
+    modal.querySelector('#blk-addrow').hidden = false;
+    modal.querySelector('#blk-add').hidden = true;
+    modal.querySelector('#blk-newname').focus();
+  });
+  modal.querySelector('#blk-addsave').addEventListener('click', () => {
+    const v = (modal.querySelector('#blk-newname').value || '').trim();
+    if(!v) return;
+    addBlockedOnOption(v);
+    const opts = getBlockedOnOptions();
+    sel.innerHTML = `<option value="">No one specific</option>` + opts.map(o => `<option value="${esc(o)}"${o===v?' selected':''}>${esc(o)}</option>`).join('');
+    modal.querySelector('#blk-addrow').hidden = true;
+    modal.querySelector('#blk-add').hidden = false;
+    modal.querySelector('#blk-newname').value = '';
+  });
+  modal.querySelector('#blk-cancel').addEventListener('click', closeOverlay);
+  modal.querySelector('#blk-save').addEventListener('click', async () => {
+    const reason = (modal.querySelector('#blk-reason').value || '').trim();
+    const errEl = modal.querySelector('#blk-err');
+    if(!reason){ errEl.textContent = 'A reason is required to block a task.'; errEl.hidden = false; return; }
+    await blockTask(itemId, reason, sel.value || null);
+    closeOverlay();
+  });
+}
+
+/* ---- Add task dialog ---- */
+function openAddTask(){
+  const m = model();
+  const weeks = m.list.slice().sort((a,b) => a.weekNumber - b.weekNumber);
+  const defaultWk = m.currentNum ?? (weeks[0] ? weeks[0].weekNumber : null);
+  const html = `<div class="modal-head"><div><div class="modal-title">Add task</div>`
+    + `<div class="modal-desc">Add an ad-hoc task that isn't part of the seeded playbook.</div></div>`
+    + `<button class="modal-x" aria-label="Close">&times;</button></div>`
+    + `<div class="modal-body">`
+    + `<div class="field"><label for="at-text">Task text</label><textarea id="at-text" rows="3" maxlength="2000"></textarea></div>`
+    + `<div class="field"><label for="at-week">Week</label><select id="at-week">`
+    + weeks.map(w => `<option value="${w.weekNumber}"${w.weekNumber===defaultWk?' selected':''}>Week ${w.weekNumber} — ${esc(w.weekLabel)}</option>`).join('')
+    + `</select></div>`
+    + `<div class="field"><label>Category</label><div class="statusctl" id="at-cat">`
+    + `<button type="button" class="btn btn-outline btn-sm active" data-cat="goal">Goal</button>`
+    + `<button type="button" class="btn btn-outline btn-sm" data-cat="watchout">Heads up</button>`
+    + `<button type="button" class="btn btn-outline btn-sm" data-cat="escalation">Escalate if</button></div></div>`
+    + `<div class="err" id="at-err" hidden></div>`
+    + `<div class="modal-foot"><button class="btn btn-outline btn-sm" id="at-cancel">Cancel</button>`
+    + `<button class="btn btn-primary btn-sm" id="at-save">Add task</button></div></div>`;
+  openOverlay(html, null, 'addtask');
+  let cat = 'goal';
+  modal.querySelectorAll('#at-cat [data-cat]').forEach(b => b.addEventListener('click', () => {
+    cat = b.getAttribute('data-cat');
+    modal.querySelectorAll('#at-cat [data-cat]').forEach(x => x.classList.toggle('active', x === b));
+  }));
+  modal.querySelector('#at-cancel').addEventListener('click', closeOverlay);
+  modal.querySelector('#at-save').addEventListener('click', async () => {
+    const text = (modal.querySelector('#at-text').value || '').trim();
+    const weekNumber = Number(modal.querySelector('#at-week').value);
+    const errEl = modal.querySelector('#at-err');
+    if(!text){ errEl.textContent = 'Task text is required.'; errEl.hidden = false; return; }
+    if(!weekNumber){ errEl.textContent = 'Pick a week.'; errEl.hidden = false; return; }
+    try { await addTask({ text, weekNumber, category: cat }); closeOverlay(); }
+    catch(e){ errEl.textContent = 'Could not add the task. It may be a connection issue.'; errEl.hidden = false; }
+  });
+}
 
 render();          // instant paint from local mirror
 loadFromCloud();   // then reconcile with the cloud
+
+/* Expose a tiny hook for headless verification (no effect on UX). Arc 2b's
+   render-parity harness and write-path exercise drive the page's REAL code
+   through this surface — the lesson from Arc 2 being that verification must run
+   what actually ships, not a reimplementation. */
+window.__eaglePath = {
+  model, render, TODAY_SAT,
+  get rows(){ return rows; }, set rows(v){ rows = v; },
+  setStatus, toggle, blockTask, unblockTask, addTask, removeTask,
+  fetchNotes, addNote, deleteNote, getName, setName
+};
 </script>
 </body>
 </html>
