@@ -292,7 +292,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v2.2.5</span>
+    <span class="nav-badge">v2.2.6</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -1010,6 +1010,14 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </div>
 
       <div class="instr">
+        <span class="who">Owner: Quill · trigger — "build me a deck" / "make slides" / "beautify these slides"</span>
+        <h4>Deck</h4>
+        <p>Produces a finished, nicely-designed <b class="ink"><code>.pptx</code></b> from the Principal's content, in one of <b class="ink">two input modes</b>: <b class="ink">compose</b> — text descriptions of the slides go in, Quill authors the deck from them — or <b class="ink">beautify</b> — existing slides supplied as either a <code>.pptx</code> on disk <i>or</i> pasted text and screenshots. This is the tool of record for slide decks; render remains the tool for standalone imagery, and Design (Canvas) for editable web and UI elements.</p>
+        <p><b class="ink">The Eye consults on look, by default.</b> Before building, the Eye offers <b class="ink">two or three quick look-options</b> — a one-line description each, such as Swiss and clean, editorial, or dark-mode executive — and the Principal's pick drives the deck's design tokens. This is the Eye running <b class="ink">LITE</b>, fast look-options rather than a full six-direction scored review. Saying <b class="ink">"skip Eye"</b> bypasses the directions entirely for a clean, professional default. The first-party <b class="ink">pptx skill</b> then builds the file, applying the chosen look, and the result is saved to <code>~/Documents/decks/</code>. Quill's discipline carries through: decision-first slide order, no padding.</p>
+        <p><b class="ink">Home surface is Cowork</b> — the pptx skill and code execution both live there, and a file-access connector alone cannot generate a <code>.pptx</code>, so a chat-only surface emits the Cowork instruction rather than pretending to build inline. Beautify <b class="ink">always writes a new file</b> and never mutates the source in place, so a bad pass leaves the original untouched and the build can simply be re-issued.</p>
+      </div>
+
+      <div class="instr">
         <span class="who">Owner: Steward · trigger — "sync the council" / "run the audit" / <code>/kings-council:audit</code> / monthly cadence</span>
         <h4>Steward Audit</h4>
         <p>The one command that keeps the plugin aligned and propagated across every surface — <b class="ink">detect → repair → propagate</b>, replacing the old multi-chat scramble. <b class="ink">Detect:</b> diffs <code>plugin.json</code> against the four version-stamp locations (guide nav badge + footer, and the <code>Version:</code> headers in <code>PERSONAS.md</code> and <code>CAPABILITIES.md</code>), flags annex entries newer than the guide's stamp, checks skills against the cast (<code>PERSONAS.md</code>) and against the instrument index (every registered instrument needs its one-line entry in <code>skills/hand/SKILL.md</code>), catches capabilities used but never registered, and detects a <b class="ink">stale bundle</b> — a <code>dist/kings-council.plugin</code> older than the newest committed source means Cowork + web/mobile are out of date, whether <code>MANUAL.md</code> (the separate environment repo) trails the plugin's version, and whether the published Press copy of this guide (<code>schnubsy/press/council.html</code>) has fallen behind the generated version — a <b class="ink">stale Press copy</b> is flagged as drift, so a missed publish is caught next run. <b class="ink">Repair (automatable):</b> fixes all four stamps to match <code>plugin.json</code> and regenerates this guide from its sources. <b class="ink">Propagate:</b> on a chat surface it <i>emits</i> ready-to-paste Claude Code prompts to commit + push and to rebuild the bundle; run instead as the <code>/kings-council:audit</code> command in Claude Code, those same steps <i>execute</i> directly. Either way you get a manual checklist for the two steps no tool can do — reloading <code>dist/kings-council.plugin</code> in Desktop (the single action that refreshes Cowork and claude.ai web/mobile together) and a fresh-chat cast check to verify. It separates what it fixed itself from what waits on your manual reload. When a run regenerates this guide, propagate also <b class="ink">republishes it to the public Press copy</b> (<code>council.html</code>) — gated on the guide having actually changed, lane-aware by size, and hash-verified — so the published prospectus never lags the generated one. <b class="ink">Cadence:</b> monthly (co-timed with the log-hygiene job), not only symptom-driven — the monthly run drops an <code>audit-due</code> marker that a SessionStart hook surfaces <b class="ink">once per day</b> until you run the audit, which clears it on completion. Because the audit emits steps and needs your go for repairs and the reload, the hook only <i>reminds</i>, never runs it.</p>
@@ -1315,7 +1323,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <footer>
   <div class="footer-in">
     <div>The Council · a private prospectus · generated from PERSONAS.md + skills</div>
-    <div class="mono">kings-council v2.2.5 · last updated 2026-07-19</div>
+    <div class="mono">kings-council v2.2.6 · last updated 2026-07-20</div>
   </div>
 </footer>
 
