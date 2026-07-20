@@ -292,7 +292,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v2.2.6</span>
+    <span class="nav-badge">v3.0.0</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -912,7 +912,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
             <div><dt>Signature move</dt><dd>Scope, files, commands, done-criteria, error handling — one brief, zero check-backs</dd></div>
           </dl>
           <div class="p-quote">"Slow is smooth, smooth is fast."<span class="attr">— her one and only motivational poster</span></div>
-          <div class="trade"><span class="dis">Discipline: every work order ends with the /kings-council:handoff footer — the arc always closes.</span></div>
+          <div class="trade"><span class="dis">Discipline: every work order ends with the /council:handoff footer — the arc always closes.</span></div>
         </div>
       </article>
 
@@ -1018,9 +1018,9 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </div>
 
       <div class="instr">
-        <span class="who">Owner: Steward · trigger — "sync the council" / "run the audit" / <code>/kings-council:audit</code> / monthly cadence</span>
+        <span class="who">Owner: Steward · trigger — "sync the council" / "run the audit" / <code>/council:audit</code> / monthly cadence</span>
         <h4>Steward Audit</h4>
-        <p>The one command that keeps the plugin aligned and propagated across every surface — <b class="ink">detect → repair → propagate</b>, replacing the old multi-chat scramble. <b class="ink">Detect:</b> diffs <code>plugin.json</code> against the four version-stamp locations (guide nav badge + footer, and the <code>Version:</code> headers in <code>PERSONAS.md</code> and <code>CAPABILITIES.md</code>), flags annex entries newer than the guide's stamp, checks skills against the cast (<code>PERSONAS.md</code>) and against the instrument index (every registered instrument needs its one-line entry in <code>skills/hand/SKILL.md</code>), catches capabilities used but never registered, and detects a <b class="ink">stale bundle</b> — a <code>dist/kings-council.plugin</code> older than the newest committed source means Cowork + web/mobile are out of date, whether <code>MANUAL.md</code> (the separate environment repo) trails the plugin's version, and whether the published Press copy of this guide (<code>schnubsy/press/council.html</code>) has fallen behind the generated version — a <b class="ink">stale Press copy</b> is flagged as drift, so a missed publish is caught next run. <b class="ink">Repair (automatable):</b> fixes all four stamps to match <code>plugin.json</code> and regenerates this guide from its sources. <b class="ink">Propagate:</b> on a chat surface it <i>emits</i> ready-to-paste Claude Code prompts to commit + push and to rebuild the bundle; run instead as the <code>/kings-council:audit</code> command in Claude Code, those same steps <i>execute</i> directly. Either way you get a manual checklist for the two steps no tool can do — reloading <code>dist/kings-council.plugin</code> in Desktop (the single action that refreshes Cowork and claude.ai web/mobile together) and a fresh-chat cast check to verify. It separates what it fixed itself from what waits on your manual reload. When a run regenerates this guide, propagate also <b class="ink">republishes it to the public Press copy</b> (<code>council.html</code>) — gated on the guide having actually changed, lane-aware by size, and hash-verified — so the published prospectus never lags the generated one. <b class="ink">Cadence:</b> monthly (co-timed with the log-hygiene job), not only symptom-driven — the monthly run drops an <code>audit-due</code> marker that a SessionStart hook surfaces <b class="ink">once per day</b> until you run the audit, which clears it on completion. Because the audit emits steps and needs your go for repairs and the reload, the hook only <i>reminds</i>, never runs it.</p>
+        <p>The one command that keeps the plugin aligned and propagated across every surface — <b class="ink">detect → repair → propagate</b>, replacing the old multi-chat scramble. <b class="ink">Detect:</b> diffs <code>plugin.json</code> against the four version-stamp locations (guide nav badge + footer, and the <code>Version:</code> headers in <code>PERSONAS.md</code> and <code>CAPABILITIES.md</code>), flags annex entries newer than the guide's stamp, checks skills against the cast (<code>PERSONAS.md</code>) and against the instrument index (every registered instrument needs its one-line entry in <code>skills/hand/SKILL.md</code>), catches capabilities used but never registered, and detects a <b class="ink">stale bundle</b> — a <code>dist/council.plugin</code> older than the newest committed source means Cowork + web/mobile are out of date, whether <code>MANUAL.md</code> (the separate environment repo) trails the plugin's version, and whether the published Press copy of this guide (<code>schnubsy/press/council.html</code>) has fallen behind the generated version — a <b class="ink">stale Press copy</b> is flagged as drift, so a missed publish is caught next run. <b class="ink">Repair (automatable):</b> fixes all four stamps to match <code>plugin.json</code> and regenerates this guide from its sources. <b class="ink">Propagate:</b> on a chat surface it <i>emits</i> ready-to-paste Claude Code prompts to commit + push and to rebuild the bundle; run instead as the <code>/council:audit</code> command in Claude Code, those same steps <i>execute</i> directly. Either way you get a manual checklist for the two steps no tool can do — reloading <code>dist/council.plugin</code> in Desktop (the single action that refreshes Cowork and claude.ai web/mobile together) and a fresh-chat cast check to verify. It separates what it fixed itself from what waits on your manual reload. When a run regenerates this guide, propagate also <b class="ink">republishes it to the public Press copy</b> (<code>council.html</code>) — gated on the guide having actually changed, lane-aware by size, and hash-verified — so the published prospectus never lags the generated one. <b class="ink">Cadence:</b> monthly (co-timed with the log-hygiene job), not only symptom-driven — the monthly run drops an <code>audit-due</code> marker that a SessionStart hook surfaces <b class="ink">once per day</b> until you run the audit, which clears it on completion. Because the audit emits steps and needs your go for repairs and the reload, the hook only <i>reminds</i>, never runs it.</p>
       </div>
 
       <div class="instr">
@@ -1115,11 +1115,11 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <li><b>Worth-building check</b> — one honest pass: names tools that already solve it, offers an Ear gut-check if the verdict is murky.</li>
         <li><b>One batched interview</b> — purpose, users, platform, stack, data sensitivity, name, git remote, v0.1 success. Every question up front; zero drip-feeding after.</li>
         <li><b>Scaffold</b> (Claude Code only) — repo under <code>~/Documents/VSCode/&lt;name&gt;</code>, git initialized, control files seeded with the real answers.</li>
-        <li><b>First arc-close</b> — runs <code>/kings-council:handoff</code>, emits a paste-ready Claude Desktop project block, registers the project in MANUAL.md.</li>
+        <li><b>First arc-close</b> — runs <code>/council:handoff</code>, emits a paste-ready Claude Desktop project block, registers the project in MANUAL.md.</li>
       </ol>
       <div class="modebox"><b>On any other surface</b> the rite returns a single deterministic Claude Code work order instead — nothing half-scaffolded, ever.</div>
       <h3 style="font-size:22px;margin:30px 0 4px">Handoff — closing an arc</h3>
-      <p class="muted" style="margin-bottom:6px">The command: <code>/kings-council:handoff</code> (Claude Code and Cowork).</p>
+      <p class="muted" style="margin-bottom:6px">The command: <code>/council:handoff</code> (Claude Code and Cowork).</p>
       <ol class="steps">
         <li><b>Consumes</b> ORCHESTRATION.md — Desktop's append-only inbox of decisions, work-order summaries, and flagged RULE: entries.</li>
         <li><b>Updates</b> CLAUDE.md (durable truth), HANDOFF.md (last-arc snapshot + exact next steps), and STATUS.html (single-writer).</li>
@@ -1271,7 +1271,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       <div class="sect-head">
         <span class="eyebrow">Protocol</span>
         <h2>Engage the Council</h2>
-        <p class="lede">Speak plainly and the right chamber opens. The skills trigger on natural language — "vet this idea," "design this," "spec the build" — or by direct address. Every original invocation still works; the modern forms below are additions, not replacements. All five skills reach every surface (Claude Desktop, Claude Code, Cowork, claude.ai web and mobile); the <code>/kings-council:handoff</code> command runs in Claude Code and Cowork.</p>
+        <p class="lede">Speak plainly and the right chamber opens. The skills trigger on natural language — "vet this idea," "design this," "spec the build" — or by direct address. Every original invocation still works; the modern forms below are additions, not replacements. All five skills reach every surface (Claude Desktop, Claude Code, Cowork, claude.ai web and mobile); the <code>/council:handoff</code> command runs in Claude Code and Cowork.</p>
       </div>
       <div class="table-scroll">
         <table class="invoke">
@@ -1280,22 +1280,22 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
           </thead>
           <tbody>
             <tr>
-              <td><span class="cmd">the council…</span><span class="alias">also: "kings council", "convene the council"</span></td>
+              <td><span class="cmd">the council…</span><span class="alias">also: "convene the council"</span></td>
               <td class="who">Sir Garrick Vale, the Hand</td>
               <td>A one-line routing call, then the right head(s) run and return one integrated deliverable.</td>
             </tr>
             <tr>
-              <td><span class="cmd">the eye — design this</span><span class="alias">also: "kings eye", "council eye"</span></td>
+              <td><span class="cmd">the eye — design this</span><span class="alias">also: "council eye"</span></td>
               <td class="who">Marlowe Holm + the cast of 7</td>
               <td>FULL: six scored directions with build-ready assets. LITE ("quick ideas"): 3–4 fast hero mockups.</td>
             </tr>
             <tr>
-              <td><span class="cmd">the ear — vet this</span><span class="alias">also: "kings ear", "council ear", "convene the council"</span></td>
+              <td><span class="cmd">the ear — vet this</span><span class="alias">also: "council ear", "convene the council"</span></td>
               <td class="who">Sir Alistair Crane + 8 advisors</td>
               <td>GUT-CHECK (fast take), FULL COUNCIL (steelman → debate → verdict), or CRITIQUE (does this clear the bar).</td>
             </tr>
             <tr>
-              <td><span class="cmd">the hand — build me…</span><span class="alias">also: "kings hand", "council hand"</span></td>
+              <td><span class="cmd">the hand — build me…</span><span class="alias">also: "council hand"</span></td>
               <td class="who">Garrick's seats: Forge, Quill, Steward</td>
               <td>The finished artifact — work order, spec, deck, memo, or maintenance runbook.</td>
             </tr>
@@ -1305,7 +1305,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
               <td>Idea → worth-building check → one batched interview → scaffolded, git-initialized, handoff-ready repo.</td>
             </tr>
             <tr>
-              <td><span class="cmd">/kings-council:handoff</span></td>
+              <td><span class="cmd">/council:handoff</span></td>
               <td class="who">The Arc-Close rite</td>
               <td>Consumes ORCHESTRATION.md, updates CLAUDE.md / HANDOFF.md / STATUS.html, commits and pushes.</td>
             </tr>
@@ -1323,7 +1323,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <footer>
   <div class="footer-in">
     <div>The Council · a private prospectus · generated from PERSONAS.md + skills</div>
-    <div class="mono">kings-council v2.2.6 · last updated 2026-07-20</div>
+    <div class="mono">council v3.0.0 · last updated 2026-07-20</div>
   </div>
 </footer>
 
