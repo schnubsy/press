@@ -188,6 +188,40 @@ ol.steps{margin:18px 0 0 22px;display:grid;gap:9px;font-size:15px;color:var(--mu
 ol.steps li::marker{color:var(--gold);font-family:'Spline Sans Mono',monospace;font-size:13px}
 ol.steps b{color:var(--ink)}
 
+/* ---------- capabilities menu (grouped · expandable) ---------- */
+.cap-head{display:flex;gap:20px;align-items:center;margin:54px 0 18px;padding:24px 28px;border:1px solid var(--hairline);border-radius:var(--radius)}
+.cap-head .cap-seal{width:130px;height:130px;flex:none;object-fit:contain}
+.cap-head-txt{flex:1;min-width:0}
+.cap-head:first-of-type{margin-top:10px}
+.cap-head .eyebrow{margin-bottom:8px}
+.cap-head h3{font-size:27px}
+.cap-head p{font-size:14.5px;color:var(--muted);margin-top:8px;max-width:74ch}
+.cap-head.h-eye .eyebrow{color:var(--eye)}
+.cap-head.h-ear .eyebrow{color:var(--ear)}
+.cap-head.h-hand .eyebrow{color:var(--hand)}
+.instr.i-eye{border-left:2px solid rgba(167,139,219,.4)}
+.instr.i-ear{border-left:2px solid rgba(86,184,150,.4)}
+.instr.i-hand{border-left:2px solid rgba(201,127,82,.38)}
+.instr.i-eye .who{color:var(--eye)}
+.instr.i-ear .who{color:var(--ear)}
+.instr-sum{font-size:15px;color:var(--ink);opacity:.9;margin-top:2px}
+.instr .facet-note{font-family:'Spline Sans Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-top:14px}
+details.facet{border-top:1px solid var(--hairline-soft)}
+details.facet:first-of-type{margin-top:14px;border-top:1px solid var(--hairline)}
+details.facet>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:11px;padding:12px 2px;font-family:'Spline Sans Mono',monospace;font-size:12px;letter-spacing:.03em;color:var(--muted);transition:color .14s}
+details.facet>summary::-webkit-details-marker{display:none}
+details.facet>summary:hover{color:var(--ink)}
+details.facet>summary .fmk{color:var(--faint);font-size:12px;line-height:1;transition:transform .18s,color .18s;flex:none;width:11px;display:inline-block}
+details.facet[open]>summary{color:var(--ink)}
+details.facet[open]>summary .fmk{transform:rotate(90deg);color:var(--gold)}
+details.facet .facet-body{padding:2px 4px 18px 23px}
+details.facet .facet-body p{font-size:14px;color:var(--muted)}
+details.facet .facet-body p+p{margin-top:10px}
+details.facet.enhance>summary{color:var(--gold-soft)}
+details.facet.enhance>summary:hover{color:var(--gold)}
+details.facet.enhance>summary .ftag{font-family:'Spline Sans Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--bg);background:var(--gold-soft);border-radius:5px;padding:2px 6px;flex:none}
+@media (prefers-reduced-motion:reduce){details.facet>summary .fmk{transition:none}}
+
 /* ---------- playbook ---------- */
 .play{background:var(--panel);border:1px solid var(--hairline);border-radius:var(--radius);padding:22px 24px;margin-top:16px}
 .play .who{font-family:'Spline Sans Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:8px}
@@ -426,7 +460,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <a class="pillar ph" href="#hand">
           <img src="council-assets/seals/seal_hand.svg" alt="" width="52" height="52" loading="lazy">
           <h4>The Hand</h4>
-          <p>The execution arm. Decisions in, finished artifacts out — work orders, decks, runbooks. Never a status update in place of the thing.</p>
+          <p>The execution arm. Decisions in, finished artifacts out — work orders, memos, runbooks. Never a status update in place of the thing.</p>
           <span class="go">Enter the Hand →</span>
         </a>
       </div>
@@ -854,7 +888,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       <div>
         <span class="eyebrow c-hand">Third Head · Execution</span>
         <h2>The Hand</h2>
-        <p class="manifesto">The Hand deals only in <b>finished things</b>. A decision goes in; a work order, a deck, a runbook, or a repaired system comes out — never a status update standing in for the work. Sir Garrick Vale receives every decree, decomposes it, names in one line the seat that will carry it, and holds the whole arc to its close. Forge builds, Quill writes, Steward runs, Snag proves. What leaves this room is meant to be used — not reviewed and handed back for another pass.</p>
+        <p class="manifesto">The Hand deals only in <b>finished things</b>. A decision goes in; a work order, a memo, a runbook, or a repaired system comes out — never a status update standing in for the work. Sir Garrick Vale receives every decree, decomposes it, names in one line the seat that will carry it, and holds the whole arc to its close. Forge builds, Quill writes, Steward runs, Snag proves. What leaves this room is meant to be used — not reviewed and handed back for another pass.</p>
       </div>
     </div>
 
@@ -862,7 +896,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       <h3 style="font-size:24px;margin-bottom:6px">What the Hand delivers</h3>
       <ul class="delivers dl-hand">
         <li><b>Forge</b> — Claude Code work orders, technical specs, tech-stack selection, data models, system and functional diagrams. Software architecture lives here — not with the Eye.</li>
-        <li><b>Quill</b> — PM and stakeholder deliverables: status reports, decks, memos, comms — decision-first, audience-calibrated.</li>
+        <li><b>Quill</b> — PM and stakeholder deliverables: status reports, memos, comms — decision-first, audience-calibrated.</li>
         <li><b>Steward</b> — environment maintenance runbooks, config discipline, migration prep, the handoff system, MANUAL.md — and this guide's sync.</li>
         <li><b>Snag</b> — QA and testing: full test runs, gap analysis, regression checks, and data-quality validation, every defect severity-flagged with reproduction steps. With sentry, half of the ship-gate.</li>
         <li><b>Kickoff routing</b> — a brand-new software project never goes straight to Forge: Garrick routes it to the Kickoff rite first, so the worth-building check and batched interview happen before any scaffold.</li>
@@ -921,8 +955,8 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <div>
           <div class="p-tags"><span class="handle h-hand">Quill</span><span class="movement">Written &amp; Presented Deliverables · the Scribe</span></div>
           <h4 class="p-name">Priya Raman</h4>
-          <p class="p-role">Status reports, decks, memos, briefs, comms — every deliverable opens with what the reader should decide or do. Context serves that; nothing else survives.</p>
-          <p class="p-bio">Chennai-born; English literature at Madras, an MBA at London Business School, then engagement manager at a top-tier consultancy — where she ghostwrote board packs for FTSE chief executives who received the credit and the questions. Priya writes the deck that ends the meeting early, and considers that the highest compliment in her field.</p>
+          <p class="p-role">Status reports, memos, briefs, comms — every deliverable opens with what the reader should decide or do. Context serves that; nothing else survives.</p>
+          <p class="p-bio">Chennai-born; English literature at Madras, an MBA at London Business School, then engagement manager at a top-tier consultancy — where she ghostwrote board packs for FTSE chief executives who received the credit and the questions. Priya writes the narrative that ends the meeting early — the through-line behind an Eye-built deck — and considers that the highest compliment in her field.</p>
           <dl class="facts">
             <div><dt>Born</dt><dd>Chennai, India — 1986</dd></div>
             <div><dt>Education</dt><dd>English Literature, Madras; MBA, London Business School</dd></div>
@@ -987,104 +1021,238 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
     <section class="section" style="border-top:0">
       <div class="sect-head">
         <span class="eyebrow c-hand">The Toolbelt</span>
-        <h2>The Hand's instruments</h2>
+        <h2>The Council's instruments</h2>
         <p class="lede">The cast is fixed; the toolbelt grows. Every new capability the Council gains joins as an <b class="ink">instrument</b> — a named, owner-assigned, deterministic procedure — never as a new persona. Instruments are registered in <code>CAPABILITIES.md</code> at the repo root (the canonical registry) with a one-line index in the Hand's skill, which is what makes them invocable from every surface. More instruments are coming; the cast that wields them does not.</p>
       </div>
 
-      <div class="instr">
-        <span class="who">Owner: Quill · trigger — "press this" / "send to the press" / "publish &lt;file&gt;"</span>
+      <!-- ========== THE HAND ========== -->
+      <div class="cap-head h-hand">
+        <img class="cap-seal" src="council-assets/seals/seal_hand.svg" alt="The Hand — seal" width="130" height="130" loading="lazy">
+        <div class="cap-head-txt">
+          <span class="eyebrow c-hand">The Hand · Execution</span>
+          <h3>The Hand's instruments</h3>
+          <p>The execution arm — every instrument here turns a decision into a finished thing: a published page, a security pass, a release. Read the summary to know what each one does; expand a card for the technical detail. Ordered by owner seat — Quill, Steward, Snag, Forge, then Garrick, the Hand's lead.</p>
+        </div>
+      </div>
+
+      <!-- Quill -->
+      <div class="instr i-hand" id="cap-press">
+        <span class="who">Owner: Quill · trigger — "press this" / "publish &lt;file&gt;"</span>
         <h4>Press</h4>
-        <p>Publishes to the open web at <code>schnubsy.github.io/press/&lt;name&gt;.html</code> — the portal auto-discovers, no index edit — in one of <b class="ink">two lanes</b>. <b class="ink">Lane A — single page:</b> one self-contained HTML file (inline CSS/JS, no build step) pushed with a single GitHub MCP <code>create_or_update_file</code> call to <code>schnubsy/press</code> on <code>main</code>, with the <code>sha</code> omitted for new files so an existing file fails safely instead of overwriting. Reliable below ~100&nbsp;KB per file. <b class="ink">Lane B — publication:</b> a main page plus linked subpages and/or image assets, routed as a whole through a single Claude Code work order (pull, add files, commit, push), because the single-call MCP path is unreliable above ~100&nbsp;KB and wasteful for asset batches.</p>
-        <p>Shared rules across both lanes: confirm it's a page, not an app; if the source is private, redact <b class="ink">every</b> file — no local paths, dossier locations, hardware, or environment-manual references, subpages and assets included. Filenames are <b class="ink">one to three words</b>, lowercase and hyphen-delimited (e.g. <code>divorce-prep-checklist.html</code>); pages sit at the repo root (<code>&lt;name&gt;.html</code>), assets in a root-level <code>&lt;name&gt;-assets/</code> directory, and subpages link relatively — the portal auto-discovers root-level pages only, so every subpage must be reachable from the main page. Verify byte-exact per file: local <code>git hash-object</code> must equal the blob SHA GitHub returns (never cross-compared against <code>shasum -a 1</code> — different schemes); Lane B verifies the main page's hash exactly, then the asset count plus one sampled asset hash. Recovery: a wedged Lane A MCP means a full Claude Desktop quit and relaunch, then push — never reroute to a relay; Lane B failures self-resolve inside the Code work order.</p>
-        <p><b class="ink">Display titles</b> decouple a card's name from its filename. Each page is self-describing — its human title lives in the page's own <code>&lt;title&gt;</code> and a <code>&lt;meta name="page-title"&gt;</code>, so the title travels with the file — and a lightweight root manifest, <code>pages.json</code> (<code>{"&lt;file&gt;.html":{"title":"…"}}</code>), lets the portal render every card title in a single fetch, falling back to a titleized filename (hyphens → spaces, title-cased) when a page is absent from the manifest. On publish the action <b class="ink">prompts for the display title</b>, offering the titleized filename as the default, then writes both the page (with <code>&lt;title&gt;</code> and <code>&lt;meta&gt;</code> set) and the <code>pages.json</code> entry — failing safe, since the titleize fallback still renders the card if the manifest write is missed.</p>
-        <p>The <b class="ink">archive action</b> retires a page off the portal without deleting it. <code>archive &lt;page&gt;</code> (bare slug) physically moves <code>&lt;page&gt;.html</code> and its <code>&lt;page&gt;-assets/</code> folder from the repo root into <code>archive/</code>, and moves its manifest entry from root <code>pages.json</code> into <code>archive/pages.json</code> — all in one commit, so relative asset links stay intact (root-absolute self-references are rewritten first, or the move aborts and flags). Because discovery is root-scoped, the page drops off the main portal automatically and surfaces in the <b class="ink">archive view</b> — the same auto-discovery logic pointed at <code>archive/</code>, reading <code>archive/pages.json</code> for titles. It runs as <b class="ink">Lane B</b> (a page + asset-folder + manifest move is a multi-file git change with no single-call MCP equivalent) and is fully reversible via <code>unarchive</code>.</p>
+        <p class="instr-sum">Publishes a page to the open web — the portal finds it automatically, no index to edit. Two lanes by size: one self-contained HTML file for small pages, or a full publication (subpages + assets) routed through a single build order.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Lanes — single page vs publication</summary>
+          <div class="facet-body">
+            <p>Publishes to the open web at <code>schnubsy.github.io/press/&lt;name&gt;.html</code> — the portal auto-discovers, no index edit — in one of <b class="ink">two lanes</b>. <b class="ink">Lane A — single page:</b> one self-contained HTML file (inline CSS/JS, no build step) pushed with a single GitHub MCP <code>create_or_update_file</code> call to <code>schnubsy/press</code> on <code>main</code>, with the <code>sha</code> omitted for new files so an existing file fails safely instead of overwriting. Reliable below ~100&nbsp;KB per file. <b class="ink">Lane B — publication:</b> a main page plus linked subpages and/or image assets, routed as a whole through a single Claude Code work order (pull, add files, commit, push), because the single-call MCP path is unreliable above ~100&nbsp;KB and wasteful for asset batches.</p>
+          </div>
+        </details>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Shared rules — redaction, filenames, verification</summary>
+          <div class="facet-body">
+            <p>Shared rules across both lanes: confirm it's a page, not an app; if the source is private, redact <b class="ink">every</b> file — no local paths, dossier locations, hardware, or environment-manual references, subpages and assets included. Filenames are <b class="ink">one to three words</b>, lowercase and hyphen-delimited (e.g. <code>divorce-prep-checklist.html</code>); pages sit at the repo root (<code>&lt;name&gt;.html</code>), assets in a root-level <code>&lt;name&gt;-assets/</code> directory, and subpages link relatively — the portal auto-discovers root-level pages only, so every subpage must be reachable from the main page. Verify byte-exact per file: local <code>git hash-object</code> must equal the blob SHA GitHub returns (never cross-compared against <code>shasum -a 1</code> — different schemes); Lane B verifies the main page's hash exactly, then the asset count plus one sampled asset hash. Recovery: a wedged Lane A MCP means a full Claude Desktop quit and relaunch, then push — never reroute to a relay; Lane B failures self-resolve inside the Code work order.</p>
+          </div>
+        </details>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Display titles</summary>
+          <div class="facet-body">
+            <p><b class="ink">Display titles</b> decouple a card's name from its filename. Each page is self-describing — its human title lives in the page's own <code>&lt;title&gt;</code> and a <code>&lt;meta name="page-title"&gt;</code>, so the title travels with the file — and a lightweight root manifest, <code>pages.json</code> (<code>{"&lt;file&gt;.html":{"title":"…"}}</code>), lets the portal render every card title in a single fetch, falling back to a titleized filename (hyphens → spaces, title-cased) when a page is absent from the manifest. On publish the action <b class="ink">prompts for the display title</b>, offering the titleized filename as the default, then writes both the page (with <code>&lt;title&gt;</code> and <code>&lt;meta&gt;</code> set) and the <code>pages.json</code> entry — failing safe, since the titleize fallback still renders the card if the manifest write is missed.</p>
+          </div>
+        </details>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Archive &amp; unarchive</summary>
+          <div class="facet-body">
+            <p>The <b class="ink">archive action</b> retires a page off the portal without deleting it. <code>archive &lt;page&gt;</code> (bare slug) physically moves <code>&lt;page&gt;.html</code> and its <code>&lt;page&gt;-assets/</code> folder from the repo root into <code>archive/</code>, and moves its manifest entry from root <code>pages.json</code> into <code>archive/pages.json</code> — all in one commit, so relative asset links stay intact (root-absolute self-references are rewritten first, or the move aborts and flags). Because discovery is root-scoped, the page drops off the main portal automatically and surfaces in the <b class="ink">archive view</b> — the same auto-discovery logic pointed at <code>archive/</code>, reading <code>archive/pages.json</code> for titles. It runs as <b class="ink">Lane B</b> (a page + asset-folder + manifest move is a multi-file git change with no single-call MCP equivalent) and is fully reversible via <code>unarchive</code>.</p>
+          </div>
+        </details>
+        <details class="facet enhance">
+          <summary><span class="fmk">&#9656;</span><span class="ftag">Enhancement</span>Press Live — DB-backed state</summary>
+          <div class="facet-body">
+            <p>Either press lane may be <b class="ink">DB-backed</b>: a published page can persist live, shared state to a dedicated database that exists purely as the backing store for press pages, shared with no other project. This <b class="ink">supersedes the earlier "press pages are static" framing</b> — they have carried state since the first checklist page shipped. It runs on a free tier, which means <b class="ink">no managed backups</b>; periodic dumps are the only mitigation, and the standing rule to move to a paid tier before any real client data still stands.</p>
+            <p><b class="ink">Open access is a deliberate posture, not an oversight.</b> The database runs with permissive row-level policies and <b class="ink">no authentication at this stage</b> — the Principal's explicit decision — so anyone holding a page's URL, and the publishable key embedded in it, can read <i>and</i> write that page's rows. That is intentional for personal, family, and non-sensitive pages. Anything private needs authentication raised <i>before</i> the page is built, never bolted on afterwards.</p>
+            <p><b class="ink">Schema convention — <code>press_&lt;shape&gt;</code>, page-keyed.</b> Tables are shared across pages and named for their <i>shape</i>, with every row keyed by a <code>page</code> column whose value is the filename stem — never a table per page, never one universal mega-schema. Reuse an existing shape; mint a new one only when nothing fits. Two are registered: <code>press_state</code> for simple checkboxes, and <code>press_tasks</code> for rich task rows, which carries an <code>extras</code> JSON column so page-specific fields cause no schema churn. Wiring is a REST call plus a <code>localStorage</code> mirror and a small sync-status pill — the cloud is the source of truth, the mirror gives instant paint and offline tolerance.</p>
+            <p><b class="ink">The channel split is load-bearing, and proven rather than theoretical.</b> Schema changes are applied from <b class="ink">Claude Desktop</b>, which holds a working management credential for this database; <b class="ink">Claude Code has none</b> — its connector is read-only and no password sits on disk. Conversely, data movement and field-for-field verification belong in <b class="ink">Claude Code</b>, which has real network egress and can run a scripted copy-and-verify, whereas a chat executes one query at a time and cannot stream rows between projects. Hand-building bulk inserts from a chat risks corrupting the very data being preserved — one such run caught a multi-byte character corruption that only a scripted verify would have surfaced. Do not route schema work to Code and expect it to succeed.</p>
+          </div>
+        </details>
       </div>
 
-      <div class="instr">
-        <span class="who">Owner: Quill · trigger — "make this page live" / any press page that needs saved state</span>
-        <h4>Press Live — DB-backed state</h4>
-        <p>Either press lane may be <b class="ink">DB-backed</b>: a published page can persist live, shared state to a dedicated database that exists purely as the backing store for press pages, shared with no other project. This <b class="ink">supersedes the earlier "press pages are static" framing</b> — they have carried state since the first checklist page shipped. It runs on a free tier, which means <b class="ink">no managed backups</b>; periodic dumps are the only mitigation, and the standing rule to move to a paid tier before any real client data still stands.</p>
-        <p><b class="ink">Open access is a deliberate posture, not an oversight.</b> The database runs with permissive row-level policies and <b class="ink">no authentication at this stage</b> — the Principal's explicit decision — so anyone holding a page's URL, and the publishable key embedded in it, can read <i>and</i> write that page's rows. That is intentional for personal, family, and non-sensitive pages. Anything private needs authentication raised <i>before</i> the page is built, never bolted on afterwards.</p>
-        <p><b class="ink">Schema convention — <code>press_&lt;shape&gt;</code>, page-keyed.</b> Tables are shared across pages and named for their <i>shape</i>, with every row keyed by a <code>page</code> column whose value is the filename stem — never a table per page, never one universal mega-schema. Reuse an existing shape; mint a new one only when nothing fits. Two are registered: <code>press_state</code> for simple checkboxes, and <code>press_tasks</code> for rich task rows, which carries an <code>extras</code> JSON column so page-specific fields cause no schema churn. Wiring is a REST call plus a <code>localStorage</code> mirror and a small sync-status pill — the cloud is the source of truth, the mirror gives instant paint and offline tolerance.</p>
-        <p><b class="ink">The channel split is load-bearing, and proven rather than theoretical.</b> Schema changes are applied from <b class="ink">Claude Desktop</b>, which holds a working management credential for this database; <b class="ink">Claude Code has none</b> — its connector is read-only and no password sits on disk. Conversely, data movement and field-for-field verification belong in <b class="ink">Claude Code</b>, which has real network egress and can run a scripted copy-and-verify, whereas a chat executes one query at a time and cannot stream rows between projects. Hand-building bulk inserts from a chat risks corrupting the very data being preserved — one such run caught a multi-byte character corruption that only a scripted verify would have surfaced. Do not route schema work to Code and expect it to succeed.</p>
-      </div>
-
-      <div class="instr">
-        <span class="who">Owner: Quill · trigger — "build me a deck" / "make slides" / "beautify these slides"</span>
-        <h4>Deck</h4>
-        <p>Produces a finished, nicely-designed <b class="ink"><code>.pptx</code></b> from the Principal's content, in one of <b class="ink">two input modes</b>: <b class="ink">compose</b> — text descriptions of the slides go in, Quill authors the deck from them — or <b class="ink">beautify</b> — existing slides supplied as either a <code>.pptx</code> on disk <i>or</i> pasted text and screenshots. This is the tool of record for slide decks; render remains the tool for standalone imagery, and Design (Canvas) for editable web and UI elements.</p>
-        <p><b class="ink">The Eye consults on look, by default.</b> Before building, the Eye offers <b class="ink">two or three quick look-options</b> — a one-line description each, such as Swiss and clean, editorial, or dark-mode executive — and the Principal's pick drives the deck's design tokens. This is the Eye running <b class="ink">LITE</b>, fast look-options rather than a full six-direction scored review. Saying <b class="ink">"skip Eye"</b> bypasses the directions entirely for a clean, professional default. The first-party <b class="ink">pptx skill</b> then builds the file, applying the chosen look, and the result is saved to <code>~/Documents/decks/</code>. Quill's discipline carries through: decision-first slide order, no padding.</p>
-        <p><b class="ink">Home surface is Cowork</b> — the pptx skill and code execution both live there, and a file-access connector alone cannot generate a <code>.pptx</code>, so a chat-only surface emits the Cowork instruction rather than pretending to build inline. Beautify <b class="ink">always writes a new file</b> and never mutates the source in place, so a bad pass leaves the original untouched and the build can simply be re-issued.</p>
-      </div>
-
-      <div class="instr">
+      <!-- Steward -->
+      <div class="instr i-hand" id="cap-audit">
         <span class="who">Owner: Steward · trigger — "sync the council" / "run the audit" / <code>/council:audit</code> / monthly cadence</span>
         <h4>Steward Audit</h4>
-        <p>The one command that keeps the plugin aligned and propagated across every surface — <b class="ink">detect → repair → propagate</b>, replacing the old multi-chat scramble. <b class="ink">Detect:</b> diffs <code>plugin.json</code> against the four version-stamp locations (guide nav badge + footer, and the <code>Version:</code> headers in <code>PERSONAS.md</code> and <code>CAPABILITIES.md</code>), flags annex entries newer than the guide's stamp, checks skills against the cast (<code>PERSONAS.md</code>) and against the instrument index (every registered instrument needs its one-line entry in <code>skills/hand/SKILL.md</code>), catches capabilities used but never registered, and detects a <b class="ink">stale bundle</b> — a <code>dist/council.plugin</code> older than the newest committed source means Cowork + web/mobile are out of date, whether <code>MANUAL.md</code> (the separate environment repo) trails the plugin's version, and whether the published Press copy of this guide (<code>schnubsy/press/council.html</code>) has fallen behind the generated version — a <b class="ink">stale Press copy</b> is flagged as drift, so a missed publish is caught next run. <b class="ink">Repair (automatable):</b> fixes all four stamps to match <code>plugin.json</code> and regenerates this guide from its sources. <b class="ink">Propagate:</b> on a chat surface it <i>emits</i> ready-to-paste Claude Code prompts to commit + push and to rebuild the bundle; run instead as the <code>/council:audit</code> command in Claude Code, those same steps <i>execute</i> directly. Either way you get a manual checklist for the two steps no tool can do — reloading <code>dist/council.plugin</code> in Desktop (the single action that refreshes Cowork and claude.ai web/mobile together) and a fresh-chat cast check to verify. It separates what it fixed itself from what waits on your manual reload. When a run regenerates this guide, propagate also <b class="ink">republishes it to the public Press copy</b> (<code>council.html</code>) — gated on the guide having actually changed, lane-aware by size, and hash-verified — so the published prospectus never lags the generated one. <b class="ink">Cadence:</b> monthly (co-timed with the log-hygiene job), not only symptom-driven — the monthly run drops an <code>audit-due</code> marker that a SessionStart hook surfaces <b class="ink">once per day</b> until you run the audit, which clears it on completion. Because the audit emits steps and needs your go for repairs and the reload, the hook only <i>reminds</i>, never runs it.</p>
+        <p class="instr-sum">The one command that keeps the plugin aligned across every surface — detect drift, repair what's automatable, propagate. Runs monthly, and nudges you once a day until it's run.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Detect — what it checks for drift</summary>
+          <div class="facet-body">
+            <p><b class="ink">Detect:</b> diffs <code>plugin.json</code> against the four version-stamp locations (guide nav badge + footer, and the <code>Version:</code> headers in <code>PERSONAS.md</code> and <code>CAPABILITIES.md</code>), flags annex entries newer than the guide's stamp, checks skills against the cast (<code>PERSONAS.md</code>) and against the instrument index (every registered instrument needs its one-line entry in <code>skills/hand/SKILL.md</code>), catches capabilities used but never registered, and detects a <b class="ink">stale bundle</b> — a <code>dist/council.plugin</code> older than the newest committed source means Cowork + web/mobile are out of date, whether <code>MANUAL.md</code> (the separate environment repo) trails the plugin's version, and whether the published Press copy of this guide (<code>schnubsy/press/council.html</code>) has fallen behind the generated version — a <b class="ink">stale Press copy</b> is flagged as drift, so a missed publish is caught next run.</p>
+          </div>
+        </details>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Repair &amp; propagate</summary>
+          <div class="facet-body">
+            <p><b class="ink">Repair (automatable):</b> fixes all four stamps to match <code>plugin.json</code> and regenerates this guide from its sources. <b class="ink">Propagate:</b> on a chat surface it <i>emits</i> ready-to-paste Claude Code prompts to commit + push and to rebuild the bundle; run instead as the <code>/council:audit</code> command in Claude Code, those same steps <i>execute</i> directly. Either way you get a manual checklist for the two steps no tool can do — reloading <code>dist/council.plugin</code> in Desktop (the single action that refreshes Cowork and claude.ai web/mobile together) and a fresh-chat cast check to verify. It separates what it fixed itself from what waits on your manual reload. When a run regenerates this guide, propagate also <b class="ink">republishes it to the public Press copy</b> (<code>council.html</code>) — gated on the guide having actually changed, lane-aware by size, and hash-verified — so the published prospectus never lags the generated one.</p>
+          </div>
+        </details>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Cadence &amp; the daily reminder</summary>
+          <div class="facet-body">
+            <p><b class="ink">Cadence:</b> monthly (co-timed with the log-hygiene job), not only symptom-driven — the monthly run drops an <code>audit-due</code> marker that a SessionStart hook surfaces <b class="ink">once per day</b> until you run the audit, which clears it on completion. Because the audit emits steps and needs your go for repairs and the reload, the hook only <i>reminds</i>, never runs it.</p>
+          </div>
+        </details>
       </div>
 
-      <div class="instr">
-        <span class="who">Owner: Garrick + Steward · trigger — "optimization review" / quarterly</span>
-        <h4>Optimization Review</h4>
-        <p>Audits the Principal's own configuration: saved memory, global preferences, and per-project instructions — hunting contradictions, stale rules, and project-local rules that deserve promotion to global (or the reverse). Delivers ready-to-paste diffs; memory edits are proposed and applied only on your confirmation.</p>
-      </div>
-
-      <div class="instr">
+      <div class="instr i-hand" id="cap-thrift">
         <span class="who">Owner: Steward · trigger — "run thrift" / "check my cloud costs"</span>
         <h4>Thrift</h4>
-        <p>Cloud-cost diagnosis and the safeguards that catch the next one. Reads month-to-date spend by resource, by service, and by day to separate a genuine leak from a step-change — then reads each suspect resource's live configuration before naming a cause. Its hardest-won rule: a budget that exists is not a budget that works. Scope and notification address are verified character-for-character, because a mistyped alert email fails silently and looks exactly like a working one. Read-only throughout; mutations only on an explicit go, one at a time, each reversible.</p>
+        <p class="instr-sum">Cloud-cost diagnosis and the guardrails that catch the next surprise. Reads spend by resource, service, and day, then checks each suspect's live config before naming a cause. Read-only; changes only on your go.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Full detail — and the budget rule</summary>
+          <div class="facet-body">
+            <p>Cloud-cost diagnosis and the safeguards that catch the next one. Reads month-to-date spend by resource, by service, and by day to separate a genuine leak from a step-change — then reads each suspect resource's live configuration before naming a cause. Its hardest-won rule: a budget that exists is not a budget that works. Scope and notification address are verified character-for-character, because a mistyped alert email fails silently and looks exactly like a working one. Read-only throughout; mutations only on an explicit go, one at a time, each reversible.</p>
+          </div>
+        </details>
       </div>
 
-      <div class="instr">
+      <div class="instr i-hand" id="cap-render">
         <span class="who">Owner: Steward · creative authority: Marlowe (Eye) · trigger — "run render" / "generate an image"</span>
         <h4>Render</h4>
-        <p>General-purpose image generation for the Council — portraits, emblems, illustrations, any asset the Principal needs. A vendored, pinned, Gemini-backed CLI does the work: text-to-image when there is no reference, and identity-preserving image-to-image when there is. The ownership is split by craft — Steward holds the mechanics (CLI wiring, the API secret sourced at call time, format conversion and transparency knockout, asset placement, guide sync); Marlowe, the Eye's lead, holds creative-direction authority over the house styles — framing, finish, lighting, presets.</p>
-        <p>Its first documented use minted this guide's own cast: each member's flat SVG was rendered into a photoreal portrait through a locked three-tier prompt — house style, the SVG identity anchor, and the persona's character read from <code>PERSONAS.md</code> — plus the three transparent gold seals. An instrument, never a persona; on Intel the CLI runs as a Claude Code work order, and heavy or bulk runs route there by default.</p>
-        <p><b class="ink">Cheap-first, always ask.</b> Before generating anything, render now asks the Principal to pick one of three modes — never a silent default, and full resolution is never the first step: <b class="ink">Small Batch</b> (several draft variations, each saved to its own file; pick a keeper, then render that exact prompt once as the final), <b class="ink">Iterate on One</b> (a single draft, refined across cheap prompt rounds, the final cut only on "make the final"), or <b class="ink">Bring a Reference</b> (an image already dialed in, passed straight through as an image-to-image reference — no drafting round). The pinned CLI exposes no resolution, seed, or batch flag, so thrift is measured in image count and in withholding the final render, not in a resolution knob — and a chosen draft is locked forward as a reference image via <code>--input-image</code>, not a replayed seed.</p>
+        <p class="instr-sum">General-purpose image generation — portraits, emblems, illustrations, any asset. Always asks you to pick a mode first and never jumps straight to a full-resolution render, to keep cost down.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>How it works — the engine &amp; ownership</summary>
+          <div class="facet-body">
+            <p>General-purpose image generation for the Council — portraits, emblems, illustrations, any asset the Principal needs. A vendored, pinned, Gemini-backed CLI does the work: text-to-image when there is no reference, and identity-preserving image-to-image when there is. The ownership is split by craft — Steward holds the mechanics (CLI wiring, the API secret sourced at call time, format conversion and transparency knockout, asset placement, guide sync); Marlowe, the Eye's lead, holds creative-direction authority over the house styles — framing, finish, lighting, presets.</p>
+            <p>Its first documented use minted this guide's own cast: each member's flat SVG was rendered into a photoreal portrait through a locked three-tier prompt — house style, the SVG identity anchor, and the persona's character read from <code>PERSONAS.md</code> — plus the three transparent gold seals. An instrument, never a persona; on Intel the CLI runs as a Claude Code work order, and heavy or bulk runs route there by default.</p>
+          </div>
+        </details>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>The three modes — cheap-first, always ask</summary>
+          <div class="facet-body">
+            <p><b class="ink">Cheap-first, always ask.</b> Before generating anything, render now asks the Principal to pick one of three modes — never a silent default, and full resolution is never the first step: <b class="ink">Small Batch</b> (several draft variations, each saved to its own file; pick a keeper, then render that exact prompt once as the final), <b class="ink">Iterate on One</b> (a single draft, refined across cheap prompt rounds, the final cut only on "make the final"), or <b class="ink">Bring a Reference</b> (an image already dialed in, passed straight through as an image-to-image reference — no drafting round). The pinned CLI exposes no resolution, seed, or batch flag, so thrift is measured in image count and in withholding the final render, not in a resolution knob — and a chosen draft is locked forward as a reference image via <code>--input-image</code>, not a replayed seed.</p>
+          </div>
+        </details>
       </div>
 
-      <div class="instr">
-        <span class="who">Owner: Marlowe Holm (Eye lead) · trigger — "put it on the canvas" / "tweak this in Design"</span>
-        <h4>Design (Canvas)</h4>
-        <p>The Claude-hosted design canvas — where an Eye engagement crosses from direction and scoring into building and tweaking editable visual and UI elements. It is Marlowe's instrument end to end: she directs the Principal <i>to</i> the canvas (the Desktop sidebar and <code>claude.ai/design</code> on web) and never operates it from inside a chat; it is not a mobile or in-chat tool. An instrument, never a persona — registered in the ledger like every other, though it lives under the Eye rather than a Hand seat.</p>
-        <p>Every engagement that routes to the canvas ends with a required <b class="ink">Canvas Brief</b> — a single paste-ready opening prompt Marlowe hands the Principal to drop into Design as its first message. One block, no assembly: the winning direction's name and intent, the design tokens and constraints that apply (or a pointer to the design system already seeded via <code>/design-sync</code> from Claude Code or an upload), the hard constraints (platform, responsiveness, accessibility), and what "done" means for the session. No canvas handoff is complete without it. Render, not Design, remains the tool of record for standalone imagery.</p>
-      </div>
-
-      <div class="instr">
-        <span class="who">Owner: Snag · trigger — "run the gauntlet" / "test this" / "QA this" / "find the gaps"</span>
-        <h4>Gauntlet</h4>
-        <p>The Council's <b class="ink">quality gate</b> — full test runs, solution review, gap analysis, regression checks, and general QC on anything the Hand produces, plus <b class="ink">data-quality validation</b>: schema checks, migration integrity, and whether the numbers survived the pipeline. It inventories what "done" claims to be, runs the project's suite end-to-end (writing targeted tests where none exist), reviews the solution against spec for gaps, edge cases, error paths, and regressions, then reports every defect with a severity flag (🔴 P0 / 🟡 watch / 🟢 fine), reproduction steps, and a verified-vs-inferred label — a clean run is an explicit green report, never silence. Read-only by nature: defect fixes route back to Forge as work orders, never patched in-line, and heavy runs execute in Claude Code, never in a Desktop chat. <b class="ink">Paired with sentry, it is the ship-gate</b> — nothing leaves Forge without both a gauntlet pass and a sentry pass; the two run as one gate.</p>
-      </div>
-
-      <div class="instr">
+      <div class="instr i-hand" id="cap-sentry">
         <span class="who">Owner: Steward · trigger — "run sentry" / "security pass"</span>
         <h4>Sentry</h4>
-        <p>The Council's <b class="ink">security review</b> — secrets scanning across the diff and config (no secret values ever echoed — first-4/last-4 only), a dependency and vulnerability audit, and a one-page <b class="ink">threat sketch</b> for any solution handling user or third-party data: what data is held, where it flows, who could reach it, and the blast radius. Findings are severity-flagged and verified-vs-inferred, every flagged secret or vuln pinned to an exact location, remediations named. Read-only diagnosis — remediations route to Forge as work orders; rotation follows Steward's standing secrets runbook. <b class="ink">Paired with gauntlet, it is the ship-gate</b> — nothing leaves Forge without both passes green.</p>
+        <p class="instr-sum">The Council's security review — secrets scanning, a dependency and vulnerability audit, and a one-page threat sketch for anything handling user data. Read-only; paired with Gauntlet it forms the ship-gate.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Full detail</summary>
+          <div class="facet-body">
+            <p>The Council's <b class="ink">security review</b> — secrets scanning across the diff and config (no secret values ever echoed — first-4/last-4 only), a dependency and vulnerability audit, and a one-page <b class="ink">threat sketch</b> for any solution handling user or third-party data: what data is held, where it flows, who could reach it, and the blast radius. Findings are severity-flagged and verified-vs-inferred, every flagged secret or vuln pinned to an exact location, remediations named. Read-only diagnosis — remediations route to Forge as work orders; rotation follows Steward's standing secrets runbook. <b class="ink">Paired with gauntlet, it is the ship-gate</b> — nothing leaves Forge without both passes green.</p>
+          </div>
+        </details>
       </div>
 
-      <div class="instr">
+      <!-- Snag -->
+      <div class="instr i-hand" id="cap-gauntlet">
+        <span class="who">Owner: Snag · trigger — "run the gauntlet" / "test this" / "QA this" / "find the gaps"</span>
+        <h4>Gauntlet</h4>
+        <p class="instr-sum">The Council's quality gate — full test runs, gap analysis, regression checks, and data-quality validation on anything the Hand builds. Every defect gets a severity flag and repro steps; a clean run is an explicit green.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Full detail</summary>
+          <div class="facet-body">
+            <p>The Council's <b class="ink">quality gate</b> — full test runs, solution review, gap analysis, regression checks, and general QC on anything the Hand produces, plus <b class="ink">data-quality validation</b>: schema checks, migration integrity, and whether the numbers survived the pipeline. It inventories what "done" claims to be, runs the project's suite end-to-end (writing targeted tests where none exist), reviews the solution against spec for gaps, edge cases, error paths, and regressions, then reports every defect with a severity flag (🔴 P0 / 🟡 watch / 🟢 fine), reproduction steps, and a verified-vs-inferred label — a clean run is an explicit green report, never silence. Read-only by nature: defect fixes route back to Forge as work orders, never patched in-line, and heavy runs execute in Claude Code, never in a Desktop chat. <b class="ink">Paired with sentry, it is the ship-gate</b> — nothing leaves Forge without both a gauntlet pass and a sentry pass; the two run as one gate.</p>
+          </div>
+        </details>
+      </div>
+
+      <!-- Forge -->
+      <div class="instr i-hand" id="cap-release">
         <span class="who">Owner: Forge · consulted: Quill (comms) + Pulse, Ear (market) · trigger — "release this" / "ship it" / "prepare the launch"</span>
         <h4>Release</h4>
-        <p>Any solution <b class="ink">launch</b> — the App Store is the heavy case, but equally web deploys and <b class="ink">non-software releases: physical products, books, classes</b>. Whatever the medium, it owns versioning, release notes, launch checklists, submission mechanics, and distribution. The sequence is fixed: a <b class="ink">gate check</b> (gauntlet + sentry both green) before anything proceeds, a version bump per the project's stamp discipline, release notes and launch comms in Quill's voice, market timing and positioning consulted through Pulse (cross-head, via the Ear), then the medium-specific mechanics — App Store submission, web deploy-and-verify, or a physical/course launch checklist. Every checklist names its rollback path <i>before</i> launch, not after; nothing irreversible ships without the Principal's explicit go.</p>
+        <p class="instr-sum">Any launch — App Store, web deploy, or a non-software release like a book or a class. Owns versioning, release notes, checklists, and distribution, and won't proceed until Gauntlet and Sentry are both green.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Full detail — the fixed sequence</summary>
+          <div class="facet-body">
+            <p>Any solution <b class="ink">launch</b> — the App Store is the heavy case, but equally web deploys and <b class="ink">non-software releases: physical products, books, classes</b>. Whatever the medium, it owns versioning, release notes, launch checklists, submission mechanics, and distribution. The sequence is fixed: a <b class="ink">gate check</b> (gauntlet + sentry both green) before anything proceeds, a version bump per the project's stamp discipline, release notes and launch comms in Quill's voice, market timing and positioning consulted through Pulse (cross-head, via the Ear), then the medium-specific mechanics — App Store submission, web deploy-and-verify, or a physical/course launch checklist. Every checklist names its rollback path <i>before</i> launch, not after; nothing irreversible ships without the Principal's explicit go.</p>
+          </div>
+        </details>
       </div>
 
-      <div class="instr">
-        <span class="who">Owner: Garrick (Hand lead) · trigger — "link in Elevate Ops" / "wire up the Ops link for &lt;project&gt;"</span>
-        <h4>Elevate Ops Link-In</h4>
-        <p>Loops a project's owner and its client reviewer(s) into a dedicated <b class="ink">Elevate Ops</b> workspace — time-and-expense logging, document upload, client collaboration — and surfaces a gated <b class="ink">"Elevate Ops ↗"</b> deep-link tab in the project's own webapp nav. Two halves that must not be confused: the workspace and its membership live <i>inside Elevate Ops</i> (a separate deployed workspace); the nav tab lives inside the project's webapp and is <b class="ink">navigation only</b>.</p>
-        <p><b class="ink">Reuse recipe, per project:</b> in Elevate Ops, create the workspace and add the owner plus that project's reviewer(s) as members — membership is per-workspace, so a client sees only the workspaces they belong to and only the owner sees all; capture the workspace project-id from its <code>{base}/projects/{project-id}</code> URL; then in the webapp set <code>ELEVATE_OPS_BASE_URL</code> and <code>ELEVATE_OPS_PROJECT_ID</code>, expose the joined URL as a template global, and add the gated tab — gate <code>is_admin</code> OR reviewer, new tab, outbound marker, never <code>active_nav</code> (reference implementation: fdd-agent commit <code>9d9eeb1</code>).</p>
-        <p><b class="ink">The load-bearing precondition — ✅ satisfied:</b> isolation is enforced <i>inside Elevate Ops</i> at the app and data layer — every data path through the <code>withProjectAccess</code> chokepoint, no service-role bypass — and <b class="ink">the nav link never provides it</b>. Before a <i>different</i> client is onboarded into Ops, that per-project isolation guarantee must hold in the Elevate Ops codebase; a rendered link proves nothing about cross-client data separation. <b class="ink">Verified 2026-07-19</b> by a full investigation of that codebase: <b class="ink">17 of 17 data paths guarded</b>, <b class="ink">47 of 47 live access checks passed</b> — including cross-project negatives on all three surfaces — verdict <b class="ink">sound</b>, and second-client onboarding is unblocked on the isolation front. It is <b class="ink">met, not retired</b>: the requirement stands, and any change to the access layer calls for a fresh verification.</p>
+      <!-- Garrick (Hand lead) -->
+      <div class="instr i-hand" id="cap-optimize">
+        <span class="who">Owner: Garrick + Steward · trigger — "optimization review" / quarterly</span>
+        <h4>Optimization Review</h4>
+        <p class="instr-sum">Audits your own configuration — saved memory, global preferences, per-project instructions — hunting contradictions, stale rules, and project-local rules that deserve promotion to global (or the reverse). Delivers ready-to-paste diffs; memory edits are applied only on your confirmation.</p>
       </div>
 
-      <div class="instr">
-        <span class="who">Owner: Garrick (Hand lead) · trigger — "onboard &lt;person&gt; to Ops" / "create an Ops project" / "add an instrument to Ops" / "deploy Elevate Ops"</span>
-        <h4>Elevate Ops Admin</h4>
-        <p>The <b class="ink">operator console for Elevate Ops itself</b> — project lifecycle, member onboarding and offboarding, instrument enablement, and image deploys. <b class="ink">Distinct from Link-In</b>, which only wires a project webapp's nav deep-link: this instrument operates the workspace. The console is <b class="ink">owner-only</b>, and a reviewer or unmapped visitor gets a deny that leaks no existence. The identity map is <b class="ink">data, not a code constant</b> — an unmapped identity is denied, and nothing auto-provisions outside the admin path.</p>
-        <p><b class="ink">The admin runbook.</b> <i>Create project</i> mints the project, the owner's membership, and default instrument rows drawn from the registry, so a newly registered instrument is included automatically. <i>Add member</i> has two modes: pick an existing profile, or provision a net-new person from a name — creating a profile record with no authentication user attached — and optionally wire their corporate login in the same form by supplying their directory object id; leave it blank to provision now and wire the login later, reading the id from the tenant's sign-in logs after they attempt a first sign-in. <i>Remove member</i> drops a membership while leaving the person's profile and login mapping intact, since they may belong to other projects; the owner cannot be removed. <i>Delete project</i> hard-deletes the project, every dependent row, and its file storage — it demands a typed-name confirmation, refuses a project the operator does not own, and is <b class="ink">irreversible</b>, so a safety export always runs first.</p>
-        <p><b class="ink">Elevate Ops is a workspace made of instruments</b> — documents, time and expenses, and whatever comes next — and the catalog is deliberately split in two halves. <b class="ink">Code</b> declares what <i>exists</i>: a registry whose entries derive the legal key type, so an unregistered key is a compile error at every call site. <b class="ink">Data</b> declares what is <i>on</i> per project, toggled from the console — enabling a feature for a client is an admin toggle, never a redeploy, and disabling <b class="ink">deletes nothing</b>: it flips one boolean, and flipping it back restores access untouched.</p>
-        <p><b class="ink">The rule that matters: hiding a nav card is never the barrier.</b> The workspace renders only enabled instruments, but every page, route handler <i>and</i> server action re-asserts enablement server-side on every request, after membership — so a real member who hand-types a disabled instrument's URL, or replays its action, is denied. Access is fail-closed twice over: no enablement row means disabled rather than "unknown, allow", and an unregistered key grants nothing. Every data path runs through a single access chokepoint with deny-by-default, unforgeable contexts, and the privileged client that bypasses row-level security is constructed once and importable only from inside that chokepoint — enforced by two static guards chained into the ship gate.</p>
-        <p><b class="ink">Adding a new instrument is a decree, not a design session.</b> The entry carries a deterministic <b class="ink">twelve-step BUILD-AN-INSTRUMENT template</b> a future Hand session executes verbatim: choose the key, register it in code, add tables only if genuinely needed (row-level security enabled with no policies, so only the privileged client reaches them), write the data module with a context assertion as its first statement and every query hard-scoped to the project, add the gated section and server actions, backfill existing projects deliberately rather than bulk-enabling behind the Principal's back, then the three <b class="ink">non-negotiable tests</b> — a positive, a reviewer-denied, and a disabled-denied check that flips the instrument off, proves a real member is refused, and restores it in a <code>finally</code>. Any stateful test against a live project must provably self-restore and be re-runnable. Then the ship gate, the deploy, and registration of the capability here.</p>
+      <div class="instr i-hand" id="cap-elevate-ops">
+        <span class="who">Owner: Garrick (Hand lead) · trigger — "link in Elevate Ops" / "onboard &lt;person&gt; to Ops" / "create an Ops project"</span>
+        <h4>Elevate Ops</h4>
+        <p class="instr-sum">Loops a project's owner and client reviewers into a dedicated Elevate Ops workspace — time &amp; expense logging, document upload, client collaboration — and surfaces a gated link to it in the project's own app. Two parts: Link-In wires the nav link; Admin runs the workspace.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Link-In — wiring the nav deep-link</summary>
+          <div class="facet-body">
+            <p>Loops a project's owner and its client reviewer(s) into a dedicated <b class="ink">Elevate Ops</b> workspace — time-and-expense logging, document upload, client collaboration — and surfaces a gated <b class="ink">"Elevate Ops ↗"</b> deep-link tab in the project's own webapp nav. Two halves that must not be confused: the workspace and its membership live <i>inside Elevate Ops</i> (a separate deployed workspace); the nav tab lives inside the project's webapp and is <b class="ink">navigation only</b>.</p>
+            <p><b class="ink">Reuse recipe, per project:</b> in Elevate Ops, create the workspace and add the owner plus that project's reviewer(s) as members — membership is per-workspace, so a client sees only the workspaces they belong to and only the owner sees all; capture the workspace project-id from its <code>{base}/projects/{project-id}</code> URL; then in the webapp set <code>ELEVATE_OPS_BASE_URL</code> and <code>ELEVATE_OPS_PROJECT_ID</code>, expose the joined URL as a template global, and add the gated tab — gate <code>is_admin</code> OR reviewer, new tab, outbound marker, never <code>active_nav</code> (reference implementation: fdd-agent commit <code>9d9eeb1</code>).</p>
+            <p><b class="ink">The load-bearing precondition — ✅ satisfied:</b> isolation is enforced <i>inside Elevate Ops</i> at the app and data layer — every data path through the <code>withProjectAccess</code> chokepoint, no service-role bypass — and <b class="ink">the nav link never provides it</b>. Before a <i>different</i> client is onboarded into Ops, that per-project isolation guarantee must hold in the Elevate Ops codebase; a rendered link proves nothing about cross-client data separation. <b class="ink">Verified 2026-07-19</b> by a full investigation of that codebase: <b class="ink">17 of 17 data paths guarded</b>, <b class="ink">47 of 47 live access checks passed</b> — including cross-project negatives on all three surfaces — verdict <b class="ink">sound</b>, and second-client onboarding is unblocked on the isolation front. It is <b class="ink">met, not retired</b>: the requirement stands, and any change to the access layer calls for a fresh verification.</p>
+          </div>
+        </details>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Admin — the operator console</summary>
+          <div class="facet-body">
+            <p>The <b class="ink">operator console for Elevate Ops itself</b> — project lifecycle, member onboarding and offboarding, instrument enablement, and image deploys. <b class="ink">Distinct from Link-In</b>, which only wires a project webapp's nav deep-link: this instrument operates the workspace. The console is <b class="ink">owner-only</b>, and a reviewer or unmapped visitor gets a deny that leaks no existence. The identity map is <b class="ink">data, not a code constant</b> — an unmapped identity is denied, and nothing auto-provisions outside the admin path.</p>
+            <p><b class="ink">The admin runbook.</b> <i>Create project</i> mints the project, the owner's membership, and default instrument rows drawn from the registry, so a newly registered instrument is included automatically. <i>Add member</i> has two modes: pick an existing profile, or provision a net-new person from a name — creating a profile record with no authentication user attached — and optionally wire their corporate login in the same form by supplying their directory object id; leave it blank to provision now and wire the login later, reading the id from the tenant's sign-in logs after they attempt a first sign-in. <i>Remove member</i> drops a membership while leaving the person's profile and login mapping intact, since they may belong to other projects; the owner cannot be removed. <i>Delete project</i> hard-deletes the project, every dependent row, and its file storage — it demands a typed-name confirmation, refuses a project the operator does not own, and is <b class="ink">irreversible</b>, so a safety export always runs first.</p>
+            <p><b class="ink">Elevate Ops is a workspace made of instruments</b> — documents, time and expenses, and whatever comes next — and the catalog is deliberately split in two halves. <b class="ink">Code</b> declares what <i>exists</i>: a registry whose entries derive the legal key type, so an unregistered key is a compile error at every call site. <b class="ink">Data</b> declares what is <i>on</i> per project, toggled from the console — enabling a feature for a client is an admin toggle, never a redeploy, and disabling <b class="ink">deletes nothing</b>: it flips one boolean, and flipping it back restores access untouched.</p>
+            <p><b class="ink">The rule that matters: hiding a nav card is never the barrier.</b> The workspace renders only enabled instruments, but every page, route handler <i>and</i> server action re-asserts enablement server-side on every request, after membership — so a real member who hand-types a disabled instrument's URL, or replays its action, is denied. Access is fail-closed twice over: no enablement row means disabled rather than "unknown, allow", and an unregistered key grants nothing. Every data path runs through a single access chokepoint with deny-by-default, unforgeable contexts, and the privileged client that bypasses row-level security is constructed once and importable only from inside that chokepoint — enforced by two static guards chained into the ship gate.</p>
+            <p><b class="ink">Adding a new instrument is a decree, not a design session.</b> The entry carries a deterministic <b class="ink">twelve-step BUILD-AN-INSTRUMENT template</b> a future Hand session executes verbatim: choose the key, register it in code, add tables only if genuinely needed (row-level security enabled with no policies, so only the privileged client reaches them), write the data module with a context assertion as its first statement and every query hard-scoped to the project, add the gated section and server actions, backfill existing projects deliberately rather than bulk-enabling behind the Principal's back, then the three <b class="ink">non-negotiable tests</b> — a positive, a reviewer-denied, and a disabled-denied check that flips the instrument off, proves a real member is refused, and restores it in a <code>finally</code>. Any stateful test against a live project must provably self-restore and be re-runnable. Then the ship gate, the deploy, and registration of the capability here.</p>
+          </div>
+        </details>
       </div>
+
+      <!-- ========== THE EYE ========== -->
+      <div class="cap-head h-eye">
+        <img class="cap-seal" src="council-assets/seals/seal_eye.svg" alt="The Eye — seal" width="130" height="130" loading="lazy">
+        <div class="cap-head-txt">
+          <span class="eyebrow c-eye">The Eye · Design</span>
+          <h3>The Eye's instruments</h3>
+          <p>Design and UX. Two instruments — the <b class="ink">Deck</b> (finished slide decks from your content, Quill consulted on narrative) and the <b class="ink">Canvas</b>, where an Eye engagement crosses from choosing a direction into building and tweaking real, editable UI.</p>
+        </div>
+      </div>
+
+      <div class="instr i-eye" id="cap-deck">
+        <span class="who">Owner: Marlowe (Eye lead) · Quill consulted · trigger — "build me a deck" / "make slides" / "beautify these slides"</span>
+        <h4>Deck</h4>
+        <p class="instr-sum">Turns your content into a finished, well-designed <code>.pptx</code> — either composed from slide descriptions, or by beautifying slides you already have. The Eye offers a couple of quick look-options first, unless you say "skip Eye".</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Input modes, the Eye consult &amp; where it runs</summary>
+          <div class="facet-body">
+            <p>Produces a finished, nicely-designed <b class="ink"><code>.pptx</code></b> from the Principal's content, in one of <b class="ink">two input modes</b>: <b class="ink">compose</b> — text descriptions of the slides go in, the Eye authors the deck (pptx skill), Quill consulted on slide narrative — or <b class="ink">beautify</b> — existing slides supplied as either a <code>.pptx</code> on disk <i>or</i> pasted text and screenshots. This is the tool of record for slide decks; render remains the tool for standalone imagery, and Design (Canvas) for editable web and UI elements.</p>
+            <p><b class="ink">The Eye consults on look, by default.</b> Before building, the Eye offers <b class="ink">two or three quick look-options</b> — a one-line description each, such as Swiss and clean, editorial, or dark-mode executive — and the Principal's pick drives the deck's design tokens. This is the Eye running <b class="ink">LITE</b>, fast look-options rather than a full six-direction scored review. Saying <b class="ink">"skip Eye"</b> bypasses the directions entirely for a clean, professional default. The first-party <b class="ink">pptx skill</b> then builds the file, applying the chosen look, and the result is saved to <code>~/Documents/decks/</code>. Quill's slide discipline carries through (consulted): decision-first order, no padding.</p>
+            <p><b class="ink">Home surface is Cowork</b> — the pptx skill and code execution both live there, and a file-access connector alone cannot generate a <code>.pptx</code>, so a chat-only surface emits the Cowork instruction rather than pretending to build inline. Beautify <b class="ink">always writes a new file</b> and never mutates the source in place, so a bad pass leaves the original untouched and the build can simply be re-issued.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="instr i-eye" id="cap-design">
+        <span class="who">Owner: Marlowe Holm (Eye lead) · trigger — "put it on the canvas" / "tweak this in Design"</span>
+        <h4>Design (Canvas)</h4>
+        <p class="instr-sum">The Claude-hosted design canvas — where an Eye engagement crosses from direction and scoring into building and tweaking editable UI. Marlowe directs you to the canvas and hands you a paste-ready Canvas Brief to open it.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>How it works &amp; the required Canvas Brief</summary>
+          <div class="facet-body">
+            <p>The Claude-hosted design canvas — where an Eye engagement crosses from direction and scoring into building and tweaking editable visual and UI elements. It is Marlowe's instrument end to end: she directs the Principal <i>to</i> the canvas (the Desktop sidebar and <code>claude.ai/design</code> on web) and never operates it from inside a chat; it is not a mobile or in-chat tool. An instrument, never a persona — registered in the ledger like every other, though it lives under the Eye rather than a Hand seat.</p>
+            <p>Every engagement that routes to the canvas ends with a required <b class="ink">Canvas Brief</b> — a single paste-ready opening prompt Marlowe hands the Principal to drop into Design as its first message. One block, no assembly: the winning direction's name and intent, the design tokens and constraints that apply (or a pointer to the design system already seeded via <code>/design-sync</code> from Claude Code or an upload), the hard constraints (platform, responsiveness, accessibility), and what "done" means for the session. No canvas handoff is complete without it. Render, not Design, remains the tool of record for standalone imagery.</p>
+          </div>
+        </details>
+      </div>
+
+      <!-- ========== THE EAR ========== -->
+      <div class="cap-head h-ear">
+        <img class="cap-seal" src="council-assets/seals/seal_ear.svg" alt="The Ear — seal" width="130" height="130" loading="lazy">
+        <div class="cap-head-txt">
+          <span class="eyebrow c-ear">The Ear · Counsel</span>
+          <h3>The Ear's instruments</h3>
+          <p>Counsel — structured challenge, not parallel agreement. The Ear works live, in session today, and it's consulted across heads too (for example Pulse on market timing during a Release). Standing instruments are on the way.</p>
+        </div>
+      </div>
+
+      <div class="instr i-ear" id="cap-ear-soon">
+        <span class="who">The Ear · in development</span>
+        <h4>Coming soon</h4>
+        <p class="instr-sum">The Ear's first standing instruments are being minted. For now its work is live and in-session — gut-checks, full-council debate, pre-mortems, and red-teaming — summoned with <code>the ear</code> or <code>convene the council</code>. Registered Ear instruments will appear here as they land.</p>
+      </div>
+
 
       <h3 style="font-size:23px;margin:38px 0 4px">Adding an instrument — the standing process</h3>
       <ol class="steps">
@@ -1225,7 +1393,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       <h3 style="font-size:22px;margin:32px 0 2px">Beyond software — uses you may not have considered</h3>
       <div class="grid2">
         <div class="play"><span class="who">Ear · full council or gut-check</span><h4>Life &amp; career decisions</h4><p>Role changes, big purchases, relocation, the M5 build config. Sentinel runs a regret pre-mortem, Soul weighs what it means, Proof demands the actual numbers, Premise asks whether you're even deciding the right question.</p></div>
-        <div class="play"><span class="who">Quill + Sentinel + Premise</span><h4>Stakeholder work at the day job</h4><p>Quill drafts the steering-committee deck or workstream status that ends the meeting early. Before a go-live: Sentinel pre-mortems the cutover. Before a metrics review: Premise interrogates whether the KPI measures the goal.</p></div>
+        <div class="play"><span class="who">Quill + Sentinel + Premise</span><h4>Stakeholder work at the day job</h4><p>Quill drafts the steering-committee narrative or workstream status that ends the meeting early. Before a go-live: Sentinel pre-mortems the cutover. Before a metrics review: Premise interrogates whether the KPI measures the goal.</p></div>
         <div class="play"><span class="who">Eye · full or lite</span><h4>Physical space</h4><p>The Eye's remit includes built space — a home-office redesign, a workshop layout, landscaping. Six directions on a room work exactly like six directions on a screen.</p></div>
         <div class="play"><span class="who">Ear · critique mode</span><h4>Writing, talks, and arguments</h4><p>Hand the Council a draft essay, a presentation, or a position you intend to defend. CRITIQUE evaluates it against what good looks like; the cross-examination finds the weak joint before your audience does.</p></div>
         <div class="play"><span class="who">Owl, with Proof on call</span><h4>Learning a field fast</h4><p>"What is already known about X?" is Owl's entire purpose — prior art, established frameworks, where the settled ground ends and the open questions begin. Proof flags which claims in the field are actually well-evidenced.</p></div>
@@ -1297,7 +1465,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
             <tr>
               <td><span class="cmd">the hand — build me…</span><span class="alias">also: "council hand"</span></td>
               <td class="who">Garrick's seats: Forge, Quill, Steward</td>
-              <td>The finished artifact — work order, spec, deck, memo, or maintenance runbook.</td>
+              <td>The finished artifact — work order, spec, memo, or maintenance runbook.</td>
             </tr>
             <tr>
               <td><span class="cmd">kickoff / new project</span></td>
