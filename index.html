@@ -26,6 +26,9 @@
    R3.6: smaller "new" pill (icon barely nudged); bulbs back to the smooth
    fade wave with the EXTERNAL halo alone riding the brightest bulb; archive
    card ~50% taller for visual separation.
+   R3.7: archive content vertically centered; crescent replaced with Feather
+   moon per icon rules; count indicator enlarged; bulb glow removed entirely
+   (pure fade wave); "new" pill 30% smaller, glyph-only.
    ============================================================================ */
 :root {
   /* palette */
@@ -69,11 +72,9 @@
                      radial-gradient(440px 320px at 92% 20%, rgba(231,166,199,.2), transparent 60%);
   --tw-aurora-opacity:.6; --tw-aurora-cycle:32s; --tw-aurora-ease:ease-in-out;
   --tw-aurora-opacity-lo:.5; --tw-aurora-opacity-hi:.72; --tw-aurora-drift:-2%;
-  /* retimed marquee bulbs — R3.5: glow spikes briefly so only ONE bulb is lit */
+  /* retimed marquee bulbs — R3.7: pure brightness/color wave, no glow */
   --tw-bulb-color:#8E7BE8;
   --tw-bulb-peak-color:#B7A8FF;
-  --tw-bulb-glow-floor:0 0 0 0 rgba(142,123,232,0);
-  --tw-bulb-glow-peak:0 0 14px 4px rgba(142,123,232,.95), 0 0 30px 10px rgba(231,166,199,.4);
   --tw-bulb-size:6px; --tw-bulb-gap:10px;
   --tw-bulb-cycle:3.5s; --tw-bulb-stagger:.25s; --tw-bulb-ease:ease-in-out;
   --tw-bulb-opacity-floor:.55; --tw-bulb-opacity-peak:1; --tw-bulb-opacity-reduced:.7;
@@ -85,21 +86,14 @@
   0%   { opacity: var(--tw-aurora-opacity-lo, .5);  transform: translateY(0); }
   100% { opacity: var(--tw-aurora-opacity-hi, .72); transform: translateY(var(--tw-aurora-drift, -2%)); }
 }
-/* R3.6 — brightness/color keep the smooth wave (keyed at 0/50/100 only);
-   the EXTERNAL glow spikes for ~7% of the cycle (46-54%), so trailing bulbs
-   fade slowly while only the single brightest bulb throws a halo */
+/* R3.7 — pure brightness/color wave, no external glow */
 @keyframes twBulb {
-  0%, 100% { opacity: var(--tw-bulb-opacity-floor, .55); background: var(--tw-bulb-color);
-             box-shadow: var(--tw-bulb-glow-floor); }
-  46%      { box-shadow: var(--tw-bulb-glow-floor); }
-  50%      { opacity: var(--tw-bulb-opacity-peak, 1); background: var(--tw-bulb-peak-color);
-             box-shadow: var(--tw-bulb-glow-peak); }
-  54%      { box-shadow: var(--tw-bulb-glow-floor); }
+  0%, 100% { opacity: var(--tw-bulb-opacity-floor, .55); background: var(--tw-bulb-color); }
+  50%      { opacity: var(--tw-bulb-opacity-peak, 1); background: var(--tw-bulb-peak-color); }
 }
 @media (prefers-reduced-motion: reduce) {
   .tw-aurora { animation: none !important; }
-  .tw-bulbs i { animation: none !important; opacity: var(--tw-bulb-opacity-reduced, .7) !important;
-    box-shadow: var(--tw-bulb-glow-floor) !important; }
+  .tw-bulbs i { animation: none !important; opacity: var(--tw-bulb-opacity-reduced, .7) !important; }
 }
 
 /* ── component CSS ─────────────────────────────────────────────────────────*/
@@ -113,7 +107,7 @@ body.tw-page{background:var(--tw-stage-gradient);color:var(--tw-ink);font-family
 /* THE GRAFT — retimed marquee bulbs */
 .tw-bulbs{display:flex;gap:var(--tw-bulb-gap);justify-content:center;margin-bottom:18px}
 .tw-bulbs i{width:var(--tw-bulb-size);height:var(--tw-bulb-size);border-radius:50%;background:var(--tw-bulb-color);
-  box-shadow:var(--tw-bulb-glow-floor);opacity:var(--tw-bulb-opacity-floor);
+  opacity:var(--tw-bulb-opacity-floor);
   animation:twBulb var(--tw-bulb-cycle) var(--tw-bulb-ease) infinite}
 .tw-bulbs i:nth-child(2){animation-delay:calc(var(--tw-bulb-stagger)*1)}
 .tw-bulbs i:nth-child(3){animation-delay:calc(var(--tw-bulb-stagger)*2)}
@@ -148,10 +142,9 @@ h2.tw-title .lit{background:none;-webkit-background-clip:initial;background-clip
 .tw-card h3{font-family:var(--tw-font-display);font-weight:400;font-size:var(--tw-card-title);margin-bottom:3px;line-height:1.3}
 .tw-card .fn{font-family:var(--tw-font-meta);font-size:10.5px;color:var(--tw-muted)}
 /* R3.1/R3.4 — labeled "new" pill, flush right, sunrise = early/new */
-.tw-card .newpill{position:absolute;right:12px;top:12px;font-family:var(--tw-font-meta);font-size:8.5px;
-  letter-spacing:.1em;text-transform:uppercase;color:var(--tw-violet);
-  display:inline-flex;align-items:center;gap:4px;
-  border:1px solid rgba(142,123,232,.45);padding:3px 7px;border-radius:var(--tw-radius-pill);
+.tw-card .newpill{position:absolute;right:12px;top:12px;color:var(--tw-violet);
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid rgba(142,123,232,.45);padding:3px;border-radius:50%;
   background:rgba(142,123,232,.12);box-shadow:0 0 12px rgba(142,123,232,.35)}
 .tw-card .newpill svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
@@ -174,12 +167,15 @@ h2.tw-title .lit{background:none;-webkit-background-clip:initial;background-clip
   box-shadow:0 18px 50px rgba(10,7,22,.7), 0 0 0 1px rgba(142,123,232,.45);will-change:transform}
 body.tw-sorting{cursor:grabbing}
 body.tw-sorting .tw-card{transition:none}
-.tw-arch{position:relative;display:block;text-decoration:none;color:inherit;padding:24px 22px;margin-top:6px;min-height:168px;
+.tw-arch{position:relative;display:flex;flex-direction:column;justify-content:center;text-decoration:none;color:inherit;padding:24px 22px;margin-top:6px;min-height:168px;
   border-radius:var(--tw-radius-card);
   background:radial-gradient(140px 90px at 88% 30%, rgba(142,123,232,.16), transparent 70%),var(--tw-glass-arch);
   border:1px solid var(--tw-border-arch);cursor:pointer;transition:var(--tw-transition-card);overflow:hidden}
-.tw-arch::after{content:"";position:absolute;right:22px;top:20px;width:26px;height:26px;border-radius:50%;
-  box-shadow:inset -7px -3px 0 0 rgba(142,123,232,.6)}
+.tw-arch .aicon{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;color:var(--tw-icon);pointer-events:none;
+  filter:drop-shadow(0 0 6px rgba(142,123,232,.45))}
+.tw-arch .aicon svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
 .tw-arch:hover{border-color:rgba(142,123,232,.5)}
 .tw-arch:focus-visible{outline:2px solid var(--tw-violet);outline-offset:3px}
 .tw-arch.drop-hot{border-color:var(--tw-violet);box-shadow:0 0 0 2px rgba(142,123,232,.4), var(--tw-shadow-card-hover);
@@ -188,7 +184,7 @@ body.tw-sorting .tw-card{transition:none}
   color:var(--tw-violet);margin-bottom:6px}
 .tw-arch h3{font-family:var(--tw-font-display);font-weight:400;font-size:var(--tw-arch-title)}
 .tw-arch p{font-size:12px;color:var(--tw-muted);margin-top:6px;max-width:280px}
-.tw-arch .ct{position:absolute;right:22px;bottom:18px;font-family:var(--tw-font-meta);font-size:var(--tw-meta);
+.tw-arch .ct{position:absolute;right:22px;bottom:16px;font-family:var(--tw-font-meta);font-size:14px;font-weight:700;
   color:var(--tw-violet)}
 .tw-hint{font-size:10.5px;color:var(--tw-faint);margin-top:6px;text-align:center}
 .tw-auto{font-size:10.5px;color:var(--tw-faint);margin-top:16px;text-align:center}
@@ -244,7 +240,8 @@ const ICONS={
   'Checklist': '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
   'Notes':     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
   'Guide':     '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
-  'Page':      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>'
+  'Page':      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>',
+  'Archive':   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
 };
 const iconFor=k=>ICONS[k]||ICONS['Page'];
 /* R3.4/R3.5 — Feather "sunrise" inside the "new" pill (early morning sun = fresh) */
@@ -331,14 +328,14 @@ function titleOf(f, man){ return (man&&man[f]&&man[f].title) ? man[f].title : ti
 function cardHTML(f, man, isNewest){
   const k = kicker(f);
   return `<a class="tw-card${isNewest?' has-new':''}" href="${esc(f)}" data-file="${esc(f)}" draggable="false">`+
-    `${isNewest?`<span class="newpill">${SUNRISE} new</span>`:''}`+
+    `${isNewest?`<span class="newpill" title="new" aria-label="new">${SUNRISE}</span>`:''}`+
     `<div class="k">${esc(k)}</div><h3>${esc(titleOf(f,man))}</h3>`+
     `<div class="fn">${esc(f)}</div><span class="ticon">${iconFor(k)}</span></a>`;
 }
 function archiveCardHTML(count){
   return `<a class="tw-arch" id="archTarget" href="./?view=archive" draggable="false"><div class="k">▤ The Archive</div>`+
     `<h3>Resting pages</h3><p>Everything eased off the marquee — nothing lost, just at rest.</p>`+
-    `<span class="ct">${count} →</span></a>`;
+    `<span class="ct">${count} →</span><span class="aicon">${ICONS['Archive']}</span></a>`;
 }
 const bulbsHTML=`<div class="tw-bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>`;
 const skelHTML=`${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>loading…</span></div>`+
