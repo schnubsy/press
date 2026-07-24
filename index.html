@@ -19,6 +19,9 @@
    New in R3: drag-to-sort cards, drag-into-archive, restore-from-archive —
    shared state synced via Supabase press_portal (same project as kayley's
    press_state), localStorage mirror for instant paint / offline.
+   R3.1: newest marker is a labeled "✦ new" pill (was an unlabeled glow dot);
+   dragging shows a floating ghost card under the pointer with a dashed
+   placeholder marking the drop slot.
    ============================================================================ */
 :root {
   /* palette */
@@ -118,14 +121,23 @@ h2.tw-title{font-family:var(--tw-font-display);font-weight:500;font-size:var(--t
   color:var(--tw-rose);margin-bottom:6px}
 .tw-card h3{font-family:var(--tw-font-display);font-weight:400;font-size:var(--tw-card-title);margin-bottom:3px;line-height:1.3}
 .tw-card .fn{font-family:var(--tw-font-meta);font-size:10.5px;color:var(--tw-muted)}
-.tw-card .glowdot{position:absolute;right:20px;top:20px;width:10px;height:10px;border-radius:50%;
-  background:var(--tw-violet);box-shadow:var(--tw-glow-dot)}
+/* R3.1 — labeled "new" pill (replaces the unlabeled glow dot) */
+.tw-card .newpill{position:absolute;right:46px;top:16px;font-family:var(--tw-font-meta);font-size:9px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--tw-violet);
+  border:1px solid rgba(142,123,232,.45);padding:4px 9px;border-radius:var(--tw-radius-pill);
+  background:rgba(142,123,232,.12);box-shadow:0 0 12px rgba(142,123,232,.35)}
 /* R3 — drag grip */
 .tw-card .grip{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:34px;height:44px;
   display:flex;align-items:center;justify-content:center;color:var(--tw-faint);font-size:15px;letter-spacing:1px;
   cursor:grab;touch-action:none;border-radius:12px;user-select:none;-webkit-user-select:none}
 .tw-card .grip:hover{color:var(--tw-violet);background:rgba(142,123,232,.1)}
-.tw-card.dragging{opacity:.45;box-shadow:var(--tw-shadow-card-hover);border-color:rgba(142,123,232,.55)}
+/* R3.1 — while dragging: the in-list card becomes a dashed placeholder… */
+.tw-card.dragging{opacity:.3;border-style:dashed;border-color:rgba(142,123,232,.5);box-shadow:none;
+  background:rgba(142,123,232,.05)}
+.tw-card.dragging>*{visibility:hidden}
+/* …and a ghost clone rides under the pointer */
+.tw-drag-ghost{position:fixed;left:0;top:0;z-index:999;pointer-events:none;margin:0;opacity:.96;
+  box-shadow:0 18px 50px rgba(10,7,22,.7), 0 0 0 1px rgba(142,123,232,.45);will-change:transform}
 body.tw-sorting{cursor:grabbing}
 body.tw-sorting .tw-card{transition:none}
 .tw-arch{position:relative;display:block;text-decoration:none;color:inherit;padding:20px 22px;margin-top:6px;
@@ -265,7 +277,7 @@ function applyState(files, man){ // user sort first, then default order for the 
 function titleOf(f, man){ return (man&&man[f]&&man[f].title) ? man[f].title : titleize(f); }
 
 function cardHTML(f, man, isNewest){
-  return `<a class="tw-card" href="${esc(f)}" data-file="${esc(f)}">${isNewest?'<span class="glowdot"></span>':''}`+
+  return `<a class="tw-card" href="${esc(f)}" data-file="${esc(f)}">${isNewest?'<span class="newpill">✦ new</span>':''}`+
     `<div class="k">${esc(kicker(f))}</div><h3>${esc(titleOf(f,man))}</h3>`+
     `<div class="fn">${esc(f)}</div><span class="grip" aria-label="Drag to sort or archive">⠿</span></a>`;
 }
@@ -305,7 +317,9 @@ function paintMarquee(root, files, man, physArchiveCount, stale){
   wireDrag(root);
 }
 
-/* ══ R3 — drag to sort / drag into archive (pointer events: mouse + touch) ══ */
+/* ══ R3 — drag to sort / drag into archive (pointer events: mouse + touch) ══
+   R3.1: a ghost clone of the card follows the pointer; the in-list card
+   becomes a dashed placeholder that shows where the card will land. */
 function wireDrag(root){
   const grid = root;
   root.querySelectorAll('.tw-card .grip').forEach(grip=>{
@@ -315,11 +329,20 @@ function wireDrag(root){
       const card = grip.closest('.tw-card');
       const arch = document.getElementById('archTarget');
       let overArch = false, moved = false;
+      /* ghost clone rides under the pointer */
+      const rect = card.getBoundingClientRect();
+      const dx = e.clientX - rect.left, dy = e.clientY - rect.top;
+      const ghost = card.cloneNode(true);
+      ghost.classList.remove('dragging'); ghost.classList.add('tw-drag-ghost');
+      ghost.style.width = rect.width + 'px';
+      ghost.style.transform = `translate(${rect.left}px, ${rect.top}px) rotate(1.5deg)`;
+      document.body.appendChild(ghost);
       card.classList.add('dragging'); document.body.classList.add('tw-sorting');
       grip.setPointerCapture(e.pointerId);
       const onMove = ev=>{
         moved = true;
         const y = ev.clientY, x = ev.clientX;
+        ghost.style.transform = `translate(${x - dx}px, ${y - dy}px) rotate(1.5deg)`;
         /* archive drop target */
         if(arch){
           const r = arch.getBoundingClientRect();
@@ -327,7 +350,7 @@ function wireDrag(root){
           arch.classList.toggle('drop-hot', overArch);
         }
         if(overArch) return;
-        /* reorder among sibling cards */
+        /* reorder among sibling cards — the dashed placeholder moves to the drop slot */
         const cards = Array.from(grid.querySelectorAll('.tw-card')).filter(c=>c!==card);
         for(const c of cards){
           const r = c.getBoundingClientRect();
@@ -341,6 +364,7 @@ function wireDrag(root){
         window.removeEventListener('pointermove', onMove);
         window.removeEventListener('pointerup', onUp);
         window.removeEventListener('pointercancel', onUp);
+        ghost.remove();
         card.classList.remove('dragging'); document.body.classList.remove('tw-sorting');
         if(arch) arch.classList.remove('drop-hot');
         if(overArch){
