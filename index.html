@@ -22,6 +22,9 @@
    R3.1: newest marker is a labeled "✦ new" pill (was an unlabeled glow dot);
    dragging shows a floating ghost card under the pointer with a dashed
    placeholder marking the drop slot.
+   R3.2: masthead enlarged (clamp → 32px); "lit." rendered white with a glow;
+   "at dusk" flavor → "on the pad" (launchpad-aligned); bulb animation 2×
+   faster (7s/.5s → 3.5s/.25s).
    ============================================================================ */
 :root {
   /* palette */
@@ -46,10 +49,11 @@
   --tw-font-display: 'Unbounded', 'Inter', system-ui, sans-serif;
   --tw-font-body:    'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --tw-font-meta:    'Space Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-  --tw-h1:24px; --tw-card-title:15.5px; --tw-arch-title:15px;
+  --tw-h1:clamp(25px, 7vw, 32px); --tw-card-title:15.5px; --tw-arch-title:15px;
   --tw-body:14.5px; --tw-body-sm:13px; --tw-meta:11px;
   --tw-eyebrow:10px; --tw-track-eyebrow:.16em;
   --tw-grad-title: linear-gradient(92deg, #B7A8FF, #E7A6C7);
+  --tw-glow-lit: 0 0 14px rgba(237,231,242,.65), 0 0 30px rgba(142,123,232,.75), 0 0 52px rgba(231,166,199,.4);
   /* radii */
   --tw-radius-card:22px; --tw-radius-pill:100px;
   /* blur */
@@ -63,11 +67,11 @@
                      radial-gradient(440px 320px at 92% 20%, rgba(231,166,199,.2), transparent 60%);
   --tw-aurora-opacity:.6; --tw-aurora-cycle:32s; --tw-aurora-ease:ease-in-out;
   --tw-aurora-opacity-lo:.5; --tw-aurora-opacity-hi:.72; --tw-aurora-drift:-2%;
-  /* retimed marquee bulbs (Calm tempo) */
+  /* retimed marquee bulbs — R3.2: tempo doubled */
   --tw-bulb-color:#8E7BE8;
   --tw-bulb-glow:0 0 10px rgba(142,123,232,.6);
   --tw-bulb-size:6px; --tw-bulb-gap:10px;
-  --tw-bulb-cycle:7s; --tw-bulb-stagger:.5s; --tw-bulb-ease:ease-in-out;
+  --tw-bulb-cycle:3.5s; --tw-bulb-stagger:.25s; --tw-bulb-ease:ease-in-out;
   --tw-bulb-opacity-floor:.55; --tw-bulb-opacity-peak:.9; --tw-bulb-opacity-reduced:.7;
   /* transitions */
   --tw-transition-card:.24s;
@@ -108,8 +112,11 @@ body.tw-page{background:var(--tw-stage-gradient);color:var(--tw-ink);font-family
 .tw-top b{color:var(--tw-ink);font-weight:600;letter-spacing:.02em}
 .tw-stale{font-size:10.5px;color:var(--tw-faint);margin-top:6px}
 h2.tw-title{font-family:var(--tw-font-display);font-weight:500;font-size:var(--tw-h1);line-height:1.22;
-  letter-spacing:.005em;margin:18px 0 6px;
+  letter-spacing:.005em;margin:18px 0 8px;
   background:var(--tw-grad-title);-webkit-background-clip:text;background-clip:text;color:transparent}
+/* R3.2 — "lit." breaks out of the gradient: white, glowing */
+h2.tw-title .lit{background:none;-webkit-background-clip:initial;background-clip:initial;
+  color:#fff;-webkit-text-fill-color:#fff;text-shadow:var(--tw-glow-lit)}
 .tw-dek{font-size:var(--tw-body-sm);color:var(--tw-muted);max-width:380px;margin-bottom:20px}
 .tw-card{position:relative;display:block;text-decoration:none;color:inherit;padding:18px 48px 18px 20px;margin-bottom:14px;
   border-radius:var(--tw-radius-card);background:var(--tw-glass-card);border:1px solid var(--tw-border-card);
@@ -199,9 +206,10 @@ const kicker=f=>{for(const[re,k]of KICKERS)if(re.test(f))return k;return 'Page';
 const titleize=f=>f.replace(/\.html$/,'').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-/* ── R3 copy — describes the tool, not the design ── */
-const COPY_TITLE='Your launchpad, lit.';
+/* ── R3 copy — describes the tool, not the design. "lit." glows (R3.2) ── */
+const COPY_TITLE='Your launchpad, <span class="lit">lit.</span>';
 const COPY_DEK='A fast landing pad for shared pages, checklists, and tools — grab what you need and go.';
+const COPY_FLAVOR='on the pad';
 
 async function ghJson(url){const r=await fetch(url,{headers:{'Accept':'application/vnd.github+json'}});
   if(!r.ok)throw new Error('GitHub '+r.status);return r.json();}
@@ -295,7 +303,7 @@ function paintMarquee(root, files, man, physArchiveCount, stale){
   const {ordered, newest, stateArchived} = applyState(files, man);
   const archiveCount = physArchiveCount + stateArchived.length;
   if(!ordered.length){
-    root.innerHTML = `${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>at dusk</span></div>`+
+    root.innerHTML = `${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>${COPY_FLAVOR}</span></div>`+
       `<h2 class="tw-title">${COPY_TITLE}</h2>`+
       `<div class="tw-empty"><h3>Nothing on the marquee yet</h3>`+
       `<p>Published pages appear here automatically.</p></div>`+
@@ -307,7 +315,7 @@ function paintMarquee(root, files, man, physArchiveCount, stale){
     ? `<div class="tw-stale">showing your last saved list — GitHub was unreachable</div>` : '';
   root.innerHTML =
     `${bulbsHTML}`+
-    `<div class="tw-top"><span>The <b>Marquee</b></span><span>${ordered.length} showing · at dusk</span></div>`+
+    `<div class="tw-top"><span>The <b>Marquee</b></span><span>${ordered.length} showing · ${COPY_FLAVOR}</span></div>`+
     staleNote +
     `<h2 class="tw-title">${COPY_TITLE}</h2>`+
     `<div class="tw-dek">${COPY_DEK}</div>`+
@@ -376,7 +384,7 @@ function wireDrag(root){
           const ct = arch.querySelector('.ct');
           if(ct) ct.textContent = (parseInt(ct.textContent)+1||1)+' →';
           const top = grid.querySelector('.tw-top span:last-child');
-          if(top) top.textContent = grid.querySelectorAll('.tw-card').length+' showing · at dusk';
+          if(top) top.textContent = grid.querySelectorAll('.tw-card').length+' showing · '+COPY_FLAVOR;
           flash('Moved to the archive');
         } else if(moved){
           PSTATE.order = Array.from(grid.querySelectorAll('.tw-card')).map(c=>c.dataset.file);
@@ -404,7 +412,7 @@ async function renderMarquee(root){
     if(cached && Array.isArray(cached.files) && cached.files.length){
       paintMarquee(root, cached.files, cached.man, 0, true);
     } else {
-      root.innerHTML = `${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>at dusk</span></div>`+
+      root.innerHTML = `${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>${COPY_FLAVOR}</span></div>`+
         `<h2 class="tw-title">${COPY_TITLE}</h2>`+
         `<div class="tw-error"><h3>Couldn't reach the marquee</h3>`+
         `<p>GitHub didn't answer — this usually clears in a minute.</p>`+
