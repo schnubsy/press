@@ -13,18 +13,14 @@
    PRESS — TWILIGHT CUT · R3 "Neon masthead" refinement
    Base: Direction 04 "Twilight Cut" (Calm) + Premiere's retimed bulbs.
    R3 (Neon · Mr. Neon, winner): display face Bodoni Moda → Unbounded across
-   the whole page (masthead + card titles + archive + states) for legibility;
-   masthead carries a violet→rose gradient fill; opening copy rewritten to
-   describe the tool, not the design.
-   New in R3: drag-to-sort cards, drag-into-archive, restore-from-archive —
-   shared state synced via Supabase press_portal (same project as kayley's
-   press_state), localStorage mirror for instant paint / offline.
-   R3.1: newest marker is a labeled "✦ new" pill (was an unlabeled glow dot);
-   dragging shows a floating ghost card under the pointer with a dashed
-   placeholder marking the drop slot.
-   R3.2: masthead enlarged (clamp → 32px); "lit." rendered white with a glow;
-   "at dusk" flavor → "on the pad" (launchpad-aligned); bulb animation 2×
-   faster (7s/.5s → 3.5s/.25s).
+   the whole page; gradient masthead; opening copy describes the tool.
+   R3 features: drag-to-sort, drag-into-archive, restore-from-archive — shared
+   state via Supabase press_portal + localStorage mirror.
+   R3.1: labeled "✦ new" pill; drag ghost + dashed placeholder.
+   R3.2: larger masthead; glowing white "lit."; "on the pad" flavor; bulbs 2×.
+   R3.3: grip removed — LONG-PRESS a card (~400ms) to lift and drag, tap to
+   open (standard mobile pattern; scroll-safe, iOS callout suppressed).
+   Page-type icons (right, centered) from the ICON REGISTRY below.
    ============================================================================ */
 :root {
   /* palette */
@@ -118,10 +114,11 @@ h2.tw-title{font-family:var(--tw-font-display);font-weight:500;font-size:var(--t
 h2.tw-title .lit{background:none;-webkit-background-clip:initial;background-clip:initial;
   color:#fff;-webkit-text-fill-color:#fff;text-shadow:var(--tw-glow-lit)}
 .tw-dek{font-size:var(--tw-body-sm);color:var(--tw-muted);max-width:380px;margin-bottom:20px}
-.tw-card{position:relative;display:block;text-decoration:none;color:inherit;padding:18px 48px 18px 20px;margin-bottom:14px;
+.tw-card{position:relative;display:block;text-decoration:none;color:inherit;padding:18px 52px 18px 20px;margin-bottom:14px;
   border-radius:var(--tw-radius-card);background:var(--tw-glass-card);border:1px solid var(--tw-border-card);
   backdrop-filter:blur(var(--tw-blur-card));-webkit-backdrop-filter:blur(var(--tw-blur-card));
-  box-shadow:var(--tw-shadow-card);cursor:pointer;transition:var(--tw-transition-card)}
+  box-shadow:var(--tw-shadow-card);cursor:pointer;transition:var(--tw-transition-card);
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 .tw-card:hover{box-shadow:var(--tw-shadow-card-hover);border-color:rgba(142,123,232,.4)}
 .tw-card:focus-visible{outline:2px solid var(--tw-violet);outline-offset:3px}
 .tw-card .k{font-size:var(--tw-eyebrow);letter-spacing:var(--tw-track-eyebrow);text-transform:uppercase;
@@ -129,15 +126,19 @@ h2.tw-title .lit{background:none;-webkit-background-clip:initial;background-clip
 .tw-card h3{font-family:var(--tw-font-display);font-weight:400;font-size:var(--tw-card-title);margin-bottom:3px;line-height:1.3}
 .tw-card .fn{font-family:var(--tw-font-meta);font-size:10.5px;color:var(--tw-muted)}
 /* R3.1 — labeled "new" pill (replaces the unlabeled glow dot) */
-.tw-card .newpill{position:absolute;right:46px;top:16px;font-family:var(--tw-font-meta);font-size:9px;
+.tw-card .newpill{position:absolute;right:16px;top:16px;font-family:var(--tw-font-meta);font-size:9px;
   letter-spacing:.12em;text-transform:uppercase;color:var(--tw-violet);
   border:1px solid rgba(142,123,232,.45);padding:4px 9px;border-radius:var(--tw-radius-pill);
   background:rgba(142,123,232,.12);box-shadow:0 0 12px rgba(142,123,232,.35)}
-/* R3 — drag grip */
-.tw-card .grip{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:34px;height:44px;
-  display:flex;align-items:center;justify-content:center;color:var(--tw-faint);font-size:15px;letter-spacing:1px;
-  cursor:grab;touch-action:none;border-radius:12px;user-select:none;-webkit-user-select:none}
-.tw-card .grip:hover{color:var(--tw-violet);background:rgba(142,123,232,.1)}
+/* R3.3 — page-type icon (right, vertically centered; see ICON REGISTRY in JS) */
+.tw-card .ticon{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:24px;height:24px;
+  display:flex;align-items:center;justify-content:center;color:var(--tw-faint);pointer-events:none}
+.tw-card .ticon svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;
+  stroke-linecap:round;stroke-linejoin:round}
+.tw-card:hover .ticon{color:var(--tw-violet)}
+.tw-card .newpill ~ .ticon, .tw-card.has-new .ticon{top:auto;bottom:16px;transform:none}
+/* R3.3 — long-press arming cue… */
+.tw-card.pressing{transform:scale(.985);border-color:rgba(142,123,232,.45)}
 /* R3.1 — while dragging: the in-list card becomes a dashed placeholder… */
 .tw-card.dragging{opacity:.3;border-style:dashed;border-color:rgba(142,123,232,.5);box-shadow:none;
   background:rgba(142,123,232,.05)}
@@ -205,6 +206,19 @@ const KICKERS=[[/council/,'Reference'],[/checklist|prep|kayley|eagle/,'Checklist
 const kicker=f=>{for(const[re,k]of KICKERS)if(re.test(f))return k;return 'Page';};
 const titleize=f=>f.replace(/\.html$/,'').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ══ ICON REGISTRY (R3.3) — Hand instrument note ═════════════════════════════
+   Page-type → icon, rendered right-center on each card. When a new page type
+   is added to KICKERS above, add a matching minimal line-SVG here (24 viewBox,
+   stroke currentColor, no fills). Unknown types fall back to 'Page'. */
+const ICONS={
+  'Reference': '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5H6.5A2.5 2.5 0 0 0 4 21V5.5z"/><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20"/></svg>',
+  'Checklist': '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4.5"/><path d="M8.4 12.2l2.5 2.5 4.7-5.2"/></svg>',
+  'Notes':     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/><path d="M9 13.5h6.5M9 16.5h4.5"/></svg>',
+  'Guide':     '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M15.4 8.6l-2.1 4.7-4.7 2.1 2.1-4.7z"/></svg>',
+  'Page':      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/></svg>'
+};
+const iconFor=k=>ICONS[k]||ICONS['Page'];
 
 /* ── R3 copy — describes the tool, not the design. "lit." glows (R3.2) ── */
 const COPY_TITLE='Your launchpad, <span class="lit">lit.</span>';
@@ -285,9 +299,11 @@ function applyState(files, man){ // user sort first, then default order for the 
 function titleOf(f, man){ return (man&&man[f]&&man[f].title) ? man[f].title : titleize(f); }
 
 function cardHTML(f, man, isNewest){
-  return `<a class="tw-card" href="${esc(f)}" data-file="${esc(f)}">${isNewest?'<span class="newpill">✦ new</span>':''}`+
-    `<div class="k">${esc(kicker(f))}</div><h3>${esc(titleOf(f,man))}</h3>`+
-    `<div class="fn">${esc(f)}</div><span class="grip" aria-label="Drag to sort or archive">⠿</span></a>`;
+  const k = kicker(f);
+  return `<a class="tw-card${isNewest?' has-new':''}" href="${esc(f)}" data-file="${esc(f)}">`+
+    `${isNewest?'<span class="newpill">✦ new</span>':''}`+
+    `<div class="k">${esc(k)}</div><h3>${esc(titleOf(f,man))}</h3>`+
+    `<div class="fn">${esc(f)}</div><span class="ticon">${iconFor(k)}</span></a>`;
 }
 function archiveCardHTML(count){
   return `<a class="tw-arch" id="archTarget" href="./?view=archive"><div class="k">▤ The Archive</div>`+
@@ -320,45 +336,70 @@ function paintMarquee(root, files, man, physArchiveCount, stale){
     `<h2 class="tw-title">${COPY_TITLE}</h2>`+
     `<div class="tw-dek">${COPY_DEK}</div>`+
     cards + archiveCardHTML(archiveCount) +
-    `<div class="tw-hint">⠿ drag to sort · drop on the archive to tuck a page away</div>`+
+    `<div class="tw-hint">hold a card to lift it · drop on the archive to tuck it away</div>`+
     `<div class="tw-auto">↻ auto-listed from the repository root</div>`;
   wireDrag(root);
 }
 
-/* ══ R3 — drag to sort / drag into archive (pointer events: mouse + touch) ══
-   R3.1: a ghost clone of the card follows the pointer; the in-list card
-   becomes a dashed placeholder that shows where the card will land. */
+/* ══ R3.3 — LONG-PRESS drag (mouse + touch, pointer events) ═════════════════
+   Hold ~400ms to lift (card "arms" with a slight press first). Tap = open.
+   Move >10px before the hold completes = scroll/click intent, drag cancelled.
+   While dragging: ghost clone follows the pointer, dashed placeholder marks
+   the drop slot; scroll is blocked via a non-passive touchmove listener. */
+const HOLD_MS=400, SLOP=10;
 function wireDrag(root){
   const grid = root;
-  root.querySelectorAll('.tw-card .grip').forEach(grip=>{
-    grip.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); });
-    grip.addEventListener('pointerdown', e=>{
-      e.preventDefault(); e.stopPropagation();
-      const card = grip.closest('.tw-card');
+  root.querySelectorAll('.tw-card').forEach(card=>{
+    let suppressClick=false;
+    card.addEventListener('click', e=>{
+      if(suppressClick){ e.preventDefault(); e.stopPropagation(); suppressClick=false; }
+    });
+    card.addEventListener('contextmenu', e=>{
+      if(card.classList.contains('pressing')||card.classList.contains('dragging')) e.preventDefault();
+    });
+    card.addEventListener('pointerdown', e=>{
+      if(typeof e.button==='number' && e.button!==0) return;
       const arch = document.getElementById('archTarget');
-      let overArch = false, moved = false;
-      /* ghost clone rides under the pointer */
-      const rect = card.getBoundingClientRect();
-      const dx = e.clientX - rect.left, dy = e.clientY - rect.top;
-      const ghost = card.cloneNode(true);
-      ghost.classList.remove('dragging'); ghost.classList.add('tw-drag-ghost');
-      ghost.style.width = rect.width + 'px';
-      ghost.style.transform = `translate(${rect.left}px, ${rect.top}px) rotate(1.5deg)`;
-      document.body.appendChild(ghost);
-      card.classList.add('dragging'); document.body.classList.add('tw-sorting');
-      grip.setPointerCapture(e.pointerId);
+      const sx=e.clientX, sy=e.clientY;
+      let dragActive=false, overArch=false, moved=false, ghost=null, dx=0, dy=0;
+      card.classList.add('pressing');
+      const blockScroll = ev=>{ if(dragActive) ev.preventDefault(); };
+      document.addEventListener('touchmove', blockScroll, {passive:false});
+      const timer = setTimeout(()=>{
+        dragActive=true; suppressClick=true;
+        const rect = card.getBoundingClientRect();
+        dx = sx-rect.left; dy = sy-rect.top;
+        ghost = card.cloneNode(true);
+        ghost.classList.remove('pressing','dragging'); ghost.classList.add('tw-drag-ghost');
+        ghost.style.width = rect.width+'px';
+        ghost.style.transform = `translate(${rect.left}px, ${rect.top}px) rotate(1.5deg)`;
+        document.body.appendChild(ghost);
+        card.classList.remove('pressing'); card.classList.add('dragging');
+        document.body.classList.add('tw-sorting');
+        try{ card.setPointerCapture(e.pointerId); }catch(_){}
+      }, HOLD_MS);
+      const teardown = ()=>{
+        clearTimeout(timer);
+        card.classList.remove('pressing');
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('pointercancel', onCancel);
+        document.removeEventListener('touchmove', blockScroll);
+      };
       const onMove = ev=>{
-        moved = true;
-        const y = ev.clientY, x = ev.clientX;
-        ghost.style.transform = `translate(${x - dx}px, ${y - dy}px) rotate(1.5deg)`;
-        /* archive drop target */
+        if(!dragActive){
+          if(Math.hypot(ev.clientX-sx, ev.clientY-sy)>SLOP) teardown(); // scroll / normal click
+          return;
+        }
+        moved=true;
+        const x=ev.clientX, y=ev.clientY;
+        ghost.style.transform = `translate(${x-dx}px, ${y-dy}px) rotate(1.5deg)`;
         if(arch){
           const r = arch.getBoundingClientRect();
           overArch = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
           arch.classList.toggle('drop-hot', overArch);
         }
         if(overArch) return;
-        /* reorder among sibling cards — the dashed placeholder moves to the drop slot */
         const cards = Array.from(grid.querySelectorAll('.tw-card')).filter(c=>c!==card);
         for(const c of cards){
           const r = c.getBoundingClientRect();
@@ -367,14 +408,16 @@ function wireDrag(root){
         if(cards.length){ const last=cards[cards.length-1];
           if(last.nextElementSibling!==card) grid.insertBefore(card, last.nextElementSibling); }
       };
-      const onUp = ()=>{
-        grip.releasePointerCapture(e.pointerId);
-        window.removeEventListener('pointermove', onMove);
-        window.removeEventListener('pointerup', onUp);
-        window.removeEventListener('pointercancel', onUp);
-        ghost.remove();
+      const finishDrag = ()=>{
+        if(ghost) ghost.remove();
         card.classList.remove('dragging'); document.body.classList.remove('tw-sorting');
         if(arch) arch.classList.remove('drop-hot');
+      };
+      const onUp = ()=>{
+        const wasDrag = dragActive;
+        teardown();
+        if(!wasDrag) return; // plain tap → click proceeds and opens the page
+        finishDrag();
         if(overArch){
           const f = card.dataset.file;
           if(!PSTATE.archived.includes(f)) PSTATE.archived.push(f);
@@ -391,9 +434,10 @@ function wireDrag(root){
           pLocalSave(); pCloudSave();
         }
       };
+      const onCancel = ()=>{ const wasDrag=dragActive; teardown(); if(wasDrag) finishDrag(); };
       window.addEventListener('pointermove', onMove);
       window.addEventListener('pointerup', onUp);
-      window.addEventListener('pointercancel', onUp);
+      window.addEventListener('pointercancel', onCancel);
     });
   });
 }
@@ -445,9 +489,10 @@ async function renderArchive(root){
       `<div class="k">${esc(kicker(f))}</div><h3>${esc(titleOf(f,rootMan))}</h3>`+
       `<div class="fn">${esc(f)}</div>`+
       `<span class="tw-restore" role="button" tabindex="0" aria-label="Move back to the launchpad">↩ launchpad</span></a>`).join('');
-    const physCards = [...physFiles].sort().map(f=>`<a class="tw-card" href="archive/${esc(f)}">`+
-      `<div class="k">${esc(kicker(f))}</div><h3>${esc(titleOf(f,physMan))}</h3>`+
-      `<div class="fn">archive/${esc(f)}</div></a>`).join('');
+    const physCards = [...physFiles].sort().map(f=>{const k=kicker(f);
+      return `<a class="tw-card" href="archive/${esc(f)}">`+
+      `<div class="k">${esc(k)}</div><h3>${esc(titleOf(f,physMan))}</h3>`+
+      `<div class="fn">archive/${esc(f)}</div><span class="ticon">${iconFor(k)}</span></a>`;}).join('');
     root.innerHTML = back +
       `<div class="tw-top"><span>The <b>Archive</b></span><span>${total} resting</span></div>`+
       `<h2 class="tw-title">At rest.</h2>`+
