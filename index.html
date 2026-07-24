@@ -37,6 +37,8 @@
    subtle aurora blobs for background texture.
    R3.10: archive counter moved inline after the card title — "Resting
    pages → N", counter sized to match the title text.
+   R3.11: archive moon -15% and aligned to right:14px (matches .ticon), same
+   stroke-width:2 so it reads as the same Feather set.
    ============================================================================ */
 :root {
   /* palette */
@@ -188,10 +190,10 @@ body.tw-sorting .tw-card{transition:none}
   border-radius:var(--tw-radius-card);
   background:radial-gradient(140px 90px at 88% 30%, rgba(142,123,232,.16), transparent 70%),var(--tw-glass-arch);
   border:1px solid var(--tw-border-arch);cursor:pointer;transition:var(--tw-transition-card);overflow:hidden}
-.tw-arch .aicon{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:40px;height:40px;
+.tw-arch .aicon{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:34px;height:34px;
   display:flex;align-items:center;justify-content:center;color:var(--tw-icon);pointer-events:none;
   filter:drop-shadow(0 0 6px rgba(142,123,232,.45))}
-.tw-arch .aicon svg{width:36px;height:36px;stroke:currentColor;fill:none;stroke-width:2;
+.tw-arch .aicon svg{width:31px;height:31px;stroke:currentColor;fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
 .tw-arch:hover{border-color:rgba(142,123,232,.5)}
 .tw-arch:focus-visible{outline:2px solid var(--tw-violet);outline-offset:3px}
