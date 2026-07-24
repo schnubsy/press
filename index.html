@@ -12,15 +12,14 @@
 /* ============================================================================
    PRESS — TWILIGHT CUT · R3 "Neon masthead" refinement
    Base: Direction 04 "Twilight Cut" (Calm) + Premiere's retimed bulbs.
-   R3 (Neon · Mr. Neon, winner): display face Bodoni Moda → Unbounded across
-   the whole page; gradient masthead; opening copy describes the tool.
-   R3 features: drag-to-sort, drag-into-archive, restore-from-archive — shared
-   state via Supabase press_portal + localStorage mirror.
-   R3.1: labeled "✦ new" pill; drag ghost + dashed placeholder.
-   R3.2: larger masthead; glowing white "lit."; "on the pad" flavor; bulbs 2×.
-   R3.3: grip removed — LONG-PRESS a card (~400ms) to lift and drag, tap to
-   open (standard mobile pattern; scroll-safe, iOS callout suppressed).
-   Page-type icons (right, centered) from the ICON REGISTRY below.
+   R3 (Neon · Mr. Neon, winner): Unbounded display face page-wide; gradient
+   masthead; copy describes the tool. Drag-to-sort / drag-into-archive /
+   restore with shared Supabase press_portal state + localStorage mirror.
+   R3.1: "✦ new" pill; drag ghost + dashed placeholder.
+   R3.2: larger masthead; glowing "lit."; "on the pad"; bulbs 2×.
+   R3.3: long-press to drag, tap to open; page-type ICON REGISTRY.
+   R3.4: cards spring up on hover; chase glow rides the brightest bulb;
+   "new" pill flush right with a sunrise icon (early/new).
    ============================================================================ */
 :root {
   /* palette */
@@ -63,26 +62,32 @@
                      radial-gradient(440px 320px at 92% 20%, rgba(231,166,199,.2), transparent 60%);
   --tw-aurora-opacity:.6; --tw-aurora-cycle:32s; --tw-aurora-ease:ease-in-out;
   --tw-aurora-opacity-lo:.5; --tw-aurora-opacity-hi:.72; --tw-aurora-drift:-2%;
-  /* retimed marquee bulbs — R3.2: tempo doubled */
+  /* retimed marquee bulbs — R3.2 tempo doubled; R3.4 chase glow at peak */
   --tw-bulb-color:#8E7BE8;
-  --tw-bulb-glow:0 0 10px rgba(142,123,232,.6);
+  --tw-bulb-peak-color:#B7A8FF;
+  --tw-bulb-glow-floor:0 0 8px rgba(142,123,232,.35);
+  --tw-bulb-glow-peak:0 0 14px 4px rgba(142,123,232,.9), 0 0 28px 9px rgba(231,166,199,.35);
   --tw-bulb-size:6px; --tw-bulb-gap:10px;
   --tw-bulb-cycle:3.5s; --tw-bulb-stagger:.25s; --tw-bulb-ease:ease-in-out;
-  --tw-bulb-opacity-floor:.55; --tw-bulb-opacity-peak:.9; --tw-bulb-opacity-reduced:.7;
-  /* transitions */
+  --tw-bulb-opacity-floor:.55; --tw-bulb-opacity-peak:1; --tw-bulb-opacity-reduced:.7;
+  /* transitions — R3.4: transform gets a springy overshoot curve */
   --tw-transition-card:.24s;
+  --tw-spring:cubic-bezier(.34,1.56,.64,1);
 }
 @keyframes twBreath {
   0%   { opacity: var(--tw-aurora-opacity-lo, .5);  transform: translateY(0); }
   100% { opacity: var(--tw-aurora-opacity-hi, .72); transform: translateY(var(--tw-aurora-drift, -2%)); }
 }
 @keyframes twBulb {
-  0%, 100% { opacity: var(--tw-bulb-opacity-floor, .55); }
-  50%      { opacity: var(--tw-bulb-opacity-peak,  .9);  }
+  0%, 100% { opacity: var(--tw-bulb-opacity-floor, .55); background: var(--tw-bulb-color);
+             box-shadow: var(--tw-bulb-glow-floor); }
+  50%      { opacity: var(--tw-bulb-opacity-peak, 1); background: var(--tw-bulb-peak-color);
+             box-shadow: var(--tw-bulb-glow-peak); }
 }
 @media (prefers-reduced-motion: reduce) {
   .tw-aurora { animation: none !important; }
-  .tw-bulbs i { animation: none !important; opacity: var(--tw-bulb-opacity-reduced, .7) !important; }
+  .tw-bulbs i { animation: none !important; opacity: var(--tw-bulb-opacity-reduced, .7) !important;
+    box-shadow: var(--tw-bulb-glow-floor) !important; }
 }
 
 /* ── component CSS ─────────────────────────────────────────────────────────*/
@@ -96,7 +101,7 @@ body.tw-page{background:var(--tw-stage-gradient);color:var(--tw-ink);font-family
 /* THE GRAFT — retimed marquee bulbs */
 .tw-bulbs{display:flex;gap:var(--tw-bulb-gap);justify-content:center;margin-bottom:18px}
 .tw-bulbs i{width:var(--tw-bulb-size);height:var(--tw-bulb-size);border-radius:50%;background:var(--tw-bulb-color);
-  box-shadow:var(--tw-bulb-glow);opacity:var(--tw-bulb-opacity-floor);
+  box-shadow:var(--tw-bulb-glow-floor);opacity:var(--tw-bulb-opacity-floor);
   animation:twBulb var(--tw-bulb-cycle) var(--tw-bulb-ease) infinite}
 .tw-bulbs i:nth-child(2){animation-delay:calc(var(--tw-bulb-stagger)*1)}
 .tw-bulbs i:nth-child(3){animation-delay:calc(var(--tw-bulb-stagger)*2)}
@@ -117,31 +122,38 @@ h2.tw-title .lit{background:none;-webkit-background-clip:initial;background-clip
 .tw-card{position:relative;display:block;text-decoration:none;color:inherit;padding:18px 52px 18px 20px;margin-bottom:14px;
   border-radius:var(--tw-radius-card);background:var(--tw-glass-card);border:1px solid var(--tw-border-card);
   backdrop-filter:blur(var(--tw-blur-card));-webkit-backdrop-filter:blur(var(--tw-blur-card));
-  box-shadow:var(--tw-shadow-card);cursor:pointer;transition:var(--tw-transition-card);
+  box-shadow:var(--tw-shadow-card);cursor:pointer;
+  transition:box-shadow var(--tw-transition-card), border-color var(--tw-transition-card),
+             transform .32s var(--tw-spring);
   user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
-.tw-card:hover{box-shadow:var(--tw-shadow-card-hover);border-color:rgba(142,123,232,.4)}
+/* R3.4 — springy lift on hover */
+.tw-card:hover{box-shadow:var(--tw-shadow-card-hover);border-color:rgba(142,123,232,.4);
+  transform:translateY(-3px) scale(1.02)}
 .tw-card:focus-visible{outline:2px solid var(--tw-violet);outline-offset:3px}
 .tw-card .k{font-size:var(--tw-eyebrow);letter-spacing:var(--tw-track-eyebrow);text-transform:uppercase;
   color:var(--tw-rose);margin-bottom:6px}
 .tw-card h3{font-family:var(--tw-font-display);font-weight:400;font-size:var(--tw-card-title);margin-bottom:3px;line-height:1.3}
 .tw-card .fn{font-family:var(--tw-font-meta);font-size:10.5px;color:var(--tw-muted)}
-/* R3.1 — labeled "new" pill (replaces the unlabeled glow dot) */
-.tw-card .newpill{position:absolute;right:16px;top:16px;font-family:var(--tw-font-meta);font-size:9px;
+/* R3.1/R3.4 — labeled "new" pill, flush right, sunrise = early/new */
+.tw-card .newpill{position:absolute;right:12px;top:14px;font-family:var(--tw-font-meta);font-size:9px;
   letter-spacing:.12em;text-transform:uppercase;color:var(--tw-violet);
+  display:inline-flex;align-items:center;gap:5px;
   border:1px solid rgba(142,123,232,.45);padding:4px 9px;border-radius:var(--tw-radius-pill);
   background:rgba(142,123,232,.12);box-shadow:0 0 12px rgba(142,123,232,.35)}
+.tw-card .newpill svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
 /* R3.3 — page-type icon (right, vertically centered; see ICON REGISTRY in JS) */
 .tw-card .ticon{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:24px;height:24px;
   display:flex;align-items:center;justify-content:center;color:var(--tw-faint);pointer-events:none}
 .tw-card .ticon svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;
   stroke-linecap:round;stroke-linejoin:round}
 .tw-card:hover .ticon{color:var(--tw-violet)}
-.tw-card .newpill ~ .ticon, .tw-card.has-new .ticon{top:auto;bottom:16px;transform:none}
-/* R3.3 — long-press arming cue… */
+.tw-card.has-new .ticon{top:auto;bottom:16px;transform:none}
+/* R3.3 — long-press arming cue (declared after :hover so it wins while held) */
 .tw-card.pressing{transform:scale(.985);border-color:rgba(142,123,232,.45)}
 /* R3.1 — while dragging: the in-list card becomes a dashed placeholder… */
 .tw-card.dragging{opacity:.3;border-style:dashed;border-color:rgba(142,123,232,.5);box-shadow:none;
-  background:rgba(142,123,232,.05)}
+  background:rgba(142,123,232,.05);transform:none}
 .tw-card.dragging>*{visibility:hidden}
 /* …and a ghost clone rides under the pointer */
 .tw-drag-ghost{position:fixed;left:0;top:0;z-index:999;pointer-events:none;margin:0;opacity:.96;
@@ -189,7 +201,8 @@ body.tw-sorting .tw-card{transition:none}
 .tw-error .tw-retry{margin-top:14px;display:inline-block;cursor:pointer;font-family:var(--tw-font-meta);font-size:10px;
   letter-spacing:.14em;text-transform:uppercase;color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);
   padding:7px 14px;border-radius:var(--tw-radius-pill)}
-@media (prefers-reduced-motion:reduce){.tw-skel::after{animation:none}}
+@media (prefers-reduced-motion:reduce){.tw-skel::after{animation:none}
+  .tw-card,.tw-card:hover{transform:none !important}}
 </style>
 </head>
 <body class="tw-page">
@@ -219,6 +232,8 @@ const ICONS={
   'Page':      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/></svg>'
 };
 const iconFor=k=>ICONS[k]||ICONS['Page'];
+/* R3.4 — sunrise glyph inside the "new" pill (early morning sun = fresh) */
+const SUNRISE='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3M5.3 6.9l2.1 2.1M2.5 14h3M18.5 14h3M16.6 9l2.1-2.1M7.5 17.5a4.5 4.5 0 0 1 9 0"/><path d="M3 21h18"/></svg>';
 
 /* ── R3 copy — describes the tool, not the design. "lit." glows (R3.2) ── */
 const COPY_TITLE='Your launchpad, <span class="lit">lit.</span>';
@@ -301,7 +316,7 @@ function titleOf(f, man){ return (man&&man[f]&&man[f].title) ? man[f].title : ti
 function cardHTML(f, man, isNewest){
   const k = kicker(f);
   return `<a class="tw-card${isNewest?' has-new':''}" href="${esc(f)}" data-file="${esc(f)}">`+
-    `${isNewest?'<span class="newpill">✦ new</span>':''}`+
+    `${isNewest?`<span class="newpill">${SUNRISE} new</span>`:''}`+
     `<div class="k">${esc(k)}</div><h3>${esc(titleOf(f,man))}</h3>`+
     `<div class="fn">${esc(f)}</div><span class="ticon">${iconFor(k)}</span></a>`;
 }
