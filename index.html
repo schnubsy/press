@@ -7,12 +7,18 @@
 <meta name="page-title" content="The Marquee">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,600;1,6..96,400;1,6..96,500&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================================
-   PRESS — TWILIGHT CUT · design tokens (inlined from tokens.css — self-contained page)
-   Winner: Direction 04 "Twilight Cut" (Calm · Anaya Shrestha), .mk-tw skin,
-   grafted with Premiere's marquee bulbs retimed to Calm's tempo.
+   PRESS — TWILIGHT CUT · R3 "Neon masthead" refinement
+   Base: Direction 04 "Twilight Cut" (Calm) + Premiere's retimed bulbs.
+   R3 (Neon · Mr. Neon, winner): display face Bodoni Moda → Unbounded across
+   the whole page (masthead + card titles + archive + states) for legibility;
+   masthead carries a violet→rose gradient fill; opening copy rewritten to
+   describe the tool, not the design.
+   New in R3: drag-to-sort cards, drag-into-archive, restore-from-archive —
+   shared state synced via Supabase press_portal (same project as kayley's
+   press_state), localStorage mirror for instant paint / offline.
    ============================================================================ */
 :root {
   /* palette */
@@ -29,29 +35,26 @@
   --tw-stage-gradient: linear-gradient(165deg, var(--tw-dusk-1), var(--tw-dusk-2) 55%, var(--tw-dusk-3));
   /* glass */
   --tw-glass-card: linear-gradient(160deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
-  --tw-glass-doc:  linear-gradient(160deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
   --tw-glass-arch: linear-gradient(160deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
   --tw-border-card: rgba(255,255,255,.10);
-  --tw-border-doc:  rgba(255,255,255,.09);
   --tw-border-arch: rgba(142,123,232,.26);
   --tw-hairline:    rgba(255,255,255,.06);
-  /* type */
-  --tw-font-display: 'Bodoni Moda', Georgia, 'Times New Roman', serif;
+  /* type — R3: Unbounded is the single display face, page-wide */
+  --tw-font-display: 'Unbounded', 'Inter', system-ui, sans-serif;
   --tw-font-body:    'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --tw-font-meta:    'Space Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-  --tw-h1:34px; --tw-h2-doc:34px; --tw-card-title:21px; --tw-arch-title:20px;
-  --tw-sec:18px; --tw-body:14.5px; --tw-body-sm:13px; --tw-meta:11px;
+  --tw-h1:24px; --tw-card-title:15.5px; --tw-arch-title:15px;
+  --tw-body:14.5px; --tw-body-sm:13px; --tw-meta:11px;
   --tw-eyebrow:10px; --tw-track-eyebrow:.16em;
+  --tw-grad-title: linear-gradient(92deg, #B7A8FF, #E7A6C7);
   /* radii */
-  --tw-radius-card:22px; --tw-radius-doc:20px; --tw-radius-pill:100px; --tw-radius-round:50%;
+  --tw-radius-card:22px; --tw-radius-pill:100px;
   /* blur */
-  --tw-blur-card:16px; --tw-blur-doc:12px;
+  --tw-blur-card:16px;
   /* glow / shadow */
   --tw-shadow-card:       0 10px 34px rgba(10,7,22,.5), inset 0 1px 0 rgba(255,255,255,.12);
   --tw-shadow-card-hover: 0 12px 40px rgba(142,123,232,.28), inset 0 1px 0 rgba(255,255,255,.16);
   --tw-glow-dot:   0 0 16px 3px rgba(142,123,232,.7);
-  --tw-glow-check: 0 0 14px rgba(142,123,232,.55);
-  --tw-glow-ring:  drop-shadow(0 0 6px rgba(142,123,232,.5));
   /* aurora */
   --tw-aurora-field: radial-gradient(520px 340px at 30% -8%, rgba(142,123,232,.4), transparent 62%),
                      radial-gradient(440px 320px at 92% 20%, rgba(231,166,199,.2), transparent 60%);
@@ -101,11 +104,11 @@ body.tw-page{background:var(--tw-stage-gradient);color:var(--tw-ink);font-family
 .tw-top{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--tw-muted)}
 .tw-top b{color:var(--tw-ink);font-weight:600;letter-spacing:.02em}
 .tw-stale{font-size:10.5px;color:var(--tw-faint);margin-top:6px}
-h2.tw-title{font-family:var(--tw-font-display);font-weight:400;font-size:var(--tw-h1);line-height:1.02;
-  letter-spacing:-.01em;margin:18px 0 6px}
-h2.tw-title em{font-style:italic;color:var(--tw-violet)}
-.tw-dek{font-size:var(--tw-body-sm);color:var(--tw-muted);max-width:360px;margin-bottom:20px}
-.tw-card{position:relative;display:block;text-decoration:none;color:inherit;padding:18px 20px;margin-bottom:14px;
+h2.tw-title{font-family:var(--tw-font-display);font-weight:500;font-size:var(--tw-h1);line-height:1.22;
+  letter-spacing:.005em;margin:18px 0 6px;
+  background:var(--tw-grad-title);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tw-dek{font-size:var(--tw-body-sm);color:var(--tw-muted);max-width:380px;margin-bottom:20px}
+.tw-card{position:relative;display:block;text-decoration:none;color:inherit;padding:18px 48px 18px 20px;margin-bottom:14px;
   border-radius:var(--tw-radius-card);background:var(--tw-glass-card);border:1px solid var(--tw-border-card);
   backdrop-filter:blur(var(--tw-blur-card));-webkit-backdrop-filter:blur(var(--tw-blur-card));
   box-shadow:var(--tw-shadow-card);cursor:pointer;transition:var(--tw-transition-card)}
@@ -113,10 +116,18 @@ h2.tw-title em{font-style:italic;color:var(--tw-violet)}
 .tw-card:focus-visible{outline:2px solid var(--tw-violet);outline-offset:3px}
 .tw-card .k{font-size:var(--tw-eyebrow);letter-spacing:var(--tw-track-eyebrow);text-transform:uppercase;
   color:var(--tw-rose);margin-bottom:6px}
-.tw-card h3{font-family:var(--tw-font-display);font-weight:500;font-size:var(--tw-card-title);margin-bottom:2px}
+.tw-card h3{font-family:var(--tw-font-display);font-weight:400;font-size:var(--tw-card-title);margin-bottom:3px;line-height:1.3}
 .tw-card .fn{font-family:var(--tw-font-meta);font-size:10.5px;color:var(--tw-muted)}
 .tw-card .glowdot{position:absolute;right:20px;top:20px;width:10px;height:10px;border-radius:50%;
   background:var(--tw-violet);box-shadow:var(--tw-glow-dot)}
+/* R3 — drag grip */
+.tw-card .grip{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:34px;height:44px;
+  display:flex;align-items:center;justify-content:center;color:var(--tw-faint);font-size:15px;letter-spacing:1px;
+  cursor:grab;touch-action:none;border-radius:12px;user-select:none;-webkit-user-select:none}
+.tw-card .grip:hover{color:var(--tw-violet);background:rgba(142,123,232,.1)}
+.tw-card.dragging{opacity:.45;box-shadow:var(--tw-shadow-card-hover);border-color:rgba(142,123,232,.55)}
+body.tw-sorting{cursor:grabbing}
+body.tw-sorting .tw-card{transition:none}
 .tw-arch{position:relative;display:block;text-decoration:none;color:inherit;padding:20px 22px;margin-top:6px;
   border-radius:var(--tw-radius-card);
   background:radial-gradient(140px 90px at 88% 30%, rgba(142,123,232,.16), transparent 70%),var(--tw-glass-arch);
@@ -125,16 +136,26 @@ h2.tw-title em{font-style:italic;color:var(--tw-violet)}
   box-shadow:inset -7px -3px 0 0 rgba(142,123,232,.6)}
 .tw-arch:hover{border-color:rgba(142,123,232,.5)}
 .tw-arch:focus-visible{outline:2px solid var(--tw-violet);outline-offset:3px}
+.tw-arch.drop-hot{border-color:var(--tw-violet);box-shadow:0 0 0 2px rgba(142,123,232,.4), var(--tw-shadow-card-hover);
+  background:radial-gradient(140px 90px at 88% 30%, rgba(142,123,232,.3), transparent 70%),var(--tw-glass-arch)}
 .tw-arch .k{font-size:var(--tw-eyebrow);letter-spacing:var(--tw-track-eyebrow);text-transform:uppercase;
   color:var(--tw-violet);margin-bottom:6px}
-.tw-arch h3{font-family:var(--tw-font-display);font-weight:500;font-style:italic;font-size:var(--tw-arch-title)}
+.tw-arch h3{font-family:var(--tw-font-display);font-weight:400;font-size:var(--tw-arch-title)}
 .tw-arch p{font-size:12px;color:var(--tw-muted);margin-top:6px;max-width:280px}
 .tw-arch .ct{position:absolute;right:22px;bottom:18px;font-family:var(--tw-font-meta);font-size:var(--tw-meta);
   color:var(--tw-violet)}
+.tw-hint{font-size:10.5px;color:var(--tw-faint);margin-top:6px;text-align:center}
 .tw-auto{font-size:10.5px;color:var(--tw-faint);margin-top:16px;text-align:center}
 .tw-back{display:inline-flex;align-items:center;gap:7px;font-family:var(--tw-font-meta);font-size:10px;
   letter-spacing:.14em;text-transform:uppercase;color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);
   padding:6px 12px;border-radius:var(--tw-radius-pill);text-decoration:none;margin-bottom:14px}
+/* R3 — restore control on archive cards */
+.tw-restore{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-family:var(--tw-font-meta);
+  font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--tw-violet);
+  border:1px solid rgba(142,123,232,.4);padding:7px 11px;border-radius:var(--tw-radius-pill);cursor:pointer;
+  background:rgba(16,12,30,.4)}
+.tw-restore:hover{border-color:var(--tw-violet);background:rgba(142,123,232,.12)}
+.tw-card.restorable{padding-right:132px}
 /* states */
 .tw-skel{padding:18px 20px;margin-bottom:14px;border-radius:var(--tw-radius-card);background:var(--tw-glass-card);
   border:1px solid var(--tw-border-card);height:78px;position:relative;overflow:hidden}
@@ -143,7 +164,7 @@ h2.tw-title em{font-style:italic;color:var(--tw-violet)}
 @keyframes twShimmer{100%{transform:translateX(100%)}}
 .tw-empty,.tw-error{padding:22px 22px;border-radius:var(--tw-radius-card);background:var(--tw-glass-card);
   border:1px solid var(--tw-border-card);text-align:center}
-.tw-empty h3,.tw-error h3{font-family:var(--tw-font-display);font-weight:500;font-size:20px;margin-bottom:6px}
+.tw-empty h3,.tw-error h3{font-family:var(--tw-font-display);font-weight:400;font-size:16px;margin-bottom:6px}
 .tw-empty p,.tw-error p{font-size:13px;color:var(--tw-muted)}
 .tw-error .tw-retry{margin-top:14px;display:inline-block;cursor:pointer;font-family:var(--tw-font-meta);font-size:10px;
   letter-spacing:.14em;text-transform:uppercase;color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);
@@ -166,6 +187,10 @@ const kicker=f=>{for(const[re,k]of KICKERS)if(re.test(f))return k;return 'Page';
 const titleize=f=>f.replace(/\.html$/,'').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+/* ── R3 copy — describes the tool, not the design ── */
+const COPY_TITLE='Your launchpad, lit.';
+const COPY_DEK='A fast landing pad for shared pages, checklists, and tools — grab what you need and go.';
+
 async function ghJson(url){const r=await fetch(url,{headers:{'Accept':'application/vnd.github+json'}});
   if(!r.ok)throw new Error('GitHub '+r.status);return r.json();}
 async function listPages(dir){ // dir '' = root, 'archive' = archive/
@@ -177,42 +202,92 @@ async function loadManifest(dir){
   const path = dir?`${dir}/pages.json`:'pages.json';
   try{const r=await fetch(`${RAW}/${path}`);if(!r.ok)return null;return await r.json();}catch(e){return null;}
 }
-/* ── cache fallback (correction #1): last good marquee list survives an outage ── */
+/* ── cache fallback: last good marquee list survives an outage ── */
 const CACHE_KEY='press:marquee:v2';
 function cacheSave(files, man){ try{ localStorage.setItem(CACHE_KEY, JSON.stringify({files, man})); }catch(e){} }
 function cacheLoad(){ try{ return JSON.parse(localStorage.getItem(CACHE_KEY)||'null'); }catch(e){ return null; } }
 
-function order(files, man){ // newest-first (manifest insertion order reversed); disk-only pages appended A→Z
+/* ══ R3 — shared portal state (sort order + archived pages) ══════════════════
+   Synced for everyone via Supabase press_portal (same press project + publishable
+   key as kayley's press_state; open RLS). localStorage mirror = instant paint
+   and offline fallback. Note: drag-to-archive changes STATE, not the repo —
+   the file stays at root; the marquee hides it and the archive lists it. */
+const SB_URL='https://eepjhpyziczrxvirczio.supabase.co';
+const SB_KEY='sb_publishable__iv3bI7xDAsOdHUlXzbVZQ_2yyFS4uX';
+const PREST=SB_URL+'/rest/v1/press_portal';
+const PHEAD={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
+const PKEY='press:portal:v1';
+let PSTATE={order:[],archived:[]};
+function pNorm(s){ return {order:Array.isArray(s&&s.order)?s.order:[], archived:Array.isArray(s&&s.archived)?s.archived:[]}; }
+function pLocalSave(){ try{ localStorage.setItem(PKEY, JSON.stringify(PSTATE)); }catch(e){} }
+function pLocalLoad(){ try{ PSTATE=pNorm(JSON.parse(localStorage.getItem(PKEY)||'null')); }catch(e){ PSTATE={order:[],archived:[]}; } }
+async function pCloudLoad(){
+  const r=await fetch(PREST+'?page=eq.marquee&select=state',{headers:PHEAD});
+  if(!r.ok)throw new Error('SB '+r.status);
+  const rows=await r.json();
+  if(rows.length) PSTATE=pNorm(rows[0].state);
+  pLocalSave();
+}
+async function pCloudSave(){
+  try{
+    const r=await fetch(PREST+'?on_conflict=page',{method:'POST',
+      headers:Object.assign({},PHEAD,{'Prefer':'resolution=merge-duplicates'}),
+      body:JSON.stringify({page:'marquee',state:PSTATE,updated_at:new Date().toISOString()})});
+    if(!r.ok)throw new Error('SB '+r.status);
+    flash('Saved');
+  }catch(e){ flash('Offline · saved on this device','#c08a1e'); }
+}
+/* sync pill (same pattern as kayley) */
+const sync=document.createElement('div');
+sync.style.cssText='position:fixed;bottom:16px;right:16px;z-index:99;font:500 12px/1 "Space Mono",monospace;'
+  +'padding:8px 12px;border-radius:999px;background:#0f6e63;color:#fff;opacity:0;transition:.3s;box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none';
+document.body.appendChild(sync);
+let pillTimer;
+function flash(msg,color){ sync.textContent=msg; sync.style.background=color||'#0f6e63'; sync.style.opacity='1';
+  clearTimeout(pillTimer); pillTimer=setTimeout(()=>{sync.style.opacity='0';},1600); }
+
+function order(files, man){ // default order: manifest newest-first; disk-only pages appended A→Z
   if(!man) return {ordered:[...files].sort(), newest:null};
   const manKeys = Object.keys(man).filter(k=>files.includes(k));
   const rest = files.filter(f=>!manKeys.includes(f)).sort();
   return {ordered:[...manKeys.slice().reverse(), ...rest],
           newest: manKeys.length?manKeys[manKeys.length-1]:null};
 }
+function applyState(files, man){ // user sort first, then default order for the rest; archived hidden
+  const visible = files.filter(f=>!PSTATE.archived.includes(f));
+  const userOrdered = PSTATE.order.filter(f=>visible.includes(f));
+  const rest = visible.filter(f=>!userOrdered.includes(f));
+  const d = order(rest.length?rest:visible, man);
+  const ordered = userOrdered.length ? [...userOrdered, ...d.ordered.filter(f=>!userOrdered.includes(f))] : d.ordered;
+  const dAll = order(visible, man);
+  return {ordered, newest:dAll.newest, stateArchived: files.filter(f=>PSTATE.archived.includes(f))};
+}
 function titleOf(f, man){ return (man&&man[f]&&man[f].title) ? man[f].title : titleize(f); }
 
 function cardHTML(f, man, isNewest){
-  return `<a class="tw-card" href="${esc(f)}">${isNewest?'<span class="glowdot"></span>':''}`+
+  return `<a class="tw-card" href="${esc(f)}" data-file="${esc(f)}">${isNewest?'<span class="glowdot"></span>':''}`+
     `<div class="k">${esc(kicker(f))}</div><h3>${esc(titleOf(f,man))}</h3>`+
-    `<div class="fn">${esc(f)}</div></a>`;
+    `<div class="fn">${esc(f)}</div><span class="grip" aria-label="Drag to sort or archive">⠿</span></a>`;
 }
 function archiveCardHTML(count){
-  return `<a class="tw-arch" href="./?view=archive"><div class="k">▤ The Archive</div>`+
+  return `<a class="tw-arch" id="archTarget" href="./?view=archive"><div class="k">▤ The Archive</div>`+
     `<h3>Resting pages</h3><p>Everything eased off the marquee — nothing lost, just at rest.</p>`+
     `<span class="ct">${count} →</span></a>`;
 }
 const bulbsHTML=`<div class="tw-bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>`;
 const skelHTML=`${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>loading…</span></div>`+
-  `<h2 class="tw-title">On the <em>marquee</em>, softly.</h2>`+
+  `<h2 class="tw-title">${COPY_TITLE}</h2>`+
   `<div class="tw-skel"></div><div class="tw-skel"></div><div class="tw-skel"></div>`;
 
-function paintMarquee(root, files, man, archiveCount, stale){
-  const {ordered, newest} = order(files, man);
+function paintMarquee(root, files, man, physArchiveCount, stale){
+  const {ordered, newest, stateArchived} = applyState(files, man);
+  const archiveCount = physArchiveCount + stateArchived.length;
   if(!ordered.length){
     root.innerHTML = `${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>at dusk</span></div>`+
-      `<h2 class="tw-title">On the <em>marquee</em>, softly.</h2>`+
+      `<h2 class="tw-title">${COPY_TITLE}</h2>`+
       `<div class="tw-empty"><h3>Nothing on the marquee yet</h3>`+
-      `<p>Published pages appear here automatically.</p></div>`;
+      `<p>Published pages appear here automatically.</p></div>`+
+      (archiveCount?archiveCardHTML(archiveCount):'');
     return;
   }
   const cards = ordered.map(f=>cardHTML(f, man, f===newest)).join('');
@@ -222,53 +297,153 @@ function paintMarquee(root, files, man, archiveCount, stale){
     `${bulbsHTML}`+
     `<div class="tw-top"><span>The <b>Marquee</b></span><span>${ordered.length} showing · at dusk</span></div>`+
     staleNote +
-    `<h2 class="tw-title">On the <em>marquee</em>, softly.</h2>`+
-    `<div class="tw-dek">The latest, set out and gently lit. Older pages rest in the archive so the front stays calm.</div>`+
+    `<h2 class="tw-title">${COPY_TITLE}</h2>`+
+    `<div class="tw-dek">${COPY_DEK}</div>`+
     cards + archiveCardHTML(archiveCount) +
+    `<div class="tw-hint">⠿ drag to sort · drop on the archive to tuck a page away</div>`+
     `<div class="tw-auto">↻ auto-listed from the repository root</div>`;
+  wireDrag(root);
+}
+
+/* ══ R3 — drag to sort / drag into archive (pointer events: mouse + touch) ══ */
+function wireDrag(root){
+  const grid = root;
+  root.querySelectorAll('.tw-card .grip').forEach(grip=>{
+    grip.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); });
+    grip.addEventListener('pointerdown', e=>{
+      e.preventDefault(); e.stopPropagation();
+      const card = grip.closest('.tw-card');
+      const arch = document.getElementById('archTarget');
+      let overArch = false, moved = false;
+      card.classList.add('dragging'); document.body.classList.add('tw-sorting');
+      grip.setPointerCapture(e.pointerId);
+      const onMove = ev=>{
+        moved = true;
+        const y = ev.clientY, x = ev.clientX;
+        /* archive drop target */
+        if(arch){
+          const r = arch.getBoundingClientRect();
+          overArch = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
+          arch.classList.toggle('drop-hot', overArch);
+        }
+        if(overArch) return;
+        /* reorder among sibling cards */
+        const cards = Array.from(grid.querySelectorAll('.tw-card')).filter(c=>c!==card);
+        for(const c of cards){
+          const r = c.getBoundingClientRect();
+          if(y < r.top + r.height/2){ if(c.previousElementSibling!==card) grid.insertBefore(card, c); return; }
+        }
+        if(cards.length){ const last=cards[cards.length-1];
+          if(last.nextElementSibling!==card) grid.insertBefore(card, last.nextElementSibling); }
+      };
+      const onUp = ()=>{
+        grip.releasePointerCapture(e.pointerId);
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('pointercancel', onUp);
+        card.classList.remove('dragging'); document.body.classList.remove('tw-sorting');
+        if(arch) arch.classList.remove('drop-hot');
+        if(overArch){
+          const f = card.dataset.file;
+          if(!PSTATE.archived.includes(f)) PSTATE.archived.push(f);
+          PSTATE.order = PSTATE.order.filter(x=>x!==f);
+          pLocalSave(); pCloudSave();
+          card.remove();
+          const ct = arch.querySelector('.ct');
+          if(ct) ct.textContent = (parseInt(ct.textContent)+1||1)+' →';
+          const top = grid.querySelector('.tw-top span:last-child');
+          if(top) top.textContent = grid.querySelectorAll('.tw-card').length+' showing · at dusk';
+          flash('Moved to the archive');
+        } else if(moved){
+          PSTATE.order = Array.from(grid.querySelectorAll('.tw-card')).map(c=>c.dataset.file);
+          pLocalSave(); pCloudSave();
+        }
+      };
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+      window.addEventListener('pointercancel', onUp);
+    });
+  });
 }
 
 async function renderMarquee(root){
   root.innerHTML = skelHTML;
+  pLocalLoad();
   try{
-    const [files, man] = await Promise.all([listPages(''), loadManifest('')]);
-    let archiveCount = 0; try{ archiveCount=(await listPages('archive')).length; }catch(e){}
-    cacheSave(files, man);                       // persist last good list
-    paintMarquee(root, files, man, archiveCount, false);
+    const results = await Promise.all([listPages(''), loadManifest(''), pCloudLoad().catch(()=>{})]);
+    const files = results[0], man = results[1];
+    let physCount = 0; try{ physCount=(await listPages('archive')).length; }catch(e){}
+    cacheSave(files, man);
+    paintMarquee(root, files, man, physCount, false);
   }catch(e){
-    const cached = cacheLoad();                  // outage → show last good list, not the error
+    const cached = cacheLoad();
     if(cached && Array.isArray(cached.files) && cached.files.length){
       paintMarquee(root, cached.files, cached.man, 0, true);
     } else {
       root.innerHTML = `${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>at dusk</span></div>`+
-        `<h2 class="tw-title">On the <em>marquee</em>, softly.</h2>`+
+        `<h2 class="tw-title">${COPY_TITLE}</h2>`+
         `<div class="tw-error"><h3>Couldn't reach the marquee</h3>`+
         `<p>GitHub didn't answer — this usually clears in a minute.</p>`+
         `<span class="tw-retry" onclick="location.reload()">Retry</span></div>`;
     }
   }
 }
+
 async function renderArchive(root){
   root.innerHTML = `<a class="tw-back" href="index.html">← the marquee</a>`+
     `<div class="tw-top"><span>The <b>Archive</b></span><span>resting pages</span></div>`+
-    `<h2 class="tw-title">At <em>rest</em>.</h2><div class="tw-skel"></div><div class="tw-skel"></div>`;
+    `<h2 class="tw-title">At rest.</h2><div class="tw-skel"></div><div class="tw-skel"></div>`;
+  pLocalLoad();
   try{
-    const [files, man] = await Promise.all([listPages('archive'), loadManifest('archive')]);
+    const results = await Promise.all([listPages('archive').catch(()=>[]), loadManifest('archive'),
+                                       listPages(''), loadManifest(''), pCloudLoad().catch(()=>{})]);
+    const physFiles=results[0], physMan=results[1], rootFiles=results[2], rootMan=results[3];
+    const stateArchived = rootFiles.filter(f=>PSTATE.archived.includes(f));
     const back = `<a class="tw-back" href="index.html">← the marquee</a>`;
-    if(!files.length){
+    const total = physFiles.length + stateArchived.length;
+    if(!total){
       root.innerHTML = back +
         `<div class="tw-top"><span>The <b>Archive</b></span><span>resting pages</span></div>`+
-        `<h2 class="tw-title">At <em>rest</em>.</h2>`+
+        `<h2 class="tw-title">At rest.</h2>`+
         `<div class="tw-empty"><h3>The archive is empty</h3>`+
         `<p>Pages you archive will rest here.</p></div>`; return;
     }
-    const cards = [...files].sort().map(f=>`<a class="tw-card" href="archive/${esc(f)}">`+
-      `<div class="k">${esc(kicker(f))}</div><h3>${esc(titleOf(f,man))}</h3>`+
+    const stateCards = [...stateArchived].sort().map(f=>
+      `<a class="tw-card restorable" href="${esc(f)}" data-file="${esc(f)}">`+
+      `<div class="k">${esc(kicker(f))}</div><h3>${esc(titleOf(f,rootMan))}</h3>`+
+      `<div class="fn">${esc(f)}</div>`+
+      `<span class="tw-restore" role="button" tabindex="0" aria-label="Move back to the launchpad">↩ launchpad</span></a>`).join('');
+    const physCards = [...physFiles].sort().map(f=>`<a class="tw-card" href="archive/${esc(f)}">`+
+      `<div class="k">${esc(kicker(f))}</div><h3>${esc(titleOf(f,physMan))}</h3>`+
       `<div class="fn">archive/${esc(f)}</div></a>`).join('');
     root.innerHTML = back +
-      `<div class="tw-top"><span>The <b>Archive</b></span><span>${files.length} resting</span></div>`+
-      `<h2 class="tw-title">At <em>rest</em>.</h2>`+
-      `<div class="tw-dek">Everything eased off the marquee. Nothing lost.</div>`+ cards;
+      `<div class="tw-top"><span>The <b>Archive</b></span><span>${total} resting</span></div>`+
+      `<h2 class="tw-title">At rest.</h2>`+
+      `<div class="tw-dek">Everything eased off the marquee. Nothing lost — send a page back whenever you need it.</div>`+
+      stateCards + physCards;
+    root.querySelectorAll('.tw-restore').forEach(btn=>{
+      const restore = e=>{
+        e.preventDefault(); e.stopPropagation();
+        const card = btn.closest('.tw-card');
+        const f = card.dataset.file;
+        PSTATE.archived = PSTATE.archived.filter(x=>x!==f);
+        pLocalSave(); pCloudSave();
+        card.remove();
+        const top = root.querySelector('.tw-top span:last-child');
+        const left = root.querySelectorAll('.tw-card').length;
+        if(top) top.textContent = left+' resting';
+        if(!left){
+          root.innerHTML = `<a class="tw-back" href="index.html">← the marquee</a>`+
+            `<div class="tw-top"><span>The <b>Archive</b></span><span>resting pages</span></div>`+
+            `<h2 class="tw-title">At rest.</h2>`+
+            `<div class="tw-empty"><h3>The archive is empty</h3>`+
+            `<p>Pages you archive will rest here.</p></div>`;
+        }
+        flash('Back on the launchpad');
+      };
+      btn.addEventListener('click', restore);
+      btn.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') restore(e); });
+    });
   }catch(e){
     root.innerHTML = `<a class="tw-back" href="index.html">← the marquee</a>`+
       `<div class="tw-error"><h3>Couldn't reach the archive</h3>`+
