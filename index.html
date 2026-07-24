@@ -32,6 +32,9 @@
    R3.8: "new" badge inline before the page-type word; archive card back to
    standard card sizing; bulb glow reinstated PROPORTIONALLY — halo animates
    on the same wave as brightness, zero at the dimmest, full at the peak.
+   R3.9: proportional glow scaled down 60%; archive moon +50%; "new" pill
+   moved to the right of the type word with its text restored; three extra
+   subtle aurora blobs for background texture.
    ============================================================================ */
 :root {
   /* palette */
@@ -72,14 +75,17 @@
   --tw-glow-dot:   0 0 16px 3px rgba(142,123,232,.7);
   /* aurora */
   --tw-aurora-field: radial-gradient(520px 340px at 30% -8%, rgba(142,123,232,.4), transparent 62%),
-                     radial-gradient(440px 320px at 92% 20%, rgba(231,166,199,.2), transparent 60%);
+                     radial-gradient(440px 320px at 92% 20%, rgba(231,166,199,.2), transparent 60%),
+                     radial-gradient(380px 300px at 12% 68%, rgba(142,123,232,.14), transparent 65%),
+                     radial-gradient(420px 340px at 78% 84%, rgba(231,166,199,.12), transparent 65%),
+                     radial-gradient(300px 240px at 52% 42%, rgba(183,168,255,.09), transparent 70%);
   --tw-aurora-opacity:.6; --tw-aurora-cycle:32s; --tw-aurora-ease:ease-in-out;
   --tw-aurora-opacity-lo:.5; --tw-aurora-opacity-hi:.72; --tw-aurora-drift:-2%;
   /* retimed marquee bulbs — R3.8: glow scales 1:1 with brightness (zero at floor) */
   --tw-bulb-color:#8E7BE8;
   --tw-bulb-peak-color:#B7A8FF;
   --tw-bulb-glow-floor:0 0 0 0 rgba(142,123,232,0), 0 0 0 0 rgba(231,166,199,0);
-  --tw-bulb-glow-peak:0 0 12px 3px rgba(142,123,232,.85), 0 0 24px 8px rgba(231,166,199,.35);
+  --tw-bulb-glow-peak:0 0 5px 1px rgba(142,123,232,.85), 0 0 10px 3px rgba(231,166,199,.35);
   --tw-bulb-size:6px; --tw-bulb-gap:10px;
   --tw-bulb-cycle:3.5s; --tw-bulb-stagger:.25s; --tw-bulb-ease:ease-in-out;
   --tw-bulb-opacity-floor:.55; --tw-bulb-opacity-peak:1; --tw-bulb-opacity-reduced:.7;
@@ -151,9 +157,10 @@ h2.tw-title .lit{background:none;-webkit-background-clip:initial;background-clip
 .tw-card h3{font-family:var(--tw-font-display);font-weight:400;font-size:var(--tw-card-title);margin-bottom:3px;line-height:1.3}
 .tw-card .fn{font-family:var(--tw-font-meta);font-size:10.5px;color:var(--tw-muted)}
 /* R3.1/R3.4 — labeled "new" pill, flush right, sunrise = early/new */
-.tw-card .newpill{color:var(--tw-violet);flex:none;
-  display:inline-flex;align-items:center;justify-content:center;
-  border:1px solid rgba(142,123,232,.45);padding:3px;border-radius:50%;
+.tw-card .newpill{color:var(--tw-violet);flex:none;font-family:var(--tw-font-meta);font-size:8.5px;
+  letter-spacing:.1em;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:4px;
+  border:1px solid rgba(142,123,232,.45);padding:3px 7px;border-radius:var(--tw-radius-pill);
   background:rgba(142,123,232,.12);box-shadow:0 0 12px rgba(142,123,232,.35)}
 .tw-card .newpill svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
@@ -179,10 +186,10 @@ body.tw-sorting .tw-card{transition:none}
   border-radius:var(--tw-radius-card);
   background:radial-gradient(140px 90px at 88% 30%, rgba(142,123,232,.16), transparent 70%),var(--tw-glass-arch);
   border:1px solid var(--tw-border-arch);cursor:pointer;transition:var(--tw-transition-card);overflow:hidden}
-.tw-arch .aicon{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:28px;height:28px;
+.tw-arch .aicon{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:40px;height:40px;
   display:flex;align-items:center;justify-content:center;color:var(--tw-icon);pointer-events:none;
   filter:drop-shadow(0 0 6px rgba(142,123,232,.45))}
-.tw-arch .aicon svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;
+.tw-arch .aicon svg{width:36px;height:36px;stroke:currentColor;fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
 .tw-arch:hover{border-color:rgba(142,123,232,.5)}
 .tw-arch:focus-visible{outline:2px solid var(--tw-violet);outline-offset:3px}
@@ -336,7 +343,7 @@ function titleOf(f, man){ return (man&&man[f]&&man[f].title) ? man[f].title : ti
 function cardHTML(f, man, isNewest){
   const k = kicker(f);
   return `<a class="tw-card${isNewest?' has-new':''}" href="${esc(f)}" data-file="${esc(f)}" draggable="false">`+
-    `<div class="k">${isNewest?`<span class="newpill" title="new" aria-label="new">${SUNRISE}</span>`:''}${esc(k)}</div><h3>${esc(titleOf(f,man))}</h3>`+
+    `<div class="k">${esc(k)}${isNewest?`<span class="newpill">${SUNRISE} new</span>`:''}</div><h3>${esc(titleOf(f,man))}</h3>`+
     `<div class="fn">${esc(f)}</div><span class="ticon">${iconFor(k)}</span></a>`;
 }
 function archiveCardHTML(count){
