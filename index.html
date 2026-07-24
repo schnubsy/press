@@ -29,6 +29,9 @@
    R3.7: archive content vertically centered; crescent replaced with Feather
    moon per icon rules; count indicator enlarged; bulb glow removed entirely
    (pure fade wave); "new" pill 30% smaller, glyph-only.
+   R3.8: "new" badge inline before the page-type word; archive card back to
+   standard card sizing; bulb glow reinstated PROPORTIONALLY — halo animates
+   on the same wave as brightness, zero at the dimmest, full at the peak.
    ============================================================================ */
 :root {
   /* palette */
@@ -72,9 +75,11 @@
                      radial-gradient(440px 320px at 92% 20%, rgba(231,166,199,.2), transparent 60%);
   --tw-aurora-opacity:.6; --tw-aurora-cycle:32s; --tw-aurora-ease:ease-in-out;
   --tw-aurora-opacity-lo:.5; --tw-aurora-opacity-hi:.72; --tw-aurora-drift:-2%;
-  /* retimed marquee bulbs — R3.7: pure brightness/color wave, no glow */
+  /* retimed marquee bulbs — R3.8: glow scales 1:1 with brightness (zero at floor) */
   --tw-bulb-color:#8E7BE8;
   --tw-bulb-peak-color:#B7A8FF;
+  --tw-bulb-glow-floor:0 0 0 0 rgba(142,123,232,0), 0 0 0 0 rgba(231,166,199,0);
+  --tw-bulb-glow-peak:0 0 12px 3px rgba(142,123,232,.85), 0 0 24px 8px rgba(231,166,199,.35);
   --tw-bulb-size:6px; --tw-bulb-gap:10px;
   --tw-bulb-cycle:3.5s; --tw-bulb-stagger:.25s; --tw-bulb-ease:ease-in-out;
   --tw-bulb-opacity-floor:.55; --tw-bulb-opacity-peak:1; --tw-bulb-opacity-reduced:.7;
@@ -86,14 +91,18 @@
   0%   { opacity: var(--tw-aurora-opacity-lo, .5);  transform: translateY(0); }
   100% { opacity: var(--tw-aurora-opacity-hi, .72); transform: translateY(var(--tw-aurora-drift, -2%)); }
 }
-/* R3.7 — pure brightness/color wave, no external glow */
+/* R3.8 — glow rides the same wave as brightness: zero at the floor,
+   full halo at peak, smoothly proportional in between */
 @keyframes twBulb {
-  0%, 100% { opacity: var(--tw-bulb-opacity-floor, .55); background: var(--tw-bulb-color); }
-  50%      { opacity: var(--tw-bulb-opacity-peak, 1); background: var(--tw-bulb-peak-color); }
+  0%, 100% { opacity: var(--tw-bulb-opacity-floor, .55); background: var(--tw-bulb-color);
+             box-shadow: var(--tw-bulb-glow-floor); }
+  50%      { opacity: var(--tw-bulb-opacity-peak, 1); background: var(--tw-bulb-peak-color);
+             box-shadow: var(--tw-bulb-glow-peak); }
 }
 @media (prefers-reduced-motion: reduce) {
   .tw-aurora { animation: none !important; }
-  .tw-bulbs i { animation: none !important; opacity: var(--tw-bulb-opacity-reduced, .7) !important; }
+  .tw-bulbs i { animation: none !important; opacity: var(--tw-bulb-opacity-reduced, .7) !important;
+    box-shadow: none !important; }
 }
 
 /* ── component CSS ─────────────────────────────────────────────────────────*/
@@ -107,7 +116,7 @@ body.tw-page{background:var(--tw-stage-gradient);color:var(--tw-ink);font-family
 /* THE GRAFT — retimed marquee bulbs */
 .tw-bulbs{display:flex;gap:var(--tw-bulb-gap);justify-content:center;margin-bottom:18px}
 .tw-bulbs i{width:var(--tw-bulb-size);height:var(--tw-bulb-size);border-radius:50%;background:var(--tw-bulb-color);
-  opacity:var(--tw-bulb-opacity-floor);
+  box-shadow:var(--tw-bulb-glow-floor);opacity:var(--tw-bulb-opacity-floor);
   animation:twBulb var(--tw-bulb-cycle) var(--tw-bulb-ease) infinite}
 .tw-bulbs i:nth-child(2){animation-delay:calc(var(--tw-bulb-stagger)*1)}
 .tw-bulbs i:nth-child(3){animation-delay:calc(var(--tw-bulb-stagger)*2)}
@@ -138,11 +147,11 @@ h2.tw-title .lit{background:none;-webkit-background-clip:initial;background-clip
   transform:translateY(-3px) scale(1.02)}
 .tw-card:focus-visible{outline:2px solid var(--tw-violet);outline-offset:3px}
 .tw-card .k{font-size:var(--tw-eyebrow);letter-spacing:var(--tw-track-eyebrow);text-transform:uppercase;
-  color:var(--tw-rose);margin-bottom:6px}
+  color:var(--tw-rose);margin-bottom:6px;display:flex;align-items:center;gap:6px}
 .tw-card h3{font-family:var(--tw-font-display);font-weight:400;font-size:var(--tw-card-title);margin-bottom:3px;line-height:1.3}
 .tw-card .fn{font-family:var(--tw-font-meta);font-size:10.5px;color:var(--tw-muted)}
 /* R3.1/R3.4 — labeled "new" pill, flush right, sunrise = early/new */
-.tw-card .newpill{position:absolute;right:12px;top:12px;color:var(--tw-violet);
+.tw-card .newpill{color:var(--tw-violet);flex:none;
   display:inline-flex;align-items:center;justify-content:center;
   border:1px solid rgba(142,123,232,.45);padding:3px;border-radius:50%;
   background:rgba(142,123,232,.12);box-shadow:0 0 12px rgba(142,123,232,.35)}
@@ -155,7 +164,6 @@ h2.tw-title .lit{background:none;-webkit-background-clip:initial;background-clip
 .tw-card .ticon svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
 .tw-card:hover .ticon{color:#fff}
-.tw-card.has-new .ticon{top:58%}
 /* R3.3 — long-press arming cue (declared after :hover so it wins while held) */
 .tw-card.pressing{transform:scale(.985);border-color:rgba(142,123,232,.45)}
 /* R3.1 — while dragging: the in-list card becomes a dashed placeholder… */
@@ -167,7 +175,7 @@ h2.tw-title .lit{background:none;-webkit-background-clip:initial;background-clip
   box-shadow:0 18px 50px rgba(10,7,22,.7), 0 0 0 1px rgba(142,123,232,.45);will-change:transform}
 body.tw-sorting{cursor:grabbing}
 body.tw-sorting .tw-card{transition:none}
-.tw-arch{position:relative;display:flex;flex-direction:column;justify-content:center;text-decoration:none;color:inherit;padding:24px 22px;margin-top:6px;min-height:168px;
+.tw-arch{position:relative;display:block;text-decoration:none;color:inherit;padding:20px 22px;margin-top:6px;
   border-radius:var(--tw-radius-card);
   background:radial-gradient(140px 90px at 88% 30%, rgba(142,123,232,.16), transparent 70%),var(--tw-glass-arch);
   border:1px solid var(--tw-border-arch);cursor:pointer;transition:var(--tw-transition-card);overflow:hidden}
@@ -328,8 +336,7 @@ function titleOf(f, man){ return (man&&man[f]&&man[f].title) ? man[f].title : ti
 function cardHTML(f, man, isNewest){
   const k = kicker(f);
   return `<a class="tw-card${isNewest?' has-new':''}" href="${esc(f)}" data-file="${esc(f)}" draggable="false">`+
-    `${isNewest?`<span class="newpill" title="new" aria-label="new">${SUNRISE}</span>`:''}`+
-    `<div class="k">${esc(k)}</div><h3>${esc(titleOf(f,man))}</h3>`+
+    `<div class="k">${isNewest?`<span class="newpill" title="new" aria-label="new">${SUNRISE}</span>`:''}${esc(k)}</div><h3>${esc(titleOf(f,man))}</h3>`+
     `<div class="fn">${esc(f)}</div><span class="ticon">${iconFor(k)}</span></a>`;
 }
 function archiveCardHTML(count){
