@@ -35,6 +35,8 @@
    R3.9: proportional glow scaled down 60%; archive moon +50%; "new" pill
    moved to the right of the type word with its text restored; three extra
    subtle aurora blobs for background texture.
+   R3.10: archive counter moved inline after the card title — "Resting
+   pages → N", counter sized to match the title text.
    ============================================================================ */
 :root {
   /* palette */
@@ -199,8 +201,8 @@ body.tw-sorting .tw-card{transition:none}
   color:var(--tw-violet);margin-bottom:6px}
 .tw-arch h3{font-family:var(--tw-font-display);font-weight:400;font-size:var(--tw-arch-title)}
 .tw-arch p{font-size:12px;color:var(--tw-muted);margin-top:6px;max-width:280px}
-.tw-arch .ct{position:absolute;right:22px;bottom:16px;font-family:var(--tw-font-meta);font-size:14px;font-weight:700;
-  color:var(--tw-violet)}
+.tw-arch .ct{font-family:var(--tw-font-meta);font-size:var(--tw-arch-title);font-weight:700;
+  color:var(--tw-violet);margin-left:8px}
 .tw-hint{font-size:10.5px;color:var(--tw-faint);margin-top:6px;text-align:center}
 .tw-auto{font-size:10.5px;color:var(--tw-faint);margin-top:16px;text-align:center}
 .tw-back{display:inline-flex;align-items:center;gap:7px;font-family:var(--tw-font-meta);font-size:10px;
@@ -348,8 +350,8 @@ function cardHTML(f, man, isNewest){
 }
 function archiveCardHTML(count){
   return `<a class="tw-arch" id="archTarget" href="./?view=archive" draggable="false"><div class="k">▤ The Archive</div>`+
-    `<h3>Resting pages</h3><p>Everything eased off the marquee — nothing lost, just at rest.</p>`+
-    `<span class="ct">${count} →</span><span class="aicon">${ICONS['Archive']}</span></a>`;
+    `<h3>Resting pages <span class="ct">→ ${count}</span></h3><p>Everything eased off the marquee — nothing lost, just at rest.</p>`+
+    `<span class="aicon">${ICONS['Archive']}</span></a>`;
 }
 const bulbsHTML=`<div class="tw-bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>`;
 const skelHTML=`${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>loading…</span></div>`+
@@ -470,7 +472,7 @@ function wireDrag(root){
           pLocalSave(); pCloudSave();
           card.remove();
           const ct = arch.querySelector('.ct');
-          if(ct) ct.textContent = (parseInt(ct.textContent)+1||1)+' →';
+          if(ct){ const n=(parseInt((ct.textContent.match(/\d+/)||[0])[0],10)||0)+1; ct.textContent='→ '+n; }
           const top = grid.querySelector('.tw-top span:last-child');
           if(top) top.textContent = grid.querySelectorAll('.tw-card').length+' showing · '+COPY_FLAVOR;
           flash('Moved to the archive');
