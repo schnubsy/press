@@ -15,11 +15,14 @@
    R3 (Neon · Mr. Neon, winner): Unbounded display face page-wide; gradient
    masthead; copy describes the tool. Drag-to-sort / drag-into-archive /
    restore with shared Supabase press_portal state + localStorage mirror.
-   R3.1: "✦ new" pill; drag ghost + dashed placeholder.
+   R3.1: "new" pill; drag ghost + dashed placeholder.
    R3.2: larger masthead; glowing "lit."; "on the pad"; bulbs 2×.
    R3.3: long-press to drag, tap to open; page-type ICON REGISTRY.
-   R3.4: cards spring up on hover; chase glow rides the brightest bulb;
-   "new" pill flush right with a sunrise icon (early/new).
+   R3.4: springy hover; bulb chase glow; sunrise pill flush right.
+   R3.5: FIX native link-drag hijack (draggable=false + dragstart blocked) —
+   long-press drag now moves; icons upgraded to Feather-quality strokes in
+   bright #B7A8FF at 24px; bulb glow narrowed to a single-bulb spike so the
+   chase reads clearly.
    ============================================================================ */
 :root {
   /* palette */
@@ -29,6 +32,7 @@
   --tw-rose:   #E7A6C7;
   --tw-muted:  #9E97AE;
   --tw-faint:  #6a6478;
+  --tw-icon:   #B7A8FF;   /* R3.5 — matches the "Your" end of the title gradient */
   /* dusk gradient */
   --tw-dusk-1: #151029;
   --tw-dusk-2: #100C1E;
@@ -62,14 +66,14 @@
                      radial-gradient(440px 320px at 92% 20%, rgba(231,166,199,.2), transparent 60%);
   --tw-aurora-opacity:.6; --tw-aurora-cycle:32s; --tw-aurora-ease:ease-in-out;
   --tw-aurora-opacity-lo:.5; --tw-aurora-opacity-hi:.72; --tw-aurora-drift:-2%;
-  /* retimed marquee bulbs — R3.2 tempo doubled; R3.4 chase glow at peak */
+  /* retimed marquee bulbs — R3.5: glow spikes briefly so only ONE bulb is lit */
   --tw-bulb-color:#8E7BE8;
   --tw-bulb-peak-color:#B7A8FF;
-  --tw-bulb-glow-floor:0 0 8px rgba(142,123,232,.35);
-  --tw-bulb-glow-peak:0 0 14px 4px rgba(142,123,232,.9), 0 0 28px 9px rgba(231,166,199,.35);
+  --tw-bulb-glow-floor:0 0 6px rgba(142,123,232,.25);
+  --tw-bulb-glow-peak:0 0 14px 4px rgba(142,123,232,.95), 0 0 30px 10px rgba(231,166,199,.4);
   --tw-bulb-size:6px; --tw-bulb-gap:10px;
-  --tw-bulb-cycle:3.5s; --tw-bulb-stagger:.25s; --tw-bulb-ease:ease-in-out;
-  --tw-bulb-opacity-floor:.55; --tw-bulb-opacity-peak:1; --tw-bulb-opacity-reduced:.7;
+  --tw-bulb-cycle:3.5s; --tw-bulb-stagger:.25s; --tw-bulb-ease:linear;
+  --tw-bulb-opacity-floor:.45; --tw-bulb-opacity-peak:1; --tw-bulb-opacity-reduced:.7;
   /* transitions — R3.4: transform gets a springy overshoot curve */
   --tw-transition-card:.24s;
   --tw-spring:cubic-bezier(.34,1.56,.64,1);
@@ -78,11 +82,15 @@
   0%   { opacity: var(--tw-aurora-opacity-lo, .5);  transform: translateY(0); }
   100% { opacity: var(--tw-aurora-opacity-hi, .72); transform: translateY(var(--tw-aurora-drift, -2%)); }
 }
+/* R3.5 — narrow spike: bright for ~7% of the cycle (≈ one stagger step),
+   so exactly one bulb carries the glow as the pulse travels the line */
 @keyframes twBulb {
-  0%, 100% { opacity: var(--tw-bulb-opacity-floor, .55); background: var(--tw-bulb-color);
-             box-shadow: var(--tw-bulb-glow-floor); }
-  50%      { opacity: var(--tw-bulb-opacity-peak, 1); background: var(--tw-bulb-peak-color);
-             box-shadow: var(--tw-bulb-glow-peak); }
+  0%, 46% { opacity: var(--tw-bulb-opacity-floor, .45); background: var(--tw-bulb-color);
+            box-shadow: var(--tw-bulb-glow-floor); }
+  50%     { opacity: var(--tw-bulb-opacity-peak, 1); background: var(--tw-bulb-peak-color);
+            box-shadow: var(--tw-bulb-glow-peak); }
+  54%, 100% { opacity: var(--tw-bulb-opacity-floor, .45); background: var(--tw-bulb-color);
+            box-shadow: var(--tw-bulb-glow-floor); }
 }
 @media (prefers-reduced-motion: reduce) {
   .tw-aurora { animation: none !important; }
@@ -119,13 +127,14 @@ h2.tw-title{font-family:var(--tw-font-display);font-weight:500;font-size:var(--t
 h2.tw-title .lit{background:none;-webkit-background-clip:initial;background-clip:initial;
   color:#fff;-webkit-text-fill-color:#fff;text-shadow:var(--tw-glow-lit)}
 .tw-dek{font-size:var(--tw-body-sm);color:var(--tw-muted);max-width:380px;margin-bottom:20px}
-.tw-card{position:relative;display:block;text-decoration:none;color:inherit;padding:18px 52px 18px 20px;margin-bottom:14px;
+.tw-card{position:relative;display:block;text-decoration:none;color:inherit;padding:18px 56px 18px 20px;margin-bottom:14px;
   border-radius:var(--tw-radius-card);background:var(--tw-glass-card);border:1px solid var(--tw-border-card);
   backdrop-filter:blur(var(--tw-blur-card));-webkit-backdrop-filter:blur(var(--tw-blur-card));
   box-shadow:var(--tw-shadow-card);cursor:pointer;
   transition:box-shadow var(--tw-transition-card), border-color var(--tw-transition-card),
              transform .32s var(--tw-spring);
-  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
+  -webkit-user-drag:none}
 /* R3.4 — springy lift on hover */
 .tw-card:hover{box-shadow:var(--tw-shadow-card-hover);border-color:rgba(142,123,232,.4);
   transform:translateY(-3px) scale(1.02)}
@@ -142,13 +151,14 @@ h2.tw-title .lit{background:none;-webkit-background-clip:initial;background-clip
   background:rgba(142,123,232,.12);box-shadow:0 0 12px rgba(142,123,232,.35)}
 .tw-card .newpill svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
-/* R3.3 — page-type icon (right, vertically centered; see ICON REGISTRY in JS) */
-.tw-card .ticon{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:24px;height:24px;
-  display:flex;align-items:center;justify-content:center;color:var(--tw-faint);pointer-events:none}
-.tw-card .ticon svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;
+/* R3.3/R3.5 — page-type icon: Feather-quality strokes, bright, 24px */
+.tw-card .ticon{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;color:var(--tw-icon);pointer-events:none;
+  filter:drop-shadow(0 0 6px rgba(142,123,232,.45))}
+.tw-card .ticon svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
-.tw-card:hover .ticon{color:var(--tw-violet)}
-.tw-card.has-new .ticon{top:auto;bottom:16px;transform:none}
+.tw-card:hover .ticon{color:#fff}
+.tw-card.has-new .ticon{top:auto;bottom:14px;transform:none}
 /* R3.3 — long-press arming cue (declared after :hover so it wins while held) */
 .tw-card.pressing{transform:scale(.985);border-color:rgba(142,123,232,.45)}
 /* R3.1 — while dragging: the in-list card becomes a dashed placeholder… */
@@ -220,20 +230,21 @@ const kicker=f=>{for(const[re,k]of KICKERS)if(re.test(f))return k;return 'Page';
 const titleize=f=>f.replace(/\.html$/,'').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-/* ══ ICON REGISTRY (R3.3) — Hand instrument note ═════════════════════════════
-   Page-type → icon, rendered right-center on each card. When a new page type
-   is added to KICKERS above, add a matching minimal line-SVG here (24 viewBox,
-   stroke currentColor, no fills). Unknown types fall back to 'Page'. */
+/* ══ ICON REGISTRY (R3.3, upgraded R3.5) — Hand instrument note ══════════════
+   Page-type → icon, rendered right-center on each card in --tw-icon (#B7A8FF).
+   Paths are Feather-set quality (24 viewBox, stroke 2, round joins). When a
+   new page type is added to KICKERS above, add a matching Feather/Lucide-grade
+   path here. Unknown types fall back to 'Page'. */
 const ICONS={
-  'Reference': '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5H6.5A2.5 2.5 0 0 0 4 21V5.5z"/><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20"/></svg>',
-  'Checklist': '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4.5"/><path d="M8.4 12.2l2.5 2.5 4.7-5.2"/></svg>',
-  'Notes':     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/><path d="M9 13.5h6.5M9 16.5h4.5"/></svg>',
-  'Guide':     '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M15.4 8.6l-2.1 4.7-4.7 2.1 2.1-4.7z"/></svg>',
-  'Page':      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/></svg>'
+  'Reference': '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>',
+  'Checklist': '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+  'Notes':     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
+  'Guide':     '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
+  'Page':      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>'
 };
 const iconFor=k=>ICONS[k]||ICONS['Page'];
-/* R3.4 — sunrise glyph inside the "new" pill (early morning sun = fresh) */
-const SUNRISE='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3M5.3 6.9l2.1 2.1M2.5 14h3M18.5 14h3M16.6 9l2.1-2.1M7.5 17.5a4.5 4.5 0 0 1 9 0"/><path d="M3 21h18"/></svg>';
+/* R3.4/R3.5 — Feather "sunrise" inside the "new" pill (early morning sun = fresh) */
+const SUNRISE='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><polyline points="8 6 12 2 16 6"/></svg>';
 
 /* ── R3 copy — describes the tool, not the design. "lit." glows (R3.2) ── */
 const COPY_TITLE='Your launchpad, <span class="lit">lit.</span>';
@@ -298,7 +309,7 @@ function flash(msg,color){ sync.textContent=msg; sync.style.background=color||'#
 function order(files, man){ // default order: manifest newest-first; disk-only pages appended A→Z
   if(!man) return {ordered:[...files].sort(), newest:null};
   const manKeys = Object.keys(man).filter(k=>files.includes(k));
-  const rest = files.filter(f=>!manKeys.includes(f)).sort();
+  const rest = files.filter(f=>!manKeys.includes(k=>k===f)).sort();
   return {ordered:[...manKeys.slice().reverse(), ...rest],
           newest: manKeys.length?manKeys[manKeys.length-1]:null};
 }
@@ -315,13 +326,13 @@ function titleOf(f, man){ return (man&&man[f]&&man[f].title) ? man[f].title : ti
 
 function cardHTML(f, man, isNewest){
   const k = kicker(f);
-  return `<a class="tw-card${isNewest?' has-new':''}" href="${esc(f)}" data-file="${esc(f)}">`+
+  return `<a class="tw-card${isNewest?' has-new':''}" href="${esc(f)}" data-file="${esc(f)}" draggable="false">`+
     `${isNewest?`<span class="newpill">${SUNRISE} new</span>`:''}`+
     `<div class="k">${esc(k)}</div><h3>${esc(titleOf(f,man))}</h3>`+
     `<div class="fn">${esc(f)}</div><span class="ticon">${iconFor(k)}</span></a>`;
 }
 function archiveCardHTML(count){
-  return `<a class="tw-arch" id="archTarget" href="./?view=archive"><div class="k">▤ The Archive</div>`+
+  return `<a class="tw-arch" id="archTarget" href="./?view=archive" draggable="false"><div class="k">▤ The Archive</div>`+
     `<h3>Resting pages</h3><p>Everything eased off the marquee — nothing lost, just at rest.</p>`+
     `<span class="ct">${count} →</span></a>`;
 }
@@ -360,12 +371,16 @@ function paintMarquee(root, files, man, physArchiveCount, stale){
    Hold ~400ms to lift (card "arms" with a slight press first). Tap = open.
    Move >10px before the hold completes = scroll/click intent, drag cancelled.
    While dragging: ghost clone follows the pointer, dashed placeholder marks
-   the drop slot; scroll is blocked via a non-passive touchmove listener. */
+   the drop slot; scroll is blocked via a non-passive touchmove listener.
+   R3.5 FIX: anchors start a NATIVE link-drag on mouse move, which hijacked the
+   pointer stream and froze the ghost — blocked via draggable="false" +
+   dragstart preventDefault + -webkit-user-drag:none. */
 const HOLD_MS=400, SLOP=10;
 function wireDrag(root){
   const grid = root;
   root.querySelectorAll('.tw-card').forEach(card=>{
     let suppressClick=false;
+    card.addEventListener('dragstart', e=>e.preventDefault());
     card.addEventListener('click', e=>{
       if(suppressClick){ e.preventDefault(); e.stopPropagation(); suppressClick=false; }
     });
@@ -500,12 +515,12 @@ async function renderArchive(root){
         `<p>Pages you archive will rest here.</p></div>`; return;
     }
     const stateCards = [...stateArchived].sort().map(f=>
-      `<a class="tw-card restorable" href="${esc(f)}" data-file="${esc(f)}">`+
+      `<a class="tw-card restorable" href="${esc(f)}" data-file="${esc(f)}" draggable="false">`+
       `<div class="k">${esc(kicker(f))}</div><h3>${esc(titleOf(f,rootMan))}</h3>`+
       `<div class="fn">${esc(f)}</div>`+
       `<span class="tw-restore" role="button" tabindex="0" aria-label="Move back to the launchpad">↩ launchpad</span></a>`).join('');
     const physCards = [...physFiles].sort().map(f=>{const k=kicker(f);
-      return `<a class="tw-card" href="archive/${esc(f)}">`+
+      return `<a class="tw-card" href="archive/${esc(f)}" draggable="false">`+
       `<div class="k">${esc(k)}</div><h3>${esc(titleOf(f,physMan))}</h3>`+
       `<div class="fn">archive/${esc(f)}</div><span class="ticon">${iconFor(k)}</span></a>`;}).join('');
     root.innerHTML = back +
