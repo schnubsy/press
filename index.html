@@ -309,7 +309,7 @@ function flash(msg,color){ sync.textContent=msg; sync.style.background=color||'#
 function order(files, man){ // default order: manifest newest-first; disk-only pages appended A→Z
   if(!man) return {ordered:[...files].sort(), newest:null};
   const manKeys = Object.keys(man).filter(k=>files.includes(k));
-  const rest = files.filter(f=>!manKeys.includes(k=>k===f)).sort();
+  const rest = files.filter(f=>!manKeys.includes(f)).sort();
   return {ordered:[...manKeys.slice().reverse(), ...rest],
           newest: manKeys.length?manKeys[manKeys.length-1]:null};
 }
