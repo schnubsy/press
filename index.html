@@ -39,6 +39,7 @@
    pages → N", counter sized to match the title text.
    R3.11: archive moon -15% and aligned to right:14px (matches .ticon), same
    stroke-width:2 so it reads as the same Feather set.
+   R3.12: archive moon filled (solid crescent, no stroke) and 20% smaller.
    ============================================================================ */
 :root {
   /* palette */
@@ -190,11 +191,10 @@ body.tw-sorting .tw-card{transition:none}
   border-radius:var(--tw-radius-card);
   background:radial-gradient(140px 90px at 88% 30%, rgba(142,123,232,.16), transparent 70%),var(--tw-glass-arch);
   border:1px solid var(--tw-border-arch);cursor:pointer;transition:var(--tw-transition-card);overflow:hidden}
-.tw-arch .aicon{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:34px;height:34px;
+.tw-arch .aicon{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:28px;height:28px;
   display:flex;align-items:center;justify-content:center;color:var(--tw-icon);pointer-events:none;
   filter:drop-shadow(0 0 6px rgba(142,123,232,.45))}
-.tw-arch .aicon svg{width:31px;height:31px;stroke:currentColor;fill:none;stroke-width:2;
-  stroke-linecap:round;stroke-linejoin:round}
+.tw-arch .aicon svg{width:25px;height:25px;stroke:none;fill:currentColor}
 .tw-arch:hover{border-color:rgba(142,123,232,.5)}
 .tw-arch:focus-visible{outline:2px solid var(--tw-violet);outline-offset:3px}
 .tw-arch.drop-hot{border-color:var(--tw-violet);box-shadow:0 0 0 2px rgba(142,123,232,.4), var(--tw-shadow-card-hover);
