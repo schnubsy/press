@@ -87,6 +87,8 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .totC{text-align:center;margin:10px 0 12px}
 .totC b{display:block;font-family:var(--mono);font-size:clamp(26px,8vw,31px);font-weight:700;letter-spacing:-.03em;line-height:1}
 .totC span{display:block;font-size:10.5px;color:var(--muted);font-weight:600;margin-top:3px}
+.totC .fair{font-size:12px;color:var(--ink);font-weight:700;margin-top:5px}
+.totC .fair b{font-family:var(--mono);color:var(--vio);font-weight:700}
 .needmembers{font-size:13px;color:var(--muted);background:var(--soft);border-radius:11px;padding:11px 13px}
 .needmembers button{color:var(--vio);font-weight:800;font-size:13px;text-decoration:underline}
 
@@ -266,7 +268,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
       <h2 class="h2">The tab <em id="forTrip0"></em></h2>
       <button class="editbtn" id="editTripBtn">Edit</button>
     </div>
-    <div class="totC"><b id="totalAmt">$0.00</b><span id="totalLbl"></span></div>
+    <div class="totC"><b id="totalAmt">$0.00</b><span class="fair" id="fairLbl"></span><span id="totalLbl"></span></div>
     <div id="needMembers" class="needmembers" hidden>
       No members yet — <button id="addMembersBtn">add everyone going</button> to start.
     </div>
@@ -474,24 +476,34 @@ async function cloudDeleteTrip(tid){
    paid[A] += amt, share[B] += amt; excluded from trip total & count.        */
 function compute(trip,exps){
   const members=trip.members||[];
-  const paid={},share={}; members.forEach(m=>{paid[m]=0;share[m]=0;});
-  const ensure=m=>{ if(paid[m]===undefined){paid[m]=0;share[m]=0;} };
-  let total=0, off=0, count=0, paidBack=0; const offBy={};
+  /* two ledgers: E = trip expenses only (drives the rings and each person's
+     trip position), T = expenses + settlement transfers (drives what is still
+     outstanding). Keeping them apart stops a repayment from inflating
+     somebody's "fair share".                                              */
+  const paidE={},shareE={},paidT={},shareT={};
+  members.forEach(m=>{paidE[m]=0;shareE[m]=0;paidT[m]=0;shareT[m]=0;});
+  const ensure=m=>{ if(paidE[m]===undefined){paidE[m]=0;shareE[m]=0;paidT[m]=0;shareT[m]=0;} };
+  let total=0, off=0, count=0, paidBack=0, custom=false; const offBy={};
   exps.forEach(x=>{
     const c=Math.round(x.amount*100);
-    if(isPay(x)){ ensure(x.paid_by); paid[x.paid_by]+=c; paidBack+=c;
-      const to=(x.split_members||[])[0]; if(to){ ensure(to); share[to]+=c; } return; }
+    if(isPay(x)){ ensure(x.paid_by); paidT[x.paid_by]+=c; paidBack+=c;
+      const to=(x.split_members||[])[0]; if(to){ ensure(to); shareT[to]+=c; } return; }
     if(x.excluded){ off+=c; offBy[x.paid_by]=(offBy[x.paid_by]||0)+c; return; }
     total+=c; count++;
     ensure(x.paid_by);
     let parts=(x.split_members&&x.split_members.length)?x.split_members.filter(m=>members.includes(m)):members.slice();
     if(!parts.length) parts=members.slice();
-    paid[x.paid_by]+=c;
+    if(parts.length!==members.length) custom=true;
+    paidE[x.paid_by]+=c; paidT[x.paid_by]+=c;
     const base=Math.floor(c/parts.length); let rem=c-base*parts.length;
-    parts.forEach(m=>{ ensure(m); share[m]+=base+(rem>0?1:0); if(rem>0)rem--; });
+    parts.forEach(m=>{ ensure(m); const bit=base+(rem>0?1:0); shareE[m]+=bit; shareT[m]+=bit; if(rem>0)rem--; });
   });
-  const order=members.concat(Object.keys(paid).filter(m=>!members.includes(m)));
-  const nets=order.map(m=>({m,net:paid[m]-share[m],paid:paid[m],share:share[m]}));
+  const order=members.concat(Object.keys(paidE).filter(m=>!members.includes(m)));
+  const nets=order.map(m=>({m,net:paidT[m]-shareT[m],paid:paidT[m],share:shareT[m]}));
+  /* what each person's ring and headline figure use */
+  const people=order.map(m=>({m,paid:paidE[m],share:shareE[m],
+    net:paidE[m]-shareE[m], outstanding:paidT[m]-shareT[m]}));
+  const fair=members.length?Math.round(total/members.length):0;
   const cred=nets.filter(n=>n.net>0).map(n=>({m:n.m,v:n.net})).sort((a,b)=>b.v-a.v);
   const debt=nets.filter(n=>n.net<0).map(n=>({m:n.m,v:-n.net})).sort((a,b)=>b.v-a.v);
   const settle=[]; let i=0,j=0;
@@ -502,7 +514,7 @@ function compute(trip,exps){
     if(debt[i].v===0)i++; if(cred[j].v===0)j++;
   }
   const remaining=nets.filter(n=>n.net<0).reduce((a,n)=>a-n.net,0);
-  return {total,off,count,nets,settle,paidBack,remaining,offBy};
+  return {total,off,count,nets,people,fair,custom,settle,paidBack,remaining,offBy};
 }
 
 /* ---- the ring ----
@@ -570,6 +582,9 @@ function renderAll(rebuildForm){
   const sym=trip.currency;
 
   $('totalAmt').textContent=fmt(r.total,sym);
+  $('fairLbl').innerHTML=!r.count?''
+    :(r.custom?'Shares vary by expense'
+      :'Fair share <b>'+fmt(r.fair,sym)+'</b> each');
   $('totalLbl').textContent=r.count
     ? r.count+' expense'+(r.count>1?'s':'')+' · '+trip.members.length+' people'
     : 'Nothing on the tab yet';
@@ -580,9 +595,11 @@ function renderAll(rebuildForm){
 
   $('orbits').hidden=!(hasMembers&&r.count);
   if(hasMembers&&r.count){
-    $('orbits').innerHTML=r.nets.map((n,i)=>{
+    $('orbits').innerHTML=r.people.map((n,i)=>{
       const col=memColor(trip,n.m);
-      const line=n.net>0?'<span class="st2 g">gets '+fmt(n.net,sym)+' back</span>'
+      const settled=n.net!==0&&Math.abs(n.outstanding)<1;
+      const line=settled?'<span class="st2 g">settled ✓</span>'
+        :n.net>0?'<span class="st2 g">gets '+fmt(n.net,sym)+' back</span>'
         :n.net<0?'<span class="st2 o">owes '+fmt(-n.net,sym)+'</span>'
         :'<span class="st2 e">all even</span>';
       return '<div class="ob"><div class="gz">'+gauge(col,n.paid,n.share,i)
