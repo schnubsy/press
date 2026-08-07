@@ -32,7 +32,7 @@ html{scroll-behavior:smooth}
 body{
   font-family:var(--body);background:var(--paper);color:var(--ink);
   line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;
-  padding-bottom:calc(48px + env(safe-area-inset-bottom));
+  padding-bottom:calc(28px + env(safe-area-inset-bottom));
 }
 .wrap{max-width:540px;margin:0 auto;padding:0 18px}
 button{font-family:inherit;cursor:pointer}
@@ -40,16 +40,16 @@ input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink)}
 [hidden]{display:none!important}
 
 /* ---------- header ---------- */
-.top{padding:calc(16px + env(safe-area-inset-top)) 0 6px}
+.top{padding-top:calc(14px + env(safe-area-inset-top));padding-bottom:4px}
 .back{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;
   letter-spacing:.14em;text-transform:uppercase;color:var(--pine);text-decoration:none;
-  border:1px solid rgba(11,79,58,.25);padding:5px 11px;border-radius:99px;margin-bottom:16px}
+  border:1px solid rgba(11,79,58,.25);padding:4px 10px;border-radius:99px;margin-bottom:10px}
 .back:active{background:rgba(11,79,58,.06)}
 .brandrow{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
-.wordmark{font-family:var(--disp);font-weight:750;font-size:clamp(38px,11vw,50px);
+.wordmark{font-family:var(--disp);font-weight:750;font-size:clamp(30px,8.5vw,40px);
   letter-spacing:-.03em;line-height:.95;color:var(--ink)}
 .wordmark em{font-style:italic;font-weight:450;color:var(--green)}
-.tagline{font-size:14px;color:var(--muted);margin-top:6px;font-weight:500}
+.tagline{font-size:13px;color:var(--muted);margin-top:2px;font-weight:500}
 .who{border:1.5px dashed var(--dash);background:var(--card);border-radius:99px;
   padding:8px 14px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;
   transition:.15s;margin-bottom:4px}
@@ -57,96 +57,105 @@ input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink)}
 .who:active{transform:scale(.97)}
 
 /* ---------- trip bar ---------- */
-.tripbar{display:flex;gap:10px;margin:22px 0 18px}
+.tripbar{display:flex;gap:9px;margin:13px 0 11px}
 .selectwrap{position:relative;flex:1}
 .selectwrap select{
   width:100%;appearance:none;-webkit-appearance:none;border:1px solid var(--line);
-  background:var(--card);border-radius:14px;padding:13px 40px 13px 16px;
+  background:var(--card);border-radius:13px;padding:10px 38px 10px 14px;
   font-weight:600;box-shadow:var(--shadow);
 }
 .selectwrap::after{content:"";position:absolute;right:16px;top:50%;width:9px;height:9px;
   border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
   transform:translateY(-70%) rotate(45deg);pointer-events:none}
-.iconbtn{width:48px;flex:none;border:none;border-radius:14px;background:var(--pine);color:#fff;
-  font-size:24px;font-weight:400;line-height:1;box-shadow:var(--shadow);transition:.15s}
+.iconbtn{width:44px;flex:none;border:none;border-radius:13px;background:var(--pine);color:#fff;
+  font-size:22px;font-weight:400;line-height:1;box-shadow:var(--shadow);transition:.15s}
 .iconbtn:active{transform:scale(.95)}
 
 /* ---------- empty state ---------- */
 .empty{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);
-  padding:44px 26px;text-align:center;margin-top:8px}
+  padding:32px 24px;text-align:center;margin-top:6px}
 .empty h2{font-family:var(--disp);font-weight:700;font-size:24px;letter-spacing:-.02em;margin-bottom:8px}
 .empty p{color:var(--muted);font-size:15px;max-width:320px;margin:0 auto 22px}
 
 /* ---------- receipt (the tab) — signature ---------- */
 .receipt{background:var(--card);border-radius:var(--r) var(--r) 0 0;box-shadow:var(--shadow);
-  padding:22px 22px 16px;position:relative}
-.zig{height:12px;margin-bottom:26px;filter:drop-shadow(0 8px 10px rgba(24,45,38,.06));
+  padding:15px 16px 11px;position:relative}
+.zig{height:12px;margin-bottom:14px;filter:drop-shadow(0 8px 10px rgba(24,45,38,.06));
   background:
     linear-gradient(135deg,var(--card) 50%,transparent 50%),
     linear-gradient(225deg,var(--card) 50%,transparent 50%);
   background-size:16px 12px;background-repeat:repeat-x}
 .rhead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:2px}
 .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--green)}
-.tripname{font-family:var(--disp);font-weight:700;font-size:24px;letter-spacing:-.02em;line-height:1.15}
-.editbtn{border:1px solid var(--line);background:none;border-radius:99px;padding:6px 13px;
+.tripname{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:-.02em;line-height:1.12}
+.editbtn{border:1px solid var(--line);background:none;border-radius:99px;padding:5px 12px;
   font-size:12px;font-weight:600;color:var(--muted);flex:none;margin-top:2px}
 .editbtn:active{background:var(--paper)}
-.total{margin:16px 0 4px}
-.total .amt{font-family:var(--mono);font-weight:700;font-size:clamp(34px,10vw,44px);letter-spacing:-.03em;line-height:1}
-.total .lbl{font-size:13px;color:var(--muted);margin-top:4px;font-weight:500}
-.dashline{border:none;border-top:1.5px dashed var(--dash);margin:16px 0}
-.slabel{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
+.total{margin:9px 0 2px}
+.total .amt{font-family:var(--mono);font-weight:700;font-size:clamp(26px,7.5vw,34px);letter-spacing:-.03em;line-height:1}
+.total .lbl{font-size:12px;color:var(--muted);margin-top:2px;font-weight:500}
+.dashline{border:none;border-top:1.5px dashed var(--dash);margin:10px 0}
+.slabel{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
 
-.person{margin-bottom:14px}
-.person:last-child{margin-bottom:2px}
-.prow{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
-.pname{font-weight:600;font-size:15px}
-.chip{font-family:var(--mono);font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;white-space:nowrap}
+/* ---- the split ring: outer = paid, inner = fair share ---- */
+.tabviz{display:flex;align-items:center;gap:14px}
+.donut{flex:none;position:relative;width:118px;height:118px}
+.donut svg{display:block}
+.donut .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none}
+.donut .ctr .cl{font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+.donut .ctr .cv{font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:-.02em}
+.legend{flex:1;min-width:0}
+.lrow{display:flex;align-items:center;gap:8px;padding:4px 0}
+.ldot{width:9px;height:9px;border-radius:50%;flex:none}
+.lname{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lpaid{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:auto;flex:none}
+.lrow .chip{flex:none}
+.chip{font-family:var(--mono);font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
 .chip.gets{background:var(--green-soft);color:var(--green)}
 .chip.owes{background:var(--coral-soft);color:var(--coral)}
 .chip.even{background:var(--paper);color:var(--faint)}
-.pbar{height:6px;border-radius:99px;background:var(--paper);margin:7px 0 4px;overflow:hidden}
-.pbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),var(--pine));min-width:2px}
-.pmeta{font-size:12px;color:var(--faint)}
-.pmeta b{font-family:var(--mono);font-weight:600;color:var(--muted)}
+.vizcap{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:var(--faint);margin-top:7px;display:flex;gap:12px}
+.vizcap i{font-style:normal;display:inline-flex;align-items:center;gap:5px}
+.vizcap .ring{width:10px;height:10px;border-radius:50%;border:3px solid var(--faint);display:inline-block}
+.vizcap .ring.thin{border-width:1.5px}
 
-.settle{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid var(--line);
-  border-radius:12px;margin-bottom:8px;background:var(--paper)}
-.settle .from,.settle .to{font-weight:600;font-size:14px}
+.settle{display:flex;align-items:center;gap:9px;padding:8px 12px;border:1px solid var(--line);
+  border-radius:11px;margin-bottom:6px;background:var(--paper)}
+.settle .from,.settle .to{font-weight:600;font-size:13.5px}
 .settle .arr{color:var(--green);flex:none;display:flex}
-.settle .amt{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:15px}
-.allsquare{display:flex;align-items:center;gap:8px;color:var(--green);font-weight:600;font-size:14px;
-  background:var(--green-soft);border-radius:12px;padding:12px 14px}
-.offtab{display:flex;justify-content:space-between;font-size:13px;color:var(--sun);font-weight:600;
-  background:var(--sun-soft);border-radius:10px;padding:9px 13px;margin-top:14px}
+.settle .amt{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:14px}
+.allsquare{display:flex;align-items:center;gap:8px;color:var(--green);font-weight:600;font-size:13.5px;
+  background:var(--green-soft);border-radius:11px;padding:9px 12px}
+.offtab{display:flex;justify-content:space-between;font-size:12.5px;color:var(--sun);font-weight:600;
+  background:var(--sun-soft);border-radius:10px;padding:7px 12px;margin-top:10px}
 .offtab b{font-family:var(--mono)}
 .needmembers{font-size:14px;color:var(--muted);background:var(--paper);border-radius:12px;padding:13px 15px}
 .needmembers button{background:none;border:none;color:var(--pine);font-weight:700;font-size:14px;text-decoration:underline;padding:0}
 
 /* ---------- entry form ---------- */
-.panel{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:20px;margin-bottom:20px}
-.panel h2{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:-.01em}
-.panel .sub{font-size:13px;color:var(--muted);margin:2px 0 16px}
+.panel{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px;margin-bottom:14px}
+.panel h2{font-family:var(--disp);font-weight:700;font-size:17px;letter-spacing:-.01em}
+.panel .sub{font-size:12.5px;color:var(--muted);margin:1px 0 11px}
 .editing-note{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--sun);background:var(--sun-soft);border-radius:8px;padding:6px 11px;margin-bottom:14px}
 .panel.editing .editing-note{display:inline-block}
-.field{margin-bottom:14px}
-.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;
   text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)}
-.field input[type=text],.field input[type=tel]{width:100%;border:1px solid var(--line);border-radius:12px;
-  padding:12px 14px;background:var(--paper)}
+.field input[type=text],.field input[type=tel]{width:100%;border:1px solid var(--line);border-radius:11px;
+  padding:10px 12px;background:var(--paper)}
 .field input:focus{outline:2px solid var(--green);outline-offset:0;border-color:transparent}
 .amount-in{position:relative}
-.amount-in .cur{position:absolute;left:14px;top:50%;transform:translateY(-50%);
+.amount-in .cur{position:absolute;left:12px;top:50%;transform:translateY(-50%);
   font-family:var(--mono);font-weight:700;color:var(--muted)}
-.amount-in input{padding-left:38px!important;font-family:var(--mono);font-weight:600;font-size:20px!important}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.pchip{border:1.5px solid var(--line);background:var(--paper);border-radius:99px;padding:8px 15px;
-  font-size:14px;font-weight:600;color:var(--muted);transition:.12s}
+.amount-in input{padding-left:36px!important;font-family:var(--mono);font-weight:600;font-size:18px!important}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.pchip{border:1.5px solid var(--line);background:var(--paper);border-radius:99px;padding:7px 13px;
+  font-size:13.5px;font-weight:600;color:var(--muted);transition:.12s}
 .pchip.on{background:var(--pine);border-color:var(--pine);color:#fff}
 .pchip:active{transform:scale(.96)}
 .splitrow{display:flex;align-items:center;justify-content:space-between;width:100%;
-  border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:12px 14px;font-size:14px}
+  border:1px solid var(--line);border-radius:11px;background:var(--paper);padding:10px 12px;font-size:13.5px}
 .splitrow b{font-weight:600}
 .splitrow .val{color:var(--green);font-weight:700;display:flex;align-items:center;gap:6px}
 .splitgrid{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
@@ -160,30 +169,30 @@ input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink)}
   background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:.18s}
 .switch input:checked + i{background:var(--sun)}
 .switch input:checked + i::after{transform:translateX(20px)}
-.btn{width:100%;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:700;
-  background:var(--pine);color:#fff;transition:.15s;margin-top:6px}
+.btn{width:100%;border:none;border-radius:13px;padding:12px;font-size:15px;font-weight:700;
+  background:var(--pine);color:#fff;transition:.15s;margin-top:4px}
 .btn:active{transform:scale(.98)}
-.btn.ghost{background:none;color:var(--muted);border:1px solid var(--line);margin-top:10px;padding:12px}
+.btn.ghost{background:none;color:var(--muted);border:1px solid var(--line);margin-top:8px;padding:10px}
 .btn.danger{background:var(--coral-soft);color:var(--coral)}
 .btnrow{display:flex;gap:10px}
-.btnrow .btn{margin-top:10px}
+.btnrow .btn{margin-top:8px}
 
 /* ---------- expense list ---------- */
-.listhead{display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px}
-.listhead h2{font-family:var(--disp);font-weight:700;font-size:19px}
-.listhead span{font-size:12px;color:var(--faint);font-family:var(--mono)}
-.exp{display:flex;align-items:center;gap:13px;background:var(--card);border-radius:14px;
-  box-shadow:var(--shadow);padding:14px 16px;margin-bottom:10px;width:100%;border:none;text-align:left;transition:.12s}
+.listhead{display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 7px}
+.listhead h2{font-family:var(--disp);font-weight:700;font-size:17px}
+.listhead span{font-size:11px;color:var(--faint);font-family:var(--mono)}
+.exp{display:flex;align-items:center;gap:11px;background:var(--card);border-radius:13px;
+  box-shadow:var(--shadow);padding:10px 13px;margin-bottom:7px;width:100%;border:none;text-align:left;transition:.12s}
 .exp:active{transform:scale(.985)}
 .exp.off{background:transparent;border:1.5px dashed var(--dash);box-shadow:none}
-.exp .ic{width:38px;height:38px;flex:none;border-radius:11px;background:var(--green-soft);color:var(--pine);
-  display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;font-size:16px}
+.exp .ic{width:33px;height:33px;flex:none;border-radius:10px;background:var(--green-soft);color:var(--pine);
+  display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;font-size:14px}
 .exp.off .ic{background:var(--sun-soft);color:var(--sun)}
 .exp .mid{flex:1;min-width:0}
-.exp .t{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.exp .m{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exp .t{display:block;font-weight:600;font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exp .m{display:block;font-size:12px;color:var(--muted);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .exp .m .offtag{color:var(--sun);font-weight:600}
-.exp .a{font-family:var(--mono);font-weight:700;font-size:15px;flex:none}
+.exp .a{font-family:var(--mono);font-weight:700;font-size:14px;flex:none}
 .exp.off .a{color:var(--faint);font-weight:500}
 
 /* ---------- sheets ---------- */
@@ -210,9 +219,6 @@ input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink)}
   font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center}
 .whochips{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 6px}
 .whochips .pchip{padding:11px 20px;font-size:15px}
-
-footer{padding:34px 0 10px;text-align:center;color:var(--faint);font-size:12.5px}
-footer a{color:var(--pine);text-decoration:none;font-weight:600}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 :focus-visible{outline:2px solid var(--green);outline-offset:2px}
@@ -261,7 +267,7 @@ footer a{color:var(--pine);text-decoration:none;font-weight:600}
       </div>
       <div id="peopleBlock" hidden>
         <hr class="dashline">
-        <div class="slabel">Each person</div>
+        <div class="slabel">The split</div>
         <div id="peopleList"></div>
       </div>
       <div id="settleBlock" hidden>
@@ -326,10 +332,6 @@ footer a{color:var(--pine);text-decoration:none;font-weight:600}
   </section>
 
 </main>
-
-<footer class="wrap">
-  Everything syncs live for everyone with this link. · <a href="./">Mark's Press</a>
-</footer>
 
 <!-- TRIP SHEET -->
 <div class="backdrop" id="backdrop"></div>
@@ -536,20 +538,45 @@ function renderAll(rebuildForm){
   $('needMembers').hidden=hasMembers;
   $('entryPanel').hidden=!hasMembers;
 
-  // people
+  // the split — dual-ring donut: outer = who paid, inner = fair share
   $('peopleBlock').hidden=!(hasMembers&&r.count);
   if(hasMembers&&r.count){
-    const maxPaid=Math.max(1,...r.nets.map(n=>n.paid));
-    $('peopleList').innerHTML=r.nets
-      .filter(n=>trip.members.includes(n.m)||n.paid||n.share)
-      .map(n=>{
-        const chip=n.net>0?'<span class="chip gets">gets back '+fmt(n.net,sym)+'</span>'
+    const PAL=['#0E9F6E','#E0532F','#5B8DEF','#D9970F','#8E5BEF','#0FA3A3','#E05B9E','#64748B'];
+    const rows=r.nets, tot=Math.max(1,r.total);
+    const color=i=>PAL[i%PAL.length];
+    function ring(cx,rad,sw,vals){
+      const C=2*Math.PI*rad; let cum=0, out='';
+      vals.forEach((v,i)=>{
+        const f=v/tot; if(f<=0){return;}
+        const len=Math.max(f*C-1.5,0.5);
+        out+='<circle cx="'+cx+'" cy="'+cx+'" r="'+rad+'" fill="none" stroke="'+color(i)
+          +'" stroke-width="'+sw+'" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)
+          +'" stroke-dashoffset="'+(-cum*C).toFixed(2)+'" stroke-linecap="butt"/>';
+        cum+=f;
+      });
+      return out;
+    }
+    const svg='<svg width="118" height="118" viewBox="0 0 118 118">'
+      +'<g transform="rotate(-90 59 59)">'
+      +'<circle cx="59" cy="59" r="47" fill="none" stroke="var(--paper)" stroke-width="13"/>'
+      +'<circle cx="59" cy="59" r="33" fill="none" stroke="var(--paper)" stroke-width="6"/>'
+      +ring(59,47,13,rows.map(n=>n.paid))
+      +ring(59,33,6,rows.map(n=>n.share))
+      +'</g></svg>';
+    const totTxt=fmt(r.total,sym);
+    $('peopleList').innerHTML=
+      '<div class="tabviz"><div class="donut">'+svg
+      +'<div class="ctr"><span class="cl">total</span><span class="cv" style="font-size:'
+      +(totTxt.length>9?'11':'13')+'px">'+totTxt+'</span></div></div>'
+      +'<div class="legend">'+rows.map((n,i)=>{
+        const chip=n.net>0?'<span class="chip gets">gets '+fmt(n.net,sym)+'</span>'
           :n.net<0?'<span class="chip owes">owes '+fmt(-n.net,sym)+'</span>'
           :'<span class="chip even">even</span>';
-        return '<div class="person"><div class="prow"><span class="pname">'+esc(n.m)+'</span>'+chip+'</div>'
-          +'<div class="pbar"><i style="width:'+Math.max(2,Math.round(n.paid/maxPaid*100))+'%"></i></div>'
-          +'<div class="pmeta">paid <b>'+fmt(n.paid,sym)+'</b> · fair share <b>'+fmt(n.share,sym)+'</b></div></div>';
-      }).join('');
+        return '<div class="lrow"><span class="ldot" style="background:'+color(i)+'"></span>'
+          +'<span class="lname">'+esc(n.m)+'</span>'
+          +'<span class="lpaid">'+fmt(n.paid,sym)+'</span>'+chip+'</div>';
+      }).join('')+'</div></div>'
+      +'<div class="vizcap"><i><span class="ring"></span>outer · paid</i><i><span class="ring thin"></span>inner · fair share</i></div>';
   }
 
   // settle
