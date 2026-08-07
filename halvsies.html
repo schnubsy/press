@@ -99,11 +99,15 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .money{margin-top:6px;padding-top:6px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:1px}
 .money .pd{font-family:var(--mono);font-size:9px;color:var(--muted)}
 .money .st2{font-family:var(--mono);font-size:9.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st2.g{color:var(--st-ink)}
 .st2.o{color:var(--red)}
 .st2.e{color:var(--faint)}
-.offtab{display:flex;justify-content:space-between;font-size:11.5px;color:var(--amb);font-weight:700;
-  background:var(--amb-soft);border-radius:10px;padding:6px 11px;margin-top:9px}
-.offtab b{font-family:var(--mono)}
+.offtab{font-size:11.5px;color:var(--amb);font-weight:700;
+  background:var(--amb-soft);border-radius:10px;padding:7px 11px;margin-top:9px}
+.offhead{font-size:10px;opacity:.8;margin-bottom:3px}
+.offrow{display:flex;align-items:center;gap:6px;line-height:1.6}
+.offrow .odot{width:7px;height:7px;border-radius:50%;flex:none}
+.offrow b{margin-left:auto;font-family:var(--mono)}
 
 /* settle */
 .prog{display:flex;align-items:center;gap:9px;margin:9px 0 11px}
@@ -267,7 +271,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
       No members yet — <button id="addMembersBtn">add everyone going</button> to start.
     </div>
     <div class="orbits" id="orbits" hidden></div>
-    <div class="offtab" id="offtabLine" hidden><span>Off the tab (recorded only)</span><b id="offtabAmt"></b></div>
+    <div class="offtab" id="offtabLine" hidden></div>
   </section>
 
   <!-- SETTLE -->
@@ -472,12 +476,12 @@ function compute(trip,exps){
   const members=trip.members||[];
   const paid={},share={}; members.forEach(m=>{paid[m]=0;share[m]=0;});
   const ensure=m=>{ if(paid[m]===undefined){paid[m]=0;share[m]=0;} };
-  let total=0, off=0, count=0, paidBack=0;
+  let total=0, off=0, count=0, paidBack=0; const offBy={};
   exps.forEach(x=>{
     const c=Math.round(x.amount*100);
     if(isPay(x)){ ensure(x.paid_by); paid[x.paid_by]+=c; paidBack+=c;
       const to=(x.split_members||[])[0]; if(to){ ensure(to); share[to]+=c; } return; }
-    if(x.excluded){ off+=c; return; }
+    if(x.excluded){ off+=c; offBy[x.paid_by]=(offBy[x.paid_by]||0)+c; return; }
     total+=c; count++;
     ensure(x.paid_by);
     let parts=(x.split_members&&x.split_members.length)?x.split_members.filter(m=>members.includes(m)):members.slice();
@@ -498,7 +502,7 @@ function compute(trip,exps){
     if(debt[i].v===0)i++; if(cred[j].v===0)j++;
   }
   const remaining=nets.filter(n=>n.net<0).reduce((a,n)=>a-n.net,0);
-  return {total,off,count,nets,settle,paidBack,remaining};
+  return {total,off,count,nets,settle,paidBack,remaining,offBy};
 }
 
 /* ---- the ring ----
@@ -578,7 +582,7 @@ function renderAll(rebuildForm){
   if(hasMembers&&r.count){
     $('orbits').innerHTML=r.nets.map((n,i)=>{
       const col=memColor(trip,n.m);
-      const line=n.net>0?'<span class="st2" style="color:'+shade(col,.6)+'">gets '+fmt(n.net,sym)+' back</span>'
+      const line=n.net>0?'<span class="st2 g">gets '+fmt(n.net,sym)+' back</span>'
         :n.net<0?'<span class="st2 o">owes '+fmt(-n.net,sym)+'</span>'
         :'<span class="st2 e">all even</span>';
       return '<div class="ob"><div class="gz">'+gauge(col,n.paid,n.share,i)
@@ -589,7 +593,11 @@ function renderAll(rebuildForm){
   }
 
   $('offtabLine').hidden=!r.off;
-  if(r.off) $('offtabAmt').textContent=fmt(r.off,sym);
+  if(r.off){
+    $('offtabLine').innerHTML='<div class="offhead">Off the tab (recorded only)</div>'
+      +Object.keys(r.offBy).map(m=>'<div class="offrow"><span class="odot" style="background:'
+        +memColor(trip,m)+'"></span>'+esc(m)+'<b>'+fmt(r.offBy[m],sym)+'</b></div>').join('');
+  }
 
   renderSettle(trip,exps,r,sym);
   renderList(trip,exps,sym);
