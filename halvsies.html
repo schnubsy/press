@@ -12,15 +12,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Spline+Sans+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   HALVSIES · Orbit — playful modern, avatar-first.
-   People are avatars; gauges fill toward fair share; settle-up
-   is a handshake that turns green. Winner of the Eye LITE round.
+   HALVSIES · Orbit v4 — "Bridge rings × Track settle"
+   Ring = your fair share. Solid colour = paid (rounded cap).
+   Striped = still to pay. Past the top line the SAME band goes
+   darker for exactly the proportion overpaid, darkening again
+   on each further lap. Settle-up = a chevron route between
+   two people; settled states run on the teal family.
    ============================================================ */
 :root{
   --bg:#F7F6FB; --card:#FFFFFF; --ink:#211F33; --muted:#8D89A6; --faint:#A6A2BC;
   --soft:#F1F0F7; --line:#E7E5F0;
   --vio:#7C5CFF; --cor:#FF6B5E;
-  --grn:#16A34A; --grn-soft:#DCFCE7; --grn-ink:#15803D;
+  --st:#0D9488; --st-soft:#CCFBF1; --st-ink:#0F766E; --st-lite:#5EEAD4;
   --red:#DC4B3E; --red-soft:#FFE4E0;
   --amb:#B45309; --amb-soft:#FEF3C7;
   --font:'Sora',system-ui,-apple-system,sans-serif;
@@ -50,7 +53,6 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .who .av{width:21px;height:21px;font-size:10px;background:var(--faint)}
 .who.set{border-style:solid}
 .who:active{transform:scale(.96)}
-.brandrow{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
 .wordmark{font-weight:800;font-size:clamp(27px,7.5vw,34px);letter-spacing:-.04em;line-height:1}
 .wordmark span{background:linear-gradient(90deg,var(--vio),var(--cor));-webkit-background-clip:text;background-clip:text;color:transparent}
 .tagline{font-size:11.5px;color:var(--muted);margin:1px 0 10px;font-weight:600}
@@ -74,61 +76,61 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .empty p{color:var(--muted);font-size:13.5px;max-width:300px;margin:0 auto 16px}
 .empty .go{max-width:220px;margin:0 auto}
 
-/* the tab */
-.rh{display:flex;justify-content:space-between;align-items:center}
-.tn small{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;color:var(--vio);font-weight:600;text-transform:uppercase;margin-bottom:1px}
-.tn b{font-weight:800;font-size:18px;letter-spacing:-.02em;line-height:1.1}
-.editbtn{font-size:10.5px;font-weight:700;color:var(--muted);background:var(--soft);border-radius:99px;padding:6px 12px}
+/* one heading style everywhere */
+.h2{font-weight:800;font-size:15px;letter-spacing:-.01em}
+.h2 em{font-style:normal;color:var(--vio)}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.editbtn{font-size:10.5px;font-weight:700;color:var(--muted);background:var(--soft);border-radius:99px;padding:6px 12px;flex:none}
 .editbtn:active{background:var(--line)}
-.tot{display:flex;align-items:baseline;gap:8px;margin:6px 0 10px}
-.tot b{font-family:var(--mono);font-size:clamp(23px,6.5vw,29px);font-weight:700;letter-spacing:-.03em}
-.tot span{font-size:10.5px;color:var(--muted);font-weight:600}
+
+/* the tab */
+.totC{text-align:center;margin:10px 0 12px}
+.totC b{display:block;font-family:var(--mono);font-size:clamp(26px,8vw,31px);font-weight:700;letter-spacing:-.03em;line-height:1}
+.totC span{display:block;font-size:10.5px;color:var(--muted);font-weight:600;margin-top:3px}
 .needmembers{font-size:13px;color:var(--muted);background:var(--soft);border-radius:11px;padding:11px 13px}
 .needmembers button{color:var(--vio);font-weight:800;font-size:13px;text-decoration:underline}
 
-/* orbit gauges */
+/* rings */
 .orbits{display:flex;flex-wrap:wrap;gap:7px}
-.ob{flex:1 1 30%;min-width:96px;background:var(--bg);border-radius:14px;padding:9px 6px 8px;text-align:center}
-.gz{position:relative;width:56px;height:56px;margin:0 auto 5px}
-.gz .in{position:absolute;inset:8px;font-size:16px}
-.gz .plusb{position:absolute;right:-6px;top:-3px;background:var(--grn);color:#fff;font-family:var(--mono);
-  font-size:8px;font-weight:700;border-radius:99px;padding:2px 5px;box-shadow:0 2px 6px rgba(22,163,74,.4)}
-.ob .n2{font-weight:700;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ob .p2{font-family:var(--mono);font-size:9px;color:var(--muted);margin:0 0 4px}
-.chip{font-family:var(--mono);font-size:9px;font-weight:600;border-radius:99px;padding:2.5px 7px;display:inline-block;white-space:nowrap}
-.chip.g{background:var(--grn-soft);color:var(--grn-ink)}
-.chip.o{background:var(--red-soft);color:var(--red)}
-.chip.e{background:var(--soft);color:var(--faint)}
-.cap{font-size:8.5px;color:var(--faint);margin-top:6px;text-align:center;font-weight:600}
-
-/* section labels */
-.sl{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:var(--faint);text-transform:uppercase;
-  font-weight:600;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
-.sl .pct{font-size:9px;color:var(--vio);letter-spacing:.02em}
-.sl .pct.full{color:var(--grn)}
-
-/* settle handshakes */
-.hs{display:flex;align-items:center;gap:7px;background:var(--bg);border-radius:99px;padding:5px 6px;margin-bottom:6px}
-.hs:last-child{margin-bottom:0}
-.hs .av{width:25px;height:25px;font-size:10.5px}
-.hs .nm{font-weight:700;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.hs .arr2{color:var(--faint);font-weight:700;font-size:12px;flex:none}
-.hs .a3{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:12.5px;padding-right:2px;flex:none}
-.hs .btn2{font-size:9.5px;font-weight:800;color:var(--vio);background:var(--card);border-radius:99px;
-  padding:6px 10px;box-shadow:0 2px 6px rgba(33,31,51,.1);white-space:nowrap;flex:none}
-.hs .btn2:active{transform:scale(.95)}
-.hs.done{background:linear-gradient(90deg,var(--grn-soft),#F0FDF4)}
-.hs.done .a3{color:var(--grn-ink)}
-.hs.done .btn2{background:var(--grn);color:#fff;box-shadow:none}
-.allsq{display:flex;align-items:center;gap:8px;color:var(--grn-ink);font-weight:700;font-size:13px;
-  background:var(--grn-soft);border-radius:12px;padding:10px 13px}
+.ob{flex:1 1 30%;min-width:100px;background:var(--bg);border-radius:14px;padding:10px 6px 9px;text-align:center}
+.gz{position:relative;width:72px;height:72px;margin:0 auto 5px}
+.gz .in{position:absolute;left:20px;top:20px;width:32px;height:32px;font-size:14px}
+.ob .n2{font-weight:700;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.money{margin-top:6px;padding-top:6px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:1px}
+.money .pd{font-family:var(--mono);font-size:9px;color:var(--muted)}
+.money .st2{font-family:var(--mono);font-size:9.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st2.o{color:var(--red)}
+.st2.e{color:var(--faint)}
 .offtab{display:flex;justify-content:space-between;font-size:11.5px;color:var(--amb);font-weight:700;
   background:var(--amb-soft);border-radius:10px;padding:6px 11px;margin-top:9px}
 .offtab b{font-family:var(--mono)}
 
+/* settle */
+.prog{display:flex;align-items:center;gap:9px;margin:9px 0 11px}
+.prog .bar{flex:1;height:7px;border-radius:99px;background:var(--soft);overflow:hidden}
+.prog .bar i{display:block;height:100%;background:var(--st);border-radius:99px;transition:width .3s}
+.prog .lbl{font-size:11px;font-weight:700;color:var(--st-ink);white-space:nowrap}
+.prog .lbl small{color:var(--muted);font-weight:600;font-size:10px}
+.hsA{display:flex;align-items:center;gap:9px;background:var(--bg);border-radius:14px;padding:9px 10px;margin-bottom:8px}
+.hsA:last-child{margin-bottom:0}
+.hsA .av{width:30px;height:30px;font-size:12px}
+.track{flex:1;position:relative;height:30px;display:flex;align-items:center;justify-content:center;min-width:0}
+.chevs{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;
+  font-size:12px;font-weight:800;line-height:1;color:var(--vio);overflow:hidden}
+.track .amt{position:relative;background:var(--card);border-radius:99px;padding:4px 10px;
+  font-family:var(--mono);font-weight:700;font-size:12px;box-shadow:0 2px 8px rgba(33,31,51,.12);white-space:nowrap}
+.hsA .cta{font-size:10px;font-weight:800;color:#fff;background:var(--vio);border-radius:99px;
+  padding:8px 11px;white-space:nowrap;flex:none}
+.hsA .cta:active{transform:scale(.95)}
+.hsA.done{background:linear-gradient(90deg,var(--st-soft),#F0FDFA)}
+.hsA.done .chevs{color:var(--st-lite)}
+.hsA.done .amt{color:var(--st-ink)}
+.hsA.done .cta{background:var(--st)}
+.allsq{display:flex;align-items:center;gap:8px;color:var(--st-ink);font-weight:700;font-size:13px;
+  background:var(--st-soft);border-radius:12px;padding:11px 13px;margin-bottom:14px}
+.allsq:last-child{margin-bottom:0}
+
 /* entry */
-.h2{font-weight:800;font-size:15px;letter-spacing:-.01em}
-.h2 em{font-style:normal;color:var(--vio)}
 .editing-note{display:none;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--amb);background:var(--amb-soft);border-radius:8px;padding:5px 10px;margin-bottom:9px}
 .card.editing .editing-note{display:inline-block}
@@ -142,8 +144,10 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .datewrap{flex:1;position:relative}
 .datewrap .fin{width:100%;font-size:13px;color:var(--muted);font-weight:600;-webkit-appearance:none;appearance:none;min-height:41px}
 .flabel{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:600;margin:9px 0 5px}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.pc{border-radius:99px;padding:6px 12px;font-size:12px;font-weight:700;background:var(--soft);color:var(--muted);transition:.12s;border:1.5px solid transparent}
+/* pay chips share the full width */
+.chips{display:flex;gap:6px}
+.pc{flex:1 1 0;min-width:0;text-align:center;border-radius:99px;padding:7px 6px;font-size:12px;font-weight:700;
+  background:var(--soft);color:var(--muted);transition:.12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pc:active{transform:scale(.95)}
 .splitline{display:flex;align-items:center;justify-content:space-between;margin-top:9px;gap:8px}
 .splitbtn{font-size:11px;color:var(--muted);font-weight:600;text-align:left}
@@ -157,6 +161,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .offmini input:checked + .sw::after{transform:translateX(11px)}
 .offmini label{display:flex;align-items:center;gap:5px;cursor:pointer;position:relative}
 .splitgrid{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.splitgrid .pc{flex:1 1 auto}
 .go{width:100%;border-radius:12px;padding:11px;font-size:14px;font-weight:800;background:var(--ink);color:#fff;transition:.15s;margin-top:10px;display:block;text-align:center}
 .go:active{transform:scale(.98)}
 .go.ghost{background:none;color:var(--muted);border:1.5px solid var(--line);padding:9px;margin-top:7px}
@@ -234,7 +239,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
     <a class="mq" href="./">← The Marquee</a>
     <button class="who" id="whoChip" hidden><span class="av" id="whoAv">?</span><span id="whoTxt">Who are you?</span></button>
   </div>
-  <div class="brandrow"><h1 class="wordmark">Halv<span>sies</span></h1></div>
+  <h1 class="wordmark">Halv<span>sies</span></h1>
   <p class="tagline">The group expense-sharing app</p>
 </header>
 
@@ -253,24 +258,22 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 
   <!-- THE TAB -->
   <section class="card" id="tabCard" hidden>
-    <div class="rh">
-      <div class="tn"><small>The Tab</small><b id="tripName"></b></div>
-      <button class="editbtn" id="editTripBtn">Edit trip</button>
+    <div class="hrow">
+      <h2 class="h2">The tab <em id="forTrip0"></em></h2>
+      <button class="editbtn" id="editTripBtn">Edit</button>
     </div>
-    <div class="tot"><b id="totalAmt">$0.00</b><span id="totalLbl"></span></div>
+    <div class="totC"><b id="totalAmt">$0.00</b><span id="totalLbl"></span></div>
     <div id="needMembers" class="needmembers" hidden>
       No members yet — <button id="addMembersBtn">add everyone going</button> to start.
     </div>
-    <div id="orbitWrap" hidden>
-      <div class="orbits" id="orbits"></div>
-      <div class="cap">ring fills as you cover your fair share · badge = overpaid</div>
-    </div>
+    <div class="orbits" id="orbits" hidden></div>
     <div class="offtab" id="offtabLine" hidden><span>Off the tab (recorded only)</span><b id="offtabAmt"></b></div>
   </section>
 
   <!-- SETTLE -->
   <section class="card" id="settleCard" hidden>
-    <div class="sl"><span>To settle up</span><span class="pct" id="settlePct"></span></div>
+    <h2 class="h2">to settle up <em id="forTrip3"></em></h2>
+    <div class="prog" id="progWrap"><div class="bar"><i id="progBar"></i></div><span class="lbl" id="progLbl"></span></div>
     <div id="settleList"></div>
   </section>
 
@@ -300,12 +303,11 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   <!-- LIST -->
   <section id="listWrap" hidden>
     <div class="lh">
-      <h2 class="h2">Expenses <em id="forTrip2" style="font-style:normal;color:var(--vio)"></em></h2>
+      <h2 class="h2">Expenses <em id="forTrip2"></em></h2>
       <div class="sort" id="sortRow">
         <button class="sc" data-sort="date">date</button>
         <button class="sc" data-sort="user">user</button>
         <button class="sc" data-sort="amount">amt</button>
-        <button class="sc" data-sort="type">type</button>
       </div>
     </div>
     <div id="expList"></div>
@@ -382,13 +384,16 @@ function fmtDate(d){ if(!d) return ''; try{ const dt=new Date(d.length>10?d:d+'T
   return dt.toLocaleDateString(undefined,{month:'short',day:'numeric'}); }catch(e){ return ''; } }
 const initial=n=>String(n||'?').trim().charAt(0).toUpperCase()||'?';
 const isPay=x=>x.extras&&x.extras.kind==='payment';
+function shade(hex,f){ const n=parseInt(hex.slice(1),16);
+  const r=Math.round(((n>>16)&255)*f), g=Math.round(((n>>8)&255)*f), b=Math.round((n&255)*f);
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1); }
 
 /* ---- state ---- */
 let db={trips:[],expenses:[]};
 let sel=localStorage.getItem('press:halvsies:trip')||null;
 let editingId=null;
 let formPay=null, formSplit=null, splitOpen=false;
-let sortMode='date', sortDir=-1; // -1 desc
+let sortMode='date', sortDir=-1;
 try{ const l=JSON.parse(localStorage.getItem(LKEY)); if(l&&Array.isArray(l.trips)&&Array.isArray(l.expenses)) db=l; }catch(e){}
 function saveLocal(){ try{ localStorage.setItem(LKEY,JSON.stringify(db)); }catch(e){} }
 const whoKey=t=>'press:halvsies:who:'+t;
@@ -461,7 +466,7 @@ async function cloudDeleteTrip(tid){
 
 /* ---- math ----
    Regular expense: payer's paid += amt; each participant's share += amt/n (exact cents).
-   Payment record (extras.kind='payment'): a transfer from A to B —
+   Payment record (extras.kind='payment'): transfer A → B —
    paid[A] += amt, share[B] += amt; excluded from trip total & count.        */
 function compute(trip,exps){
   const members=trip.members||[];
@@ -496,11 +501,47 @@ function compute(trip,exps){
   return {total,off,count,nets,settle,paidBack,remaining};
 }
 
+/* ---- the ring ----
+   Circumference = your fair share, starting at the top.
+   paid < share  → striped band (your colour, faint) + solid arc, rounded cap.
+   paid = share  → clean full circle in your colour.
+   paid > share  → full circle, then the SAME band goes darker for the
+                   overpaid proportion, wrapping from the top; each further
+                   lap darkens again.                                        */
+const RING_C=163.36;   // 2πr, r=26
+function gauge(col,paid,share,key){
+  const pid='hstripe'+key;
+  let s='<svg width="72" height="72" viewBox="0 0 72 72" aria-hidden="true">';
+  if(share>0 && paid<share){
+    s+='<defs><pattern id="'+pid+'" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
+      +'<rect width="5" height="5" fill="'+col+'" opacity=".11"/>'
+      +'<rect width="2.5" height="5" fill="'+col+'" opacity=".32"/></pattern></defs>'
+      +'<circle cx="36" cy="36" r="26" fill="none" stroke="url(#'+pid+')" stroke-width="11"/>';
+    const frac=paid/share;
+    if(frac>0){ const L=frac*RING_C;
+      s+='<g transform="rotate(-90 36 36)"><circle cx="36" cy="36" r="26" fill="none" stroke="'+col
+        +'" stroke-width="11" stroke-linecap="round" stroke-dasharray="'+L.toFixed(2)+' '+(RING_C-L).toFixed(2)+'"/></g>'; }
+  }else{
+    s+='<circle cx="36" cy="36" r="26" fill="none" stroke="'+col+'" stroke-width="11"/>';
+    let over = share>0 ? (paid-share)/share : (paid>0?1:0);
+    let lap=1;
+    while(over>0.0005 && lap<=4){
+      const f=Math.min(over,1), L=f*RING_C, dk=shade(col,Math.pow(.6,lap));
+      s+='<g transform="rotate(-90 36 36)"><circle cx="36" cy="36" r="26" fill="none" stroke="'+dk
+        +'" stroke-width="11"'+(f<1?' stroke-linecap="round"':'')
+        +' stroke-dasharray="'+L.toFixed(2)+' '+(RING_C-L).toFixed(2)+'"/></g>';
+      over-=1; lap++;
+    }
+  }
+  return s+'</svg>';
+}
+
 /* ---- rendering ---- */
 const tripsSorted=()=>db.trips.slice().sort((a,b)=>String(b.updated_at||b.created_at).localeCompare(String(a.updated_at||a.created_at)));
 const curTrip=()=>db.trips.find(t=>t.trip_id===sel)||null;
 const tripExps=()=>db.expenses.filter(x=>x.trip_id===sel);
 const expDate=x=>(x.extras&&x.extras.date)||String(x.created_at||'').slice(0,10);
+const CHEVS=Array.from({length:16},(_,i)=>'<b style="opacity:'+(0.10+0.9*i/15).toFixed(2)+'">›</b>').join('');
 
 function renderAll(rebuildForm){
   const trips=tripsSorted();
@@ -518,14 +559,12 @@ function renderAll(rebuildForm){
 
   $('tpName').textContent=trip.name;
   $('tpMembers').textContent=trip.members.length?'('+trip.members.join(', ')+')':'(no members yet)';
-  $('forTrip1').textContent='for '+trip.name;
-  $('forTrip2').textContent='for '+trip.name;
+  ['forTrip0','forTrip1','forTrip2','forTrip3'].forEach(i=>$(i).textContent='for '+trip.name);
 
   const exps=tripExps();
   const r=compute(trip,exps);
   const sym=trip.currency;
 
-  $('tripName').textContent=trip.name;
   $('totalAmt').textContent=fmt(r.total,sym);
   $('totalLbl').textContent=r.count
     ? r.count+' expense'+(r.count>1?'s':'')+' · '+trip.members.length+' people'
@@ -535,35 +574,24 @@ function renderAll(rebuildForm){
   $('needMembers').hidden=hasMembers;
   $('entryCard').hidden=!hasMembers;
 
-  // orbit gauges
-  $('orbitWrap').hidden=!(hasMembers&&r.count);
+  $('orbits').hidden=!(hasMembers&&r.count);
   if(hasMembers&&r.count){
-    $('orbits').innerHTML=r.nets.map(n=>{
+    $('orbits').innerHTML=r.nets.map((n,i)=>{
       const col=memColor(trip,n.m);
-      const frac=n.share>0?Math.min(n.paid/n.share,1):(n.paid>0?1:0);
-      const C=163.36, len=Math.max(frac*C,0.001);
-      const chip=n.net>0?'<span class="chip g">gets '+fmt(n.net,sym)+'</span>'
-        :n.net<0?'<span class="chip o">owes '+fmt(-n.net,sym)+'</span>'
-        :'<span class="chip e">even</span>';
-      return '<div class="ob"><div class="gz">'
-        +'<svg width="56" height="56" viewBox="0 0 56 56"><g transform="rotate(-90 28 28)">'
-        +'<circle cx="28" cy="28" r="26" fill="none" stroke="#EDEBF6" stroke-width="4.5"/>'
-        +(frac>0?'<circle cx="28" cy="28" r="26" fill="none" stroke="'+col+'" stroke-width="4.5" stroke-dasharray="'
-          +len.toFixed(2)+' '+(C-len).toFixed(2)+'"'+(frac<1?' stroke-linecap="round"':'')+'/>':'')
-        +'</g></svg>'
-        +'<span class="av in" style="background:'+col+'">'+esc(initial(n.m))+'</span>'
-        +(n.net>0?'<span class="plusb">+'+fmtShort(n.net,sym)+'</span>':'')
-        +'</div><div class="n2">'+esc(n.m)+'</div><div class="p2">paid '+fmt(n.paid,sym)+'</div>'+chip+'</div>';
+      const line=n.net>0?'<span class="st2" style="color:'+shade(col,.6)+'">gets '+fmt(n.net,sym)+' back</span>'
+        :n.net<0?'<span class="st2 o">owes '+fmt(-n.net,sym)+'</span>'
+        :'<span class="st2 e">all even</span>';
+      return '<div class="ob"><div class="gz">'+gauge(col,n.paid,n.share,i)
+        +'<span class="av in" style="background:'+col+'">'+esc(initial(n.m))+'</span></div>'
+        +'<div class="n2">'+esc(n.m)+'</div>'
+        +'<div class="money"><span class="pd">paid '+fmt(n.paid,sym)+'</span>'+line+'</div></div>';
     }).join('');
   }
 
   $('offtabLine').hidden=!r.off;
   if(r.off) $('offtabAmt').textContent=fmt(r.off,sym);
 
-  // settle
   renderSettle(trip,exps,r,sym);
-
-  // list + form
   renderList(trip,exps,sym);
   $('curSym').textContent=sym;
   renderWhoChip();
@@ -577,26 +605,29 @@ function renderSettle(trip,exps,r,sym){
   if(!show) return;
   const denom=r.paidBack+r.remaining;
   const pct=denom>0?Math.round(r.paidBack/denom*100):100;
-  const p=$('settlePct');
-  p.textContent=denom>0?(pct+'% settled · '+fmtShort(r.paidBack,sym)+' of '+fmtShort(denom,sym)):'';
-  p.className='pct'+(pct===100&&denom>0?' full':'');
+  $('progWrap').hidden=!denom;
+  if(denom){
+    $('progBar').style.width=pct+'%';
+    $('progLbl').innerHTML=pct+'% settled <small>· '+fmtShort(r.paidBack,sym)+' of '+fmtShort(denom,sym)+'</small>';
+  }
   let html=r.settle.map(s0=>{
     const cf=memColor(trip,s0.from), ct=memColor(trip,s0.to);
-    return '<div class="hs"><span class="av" style="background:'+cf+'">'+esc(initial(s0.from))+'</span>'
-      +'<span class="nm">'+esc(s0.from)+'</span><span class="arr2">⟶</span>'
-      +'<span class="av" style="background:'+ct+'">'+esc(initial(s0.to))+'</span>'
-      +'<span class="nm">'+esc(s0.to)+'</span><span class="a3">'+fmt(s0.amt,sym)+'</span>'
-      +'<button class="btn2" data-pay="'+esc(s0.from)+'|'+esc(s0.to)+'|'+s0.amt+'">I\u2019ve paid ✓</button></div>';
+    return '<div class="hsA">'
+      +'<span class="av" style="background:'+cf+'" title="'+esc(s0.from)+'">'+esc(initial(s0.from))+'</span>'
+      +'<span class="track"><span class="chevs">'+CHEVS+'</span><span class="amt">'+fmt(s0.amt,sym)+'</span></span>'
+      +'<span class="av" style="background:'+ct+'" title="'+esc(s0.to)+'">'+esc(initial(s0.to))+'</span>'
+      +'<button class="cta" data-pay="'+esc(s0.from)+'|'+esc(s0.to)+'|'+s0.amt+'" aria-label="'
+      +esc(s0.from)+' paid '+esc(s0.to)+'">I\u2019ve paid ✓</button></div>';
   }).join('');
   if(!r.settle.length&&r.count) html='<div class="allsq">✓ All square — this trip is fully settled 🎉</div>';
   html+=pays.map(x=>{
     const to=(x.split_members||[])[0]||'?';
     const cf=memColor(trip,x.paid_by), ct=memColor(trip,to);
-    return '<div class="hs done"><span class="av" style="background:'+cf+'">'+esc(initial(x.paid_by))+'</span>'
-      +'<span class="nm">'+esc(x.paid_by)+'</span><span class="arr2" style="color:#86EFAC">⟶</span>'
-      +'<span class="av" style="background:'+ct+'">'+esc(initial(to))+'</span>'
-      +'<span class="nm">'+esc(to)+'</span><span class="a3">'+fmt(Math.round(x.amount*100),sym)+'</span>'
-      +'<button class="btn2" data-undo="'+esc(x.expense_id)+'">Paid '+fmtDate(expDate(x))+'</button></div>';
+    return '<div class="hsA done">'
+      +'<span class="av" style="background:'+cf+'" title="'+esc(x.paid_by)+'">'+esc(initial(x.paid_by))+'</span>'
+      +'<span class="track"><span class="chevs">'+CHEVS+'</span><span class="amt">'+fmt(Math.round(x.amount*100),sym)+'</span></span>'
+      +'<span class="av" style="background:'+ct+'" title="'+esc(to)+'">'+esc(initial(to))+'</span>'
+      +'<button class="cta" data-undo="'+esc(x.expense_id)+'">Paid '+fmtDate(expDate(x))+'</button></div>';
   }).join('');
   $('settleList').innerHTML=html;
 }
@@ -632,12 +663,6 @@ function renderList(trip,exps,sym){
       const sub=g.reduce((a,x)=>a+Math.round(x.amount*100),0);
       html+='<div class="gl"><span class="gd" style="background:'+memColor(trip,m)+'"></span>'+esc(m)
         +'<span class="gt">'+fmt(sub,sym)+'</span></div>'+g.map(row).join('');
-    });
-  }else if(sortMode==='type'){
-    [['On the tab',items.filter(x=>!x.excluded)],['Off the tab',items.filter(x=>x.excluded)]].forEach(([lbl,g])=>{
-      if(!g.length) return;
-      const sub=g.reduce((a,x)=>a+Math.round(x.amount*100),0);
-      html+='<div class="gl">'+lbl+'<span class="gt">'+fmt(sub,sym)+'</span></div>'+g.sort(byDate).map(row).join('');
     });
   }else{
     const s=items.slice().sort(sortMode==='amount'
@@ -753,7 +778,7 @@ function recordPayment(from,to,amtCents){
     split_members:[to],excluded:false,extras:{kind:'payment',date:todayStr()},
     created_at:nowIso(),updated_at:nowIso()};
   db.expenses=db.expenses.concat([row]);
-  saveLocal(); renderAll(false); upsertExp(row); flash('Marked paid ✓','#16A34A');
+  saveLocal(); renderAll(false); upsertExp(row); flash('Marked paid ✓','#0D9488');
 }
 function undoPayment(id){
   const x=db.expenses.find(e=>e.expense_id===id); if(!x) return;
@@ -769,7 +794,6 @@ function closeSheets(){ sheetOpen=null; $('backdrop').classList.remove('show');
   ['tripSheet','whoSheet','pickSheet'].forEach(i=>$(i).classList.remove('show')); }
 $('backdrop').addEventListener('click',closeSheets);
 
-/* trip picker */
 function openPickSheet(){
   const trips=tripsSorted();
   $('pickList').innerHTML=trips.map(t=>{
@@ -789,7 +813,6 @@ $('pickList').addEventListener('click',e=>{
 });
 $('tripPick').addEventListener('click',openPickSheet);
 
-/* trip sheet */
 let sheetMembers=[], sheetEditing=null;
 function drawMemberChips(){
   $('tMemberChips').innerHTML=sheetMembers.map((m,i)=>'<span class="mem">'
@@ -852,7 +875,6 @@ $('tDelete').addEventListener('click',()=>{
 });
 $('tCancel').addEventListener('click',closeSheets);
 
-/* who sheet */
 function openWhoSheet(){
   const trip=curTrip(); if(!trip) return;
   const w=getWho();
@@ -923,8 +945,8 @@ setInterval(()=>{ if(!document.hidden&&!sheetOpen&&!editingId) loadCloud(true); 
 window.addEventListener('focus',()=>{ if(!sheetOpen&&!editingId) loadCloud(true); });
 
 /* ---- go ---- */
-renderAll();       // instant paint from the local mirror (restores your trip)
-loadCloud();       // cloud is source of truth
+renderAll();
+loadCloud();
 </script>
 </body>
 </html>
