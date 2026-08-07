@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F3F6F2">
+<title>Halvsies</title>
+<meta name="page-title" content="Halvsies">
+<meta name="description" content="Halvsies — the group expense-sharing app. Track trip spending together and settle up evenly at the end.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Spline+Sans+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   HALVSIES · the group expense-sharing app
+   Design: "ledger &amp; receipt" — cool mint paper, deep pine ink,
+   receipt-styled tab as the signature element. Mobile-first.
+   ============================================================ */
+:root{
+  --paper:#F3F6F2; --card:#FFFFFF; --ink:#182D26; --muted:#5C6F66; --faint:#96A69D;
+  --line:#E4EAE5; --dash:#D5DED7;
+  --pine:#0B4F3A; --green:#0E9F6E; --green-soft:#E2F5EC;
+  --coral:#E0532F; --coral-soft:#FBE9E2;
+  --sun:#B97E12; --sun-soft:#FBF1DC;
+  --disp:'Bricolage Grotesque','Instrument Sans',system-ui,sans-serif;
+  --body:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'Spline Sans Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --r:18px; --shadow:0 8px 28px rgba(24,45,38,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--body);background:var(--paper);color:var(--ink);
+  line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;
+  padding-bottom:calc(48px + env(safe-area-inset-bottom));
+}
+.wrap{max-width:540px;margin:0 auto;padding:0 18px}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink)}
+[hidden]{display:none!important}
+
+/* ---------- header ---------- */
+.top{padding:calc(16px + env(safe-area-inset-top)) 0 6px}
+.back{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--pine);text-decoration:none;
+  border:1px solid rgba(11,79,58,.25);padding:5px 11px;border-radius:99px;margin-bottom:16px}
+.back:active{background:rgba(11,79,58,.06)}
+.brandrow{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.wordmark{font-family:var(--disp);font-weight:750;font-size:clamp(38px,11vw,50px);
+  letter-spacing:-.03em;line-height:.95;color:var(--ink)}
+.wordmark em{font-style:italic;font-weight:450;color:var(--green)}
+.tagline{font-size:14px;color:var(--muted);margin-top:6px;font-weight:500}
+.who{border:1.5px dashed var(--dash);background:var(--card);border-radius:99px;
+  padding:8px 14px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;
+  transition:.15s;margin-bottom:4px}
+.who.set{border-style:solid;border-color:var(--pine);color:var(--pine);background:var(--green-soft)}
+.who:active{transform:scale(.97)}
+
+/* ---------- trip bar ---------- */
+.tripbar{display:flex;gap:10px;margin:22px 0 18px}
+.selectwrap{position:relative;flex:1}
+.selectwrap select{
+  width:100%;appearance:none;-webkit-appearance:none;border:1px solid var(--line);
+  background:var(--card);border-radius:14px;padding:13px 40px 13px 16px;
+  font-weight:600;box-shadow:var(--shadow);
+}
+.selectwrap::after{content:"";position:absolute;right:16px;top:50%;width:9px;height:9px;
+  border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
+  transform:translateY(-70%) rotate(45deg);pointer-events:none}
+.iconbtn{width:48px;flex:none;border:none;border-radius:14px;background:var(--pine);color:#fff;
+  font-size:24px;font-weight:400;line-height:1;box-shadow:var(--shadow);transition:.15s}
+.iconbtn:active{transform:scale(.95)}
+
+/* ---------- empty state ---------- */
+.empty{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);
+  padding:44px 26px;text-align:center;margin-top:8px}
+.empty h2{font-family:var(--disp);font-weight:700;font-size:24px;letter-spacing:-.02em;margin-bottom:8px}
+.empty p{color:var(--muted);font-size:15px;max-width:320px;margin:0 auto 22px}
+
+/* ---------- receipt (the tab) — signature ---------- */
+.receipt{background:var(--card);border-radius:var(--r) var(--r) 0 0;box-shadow:var(--shadow);
+  padding:22px 22px 16px;position:relative}
+.zig{height:12px;margin-bottom:26px;filter:drop-shadow(0 8px 10px rgba(24,45,38,.06));
+  background:
+    linear-gradient(135deg,var(--card) 50%,transparent 50%),
+    linear-gradient(225deg,var(--card) 50%,transparent 50%);
+  background-size:16px 12px;background-repeat:repeat-x}
+.rhead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:2px}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--green)}
+.tripname{font-family:var(--disp);font-weight:700;font-size:24px;letter-spacing:-.02em;line-height:1.15}
+.editbtn{border:1px solid var(--line);background:none;border-radius:99px;padding:6px 13px;
+  font-size:12px;font-weight:600;color:var(--muted);flex:none;margin-top:2px}
+.editbtn:active{background:var(--paper)}
+.total{margin:16px 0 4px}
+.total .amt{font-family:var(--mono);font-weight:700;font-size:clamp(34px,10vw,44px);letter-spacing:-.03em;line-height:1}
+.total .lbl{font-size:13px;color:var(--muted);margin-top:4px;font-weight:500}
+.dashline{border:none;border-top:1.5px dashed var(--dash);margin:16px 0}
+.slabel{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
+
+.person{margin-bottom:14px}
+.person:last-child{margin-bottom:2px}
+.prow{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.pname{font-weight:600;font-size:15px}
+.chip{font-family:var(--mono);font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.chip.gets{background:var(--green-soft);color:var(--green)}
+.chip.owes{background:var(--coral-soft);color:var(--coral)}
+.chip.even{background:var(--paper);color:var(--faint)}
+.pbar{height:6px;border-radius:99px;background:var(--paper);margin:7px 0 4px;overflow:hidden}
+.pbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),var(--pine));min-width:2px}
+.pmeta{font-size:12px;color:var(--faint)}
+.pmeta b{font-family:var(--mono);font-weight:600;color:var(--muted)}
+
+.settle{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid var(--line);
+  border-radius:12px;margin-bottom:8px;background:var(--paper)}
+.settle .from,.settle .to{font-weight:600;font-size:14px}
+.settle .arr{color:var(--green);flex:none;display:flex}
+.settle .amt{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:15px}
+.allsquare{display:flex;align-items:center;gap:8px;color:var(--green);font-weight:600;font-size:14px;
+  background:var(--green-soft);border-radius:12px;padding:12px 14px}
+.offtab{display:flex;justify-content:space-between;font-size:13px;color:var(--sun);font-weight:600;
+  background:var(--sun-soft);border-radius:10px;padding:9px 13px;margin-top:14px}
+.offtab b{font-family:var(--mono)}
+.needmembers{font-size:14px;color:var(--muted);background:var(--paper);border-radius:12px;padding:13px 15px}
+.needmembers button{background:none;border:none;color:var(--pine);font-weight:700;font-size:14px;text-decoration:underline;padding:0}
+
+/* ---------- entry form ---------- */
+.panel{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:20px;margin-bottom:20px}
+.panel h2{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:-.01em}
+.panel .sub{font-size:13px;color:var(--muted);margin:2px 0 16px}
+.editing-note{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--sun);background:var(--sun-soft);border-radius:8px;padding:6px 11px;margin-bottom:14px}
+.panel.editing .editing-note{display:inline-block}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;
+  text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)}
+.field input[type=text],.field input[type=tel]{width:100%;border:1px solid var(--line);border-radius:12px;
+  padding:12px 14px;background:var(--paper)}
+.field input:focus{outline:2px solid var(--green);outline-offset:0;border-color:transparent}
+.amount-in{position:relative}
+.amount-in .cur{position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font-family:var(--mono);font-weight:700;color:var(--muted)}
+.amount-in input{padding-left:38px!important;font-family:var(--mono);font-weight:600;font-size:20px!important}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.pchip{border:1.5px solid var(--line);background:var(--paper);border-radius:99px;padding:8px 15px;
+  font-size:14px;font-weight:600;color:var(--muted);transition:.12s}
+.pchip.on{background:var(--pine);border-color:var(--pine);color:#fff}
+.pchip:active{transform:scale(.96)}
+.splitrow{display:flex;align-items:center;justify-content:space-between;width:100%;
+  border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:12px 14px;font-size:14px}
+.splitrow b{font-weight:600}
+.splitrow .val{color:var(--green);font-weight:700;display:flex;align-items:center;gap:6px}
+.splitgrid{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px}
+.toggle .txt b{display:block;font-size:14px;font-weight:600}
+.toggle .txt span{font-size:12.5px;color:var(--muted)}
+.switch{position:relative;width:48px;height:28px;flex:none}
+.switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:2}
+.switch i{position:absolute;inset:0;border-radius:99px;background:var(--line);transition:.18s}
+.switch i::after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:.18s}
+.switch input:checked + i{background:var(--sun)}
+.switch input:checked + i::after{transform:translateX(20px)}
+.btn{width:100%;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:700;
+  background:var(--pine);color:#fff;transition:.15s;margin-top:6px}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:none;color:var(--muted);border:1px solid var(--line);margin-top:10px;padding:12px}
+.btn.danger{background:var(--coral-soft);color:var(--coral)}
+.btnrow{display:flex;gap:10px}
+.btnrow .btn{margin-top:10px}
+
+/* ---------- expense list ---------- */
+.listhead{display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px}
+.listhead h2{font-family:var(--disp);font-weight:700;font-size:19px}
+.listhead span{font-size:12px;color:var(--faint);font-family:var(--mono)}
+.exp{display:flex;align-items:center;gap:13px;background:var(--card);border-radius:14px;
+  box-shadow:var(--shadow);padding:14px 16px;margin-bottom:10px;width:100%;border:none;text-align:left;transition:.12s}
+.exp:active{transform:scale(.985)}
+.exp.off{background:transparent;border:1.5px dashed var(--dash);box-shadow:none}
+.exp .ic{width:38px;height:38px;flex:none;border-radius:11px;background:var(--green-soft);color:var(--pine);
+  display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;font-size:16px}
+.exp.off .ic{background:var(--sun-soft);color:var(--sun)}
+.exp .mid{flex:1;min-width:0}
+.exp .t{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exp .m{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exp .m .offtag{color:var(--sun);font-weight:600}
+.exp .a{font-family:var(--mono);font-weight:700;font-size:15px;flex:none}
+.exp.off .a{color:var(--faint);font-weight:500}
+
+/* ---------- sheets ---------- */
+.backdrop{position:fixed;inset:0;background:rgba(24,45,38,.45);z-index:80;opacity:0;
+  pointer-events:none;transition:.2s}
+.backdrop.show{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:90;background:var(--card);
+  border-radius:22px 22px 0 0;box-shadow:0 -10px 40px rgba(24,45,38,.2);
+  max-width:540px;margin:0 auto;padding:10px 20px calc(24px + env(safe-area-inset-bottom));
+  transform:translateY(105%);transition:transform .25s cubic-bezier(.32,.72,.28,1);
+  max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sheet.show{transform:translateY(0)}
+.grab{width:38px;height:4px;border-radius:99px;background:var(--line);margin:4px auto 16px}
+.sheet h3{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:-.01em;margin-bottom:2px}
+.sheet .sub{font-size:13.5px;color:var(--muted);margin-bottom:18px}
+.memrow{display:flex;gap:9px;margin-bottom:10px}
+.memrow input{flex:1;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--paper)}
+.memrow button{flex:none;border:none;border-radius:12px;background:var(--green-soft);color:var(--pine);
+  font-weight:700;padding:0 18px;font-size:14px}
+.memchips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;min-height:8px}
+.mem{display:inline-flex;align-items:center;gap:7px;background:var(--paper);border:1px solid var(--line);
+  border-radius:99px;padding:7px 8px 7px 14px;font-size:14px;font-weight:600}
+.mem button{border:none;background:var(--line);color:var(--muted);width:20px;height:20px;border-radius:50%;
+  font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center}
+.whochips{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 6px}
+.whochips .pchip{padding:11px 20px;font-size:15px}
+
+footer{padding:34px 0 10px;text-align:center;color:var(--faint);font-size:12.5px}
+footer a{color:var(--pine);text-decoration:none;font-weight:600}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<header class="top wrap">
+  <a class="back" href="./">← The Marquee</a>
+  <div class="brandrow">
+    <h1 class="wordmark">Halv<em>sies</em></h1>
+    <button class="who" id="whoChip" hidden>Who are you?</button>
+  </div>
+  <p class="tagline">The group expense-sharing app</p>
+</header>
+
+<main class="wrap">
+
+  <section class="tripbar" id="tripbar" hidden>
+    <label class="selectwrap"><select id="tripSelect" aria-label="Select trip"></select></label>
+    <button class="iconbtn" id="newTripBtn" aria-label="New trip">+</button>
+  </section>
+
+  <section class="empty" id="emptyState" hidden>
+    <h2>Start your first trip</h2>
+    <p>Name the trip, add everyone going, then anyone with this link can log what they paid. Halvsies keeps the tab even.</p>
+    <button class="btn" id="emptyNewBtn" style="max-width:240px">Create a trip</button>
+  </section>
+
+  <!-- THE TAB — receipt-styled summary -->
+  <section id="summaryWrap" hidden>
+    <div class="receipt">
+      <div class="rhead">
+        <div>
+          <div class="eyebrow">The Tab</div>
+          <div class="tripname" id="tripName"></div>
+        </div>
+        <button class="editbtn" id="editTripBtn">Edit trip</button>
+      </div>
+      <div class="total">
+        <div class="amt" id="totalAmt">$0.00</div>
+        <div class="lbl" id="totalLbl">Nothing logged yet</div>
+      </div>
+      <div id="needMembers" class="needmembers" hidden>
+        No members yet — <button id="addMembersBtn">add everyone going</button> to start logging expenses.
+      </div>
+      <div id="peopleBlock" hidden>
+        <hr class="dashline">
+        <div class="slabel">Each person</div>
+        <div id="peopleList"></div>
+      </div>
+      <div id="settleBlock" hidden>
+        <hr class="dashline">
+        <div class="slabel">To settle up</div>
+        <div id="settleList"></div>
+      </div>
+      <div class="offtab" id="offtabLine" hidden><span>Off the tab (recorded only)</span><b id="offtabAmt"></b></div>
+    </div>
+    <div class="zig"></div>
+  </section>
+
+  <!-- ENTRY -->
+  <section class="panel" id="entryPanel" hidden>
+    <span class="editing-note">Editing expense</span>
+    <h2 id="entryTitle">Add an expense</h2>
+    <p class="sub">Anything paid for the group — log it and the tab updates for everyone.</p>
+
+    <div class="field">
+      <label for="expTitle">What was it</label>
+      <input type="text" id="expTitle" placeholder="Dinner, fuel, tickets…" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label for="expAmount">Amount</label>
+      <div class="amount-in">
+        <span class="cur" id="curSym">$</span>
+        <input type="text" id="expAmount" inputmode="decimal" placeholder="0.00" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Paid by</label>
+      <div class="chips" id="payChips"></div>
+    </div>
+
+    <div class="field" id="splitField">
+      <label>Split between</label>
+      <button class="splitrow" id="splitToggle" type="button">
+        <b>Everyone on the trip</b>
+        <span class="val" id="splitVal">Change ▾</span>
+      </button>
+      <div class="splitgrid" id="splitGrid" hidden></div>
+    </div>
+
+    <div class="field toggle">
+      <div class="txt"><b>Keep off the tab</b><span>Record it, but leave it out of the group split.</span></div>
+      <label class="switch"><input type="checkbox" id="excludedT"><i></i></label>
+    </div>
+
+    <button class="btn" id="saveBtn">Add expense</button>
+    <div class="btnrow" id="editBtns" hidden>
+      <button class="btn ghost" id="cancelEditBtn">Cancel</button>
+      <button class="btn danger" id="deleteExpBtn">Delete</button>
+    </div>
+  </section>
+
+  <!-- LIST -->
+  <section id="listWrap" hidden>
+    <div class="listhead"><h2>Expenses</h2><span id="listCount"></span></div>
+    <div id="expList"></div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  Everything syncs live for everyone with this link. · <a href="./">Mark's Press</a>
+</footer>
+
+<!-- TRIP SHEET -->
+<div class="backdrop" id="backdrop"></div>
+<div class="sheet" id="tripSheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h3 id="tripSheetTitle">New trip</h3>
+  <p class="sub">Who's going? Add everyone who'll share costs.</p>
+  <div class="field">
+    <label for="tName">Trip name</label>
+    <input type="text" id="tName" placeholder="Lake weekend, Vegas 2026…" autocomplete="off">
+  </div>
+  <div class="field">
+    <label for="tCur">Currency</label>
+    <label class="selectwrap"><select id="tCur">
+      <option value="$">$ — Dollar</option><option value="€">€ — Euro</option>
+      <option value="£">£ — Pound</option><option value="¥">¥ — Yen</option>
+      <option value="₹">₹ — Rupee</option><option value="kr">kr — Krona</option>
+      <option value="C$">C$ — Canadian</option><option value="A$">A$ — Australian</option>
+      <option value="CHF">CHF — Franc</option>
+    </select></label>
+  </div>
+  <div class="field">
+    <label for="tMember">Members</label>
+    <div class="memrow">
+      <input type="text" id="tMember" placeholder="Add a name" autocomplete="off">
+      <button id="tMemberAdd" type="button">Add</button>
+    </div>
+    <div class="memchips" id="tMemberChips"></div>
+  </div>
+  <button class="btn" id="tSave">Create trip</button>
+  <button class="btn danger" id="tDelete" hidden>Delete this trip</button>
+  <button class="btn ghost" id="tCancel">Cancel</button>
+</div>
+
+<!-- WHO SHEET -->
+<div class="sheet" id="whoSheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h3>Who are you?</h3>
+  <p class="sub">This device will remember you, so expenses you add are marked as paid by you. You can change it here anytime.</p>
+  <div class="whochips" id="whoChips"></div>
+  <button class="btn ghost" id="whoClear">Clear — don't remember me</button>
+  <button class="btn ghost" id="whoCancel">Close</button>
+</div>
+
+<script>
+/* ---- The Press · Supabase (publishable key; open-RLS press tables) ---- */
+const SB_URL='https://eepjhpyziczrxvirczio.supabase.co';
+const SB_KEY='sb_publishable__iv3bI7xDAsOdHUlXzbVZQ_2yyFS4uX';
+const PAGE='halvsies';
+const REST_T=SB_URL+'/rest/v1/press_trips';
+const REST_E=SB_URL+'/rest/v1/press_expenses';
+const HEADERS={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
+const LKEY='press:halvsies';
+
+/* ---- helpers ---- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=> (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10));
+const nowIso=()=>new Date().toISOString();
+function toCents(v){ let s=String(v).replace(/[^0-9.,-]/g,'');
+  if(s.includes('.')&&s.includes(',')) s=s.replace(/,/g,''); else s=s.replace(',','.');
+  const n=parseFloat(s); return isFinite(n)?Math.round(n*100):NaN; }
+function fmt(cents,sym){ const v=Math.abs(cents)/100; return (cents<0?'-':'')+(sym||'$')+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+/* ---- state ---- */
+let db={trips:[],expenses:[]};
+let sel=localStorage.getItem('press:halvsies:trip')||null;
+let editingId=null;
+let formPay=null, formSplit=null, splitOpen=false; // formSplit: null = everyone, else Set of names
+try{ const l=JSON.parse(localStorage.getItem(LKEY)); if(l&&l.trips) db=l; }catch(e){}
+function saveLocal(){ try{ localStorage.setItem(LKEY,JSON.stringify(db)); }catch(e){} }
+const whoKey=t=>'press:halvsies:who:'+t;
+const getWho=()=> sel?localStorage.getItem(whoKey(sel)):null;
+const setWho=n=>{ if(!sel)return; n?localStorage.setItem(whoKey(sel),n):localStorage.removeItem(whoKey(sel)); };
+
+/* ---- sync pill ---- */
+const pill=document.createElement('div');
+pill.style.cssText='position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));right:16px;z-index:99;font:600 12px/1 "Spline Sans Mono",monospace;padding:8px 13px;border-radius:99px;background:#0B4F3A;color:#fff;opacity:0;transition:.3s;box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none';
+document.body.appendChild(pill);
+let pillT;
+function flash(msg,color){ pill.textContent=msg; pill.style.background=color||'#0B4F3A'; pill.style.opacity='1';
+  clearTimeout(pillT); pillT=setTimeout(()=>pill.style.opacity='0',1500); }
+
+/* ---- cloud ---- */
+function normTrip(r){ return {trip_id:r.trip_id,name:r.name,currency:r.currency||'$',
+  members:Array.isArray(r.members)?r.members:[],created_at:r.created_at,updated_at:r.updated_at}; }
+function normExp(r){ return {expense_id:r.expense_id,trip_id:r.trip_id,title:r.title,
+  amount:Number(r.amount)||0,paid_by:r.paid_by,
+  split_members:Array.isArray(r.split_members)?r.split_members:null,
+  excluded:!!r.excluded,created_at:r.created_at,updated_at:r.updated_at}; }
+
+async function loadCloud(silent){
+  try{
+    const [rt,re]=await Promise.all([
+      fetch(REST_T+'?page=eq.'+PAGE+'&select=*',{headers:HEADERS}),
+      fetch(REST_E+'?page=eq.'+PAGE+'&select=*',{headers:HEADERS})
+    ]);
+    if(!rt.ok||!re.ok) throw new Error('HTTP');
+    const [trips,exps]=await Promise.all([rt.json(),re.json()]);
+    db={trips:trips.map(normTrip),expenses:exps.map(normExp)};
+    saveLocal(); renderAll(false);
+    if(!silent) flash('Synced');
+  }catch(e){ renderAll(false); if(!silent) flash('Offline · showing saved copy','#B97E12'); }
+}
+async function upsertTrip(t){
+  try{
+    const r=await fetch(REST_T+'?on_conflict=page,trip_id',{method:'POST',
+      headers:Object.assign({},HEADERS,{'Prefer':'resolution=merge-duplicates'}),
+      body:JSON.stringify({page:PAGE,trip_id:t.trip_id,name:t.name,currency:t.currency,
+        members:t.members,updated_at:nowIso()})});
+    if(!r.ok) throw 0; flash('Saved');
+  }catch(e){ flash('Save failed · kept on this device','#E0532F'); }
+}
+async function upsertExp(x){
+  try{
+    const r=await fetch(REST_E+'?on_conflict=page,expense_id',{method:'POST',
+      headers:Object.assign({},HEADERS,{'Prefer':'resolution=merge-duplicates'}),
+      body:JSON.stringify({page:PAGE,expense_id:x.expense_id,trip_id:x.trip_id,title:x.title,
+        amount:x.amount,paid_by:x.paid_by,split_members:x.split_members,excluded:x.excluded,
+        updated_at:nowIso()})});
+    if(!r.ok) throw 0; flash('Saved');
+  }catch(e){ flash('Save failed · kept on this device','#E0532F'); }
+}
+async function cloudDeleteExp(id){
+  try{ const r=await fetch(REST_E+'?page=eq.'+PAGE+'&expense_id=eq.'+encodeURIComponent(id),
+    {method:'DELETE',headers:HEADERS}); if(!r.ok) throw 0; flash('Deleted'); }
+  catch(e){ flash('Delete failed online','#E0532F'); }
+}
+async function cloudDeleteTrip(tid){
+  try{
+    await fetch(REST_E+'?page=eq.'+PAGE+'&trip_id=eq.'+encodeURIComponent(tid),{method:'DELETE',headers:HEADERS});
+    const r=await fetch(REST_T+'?page=eq.'+PAGE+'&trip_id=eq.'+encodeURIComponent(tid),{method:'DELETE',headers:HEADERS});
+    if(!r.ok) throw 0; flash('Trip deleted');
+  }catch(e){ flash('Delete failed online','#E0532F'); }
+}
+
+/* ---- math ---- */
+function compute(trip,exps){
+  const members=trip.members||[];
+  const paid={},share={}; members.forEach(m=>{paid[m]=0;share[m]=0;});
+  let total=0, off=0, count=0;
+  exps.forEach(x=>{
+    const c=Math.round(x.amount*100);
+    if(x.excluded){ off+=c; return; }
+    total+=c; count++;
+    if(paid[x.paid_by]===undefined){ paid[x.paid_by]=0; share[x.paid_by]=0; }
+    let parts=(x.split_members&&x.split_members.length)?x.split_members.filter(m=>members.includes(m)):members.slice();
+    if(!parts.length) parts=members.slice();
+    paid[x.paid_by]+=c;
+    if(parts.length){
+      const base=Math.floor(c/parts.length); let rem=c-base*parts.length;
+      parts.forEach(m=>{ if(share[m]===undefined){paid[m]=paid[m]||0;share[m]=0;}
+        share[m]+=base+(rem>0?1:0); if(rem>0)rem--; });
+    }
+  });
+  const nets=Object.keys(paid).map(m=>({m,net:paid[m]-share[m],paid:paid[m],share:share[m]}));
+  // greedy min-transfer settlement
+  const cred=nets.filter(n=>n.net>0).map(n=>({m:n.m,v:n.net})).sort((a,b)=>b.v-a.v);
+  const debt=nets.filter(n=>n.net<0).map(n=>({m:n.m,v:-n.net})).sort((a,b)=>b.v-a.v);
+  const settle=[]; let i=0,j=0;
+  while(i<debt.length&&j<cred.length){
+    const t=Math.min(debt[i].v,cred[j].v);
+    if(t>0) settle.push({from:debt[i].m,to:cred[j].m,amt:t});
+    debt[i].v-=t; cred[j].v-=t;
+    if(debt[i].v===0)i++; if(cred[j].v===0)j++;
+  }
+  return {total,off,count,nets,settle};
+}
+
+/* ---- rendering ---- */
+const tripsSorted=()=>db.trips.slice().sort((a,b)=>String(a.created_at).localeCompare(String(b.created_at)));
+const curTrip=()=>db.trips.find(t=>t.trip_id===sel)||null;
+const curExps=()=>db.expenses.filter(x=>x.trip_id===sel)
+  .sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
+
+function renderAll(rebuildForm){
+  const trips=tripsSorted();
+  if(!trips.find(t=>t.trip_id===sel)) sel=trips.length?trips[trips.length-1].trip_id:null;
+  if(sel) localStorage.setItem('press:halvsies:trip',sel);
+
+  $('tripbar').hidden=!trips.length;
+  $('emptyState').hidden=!!trips.length;
+  $('summaryWrap').hidden=!sel;
+  $('whoChip').hidden=!sel;
+
+  const s=$('tripSelect'); s.innerHTML='';
+  trips.forEach(t=>{ const o=document.createElement('option'); o.value=t.trip_id;
+    o.textContent=t.name; if(t.trip_id===sel)o.selected=true; s.appendChild(o); });
+
+  const trip=curTrip();
+  if(!trip){ $('entryPanel').hidden=true; $('listWrap').hidden=true; renderWhoChip(); return; }
+
+  const exps=curExps();
+  const r=compute(trip,exps);
+  const sym=trip.currency;
+
+  $('tripName').textContent=trip.name;
+  $('totalAmt').textContent=fmt(r.total,sym);
+  $('totalLbl').textContent=r.count
+    ? 'Total on the tab · '+r.count+' expense'+(r.count>1?'s':'')+' · '+trip.members.length+' people'
+    : 'Nothing on the tab yet';
+
+  const hasMembers=trip.members.length>0;
+  $('needMembers').hidden=hasMembers;
+  $('entryPanel').hidden=!hasMembers;
+
+  // people
+  $('peopleBlock').hidden=!(hasMembers&&r.count);
+  if(hasMembers&&r.count){
+    const maxPaid=Math.max(1,...r.nets.map(n=>n.paid));
+    $('peopleList').innerHTML=r.nets
+      .filter(n=>trip.members.includes(n.m)||n.paid||n.share)
+      .map(n=>{
+        const chip=n.net>0?'<span class="chip gets">gets back '+fmt(n.net,sym)+'</span>'
+          :n.net<0?'<span class="chip owes">owes '+fmt(-n.net,sym)+'</span>'
+          :'<span class="chip even">even</span>';
+        return '<div class="person"><div class="prow"><span class="pname">'+esc(n.m)+'</span>'+chip+'</div>'
+          +'<div class="pbar"><i style="width:'+Math.max(2,Math.round(n.paid/maxPaid*100))+'%"></i></div>'
+          +'<div class="pmeta">paid <b>'+fmt(n.paid,sym)+'</b> · fair share <b>'+fmt(n.share,sym)+'</b></div></div>';
+      }).join('');
+  }
+
+  // settle
+  $('settleBlock').hidden=!(hasMembers&&r.count);
+  if(hasMembers&&r.count){
+    $('settleList').innerHTML=r.settle.length
+      ? r.settle.map(s0=>'<div class="settle"><span class="from">'+esc(s0.from)+'</span>'
+          +'<span class="arr"><svg width="18" height="12" viewBox="0 0 18 12" fill="none"><path d="M1 6h15M11 1l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
+          +'<span class="to">'+esc(s0.to)+'</span><span class="amt">'+fmt(s0.amt,sym)+'</span></div>').join('')
+      : '<div class="allsquare">✓ All square — nobody owes anything</div>';
+  }
+
+  $('offtabLine').hidden=!r.off;
+  if(r.off) $('offtabAmt').textContent=fmt(r.off,sym);
+
+  // list
+  $('listWrap').hidden=!exps.length;
+  $('listCount').textContent=exps.length+' logged';
+  $('expList').innerHTML=exps.map(x=>{
+    const parts=x.excluded?'':(x.split_members&&x.split_members.length
+      ? ' · split '+x.split_members.length+' way'+(x.split_members.length>1?'s':'') : ' · everyone');
+    return '<button class="exp'+(x.excluded?' off':'')+'" data-id="'+esc(x.expense_id)+'">'
+      +'<span class="ic">'+esc((x.title||'?').trim().charAt(0).toUpperCase()||'?')+'</span>'
+      +'<span class="mid"><span class="t">'+esc(x.title)+'</span>'
+      +'<span class="m">'+esc(x.paid_by)+' paid'+parts+(x.excluded?' · <span class="offtag">off the tab</span>':'')+'</span></span>'
+      +'<span class="a">'+fmt(Math.round(x.amount*100),sym)+'</span></button>';
+  }).join('');
+
+  $('curSym').textContent=sym;
+  renderWhoChip();
+  if(rebuildForm!==false) renderForm();
+}
+
+function renderWhoChip(){
+  const w=getWho(), c=$('whoChip');
+  if(w){ c.textContent='You: '+w; c.classList.add('set'); }
+  else { c.textContent='Who are you?'; c.classList.remove('set'); }
+}
+
+function renderForm(){
+  const trip=curTrip(); if(!trip) return;
+  const members=trip.members;
+  if(!editingId){
+    if(formPay===null||!members.includes(formPay)){
+      const w=getWho(); formPay=(w&&members.includes(w))?w:null;
+    }
+    if(formSplit&&![...formSplit].every(m=>members.includes(m))) formSplit=null;
+  }
+  $('payChips').innerHTML=members.map(m=>'<button type="button" class="pchip'
+    +(formPay===m?' on':'')+'" data-m="'+esc(m)+'">'+esc(m)+'</button>').join('');
+  const n=formSplit?formSplit.size:members.length;
+  $('splitToggle').querySelector('b').textContent=formSplit
+    ? n+' of '+members.length+' people' : 'Everyone on the trip';
+  $('splitVal').textContent=splitOpen?'Done ▴':'Change ▾';
+  $('splitGrid').hidden=!splitOpen;
+  $('splitGrid').innerHTML=members.map(m=>{
+    const on=!formSplit||formSplit.has(m);
+    return '<button type="button" class="pchip'+(on?' on':'')+'" data-s="'+esc(m)+'">'+esc(m)+'</button>';
+  }).join('');
+  $('splitField').hidden=$('excludedT').checked;
+}
+
+function resetForm(){
+  editingId=null; formPay=null; formSplit=null; splitOpen=false;
+  $('expTitle').value=''; $('expAmount').value=''; $('excludedT').checked=false;
+  $('entryPanel').classList.remove('editing');
+  $('entryTitle').textContent='Add an expense';
+  $('saveBtn').textContent='Add expense';
+  $('editBtns').hidden=true;
+  renderForm();
+}
+
+/* ---- expense actions ---- */
+function saveExpense(){
+  const trip=curTrip(); if(!trip) return;
+  const c=toCents($('expAmount').value);
+  if(!isFinite(c)||c<=0){ flash('Enter an amount','#E0532F'); $('expAmount').focus(); return; }
+  if(!formPay){ flash('Tap who paid','#E0532F'); return; }
+  const excluded=$('excludedT').checked;
+  let split=null;
+  if(formSplit){
+    if(!formSplit.size&&!excluded){ flash('Pick at least one person to split','#E0532F'); return; }
+    split=(formSplit.size&&formSplit.size<trip.members.length)?[...formSplit]:null;
+  }
+  const old=editingId?db.expenses.find(x=>x.expense_id===editingId):null;
+  const row={expense_id:editingId||uid(),trip_id:sel,
+    title:($('expTitle').value.trim()||'Expense'),amount:c/100,paid_by:formPay,
+    split_members:split,excluded,
+    created_at:old?old.created_at:nowIso(),updated_at:nowIso()};
+  db.expenses=db.expenses.filter(x=>x.expense_id!==row.expense_id).concat([row]);
+  saveLocal(); resetForm(); renderAll(false); upsertExp(row);
+}
+function startEdit(id){
+  const x=db.expenses.find(e=>e.expense_id===id); const trip=curTrip();
+  if(!x||!trip) return;
+  editingId=id;
+  $('expTitle').value=x.title;
+  $('expAmount').value=(x.amount).toFixed(2);
+  $('excludedT').checked=x.excluded;
+  formPay=x.paid_by;
+  formSplit=(x.split_members&&x.split_members.length&&x.split_members.length<trip.members.length)
+    ? new Set(x.split_members):null;
+  splitOpen=!!formSplit;
+  $('entryPanel').classList.add('editing');
+  $('entryTitle').textContent='Edit expense';
+  $('saveBtn').textContent='Save changes';
+  $('editBtns').hidden=false;
+  renderForm();
+  $('entryPanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function deleteExpense(){
+  if(!editingId) return;
+  if(!confirm('Delete this expense for everyone?')) return;
+  const id=editingId;
+  db.expenses=db.expenses.filter(x=>x.expense_id!==id);
+  saveLocal(); resetForm(); renderAll(false); cloudDeleteExp(id);
+}
+
+/* ---- sheets ---- */
+let sheetOpen=null;
+function openSheet(id){ sheetOpen=id; $('backdrop').classList.add('show'); $(id).classList.add('show'); }
+function closeSheets(){ sheetOpen=null; $('backdrop').classList.remove('show');
+  ['tripSheet','whoSheet'].forEach(i=>$(i).classList.remove('show')); }
+$('backdrop').addEventListener('click',closeSheets);
+
+/* trip sheet */
+let sheetMembers=[], sheetEditing=null;
+function drawMemberChips(){
+  $('tMemberChips').innerHTML=sheetMembers.map((m,i)=>'<span class="mem">'+esc(m)
+    +'<button type="button" data-i="'+i+'" aria-label="Remove '+esc(m)+'">✕</button></span>').join('');
+}
+function memberInUse(tid,name){
+  return db.expenses.some(x=>x.trip_id===tid&&(x.paid_by===name||(x.split_members||[]).includes(name)));
+}
+function openTripSheet(trip){
+  sheetEditing=trip?trip.trip_id:null;
+  $('tripSheetTitle').textContent=trip?'Edit trip':'New trip';
+  $('tName').value=trip?trip.name:'';
+  $('tCur').value=trip?trip.currency:'$';
+  sheetMembers=trip?trip.members.slice():[];
+  $('tSave').textContent=trip?'Save changes':'Create trip';
+  $('tDelete').hidden=!trip;
+  drawMemberChips(); openSheet('tripSheet');
+  if(!trip) setTimeout(()=>$('tName').focus(),250);
+}
+function addMemberFromInput(){
+  const v=$('tMember').value.trim(); if(!v) return;
+  if(sheetMembers.some(m=>m.toLowerCase()===v.toLowerCase())){ flash('Name already added','#B97E12'); return; }
+  sheetMembers.push(v); $('tMember').value=''; drawMemberChips(); $('tMember').focus();
+}
+$('tMemberAdd').addEventListener('click',addMemberFromInput);
+$('tMember').addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();addMemberFromInput();} });
+$('tMemberChips').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-i]'); if(!b)return;
+  const name=sheetMembers[+b.dataset.i];
+  if(sheetEditing&&memberInUse(sheetEditing,name)){
+    alert(name+' is on existing expenses and can\u2019t be removed. Delete or edit those expenses first.'); return;
+  }
+  sheetMembers.splice(+b.dataset.i,1); drawMemberChips();
+});
+$('tSave').addEventListener('click',()=>{
+  const name=$('tName').value.trim();
+  if(!name){ flash('Give the trip a name','#E0532F'); $('tName').focus(); return; }
+  const pending=$('tMember').value.trim();
+  if(pending&&!sheetMembers.some(m=>m.toLowerCase()===pending.toLowerCase())){ sheetMembers.push(pending); $('tMember').value=''; }
+  const row={trip_id:sheetEditing||uid(),name,currency:$('tCur').value,
+    members:sheetMembers.slice(),
+    created_at:(sheetEditing&&curById(sheetEditing))?curById(sheetEditing).created_at:nowIso(),
+    updated_at:nowIso()};
+  db.trips=db.trips.filter(t=>t.trip_id!==row.trip_id).concat([row]);
+  const isNew=!sheetEditing;
+  sel=row.trip_id; localStorage.setItem('press:halvsies:trip',sel);
+  saveLocal(); closeSheets(); resetForm(); renderAll(); upsertTrip(row);
+  if(isNew&&row.members.length&&!getWho()) setTimeout(openWhoSheet,350);
+});
+function curById(id){ return db.trips.find(t=>t.trip_id===id); }
+$('tDelete').addEventListener('click',()=>{
+  if(!sheetEditing) return;
+  const t=curById(sheetEditing); if(!t) return;
+  if(!confirm('Delete "'+t.name+'" and all its expenses, for everyone? This can\u2019t be undone.')) return;
+  const tid=sheetEditing;
+  db.trips=db.trips.filter(x=>x.trip_id!==tid);
+  db.expenses=db.expenses.filter(x=>x.trip_id!==tid);
+  localStorage.removeItem(whoKey(tid));
+  sel=null; saveLocal(); closeSheets(); resetForm(); renderAll(); cloudDeleteTrip(tid);
+});
+$('tCancel').addEventListener('click',closeSheets);
+
+/* who sheet */
+function openWhoSheet(){
+  const trip=curTrip(); if(!trip) return;
+  const w=getWho();
+  $('whoChips').innerHTML=trip.members.map(m=>'<button type="button" class="pchip'
+    +(w===m?' on':'')+'" data-w="'+esc(m)+'">'+esc(m)+'</button>').join('')
+    ||'<p class="sub">Add members to the trip first.</p>';
+  openSheet('whoSheet');
+}
+$('whoChips').addEventListener('click',e=>{
+  const b=e.target.closest('[data-w]'); if(!b)return;
+  setWho(b.dataset.w); closeSheets(); renderWhoChip();
+  if(!editingId){ formPay=b.dataset.w; renderForm(); }
+  flash('Hi, '+b.dataset.w+' 👋');
+});
+$('whoClear').addEventListener('click',()=>{ setWho(null); closeSheets(); renderWhoChip();
+  if(!editingId){ formPay=null; renderForm(); } });
+$('whoCancel').addEventListener('click',closeSheets);
+$('whoChip').addEventListener('click',openWhoSheet);
+
+/* ---- wire up ---- */
+$('tripSelect').addEventListener('change',e=>{
+  sel=e.target.value; localStorage.setItem('press:halvsies:trip',sel);
+  resetForm(); renderAll();
+});
+$('newTripBtn').addEventListener('click',()=>openTripSheet(null));
+$('emptyNewBtn').addEventListener('click',()=>openTripSheet(null));
+$('editTripBtn').addEventListener('click',()=>openTripSheet(curTrip()));
+$('addMembersBtn').addEventListener('click',()=>openTripSheet(curTrip()));
+$('payChips').addEventListener('click',e=>{
+  const b=e.target.closest('[data-m]'); if(!b)return; formPay=b.dataset.m; renderForm();
+});
+$('splitToggle').addEventListener('click',()=>{ splitOpen=!splitOpen; renderForm(); });
+$('splitGrid').addEventListener('click',e=>{
+  const b=e.target.closest('[data-s]'); if(!b)return;
+  const trip=curTrip(); if(!trip)return;
+  if(!formSplit) formSplit=new Set(trip.members);
+  formSplit.has(b.dataset.s)?formSplit.delete(b.dataset.s):formSplit.add(b.dataset.s);
+  if(formSplit.size===trip.members.length) formSplit=null;
+  renderForm();
+});
+$('excludedT').addEventListener('change',renderForm);
+$('saveBtn').addEventListener('click',saveExpense);
+$('cancelEditBtn').addEventListener('click',()=>{ resetForm(); });
+$('deleteExpBtn').addEventListener('click',deleteExpense);
+$('expList').addEventListener('click',e=>{
+  const b=e.target.closest('.exp'); if(b) startEdit(b.dataset.id);
+});
+$('expAmount').addEventListener('keydown',e=>{ if(e.key==='Enter') saveExpense(); });
+
+/* ---- live-ish sync ---- */
+setInterval(()=>{ if(!document.hidden&&!sheetOpen&&!editingId) loadCloud(true); },30000);
+window.addEventListener('focus',()=>{ if(!sheetOpen&&!editingId) loadCloud(true); });
+
+/* ---- go ---- */
+renderAll();       // instant paint from local mirror
+loadCloud();       // cloud is source of truth
+</script>
+</body>
+</html>
