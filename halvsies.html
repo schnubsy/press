@@ -120,7 +120,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .lgd{width:9px;height:9px;border-radius:50%;flex:none;align-self:center}
 .lgn{font-weight:700;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92px}
 .lead{flex:1;min-width:8px;border-bottom:1px dotted var(--hair);transform:translateY(-4px)}
-.lead2{flex:1;min-width:14px}
+.lead2{flex:0 0 26px;min-width:26px}
 .lgs{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap;
   min-width:74px;text-align:right}
 .lgp{font-family:var(--mono);font-size:12px;font-weight:700;min-width:42px;text-align:right}
@@ -140,22 +140,22 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 /* settle rows — names centred over fixed columns, bow spans the card, the
    amount rides the middle of the line, the action sits quietly beneath.     */
 .hsA{display:grid;grid-template-columns:74px 1fr 74px;align-items:end;
-  column-gap:10px;row-gap:1px;padding:9px 0 11px;border-bottom:1px solid var(--line)}
+  column-gap:10px;row-gap:0;padding:8px 0 9px;border-bottom:1px solid var(--line)}
 .hsA:last-child{border-bottom:none;padding-bottom:2px}
 .hsA .who1,.hsA .who2{font-weight:700;font-size:13px;text-align:center;line-height:18px;
-  transform:translateY(2px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.arch{position:relative;height:34px;min-width:0}
-.arch svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.arch .amt{position:absolute;left:50%;top:calc(50% - 1px);transform:translate(-50%,-50%);
-  padding:0 4px;font-family:var(--mono);font-weight:700;font-size:12.5px;
-  white-space:nowrap;line-height:1.4;color:var(--ink)}
+  transform:translateY(-1px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.arch{position:relative;height:30px;min-width:0;display:flex;align-items:center;gap:7px}
+.arch svg{flex:1;min-width:0;height:30px;overflow:visible}
+.arch .amt{flex:none;font-family:var(--mono);font-weight:700;font-size:12.5px;
+  white-space:nowrap;line-height:1.2;color:var(--ink)}
 .hsA.done .arch .amt{color:var(--st-ink)}
-.hsA.done .arch::after{content:"";position:absolute;right:0;bottom:3px;width:8px;height:8px;
+.hsA.done .arch::after{content:"";position:absolute;right:-1px;bottom:2px;width:8px;height:8px;
   border-radius:50%;background:var(--st-lite);box-shadow:0 0 0 4px rgba(94,234,212,.15)}
-.hsA .act{grid-column:2;align-self:center;display:flex;align-items:center;justify-content:center;gap:8px}
-.hsA .act .on{font-family:var(--mono);font-size:9.5px;color:var(--st-ink);opacity:.75}
-.hsA .cta{font-size:10px;font-weight:700;color:var(--muted);background:transparent;
-  border:1px solid var(--line);border-radius:99px;padding:4px 12px;white-space:nowrap}
+.hsA .act{grid-column:2;align-self:start;margin-top:-7px;
+  display:flex;align-items:center;justify-content:center;gap:6px}
+.hsA .act .on{font-family:var(--mono);font-size:9px;color:var(--st-ink);opacity:.7}
+.hsA .cta{font-size:9px;font-weight:700;color:var(--muted);background:transparent;
+  border:1px solid var(--line);border-radius:99px;padding:3px 9px;white-space:nowrap}
 .hsA .cta:active{transform:scale(.95);background:var(--soft)}
 .hsA.done .cta{color:var(--st-ink);border-color:rgba(94,234,212,.3)}
 .hsA.done .who1,.hsA.done .who2{opacity:.7}
@@ -622,17 +622,25 @@ const curTrip=()=>db.trips.find(t=>t.trip_id===sel)||null;
 const tripExps=()=>db.expenses.filter(x=>x.trip_id===sel);
 const expDate=x=>(x.extras&&x.extras.date)||String(x.created_at||'').slice(0,10);
 function bow(paid){
-  /* the bow is drawn as two halves of the same curve with a gap in the middle,
-     so the amount sits IN the line rather than on a patch over it — which
-     matters now the cards are glass and any patch would show.               */
+  /* two halves of one curve, one either side of the amount. Each half is its
+     own flexing SVG, so the gap in the middle is exactly the width of the
+     figure — the line stays tight to it at any screen size, and nothing has
+     to sit on an opaque patch over the glass.                              */
   const stroke = paid ? '#5EEAD4' : '#4A515A';
   const p=' fill="none" stroke="'+stroke+'" stroke-width="'+(paid?2.2:2)+'"'
     +' stroke-linecap="round" vector-effect="non-scaling-stroke"'
     +(paid?'':' stroke-dasharray="1 5"')+'/>';
-  return '<span class="arch"><svg viewBox="0 0 200 34" preserveAspectRatio="none" aria-hidden="true">'
-    +'<path d="M3 27 Q32 21.5 61 19.4"'+p
-    +'<path d="M139 19.4 Q168 21.5 197 27"'+p
-    +'</svg>';
+  const half=d=>'<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><path d="'+d+'"'+p+'</svg>';
+  return '<span class="arch">'+half('M3 24 Q52 18.5 99 15')     // rises to meet the figure
+    +'<span class="amt">';                                       // …amount goes here…
+}
+function bowEnd(paid){
+  const stroke = paid ? '#5EEAD4' : '#4A515A';
+  const p=' fill="none" stroke="'+stroke+'" stroke-width="'+(paid?2.2:2)+'"'
+    +' stroke-linecap="round" vector-effect="non-scaling-stroke"'
+    +(paid?'':' stroke-dasharray="1 5"')+'/>';
+  return '<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">'
+    +'<path d="M1 15 Q48 18.5 97 24"'+p+'</svg></span>';         // …then falls away
 }
 
 function renderAll(rebuildForm){
@@ -717,7 +725,7 @@ function renderSettle(trip,exps,r,sym){
         +esc(w.from)+' paid '+esc(w.to)+'">Mark as paid</button>';
     return '<div class="hsA'+(w.paid?' done':'')+'">'
       +'<span class="who1" style="color:'+cf+'">'+esc(w.from)+'</span>'
-      +bow(w.paid)+'<span class="amt">'+fmt(w.amt,sym)+'</span></span>'
+      +bow(w.paid)+fmt(w.amt,sym)+'</span>'+bowEnd(w.paid)
       +'<span class="who2" style="color:'+ct+'">'+esc(w.to)+'</span>'
       +'<span class="act">'+act+'</span></div>';
   }).join('');
