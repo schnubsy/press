@@ -623,14 +623,17 @@ function compute(trip,exps){
 function ringStack(trip,people,sym){
   const rows=people.slice().sort((a,b)=>b.paid-a.paid);
   const n=rows.length;
-  /* fixed weight, like the mock: heavy band, generous gap, biggest spender outside.
-     Only very large groups thin down, and then only enough to fit.            */
-  const W = n<=5?12:9, GAP = W+2, RIN = n<=5?23:18;
-  const OUT = RIN+(n-1)*GAP;
-  const S = Math.round(2*(OUT+W/2)+8), CTR=S/2;
+  /* The stack always occupies the same footprint — the one it had at four
+     people (outer centre-radius 65, box 150). Thickness scales instead:
+     the widest band that still leaves a 17px hole at the middle, which at
+     n=4 works out to exactly the 12px it used to be.                        */
+  const OUT=65, HOLE=17, S=150, CTR=S/2;
+  const W = Math.max(3, Math.min(30, Math.floor((OUT-HOLE-2*(n-1))/(n-0.5))));
+  const GAP = W+2;
   let svg='<svg width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'" aria-hidden="true">'
     +'<defs><filter id="lapsh" x="-60%" y="-60%" width="220%" height="220%">'
-    +'<feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#000" flood-opacity=".9"/></filter></defs>'
+    +'<feDropShadow dx="0" dy="0" stdDeviation="'+Math.max(1.6,(W*0.22)).toFixed(2)
+    +'" flood-color="#000" flood-opacity=".9"/></filter></defs>'
     +'<g transform="rotate(-90 '+CTR+' '+CTR+')">';
   rows.forEach((p,i)=>{
     const r=OUT-i*GAP, C=2*Math.PI*r, col=memColor(trip,p.m);
@@ -660,7 +663,8 @@ function ringStack(trip,people,sym){
     return '<div class="lgr"><span class="lgd" style="background:'+col+'"></span>'
       +'<span class="lgn" style="color:'+col+'">'+esc(p.m)+'</span>'
       +'<span class="cell"><span class="lead"></span>'
-      +'<span class="lgs">'+fmt(p.paid,sym)+'</span></span>'
+      +'<span class="lgs">'+fmt(p.paid,sym)+'</span>'
+      +'<span class="lead"></span></span>'
       +'<span class="cell2"><span class="lead"></span>'
       +'<span class="lgp">'+pct+'%</span></span></div>';
   }).join('');
