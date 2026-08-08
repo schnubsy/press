@@ -623,13 +623,22 @@ function compute(trip,exps){
 function ringStack(trip,people,sym){
   const rows=people.slice().sort((a,b)=>b.paid-a.paid);
   const n=rows.length;
-  /* The stack always occupies the same footprint — the one it had at four
-     people (outer centre-radius 65, box 150). Thickness scales instead:
-     the widest band that still leaves a 17px hole at the middle, which at
-     n=4 works out to exactly the 12px it used to be.                        */
-  const OUT=65, HOLE=17, S=150, CTR=S/2;
-  const W = Math.max(3, Math.min(30, Math.floor((OUT-HOLE-2*(n-1))/(n-0.5))));
-  const GAP = W+2;
+  /* Geometry is pinned to the outer EDGE of the band, not its centreline —
+     measuring from the centreline let a heavy two-person ring overflow the
+     box and get its sides sliced flat.
+     150 is the floor: small groups keep that footprint and simply run a
+     heavier band (capped, so 2 and 3 people look the same weight). Once the
+     band would drop below 10px the weight holds and the circle grows
+     instead, up to a 200 ceiling. n=4 still lands on 12px in a 150 box.   */
+  const HOLE=17, PAD=4, W_MAX=16, W_MIN=10;
+  const R_MIN=150/2-PAD, R_MAX=200/2-PAD;
+  const fits=r=>Math.floor((r-HOLE-2*(n-1))/n);
+  let W=Math.min(W_MAX,fits(R_MIN));
+  if(W<W_MIN) W=W_MIN;                       // too thin to read — grow instead
+  let edge=Math.max(R_MIN,HOLE+n*W+2*(n-1));
+  if(edge>R_MAX){ W=Math.max(3,fits(R_MAX)); edge=HOLE+n*W+2*(n-1); }
+  const S=Math.round(2*(edge+PAD)), CTR=S/2;
+  const OUT=edge-W/2, GAP=W+2;
   let svg='<svg width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'" aria-hidden="true">'
     +'<defs><filter id="lapsh" x="-60%" y="-60%" width="220%" height="220%">'
     +'<feDropShadow dx="0" dy="0" stdDeviation="'+Math.max(1.6,(W*0.22)).toFixed(2)
