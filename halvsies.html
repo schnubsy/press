@@ -21,7 +21,7 @@
    ============================================================ */
 :root{
   --bg:#0E1114; --card:#1A1D21; --row:#14171B; --ink:#F2F4F6; --muted:#8E97A1; --faint:#6C757E;
-  --soft:#23272C; --line:#2C3238; --track:#2E343B; --hair:#3A4149;
+  --soft:#23272C; --line:#2C3238; --track:#2C2C2E; --hair:#3A4149;
   --vio:#7C5CFF; --cor:#FF6B5E;
   --st:#0D9488; --st-soft:rgba(13,148,136,.16); --st-ink:#5EEAD4; --st-lite:#5EEAD4;
   --red:#F87171; --red-soft:rgba(220,75,62,.16);
@@ -121,29 +121,22 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .prog .bar i{display:block;height:100%;background:var(--st);border-radius:99px;transition:width .3s}
 .prog .lbl{font-size:11px;font-weight:700;color:var(--st-ink);white-space:nowrap}
 .prog .lbl small{color:var(--muted);font-weight:600;font-size:10px}
-.hsA{display:flex;align-items:center;gap:7px;background:var(--row);border-radius:14px;padding:9px 10px;margin-bottom:8px}
+/* settle rows — fixed grid: every bow is the same size and every column aligns */
+.hsA{display:grid;grid-template-columns:1fr 132px 1fr 74px;align-items:center;gap:8px;
+  padding:7px 4px;margin-bottom:2px}
 .hsA:last-child{margin-bottom:0}
-.hsA .av{width:26px;height:26px;font-size:11px}
-.hsA .side{display:flex;align-items:center;gap:5px;flex:none;min-width:0}
-.hsA .side .nm{font-weight:700;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px}
-/* the bridge — a drawn bow: dotted while open, lit with a landing dot once paid */
-.arch{flex:1;position:relative;height:34px;min-width:60px}
-.arch .bow{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.arch .bow path{fill:none;stroke:var(--hair);stroke-width:2;stroke-linecap:round;
-  stroke-dasharray:1 5;vector-effect:non-scaling-stroke}
-.arch .amt{position:absolute;left:50%;top:0;transform:translateX(-50%);background:var(--row);padding:0 6px;
-  font-family:var(--mono);font-weight:700;font-size:12px;white-space:nowrap;line-height:1.45}
-.hsA.done .arch .bow path{stroke:var(--st);stroke-dasharray:none;stroke-width:2.5}
-.hsA.done .arch::after{content:"";position:absolute;right:-1px;bottom:2px;width:8px;height:8px;border-radius:50%;
-  background:var(--st-lite);box-shadow:0 0 0 4px rgba(94,234,212,.16)}
-.hsA.done .arch .amt{color:var(--st-ink);background:#101F20}
+.hsA .who1{font-weight:700;font-size:13px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hsA .who2{font-weight:700;font-size:13px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.arch{position:relative;width:132px;height:30px}
+.arch svg{display:block;width:132px;height:30px;overflow:visible}
+.arch .amt{position:absolute;left:50%;top:-1px;transform:translateX(-50%);background:var(--card);padding:0 5px;
+  font-family:var(--mono);font-weight:700;font-size:11px;white-space:nowrap;line-height:1.5;color:var(--muted)}
+.hsA.done .arch .amt{color:var(--st-ink)}
 .hsA .cta{font-size:9.5px;font-weight:800;color:#12151A;background:#F2F4F6;border-radius:99px;
-  padding:7px 3px;white-space:nowrap;flex:none;width:76px;text-align:center;overflow:hidden;text-overflow:ellipsis}
+  padding:6px 3px;white-space:nowrap;width:74px;text-align:center;overflow:hidden;text-overflow:ellipsis}
 .hsA .cta:active{transform:scale(.95)}
-.hsA.done{background:linear-gradient(90deg,rgba(13,148,136,.20),rgba(13,148,136,.06))}
-.hsA.done .arch::before{border-top-color:var(--st-lite)}
-.hsA.done .amt{color:var(--st-ink)}
 .hsA.done .cta{background:var(--st);color:#04231F}
+.hsA.done .who1,.hsA.done .who2{opacity:.62}
 .allsq{display:flex;align-items:center;gap:8px;color:var(--st-ink);font-weight:700;font-size:13px;
   background:rgba(13,148,136,.16);border:1px solid rgba(13,148,136,.3);border-radius:12px;padding:11px 13px;margin-bottom:14px}
 .allsq:last-child{margin-bottom:0}
@@ -571,7 +564,7 @@ function ringStack(trip,people,sym){
     const frac = p.share>0 ? p.paid/p.share : (p.paid>0?1:0);
     const c=(stroke,extra)=>'<circle cx="'+CTR+'" cy="'+CTR+'" r="'+r+'" fill="none" stroke="'+stroke
       +'" stroke-width="'+W+'"'+(extra||'')+'/>';
-    svg+=c('#2E343B');                                   // empty ring stays, just grey
+    svg+=c('#2C2C2E');                                   // empty ring stays, just grey
     if(frac<=0) return;
     if(frac<=1){ const L=frac*C;
       svg+=c(col,' stroke-linecap="round" stroke-dasharray="'+L.toFixed(2)+' '+(C-L).toFixed(2)+'"');
@@ -598,8 +591,16 @@ const tripsSorted=()=>db.trips.slice().sort((a,b)=>String(b.updated_at||b.create
 const curTrip=()=>db.trips.find(t=>t.trip_id===sel)||null;
 const tripExps=()=>db.expenses.filter(x=>x.trip_id===sel);
 const expDate=x=>(x.extras&&x.extras.date)||String(x.created_at||'').slice(0,10);
-const side=(name,col)=>'<span class="side"><span class="av" style="background:'+col+'">'
-  +esc(initial(name))+'</span><span class="nm">'+esc(name)+'</span></span>';
+/* one bow, drawn at a fixed size so every row matches: dotted grey while the
+   debt is open, solid and lit with a landing dot once it has been paid.      */
+function bow(paid){
+  const stroke = paid ? '#5EEAD4' : '#4A515A';
+  return '<span class="arch"><svg viewBox="0 0 132 30" aria-hidden="true">'
+    +'<path d="M6 25 Q66 3 126 25" fill="none" stroke="'+stroke+'" stroke-width="'+(paid?2.2:2)+'"'
+    +' stroke-linecap="round"'+(paid?'':' stroke-dasharray="1 5"')+'/>'
+    +(paid?'<circle cx="126" cy="25" r="4" fill="#5EEAD4"/>':'')
+    +'</svg>';
+}
 
 function renderAll(rebuildForm){
   const trips=tripsSorted();
@@ -668,8 +669,9 @@ function renderSettle(trip,exps,r,sym){
   }
   let html=r.settle.map(s0=>{
     const cf=memColor(trip,s0.from), ct=memColor(trip,s0.to);
-    return '<div class="hsA">'+side(s0.from,cf)
-      +'<span class="arch"><svg class="bow" viewBox="0 0 120 34" preserveAspectRatio="none" aria-hidden="true"><path d="M4 30 Q60 3 116 30"/></svg><span class="amt">'+fmt(s0.amt,sym)+'</span></span>'+side(s0.to,ct)
+    return '<div class="hsA"><span class="who1" style="color:'+cf+'">'+esc(s0.from)+'</span>'
+      +bow(false)+'<span class="amt">'+fmt(s0.amt,sym)+'</span></span>'
+      +'<span class="who2" style="color:'+ct+'">'+esc(s0.to)+'</span>'
       +'<button class="cta" data-pay="'+esc(s0.from)+'|'+esc(s0.to)+'|'+s0.amt+'" aria-label="'
       +esc(s0.from)+' paid '+esc(s0.to)+'">I\u2019ve paid ✓</button></div>';
   }).join('');
@@ -677,8 +679,9 @@ function renderSettle(trip,exps,r,sym){
   html+=pays.map(x=>{
     const to=(x.split_members||[])[0]||'?';
     const cf=memColor(trip,x.paid_by), ct=memColor(trip,to);
-    return '<div class="hsA done">'+side(x.paid_by,cf)
-      +'<span class="arch"><svg class="bow" viewBox="0 0 120 34" preserveAspectRatio="none" aria-hidden="true"><path d="M4 30 Q60 3 116 30"/></svg><span class="amt">'+fmt(Math.round(x.amount*100),sym)+'</span></span>'+side(to,ct)
+    return '<div class="hsA done"><span class="who1" style="color:'+cf+'">'+esc(x.paid_by)+'</span>'
+      +bow(true)+'<span class="amt">'+fmt(Math.round(x.amount*100),sym)+'</span></span>'
+      +'<span class="who2" style="color:'+ct+'">'+esc(to)+'</span>'
       +'<button class="cta" data-undo="'+esc(x.expense_id)+'">Paid '+fmtDate(expDate(x))+'</button></div>';
   }).join('');
   $('settleList').innerHTML=html;
