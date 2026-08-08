@@ -348,10 +348,10 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
     <h2 class="h2">add an expense <em id="forTrip1"></em></h2>
     <div class="frow"><input type="text" class="fin" id="expTitle" placeholder="Dinner, fuel, tickets…" autocomplete="off"></div>
     <div class="frow">
-      <div class="amount-in"><span class="cur" id="curSym">$</span><input type="text" class="fin" id="expAmount" inputmode="text" placeholder="0.00  ·  -5 for money back" autocomplete="off"></div>
+      <div class="amount-in"><span class="cur" id="curSym">$</span><input type="text" class="fin" id="expAmount" inputmode="text" placeholder="0.00" autocomplete="off"></div>
       <div class="datewrap"><input type="date" class="fin" id="expDate"></div>
     </div>
-    <div class="flabel">Paid by <i style="font-style:normal;text-transform:none;letter-spacing:0;color:var(--faint)">· or received it, on a minus amount</i></div>
+    <div class="flabel">Paid by</div>
     <div class="chips" id="payChips"></div>
     <div class="splitline">
       <button class="splitbtn" id="splitToggle">Split: <b id="splitLbl">Everyone</b> <i id="splitChev">· change ▾</i></button>
@@ -548,8 +548,9 @@ async function cloudDeleteTrip(tid){
    Regular expense: payer's paid += amt; each participant's share += amt/n (exact cents).
    Payment record (extras.kind='payment'): transfer A → B —
    paid[A] += amt, share[B] += amt; excluded from trip total & count.
-   Amounts may be negative — a refund, a rebate, or cash handed straight from
-   one person to another. The cent-split below divides negatives exactly too. */
+   A minus amount aimed at one other person is stored as one of these transfers,
+   so cash handed over moves balances without ever counting as trip spend.
+   A minus amount split across the group stays a real expense — a refund. */
 function compute(trip,exps){
   const members=trip.members||[];
   /* two ledgers: E = trip expenses only (drives the rings and each person's
@@ -784,7 +785,9 @@ function renderList(trip,exps,sym){
   const row=x=>{
     const col=memColor(trip,x.paid_by);
     const parts=x.excluded?'':(x.split_members&&x.split_members.length
-      ? ' · split '+x.split_members.length+' way'+(x.split_members.length>1?'s':'') : ' · everyone');
+      ? ' · split '+x.split_members.length+' way'+(x.split_members.length>1?'s':'')
+        +' ('+esc(x.split_members.join(', '))+')'
+      : ' · everyone');
     return '<button class="ex'+(x.excluded?' off':'')+'" data-id="'+esc(x.expense_id)+'">'
       +'<span class="av" style="background:'+col+'">'+esc(initial(x.paid_by))+'</span>'
       +'<span class="mid"><span class="t">'+esc(x.title)+'</span>'
@@ -890,12 +893,20 @@ function saveExpense(){
   const old=editingId?db.expenses.find(x=>x.expense_id===editingId):null;
   const extras=Object.assign({},old?old.extras:{},{date:$('expDate').value||todayStr()});
   delete extras.kind;
+  /* a minus amount pointed at exactly one other person is a handover, not a
+     cost: bank it as a transfer so it moves balances without ever touching
+     the trip total, the expense count or the rings.                        */
+  const handover = c<0 && split && split.length===1 && split[0]!==formPay && !excluded;
+  let amount=c/100, splitOut=split, exclOut=excluded;
+  if(handover){ extras.kind='payment'; amount=Math.abs(c)/100; exclOut=false; }
   const row={expense_id:editingId||uid(),trip_id:sel,
-    title:($('expTitle').value.trim()||'Expense'),amount:c/100,paid_by:formPay,
-    split_members:split,excluded,extras,
+    title:($('expTitle').value.trim()||(handover?'Handover':'Expense')),
+    amount:amount,paid_by:formPay,
+    split_members:splitOut,excluded:exclOut,extras,
     created_at:old?old.created_at:nowIso(),updated_at:nowIso()};
   db.expenses=db.expenses.filter(x=>x.expense_id!==row.expense_id).concat([row]);
   saveLocal(); resetForm(); renderAll(false); upsertExp(row);
+  if(handover) flash(row.paid_by+' → '+split[0]+' recorded','#0D9488');
 }
 function startEdit(id){
   const x=db.expenses.find(e=>e.expense_id===id); const trip=curTrip();
