@@ -96,18 +96,17 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .needmembers{font-size:13px;color:var(--muted);background:var(--soft);border-radius:11px;padding:11px 13px}
 .needmembers button{color:var(--vio);font-weight:800;font-size:13px;text-decoration:underline}
 
-/* rings */
-.orbits{display:flex;flex-wrap:wrap;gap:7px}
-.ob{flex:1 1 30%;min-width:100px;background:var(--bg);border-radius:14px;padding:10px 6px 9px;text-align:center}
-.gz{position:relative;width:72px;height:72px;margin:0 auto 5px}
-.gz .in{position:absolute;left:20px;top:20px;width:32px;height:32px;font-size:14px}
-.ob .n2{font-weight:700;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.money{margin-top:6px;padding-top:6px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:1px}
-.money .pd{font-family:var(--mono);font-size:9px;color:var(--muted)}
-.money .st2{font-family:var(--mono);font-size:9.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.st2.g{color:var(--st-ink)}
-.st2.o{color:var(--red)}
-.st2.e{color:var(--faint)}
+/* rings — one concentric stack, biggest spender outermost */
+.orbits{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
+  background:var(--bg);border-radius:15px;padding:13px 12px}
+.orbits svg{flex:none}
+.legend{flex:1 1 190px;min-width:180px;display:flex;flex-direction:column;gap:7px}
+.lgr{display:flex;align-items:baseline;gap:7px}
+.lgd{width:9px;height:9px;border-radius:50%;flex:none;align-self:center}
+.lgn{font-weight:700;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92px}
+.lead{flex:1;min-width:8px;border-bottom:1px dotted #CFCADE;transform:translateY(-4px)}
+.lgs{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap}
+.lgp{font-family:var(--mono);font-size:12px;font-weight:700;min-width:42px;text-align:right}
 .offtab{font-size:11.5px;color:var(--amb);font-weight:700;
   background:var(--amb-soft);border-radius:10px;padding:7px 11px;margin-top:9px}
 .offhead{font-size:10px;opacity:.8;margin-bottom:3px}
@@ -126,12 +125,16 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .hsA .av{width:26px;height:26px;font-size:11px}
 .hsA .side{display:flex;align-items:center;gap:5px;flex:none;min-width:0}
 .hsA .side .nm{font-weight:700;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px}
-/* the arch from Bridge — one clean span between the two people */
-.arch{flex:1;position:relative;height:26px;display:flex;align-items:center;justify-content:center;min-width:44px}
-.arch::before{content:"";position:absolute;left:2px;right:2px;top:50%;height:15px;transform:translateY(-50%);
-  border-top:2.5px solid #DDD8F0;border-radius:60% 60% 0 0/100% 100% 0 0}
-.arch .amt{position:relative;background:var(--card);border-radius:99px;padding:3px 8px;
-  font-family:var(--mono);font-weight:700;font-size:11.5px;box-shadow:0 2px 8px rgba(33,31,51,.12);white-space:nowrap}
+/* the bridge — dotted while open, lit with a landing dot once paid */
+.arch{flex:1;position:relative;height:30px;min-width:52px}
+.arch .curve{position:absolute;left:4px;right:4px;top:11px;bottom:1px;
+  border-top:2px dotted #C6C0DC;border-radius:60% 60% 0 0/100% 100% 0 0}
+.arch .amt{position:absolute;left:50%;top:1px;transform:translateX(-50%);background:var(--bg);padding:0 5px;
+  font-family:var(--mono);font-weight:700;font-size:11.5px;white-space:nowrap;line-height:1.5}
+.hsA.done .arch .curve{border-top:2.5px solid var(--st)}
+.hsA.done .arch::after{content:"";position:absolute;right:1px;bottom:-3px;width:7px;height:7px;border-radius:50%;
+  background:var(--st);box-shadow:0 0 0 3px rgba(13,148,136,.16)}
+.hsA.done .arch .amt{color:var(--st-ink);background:#EEFBF8}
 .hsA .cta{font-size:9.5px;font-weight:800;color:#fff;background:var(--ink);border-radius:99px;
   padding:7px 3px;white-space:nowrap;flex:none;width:76px;text-align:center;overflow:hidden;text-overflow:ellipsis}
 .hsA .cta:active{transform:scale(.95)}
@@ -544,38 +547,46 @@ function compute(trip,exps){
    Circumference = your fair share, starting at the top.
    paid < share  → striped band (your colour, faint) + solid arc, rounded cap.
    paid = share  → clean full circle in your colour.
-   paid > share  → full circle, then the SAME band goes darker for the
-                   overpaid proportion, wrapping from the top. Beyond one full
-                   lap the overflow rides a thin arc outside the ring, so the
-                   dark length always grows with the overpayment.            */
-const RING_C=163.36;   // 2πr, r=26
-function gauge(col,paid,share,key){
-  const pid='hstripe'+key;
-  let s='<svg width="72" height="72" viewBox="0 0 72 72" aria-hidden="true">';
-  if(share>0 && paid<share){
-    s+='<defs><pattern id="'+pid+'" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
-      +'<rect width="5" height="5" fill="'+col+'" opacity=".11"/>'
-      +'<rect width="2.5" height="5" fill="'+col+'" opacity=".32"/></pattern></defs>'
-      +'<circle cx="36" cy="36" r="26" fill="none" stroke="url(#'+pid+')" stroke-width="11"/>';
-    const frac=paid/share;
-    if(frac>0){ const L=frac*RING_C;
-      s+='<g transform="rotate(-90 36 36)"><circle cx="36" cy="36" r="26" fill="none" stroke="'+col
-        +'" stroke-width="11" stroke-linecap="round" stroke-dasharray="'+L.toFixed(2)+' '+(RING_C-L).toFixed(2)+'"/></g>'; }
-  }else{
-    s+='<circle cx="36" cy="36" r="26" fill="none" stroke="'+col+'" stroke-width="11"/>';
-    const over = share>0 ? (paid-share)/share : (paid>0?1:0);
-    if(over>0.0005){
-      const dk=shade(col,.55), f=Math.min(over,1), L=f*RING_C;
-      s+='<g transform="rotate(-90 36 36)"><circle cx="36" cy="36" r="26" fill="none" stroke="'+dk
-        +'" stroke-width="11"'+(f<1?' stroke-linecap="round"':'')
-        +' stroke-dasharray="'+L.toFixed(2)+' '+(RING_C-L).toFixed(2)+'"/>';
-      if(over>1.0005){ const g=Math.min(over-1,1), O=2*Math.PI*34, GL=g*O;   // overflow lap rides outside
-        s+='<circle cx="36" cy="36" r="34" fill="none" stroke="'+dk+'" stroke-width="3" stroke-linecap="round"'
-          +' stroke-dasharray="'+GL.toFixed(2)+' '+(O-GL).toFixed(2)+'"/>'; }
-      s+='</g>';
+   paid > share  → the arc laps, and the lapped portion carries a drop shadow
+                   where it crosses the first pass (the Apple-watch answer), so
+                   past-100% is unambiguous. Zero spend = an empty grey ring.
+   Rings are concentric and sorted biggest spender outermost; the legend
+   repeats the order with a leader line to name / spend / percent.           */
+function ringStack(trip,people,sym){
+  const rows=people.slice().sort((a,b)=>b.paid-a.paid);
+  const n=rows.length;
+  const OUT=66, MIN=17;
+  const step = n>1 ? (OUT-MIN)/(n-1) : 0;
+  const w = n>1 ? Math.max(5,Math.min(13,step-4)) : 13;
+  let svg='<svg width="152" height="152" viewBox="0 0 152 152" aria-hidden="true">'
+    +'<defs><filter id="lapsh" x="-60%" y="-60%" width="220%" height="220%">'
+    +'<feDropShadow dx="0" dy="0" stdDeviation="2.1" flood-color="#211F33" flood-opacity=".45"/></filter></defs>'
+    +'<g transform="rotate(-90 76 76)">';
+  rows.forEach((p,i)=>{
+    const r=OUT-i*step, C=2*Math.PI*r, col=memColor(trip,p.m);
+    const frac = p.share>0 ? p.paid/p.share : (p.paid>0?1:0);
+    const c=(stroke,extra)=>'<circle cx="76" cy="76" r="'+r.toFixed(1)+'" fill="none" stroke="'+stroke
+      +'" stroke-width="'+w.toFixed(1)+'"'+(extra||'')+'/>';
+    svg+=c('#E6E2F1');                                   // empty ring stays, just grey
+    if(frac<=0) return;
+    if(frac<=1){ const L=frac*C;
+      svg+=c(col,' stroke-linecap="round" stroke-dasharray="'+L.toFixed(2)+' '+(C-L).toFixed(2)+'"');
+    }else{
+      svg+=c(col);                                       // first lap = fair share covered
+      const g=Math.min(frac-1,1), L=g*C;                 // the lap over, shadowed where it crosses
+      svg+=c(col,' stroke-linecap="round" stroke-dasharray="'+L.toFixed(2)+' '+(C-L).toFixed(2)
+        +'" filter="url(#lapsh)"');
     }
-  }
-  return s+'</svg>';
+  });
+  svg+='</g></svg>';
+  const legend=rows.map(p=>{
+    const pct=p.share>0?Math.round(p.paid/p.share*100):0;
+    return '<div class="lgr"><span class="lgd" style="background:'+memColor(trip,p.m)+'"></span>'
+      +'<span class="lgn">'+esc(p.m)+'</span><span class="lead"></span>'
+      +'<span class="lgs">'+fmt(p.paid,sym)+'</span>'
+      +'<span class="lgp">'+pct+'%</span></div>';
+  }).join('');
+  return svg+'<div class="legend">'+legend+'</div>';
 }
 
 /* ---- rendering ---- */
@@ -622,18 +633,7 @@ function renderAll(rebuildForm){
 
   $('orbits').hidden=!(hasMembers&&r.count);
   if(hasMembers&&r.count){
-    $('orbits').innerHTML=r.people.map((n,i)=>{
-      const col=memColor(trip,n.m);
-      const settled=n.net!==0&&Math.abs(n.outstanding)<1;
-      const line=settled?'<span class="st2 g">settled ✓</span>'
-        :n.net>0?'<span class="st2 g">gets '+fmt(n.net,sym)+' back</span>'
-        :n.net<0?'<span class="st2 o">owes '+fmt(-n.net,sym)+'</span>'
-        :'<span class="st2 e">all even</span>';
-      return '<div class="ob"><div class="gz">'+gauge(col,n.paid,n.share,i)
-        +'<span class="av in" style="background:'+col+'">'+esc(initial(n.m))+'</span></div>'
-        +'<div class="n2">'+esc(n.m)+'</div>'
-        +'<div class="money"><span class="pd">paid '+fmt(n.paid,sym)+'</span>'+line+'</div></div>';
-    }).join('');
+    $('orbits').innerHTML=ringStack(trip,r.people,sym);
   }
 
   $('offtabLine').hidden=!r.off;
@@ -665,7 +665,7 @@ function renderSettle(trip,exps,r,sym){
   let html=r.settle.map(s0=>{
     const cf=memColor(trip,s0.from), ct=memColor(trip,s0.to);
     return '<div class="hsA">'+side(s0.from,cf)
-      +'<span class="arch"><span class="amt">'+fmt(s0.amt,sym)+'</span></span>'+side(s0.to,ct)
+      +'<span class="arch"><span class="curve"></span><span class="amt">'+fmt(s0.amt,sym)+'</span></span>'+side(s0.to,ct)
       +'<button class="cta" data-pay="'+esc(s0.from)+'|'+esc(s0.to)+'|'+s0.amt+'" aria-label="'
       +esc(s0.from)+' paid '+esc(s0.to)+'">I\u2019ve paid ✓</button></div>';
   }).join('');
@@ -674,7 +674,7 @@ function renderSettle(trip,exps,r,sym){
     const to=(x.split_members||[])[0]||'?';
     const cf=memColor(trip,x.paid_by), ct=memColor(trip,to);
     return '<div class="hsA done">'+side(x.paid_by,cf)
-      +'<span class="arch"><span class="amt">'+fmt(Math.round(x.amount*100),sym)+'</span></span>'+side(to,ct)
+      +'<span class="arch"><span class="curve"></span><span class="amt">'+fmt(Math.round(x.amount*100),sym)+'</span></span>'+side(to,ct)
       +'<button class="cta" data-undo="'+esc(x.expense_id)+'">Paid '+fmtDate(expDate(x))+'</button></div>';
   }).join('');
   $('settleList').innerHTML=html;
