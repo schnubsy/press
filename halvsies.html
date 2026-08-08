@@ -248,6 +248,10 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .ex .m .offtag{color:var(--amb);font-weight:700}
 .ex .a{font-family:var(--mono);font-weight:700;font-size:12.5px;flex:none}
 .ex .a.cr{color:var(--st-ink)}
+.ex.xfer{border-style:dashed;border-color:rgba(94,234,212,.28);box-shadow:none}
+.ex .a.xf{color:var(--st-ink)}
+.ex .m .xtag{color:var(--st-ink);font-weight:700}
+.ex .m .rtag{color:var(--st-ink);font-weight:700}
 .ex.off .a{color:var(--faint);font-weight:500}
 
 /* sheets */
@@ -451,6 +455,8 @@ function fmtDay(d){ if(!d) return 'No date'; try{ const dt=new Date(d.length>10?
   return dt.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return d; } }
 const initial=n=>String(n||'?').trim().charAt(0).toUpperCase()||'?';
 const isPay=x=>x.extras&&x.extras.kind==='payment';
+const isSide=x=>isPay(x)&&x.extras.side===true;      // a handover you typed in
+const isRefund=x=>!isPay(x)&&x.amount<0;             // money back on the tab
 function shade(hex,f){ const n=parseInt(hex.slice(1),16);
   const r=Math.round(((n>>16)&255)*f), g=Math.round(((n>>8)&255)*f), b=Math.round((n&255)*f);
   return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1); }
@@ -548,9 +554,13 @@ async function cloudDeleteTrip(tid){
    Regular expense: payer's paid += amt; each participant's share += amt/n (exact cents).
    Payment record (extras.kind='payment'): transfer A → B —
    paid[A] += amt, share[B] += amt; excluded from trip total & count.
-   A minus amount aimed at one other person is stored as one of these transfers,
-   so cash handed over moves balances without ever counting as trip spend.
-   A minus amount split across the group stays a real expense — a refund. */
+
+   Two shapes of minus amount, deliberately handled differently:
+   • minus to ONE other person = a handover. Stored as a transfer above, so it
+     moves balances and never touches the total, the count or the rings.
+   • minus split across the group = a refund. It stays a real expense, so the
+     total drops, everyone's fair share drops, and the person refunded is
+     owed correspondingly less. Both are audited in the scenario tests.     */
 function compute(trip,exps){
   const members=trip.members||[];
   /* two ledgers: E = trip expenses only (drives the rings and each person's
@@ -772,7 +782,10 @@ function renderSettle(trip,exps,r,sym){
 }
 
 function renderList(trip,exps,sym){
-  const items=exps.filter(x=>!isPay(x));
+  const items=exps.filter(x=>!isPay(x)||isSide(x));
+  /* transfers move money but are not spend, so they never count toward a
+     day's or a person's subtotal.                                        */
+  const spend=g=>g.filter(x=>!isSide(x)).reduce((a,x)=>a+Math.round(x.amount*100),0);
   $('listWrap').hidden=!items.length;
   if(!items.length) return;
   document.querySelectorAll('#sortRow .sc').forEach(b=>{
@@ -784,6 +797,16 @@ function renderList(trip,exps,sym){
   const byDate=(a,b)=>(expDate(b).localeCompare(expDate(a)))||String(b.created_at).localeCompare(String(a.created_at));
   const row=x=>{
     const col=memColor(trip,x.paid_by);
+    if(isSide(x)){                                   // money handed straight over
+      const to=(x.split_members||[])[0]||'?', ct=memColor(trip,to);
+      return '<button class="ex xfer" data-id="'+esc(x.expense_id)+'">'
+        +'<span class="av" style="background:'+col+'">'+esc(initial(x.paid_by))+'</span>'
+        +'<span class="mid"><span class="t">'+esc(x.title)+'</span>'
+        +'<span class="m"><b style="color:'+col+'">'+esc(x.paid_by)+'</b> → '
+        +'<b style="color:'+ct+'">'+esc(to)+'</b> · '+fmtDate(expDate(x))
+        +' · <span class="xtag">transfer</span></span></span>'
+        +'<span class="a xf">'+fmt(Math.round(x.amount*100),sym)+'</span></button>';
+    }
     const parts=x.excluded?'':(x.split_members&&x.split_members.length
       ? ' · split '+x.split_members.length+' way'+(x.split_members.length>1?'s':'')
         +' ('+esc(x.split_members.join(', '))+')'
@@ -792,6 +815,7 @@ function renderList(trip,exps,sym){
       +'<span class="av" style="background:'+col+'">'+esc(initial(x.paid_by))+'</span>'
       +'<span class="mid"><span class="t">'+esc(x.title)+'</span>'
       +'<span class="m"><b style="color:'+col+'">'+esc(x.paid_by)+'</b> · '+fmtDate(expDate(x))+parts
+      +(isRefund(x)?' · <span class="rtag">refund</span>':'')
       +(x.excluded?' · <span class="offtag">off the tab</span>':'')+'</span></span>'
       +'<span class="a'+(x.amount<0?' cr':'')+'">'+fmt(Math.round(x.amount*100),sym)+'</span></button>';
   };
@@ -801,7 +825,7 @@ function renderList(trip,exps,sym){
     order.forEach(m=>{
       const g=items.filter(x=>x.paid_by===m).sort(byDate);
       if(!g.length) return;
-      const sub=g.reduce((a,x)=>a+Math.round(x.amount*100),0);
+      const sub=spend(g);
       html+='<div class="gl"><span class="gd" style="background:'+memColor(trip,m)+'"></span>'+esc(m)
         +'<span class="gt">'+fmt(sub,sym)+'</span></div>'+g.map(row).join('');
     });
@@ -814,7 +838,7 @@ function renderList(trip,exps,sym){
       const g=items.filter(x=>expDate(x)===d)
         .sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
       if(!g.length) return;
-      const sub=g.reduce((a,x)=>a+Math.round(x.amount*100),0);
+      const sub=spend(g);
       html+='<div class="gl">'+esc(fmtDay(d))+'<span class="gt">'+fmt(sub,sym)+'</span></div>'
         +g.map(row).join('');
     });
@@ -895,10 +919,11 @@ function saveExpense(){
   delete extras.kind;
   /* a minus amount pointed at exactly one other person is a handover, not a
      cost: bank it as a transfer so it moves balances without ever touching
-     the trip total, the expense count or the rings.                        */
+     the trip total, the expense count or the rings. A minus spread across
+     the group is a refund and stays an ordinary (negative) expense.       */
   const handover = c<0 && split && split.length===1 && split[0]!==formPay && !excluded;
   let amount=c/100, splitOut=split, exclOut=excluded;
-  if(handover){ extras.kind='payment'; amount=Math.abs(c)/100; exclOut=false; }
+  if(handover){ extras.kind='payment'; extras.side=true; amount=Math.abs(c)/100; exclOut=false; }
   const row={expense_id:editingId||uid(),trip_id:sel,
     title:($('expTitle').value.trim()||(handover?'Handover':'Expense')),
     amount:amount,paid_by:formPay,
@@ -943,7 +968,8 @@ function recordPayment(from,to,amtCents){
 }
 function undoPayment(id){
   const x=db.expenses.find(e=>e.expense_id===id); if(!x) return;
-  if(!confirm('Remove this payment? The amount goes back to owing.')) return;
+  if(!confirm(isSide(x)?'Remove this transfer? The money goes back to owing.'
+    :'Remove this payment? The amount goes back to owing.')) return;
   db.expenses=db.expenses.filter(e=>e.expense_id!==id);
   saveLocal(); renderAll(false); cloudDeleteExp(id); flash('Payment removed');
 }
@@ -1116,7 +1142,9 @@ $('saveBtn').addEventListener('click',saveExpense);
 $('cancelEditBtn').addEventListener('click',resetForm);
 $('deleteExpBtn').addEventListener('click',deleteExpense);
 $('expList').addEventListener('click',e=>{
-  const b=e.target.closest('.ex'); if(b) startEdit(b.dataset.id);
+  const b=e.target.closest('.ex'); if(!b) return;
+  const x=db.expenses.find(z=>z.expense_id===b.dataset.id);
+  if(x&&isSide(x)) undoPayment(x.expense_id); else startEdit(b.dataset.id);
 });
 $('settleList').addEventListener('click',e=>{
   const p=e.target.closest('[data-pay]');
