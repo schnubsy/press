@@ -658,8 +658,12 @@ function ringStack(trip,people,sym){
       svg+=c(col);                                       // the completed lap(s) fill the ring
       /* the head of the arc sits where it actually is: the fractional part of
          however many laps have been run. 2.63x lands at 63% round, same as
-         1.63x would — the shadow shows it has crossed itself.               */
-      let head=frac%1; if(head<0.005) head=1;
+         1.63x would — the shadow shows it has crossed itself.
+         On an exact lap (200%, 300%) the head would be a complete circle, and
+         a circle with no end casts no visible edge — the shadow vanished. Stop
+         just short instead: the round cap still overshoots and closes the
+         ring, but now there's an edge for the lap shadow to fall on.        */
+      let head=frac%1; if(head<0.01||head>0.99) head=0.99;
       const L=head*C;
       svg+=c(col,' stroke-linecap="round" stroke-dasharray="'+L.toFixed(2)+' '+(C-L).toFixed(2)
         +'" filter="url(#lapsh)"');
