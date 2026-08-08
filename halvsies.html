@@ -119,7 +119,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .orbits{display:flex;align-items:stretch;justify-content:center;gap:18px;flex-wrap:wrap;padding:6px 0 2px}
 .orbits svg{flex:none;max-width:100%;height:auto;align-self:center}
 .legend{flex:1 1 190px;min-width:180px;display:flex;flex-direction:column;
-  justify-content:space-between;gap:6px;padding:15px 0}
+  justify-content:space-between;gap:6px;padding:14px 10px 14px 0}
 .lgr{display:flex;align-items:baseline;gap:7px}
 .cell{flex:1;min-width:0;display:flex;align-items:baseline;gap:7px}
 .cell2{flex:0 0 84px;display:flex;align-items:baseline;gap:7px}
@@ -147,7 +147,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   column-gap:10px;row-gap:0;padding:8px 0 9px;border-bottom:1px solid var(--line)}
 .hsA:last-child{border-bottom:none;padding-bottom:2px}
 .hsA .who1,.hsA .who2{font-weight:700;font-size:13px;text-align:center;line-height:18px;
-  transform:translateY(-1px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  transform:translateY(3px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .arch{position:relative;height:30px;min-width:0;display:flex;align-items:center;gap:7px}
 .arch svg{flex:1;min-width:0;height:30px;overflow:visible}
 .arch .amt{flex:none;font-family:var(--mono);font-weight:700;font-size:12.5px;
@@ -263,6 +263,8 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .memchips{display:flex;flex-wrap:wrap;gap:7px;min-height:6px}
 .mem{display:inline-flex;align-items:center;gap:7px;background:var(--soft);border-radius:99px;padding:5px 7px 5px 6px;font-size:12.5px;font-weight:700}
 .mem .av{width:19px;height:19px;font-size:9px}
+.mem .ren{font:inherit;color:inherit;padding:0 1px;border-bottom:1px dotted var(--faint)}
+.mem .ren:active{color:var(--vio)}
 .mem button{background:var(--line);color:var(--muted);width:18px;height:18px;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center}
 .whochips{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 8px}
 .wc{display:flex;align-items:center;gap:7px;border-radius:99px;padding:7px 15px 7px 7px;font-size:13.5px;font-weight:700;background:var(--soft);color:var(--muted);border:1.5px solid transparent}
@@ -375,7 +377,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 <div class="sheet" id="tripSheet" role="dialog" aria-modal="true">
   <div class="grab"></div>
   <h3 id="tripSheetTitle">New trip</h3>
-  <p class="sub">Who's going? Add everyone who'll share costs.</p>
+  <p class="sub">Who's going? Add everyone who'll share costs. Tap a name to rename them.</p>
   <div class="field"><label for="tName">Trip name</label>
     <input type="text" class="fin" id="tName" placeholder="Lake weekend, Vegas 2026…" autocomplete="off"></div>
   <div class="field"><label for="tCur">Currency</label>
@@ -587,7 +589,7 @@ function ringStack(trip,people,sym){
   const n=rows.length;
   /* fixed weight, like the mock: heavy band, generous gap, biggest spender outside.
      Only very large groups thin down, and then only enough to fit.            */
-  const W = n<=5?13:9, GAP = W+2, RIN = n<=5?25:18;
+  const W = n<=5?12:9, GAP = W+2, RIN = n<=5?23:18;
   const OUT = RIN+(n-1)*GAP;
   const S = Math.round(2*(OUT+W/2)+8), CTR=S/2;
   let svg='<svg width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'" aria-hidden="true">'
@@ -936,11 +938,33 @@ $('pickList').addEventListener('click',e=>{
 });
 $('tripPick').addEventListener('click',openPickSheet);
 
-let sheetMembers=[], sheetEditing=null;
+let sheetMembers=[], sheetOrig=[], sheetEditing=null;
 function drawMemberChips(){
   $('tMemberChips').innerHTML=sheetMembers.map((m,i)=>'<span class="mem">'
-    +'<span class="av" style="background:'+PAL[i%PAL.length]+'">'+esc(initial(m))+'</span>'+esc(m)
+    +'<span class="av" style="background:'+PAL[i%PAL.length]+'">'+esc(initial(m))+'</span>'
+    +'<button type="button" class="ren" data-r="'+i+'" aria-label="Rename '+esc(m)+'">'+esc(m)+'</button>'
     +'<button type="button" data-i="'+i+'" aria-label="Remove '+esc(m)+'">✕</button></span>').join('');
+}
+/* a rename has to follow the person through every expense they touched, or
+   their spending silently detaches from them.                              */
+function applyRenames(tid){
+  const pairs=sheetOrig.map((o,i)=>({o:o,n:sheetMembers[i]}))
+    .filter(p=>p.o&&p.n&&p.o!==p.n);
+  if(!pairs.length) return;
+  const map={}; pairs.forEach(p=>{ map[p.o]=p.n; });
+  db.expenses=db.expenses.map(x=>{
+    if(x.trip_id!==tid) return x;
+    let changed=false, paid_by=x.paid_by, sm=x.split_members;
+    if(map[paid_by]){ paid_by=map[paid_by]; changed=true; }
+    if(Array.isArray(sm)&&sm.some(m=>map[m])){ sm=sm.map(m=>map[m]||m); changed=true; }
+    if(!changed) return x;
+    const upd=Object.assign({},x,{paid_by:paid_by,split_members:sm,updated_at:nowIso()});
+    upsertExp(upd);
+    return upd;
+  });
+  const w=localStorage.getItem(whoKey(tid));
+  if(w&&map[w]) localStorage.setItem(whoKey(tid),map[w]);
+  flash('Renamed','#7C5CFF');
 }
 function memberInUse(tid,name){
   return db.expenses.some(x=>x.trip_id===tid&&(x.paid_by===name||(x.split_members||[]).includes(name)));
@@ -951,6 +975,7 @@ function openTripSheet(trip){
   $('tName').value=trip?trip.name:'';
   $('tCur').value=trip?trip.currency:'$';
   sheetMembers=trip?trip.members.slice():[];
+  sheetOrig=trip?trip.members.slice():[];
   $('tSave').textContent=trip?'Save changes':'Create trip';
   $('tDelete').hidden=!trip;
   drawMemberChips(); openSheet('tripSheet');
@@ -959,28 +984,38 @@ function openTripSheet(trip){
 function addMemberFromInput(){
   const v=$('tMember').value.trim(); if(!v) return;
   if(sheetMembers.some(m=>m.toLowerCase()===v.toLowerCase())){ flash('Name already added','#B45309'); return; }
-  sheetMembers.push(v); $('tMember').value=''; drawMemberChips(); $('tMember').focus();
+  sheetMembers.push(v); sheetOrig.push(null); $('tMember').value=''; drawMemberChips(); $('tMember').focus();
 }
 $('tMemberAdd').addEventListener('click',addMemberFromInput);
 $('tMember').addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();addMemberFromInput();} });
 $('tMemberChips').addEventListener('click',e=>{
+  const r=e.target.closest('button[data-r]');
+  if(r){
+    const i=+r.dataset.r, cur=sheetMembers[i];
+    const v=(prompt('Rename '+cur+' to:',cur)||'').trim();
+    if(!v||v===cur) return;
+    if(sheetMembers.some((m,j)=>j!==i&&m.toLowerCase()===v.toLowerCase())){
+      alert('Somebody on this trip is already called '+v+'.'); return; }
+    sheetMembers[i]=v; drawMemberChips(); return;
+  }
   const b=e.target.closest('button[data-i]'); if(!b)return;
   const name=sheetMembers[+b.dataset.i];
   if(sheetEditing&&memberInUse(sheetEditing,name)){
     alert(name+' is on existing expenses or payments and can\u2019t be removed. Delete or edit those first.'); return;
   }
-  sheetMembers.splice(+b.dataset.i,1); drawMemberChips();
+  sheetMembers.splice(+b.dataset.i,1); sheetOrig.splice(+b.dataset.i,1); drawMemberChips();
 });
 $('tSave').addEventListener('click',()=>{
   const name=$('tName').value.trim();
   if(!name){ flash('Give the trip a name','#DC4B3E'); $('tName').focus(); return; }
   const pending=$('tMember').value.trim();
-  if(pending&&!sheetMembers.some(m=>m.toLowerCase()===pending.toLowerCase())){ sheetMembers.push(pending); $('tMember').value=''; }
+  if(pending&&!sheetMembers.some(m=>m.toLowerCase()===pending.toLowerCase())){ sheetMembers.push(pending); sheetOrig.push(null); $('tMember').value=''; }
   const prev=sheetEditing?db.trips.find(t=>t.trip_id===sheetEditing):null;
   const row={trip_id:sheetEditing||uid(),name,currency:$('tCur').value,
     members:sheetMembers.slice(),
     created_at:prev?prev.created_at:nowIso(),updated_at:nowIso()};
   db.trips=db.trips.filter(t=>t.trip_id!==row.trip_id).concat([row]);
+  if(sheetEditing) applyRenames(row.trip_id);
   const isNew=!sheetEditing;
   sel=row.trip_id; localStorage.setItem('press:halvsies:trip',sel);
   saveLocal(); closeSheets(); resetForm(); renderAll(); upsertTrip(row);
