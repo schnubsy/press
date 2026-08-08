@@ -247,6 +247,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .ex .m{display:block;font-size:10px;color:var(--muted);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
 .ex .m .offtag{color:var(--amb);font-weight:700}
 .ex .a{font-family:var(--mono);font-weight:700;font-size:12.5px;flex:none}
+.ex .a.cr{color:var(--st-ink)}
 .ex.off .a{color:var(--faint);font-weight:500}
 
 /* sheets */
@@ -347,10 +348,10 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
     <h2 class="h2">add an expense <em id="forTrip1"></em></h2>
     <div class="frow"><input type="text" class="fin" id="expTitle" placeholder="Dinner, fuel, tickets…" autocomplete="off"></div>
     <div class="frow">
-      <div class="amount-in"><span class="cur" id="curSym">$</span><input type="text" class="fin" id="expAmount" inputmode="decimal" placeholder="0.00" autocomplete="off"></div>
+      <div class="amount-in"><span class="cur" id="curSym">$</span><input type="text" class="fin" id="expAmount" inputmode="text" placeholder="0.00  ·  -5 for money back" autocomplete="off"></div>
       <div class="datewrap"><input type="date" class="fin" id="expDate"></div>
     </div>
-    <div class="flabel">Paid by</div>
+    <div class="flabel">Paid by <i style="font-style:normal;text-transform:none;letter-spacing:0;color:var(--faint)">· or received it, on a minus amount</i></div>
     <div class="chips" id="payChips"></div>
     <div class="splitline">
       <button class="splitbtn" id="splitToggle">Split: <b id="splitLbl">Everyone</b> <i id="splitChev">· change ▾</i></button>
@@ -546,7 +547,9 @@ async function cloudDeleteTrip(tid){
 /* ---- math ----
    Regular expense: payer's paid += amt; each participant's share += amt/n (exact cents).
    Payment record (extras.kind='payment'): transfer A → B —
-   paid[A] += amt, share[B] += amt; excluded from trip total & count.        */
+   paid[A] += amt, share[B] += amt; excluded from trip total & count.
+   Amounts may be negative — a refund, a rebate, or cash handed straight from
+   one person to another. The cent-split below divides negatives exactly too. */
 function compute(trip,exps){
   const members=trip.members||[];
   /* two ledgers: E = trip expenses only (drives the rings and each person's
@@ -613,7 +616,8 @@ function ringStack(trip,people,sym){
     +'<g transform="rotate(-90 '+CTR+' '+CTR+')">';
   rows.forEach((p,i)=>{
     const r=OUT-i*GAP, C=2*Math.PI*r, col=memColor(trip,p.m);
-    const frac = p.share>0 ? p.paid/p.share : (p.paid>0?1:0);
+    let frac = p.share>0 ? p.paid/p.share : (p.paid>0?1:0);
+    if(!(frac>0)) frac=0;                                // negatives leave it empty
     const c=(stroke,extra)=>'<circle cx="'+CTR+'" cy="'+CTR+'" r="'+r+'" fill="none" stroke="'+stroke
       +'" stroke-width="'+W+'"'+(extra||'')+'/>';
     svg+=c('#2C2C2E');                                   // empty ring stays, just grey
@@ -786,7 +790,7 @@ function renderList(trip,exps,sym){
       +'<span class="mid"><span class="t">'+esc(x.title)+'</span>'
       +'<span class="m"><b style="color:'+col+'">'+esc(x.paid_by)+'</b> · '+fmtDate(expDate(x))+parts
       +(x.excluded?' · <span class="offtag">off the tab</span>':'')+'</span></span>'
-      +'<span class="a">'+fmt(Math.round(x.amount*100),sym)+'</span></button>';
+      +'<span class="a'+(x.amount<0?' cr':'')+'">'+fmt(Math.round(x.amount*100),sym)+'</span></button>';
   };
   let html='';
   if(sortMode==='user'){
@@ -874,7 +878,8 @@ function resetForm(){
 function saveExpense(){
   const trip=curTrip(); if(!trip) return;
   const c=toCents($('expAmount').value);
-  if(!isFinite(c)||c<=0){ flash('Enter an amount','#DC4B3E'); $('expAmount').focus(); return; }
+  /* zero is the only amount that means nothing; a minus is money coming back */
+  if(!isFinite(c)||c===0){ flash('Enter an amount','#DC4B3E'); $('expAmount').focus(); return; }
   if(!formPay){ flash('Tap who paid','#DC4B3E'); return; }
   const excluded=$('excludedT').checked;
   let split=null;
