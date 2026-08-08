@@ -640,8 +640,9 @@ function ringStack(trip,people,sym){
   const S=Math.round(2*(edge+PAD)), CTR=S/2;
   const OUT=edge-W/2, GAP=W+2;
   let svg='<svg width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'" aria-hidden="true">'
-    +'<defs><filter id="lapblur" x="-30%" y="-30%" width="160%" height="160%">'
-    +'<feGaussianBlur stdDeviation="'+Math.max(1.2,(W*0.16)).toFixed(2)+'"/></filter></defs>'
+    +'<defs><filter id="lapsh" x="-60%" y="-60%" width="220%" height="220%">'
+    +'<feDropShadow dx="0" dy="0" stdDeviation="'+Math.max(1.6,(W*0.22)).toFixed(2)
+    +'" flood-color="#000" flood-opacity=".9"/></filter></defs>'
     +'<g transform="rotate(-90 '+CTR+' '+CTR+')">';
   rows.forEach((p,i)=>{
     const r=OUT-i*GAP, C=2*Math.PI*r, col=memColor(trip,p.m);
@@ -656,25 +657,12 @@ function ringStack(trip,people,sym){
     }else{
       svg+=c(col);                                       // the completed lap(s) fill the ring
       /* the head of the arc sits where it actually is: the fractional part of
-         however many laps have been run — 2.63x lands at 63% round.
-         The shadow is PAINTED just ahead of the leading edge rather than left
-         to a drop-shadow filter. A filtered shadow sits under its own stroke,
-         so it only ever showed on ring the arc hadn't reached — near a whole
-         lap (199%, 200%) the band is covered end to end and it vanished.
-         Order: lap → arc → cast shadow ahead of the head → cap back on top,
-         which is the leading edge riding over the lap beneath at any value. */
+         however many laps have been run. 2.63x lands at 63% round, same as
+         1.63x would — the shadow shows it has crossed itself.               */
       let head=frac%1; if(head<0.005) head=1;
       const L=head*C;
-      const arc=(len,from,extra)=>c(col===false?'#000':col,
-        ' stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'"'
-        +' stroke-dashoffset="'+(-from).toFixed(2)+'"'+(extra||''));
-      svg+=arc(L,0,' stroke-linecap="round"');           // the lapping arc
-      const SH=Math.min(C*0.06,W*2.4), CAP=Math.min(C*0.05,W*1.6);
-      svg+='<circle cx="'+CTR+'" cy="'+CTR+'" r="'+r+'" fill="none" stroke="#05070A"'
-        +' stroke-opacity=".72" stroke-width="'+W+'" stroke-linecap="butt"'
-        +' stroke-dasharray="'+SH.toFixed(2)+' '+(C-SH).toFixed(2)+'"'
-        +' stroke-dashoffset="'+(-L).toFixed(2)+'" filter="url(#lapblur)"/>'
-      svg+=arc(CAP,L-CAP,' stroke-linecap="round"');     // leading tip, over its own shadow
+      svg+=c(col,' stroke-linecap="round" stroke-dasharray="'+L.toFixed(2)+' '+(C-L).toFixed(2)
+        +'" filter="url(#lapsh)"');
     }
   });
   svg+='</g></svg>';
