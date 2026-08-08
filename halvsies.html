@@ -737,12 +737,17 @@ function renderSettle(trip,exps,r,sym){
     $('progBar').style.width=pct+'%';
     $('progLbl').innerHTML=pct+'% settled <small>· '+fmtShort(r.paidBack,sym)+' of '+fmtShort(denom,sym)+'</small>';
   }
-  /* open debts and settled ones live in ONE list, ordered biggest first and
-     never re-ordered — marking a row paid leaves it exactly where it sat.  */
+  /* open debts and settled ones live in ONE list: everything one person owes
+     sits together, biggest payer first, and each person's rows run highest to
+     lowest. Paying a row changes how it looks, never where it sits.        */
   const rows=r.settle.map(s0=>({from:s0.from,to:s0.to,amt:s0.amt,paid:false}))
     .concat(pays.map(x=>({from:x.paid_by,to:(x.split_members||[])[0]||'?',
-      amt:Math.round(x.amount*100),paid:true,id:x.expense_id,when:expDate(x)})))
-    .sort((a,b)=>b.amt-a.amt);
+      amt:Math.round(x.amount*100),paid:true,id:x.expense_id,when:expDate(x)})));
+  const owedBy={};
+  rows.forEach(w=>{ owedBy[w.from]=(owedBy[w.from]||0)+w.amt; });
+  rows.sort((a,b)=> (owedBy[b.from]-owedBy[a.from])
+    || a.from.localeCompare(b.from)
+    || (b.amt-a.amt));
   let html = (!r.settle.length&&r.count)
     ? '<div class="allsq">✓ All square — this trip is fully settled 🎉</div>' : '';
   html+=rows.map(w=>{
