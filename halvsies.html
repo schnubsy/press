@@ -34,7 +34,14 @@
 body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.45;
   -webkit-font-smoothing:antialiased;min-height:100vh;
   padding-bottom:calc(24px + env(safe-area-inset-bottom))}
-.wrap{max-width:540px;margin:0 auto;padding:0 16px}
+/* a low, slow wash of the brand colours so the dark isn't flat */
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(70% 45% at 12% -5%,rgba(124,92,255,.16),transparent 62%),
+    radial-gradient(55% 38% at 92% 8%,rgba(255,107,94,.10),transparent 66%),
+    radial-gradient(60% 40% at 50% 104%,rgba(13,148,136,.09),transparent 70%)}
+.wrap{max-width:540px;margin:0 auto;padding:0 16px;position:relative;z-index:1}
+.card{position:relative;z-index:1}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;
   touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 input,select{font-family:inherit;font-size:16px;color:var(--ink)}
@@ -121,22 +128,28 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .prog .bar i{display:block;height:100%;background:var(--st);border-radius:99px;transition:width .3s}
 .prog .lbl{font-size:11px;font-weight:700;color:var(--st-ink);white-space:nowrap}
 .prog .lbl small{color:var(--muted);font-weight:600;font-size:10px}
-/* settle rows — fixed grid: every bow is the same size and every column aligns */
-.hsA{display:grid;grid-template-columns:1fr 132px 1fr 74px;align-items:center;gap:8px;
-  padding:7px 4px;margin-bottom:2px}
-.hsA:last-child{margin-bottom:0}
-.hsA .who1{font-weight:700;font-size:13px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hsA .who2{font-weight:700;font-size:13px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.arch{position:relative;width:132px;height:30px}
-.arch svg{display:block;width:132px;height:30px;overflow:visible}
-.arch .amt{position:absolute;left:50%;top:-1px;transform:translateX(-50%);background:var(--card);padding:0 5px;
-  font-family:var(--mono);font-weight:700;font-size:11px;white-space:nowrap;line-height:1.5;color:var(--muted)}
+/* settle rows — names centred over fixed columns, bow spans the card, the
+   amount rides the middle of the line, the action sits quietly beneath.     */
+.hsA{display:grid;grid-template-columns:74px 1fr 74px;align-items:center;
+  column-gap:10px;row-gap:1px;padding:9px 0 11px;border-bottom:1px solid var(--line)}
+.hsA:last-child{border-bottom:none;padding-bottom:2px}
+.hsA .who1,.hsA .who2{font-weight:700;font-size:13px;text-align:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.arch{position:relative;height:34px;min-width:0}
+.arch svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.arch .amt{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  background:var(--card);padding:0 8px;font-family:var(--mono);font-weight:700;font-size:12.5px;
+  white-space:nowrap;line-height:1.4;color:var(--ink)}
 .hsA.done .arch .amt{color:var(--st-ink)}
-.hsA .cta{font-size:9.5px;font-weight:800;color:#12151A;background:#F2F4F6;border-radius:99px;
-  padding:6px 3px;white-space:nowrap;width:74px;text-align:center;overflow:hidden;text-overflow:ellipsis}
-.hsA .cta:active{transform:scale(.95)}
-.hsA.done .cta{background:var(--st);color:#04231F}
-.hsA.done .who1,.hsA.done .who2{opacity:.62}
+.hsA.done .arch::after{content:"";position:absolute;right:0;bottom:5px;width:8px;height:8px;
+  border-radius:50%;background:var(--st-lite);box-shadow:0 0 0 4px rgba(94,234,212,.15)}
+.hsA .act{grid-column:2;display:flex;align-items:center;justify-content:center;gap:8px}
+.hsA .act .on{font-family:var(--mono);font-size:9.5px;color:var(--st-ink);opacity:.75}
+.hsA .cta{font-size:10px;font-weight:700;color:var(--muted);background:transparent;
+  border:1px solid var(--line);border-radius:99px;padding:4px 12px;white-space:nowrap}
+.hsA .cta:active{transform:scale(.95);background:var(--soft)}
+.hsA.done .cta{color:var(--st-ink);border-color:rgba(94,234,212,.3)}
+.hsA.done .who1,.hsA.done .who2{opacity:.7}
 .allsq{display:flex;align-items:center;gap:8px;color:var(--st-ink);font-weight:700;font-size:13px;
   background:rgba(13,148,136,.16);border:1px solid rgba(13,148,136,.3);border-radius:12px;padding:11px 13px;margin-bottom:14px}
 .allsq:last-child{margin-bottom:0}
@@ -569,8 +582,12 @@ function ringStack(trip,people,sym){
     if(frac<=1){ const L=frac*C;
       svg+=c(col,' stroke-linecap="round" stroke-dasharray="'+L.toFixed(2)+' '+(C-L).toFixed(2)+'"');
     }else{
-      svg+=c(col);                                       // first lap = fair share covered
-      const g=Math.min(frac-1,1), L=g*C;                 // the lap over, shadowed where it crosses
+      svg+=c(col);                                       // the completed lap(s) fill the ring
+      /* the head of the arc sits where it actually is: the fractional part of
+         however many laps have been run. 2.63x lands at 63% round, same as
+         1.63x would — the shadow shows it has crossed itself.               */
+      let head=frac%1; if(head<0.005) head=1;
+      const L=head*C;
       svg+=c(col,' stroke-linecap="round" stroke-dasharray="'+L.toFixed(2)+' '+(C-L).toFixed(2)
         +'" filter="url(#lapsh)"');
     }
@@ -595,11 +612,10 @@ const expDate=x=>(x.extras&&x.extras.date)||String(x.created_at||'').slice(0,10)
    debt is open, solid and lit with a landing dot once it has been paid.      */
 function bow(paid){
   const stroke = paid ? '#5EEAD4' : '#4A515A';
-  return '<span class="arch"><svg viewBox="0 0 132 30" aria-hidden="true">'
-    +'<path d="M6 25 Q66 3 126 25" fill="none" stroke="'+stroke+'" stroke-width="'+(paid?2.2:2)+'"'
-    +' stroke-linecap="round"'+(paid?'':' stroke-dasharray="1 5"')+'/>'
-    +(paid?'<circle cx="126" cy="25" r="4" fill="#5EEAD4"/>':'')
-    +'</svg>';
+  return '<span class="arch"><svg viewBox="0 0 200 34" preserveAspectRatio="none" aria-hidden="true">'
+    +'<path d="M3 27 Q100 9 197 27" fill="none" stroke="'+stroke+'" stroke-width="'+(paid?2.2:2)+'"'
+    +' stroke-linecap="round" vector-effect="non-scaling-stroke"'
+    +(paid?'':' stroke-dasharray="1 5"')+'/></svg>';
 }
 
 function renderAll(rebuildForm){
@@ -672,8 +688,8 @@ function renderSettle(trip,exps,r,sym){
     return '<div class="hsA"><span class="who1" style="color:'+cf+'">'+esc(s0.from)+'</span>'
       +bow(false)+'<span class="amt">'+fmt(s0.amt,sym)+'</span></span>'
       +'<span class="who2" style="color:'+ct+'">'+esc(s0.to)+'</span>'
-      +'<button class="cta" data-pay="'+esc(s0.from)+'|'+esc(s0.to)+'|'+s0.amt+'" aria-label="'
-      +esc(s0.from)+' paid '+esc(s0.to)+'">I\u2019ve paid ✓</button></div>';
+      +'<span class="act"><button class="cta" data-pay="'+esc(s0.from)+'|'+esc(s0.to)+'|'+s0.amt+'" aria-label="'
+      +esc(s0.from)+' paid '+esc(s0.to)+'">Mark as paid</button></span></div>';
   }).join('');
   if(!r.settle.length&&r.count) html='<div class="allsq">✓ All square — this trip is fully settled 🎉</div>';
   html+=pays.map(x=>{
@@ -682,7 +698,8 @@ function renderSettle(trip,exps,r,sym){
     return '<div class="hsA done"><span class="who1" style="color:'+cf+'">'+esc(x.paid_by)+'</span>'
       +bow(true)+'<span class="amt">'+fmt(Math.round(x.amount*100),sym)+'</span></span>'
       +'<span class="who2" style="color:'+ct+'">'+esc(to)+'</span>'
-      +'<button class="cta" data-undo="'+esc(x.expense_id)+'">Paid '+fmtDate(expDate(x))+'</button></div>';
+      +'<span class="act"><span class="on">paid '+fmtDate(expDate(x))+'</span>'
+      +'<button class="cta" data-undo="'+esc(x.expense_id)+'">Mark as unpaid</button></span></div>';
   }).join('');
   $('settleList').innerHTML=html;
 }
