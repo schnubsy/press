@@ -35,7 +35,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1
   -webkit-font-smoothing:antialiased;min-height:100vh;
   padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 .wrap{max-width:540px;margin:0 auto;padding:0 16px}
-button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 [hidden]{display:none!important}
 .av{border-radius:50%;color:#fff;display:inline-flex;align-items:center;justify-content:center;
@@ -120,19 +121,22 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .prog .bar i{display:block;height:100%;background:var(--st);border-radius:99px;transition:width .3s}
 .prog .lbl{font-size:11px;font-weight:700;color:var(--st-ink);white-space:nowrap}
 .prog .lbl small{color:var(--muted);font-weight:600;font-size:10px}
-.hsA{display:flex;align-items:center;gap:9px;background:var(--bg);border-radius:14px;padding:9px 10px;margin-bottom:8px}
+.hsA{display:flex;align-items:center;gap:6px;background:var(--bg);border-radius:14px;padding:8px 9px;margin-bottom:8px}
 .hsA:last-child{margin-bottom:0}
-.hsA .av{width:30px;height:30px;font-size:12px}
-.track{flex:1;position:relative;height:30px;display:flex;align-items:center;justify-content:center;min-width:0}
-.chevs{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;
-  font-size:12px;font-weight:800;line-height:1;color:var(--vio);overflow:hidden}
-.track .amt{position:relative;background:var(--card);border-radius:99px;padding:4px 10px;
-  font-family:var(--mono);font-weight:700;font-size:12px;box-shadow:0 2px 8px rgba(33,31,51,.12);white-space:nowrap}
-.hsA .cta{font-size:10px;font-weight:800;color:#fff;background:var(--vio);border-radius:99px;
-  padding:8px 4px;white-space:nowrap;flex:none;width:84px;text-align:center;overflow:hidden;text-overflow:ellipsis}
+.hsA .av{width:26px;height:26px;font-size:11px}
+.hsA .side{display:flex;align-items:center;gap:5px;flex:none;min-width:0}
+.hsA .side .nm{font-weight:700;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px}
+/* the arch from Bridge — one clean span between the two people */
+.arch{flex:1;position:relative;height:26px;display:flex;align-items:center;justify-content:center;min-width:44px}
+.arch::before{content:"";position:absolute;left:2px;right:2px;top:50%;height:15px;transform:translateY(-50%);
+  border-top:2.5px solid #DDD8F0;border-radius:60% 60% 0 0/100% 100% 0 0}
+.arch .amt{position:relative;background:var(--card);border-radius:99px;padding:3px 8px;
+  font-family:var(--mono);font-weight:700;font-size:11.5px;box-shadow:0 2px 8px rgba(33,31,51,.12);white-space:nowrap}
+.hsA .cta{font-size:9.5px;font-weight:800;color:#fff;background:var(--ink);border-radius:99px;
+  padding:7px 3px;white-space:nowrap;flex:none;width:76px;text-align:center;overflow:hidden;text-overflow:ellipsis}
 .hsA .cta:active{transform:scale(.95)}
 .hsA.done{background:linear-gradient(90deg,var(--st-soft),#F0FDFA)}
-.hsA.done .chevs{color:var(--st-lite)}
+.hsA.done .arch::before{border-top-color:var(--st-lite)}
 .hsA.done .amt{color:var(--st-ink)}
 .hsA.done .cta{background:var(--st)}
 .allsq{display:flex;align-items:center;gap:8px;color:var(--st-ink);font-weight:700;font-size:13px;
@@ -158,7 +162,9 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .pc{flex:1 1 0;min-width:0;text-align:center;border-radius:99px;padding:7px 6px;font-size:12px;font-weight:700;
   background:var(--soft);color:var(--muted);transition:.12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pc:active{transform:scale(.95)}
-.splitline{display:flex;align-items:center;justify-content:space-between;margin-top:9px;gap:8px}
+.splitline{display:flex;align-items:center;justify-content:space-between;margin-top:9px;gap:8px;min-height:22px}
+.splitline .splitbtn[hidden]{display:none}
+.splitline:has(.splitbtn[hidden]){justify-content:flex-end}
 .splitbtn{font-size:11px;color:var(--muted);font-weight:600;text-align:left}
 .splitbtn b{color:var(--ink);font-weight:800}
 .splitbtn i{font-style:normal;color:var(--vio);font-weight:800}
@@ -271,7 +277,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
       <h2 class="h2">the tab <em id="forTrip0"></em></h2>
       <button class="editbtn" id="editTripBtn">Edit</button>
     </div>
-    <div class="totC"><div class="bigrow"><b id="totalAmt">$0.00</b><i>Total spend</i></div>
+    <div class="totC"><div class="bigrow"><b id="totalAmt">$0.00</b><i>total spend</i></div>
       <div class="fair" id="fairLbl"></div><span id="totalLbl"></span></div>
     <div id="needMembers" class="needmembers" hidden>
       No members yet — <button id="addMembersBtn">add everyone going</button> to start.
@@ -406,6 +412,12 @@ let formPay=null, formSplit=null, splitOpen=false;
 let sortMode='date', sortDir=-1;
 try{ const l=JSON.parse(localStorage.getItem(LKEY)); if(l&&Array.isArray(l.trips)&&Array.isArray(l.expenses)) db=l; }catch(e){}
 function saveLocal(){ try{ localStorage.setItem(LKEY,JSON.stringify(db)); }catch(e){} }
+/* iOS fires focus/visibility events far more eagerly than desktop — dismissing a
+   confirm() dialog is enough. A refresh landing mid-write used to replace db with
+   the cloud copy and silently drop the row just written. These keep the local
+   truth until the server has actually acknowledged it.                        */
+const pendingPut=new Map(), pendingDel=new Set();
+let inflight=0;
 const whoKey=t=>'press:halvsies:who:'+t;
 const getWho=()=> sel?localStorage.getItem(whoKey(sel)):null;
 const setWho=n=>{ if(!sel)return; n?localStorage.setItem(whoKey(sel),n):localStorage.removeItem(whoKey(sel)); };
@@ -437,7 +449,9 @@ async function loadCloud(silent){
     ]);
     if(!rt.ok||!re.ok) throw new Error('HTTP');
     const [trips,exps]=await Promise.all([rt.json(),re.json()]);
-    db={trips:trips.map(normTrip),expenses:exps.map(normExp)};
+    let rows=exps.map(normExp).filter(x=>!pendingDel.has(x.expense_id));
+    pendingPut.forEach((row,id)=>{ if(!rows.some(x=>x.expense_id===id)) rows=rows.concat([row]); });
+    db={trips:trips.map(normTrip),expenses:rows};
     saveLocal(); renderAll(false);
     if(!silent) flash('Synced','#7C5CFF');
   }catch(e){ renderAll(false); if(!silent) flash('Offline · showing saved copy','#B45309'); }
@@ -452,19 +466,24 @@ async function upsertTrip(t){
   }catch(e){ flash('Save failed · kept on this device','#DC4B3E'); }
 }
 async function upsertExp(x){
+  pendingPut.set(x.expense_id,x); inflight++;
   try{
     const r=await fetch(REST_E+'?on_conflict=page,expense_id',{method:'POST',
       headers:Object.assign({},HEADERS,{'Prefer':'resolution=merge-duplicates'}),
       body:JSON.stringify({page:PAGE,expense_id:x.expense_id,trip_id:x.trip_id,title:x.title,
         amount:x.amount,paid_by:x.paid_by,split_members:x.split_members,excluded:x.excluded,
         extras:x.extras||{},updated_at:nowIso()})});
-    if(!r.ok) throw 0; flash('Saved','#7C5CFF');
+    if(!r.ok) throw 0;
+    pendingPut.delete(x.expense_id); flash('Saved','#7C5CFF');
   }catch(e){ flash('Save failed · kept on this device','#DC4B3E'); }
+  finally{ inflight--; }
 }
 async function cloudDeleteExp(id){
+  pendingDel.add(id); pendingPut.delete(id); inflight++;
   try{ const r=await fetch(REST_E+'?page=eq.'+PAGE+'&expense_id=eq.'+encodeURIComponent(id),
-    {method:'DELETE',headers:HEADERS}); if(!r.ok) throw 0; }
+    {method:'DELETE',headers:HEADERS}); if(!r.ok) throw 0; pendingDel.delete(id); }
   catch(e){ flash('Delete failed online','#DC4B3E'); }
+  finally{ inflight--; }
 }
 async function cloudDeleteTrip(tid){
   try{
@@ -526,9 +545,9 @@ function compute(trip,exps){
    paid < share  → striped band (your colour, faint) + solid arc, rounded cap.
    paid = share  → clean full circle in your colour.
    paid > share  → full circle, then the SAME band goes darker for the
-                   overpaid proportion, wrapping from the top. Capped at one
-                   full lap so the dark length always grows with the overpay
-                   (a second lap would re-cover the ring and read smaller). */
+                   overpaid proportion, wrapping from the top. Beyond one full
+                   lap the overflow rides a thin arc outside the ring, so the
+                   dark length always grows with the overpayment.            */
 const RING_C=163.36;   // 2πr, r=26
 function gauge(col,paid,share,key){
   const pid='hstripe'+key;
@@ -546,10 +565,14 @@ function gauge(col,paid,share,key){
     s+='<circle cx="36" cy="36" r="26" fill="none" stroke="'+col+'" stroke-width="11"/>';
     const over = share>0 ? (paid-share)/share : (paid>0?1:0);
     if(over>0.0005){
-      const f=Math.min(over,1), L=f*RING_C, dk=shade(col,.55);
+      const dk=shade(col,.55), f=Math.min(over,1), L=f*RING_C;
       s+='<g transform="rotate(-90 36 36)"><circle cx="36" cy="36" r="26" fill="none" stroke="'+dk
         +'" stroke-width="11"'+(f<1?' stroke-linecap="round"':'')
-        +' stroke-dasharray="'+L.toFixed(2)+' '+(RING_C-L).toFixed(2)+'"/></g>';
+        +' stroke-dasharray="'+L.toFixed(2)+' '+(RING_C-L).toFixed(2)+'"/>';
+      if(over>1.0005){ const g=Math.min(over-1,1), O=2*Math.PI*34, GL=g*O;   // overflow lap rides outside
+        s+='<circle cx="36" cy="36" r="34" fill="none" stroke="'+dk+'" stroke-width="3" stroke-linecap="round"'
+          +' stroke-dasharray="'+GL.toFixed(2)+' '+(O-GL).toFixed(2)+'"/>'; }
+      s+='</g>';
     }
   }
   return s+'</svg>';
@@ -560,7 +583,8 @@ const tripsSorted=()=>db.trips.slice().sort((a,b)=>String(b.updated_at||b.create
 const curTrip=()=>db.trips.find(t=>t.trip_id===sel)||null;
 const tripExps=()=>db.expenses.filter(x=>x.trip_id===sel);
 const expDate=x=>(x.extras&&x.extras.date)||String(x.created_at||'').slice(0,10);
-const CHEVS=Array.from({length:16},(_,i)=>'<b style="opacity:'+(0.10+0.9*i/15).toFixed(2)+'">›</b>').join('');
+const side=(name,col)=>'<span class="side"><span class="av" style="background:'+col+'">'
+  +esc(initial(name))+'</span><span class="nm">'+esc(name)+'</span></span>';
 
 function renderAll(rebuildForm){
   const trips=tripsSorted();
@@ -640,10 +664,8 @@ function renderSettle(trip,exps,r,sym){
   }
   let html=r.settle.map(s0=>{
     const cf=memColor(trip,s0.from), ct=memColor(trip,s0.to);
-    return '<div class="hsA">'
-      +'<span class="av" style="background:'+cf+'" title="'+esc(s0.from)+'">'+esc(initial(s0.from))+'</span>'
-      +'<span class="track"><span class="chevs">'+CHEVS+'</span><span class="amt">'+fmt(s0.amt,sym)+'</span></span>'
-      +'<span class="av" style="background:'+ct+'" title="'+esc(s0.to)+'">'+esc(initial(s0.to))+'</span>'
+    return '<div class="hsA">'+side(s0.from,cf)
+      +'<span class="arch"><span class="amt">'+fmt(s0.amt,sym)+'</span></span>'+side(s0.to,ct)
       +'<button class="cta" data-pay="'+esc(s0.from)+'|'+esc(s0.to)+'|'+s0.amt+'" aria-label="'
       +esc(s0.from)+' paid '+esc(s0.to)+'">I\u2019ve paid ✓</button></div>';
   }).join('');
@@ -651,10 +673,8 @@ function renderSettle(trip,exps,r,sym){
   html+=pays.map(x=>{
     const to=(x.split_members||[])[0]||'?';
     const cf=memColor(trip,x.paid_by), ct=memColor(trip,to);
-    return '<div class="hsA done">'
-      +'<span class="av" style="background:'+cf+'" title="'+esc(x.paid_by)+'">'+esc(initial(x.paid_by))+'</span>'
-      +'<span class="track"><span class="chevs">'+CHEVS+'</span><span class="amt">'+fmt(Math.round(x.amount*100),sym)+'</span></span>'
-      +'<span class="av" style="background:'+ct+'" title="'+esc(to)+'">'+esc(initial(to))+'</span>'
+    return '<div class="hsA done">'+side(x.paid_by,cf)
+      +'<span class="arch"><span class="amt">'+fmt(Math.round(x.amount*100),sym)+'</span></span>'+side(to,ct)
       +'<button class="cta" data-undo="'+esc(x.expense_id)+'">Paid '+fmtDate(expDate(x))+'</button></div>';
   }).join('');
   $('settleList').innerHTML=html;
@@ -738,7 +758,7 @@ function renderForm(){
     return '<button type="button" class="pc" data-s="'+esc(m)+'" style="'
       +(on?'background:'+col+';color:#fff':'')+'">'+esc(m)+'</button>';
   }).join('');
-  document.querySelector('.splitline').style.display=$('excludedT').checked?'none':'flex';
+  $('splitToggle').hidden=$('excludedT').checked;
   if($('excludedT').checked) $('splitGrid').hidden=true;
   if(!$('expDate').value) $('expDate').value=todayStr();
 }
@@ -806,7 +826,7 @@ function recordPayment(from,to,amtCents){
     split_members:[to],excluded:false,extras:{kind:'payment',date:todayStr()},
     created_at:nowIso(),updated_at:nowIso()};
   db.expenses=db.expenses.concat([row]);
-  saveLocal(); renderAll(false); upsertExp(row); flash('Marked paid ✓','#0D9488');
+  saveLocal(); renderAll(false); flash('Marked paid ✓','#0D9488'); upsertExp(row);
 }
 function undoPayment(id){
   const x=db.expenses.find(e=>e.expense_id===id); if(!x) return;
@@ -943,9 +963,8 @@ $('splitGrid').addEventListener('click',e=>{
   renderForm();
 });
 $('excludedT').addEventListener('change',()=>{
-  document.querySelector('.splitline').style.display=$('excludedT').checked?'none':'flex';
   if($('excludedT').checked){ splitOpen=false; $('splitGrid').hidden=true; }
-  else renderForm();
+  renderForm();
 });
 $('saveBtn').addEventListener('click',saveExpense);
 $('cancelEditBtn').addEventListener('click',resetForm);
@@ -969,8 +988,9 @@ $('sortRow').addEventListener('click',e=>{
 $('expAmount').addEventListener('keydown',e=>{ if(e.key==='Enter') saveExpense(); });
 
 /* ---- live-ish sync ---- */
-setInterval(()=>{ if(!document.hidden&&!sheetOpen&&!editingId) loadCloud(true); },30000);
-window.addEventListener('focus',()=>{ if(!sheetOpen&&!editingId) loadCloud(true); });
+const canRefresh=()=>!sheetOpen&&!editingId&&!inflight&&!pendingPut.size&&!pendingDel.size;
+setInterval(()=>{ if(!document.hidden&&canRefresh()) loadCloud(true); },30000);
+window.addEventListener('focus',()=>{ if(canRefresh()) loadCloud(true); });
 
 /* ---- go ---- */
 renderAll();
