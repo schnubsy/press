@@ -35,22 +35,20 @@ body{font-family:var(--font);color:var(--ink);line-height:1.45;
   background:linear-gradient(180deg,#13161C 0%,#0E1114 42%,#0A0D11 100%);
   -webkit-font-smoothing:antialiased;min-height:100vh;position:relative;overflow-x:hidden;
   padding-bottom:calc(24px + env(safe-area-inset-bottom))}
-/* the aurora sits behind everything and drifts, so the glass has something
-   worth showing through. Anchored to a centred band that tracks the content —
-   pinned to the viewport it just pooled at the edges of a wide screen.     */
-.aurora{position:fixed;top:-14%;height:132%;left:50%;width:min(1150px,155vw);
-  transform:translateX(-50%);z-index:0;pointer-events:none;opacity:.72;
+/* the aurora sits behind everything and breathes, so the glass has something
+   worth showing through. Full-bleed layer with each blob pinned a fixed
+   distance either side of centre — that keeps the colour gathered around the
+   content column without leaving unlit bars at the edges of a wide window. */
+.aurora{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
   background:
-    radial-gradient(620px 430px at 20% 0%,rgba(124,92,255,.58),transparent 63%),
-    radial-gradient(540px 400px at 88% 16%,rgba(255,107,94,.36),transparent 62%),
-    radial-gradient(500px 400px at 4% 50%,rgba(13,148,136,.34),transparent 66%),
-    radial-gradient(560px 420px at 94% 72%,rgba(124,92,255,.30),transparent 66%),
-    radial-gradient(460px 340px at 42% 96%,rgba(255,107,94,.20),transparent 68%),
-    radial-gradient(420px 320px at 58% 42%,rgba(94,234,212,.15),transparent 70%);
-  animation:breath 34s ease-in-out infinite alternate}
-@keyframes breath{
-  0%{opacity:.6;transform:translateX(-50%) translateY(0)}
-  100%{opacity:.88;transform:translateX(-50%) translateY(-2.5%)}}
+    radial-gradient(660px 460px at calc(50% - 330px) -2%,rgba(124,92,255,.30),transparent 66%),
+    radial-gradient(580px 420px at calc(50% + 330px) 15%,rgba(255,107,94,.17),transparent 66%),
+    radial-gradient(560px 440px at calc(50% - 420px) 52%,rgba(13,148,136,.17),transparent 68%),
+    radial-gradient(600px 440px at calc(50% + 390px) 76%,rgba(124,92,255,.16),transparent 68%),
+    radial-gradient(520px 380px at calc(50% - 70px) 98%,rgba(255,107,94,.10),transparent 70%),
+    radial-gradient(460px 340px at calc(50% + 110px) 40%,rgba(94,234,212,.07),transparent 72%);
+  animation:breath 40s ease-in-out infinite alternate}
+@keyframes breath{0%{opacity:.42}100%{opacity:.6}}
 .wrap{max-width:540px;margin:0 auto;padding:0 16px;position:relative;z-index:1}
 .card{position:relative;z-index:1}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;
@@ -97,8 +95,8 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .plus:active{transform:scale(.94)}
 
 /* cards */
-.card{background:linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.035));
-  border:1px solid rgba(255,255,255,.12);
+.card{background:linear-gradient(160deg,rgba(255,255,255,.085),rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.10);
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-radius:17px;
   box-shadow:0 10px 34px rgba(10,7,22,.5),inset 0 1px 0 rgba(255,255,255,.12);
