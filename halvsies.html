@@ -32,14 +32,17 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.45;
-  -webkit-font-smoothing:antialiased;min-height:100vh;
+  -webkit-font-smoothing:antialiased;min-height:100vh;position:relative;
   padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 /* a low, slow wash of the brand colours so the dark isn't flat */
-body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+body::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
   background:
-    radial-gradient(70% 45% at 12% -5%,rgba(124,92,255,.16),transparent 62%),
-    radial-gradient(55% 38% at 92% 8%,rgba(255,107,94,.10),transparent 66%),
-    radial-gradient(60% 40% at 50% 104%,rgba(13,148,136,.09),transparent 70%)}
+    radial-gradient(46% 26% at 10% 2%,rgba(124,92,255,.20),transparent 64%),
+    radial-gradient(52% 24% at 96% 34%,rgba(255,107,94,.13),transparent 66%),
+    radial-gradient(40% 20% at 6% 58%,rgba(13,148,136,.12),transparent 68%),
+    radial-gradient(48% 22% at 88% 76%,rgba(124,92,255,.13),transparent 66%),
+    radial-gradient(38% 18% at 34% 88%,rgba(255,107,94,.08),transparent 70%),
+    radial-gradient(44% 20% at 62% 20%,rgba(94,234,212,.05),transparent 72%)}
 .wrap{max-width:540px;margin:0 auto;padding:0 16px;position:relative;z-index:1}
 .card{position:relative;z-index:1}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;
@@ -53,10 +56,11 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .top{padding-top:calc(12px + env(safe-area-inset-top))}
 .toprow{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
 .mq{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
-  color:var(--muted);text-decoration:none;background:var(--card);border-radius:99px;
-  padding:5px 11px;box-shadow:var(--sh)}
+  color:var(--muted);text-decoration:none;background:rgba(26,29,33,.7);border-radius:99px;
+  padding:5px 11px;box-shadow:var(--sh);backdrop-filter:blur(10px)}
 .who{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;border-radius:99px;
-  padding:4px 12px 4px 5px;background:var(--card);color:var(--muted);box-shadow:var(--sh);
+  padding:4px 12px 4px 5px;background:rgba(26,29,33,.7);color:var(--muted);box-shadow:var(--sh);
+  backdrop-filter:blur(10px);
   border:1.5px dashed var(--line);transition:.15s}
 .who .av{width:21px;height:21px;font-size:10px;background:var(--faint)}
 .who.set{border-style:solid}
@@ -67,7 +71,8 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 
 /* trip bar */
 .tripbar{display:flex;gap:8px;margin-bottom:10px}
-.trippick{flex:1;display:flex;align-items:baseline;gap:6px;background:var(--card);border-radius:13px;
+.trippick{flex:1;display:flex;align-items:baseline;gap:6px;background:rgba(26,29,33,.66);
+  border:1px solid rgba(255,255,255,.055);backdrop-filter:blur(14px);border-radius:13px;
   padding:10px 13px;box-shadow:var(--sh);text-align:left;min-width:0}
 .trippick b{font-size:14.5px;font-weight:800;white-space:nowrap}
 .trippick span{font-size:10.5px;color:var(--faint);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex:1;min-width:0}
@@ -78,7 +83,9 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .plus:active{transform:scale(.94)}
 
 /* cards */
-.card{background:var(--card);border-radius:17px;box-shadow:var(--sh);padding:13px 14px;margin-bottom:10px}
+.card{background:rgba(26,29,33,.66);border:1px solid rgba(255,255,255,.055);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-radius:17px;box-shadow:var(--sh);padding:13px 14px;margin-bottom:10px}
 .empty{padding:30px 22px;text-align:center}
 .empty h2{font-weight:800;font-size:21px;letter-spacing:-.02em;margin-bottom:6px}
 .empty p{color:var(--muted);font-size:13.5px;max-width:300px;margin:0 auto 16px}
@@ -106,15 +113,16 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 
 /* rings — one concentric stack, biggest spender outermost */
 .orbits{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;
-  background:var(--row);border-radius:15px;padding:16px 14px}
+  background:rgba(10,12,15,.42);border:1px solid rgba(255,255,255,.04);border-radius:15px;padding:16px 14px}
 .orbits svg{flex:none;max-width:100%;height:auto}
 .legend{flex:1 1 190px;min-width:180px;display:flex;flex-direction:column;gap:7px}
 .lgr{display:flex;align-items:baseline;gap:7px}
 .lgd{width:9px;height:9px;border-radius:50%;flex:none;align-self:center}
 .lgn{font-weight:700;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92px}
 .lead{flex:1;min-width:8px;border-bottom:1px dotted var(--hair);transform:translateY(-4px)}
-.lead2{flex:0 0 20px;min-width:20px}
-.lgs{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap}
+.lead2{flex:1;min-width:14px}
+.lgs{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap;
+  min-width:74px;text-align:right}
 .lgp{font-family:var(--mono);font-size:12px;font-weight:700;min-width:42px;text-align:right}
 .offtab{font-size:11.5px;color:var(--amb);font-weight:700;
   background:var(--amb-soft);border-radius:10px;padding:7px 11px;margin-top:9px}
@@ -131,20 +139,20 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .prog .lbl small{color:var(--muted);font-weight:600;font-size:10px}
 /* settle rows — names centred over fixed columns, bow spans the card, the
    amount rides the middle of the line, the action sits quietly beneath.     */
-.hsA{display:grid;grid-template-columns:74px 1fr 74px;align-items:center;
+.hsA{display:grid;grid-template-columns:74px 1fr 74px;align-items:end;
   column-gap:10px;row-gap:1px;padding:9px 0 11px;border-bottom:1px solid var(--line)}
 .hsA:last-child{border-bottom:none;padding-bottom:2px}
-.hsA .who1,.hsA .who2{font-weight:700;font-size:13px;text-align:center;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hsA .who1,.hsA .who2{font-weight:700;font-size:13px;text-align:center;line-height:18px;
+  transform:translateY(2px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .arch{position:relative;height:34px;min-width:0}
 .arch svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.arch .amt{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  background:var(--card);padding:0 8px;font-family:var(--mono);font-weight:700;font-size:12.5px;
+.arch .amt{position:absolute;left:50%;top:calc(50% - 1px);transform:translate(-50%,-50%);
+  padding:0 4px;font-family:var(--mono);font-weight:700;font-size:12.5px;
   white-space:nowrap;line-height:1.4;color:var(--ink)}
 .hsA.done .arch .amt{color:var(--st-ink)}
 .hsA.done .arch::after{content:"";position:absolute;right:0;bottom:3px;width:8px;height:8px;
   border-radius:50%;background:var(--st-lite);box-shadow:0 0 0 4px rgba(94,234,212,.15)}
-.hsA .act{grid-column:2;display:flex;align-items:center;justify-content:center;gap:8px}
+.hsA .act{grid-column:2;align-self:center;display:flex;align-items:center;justify-content:center;gap:8px}
 .hsA .act .on{font-family:var(--mono);font-size:9.5px;color:var(--st-ink);opacity:.75}
 .hsA .cta{font-size:10px;font-weight:700;color:var(--muted);background:transparent;
   border:1px solid var(--line);border-radius:99px;padding:4px 12px;white-space:nowrap}
@@ -199,13 +207,15 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .lh{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 7px;gap:8px}
 .lh .h2{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sort{display:flex;gap:4px;flex:none}
-.sc{font-size:9px;font-weight:700;color:var(--muted);background:var(--card);border-radius:99px;padding:4px 9px;box-shadow:var(--sh)}
+.sc{font-size:9px;font-weight:700;color:var(--muted);background:rgba(26,29,33,.7);backdrop-filter:blur(10px);
+  border-radius:99px;padding:4px 9px;box-shadow:var(--sh)}
 .sc.on{background:#F2F4F6;color:#12151A}
 .gl{display:flex;align-items:center;gap:6px;font-size:9px;font-weight:800;letter-spacing:.13em;
   text-transform:uppercase;color:var(--muted);margin:8px 3px 5px}
 .gl .gd{width:7px;height:7px;border-radius:50%}
 .gl .gt{font-family:var(--mono);font-weight:600;margin-left:auto;letter-spacing:0;font-size:9.5px}
-.ex{display:flex;align-items:center;gap:9px;background:var(--card);border-radius:13px;box-shadow:var(--sh);
+.ex{display:flex;align-items:center;gap:9px;background:rgba(26,29,33,.66);
+  backdrop-filter:blur(14px);border-radius:13px;box-shadow:var(--sh);
   padding:8px 11px;margin-bottom:6px;width:100%;text-align:left;transition:.12s}
 .ex:active{transform:scale(.985)}
 .ex.off{background:transparent;border:1.5px dashed var(--line);box-shadow:none}
@@ -220,8 +230,9 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 /* sheets */
 .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:80;opacity:0;pointer-events:none;transition:.2s}
 .backdrop.show{opacity:1;pointer-events:auto}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:90;background:var(--card);border-radius:22px 22px 0 0;
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:90;background:rgba(26,29,33,.94);border-radius:22px 22px 0 0;
   box-shadow:0 -10px 40px rgba(0,0,0,.6);max-width:540px;margin:0 auto;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   padding:8px 18px calc(20px + env(safe-area-inset-bottom));
   transform:translateY(105%);transition:transform .25s cubic-bezier(.32,.72,.28,1);
   max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -610,14 +621,18 @@ const tripsSorted=()=>db.trips.slice().sort((a,b)=>String(b.updated_at||b.create
 const curTrip=()=>db.trips.find(t=>t.trip_id===sel)||null;
 const tripExps=()=>db.expenses.filter(x=>x.trip_id===sel);
 const expDate=x=>(x.extras&&x.extras.date)||String(x.created_at||'').slice(0,10);
-/* one bow, drawn at a fixed size so every row matches: dotted grey while the
-   debt is open, solid and lit with a landing dot once it has been paid.      */
 function bow(paid){
+  /* the bow is drawn as two halves of the same curve with a gap in the middle,
+     so the amount sits IN the line rather than on a patch over it — which
+     matters now the cards are glass and any patch would show.               */
   const stroke = paid ? '#5EEAD4' : '#4A515A';
-  return '<span class="arch"><svg viewBox="0 0 200 34" preserveAspectRatio="none" aria-hidden="true">'
-    +'<path d="M3 27 Q100 9 197 27" fill="none" stroke="'+stroke+'" stroke-width="'+(paid?2.2:2)+'"'
+  const p=' fill="none" stroke="'+stroke+'" stroke-width="'+(paid?2.2:2)+'"'
     +' stroke-linecap="round" vector-effect="non-scaling-stroke"'
-    +(paid?'':' stroke-dasharray="1 5"')+'/></svg>';
+    +(paid?'':' stroke-dasharray="1 5"')+'/>';
+  return '<span class="arch"><svg viewBox="0 0 200 34" preserveAspectRatio="none" aria-hidden="true">'
+    +'<path d="M3 27 Q32 21.5 61 19.4"'+p
+    +'<path d="M139 19.4 Q168 21.5 197 27"'+p
+    +'</svg>';
 }
 
 function renderAll(rebuildForm){
