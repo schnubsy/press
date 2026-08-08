@@ -136,13 +136,17 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .legend{flex:1 1 190px;min-width:180px;display:flex;flex-direction:column;
   justify-content:space-between;gap:6px;padding:14px 10px 14px 0}
 .lgr{display:flex;align-items:baseline;gap:7px}
-.cell{flex:1;min-width:0;display:flex;align-items:baseline;gap:7px}
-.cell2{flex:0 0 84px;display:flex;align-items:baseline;gap:7px}
+/* 3+ rows spread to the ring's height; 1 or 2 sit centred on it instead,
+   keeping the same 31px rhythm so two names land in the gaps a three-name
+   legend leaves either side of centre.                                    */
+.legend.one{justify-content:center}
+.legend.two{justify-content:center;gap:31px}
 .lgd{width:10px;height:10px;border-radius:50%;flex:none;align-self:center}
 .lgn{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:104px}
 .lead{flex:1;min-width:8px;border-bottom:1px dotted var(--hair);transform:translateY(-4px)}
 .lgs{font-family:var(--mono);font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap}
-.lgp{font-family:var(--mono);font-size:13.5px;font-weight:700;white-space:nowrap}
+.lgp{font-family:var(--mono);font-size:13.5px;font-weight:700;white-space:nowrap;
+  flex:0 0 52px;text-align:right}
 .offtab{font-size:11.5px;color:var(--amb);font-weight:700;
   background:var(--amb-soft);border-radius:10px;padding:7px 11px;margin-top:9px}
 .offhead{font-size:10px;opacity:.8;margin-bottom:3px}
@@ -671,13 +675,12 @@ function ringStack(trip,people,sym){
     const col=memColor(trip,p.m);
     return '<div class="lgr"><span class="lgd" style="background:'+col+'"></span>'
       +'<span class="lgn" style="color:'+col+'">'+esc(p.m)+'</span>'
-      +'<span class="cell"><span class="lead"></span>'
+      +'<span class="lead"></span>'
       +'<span class="lgs">'+fmt(p.paid,sym)+'</span>'
-      +'<span class="lead"></span></span>'
-      +'<span class="cell2"><span class="lead"></span>'
-      +'<span class="lgp">'+pct+'%</span></span></div>';
+      +'<span class="lead"></span>'
+      +'<span class="lgp">'+pct+'%</span></div>';
   }).join('');
-  return svg+'<div class="legend">'+legend+'</div>';
+  return svg+'<div class="legend'+(n===1?' one':n===2?' two':'')+'">'+legend+'</div>';
 }
 
 /* ---- rendering ---- */
