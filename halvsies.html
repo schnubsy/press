@@ -711,8 +711,7 @@ function renderAll(rebuildForm){
 
   $('totalAmt').textContent=fmt(r.total,sym);
   $('fairLbl').innerHTML=!r.count?''
-    :(r.custom?'<i>Shares vary by expense</i>'
-      :'<b>'+fmt(r.fair,sym)+'</b><i>each</i>');
+    :'<b>'+fmt(r.fair,sym)+'</b><i>each'+(r.custom?' on average':'')+'</i>';
   $('totalLbl').textContent=r.count
     ? r.count+' expense'+(r.count>1?'s':'')+' · '+trip.members.length+' people'
     : 'Nothing on the tab yet';
