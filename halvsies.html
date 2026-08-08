@@ -429,6 +429,8 @@ function fmtShort(cents,sym){ const v=Math.abs(cents)/100;
   return (sym||'$')+(v>=1000?Math.round(v).toLocaleString():v.toLocaleString(undefined,{maximumFractionDigits:0})); }
 function fmtDate(d){ if(!d) return ''; try{ const dt=new Date(d.length>10?d:d+'T00:00:00');
   return dt.toLocaleDateString(undefined,{month:'short',day:'numeric'}); }catch(e){ return ''; } }
+function fmtDay(d){ if(!d) return 'No date'; try{ const dt=new Date(d.length>10?d:d+'T00:00:00');
+  return dt.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return d; } }
 const initial=n=>String(n||'?').trim().charAt(0).toUpperCase()||'?';
 const isPay=x=>x.extras&&x.extras.kind==='payment';
 function shade(hex,f){ const n=parseInt(hex.slice(1),16);
@@ -774,10 +776,21 @@ function renderList(trip,exps,sym){
       html+='<div class="gl"><span class="gd" style="background:'+memColor(trip,m)+'"></span>'+esc(m)
         +'<span class="gt">'+fmt(sub,sym)+'</span></div>'+g.map(row).join('');
     });
+  }else if(sortMode==='date'){
+    /* one heading per day, with that day's total, so you can see the damage
+       day by day the same way the user grouping shows it person by person. */
+    const days=[...new Set(items.map(expDate))]
+      .sort((a,b)=> sortDir<0 ? String(b).localeCompare(String(a)) : String(a).localeCompare(String(b)));
+    days.forEach(d=>{
+      const g=items.filter(x=>expDate(x)===d)
+        .sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
+      if(!g.length) return;
+      const sub=g.reduce((a,x)=>a+Math.round(x.amount*100),0);
+      html+='<div class="gl">'+esc(fmtDay(d))+'<span class="gt">'+fmt(sub,sym)+'</span></div>'
+        +g.map(row).join('');
+    });
   }else{
-    const s=items.slice().sort(sortMode==='amount'
-      ? (a,b)=>sortDir*(b.amount-a.amount)
-      : (a,b)=>sortDir<0?byDate(a,b):byDate(b,a));
+    const s=items.slice().sort((a,b)=>sortDir*(b.amount-a.amount));
     html=s.map(row).join('');
   }
   $('expList').innerHTML=html;
