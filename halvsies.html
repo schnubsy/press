@@ -113,6 +113,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .lgd{width:9px;height:9px;border-radius:50%;flex:none;align-self:center}
 .lgn{font-weight:700;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92px}
 .lead{flex:1;min-width:8px;border-bottom:1px dotted var(--hair);transform:translateY(-4px)}
+.lead2{flex:0 0 20px;min-width:20px}
 .lgs{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap}
 .lgp{font-family:var(--mono);font-size:12px;font-weight:700;min-width:42px;text-align:right}
 .offtab{font-size:11.5px;color:var(--amb);font-weight:700;
@@ -141,7 +142,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   background:var(--card);padding:0 8px;font-family:var(--mono);font-weight:700;font-size:12.5px;
   white-space:nowrap;line-height:1.4;color:var(--ink)}
 .hsA.done .arch .amt{color:var(--st-ink)}
-.hsA.done .arch::after{content:"";position:absolute;right:0;bottom:5px;width:8px;height:8px;
+.hsA.done .arch::after{content:"";position:absolute;right:0;bottom:3px;width:8px;height:8px;
   border-radius:50%;background:var(--st-lite);box-shadow:0 0 0 4px rgba(94,234,212,.15)}
 .hsA .act{grid-column:2;display:flex;align-items:center;justify-content:center;gap:8px}
 .hsA .act .on{font-family:var(--mono);font-size:9.5px;color:var(--st-ink);opacity:.75}
@@ -595,9 +596,10 @@ function ringStack(trip,people,sym){
   svg+='</g></svg>';
   const legend=rows.map(p=>{
     const pct=p.share>0?Math.round(p.paid/p.share*100):0;
-    return '<div class="lgr"><span class="lgd" style="background:'+memColor(trip,p.m)+'"></span>'
-      +'<span class="lgn">'+esc(p.m)+'</span><span class="lead"></span>'
-      +'<span class="lgs">'+fmt(p.paid,sym)+'</span>'
+    const col=memColor(trip,p.m);
+    return '<div class="lgr"><span class="lgd" style="background:'+col+'"></span>'
+      +'<span class="lgn" style="color:'+col+'">'+esc(p.m)+'</span><span class="lead"></span>'
+      +'<span class="lgs">'+fmt(p.paid,sym)+'</span><span class="lead lead2"></span>'
       +'<span class="lgp">'+pct+'%</span></div>';
   }).join('');
   return svg+'<div class="legend">'+legend+'</div>';
@@ -683,23 +685,26 @@ function renderSettle(trip,exps,r,sym){
     $('progBar').style.width=pct+'%';
     $('progLbl').innerHTML=pct+'% settled <small>· '+fmtShort(r.paidBack,sym)+' of '+fmtShort(denom,sym)+'</small>';
   }
-  let html=r.settle.map(s0=>{
-    const cf=memColor(trip,s0.from), ct=memColor(trip,s0.to);
-    return '<div class="hsA"><span class="who1" style="color:'+cf+'">'+esc(s0.from)+'</span>'
-      +bow(false)+'<span class="amt">'+fmt(s0.amt,sym)+'</span></span>'
-      +'<span class="who2" style="color:'+ct+'">'+esc(s0.to)+'</span>'
-      +'<span class="act"><button class="cta" data-pay="'+esc(s0.from)+'|'+esc(s0.to)+'|'+s0.amt+'" aria-label="'
-      +esc(s0.from)+' paid '+esc(s0.to)+'">Mark as paid</button></span></div>';
-  }).join('');
-  if(!r.settle.length&&r.count) html='<div class="allsq">✓ All square — this trip is fully settled 🎉</div>';
-  html+=pays.map(x=>{
-    const to=(x.split_members||[])[0]||'?';
-    const cf=memColor(trip,x.paid_by), ct=memColor(trip,to);
-    return '<div class="hsA done"><span class="who1" style="color:'+cf+'">'+esc(x.paid_by)+'</span>'
-      +bow(true)+'<span class="amt">'+fmt(Math.round(x.amount*100),sym)+'</span></span>'
-      +'<span class="who2" style="color:'+ct+'">'+esc(to)+'</span>'
-      +'<span class="act"><span class="on">paid '+fmtDate(expDate(x))+'</span>'
-      +'<button class="cta" data-undo="'+esc(x.expense_id)+'">Mark as unpaid</button></span></div>';
+  /* open debts and settled ones live in ONE list, ordered biggest first and
+     never re-ordered — marking a row paid leaves it exactly where it sat.  */
+  const rows=r.settle.map(s0=>({from:s0.from,to:s0.to,amt:s0.amt,paid:false}))
+    .concat(pays.map(x=>({from:x.paid_by,to:(x.split_members||[])[0]||'?',
+      amt:Math.round(x.amount*100),paid:true,id:x.expense_id,when:expDate(x)})))
+    .sort((a,b)=>b.amt-a.amt);
+  let html = (!r.settle.length&&r.count)
+    ? '<div class="allsq">✓ All square — this trip is fully settled 🎉</div>' : '';
+  html+=rows.map(w=>{
+    const cf=memColor(trip,w.from), ct=memColor(trip,w.to);
+    const act = w.paid
+      ? '<span class="on">paid '+fmtDate(w.when)+'</span>'
+        +'<button class="cta" data-undo="'+esc(w.id)+'">Mark as unpaid</button>'
+      : '<button class="cta" data-pay="'+esc(w.from)+'|'+esc(w.to)+'|'+w.amt+'" aria-label="'
+        +esc(w.from)+' paid '+esc(w.to)+'">Mark as paid</button>';
+    return '<div class="hsA'+(w.paid?' done':'')+'">'
+      +'<span class="who1" style="color:'+cf+'">'+esc(w.from)+'</span>'
+      +bow(w.paid)+'<span class="amt">'+fmt(w.amt,sym)+'</span></span>'
+      +'<span class="who2" style="color:'+ct+'">'+esc(w.to)+'</span>'
+      +'<span class="act">'+act+'</span></div>';
   }).join('');
   $('settleList').innerHTML=html;
 }
