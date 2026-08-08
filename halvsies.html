@@ -268,7 +268,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   <!-- THE TAB -->
   <section class="card" id="tabCard" hidden>
     <div class="hrow">
-      <h2 class="h2">The tab <em id="forTrip0"></em></h2>
+      <h2 class="h2">the tab <em id="forTrip0"></em></h2>
       <button class="editbtn" id="editTripBtn">Edit</button>
     </div>
     <div class="totC"><div class="bigrow"><b id="totalAmt">$0.00</b><i>Total spend</i></div>
@@ -290,7 +290,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   <!-- ENTRY -->
   <section class="card" id="entryCard" hidden>
     <span class="editing-note">Editing expense</span>
-    <h2 class="h2">Add an expense <em id="forTrip1"></em></h2>
+    <h2 class="h2">add an expense <em id="forTrip1"></em></h2>
     <div class="frow"><input type="text" class="fin" id="expTitle" placeholder="Dinner, fuel, tickets…" autocomplete="off"></div>
     <div class="frow">
       <div class="amount-in"><span class="cur" id="curSym">$</span><input type="text" class="fin" id="expAmount" inputmode="decimal" placeholder="0.00" autocomplete="off"></div>
@@ -313,7 +313,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   <!-- LIST -->
   <section id="listWrap" hidden>
     <div class="lh">
-      <h2 class="h2">Expenses <em id="forTrip2"></em></h2>
+      <h2 class="h2">expenses <em id="forTrip2"></em></h2>
       <div class="sort" id="sortRow">
         <button class="sc" data-sort="date">date</button>
         <button class="sc" data-sort="user">user</button>
@@ -526,8 +526,9 @@ function compute(trip,exps){
    paid < share  → striped band (your colour, faint) + solid arc, rounded cap.
    paid = share  → clean full circle in your colour.
    paid > share  → full circle, then the SAME band goes darker for the
-                   overpaid proportion, wrapping from the top; each further
-                   lap darkens again.                                        */
+                   overpaid proportion, wrapping from the top. Capped at one
+                   full lap so the dark length always grows with the overpay
+                   (a second lap would re-cover the ring and read smaller). */
 const RING_C=163.36;   // 2πr, r=26
 function gauge(col,paid,share,key){
   const pid='hstripe'+key;
@@ -543,14 +544,12 @@ function gauge(col,paid,share,key){
         +'" stroke-width="11" stroke-linecap="round" stroke-dasharray="'+L.toFixed(2)+' '+(RING_C-L).toFixed(2)+'"/></g>'; }
   }else{
     s+='<circle cx="36" cy="36" r="26" fill="none" stroke="'+col+'" stroke-width="11"/>';
-    let over = share>0 ? (paid-share)/share : (paid>0?1:0);
-    let lap=1;
-    while(over>0.0005 && lap<=4){
-      const f=Math.min(over,1), L=f*RING_C, dk=shade(col,Math.pow(.6,lap));
+    const over = share>0 ? (paid-share)/share : (paid>0?1:0);
+    if(over>0.0005){
+      const f=Math.min(over,1), L=f*RING_C, dk=shade(col,.55);
       s+='<g transform="rotate(-90 36 36)"><circle cx="36" cy="36" r="26" fill="none" stroke="'+dk
         +'" stroke-width="11"'+(f<1?' stroke-linecap="round"':'')
         +' stroke-dasharray="'+L.toFixed(2)+' '+(RING_C-L).toFixed(2)+'"/></g>';
-      over-=1; lap++;
     }
   }
   return s+'</svg>';
