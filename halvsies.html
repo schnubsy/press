@@ -31,18 +31,23 @@
   --sh:0 4px 16px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.45;
-  -webkit-font-smoothing:antialiased;min-height:100vh;position:relative;
+body{font-family:var(--font);color:var(--ink);line-height:1.45;
+  background:linear-gradient(180deg,#13161C 0%,#0E1114 42%,#0A0D11 100%);
+  -webkit-font-smoothing:antialiased;min-height:100vh;position:relative;overflow-x:hidden;
   padding-bottom:calc(24px + env(safe-area-inset-bottom))}
-/* a low, slow wash of the brand colours so the dark isn't flat */
-body::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+/* the aurora sits behind everything and drifts, so the glass has something
+   worth showing through. Oversized on purpose — the edges never show.     */
+.aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;opacity:.62;
   background:
-    radial-gradient(46% 26% at 10% 2%,rgba(124,92,255,.26),transparent 64%),
-    radial-gradient(52% 24% at 96% 34%,rgba(255,107,94,.17),transparent 66%),
-    radial-gradient(40% 20% at 6% 58%,rgba(13,148,136,.16),transparent 68%),
-    radial-gradient(48% 22% at 88% 76%,rgba(124,92,255,.17),transparent 66%),
-    radial-gradient(38% 18% at 34% 88%,rgba(255,107,94,.08),transparent 70%),
-    radial-gradient(44% 20% at 62% 20%,rgba(94,234,212,.05),transparent 72%)}
+    radial-gradient(520px 340px at 30% -4%,rgba(124,92,255,.42),transparent 62%),
+    radial-gradient(440px 320px at 92% 22%,rgba(255,107,94,.24),transparent 60%),
+    radial-gradient(380px 300px at 8% 60%,rgba(13,148,136,.22),transparent 65%),
+    radial-gradient(420px 340px at 84% 80%,rgba(124,92,255,.18),transparent 65%),
+    radial-gradient(300px 240px at 50% 44%,rgba(94,234,212,.09),transparent 70%);
+  animation:breath 34s ease-in-out infinite alternate}
+@keyframes breath{
+  0%{opacity:.5;transform:translateY(0)}
+  100%{opacity:.74;transform:translateY(-2%)}}
 .wrap{max-width:540px;margin:0 auto;padding:0 16px;position:relative;z-index:1}
 .card{position:relative;z-index:1}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;
@@ -56,12 +61,15 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .top{padding-top:calc(12px + env(safe-area-inset-top))}
 .toprow{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
 .mq{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
-  color:var(--muted);text-decoration:none;background:rgba(26,29,33,.7);border-radius:99px;
-  padding:5px 11px;box-shadow:var(--sh);backdrop-filter:blur(10px)}
+  color:var(--muted);text-decoration:none;border-radius:99px;
+  background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.09);
+  padding:5px 11px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .who{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;border-radius:99px;
-  padding:4px 12px 4px 5px;background:rgba(26,29,33,.7);color:var(--muted);box-shadow:var(--sh);
-  backdrop-filter:blur(10px);
-  border:1.5px dashed var(--line);transition:.15s}
+  padding:4px 12px 4px 5px;color:var(--muted);
+  background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1.5px dashed rgba(255,255,255,.18);transition:.15s}
 .who .av{width:21px;height:21px;font-size:10px;background:var(--faint)}
 .who.set{border-style:solid}
 .who:active{transform:scale(.96)}
@@ -72,10 +80,11 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 /* trip bar */
 .tripbar{display:flex;gap:8px;margin-bottom:10px}
 .trippick{flex:1;display:flex;align-items:baseline;gap:6px;
-  background:linear-gradient(160deg,rgba(255,255,255,.055),rgba(255,255,255,.012)),rgba(22,25,29,.44);
-  border:1px solid rgba(255,255,255,.085);backdrop-filter:blur(18px) saturate(140%);
-  -webkit-backdrop-filter:blur(18px) saturate(140%);border-radius:13px;
-  padding:10px 13px;box-shadow:var(--sh);text-align:left;min-width:0}
+  background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.10);backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);border-radius:13px;
+  padding:10px 13px;box-shadow:0 10px 34px rgba(10,7,22,.5),inset 0 1px 0 rgba(255,255,255,.12);
+  text-align:left;min-width:0}
 .trippick b{font-size:14.5px;font-weight:800;white-space:nowrap}
 .trippick span{font-size:10.5px;color:var(--faint);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex:1;min-width:0}
 .trippick i{font-style:normal;color:var(--muted);font-size:15px;line-height:1}
@@ -85,10 +94,11 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .plus:active{transform:scale(.94)}
 
 /* cards */
-.card{background:linear-gradient(160deg,rgba(255,255,255,.055),rgba(255,255,255,.012)),rgba(22,25,29,.44);
-  border:1px solid rgba(255,255,255,.085);
-  backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);
-  border-radius:17px;box-shadow:var(--sh),inset 0 1px 0 rgba(255,255,255,.05);
+.card{background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.10);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-radius:17px;
+  box-shadow:0 10px 34px rgba(10,7,22,.5),inset 0 1px 0 rgba(255,255,255,.12);
   padding:13px 14px;margin-bottom:10px}
 .empty{padding:30px 22px;text-align:center}
 .empty h2{font-weight:800;font-size:21px;letter-spacing:-.02em;margin-bottom:6px}
@@ -112,7 +122,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .totC .fair b{font-family:var(--mono);font-size:17px;color:var(--vio);font-weight:700;letter-spacing:-.02em}
 .totC .fair i{font-style:normal;color:var(--muted)}
 .needmembers{font-size:13px;color:var(--muted);background:var(--soft);border-radius:11px;padding:11px 13px}
-.ex{border:1px solid rgba(255,255,255,.075)}
+.ex{border:1px solid rgba(255,255,255,.10)}
 .needmembers button{color:var(--vio);font-weight:800;font-size:13px;text-decoration:underline}
 
 /* rings — one concentric stack, biggest spender outermost */
@@ -172,8 +182,9 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   color:var(--amb);background:var(--amb-soft);border-radius:8px;padding:5px 10px;margin-bottom:9px}
 .card.editing .editing-note{display:inline-block}
 .frow{display:flex;gap:7px;margin-top:8px}
-.fin{flex:1;background:var(--soft);border:1px solid transparent;border-radius:11px;padding:9px 12px;font-size:14px;min-width:0}
-.fin:focus{outline:none;border-color:var(--vio);background:#2A2F35}
+.fin{flex:1;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.07);
+  border-radius:11px;padding:9px 12px;font-size:14px;min-width:0}
+.fin:focus{outline:none;border-color:var(--vio);background:rgba(255,255,255,.09)}
 .fin::placeholder{color:var(--faint)}
 .amount-in{position:relative;flex:1}
 .amount-in .cur{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-weight:700;color:var(--muted);font-size:13px}
@@ -186,7 +197,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 /* pay chips share the full width */
 .chips{display:flex;gap:6px}
 .pc{flex:1 1 0;min-width:0;text-align:center;border-radius:99px;padding:7px 6px;font-size:12px;font-weight:700;
-  background:var(--soft);color:var(--muted);transition:.12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  background:rgba(255,255,255,.06);color:var(--muted);transition:.12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pc:active{transform:scale(.95)}
 .splitline{display:flex;align-items:center;justify-content:space-between;margin-top:9px;gap:8px;min-height:22px}
 .splitline .splitbtn[hidden]{display:none}
@@ -213,17 +224,19 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .lh{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 7px;gap:8px}
 .lh .h2{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sort{display:flex;gap:4px;flex:none}
-.sc{font-size:9px;font-weight:700;color:var(--muted);background:rgba(26,29,33,.7);backdrop-filter:blur(10px);
-  border-radius:99px;padding:4px 9px;box-shadow:var(--sh)}
+.sc{font-size:9px;font-weight:700;color:var(--muted);border-radius:99px;padding:4px 9px;
+  background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.09);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .sc.on{background:#F2F4F6;color:#12151A}
 .gl{display:flex;align-items:center;gap:6px;font-size:9px;font-weight:800;letter-spacing:.13em;
   text-transform:uppercase;color:var(--muted);margin:8px 3px 5px}
 .gl .gd{width:7px;height:7px;border-radius:50%}
 .gl .gt{font-family:var(--mono);font-weight:600;margin-left:auto;letter-spacing:0;font-size:9.5px}
 .ex{display:flex;align-items:center;gap:9px;
-  background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.01)),rgba(22,25,29,.44);
-  backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);
-  border-radius:13px;box-shadow:var(--sh);
+  background:linear-gradient(160deg,rgba(255,255,255,.065),rgba(255,255,255,.022));
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-radius:13px;box-shadow:0 8px 26px rgba(10,7,22,.42),inset 0 1px 0 rgba(255,255,255,.10);
   padding:8px 11px;margin-bottom:6px;width:100%;text-align:left;transition:.12s}
 .ex:active{transform:scale(.985)}
 .ex.off{background:transparent;border:1.5px dashed var(--line);box-shadow:none}
@@ -238,7 +251,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 /* sheets */
 .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:80;opacity:0;pointer-events:none;transition:.2s}
 .backdrop.show{opacity:1;pointer-events:auto}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:90;background:rgba(26,29,33,.94);border-radius:22px 22px 0 0;
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:90;background:rgba(20,23,28,.9);border-radius:22px 22px 0 0;
   box-shadow:0 -10px 40px rgba(0,0,0,.6);max-width:540px;margin:0 auto;
   backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   padding:8px 18px calc(20px + env(safe-area-inset-bottom));
@@ -281,6 +294,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 </style>
 </head>
 <body>
+<div class="aurora" aria-hidden="true"></div>
 
 <header class="top wrap">
   <div class="toprow">
