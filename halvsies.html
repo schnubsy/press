@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#F7F6FB">
+<meta name="theme-color" content="#0E1114">
 <title>Halvsies</title>
 <meta name="page-title" content="Halvsies">
 <meta name="description" content="Halvsies — the group expense-sharing app. Track trip spending together, settle up, done.">
@@ -20,15 +20,15 @@
    two people; settled states run on the teal family.
    ============================================================ */
 :root{
-  --bg:#F7F6FB; --card:#FFFFFF; --ink:#211F33; --muted:#8D89A6; --faint:#A6A2BC;
-  --soft:#F1F0F7; --line:#E7E5F0;
+  --bg:#0E1114; --card:#1A1D21; --row:#14171B; --ink:#F2F4F6; --muted:#8E97A1; --faint:#6C757E;
+  --soft:#23272C; --line:#2C3238; --track:#2E343B; --hair:#3A4149;
   --vio:#7C5CFF; --cor:#FF6B5E;
-  --st:#0D9488; --st-soft:#CCFBF1; --st-ink:#0F766E; --st-lite:#5EEAD4;
-  --red:#DC4B3E; --red-soft:#FFE4E0;
-  --amb:#B45309; --amb-soft:#FEF3C7;
+  --st:#0D9488; --st-soft:rgba(13,148,136,.16); --st-ink:#5EEAD4; --st-lite:#5EEAD4;
+  --red:#F87171; --red-soft:rgba(220,75,62,.16);
+  --amb:#FBBF24; --amb-soft:rgba(180,83,9,.18);
   --font:'Sora',system-ui,-apple-system,sans-serif;
   --mono:'Spline Sans Mono',ui-monospace,Menlo,monospace;
-  --sh:0 5px 18px rgba(33,31,51,.07);
+  --sh:0 4px 16px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.45;
@@ -94,17 +94,18 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .totC .fair b{font-family:var(--mono);font-size:17px;color:var(--vio);font-weight:700;letter-spacing:-.02em}
 .totC .fair i{font-style:normal;color:var(--muted)}
 .needmembers{font-size:13px;color:var(--muted);background:var(--soft);border-radius:11px;padding:11px 13px}
+.ex{border:1px solid var(--line)}
 .needmembers button{color:var(--vio);font-weight:800;font-size:13px;text-decoration:underline}
 
 /* rings — one concentric stack, biggest spender outermost */
-.orbits{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
-  background:var(--bg);border-radius:15px;padding:13px 12px}
-.orbits svg{flex:none}
+.orbits{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;
+  background:var(--row);border-radius:15px;padding:16px 14px}
+.orbits svg{flex:none;max-width:100%;height:auto}
 .legend{flex:1 1 190px;min-width:180px;display:flex;flex-direction:column;gap:7px}
 .lgr{display:flex;align-items:baseline;gap:7px}
 .lgd{width:9px;height:9px;border-radius:50%;flex:none;align-self:center}
 .lgn{font-weight:700;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92px}
-.lead{flex:1;min-width:8px;border-bottom:1px dotted #CFCADE;transform:translateY(-4px)}
+.lead{flex:1;min-width:8px;border-bottom:1px dotted var(--hair);transform:translateY(-4px)}
 .lgs{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap}
 .lgp{font-family:var(--mono);font-size:12px;font-weight:700;min-width:42px;text-align:right}
 .offtab{font-size:11.5px;color:var(--amb);font-weight:700;
@@ -120,30 +121,31 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .prog .bar i{display:block;height:100%;background:var(--st);border-radius:99px;transition:width .3s}
 .prog .lbl{font-size:11px;font-weight:700;color:var(--st-ink);white-space:nowrap}
 .prog .lbl small{color:var(--muted);font-weight:600;font-size:10px}
-.hsA{display:flex;align-items:center;gap:6px;background:var(--bg);border-radius:14px;padding:8px 9px;margin-bottom:8px}
+.hsA{display:flex;align-items:center;gap:7px;background:var(--row);border-radius:14px;padding:9px 10px;margin-bottom:8px}
 .hsA:last-child{margin-bottom:0}
 .hsA .av{width:26px;height:26px;font-size:11px}
 .hsA .side{display:flex;align-items:center;gap:5px;flex:none;min-width:0}
 .hsA .side .nm{font-weight:700;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px}
-/* the bridge — dotted while open, lit with a landing dot once paid */
-.arch{flex:1;position:relative;height:30px;min-width:52px}
-.arch .curve{position:absolute;left:4px;right:4px;top:11px;bottom:1px;
-  border-top:2px dotted #C6C0DC;border-radius:60% 60% 0 0/100% 100% 0 0}
-.arch .amt{position:absolute;left:50%;top:1px;transform:translateX(-50%);background:var(--bg);padding:0 5px;
-  font-family:var(--mono);font-weight:700;font-size:11.5px;white-space:nowrap;line-height:1.5}
-.hsA.done .arch .curve{border-top:2.5px solid var(--st)}
-.hsA.done .arch::after{content:"";position:absolute;right:1px;bottom:-3px;width:7px;height:7px;border-radius:50%;
-  background:var(--st);box-shadow:0 0 0 3px rgba(13,148,136,.16)}
-.hsA.done .arch .amt{color:var(--st-ink);background:#EEFBF8}
-.hsA .cta{font-size:9.5px;font-weight:800;color:#fff;background:var(--ink);border-radius:99px;
+/* the bridge — a drawn bow: dotted while open, lit with a landing dot once paid */
+.arch{flex:1;position:relative;height:34px;min-width:60px}
+.arch .bow{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.arch .bow path{fill:none;stroke:var(--hair);stroke-width:2;stroke-linecap:round;
+  stroke-dasharray:1 5;vector-effect:non-scaling-stroke}
+.arch .amt{position:absolute;left:50%;top:0;transform:translateX(-50%);background:var(--row);padding:0 6px;
+  font-family:var(--mono);font-weight:700;font-size:12px;white-space:nowrap;line-height:1.45}
+.hsA.done .arch .bow path{stroke:var(--st);stroke-dasharray:none;stroke-width:2.5}
+.hsA.done .arch::after{content:"";position:absolute;right:-1px;bottom:2px;width:8px;height:8px;border-radius:50%;
+  background:var(--st-lite);box-shadow:0 0 0 4px rgba(94,234,212,.16)}
+.hsA.done .arch .amt{color:var(--st-ink);background:#101F20}
+.hsA .cta{font-size:9.5px;font-weight:800;color:#12151A;background:#F2F4F6;border-radius:99px;
   padding:7px 3px;white-space:nowrap;flex:none;width:76px;text-align:center;overflow:hidden;text-overflow:ellipsis}
 .hsA .cta:active{transform:scale(.95)}
-.hsA.done{background:linear-gradient(90deg,var(--st-soft),#F0FDFA)}
+.hsA.done{background:linear-gradient(90deg,rgba(13,148,136,.20),rgba(13,148,136,.06))}
 .hsA.done .arch::before{border-top-color:var(--st-lite)}
 .hsA.done .amt{color:var(--st-ink)}
-.hsA.done .cta{background:var(--st)}
+.hsA.done .cta{background:var(--st);color:#04231F}
 .allsq{display:flex;align-items:center;gap:8px;color:var(--st-ink);font-weight:700;font-size:13px;
-  background:var(--st-soft);border-radius:12px;padding:11px 13px;margin-bottom:14px}
+  background:rgba(13,148,136,.16);border:1px solid rgba(13,148,136,.3);border-radius:12px;padding:11px 13px;margin-bottom:14px}
 .allsq:last-child{margin-bottom:0}
 
 /* entry */
@@ -151,8 +153,8 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   color:var(--amb);background:var(--amb-soft);border-radius:8px;padding:5px 10px;margin-bottom:9px}
 .card.editing .editing-note{display:inline-block}
 .frow{display:flex;gap:7px;margin-top:8px}
-.fin{flex:1;background:var(--bg);border:1px solid transparent;border-radius:11px;padding:9px 12px;font-size:14px;min-width:0}
-.fin:focus{outline:none;border-color:var(--vio);background:var(--card)}
+.fin{flex:1;background:var(--soft);border:1px solid transparent;border-radius:11px;padding:9px 12px;font-size:14px;min-width:0}
+.fin:focus{outline:none;border-color:var(--vio);background:#2A2F35}
 .fin::placeholder{color:var(--faint)}
 .amount-in{position:relative;flex:1}
 .amount-in .cur{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-weight:700;color:var(--muted);font-size:13px}
@@ -180,7 +182,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .offmini label{display:flex;align-items:center;gap:5px;cursor:pointer;position:relative}
 .splitgrid{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .splitgrid .pc{flex:1 1 auto}
-.go{width:100%;border-radius:12px;padding:11px;font-size:14px;font-weight:800;background:var(--ink);color:#fff;transition:.15s;margin-top:10px;display:block;text-align:center}
+.go{width:100%;border-radius:12px;padding:11px;font-size:14px;font-weight:800;background:var(--vio);color:#fff;transition:.15s;margin-top:10px;display:block;text-align:center}
 .go:active{transform:scale(.98)}
 .go.ghost{background:none;color:var(--muted);border:1.5px solid var(--line);padding:9px;margin-top:7px}
 .go.danger{background:var(--red-soft);color:var(--red)}
@@ -191,7 +193,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .lh .h2{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sort{display:flex;gap:4px;flex:none}
 .sc{font-size:9px;font-weight:700;color:var(--muted);background:var(--card);border-radius:99px;padding:4px 9px;box-shadow:var(--sh)}
-.sc.on{background:var(--ink);color:#fff}
+.sc.on{background:#F2F4F6;color:#12151A}
 .gl{display:flex;align-items:center;gap:6px;font-size:9px;font-weight:800;letter-spacing:.13em;
   text-transform:uppercase;color:var(--muted);margin:8px 3px 5px}
 .gl .gd{width:7px;height:7px;border-radius:50%}
@@ -209,10 +211,10 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .ex.off .a{color:var(--faint);font-weight:500}
 
 /* sheets */
-.backdrop{position:fixed;inset:0;background:rgba(33,31,51,.45);z-index:80;opacity:0;pointer-events:none;transition:.2s}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:80;opacity:0;pointer-events:none;transition:.2s}
 .backdrop.show{opacity:1;pointer-events:auto}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:90;background:var(--card);border-radius:22px 22px 0 0;
-  box-shadow:0 -10px 40px rgba(33,31,51,.22);max-width:540px;margin:0 auto;
+  box-shadow:0 -10px 40px rgba(0,0,0,.6);max-width:540px;margin:0 auto;
   padding:8px 18px calc(20px + env(safe-area-inset-bottom));
   transform:translateY(105%);transition:transform .25s cubic-bezier(.32,.72,.28,1);
   max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -225,21 +227,21 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   color:var(--faint);font-weight:600;margin-bottom:4px}
 .field .fin{width:100%}
 .selwrap{position:relative}
-.selwrap select{width:100%;appearance:none;-webkit-appearance:none;background:var(--bg);border:1px solid transparent;
-  border-radius:11px;padding:9px 34px 9px 12px;font-weight:600;font-size:14px}
+.selwrap select{width:100%;appearance:none;-webkit-appearance:none;background:var(--soft);border:1px solid transparent;
+  border-radius:11px;padding:9px 34px 9px 12px;font-weight:600;font-size:14px;color:var(--ink)}
 .selwrap::after{content:"";position:absolute;right:14px;top:50%;width:8px;height:8px;border-right:2px solid var(--muted);
   border-bottom:2px solid var(--muted);transform:translateY(-70%) rotate(45deg);pointer-events:none}
 .memrow{display:flex;gap:8px;margin-bottom:8px}
 .memrow .fin{flex:1}
 .memrow button{flex:none;border-radius:11px;background:var(--soft);color:var(--vio);font-weight:800;padding:0 16px;font-size:13px}
 .memchips{display:flex;flex-wrap:wrap;gap:7px;min-height:6px}
-.mem{display:inline-flex;align-items:center;gap:7px;background:var(--bg);border-radius:99px;padding:5px 7px 5px 6px;font-size:12.5px;font-weight:700}
+.mem{display:inline-flex;align-items:center;gap:7px;background:var(--soft);border-radius:99px;padding:5px 7px 5px 6px;font-size:12.5px;font-weight:700}
 .mem .av{width:19px;height:19px;font-size:9px}
 .mem button{background:var(--line);color:var(--muted);width:18px;height:18px;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center}
 .whochips{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 8px}
 .wc{display:flex;align-items:center;gap:7px;border-radius:99px;padding:7px 15px 7px 7px;font-size:13.5px;font-weight:700;background:var(--soft);color:var(--muted);border:1.5px solid transparent}
 .wc .av{width:23px;height:23px;font-size:10px}
-.pickrow{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:var(--bg);border-radius:13px;padding:10px 13px;margin-bottom:7px}
+.pickrow{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:var(--soft);border-radius:13px;padding:10px 13px;margin-bottom:7px}
 .pickrow:active{transform:scale(.99)}
 .pickrow .pn{font-weight:800;font-size:14px}
 .pickrow .pm{font-size:10.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -429,10 +431,10 @@ function memColor(trip,name){ const i=trip?trip.members.indexOf(name):-1;
 
 /* ---- sync pill ---- */
 const pill=document.createElement('div');
-pill.style.cssText='position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));right:14px;z-index:99;font:600 11px/1 "Spline Sans Mono",monospace;padding:8px 12px;border-radius:99px;background:#211F33;color:#fff;opacity:0;transition:.3s;box-shadow:0 4px 14px rgba(0,0,0,.2);pointer-events:none';
+pill.style.cssText='position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));right:14px;z-index:99;font:600 11px/1 "Spline Sans Mono",monospace;padding:8px 12px;border-radius:99px;background:#2C3238;color:#fff;opacity:0;transition:.3s;box-shadow:0 4px 14px rgba(0,0,0,.2);pointer-events:none';
 document.body.appendChild(pill);
 let pillT;
-function flash(msg,color){ pill.textContent=msg; pill.style.background=color||'#211F33'; pill.style.opacity='1';
+function flash(msg,color){ pill.textContent=msg; pill.style.background=color||'#2C3238'; pill.style.opacity='1';
   clearTimeout(pillT); pillT=setTimeout(()=>pill.style.opacity='0',1500); }
 
 /* ---- cloud ---- */
@@ -555,19 +557,21 @@ function compute(trip,exps){
 function ringStack(trip,people,sym){
   const rows=people.slice().sort((a,b)=>b.paid-a.paid);
   const n=rows.length;
-  const OUT=66, MIN=17;
-  const step = n>1 ? (OUT-MIN)/(n-1) : 0;
-  const w = n>1 ? Math.max(5,Math.min(13,step-4)) : 13;
-  let svg='<svg width="152" height="152" viewBox="0 0 152 152" aria-hidden="true">'
+  /* fixed weight, like the mock: heavy band, generous gap, biggest spender outside.
+     Only very large groups thin down, and then only enough to fit.            */
+  const W = n<=5?13:9, GAP = W+2, RIN = n<=5?25:18;
+  const OUT = RIN+(n-1)*GAP;
+  const S = Math.round(2*(OUT+W/2)+8), CTR=S/2;
+  let svg='<svg width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'" aria-hidden="true">'
     +'<defs><filter id="lapsh" x="-60%" y="-60%" width="220%" height="220%">'
-    +'<feDropShadow dx="0" dy="0" stdDeviation="2.1" flood-color="#211F33" flood-opacity=".45"/></filter></defs>'
-    +'<g transform="rotate(-90 76 76)">';
+    +'<feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#000" flood-opacity=".9"/></filter></defs>'
+    +'<g transform="rotate(-90 '+CTR+' '+CTR+')">';
   rows.forEach((p,i)=>{
-    const r=OUT-i*step, C=2*Math.PI*r, col=memColor(trip,p.m);
+    const r=OUT-i*GAP, C=2*Math.PI*r, col=memColor(trip,p.m);
     const frac = p.share>0 ? p.paid/p.share : (p.paid>0?1:0);
-    const c=(stroke,extra)=>'<circle cx="76" cy="76" r="'+r.toFixed(1)+'" fill="none" stroke="'+stroke
-      +'" stroke-width="'+w.toFixed(1)+'"'+(extra||'')+'/>';
-    svg+=c('#E6E2F1');                                   // empty ring stays, just grey
+    const c=(stroke,extra)=>'<circle cx="'+CTR+'" cy="'+CTR+'" r="'+r+'" fill="none" stroke="'+stroke
+      +'" stroke-width="'+W+'"'+(extra||'')+'/>';
+    svg+=c('#2E343B');                                   // empty ring stays, just grey
     if(frac<=0) return;
     if(frac<=1){ const L=frac*C;
       svg+=c(col,' stroke-linecap="round" stroke-dasharray="'+L.toFixed(2)+' '+(C-L).toFixed(2)+'"');
@@ -665,7 +669,7 @@ function renderSettle(trip,exps,r,sym){
   let html=r.settle.map(s0=>{
     const cf=memColor(trip,s0.from), ct=memColor(trip,s0.to);
     return '<div class="hsA">'+side(s0.from,cf)
-      +'<span class="arch"><span class="curve"></span><span class="amt">'+fmt(s0.amt,sym)+'</span></span>'+side(s0.to,ct)
+      +'<span class="arch"><svg class="bow" viewBox="0 0 120 34" preserveAspectRatio="none" aria-hidden="true"><path d="M4 30 Q60 3 116 30"/></svg><span class="amt">'+fmt(s0.amt,sym)+'</span></span>'+side(s0.to,ct)
       +'<button class="cta" data-pay="'+esc(s0.from)+'|'+esc(s0.to)+'|'+s0.amt+'" aria-label="'
       +esc(s0.from)+' paid '+esc(s0.to)+'">I\u2019ve paid ✓</button></div>';
   }).join('');
@@ -674,7 +678,7 @@ function renderSettle(trip,exps,r,sym){
     const to=(x.split_members||[])[0]||'?';
     const cf=memColor(trip,x.paid_by), ct=memColor(trip,to);
     return '<div class="hsA done">'+side(x.paid_by,cf)
-      +'<span class="arch"><span class="curve"></span><span class="amt">'+fmt(Math.round(x.amount*100),sym)+'</span></span>'+side(to,ct)
+      +'<span class="arch"><svg class="bow" viewBox="0 0 120 34" preserveAspectRatio="none" aria-hidden="true"><path d="M4 30 Q60 3 116 30"/></svg><span class="amt">'+fmt(Math.round(x.amount*100),sym)+'</span></span>'+side(to,ct)
       +'<button class="cta" data-undo="'+esc(x.expense_id)+'">Paid '+fmtDate(expDate(x))+'</button></div>';
   }).join('');
   $('settleList').innerHTML=html;
