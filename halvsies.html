@@ -85,10 +85,13 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 
 /* the tab */
 .totC{text-align:center;margin:10px 0 12px}
-.totC b{display:block;font-family:var(--mono);font-size:clamp(26px,8vw,31px);font-weight:700;letter-spacing:-.03em;line-height:1}
-.totC span{display:block;font-size:10.5px;color:var(--muted);font-weight:600;margin-top:3px}
-.totC .fair{font-size:12px;color:var(--ink);font-weight:700;margin-top:5px}
-.totC .fair b{font-family:var(--mono);color:var(--vio);font-weight:700}
+.bigrow{display:flex;align-items:baseline;justify-content:center;gap:8px;flex-wrap:wrap}
+.totC b{font-family:var(--mono);font-size:clamp(24px,7.2vw,30px);font-weight:700;letter-spacing:-.03em;line-height:1}
+.totC .bigrow i{font-style:normal;font-size:12px;color:var(--muted);font-weight:700}
+.totC span{display:block;font-size:10.5px;color:var(--muted);font-weight:600;margin-top:4px}
+.totC .fair{display:flex;align-items:baseline;justify-content:center;gap:6px;margin-top:5px;font-size:12px;font-weight:700}
+.totC .fair b{font-family:var(--mono);font-size:17px;color:var(--vio);font-weight:700;letter-spacing:-.02em}
+.totC .fair i{font-style:normal;color:var(--muted)}
 .needmembers{font-size:13px;color:var(--muted);background:var(--soft);border-radius:11px;padding:11px 13px}
 .needmembers button{color:var(--vio);font-weight:800;font-size:13px;text-decoration:underline}
 
@@ -126,7 +129,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .track .amt{position:relative;background:var(--card);border-radius:99px;padding:4px 10px;
   font-family:var(--mono);font-weight:700;font-size:12px;box-shadow:0 2px 8px rgba(33,31,51,.12);white-space:nowrap}
 .hsA .cta{font-size:10px;font-weight:800;color:#fff;background:var(--vio);border-radius:99px;
-  padding:8px 11px;white-space:nowrap;flex:none}
+  padding:8px 4px;white-space:nowrap;flex:none;width:84px;text-align:center;overflow:hidden;text-overflow:ellipsis}
 .hsA .cta:active{transform:scale(.95)}
 .hsA.done{background:linear-gradient(90deg,var(--st-soft),#F0FDFA)}
 .hsA.done .chevs{color:var(--st-lite)}
@@ -268,7 +271,8 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
       <h2 class="h2">The tab <em id="forTrip0"></em></h2>
       <button class="editbtn" id="editTripBtn">Edit</button>
     </div>
-    <div class="totC"><b id="totalAmt">$0.00</b><span class="fair" id="fairLbl"></span><span id="totalLbl"></span></div>
+    <div class="totC"><div class="bigrow"><b id="totalAmt">$0.00</b><i>Total spend</i></div>
+      <div class="fair" id="fairLbl"></div><span id="totalLbl"></span></div>
     <div id="needMembers" class="needmembers" hidden>
       No members yet — <button id="addMembersBtn">add everyone going</button> to start.
     </div>
@@ -583,8 +587,8 @@ function renderAll(rebuildForm){
 
   $('totalAmt').textContent=fmt(r.total,sym);
   $('fairLbl').innerHTML=!r.count?''
-    :(r.custom?'Shares vary by expense'
-      :'Fair share <b>'+fmt(r.fair,sym)+'</b> each');
+    :(r.custom?'<i>Shares vary by expense</i>'
+      :'<b>'+fmt(r.fair,sym)+'</b><i>each</i>');
   $('totalLbl').textContent=r.count
     ? r.count+' expense'+(r.count>1?'s':'')+' · '+trip.members.length+' people'
     : 'Nothing on the tab yet';
