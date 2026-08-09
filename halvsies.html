@@ -138,7 +138,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
    shares one x-position and the decimal points stack. The two leaders are
    equal fractions, which parks that column midway between names and percents. */
 .legend{flex:1 1 190px;min-width:180px;display:grid;
-  grid-template-columns:10px max-content 1fr max-content 1fr 52px;
+  grid-template-columns:10px minmax(0,max-content) 1fr max-content 1fr 52px max-content;
   align-items:baseline;column-gap:7px;row-gap:6px;
   align-content:space-between;padding:14px 10px 14px 0}
 .lgr{display:contents}
@@ -148,12 +148,19 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .legend.one{align-content:center}
 .legend.two{align-content:center;row-gap:31px}
 .lgd{width:10px;height:10px;border-radius:50%;flex:none;align-self:center}
-.lgn{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:104px}
+.lgn{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:104px;min-width:0}
 .lead{flex:1;min-width:8px;border-bottom:1px dotted var(--hair);transform:translateY(-4px)}
 .lgs{font-family:var(--mono);font-size:12.5px;color:var(--muted);font-weight:600;
   white-space:nowrap;text-align:right}
 .lgp{font-family:var(--mono);font-size:13.5px;font-weight:700;white-space:nowrap;
   text-align:right}
+/* net position, sized by the widest figure across all rows like the spend
+   column, so its decimals stack too. Right-aligned, so the sign hangs left. */
+.lgb{font-family:var(--mono);font-size:12.5px;font-weight:700;white-space:nowrap;
+  text-align:right;padding-left:4px}
+.lgb.up{color:var(--st-ink)}
+.lgb.dn{color:var(--red)}
+.lgb.ev{color:var(--faint)}
 .offtab{font-size:11.5px;color:var(--amb);font-weight:700;
   background:var(--amb-soft);border-radius:10px;padding:7px 11px;margin-top:9px}
 .offhead{font-size:10px;opacity:.8;margin-bottom:3px}
@@ -679,13 +686,16 @@ function ringStack(trip,people,sym){
   svg+='</g></svg>';
   const legend=rows.map(p=>{
     const pct=p.share>0?Math.round(p.paid/p.share*100):0;
+    /* same E ledger as the ring: what they put in minus their fair share */
+    const net=p.net||0;
     const col=memColor(trip,p.m);
     return '<div class="lgr"><span class="lgd" style="background:'+col+'"></span>'
       +'<span class="lgn" style="color:'+col+'">'+esc(p.m)+'</span>'
       +'<span class="lead"></span>'
       +'<span class="lgs">'+fmt(p.paid,sym)+'</span>'
       +'<span class="lead"></span>'
-      +'<span class="lgp">'+pct+'%</span></div>';
+      +'<span class="lgp">'+pct+'%</span>'
+      +'<span class="lgb '+(net>0?'up':net<0?'dn':'ev')+'">'+(net>0?'+':'')+fmt(net,sym)+'</span></div>';
   }).join('');
   return svg+'<div class="legend'+(n===1?' one':n===2?' two':'')+'">'+legend+'</div>';
 }
