@@ -169,6 +169,13 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .offrow .odot{width:7px;height:7px;border-radius:50%;flex:none}
 .offrow b{margin-left:auto;font-family:var(--mono)}
 
+/* the settle wheel — a summary of the rows below it, nothing more */
+.swheel{display:flex;justify-content:center;padding:2px 0 4px}
+.swheel svg{width:100%;max-width:320px;height:auto}
+.swheel .wn{font-family:var(--font);font-size:12px;font-weight:700}
+.swheel .wa{font-family:var(--mono);font-size:10.5px;font-weight:700}
+.swheel .wt{font-family:var(--mono);font-size:10px;font-weight:700;fill:var(--faint);letter-spacing:.06em}
+
 /* settle */
 .prog{display:flex;align-items:center;gap:9px;margin:9px 0 11px}
 .prog .bar{flex:1;height:7px;border-radius:99px;background:var(--soft);overflow:hidden}
@@ -365,6 +372,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   <!-- SETTLE -->
   <section class="card" id="settleCard" hidden>
     <h2 class="h2">to settle up <em id="forTrip3"></em></h2>
+    <div class="swheel" id="settleWheel" hidden></div>
     <div class="prog" id="progWrap"><div class="bar"><i id="progBar"></i></div><span class="lbl" id="progLbl"></span></div>
     <div id="settleList"></div>
   </section>
@@ -630,66 +638,54 @@ function compute(trip,exps){
   return {total,off,count,nets,people,fair,custom,settle,paidBack,remaining,offBy};
 }
 
-/* ---- the ring ----
-   Circumference = your fair share, starting at the top.
-   paid < share  → striped band (your colour, faint) + solid arc, rounded cap.
-   paid = share  → clean full circle in your colour.
-   paid > share  → the arc laps, and the lapped portion carries a drop shadow
-                   where it crosses the first pass (the Apple-watch answer), so
-                   past-100% is unambiguous. Zero spend = an empty grey ring.
-   Rings are concentric and sorted biggest spender outermost; the legend
-   repeats the order with a leader line to name / spend / percent.           */
-function ringStack(trip,people,sym){
+/* ---- the rose ----
+   Everyone gets an equal wedge of the circle — that IS the even split, and
+   it no longer depends on how many people are on the trip. How far the
+   petal reaches is what that person paid, scaled so the biggest spender
+   touches the rim. The dashed circle is the fair share: a petal short of
+   it is money owed, a petal past it is money owed back.
+   The legend markup is byte-identical to the ring stack's, so the eight
+   column .legend grid, its three leaders, the net column and the
+   .one / .two centring all keep working untouched.                       */
+function _pt(cx,cy,r,a){ const t=(a-90)*Math.PI/180; return [cx+r*Math.cos(t),cy+r*Math.sin(t)]; }
+function _n(v){ return (+v).toFixed(2); }
+function _sector(cx,cy,r0,r1,a0,a1){
+  const [x0,y0]=_pt(cx,cy,r1,a0), [x1,y1]=_pt(cx,cy,r1,a1);
+  const [x2,y2]=_pt(cx,cy,r0,a1), [x3,y3]=_pt(cx,cy,r0,a0);
+  const L=(a1-a0)>180?1:0;
+  return 'M'+_n(x0)+' '+_n(y0)+'A'+_n(r1)+' '+_n(r1)+' 0 '+L+' 1 '+_n(x1)+' '+_n(y1)
+    +'L'+_n(x2)+' '+_n(y2)+'A'+_n(r0)+' '+_n(r0)+' 0 '+L+' 0 '+_n(x3)+' '+_n(y3)+'Z';
+}
+/* an arrowhead struck back from the tip along the line's own direction, so
+   a $2 arrow and a $30 arrow are the same shape at different sizes.      */
+function _head(x,y,fx,fy,s){
+  const a=Math.atan2(y-fy,x-fx);
+  return 'M'+_n(x)+' '+_n(y)
+    +'L'+_n(x-s*Math.cos(a-0.42))+' '+_n(y-s*Math.sin(a-0.42))
+    +'L'+_n(x-s*Math.cos(a+0.42))+' '+_n(y-s*Math.sin(a+0.42))+'Z';
+}
+function rose(trip,people,sym){
   const rows=people.slice().sort((a,b)=>b.paid-a.paid);
   const n=rows.length;
-  /* Geometry is pinned to the outer EDGE of the band, not its centreline —
-     measuring from the centreline let a heavy two-person ring overflow the
-     box and get its sides sliced flat.
-     150 (×SC) is the floor: small groups keep that footprint and simply run a
-     heavier band (capped, so 2 and 3 people look the same weight). Once the
-     band would drop below 10px the weight holds and the circle grows
-     instead, up to a 200 ceiling. n=4 still lands on 12px in a 150 box.   */
-  const SC=0.85;                             // whole ring 15% smaller, with
-  const HOLE=17*SC, PAD=4*SC, W_MAX=16*SC;   // every constant scaled together
-  const W_MIN=10*SC, SEP=2*SC;               // so the rules above still hold
-  const R_MIN=150*SC/2-PAD, R_MAX=200*SC/2-PAD;
-  const fits=r=>Math.floor((r-HOLE-SEP*(n-1))/n);
-  let W=Math.min(W_MAX,fits(R_MIN));
-  if(W<W_MIN) W=W_MIN;                       // too thin to read — grow instead
-  let edge=Math.max(R_MIN,HOLE+n*W+SEP*(n-1));
-  if(edge>R_MAX){ W=Math.max(3*SC,fits(R_MAX)); edge=HOLE+n*W+SEP*(n-1); }
-  const S=Math.round(2*(edge+PAD)), CTR=S/2;
-  const OUT=edge-W/2, GAP=W+SEP;
-  let svg='<svg width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'" aria-hidden="true">'
-    +'<defs><filter id="lapsh" x="-60%" y="-60%" width="220%" height="220%">'
-    +'<feDropShadow dx="0" dy="0" stdDeviation="'+Math.max(1.6*SC,(W*0.22)).toFixed(2)
-    +'" flood-color="#000" flood-opacity=".9"/></filter></defs>'
-    +'<g transform="rotate(-90 '+CTR+' '+CTR+')">';
+  /* 140, not the 170 the sketch used: the legend now carries a fourth
+     column, and the extra 30px is what keeps names and figures off the
+     ellipsis.                                                          */
+  const S=140, C=S/2, R0=17, R1=S/2-6;
+  const maxPaid=Math.max.apply(null,rows.map(p=>Math.max(0,p.paid)).concat([1]));
+  const share=n?rows.reduce((a,p)=>a+p.share,0)/n:0;
+  const SC=(R1-R0)/maxPaid, PAD=n>1?1.6:0;
+  let svg='<svg width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'" aria-hidden="true">';
   rows.forEach((p,i)=>{
-    const r=OUT-i*GAP, C=2*Math.PI*r, col=memColor(trip,p.m);
-    let frac = p.share>0 ? p.paid/p.share : (p.paid>0?1:0);
-    if(!(frac>0)) frac=0;                                // negatives leave it empty
-    const c=(stroke,extra)=>'<circle cx="'+CTR+'" cy="'+CTR+'" r="'+r+'" fill="none" stroke="'+stroke
-      +'" stroke-width="'+W+'"'+(extra||'')+'/>';
-    svg+=c('#2C2C2E');                                   // empty ring stays, just grey
-    if(frac<=0) return;
-    if(frac<=1){ const L=frac*C;
-      svg+=c(col,' stroke-linecap="round" stroke-dasharray="'+L.toFixed(2)+' '+(C-L).toFixed(2)+'"');
-    }else{
-      svg+=c(col);                                       // the completed lap(s) fill the ring
-      /* the head of the arc sits where it actually is: the fractional part of
-         however many laps have been run. 2.63x lands at 63% round, same as
-         1.63x would — the shadow shows it has crossed itself.               */
-      let head=frac%1; if(head<0.005) head=1;
-      const L=head*C;
-      svg+=c(col,' stroke-linecap="round" stroke-dasharray="'+L.toFixed(2)+' '+(C-L).toFixed(2)
-        +'" filter="url(#lapsh)"');
-    }
+    const a0=i*360/n+PAD, a1=(i+1)*360/n-PAD, col=memColor(trip,p.m);
+    const reach=R0+Math.max(2,Math.max(0,p.paid)*SC);
+    svg+='<path d="'+_sector(C,C,R0,R1,a0,a1)+'" fill="'+col+'" fill-opacity=".09"/>';
+    svg+='<path d="'+_sector(C,C,R0,reach,a0,a1)+'" fill="'+col+'"/>';
   });
-  svg+='</g></svg>';
+  svg+='<circle cx="'+C+'" cy="'+C+'" r="'+_n(R0+share*SC)+'" fill="none" stroke="#F2F4F6"'
+    +' stroke-width="1.6" stroke-opacity=".9" stroke-dasharray="4 4"/></svg>';
   const legend=rows.map(p=>{
     const pct=p.share>0?Math.round(p.paid/p.share*100):0;
-    /* same E ledger as the ring: what they put in minus their fair share */
+    /* same E ledger as the petals: what they put in minus their fair share */
     const net=p.net||0;
     const col=memColor(trip,p.m);
     return '<div class="lgr"><span class="lgd" style="background:'+col+'"></span>'
@@ -702,6 +698,59 @@ function ringStack(trip,people,sym){
       +'<span class="lgb '+(net>0?'up':net<0?'dn':'ev')+'">'+(net>0?'+':'')+fmt(net,sym)+'</span></div>';
   }).join('');
   return svg+'<div class="legend'+(n===1?' one':n===2?' two':'')+'">'+legend+'</div>';
+}
+
+/* ---- the settle wheel ----
+   Everyone the money touches sits on a circle; each row underneath is an
+   arrow from payer to payee. Thickness is the amount, teal means paid,
+   grey means still owed, and the head scales with the line. Summary only:
+   every action stays on the rows. Takes the same array renderSettle
+   already builds — {from,to,amt,paid}.                                  */
+function settleWheel(trip,rows){
+  if(!rows||!rows.length) return '';
+  const DONE='#5EEAD4', OPEN='#4A515A';
+  const seen={}; rows.forEach(w=>{ seen[w.from]=1; seen[w.to]=1; });
+  const mem=trip.members.filter(m=>seen[m])
+    .concat(Object.keys(seen).filter(m=>!trip.members.includes(m)));
+  if(mem.length<2) return '';
+  const W=320,H=210,cx=W/2,cy=104,R=70;
+  const at={},pos={};
+  mem.forEach((m,i)=>{ at[m]=i*360/mem.length; pos[m]=_pt(cx,cy,R,at[m]); });
+  const maxAmt=Math.max.apply(null,rows.map(w=>w.amt).concat([1]));
+  let svg='<svg viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" aria-hidden="true">'
+    +'<circle cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="none" stroke="#2C3238" stroke-width="1.2"/>';
+  /* settled routes paint last — a paid arrow should never sit under an
+     outstanding one                                                    */
+  rows.slice().sort((a,b)=>(a.paid?1:0)-(b.paid?1:0)).forEach(w=>{
+    const a=pos[w.from], b=pos[w.to]; if(!a||!b) return;
+    const col=w.paid?DONE:OPEN, sw=2.6+w.amt/maxAmt*8.5, hs=4+sw*1.55;
+    const mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2;
+    const qx=cx+(mx-cx)*0.25, qy=cy+(my-cy)*0.25;
+    const dx=qx-b[0], dy=qy-b[1], dl=Math.hypot(dx,dy)||1, back=12+hs*0.55;
+    const tipX=b[0]+dx/dl*back, tipY=b[1]+dy/dl*back;
+    const stopX=tipX+dx/dl*hs*0.55, stopY=tipY+dy/dl*hs*0.55;
+    svg+='<path d="M'+_n(a[0])+' '+_n(a[1])+'Q'+_n(qx)+' '+_n(qy)+' '+_n(stopX)+' '+_n(stopY)
+      +'" fill="none" stroke="'+col+'" stroke-width="'+_n(sw)+'" stroke-linecap="round"'
+      +' stroke-opacity="'+(w.paid?'.9':'.65')+'"/>';
+    svg+='<path d="'+_head(tipX,tipY,qx,qy,hs)+'" fill="'+col+'" fill-opacity="'+(w.paid?'.95':'.75')+'"/>';
+    const u=0.5, iu=1-u;
+    const lx=iu*iu*a[0]+2*iu*u*qx+u*u*stopX, ly=iu*iu*a[1]+2*iu*u*qy+u*u*stopY;
+    const tx=2*(iu*(qx-a[0])+u*(stopX-qx)), ty=2*(iu*(qy-a[1])+u*(stopY-qy));
+    const tl=Math.hypot(tx,ty)||1, off=14;
+    svg+='<text class="wa" x="'+_n(lx-ty/tl*off)+'" y="'+_n(ly+tx/tl*off+4)+'"'
+      +' text-anchor="middle" fill="'+col+'">'+fmt(w.amt,trip.currency)+'</text>';
+  });
+  mem.forEach(m=>{
+    const [x,y]=pos[m], col=memColor(trip,m);
+    svg+='<circle cx="'+_n(x)+'" cy="'+_n(y)+'" r="10" fill="'+col+'" stroke="#14171B" stroke-width="3"/>';
+    const [nx,ny]=_pt(cx,cy,R+22,at[m]), d=nx-cx;
+    svg+='<text class="wn" x="'+_n(nx)+'" y="'+_n(ny+4)+'" text-anchor="'
+      +(Math.abs(d)<14?'middle':d<0?'end':'start')+'" fill="'+col+'">'+esc(m)+'</text>';
+  });
+  const open=rows.filter(w=>!w.paid).reduce((a,w)=>a+w.amt,0);
+  svg+='<text class="wt" x="10" y="16">'
+    +(open?'STILL TO MOVE '+fmt(open,trip.currency):'ALL SETTLED')+'</text></svg>';
+  return svg;
 }
 
 /* ---- rendering ---- */
@@ -766,7 +815,7 @@ function renderAll(rebuildForm){
 
   $('orbits').hidden=!(hasMembers&&r.count);
   if(hasMembers&&r.count){
-    $('orbits').innerHTML=ringStack(trip,r.people,sym);
+    $('orbits').innerHTML=rose(trip,r.people,sym);
   }
 
   $('offtabLine').hidden=!r.off;
@@ -806,6 +855,8 @@ function renderSettle(trip,exps,r,sym){
   rows.sort((a,b)=> (owedBy[b.from]-owedBy[a.from])
     || a.from.localeCompare(b.from)
     || (b.amt-a.amt));
+  $('settleWheel').hidden=!rows.length;
+  $('settleWheel').innerHTML=rows.length?settleWheel(trip,rows):'';
   let html = (!r.settle.length&&r.count)
     ? '<div class="allsq">✓ All square — this trip is fully settled 🎉</div>' : '';
   html+=rows.map(w=>{
