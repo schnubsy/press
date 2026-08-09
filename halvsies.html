@@ -133,20 +133,27 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 /* rings — one concentric stack, biggest spender outermost */
 .orbits{display:flex;align-items:stretch;justify-content:center;gap:18px;flex-wrap:wrap;padding:6px 0 2px}
 .orbits svg{flex:none;max-width:100%;height:auto;align-self:center}
-.legend{flex:1 1 190px;min-width:180px;display:flex;flex-direction:column;
-  justify-content:space-between;gap:6px;padding:14px 10px 14px 0}
-.lgr{display:flex;align-items:baseline;gap:7px}
+/* ONE grid for the whole legend rather than each row laying itself out. The
+   amount column is sized by the widest figure across ALL rows, so every amount
+   shares one x-position and the decimal points stack. The two leaders are
+   equal fractions, which parks that column midway between names and percents. */
+.legend{flex:1 1 190px;min-width:180px;display:grid;
+  grid-template-columns:10px max-content 1fr max-content 1fr 52px;
+  align-items:baseline;column-gap:7px;row-gap:6px;
+  align-content:space-between;padding:14px 10px 14px 0}
+.lgr{display:contents}
 /* 3+ rows spread to the ring's height; 1 or 2 sit centred on it instead,
    keeping the same 31px rhythm so two names land in the gaps a three-name
    legend leaves either side of centre.                                    */
-.legend.one{justify-content:center}
-.legend.two{justify-content:center;gap:31px}
+.legend.one{align-content:center}
+.legend.two{align-content:center;row-gap:31px}
 .lgd{width:10px;height:10px;border-radius:50%;flex:none;align-self:center}
 .lgn{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:104px}
 .lead{flex:1;min-width:8px;border-bottom:1px dotted var(--hair);transform:translateY(-4px)}
-.lgs{font-family:var(--mono);font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+.lgs{font-family:var(--mono);font-size:12.5px;color:var(--muted);font-weight:600;
+  white-space:nowrap;text-align:right}
 .lgp{font-family:var(--mono);font-size:13.5px;font-weight:700;white-space:nowrap;
-  flex:0 0 52px;text-align:right}
+  text-align:right}
 .offtab{font-size:11.5px;color:var(--amb);font-weight:700;
   background:var(--amb-soft);border-radius:10px;padding:7px 11px;margin-top:9px}
 .offhead{font-size:10px;opacity:.8;margin-bottom:3px}
