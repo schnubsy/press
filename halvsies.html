@@ -135,11 +135,11 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .orbits svg{flex:none;max-width:100%;height:auto;align-self:center}
 /* ONE grid for the whole legend rather than each row laying itself out. Every
    figure column is max-content — sized by the widest entry across ALL rows — so
-   each set shares one x-position and the decimal points stack. The THREE
+   each set shares one x-position and the decimal points stack. The TWO
    leaders are equal fractions, so whatever space is left over is split evenly
-   between name / spend / percent / net rather than pooling at one gap.      */
+   between name / spend / net rather than pooling at one gap.               */
 .legend{flex:1 1 190px;min-width:180px;display:grid;
-  grid-template-columns:9px minmax(0,max-content) 1fr max-content 1fr max-content 1fr max-content;
+  grid-template-columns:9px minmax(0,max-content) 1fr max-content 1fr max-content;
   align-items:baseline;column-gap:6px;row-gap:6px;
   align-content:space-between;padding:14px 8px 14px 0}
 .lgr{display:contents}
@@ -153,8 +153,6 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .lead{flex:1;min-width:6px;border-bottom:1px dotted var(--hair);transform:translateY(-3px)}
 .lgs{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:600;
   white-space:nowrap;text-align:right}
-.lgp{font-family:var(--mono);font-size:12px;font-weight:700;white-space:nowrap;
-  text-align:right}
 /* net position, sized by the widest figure across all rows like the spend
    column, so its decimals stack too. Right-aligned, so the sign hangs left. */
 .lgb{font-family:var(--mono);font-size:11px;font-weight:700;white-space:nowrap;
@@ -644,9 +642,9 @@ function compute(trip,exps){
    petal reaches is what that person paid, scaled so the biggest spender
    touches the rim. The dashed circle is the fair share: a petal short of
    it is money owed, a petal past it is money owed back.
-   The legend markup is byte-identical to the ring stack's, so the eight
-   column .legend grid, its three leaders, the net column and the
-   .one / .two centring all keep working untouched.                       */
+   The legend keeps the same shape it has always had, so the six column
+   .legend grid, its two leaders, the net column and the .one / .two
+   centring all keep working untouched.                                   */
 function _pt(cx,cy,r,a){ const t=(a-90)*Math.PI/180; return [cx+r*Math.cos(t),cy+r*Math.sin(t)]; }
 function _n(v){ return (+v).toFixed(2); }
 function _sector(cx,cy,r0,r1,a0,a1){
@@ -656,20 +654,11 @@ function _sector(cx,cy,r0,r1,a0,a1){
   return 'M'+_n(x0)+' '+_n(y0)+'A'+_n(r1)+' '+_n(r1)+' 0 '+L+' 1 '+_n(x1)+' '+_n(y1)
     +'L'+_n(x2)+' '+_n(y2)+'A'+_n(r0)+' '+_n(r0)+' 0 '+L+' 0 '+_n(x3)+' '+_n(y3)+'Z';
 }
-/* an arrowhead struck back from the tip along the line's own direction, so
-   a $2 arrow and a $30 arrow are the same shape at different sizes.      */
-function _head(x,y,fx,fy,s){
-  const a=Math.atan2(y-fy,x-fx);
-  return 'M'+_n(x)+' '+_n(y)
-    +'L'+_n(x-s*Math.cos(a-0.42))+' '+_n(y-s*Math.sin(a-0.42))
-    +'L'+_n(x-s*Math.cos(a+0.42))+' '+_n(y-s*Math.sin(a+0.42))+'Z';
-}
 function rose(trip,people,sym){
   const rows=people.slice().sort((a,b)=>b.paid-a.paid);
   const n=rows.length;
-  /* 140, not the 170 the sketch used: the legend now carries a fourth
-     column, and the extra 30px is what keeps names and figures off the
-     ellipsis.                                                          */
+  /* 140, not the 170 the sketch used: the extra 30px is what keeps the
+     legend's names and figures off the ellipsis.                       */
   const S=140, C=S/2, R0=17, R1=S/2-6;
   const maxPaid=Math.max.apply(null,rows.map(p=>Math.max(0,p.paid)).concat([1]));
   const share=n?rows.reduce((a,p)=>a+p.share,0)/n:0;
@@ -678,13 +667,11 @@ function rose(trip,people,sym){
   rows.forEach((p,i)=>{
     const a0=i*360/n+PAD, a1=(i+1)*360/n-PAD, col=memColor(trip,p.m);
     const reach=R0+Math.max(2,Math.max(0,p.paid)*SC);
-    svg+='<path d="'+_sector(C,C,R0,R1,a0,a1)+'" fill="'+col+'" fill-opacity=".09"/>';
     svg+='<path d="'+_sector(C,C,R0,reach,a0,a1)+'" fill="'+col+'"/>';
   });
   svg+='<circle cx="'+C+'" cy="'+C+'" r="'+_n(R0+share*SC)+'" fill="none" stroke="#F2F4F6"'
     +' stroke-width="1.6" stroke-opacity=".9" stroke-dasharray="4 4"/></svg>';
   const legend=rows.map(p=>{
-    const pct=p.share>0?Math.round(p.paid/p.share*100):0;
     /* same E ledger as the petals: what they put in minus their fair share */
     const net=p.net||0;
     const col=memColor(trip,p.m);
@@ -692,8 +679,6 @@ function rose(trip,people,sym){
       +'<span class="lgn" style="color:'+col+'">'+esc(p.m)+'</span>'
       +'<span class="lead"></span>'
       +'<span class="lgs">'+fmt(p.paid,sym)+'</span>'
-      +'<span class="lead"></span>'
-      +'<span class="lgp">'+pct+'%</span>'
       +'<span class="lead"></span>'
       +'<span class="lgb '+(net>0?'up':net<0?'dn':'ev')+'">'+(net>0?'+':'')+fmt(net,sym)+'</span></div>';
   }).join('');
@@ -708,47 +693,57 @@ function rose(trip,people,sym){
    already builds — {from,to,amt,paid}.                                  */
 function settleWheel(trip,rows){
   if(!rows||!rows.length) return '';
-  const DONE='#5EEAD4', OPEN='#4A515A';
+  /* one weight for every route: the amount is written on the line, so the
+     stroke doesn't need to say it twice.                                  */
+  const OPEN='#5A626C', DONE='#5EEAD4', OPEN_T='#9AA3AD';
   const seen={}; rows.forEach(w=>{ seen[w.from]=1; seen[w.to]=1; });
   const mem=trip.members.filter(m=>seen[m])
     .concat(Object.keys(seen).filter(m=>!trip.members.includes(m)));
   if(mem.length<2) return '';
-  const W=320,H=210,cx=W/2,cy=104,R=70;
+  const W=320,H=226,cx=W/2,cy=104,R=70;
+  const SW=3.2, HS=10, HW=5.2, DOT=10;      // stroke, head length, half-width, dot radius
   const at={},pos={};
   mem.forEach((m,i)=>{ at[m]=i*360/mem.length; pos[m]=_pt(cx,cy,R,at[m]); });
-  const maxAmt=Math.max.apply(null,rows.map(w=>w.amt).concat([1]));
   let svg='<svg viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" aria-hidden="true">'
     +'<circle cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="none" stroke="#2C3238" stroke-width="1.2"/>';
-  /* settled routes paint last — a paid arrow should never sit under an
-     outstanding one                                                    */
+  /* settled routes paint last so a paid arrow is never buried under an open one */
   rows.slice().sort((a,b)=>(a.paid?1:0)-(b.paid?1:0)).forEach(w=>{
     const a=pos[w.from], b=pos[w.to]; if(!a||!b) return;
-    const col=w.paid?DONE:OPEN, sw=2.6+w.amt/maxAmt*8.5, hs=4+sw*1.55;
+    const col=w.paid?DONE:OPEN;
     const mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2;
-    const qx=cx+(mx-cx)*0.25, qy=cy+(my-cy)*0.25;
-    const dx=qx-b[0], dy=qy-b[1], dl=Math.hypot(dx,dy)||1, back=12+hs*0.55;
-    const tipX=b[0]+dx/dl*back, tipY=b[1]+dy/dl*back;
-    const stopX=tipX+dx/dl*hs*0.55, stopY=tipY+dy/dl*hs*0.55;
-    svg+='<path d="M'+_n(a[0])+' '+_n(a[1])+'Q'+_n(qx)+' '+_n(qy)+' '+_n(stopX)+' '+_n(stopY)
-      +'" fill="none" stroke="'+col+'" stroke-width="'+_n(sw)+'" stroke-linecap="round"'
-      +' stroke-opacity="'+(w.paid?'.9':'.65')+'"/>';
-    svg+='<path d="'+_head(tipX,tipY,qx,qy,hs)+'" fill="'+col+'" fill-opacity="'+(w.paid?'.95':'.75')+'"/>';
-    const u=0.5, iu=1-u;
-    const lx=iu*iu*a[0]+2*iu*u*qx+u*u*stopX, ly=iu*iu*a[1]+2*iu*u*qy+u*u*stopY;
-    const tx=2*(iu*(qx-a[0])+u*(stopX-qx)), ty=2*(iu*(qy-a[1])+u*(stopY-qy));
-    const tl=Math.hypot(tx,ty)||1, off=14;
-    svg+='<text class="wa" x="'+_n(lx-ty/tl*off)+'" y="'+_n(ly+tx/tl*off+4)+'"'
-      +' text-anchor="middle" fill="'+col+'">'+fmt(w.amt,trip.currency)+'</text>';
+    const qx=cx+(mx-cx)*0.25, qy=cy+(my-cy)*0.25;   // bow toward the middle
+    /* the shaft ends where the head begins: walk back from the payee's dot
+       along the curve's own direction, then aim the head down that same
+       vector. Nothing floats.                                            */
+    let dx=b[0]-qx, dy=b[1]-qy, dl=Math.hypot(dx,dy)||1; dx/=dl; dy/=dl;
+    const bx=b[0]-dx*(DOT+3+HS), by=b[1]-dy*(DOT+3+HS);
+    let ex=bx-qx, ey=by-qy, el=Math.hypot(ex,ey)||1; ex/=el; ey/=el;
+    const tipX=bx+ex*HS, tipY=by+ey*HS, px=-ey, py=ex;
+    svg+='<path d="M'+_n(a[0])+' '+_n(a[1])+'Q'+_n(qx)+' '+_n(qy)+' '+_n(bx)+' '+_n(by)
+      +'" fill="none" stroke="'+col+'" stroke-width="'+SW+'" stroke-linecap="round"'
+      +' stroke-opacity="'+(w.paid?'.95':'.7')+'"/>';
+    svg+='<path d="M'+_n(tipX)+' '+_n(tipY)
+      +'L'+_n(bx+px*HW)+' '+_n(by+py*HW)
+      +'L'+_n(bx-px*HW)+' '+_n(by-py*HW)+'Z" fill="'+col+'"'
+      +' fill-opacity="'+(w.paid?'.95':'.7')+'"/>';
+    /* the amount rides its own curve near the receiving end — two routes out
+       of the same person separate because their destinations do.          */
+    const t=0.62, it=1-t;
+    const lx=it*it*a[0]+2*it*t*qx+t*t*bx, ly=it*it*a[1]+2*it*t*qy+t*t*by;
+    let tx=2*(it*(qx-a[0])+t*(bx-qx)), ty=2*(it*(qy-a[1])+t*(by-qy));
+    const tl=Math.hypot(tx,ty)||1;
+    svg+='<text class="wa" x="'+_n(lx-ty/tl*13)+'" y="'+_n(ly+tx/tl*13+4)+'"'
+      +' text-anchor="middle" fill="'+(w.paid?DONE:OPEN_T)+'">'+fmt(w.amt,trip.currency)+'</text>';
   });
   mem.forEach(m=>{
     const [x,y]=pos[m], col=memColor(trip,m);
-    svg+='<circle cx="'+_n(x)+'" cy="'+_n(y)+'" r="10" fill="'+col+'" stroke="#14171B" stroke-width="3"/>';
+    svg+='<circle cx="'+_n(x)+'" cy="'+_n(y)+'" r="'+DOT+'" fill="'+col+'" stroke="#14171B" stroke-width="3"/>';
     const [nx,ny]=_pt(cx,cy,R+22,at[m]), d=nx-cx;
     svg+='<text class="wn" x="'+_n(nx)+'" y="'+_n(ny+4)+'" text-anchor="'
       +(Math.abs(d)<14?'middle':d<0?'end':'start')+'" fill="'+col+'">'+esc(m)+'</text>';
   });
   const open=rows.filter(w=>!w.paid).reduce((a,w)=>a+w.amt,0);
-  svg+='<text class="wt" x="10" y="16">'
+  svg+='<text class="wt" x="10" y="'+(H-6)+'">'
     +(open?'STILL TO MOVE '+fmt(open,trip.currency):'ALL SETTLED')+'</text></svg>';
   return svg;
 }
