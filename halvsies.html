@@ -130,36 +130,16 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .ex{border:1px solid rgba(255,255,255,.10)}
 .needmembers button{color:var(--vio);font-weight:800;font-size:13px;text-decoration:underline}
 
-/* rings — one concentric stack, biggest spender outermost */
+/* the rose — equal wedges, petal reach is spend, labels ride the rim */
 .orbits{display:flex;align-items:stretch;justify-content:center;gap:18px;flex-wrap:wrap;padding:6px 0 2px}
-.orbits svg{flex:none;max-width:100%;height:auto;align-self:center}
-/* ONE grid for the whole legend rather than each row laying itself out. Every
-   figure column is max-content — sized by the widest entry across ALL rows — so
-   each set shares one x-position and the decimal points stack. The TWO
-   leaders are equal fractions, so whatever space is left over is split evenly
-   between name / spend / net rather than pooling at one gap.               */
-.legend{flex:1 1 190px;min-width:180px;display:grid;
-  grid-template-columns:9px minmax(0,max-content) 1fr max-content 1fr max-content;
-  align-items:baseline;column-gap:6px;row-gap:6px;
-  align-content:space-between;padding:14px 8px 14px 0}
-.lgr{display:contents}
-/* 3+ rows spread to the ring's height; 1 or 2 sit centred on it instead,
-   keeping the same 31px rhythm so two names land in the gaps a three-name
-   legend leaves either side of centre.                                    */
-.legend.one{align-content:center}
-.legend.two{align-content:center;row-gap:31px}
-.lgd{width:9px;height:9px;border-radius:50%;flex:none;align-self:center}
-.lgn{font-weight:700;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;min-width:0}
-.lead{flex:1;min-width:6px;border-bottom:1px dotted var(--hair);transform:translateY(-3px)}
-.lgs{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:600;
-  white-space:nowrap;text-align:right}
-/* net position, sized by the widest figure across all rows like the spend
-   column, so its decimals stack too. Right-aligned, so the sign hangs left. */
-.lgb{font-family:var(--mono);font-size:11px;font-weight:700;white-space:nowrap;
-  text-align:right}
-.lgb.up{color:var(--st-ink)}
-.lgb.dn{color:var(--red)}
-.lgb.ev{color:var(--faint)}
+.orbits svg{flex:1 1 auto;max-width:100%;height:auto;align-self:center}
+/* the rose's own labels — no legend table any more, position does the
+   connecting. Same sans/mono pairing as the rest of the card.            */
+.orbits .rn{font-size:16px;font-weight:700}
+.orbits .rv{font-size:13px;fill:var(--muted);font-family:var(--mono)}
+.orbits .rd{font-size:13px;font-weight:700;font-family:var(--mono)}
+.orbits .rt{font-size:15px;font-weight:700;fill:var(--ink);font-family:var(--mono)}
+.orbits .rc{font-size:8px;fill:var(--faint);letter-spacing:.14em}
 .offtab{font-size:11.5px;color:var(--amb);font-weight:700;
   background:var(--amb-soft);border-radius:10px;padding:7px 11px;margin-top:9px}
 .offhead{font-size:10px;opacity:.8;margin-bottom:3px}
@@ -639,50 +619,70 @@ function compute(trip,exps){
 /* ---- the rose ----
    Everyone gets an equal wedge of the circle — that IS the even split, and
    it no longer depends on how many people are on the trip. How far the
-   petal reaches is what that person paid, scaled so the biggest spender
-   touches the rim. The dashed circle is the fair share: a petal short of
-   it is money owed, a petal past it is money owed back.
-   The legend keeps the same shape it has always had, so the six column
-   .legend grid, its two leaders, the net column and the .one / .two
-   centring all keep working untouched.                                   */
+   petal reaches is what that person paid; the dashed circle is the fair
+   share, so a petal short of it is money owed and a petal past it is money
+   owed back. The hub carries the trip total, and each member's name, spend
+   and ± sit at the rim on that member's own wedge axis — position does the
+   connecting, so there is no legend table underneath.                    */
 function _pt(cx,cy,r,a){ const t=(a-90)*Math.PI/180; return [cx+r*Math.cos(t),cy+r*Math.sin(t)]; }
 function _n(v){ return (+v).toFixed(2); }
-function _sector(cx,cy,r0,r1,a0,a1){
-  const [x0,y0]=_pt(cx,cy,r1,a0), [x1,y1]=_pt(cx,cy,r1,a1);
-  const [x2,y2]=_pt(cx,cy,r0,a1), [x3,y3]=_pt(cx,cy,r0,a0);
-  const L=(a1-a0)>180?1:0;
-  return 'M'+_n(x0)+' '+_n(y0)+'A'+_n(r1)+' '+_n(r1)+' 0 '+L+' 1 '+_n(x1)+' '+_n(y1)
-    +'L'+_n(x2)+' '+_n(y2)+'A'+_n(r0)+' '+_n(r0)+' 0 '+L+' 0 '+_n(x3)+' '+_n(y3)+'Z';
-}
 function rose(trip,people,sym){
-  const rows=people.slice().sort((a,b)=>b.paid-a.paid);
-  const n=rows.length;
-  /* 140, not the 170 the sketch used: the extra 30px is what keeps the
-     legend's names and figures off the ellipsis.                       */
-  const S=140, C=S/2, R0=17, R1=S/2-6;
+  const rows=people.slice().sort((a,b)=>b.paid-a.paid), n=rows.length;
+  if(!n) return '';
+  /* one viewBox, scaled to whatever width the card gives it */
+  const S=384,C=S/2,HUB=40,R0=HUB+7,MIN=6,GAP=5;
   const maxPaid=Math.max.apply(null,rows.map(p=>Math.max(0,p.paid)).concat([1]));
-  const share=n?rows.reduce((a,p)=>a+p.share,0)/n:0;
-  const SC=(R1-R0)/maxPaid, PAD=n>1?1.6:0;
-  let svg='<svg width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'" aria-hidden="true">';
-  rows.forEach((p,i)=>{
-    const a0=i*360/n+PAD, a1=(i+1)*360/n-PAD, col=memColor(trip,p.m);
-    const reach=R0+Math.max(2,Math.max(0,p.paid)*SC);
-    svg+='<path d="'+_sector(C,C,R0,reach,a0,a1)+'" fill="'+col+'"/>';
+  const share=rows.reduce((a,p)=>a+p.share,0)/n;
+  const total=rows.reduce((a,p)=>a+p.paid,0);
+  /* the pair of mono numbers is padded to a common character count, so their
+     decimal points sit on the same vertical                                  */
+  const lab=rows.map((p,i)=>{
+    const amt=fmt(p.paid,sym), d=p.paid-p.share;
+    const del=(d>0?'+':d<0?'\u2212':'')+fmt(Math.abs(d),sym);
+    const w=Math.max(amt.length,del.length), pad=t=>'\u00A0'.repeat(w-t.length)+t;
+    return {amt:pad(amt),del:pad(del),d:d,mid:(i+0.5)*360/n};
   });
-  svg+='<circle cx="'+C+'" cy="'+C+'" r="'+_n(R0+share*SC)+'" fill="none" stroke="#F2F4F6"'
-    +' stroke-width="1.6" stroke-opacity=".9" stroke-dasharray="4 4"/></svg>';
-  const legend=rows.map(p=>{
-    /* same E ledger as the petals: what they put in minus their fair share */
-    const net=p.net||0;
-    const col=memColor(trip,p.m);
-    return '<div class="lgr"><span class="lgd" style="background:'+col+'"></span>'
-      +'<span class="lgn" style="color:'+col+'">'+esc(p.m)+'</span>'
-      +'<span class="lead"></span>'
-      +'<span class="lgs">'+fmt(p.paid,sym)+'</span>'
-      +'<span class="lead"></span>'
-      +'<span class="lgb '+(net>0?'up':net<0?'dn':'ev')+'">'+(net>0?'+':'')+fmt(net,sym)+'</span></div>';
-  }).join('');
-  return svg+'<div class="legend'+(n===1?' one':n===2?' two':'')+'">'+legend+'</div>';
+  /* labels hang outside the rim on their own wedge axis, so a very wide figure
+     — a long name, or a currency with no minor unit — pulls the rim IN rather
+     than getting clipped by the viewBox. Short labels leave the rose full size. */
+  let R1=C-70;
+  lab.forEach((l,i)=>{
+    const wid=Math.max(rows[i].m.length*9.0,l.amt.length*7.9);
+    const k=Math.abs(Math.cos((l.mid-90)*Math.PI/180));
+    if(k>0.08) R1=Math.min(R1,(C-wid-4)/k-15);
+  });
+  R1=Math.max(R1,HUB+30);
+  const SC=(R1-R0-MIN)/maxPaid, rFair=R0+MIN+share*SC;
+  /* the gap is in pixels, so the angular padding shrinks as the radius grows and
+     the sides of the channel stay parallel                                      */
+  const gp=r=>GAP/2/Math.max(r,1)*180/Math.PI;
+  const petal=(r0,r1,a0,a1)=>{
+    const p0=gp(r0),p1=gp(r1);
+    const A=_pt(C,C,r1,a0+p1),B=_pt(C,C,r1,a1-p1),D=_pt(C,C,r0,a1-p0),E=_pt(C,C,r0,a0+p0);
+    return 'M'+_n(A[0])+' '+_n(A[1])+'A'+_n(r1)+' '+_n(r1)+' 0 0 1 '+_n(B[0])+' '+_n(B[1])
+      +'L'+_n(D[0])+' '+_n(D[1])+'A'+_n(r0)+' '+_n(r0)+' 0 0 0 '+_n(E[0])+' '+_n(E[1])+'Z';
+  };
+  let svg='<svg viewBox="0 0 '+S+' '+S+'" width="100%" style="max-width:'+S+'px;display:block;margin:0 auto" aria-hidden="true">';
+  let labels='';
+  rows.forEach((p,i)=>{
+    const a0=i*360/n, a1=(i+1)*360/n, mid=(i+0.5)*360/n, col=memColor(trip,p.m);
+    const reach=R0+MIN+Math.max(0,p.paid)*SC;
+    svg+='<path d="'+petal(R0,reach,a0,a1)+'" fill="'+col+'" fill-opacity=".16"/>';
+    svg+='<path d="'+petal(Math.max(R0,reach-7),reach,a0,a1)+'" fill="'+col+'"/>';
+    const l=lab[i];
+    const L=_pt(C,C,R1+15,mid), dx=L[0]-C;
+    const an=Math.abs(dx)<20?'middle':dx<0?'end':'start';
+    labels+='<text class="rn" x="'+_n(L[0])+'" y="'+_n(L[1])+'" text-anchor="'+an+'" fill="'+col+'">'+esc(p.m)+'</text>'
+      +'<text class="rv" x="'+_n(L[0])+'" y="'+_n(L[1]+19)+'" text-anchor="'+an+'">'+l.amt+'</text>'
+      +'<text class="rd" x="'+_n(L[0])+'" y="'+_n(L[1]+35)+'" text-anchor="'+an+'" fill="'+(l.d>=0?'#5EEAD4':'#F87171')+'">'+l.del+'</text>';
+  });
+  /* fair share and hub paint last so they read on top of every petal */
+  svg+='<circle cx="'+C+'" cy="'+C+'" r="'+_n(rFair)+'" fill="none" stroke="#F2F4F6"'
+    +' stroke-width="1.5" stroke-opacity=".6" stroke-dasharray="4 4"/>'
+    +'<circle cx="'+C+'" cy="'+C+'" r="'+HUB+'" fill="#0E1114" fill-opacity=".95" stroke="#2C3238" stroke-width="1"/>'
+    +'<text class="rt" x="'+C+'" y="'+(C+1)+'" text-anchor="middle">'+fmt(total,sym)+'</text>'
+    +'<text class="rc" x="'+C+'" y="'+(C+17)+'" text-anchor="middle">ON THE TAB</text>';
+  return svg+labels+'</svg>';
 }
 
 /* ---- the settle wheel ----
