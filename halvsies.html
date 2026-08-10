@@ -113,15 +113,14 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .editbtn{font-size:10.5px;font-weight:700;color:var(--muted);background:var(--soft);border-radius:99px;padding:6px 12px;flex:none}
 .editbtn:active{background:var(--line)}
 
-/* the tab */
-.totC{text-align:center;margin:10px 0 12px}
-.bigrow{display:flex;align-items:baseline;justify-content:center;gap:8px;flex-wrap:wrap}
+/* the tab — the headline total now lives in the hub of the rose, so this
+   block is just the per-head figure and the count, sitting under the chart */
+.totC{text-align:center;margin:2px 0 0}
 .totC b{font-family:var(--mono);font-size:clamp(24px,7.2vw,30px);font-weight:700;letter-spacing:-.03em;line-height:1}
 /* the "total spend" / "each" labels are <i> too, and their rules outrank a bare
    .sep — which shrank the comma to 12px muted grey. This has to win.        */
 .totC b i.sep{font-family:var(--font);font-style:normal;font-weight:700;font-size:.9em;
   color:inherit;letter-spacing:0;margin:0 .02em;vertical-align:.03em}
-.totC .bigrow i{font-style:normal;font-size:12px;color:var(--muted);font-weight:700}
 .totC span{display:block;font-size:10.5px;color:var(--muted);font-weight:600;margin-top:4px}
 .totC .fair{display:flex;align-items:baseline;justify-content:center;gap:6px;margin-top:5px;font-size:12px;font-weight:700}
 .totC .fair b{font-family:var(--mono);font-size:17px;color:var(--vio);font-weight:700;letter-spacing:-.02em}
@@ -131,8 +130,8 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .needmembers button{color:var(--vio);font-weight:800;font-size:13px;text-decoration:underline}
 
 /* the rose — equal wedges, petal reach is spend, labels ride the rim */
-.orbits{display:flex;align-items:stretch;justify-content:center;gap:18px;flex-wrap:wrap;padding:6px 0 2px}
-.orbits svg{flex:1 1 auto;max-width:100%;height:auto;align-self:center}
+.orbits{display:block;padding:0}
+.orbits svg{display:block;width:100%;height:auto}
 /* the rose's own labels — no legend table any more, position does the
    connecting. Same sans/mono pairing as the rest of the card.            */
 .orbits .rn{font-size:16px;font-weight:700}
@@ -338,12 +337,11 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
       <h2 class="h2">the tab <em id="forTrip0"></em></h2>
       <button class="editbtn" id="editTripBtn">Edit</button>
     </div>
-    <div class="totC"><div class="bigrow"><b id="totalAmt">$0.00</b><i>total spend</i></div>
-      <div class="fair" id="fairLbl"></div><span id="totalLbl"></span></div>
     <div id="needMembers" class="needmembers" hidden>
       No members yet — <button id="addMembersBtn">add everyone going</button> to start.
     </div>
     <div class="orbits" id="orbits" hidden></div>
+    <div class="totC"><div class="fair" id="fairLbl"></div><span id="totalLbl"></span></div>
     <div class="offtab" id="offtabLine" hidden></div>
   </section>
 
@@ -629,7 +627,7 @@ function _n(v){ return (+v).toFixed(2); }
 function rose(trip,people,sym){
   const rows=people.slice().sort((a,b)=>b.paid-a.paid), n=rows.length;
   if(!n) return '';
-  /* one viewBox, scaled to whatever width the card gives it */
+  /* laid out on a 384 grid, then cropped to the drawing's own bounds */
   const S=384,C=S/2,HUB=40,R0=HUB+7,MIN=6,GAP=5;
   const maxPaid=Math.max.apply(null,rows.map(p=>Math.max(0,p.paid)).concat([1]));
   const share=rows.reduce((a,p)=>a+p.share,0)/n;
@@ -640,16 +638,16 @@ function rose(trip,people,sym){
     const amt=fmt(p.paid,sym), d=p.paid-p.share;
     const del=(d>0?'+':d<0?'\u2212':'')+fmt(Math.abs(d),sym);
     const w=Math.max(amt.length,del.length), pad=t=>'\u00A0'.repeat(w-t.length)+t;
-    return {amt:pad(amt),del:pad(del),d:d,mid:(i+0.5)*360/n};
+    return {amt:pad(amt),del:pad(del),d:d,mid:(i+0.5)*360/n,
+      w:Math.max(p.m.length*9.0,Math.max(amt.length,del.length)*7.9)};
   });
   /* labels hang outside the rim on their own wedge axis, so a very wide figure
      — a long name, or a currency with no minor unit — pulls the rim IN rather
      than getting clipped by the viewBox. Short labels leave the rose full size. */
-  let R1=C-70;
+  let R1=C-56;
   lab.forEach((l,i)=>{
-    const wid=Math.max(rows[i].m.length*9.0,l.amt.length*7.9);
     const k=Math.abs(Math.cos((l.mid-90)*Math.PI/180));
-    if(k>0.08) R1=Math.min(R1,(C-wid-4)/k-15);
+    if(k>0.08) R1=Math.min(R1,(C-l.w-4)/k-15);
   });
   R1=Math.max(R1,HUB+30);
   const SC=(R1-R0-MIN)/maxPaid, rFair=R0+MIN+share*SC;
@@ -662,27 +660,35 @@ function rose(trip,people,sym){
     return 'M'+_n(A[0])+' '+_n(A[1])+'A'+_n(r1)+' '+_n(r1)+' 0 0 1 '+_n(B[0])+' '+_n(B[1])
       +'L'+_n(D[0])+' '+_n(D[1])+'A'+_n(r0)+' '+_n(r0)+' 0 0 0 '+_n(E[0])+' '+_n(E[1])+'Z';
   };
-  let svg='<svg viewBox="0 0 '+S+' '+S+'" width="100%" style="max-width:'+S+'px;display:block;margin:0 auto" aria-hidden="true">';
-  let labels='';
+  /* the drawing is cropped to its own bounds rather than sitting in a fixed
+     square, so the card gives the rose every pixel it has and no empty band
+     is left where a wedge happens not to reach.                            */
+  let x0=C-R1, x1=C+R1, y0=C-R1, y1=C+R1;
+  let body='', labels='';
   rows.forEach((p,i)=>{
     const a0=i*360/n, a1=(i+1)*360/n, mid=(i+0.5)*360/n, col=memColor(trip,p.m);
     const reach=R0+MIN+Math.max(0,p.paid)*SC;
-    svg+='<path d="'+petal(R0,reach,a0,a1)+'" fill="'+col+'" fill-opacity=".16"/>';
-    svg+='<path d="'+petal(Math.max(R0,reach-7),reach,a0,a1)+'" fill="'+col+'"/>';
+    body+='<path d="'+petal(R0,reach,a0,a1)+'" fill="'+col+'" fill-opacity=".16"/>';
+    body+='<path d="'+petal(Math.max(R0,reach-7),reach,a0,a1)+'" fill="'+col+'"/>';
     const l=lab[i];
     const L=_pt(C,C,R1+15,mid), dx=L[0]-C;
     const an=Math.abs(dx)<20?'middle':dx<0?'end':'start';
+    const lx=an==='middle'?L[0]-l.w/2:an==='end'?L[0]-l.w:L[0];
+    x0=Math.min(x0,lx); x1=Math.max(x1,lx+l.w);
+    y0=Math.min(y0,L[1]-16); y1=Math.max(y1,L[1]+39);
     labels+='<text class="rn" x="'+_n(L[0])+'" y="'+_n(L[1])+'" text-anchor="'+an+'" fill="'+col+'">'+esc(p.m)+'</text>'
       +'<text class="rv" x="'+_n(L[0])+'" y="'+_n(L[1]+19)+'" text-anchor="'+an+'">'+l.amt+'</text>'
       +'<text class="rd" x="'+_n(L[0])+'" y="'+_n(L[1]+35)+'" text-anchor="'+an+'" fill="'+(l.d>=0?'#5EEAD4':'#F87171')+'">'+l.del+'</text>';
   });
   /* fair share and hub paint last so they read on top of every petal */
-  svg+='<circle cx="'+C+'" cy="'+C+'" r="'+_n(rFair)+'" fill="none" stroke="#F2F4F6"'
+  body+='<circle cx="'+C+'" cy="'+C+'" r="'+_n(rFair)+'" fill="none" stroke="#F2F4F6"'
     +' stroke-width="1.5" stroke-opacity=".6" stroke-dasharray="4 4"/>'
     +'<circle cx="'+C+'" cy="'+C+'" r="'+HUB+'" fill="#0E1114" fill-opacity=".95" stroke="#2C3238" stroke-width="1"/>'
     +'<text class="rt" x="'+C+'" y="'+(C+1)+'" text-anchor="middle">'+fmt(total,sym)+'</text>'
     +'<text class="rc" x="'+C+'" y="'+(C+17)+'" text-anchor="middle">ON THE TAB</text>';
-  return svg+labels+'</svg>';
+  const P=3;
+  return '<svg viewBox="'+_n(x0-P)+' '+_n(y0-P)+' '+_n(x1-x0+2*P)+' '+_n(y1-y0+2*P)+'"'
+    +' width="100%" style="display:block" aria-hidden="true">'+body+labels+'</svg>';
 }
 
 /* ---- the settle wheel ----
@@ -797,7 +803,6 @@ function renderAll(rebuildForm){
   const r=compute(trip,exps);
   const sym=trip.currency;
 
-  $('totalAmt').innerHTML=fmtBig(r.total,sym);
   $('fairLbl').innerHTML=!r.count?''
     :'<b>'+fmtBig(r.fair,sym)+'</b><i>each'+(r.custom?' on average':'')+'</i>';
   $('totalLbl').textContent=r.count
