@@ -127,11 +127,12 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 /* the rose's own labels — no legend table any more, position does the
    connecting. Size is set per render so the type can step down when a
    crowded trip would otherwise collide; these only carry face and colour. */
-/* a dark stroke painted behind the fill — a halo, not a plate, so the text
-   can sit straight on top of a petal and still read.                      */
+/* two shadows carry the labels over a bright petal: the tight one gives the
+   letterforms an edge, the wide diffuse one darkens the petal behind them.
+   No stroke, so nothing reads as a drawn outline.                         */
 .orbits .rn,.orbits .rv,.orbits .rd,.orbits .rt,.orbits .rk{
-  paint-order:stroke fill;stroke:#0E1114;stroke-width:3.5px;
-  stroke-linejoin:round;stroke-opacity:.92}
+  filter:drop-shadow(0 1px 1px rgba(14,17,20,.55))
+         drop-shadow(0 0 6px rgba(14,17,20,.85))}
 .orbits .rn{font-weight:700}
 .orbits .rv{fill:var(--muted);font-family:var(--mono)}
 .orbits .rd{font-weight:700;font-family:var(--mono)}
@@ -144,41 +145,26 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .offrow .odot{width:7px;height:7px;border-radius:50%;flex:none}
 .offrow b{margin-left:auto;font-family:var(--mono)}
 
-/* the settle wheel — a summary of the rows below it, nothing more */
-.swheel{display:flex;justify-content:center;padding:2px 0 4px}
-.swheel svg{width:100%;max-width:320px;height:auto}
-.swheel .wn{font-family:var(--font);font-size:12px;font-weight:700}
-.swheel .wa{font-family:var(--mono);font-size:10.5px;font-weight:700}
-.swheel .wt{font-family:var(--mono);font-size:10px;font-weight:700;fill:var(--faint);letter-spacing:.06em}
-
-/* settle */
-.prog{display:flex;align-items:center;gap:9px;margin:9px 0 11px}
-.prog .bar{flex:1;height:7px;border-radius:99px;background:var(--soft);overflow:hidden}
-.prog .bar i{display:block;height:100%;background:var(--st);border-radius:99px;transition:width .3s}
-.prog .lbl{font-size:11px;font-weight:700;color:var(--st-ink);white-space:nowrap}
-.prog .lbl small{color:var(--muted);font-weight:600;font-size:10px}
-/* settle rows — names centred over fixed columns, bow spans the card, the
-   amount rides the middle of the line, the action sits quietly beneath.     */
-.hsA{display:grid;grid-template-columns:74px 1fr 74px;align-items:end;
-  column-gap:10px;row-gap:0;padding:8px 0 9px;border-bottom:1px solid var(--line)}
-.hsA:last-child{border-bottom:none;padding-bottom:2px}
-.hsA .who1,.hsA .who2{font-weight:700;font-size:13px;text-align:center;line-height:18px;
-  transform:translateY(3px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.arch{position:relative;height:30px;min-width:0;display:flex;align-items:center;gap:7px}
-.arch svg{flex:1;min-width:0;height:30px;overflow:visible}
-.arch .amt{flex:none;font-family:var(--mono);font-weight:700;font-size:12.5px;
-  white-space:nowrap;line-height:1.2;color:var(--ink)}
-.hsA.done .arch .amt{color:var(--st-ink)}
-.hsA.done .arch::after{content:"";position:absolute;right:-1px;bottom:2px;width:8px;height:8px;
-  border-radius:50%;background:var(--st-lite);box-shadow:0 0 0 4px rgba(94,234,212,.15)}
-.hsA .act{grid-column:2;align-self:start;margin-top:-1px;
-  display:flex;align-items:center;justify-content:center;gap:6px}
-.hsA .act .on{font-family:var(--mono);font-size:9px;color:var(--st-ink);opacity:.7}
-.hsA .cta{font-size:9px;font-weight:700;color:var(--muted);background:transparent;
-  border:1px solid var(--line);border-radius:99px;padding:3px 9px;white-space:nowrap}
-.hsA .cta:active{transform:scale(.95);background:var(--soft)}
-.hsA.done .cta{color:var(--st-ink);border-color:rgba(94,234,212,.3)}
-.hsA.done .who1,.hsA.done .who2{opacity:.7}
+/* settle — one flow diagram and nothing else. Payers on the left, receivers
+   on the right, every payment a ribbon with a pill riding it. The pill's
+   travel from one bank to the other is the confirmation, so there is no
+   button, no status line and no progress bar.                             */
+.sfw{position:relative;width:100%;margin:0 auto}
+.sfw svg{display:block;width:100%;height:auto;overflow:visible}
+.sfr{transition:fill .38s cubic-bezier(.4,0,.2,1),fill-opacity .38s cubic-bezier(.4,0,.2,1)}
+.sfn{position:absolute;white-space:nowrap;font-weight:700;font-size:11.5px;line-height:1;
+  pointer-events:none}
+.sfp{position:absolute;appearance:none;cursor:pointer;display:flex;align-items:center;
+  gap:6px;padding:4px 9px;border-radius:99px;background:rgba(14,17,20,.86);
+  border:1px solid;font-family:var(--mono);font-size:10px;font-weight:700;
+  transition:left .38s cubic-bezier(.4,0,.2,1),top .38s cubic-bezier(.4,0,.2,1),
+             border-color .2s,color .2s}
+.sfp:active{filter:brightness(1.25)}
+.sfg{line-height:1;position:relative}
+.sfa{font-size:15px;font-weight:700;animation:sfnudge 1.8s ease-in-out infinite}
+.sfu{font-size:13.5px;font-weight:400;top:-1px}
+@keyframes sfnudge{0%,100%{transform:translateX(0);opacity:.8}
+  50%{transform:translateX(2.5px);opacity:1}}
 .allsq{display:flex;align-items:center;gap:8px;color:var(--st-ink);font-weight:700;font-size:13px;
   background:rgba(13,148,136,.16);border:1px solid rgba(13,148,136,.3);border-radius:12px;padding:11px 13px;margin-bottom:14px}
 .allsq:last-child{margin-bottom:0}
@@ -346,8 +332,6 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   <!-- SETTLE -->
   <section class="card" id="settleCard" hidden>
     <h2 class="h2">to settle up <em id="forTrip3"></em></h2>
-    <div class="swheel" id="settleWheel" hidden></div>
-    <div class="prog" id="progWrap"><div class="bar"><i id="progBar"></i></div><span class="lbl" id="progLbl"></span></div>
     <div id="settleList"></div>
   </section>
 
@@ -742,67 +726,84 @@ function rose(trip,people,sym){
     +body+labels+'</svg>';
 }
 
-/* ---- the settle wheel ----
-   Everyone the money touches sits on a circle; each row underneath is an
-   arrow from payer to payee. Thickness is the amount, teal means paid,
-   grey means still owed, and the head scales with the line. Summary only:
-   every action stays on the rows. Takes the same array renderSettle
-   already builds — {from,to,amt,paid}.                                  */
-function settleWheel(trip,rows){
+/* ---- the settle flow ----
+   Payers on the left, receivers on the right. Each person's bar is that
+   person's total and the ribbons leaving it are its exact slices, so the
+   widths add up at both ends. Every payment carries one pill: owed sits at
+   the payer's end in their colour with a nudging arrow, paid travels to the
+   receiver's end and turns teal with a rewind glyph. Geometry is laid out in
+   a 364x188 frame and placed in percentages, so the whole thing scales to
+   the card with no dead margin. Takes the same array renderSettle already
+   builds - {from,to,amt,paid,id}.                                        */
+function settleFlow(trip,rows,sym){
   if(!rows||!rows.length) return '';
-  /* one weight for every route: the amount is written on the line, so the
-     stroke doesn't need to say it twice.                                  */
-  const OPEN='#5A626C', DONE='#5EEAD4', OPEN_T='#9AA3AD';
-  const seen={}; rows.forEach(w=>{ seen[w.from]=1; seen[w.to]=1; });
-  const mem=trip.members.filter(m=>seen[m])
-    .concat(Object.keys(seen).filter(m=>!trip.members.includes(m)));
-  if(mem.length<2) return '';
-  const W=320,H=226,cx=W/2,cy=104,R=70;
-  const SW=3.2, HS=10, HW=5.2, DOT=10;      // stroke, head length, half-width, dot radius
-  const at={},pos={};
-  mem.forEach((m,i)=>{ at[m]=i*360/mem.length; pos[m]=_pt(cx,cy,R,at[m]); });
-  let svg='<svg viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" aria-hidden="true">'
-    +'<circle cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="none" stroke="#2C3238" stroke-width="1.2"/>';
-  /* settled routes paint last so a paid arrow is never buried under an open one */
-  rows.slice().sort((a,b)=>(a.paid?1:0)-(b.paid?1:0)).forEach(w=>{
-    const a=pos[w.from], b=pos[w.to]; if(!a||!b) return;
-    const col=w.paid?DONE:OPEN;
-    const mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2;
-    const qx=cx+(mx-cx)*0.25, qy=cy+(my-cy)*0.25;   // bow toward the middle
-    /* the shaft ends where the head begins: walk back from the payee's dot
-       along the curve's own direction, then aim the head down that same
-       vector. Nothing floats.                                            */
-    let dx=b[0]-qx, dy=b[1]-qy, dl=Math.hypot(dx,dy)||1; dx/=dl; dy/=dl;
-    const bx=b[0]-dx*(DOT+3+HS), by=b[1]-dy*(DOT+3+HS);
-    let ex=bx-qx, ey=by-qy, el=Math.hypot(ex,ey)||1; ex/=el; ey/=el;
-    const tipX=bx+ex*HS, tipY=by+ey*HS, px=-ey, py=ex;
-    svg+='<path d="M'+_n(a[0])+' '+_n(a[1])+'Q'+_n(qx)+' '+_n(qy)+' '+_n(bx)+' '+_n(by)
-      +'" fill="none" stroke="'+col+'" stroke-width="'+SW+'" stroke-linecap="round"'
-      +' stroke-opacity="'+(w.paid?'.95':'.7')+'"/>';
-    svg+='<path d="M'+_n(tipX)+' '+_n(tipY)
-      +'L'+_n(bx+px*HW)+' '+_n(by+py*HW)
-      +'L'+_n(bx-px*HW)+' '+_n(by-py*HW)+'Z" fill="'+col+'"'
-      +' fill-opacity="'+(w.paid?'.95':'.7')+'"/>';
-    /* the amount rides its own curve near the receiving end — two routes out
-       of the same person separate because their destinations do.          */
-    const t=0.62, it=1-t;
-    const lx=it*it*a[0]+2*it*t*qx+t*t*bx, ly=it*it*a[1]+2*it*t*qy+t*t*by;
-    let tx=2*(it*(qx-a[0])+t*(bx-qx)), ty=2*(it*(qy-a[1])+t*(by-qy));
-    const tl=Math.hypot(tx,ty)||1;
-    svg+='<text class="wa" x="'+_n(lx-ty/tl*13)+'" y="'+_n(ly+tx/tl*13+4)+'"'
-      +' text-anchor="middle" fill="'+(w.paid?DONE:OPEN_T)+'">'+fmt(w.amt,trip.currency)+'</text>';
+  const W=364,H=188,LX=74,RX=290,TOP=14,GAP=12,PILL=26,TEAL='#5EEAD4';
+  const payers=[],payees=[],outT={},inT={};
+  rows.forEach(r=>{
+    if(outT[r.from]==null){outT[r.from]=0;payers.push(r.from);} outT[r.from]+=r.amt;
+    if(inT[r.to]==null){inT[r.to]=0;payees.push(r.to);} inT[r.to]+=r.amt;
   });
-  mem.forEach(m=>{
-    const [x,y]=pos[m], col=memColor(trip,m);
-    svg+='<circle cx="'+_n(x)+'" cy="'+_n(y)+'" r="'+DOT+'" fill="'+col+'" stroke="#14171B" stroke-width="3"/>';
-    const [nx,ny]=_pt(cx,cy,R+22,at[m]), d=nx-cx;
-    svg+='<text class="wn" x="'+_n(nx)+'" y="'+_n(ny+4)+'" text-anchor="'
-      +(Math.abs(d)<14?'middle':d<0?'end':'start')+'" fill="'+col+'">'+esc(m)+'</text>';
+  const grand=rows.reduce((a,r)=>a+r.amt,0)||1;
+  /* each bank's bar is that person's total; the gaps between people are
+     fixed pixels, so the ribbons inside one bar sum to its height exactly */
+  const lS=H-TOP*2-GAP*(payers.length-1), rS=H-TOP*2-GAP*(payees.length-1);
+  const lT={},rT={}; let ac=TOP;
+  payers.forEach(m=>{lT[m]=ac; ac+=outT[m]/grand*lS+GAP;});
+  ac=TOP; payees.forEach(m=>{rT[m]=ac; ac+=inT[m]/grand*rS+GAP;});
+  const lc={},rc={},mx=(LX+RX)/2;
+  const pctX=v=>_n(v/W*100)+'%', pctY=v=>_n(v/H*100)+'%';
+  let svg='<svg viewBox="0 0 '+W+' '+H+'" aria-hidden="true">', names='';
+  payers.forEach(m=>{
+    svg+='<path d="M'+(LX-7)+' '+_n(lT[m])+'h6v'+_n(outT[m]/grand*lS)+'h-6Z" fill="'+memColor(trip,m)+'" fill-opacity=".95"/>';
+    names+='<div class="sfn" style="left:'+pctX(LX-14)+';top:'+pctY(lT[m]+outT[m]/grand*lS/2)+';transform:translate(-100%,-50%);color:'+memColor(trip,m)+'">'+esc(m)+'</div>';
   });
-  const open=rows.filter(w=>!w.paid).reduce((a,w)=>a+w.amt,0);
-  svg+='<text class="wt" x="10" y="'+(H-6)+'">'
-    +(open?'STILL TO MOVE '+fmt(open,trip.currency):'ALL SETTLED')+'</text></svg>';
-  return svg;
+  payees.forEach(m=>{
+    svg+='<path d="M'+(RX+1)+' '+_n(rT[m])+'h6v'+_n(inT[m]/grand*rS)+'h-6Z" fill="'+memColor(trip,m)+'" fill-opacity=".95"/>';
+    names+='<div class="sfn" style="left:'+pctX(RX+14)+';top:'+pctY(rT[m]+inT[m]/grand*rS/2)+';transform:translateY(-50%);color:'+memColor(trip,m)+'">'+esc(m)+'</div>';
+  });
+  const seat=[];
+  rows.forEach((r,i)=>{
+    const th=r.amt/grand*lS, th2=r.amt/grand*rS;
+    const y0=lT[r.from]+(lc[r.from]=(lc[r.from]||0)); lc[r.from]+=th;
+    const y1=rT[r.to]+(rc[r.to]=(rc[r.to]||0)); rc[r.to]+=th2;
+    svg+='<path class="sfr" id="sfr'+i+'" d="M'+LX+' '+_n(y0)+'C'+_n(mx)+' '+_n(y0)+' '+_n(mx)+' '+_n(y1)+' '+RX+' '+_n(y1)
+      +'L'+RX+' '+_n(y1+th2)+'C'+_n(mx)+' '+_n(y1+th2)+' '+_n(mx)+' '+_n(y0+th)+' '+LX+' '+_n(y0+th)+'Z"'
+      +' fill="'+(r.paid?TEAL:memColor(trip,r.from))+'" fill-opacity="'+(r.paid?'.5':'.24')+'"/>';
+    seat.push({i:i,a:y0+th/2,b:y1+th2/2,paid:!!r.paid});
+  });
+  /* a thin ribbon is shorter than a pill is tall, so two pills on one bank
+     can collide. Each bank gets pushed apart to a minimum gap, then the
+     whole run is slid back inside the frame.                             */
+  const spread=(list,key)=>{
+    if(!list.length) return;
+    list.sort((p,q)=>p[key]-q[key]);
+    for(let k=1;k<list.length;k++) if(list[k][key]-list[k-1][key]<PILL) list[k][key]=list[k-1][key]+PILL;
+    const over=list[list.length-1][key]-(H-9);
+    if(over>0) list.forEach(s=>{ s[key]-=over; });
+    if(list[0][key]<9){ const d=9-list[0][key]; list.forEach(s=>{ s[key]+=d; }); }
+  };
+  spread(seat.filter(s=>!s.paid),'a');
+  spread(seat.filter(s=>s.paid),'b');
+  let pills='';
+  seat.forEach(s=>{
+    const r=rows[s.i], mine=memColor(trip,r.from);
+    /* where it sits now, and where the tap will send it */
+    const x=r.paid?(RX-8):(LX+8),        gx=r.paid?(LX+8):(RX-8);
+    const y=r.paid?s.b:s.a,              gy=r.paid?s.a:s.b;
+    const tf=r.paid?'translate(-100%,-50%)':'translateY(-50%)';
+    const gt=r.paid?'translateY(-50%)':'translate(-100%,-50%)';
+    const col=r.paid?TEAL:mine,          gc=r.paid?mine:TEAL;
+    const glyph=r.paid?'<span class="sfg sfu">\u21BA</span>':'<span class="sfg sfa">\u2794</span>';
+    const act=r.paid?'data-undo="'+esc(r.id)+'"'
+      :'data-pay="'+esc(r.from)+'|'+esc(r.to)+'|'+r.amt+'"';
+    pills+='<button class="sfp" '+act+' data-r="'+s.i+'"'
+      +' data-gx="'+pctX(gx)+'" data-gy="'+pctY(gy)+'" data-gt="'+gt+'" data-gc="'+gc+'"'
+      +' data-gr="'+gc+'" data-gro="'+(r.paid?'.24':'.5')+'"'
+      +' aria-label="'+esc(r.from)+' to '+esc(r.to)+'"'
+      +' style="left:'+pctX(x)+';top:'+pctY(y)+';transform:'+tf
+      +';border-color:'+col+';color:'+col+'">'+fmt(r.amt,sym)+glyph+'</button>';
+  });
+  return '<div class="sfw">'+svg+'</svg>'+names+pills+'</div>';
 }
 
 /* ---- rendering ---- */
@@ -810,27 +811,6 @@ const tripsSorted=()=>db.trips.slice().sort((a,b)=>String(b.updated_at||b.create
 const curTrip=()=>db.trips.find(t=>t.trip_id===sel)||null;
 const tripExps=()=>db.expenses.filter(x=>x.trip_id===sel);
 const expDate=x=>(x.extras&&x.extras.date)||String(x.created_at||'').slice(0,10);
-function bow(paid){
-  /* two halves of one curve, one either side of the amount. Each half is its
-     own flexing SVG, so the gap in the middle is exactly the width of the
-     figure — the line stays tight to it at any screen size, and nothing has
-     to sit on an opaque patch over the glass.                              */
-  const stroke = paid ? '#5EEAD4' : '#4A515A';
-  const p=' fill="none" stroke="'+stroke+'" stroke-width="'+(paid?2.2:2)+'"'
-    +' stroke-linecap="round" vector-effect="non-scaling-stroke"'
-    +(paid?'':' stroke-dasharray="1 5"')+'/>';
-  const half=d=>'<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><path d="'+d+'"'+p+'</svg>';
-  return '<span class="arch">'+half('M3 24 Q52 18.5 99 15')     // rises to meet the figure
-    +'<span class="amt">';                                       // …amount goes here…
-}
-function bowEnd(paid){
-  const stroke = paid ? '#5EEAD4' : '#4A515A';
-  const p=' fill="none" stroke="'+stroke+'" stroke-width="'+(paid?2.2:2)+'"'
-    +' stroke-linecap="round" vector-effect="non-scaling-stroke"'
-    +(paid?'':' stroke-dasharray="1 5"')+'/>';
-  return '<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">'
-    +'<path d="M1 15 Q48 18.5 97 24"'+p+'</svg></span>';         // …then falls away
-}
 
 function renderAll(rebuildForm){
   const trips=tripsSorted();
@@ -887,42 +867,20 @@ function renderSettle(trip,exps,r,sym){
   const show=r.count||pays.length;
   $('settleCard').hidden=!show;
   if(!show) return;
-  const denom=r.paidBack+r.remaining;
-  const pct=denom>0?Math.round(r.paidBack/denom*100):100;
-  $('progWrap').hidden=!denom;
-  if(denom){
-    $('progBar').style.width=pct+'%';
-    $('progLbl').innerHTML=pct+'% settled <small>· '+fmtShort(r.paidBack,sym)+' of '+fmtShort(denom,sym)+'</small>';
-  }
-  /* open debts and settled ones live in ONE list: everything one person owes
-     sits together, biggest payer first, and each person's rows run highest to
-     lowest. Paying a row changes how it looks, never where it sits.        */
+  /* open debts and settled ones live in ONE diagram: a ribbon per payment,
+     ordered biggest payer first. Paying one changes how it looks and where
+     its pill sits, never which ribbon it is.                             */
   const rows=r.settle.map(s0=>({from:s0.from,to:s0.to,amt:s0.amt,paid:false}))
     .concat(pays.map(x=>({from:x.paid_by,to:(x.split_members||[])[0]||'?',
-      amt:Math.round(x.amount*100),paid:true,id:x.expense_id,when:expDate(x)})));
+      amt:Math.round(x.amount*100),paid:true,id:x.expense_id})));
   const owedBy={};
   rows.forEach(w=>{ owedBy[w.from]=(owedBy[w.from]||0)+w.amt; });
   rows.sort((a,b)=> (owedBy[b.from]-owedBy[a.from])
     || a.from.localeCompare(b.from)
     || (b.amt-a.amt));
-  $('settleWheel').hidden=!rows.length;
-  $('settleWheel').innerHTML=rows.length?settleWheel(trip,rows):'';
-  let html = (!r.settle.length&&r.count)
+  const html = (!r.settle.length&&r.count)
     ? '<div class="allsq">✓ All square — this trip is fully settled 🎉</div>' : '';
-  html+=rows.map(w=>{
-    const cf=memColor(trip,w.from), ct=memColor(trip,w.to);
-    const act = w.paid
-      ? '<span class="on">paid '+fmtDate(w.when)+'</span>'
-        +'<button class="cta" data-undo="'+esc(w.id)+'">Mark as unpaid</button>'
-      : '<button class="cta" data-pay="'+esc(w.from)+'|'+esc(w.to)+'|'+w.amt+'" aria-label="'
-        +esc(w.from)+' paid '+esc(w.to)+'">Mark as paid</button>';
-    return '<div class="hsA'+(w.paid?' done':'')+'">'
-      +'<span class="who1" style="color:'+cf+'">'+esc(w.from)+'</span>'
-      +bow(w.paid)+fmt(w.amt,sym)+'</span>'+bowEnd(w.paid)
-      +'<span class="who2" style="color:'+ct+'">'+esc(w.to)+'</span>'
-      +'<span class="act">'+act+'</span></div>';
-  }).join('');
-  $('settleList').innerHTML=html;
+  $('settleList').innerHTML=html+settleFlow(trip,rows,sym);
 }
 
 function renderList(trip,exps,sym){
@@ -1103,16 +1061,15 @@ function deleteExpense(){
   saveLocal(); resetForm(); renderAll(false); cloudDeleteExp(id); flash('Deleted');
 }
 function recordPayment(from,to,amtCents){
-  if(!confirm(from+' paid '+to+' '+fmt(amtCents,curTrip().currency)+' — mark it settled for everyone?')) return;
   const row={expense_id:uid(),trip_id:sel,title:'Payment',amount:amtCents/100,paid_by:from,
     split_members:[to],excluded:false,extras:{kind:'payment',date:todayStr()},
     created_at:nowIso(),updated_at:nowIso()};
   db.expenses=db.expenses.concat([row]);
   saveLocal(); renderAll(false); flash('Marked paid ✓','#0D9488'); upsertExp(row);
 }
-function undoPayment(id){
+function undoPayment(id,quiet){
   const x=db.expenses.find(e=>e.expense_id===id); if(!x) return;
-  if(!confirm(isSide(x)?'Remove this transfer? The money goes back to owing.'
+  if(!quiet&&!confirm(isSide(x)?'Remove this transfer? The money goes back to owing.'
     :'Remove this payment? The amount goes back to owing.')) return;
   db.expenses=db.expenses.filter(e=>e.expense_id!==id);
   saveLocal(); renderAll(false); cloudDeleteExp(id); flash('Payment removed');
@@ -1291,10 +1248,18 @@ $('expList').addEventListener('click',e=>{
   if(x&&isSide(x)) undoPayment(x.expense_id); else startEdit(b.dataset.id);
 });
 $('settleList').addEventListener('click',e=>{
-  const p=e.target.closest('[data-pay]');
-  if(p){ const [from,to,amt]=p.dataset.pay.split('|'); recordPayment(from,to,parseInt(amt,10)); return; }
-  const u=e.target.closest('[data-undo]');
-  if(u) undoPayment(u.dataset.undo);
+  const b=e.target.closest('.sfp'); if(!b) return;
+  /* the pill crosses to the far bank first - that travel is the whole
+     confirmation - and only then does the file's own record/undo run.  */
+  const rib=$('sfr'+b.dataset.r);
+  if(rib){ rib.setAttribute('fill',b.dataset.gr); rib.setAttribute('fill-opacity',b.dataset.gro); }
+  b.style.left=b.dataset.gx; b.style.top=b.dataset.gy; b.style.transform=b.dataset.gt;
+  b.style.borderColor=b.dataset.gc; b.style.color=b.dataset.gc;
+  setTimeout(()=>{
+    if(b.dataset.pay){ const a=b.dataset.pay.split('|'); recordPayment(a[0],a[1],parseInt(a[2],10)); }
+    else if(b.dataset.undo){ undoPayment(b.dataset.undo,true); }
+    renderAll(false);
+  },380);
 });
 $('sortRow').addEventListener('click',e=>{
   const b=e.target.closest('[data-sort]'); if(!b) return;
