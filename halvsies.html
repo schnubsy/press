@@ -127,6 +127,11 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 /* the rose's own labels — no legend table any more, position does the
    connecting. Size is set per render so the type can step down when a
    crowded trip would otherwise collide; these only carry face and colour. */
+/* a dark stroke painted behind the fill — a halo, not a plate, so the text
+   can sit straight on top of a petal and still read.                      */
+.orbits .rn,.orbits .rv,.orbits .rd,.orbits .rt,.orbits .rk{
+  paint-order:stroke fill;stroke:#0E1114;stroke-width:3.5px;
+  stroke-linejoin:round;stroke-opacity:.92}
 .orbits .rn{font-weight:700}
 .orbits .rv{fill:var(--muted);font-family:var(--mono)}
 .orbits .rd{font-weight:700;font-family:var(--mono)}
@@ -610,21 +615,25 @@ function compute(trip,exps){
    petal reaches is what that person paid; the dashed circle is the fair
    share, so a petal short of it is money owed and a petal past it is money
    owed back. The hub carries the trip total and the per-head figure, and
-   each member's name, spend and ± sit just outside that member's own petal
-   — position does the connecting, so there is no legend underneath.     */
+   each member's name, spend and ± ride a shared radius inside the dashed
+   ring, on that member's own wedge axis — position does the connecting, so
+   there is no legend underneath.                                        */
 function _pt(cx,cy,r,a){ const t=(a-90)*Math.PI/180; return [cx+r*Math.cos(t),cy+r*Math.sin(t)]; }
 function _n(v){ return (+v).toFixed(2); }
 function rose(trip,people,sym){
   const rows=people.slice().sort((a,b)=>b.paid-a.paid), n=rows.length;
   if(!n) return '';
-  /* laid out on a 384 grid, then cropped to the drawing's own bounds */
-  const S=384,C=S/2,HUB=50,R0=HUB+7,MIN=6,GAP=5,OFF=13;
-  const FN=8.4,FV=8.4,FD=8.4;                // name, paid, ± all one size
+  /* The rim is 14px off the edge instead of ~58: the labels moved INSIDE, so
+     the petals get the margin back and the rose fills the card.           */
+  const S=384,C=S/2,HUB=50,R0=HUB+7,R1=C-14,MIN=7,GAP=5;
+  const FN=12.5,FV=11.5,FD=11.5;
   const maxPaid=Math.max.apply(null,rows.map(p=>Math.max(0,p.paid)).concat([1]));
   const share=rows.reduce((a,p)=>a+p.share,0)/n;
   const total=rows.reduce((a,p)=>a+p.paid,0);
-  /* the pair of mono numbers is padded to a common character count, so their
-     decimal points sit on the same vertical                                  */
+  const SCL=(R1-R0-MIN)/maxPaid, rFair=R0+MIN+share*SCL;
+  const reach=rows.map(p=>R0+MIN+Math.max(0,p.paid)*SCL);
+  /* the two mono numbers are padded to a common character count so their
+     decimal points sit on the same vertical                              */
   const lab=rows.map((p,i)=>{
     const amt=fmt(p.paid,sym), d=p.paid-p.share;
     const del=(d>0?'+':d<0?'\u2212':'')+fmt(Math.abs(d),sym);
@@ -638,78 +647,57 @@ function rose(trip,people,sym){
     return 'M'+_n(A[0])+' '+_n(A[1])+'A'+_n(r1)+' '+_n(r1)+' 0 0 1 '+_n(B[0])+' '+_n(B[1])
       +'L'+_n(D[0])+' '+_n(D[1])+'A'+_n(r0)+' '+_n(r0)+' 0 0 0 '+_n(E[0])+' '+_n(E[1])+'Z';
   };
-  /* One pass of the whole layout at a given type scale. Labels ride just
-     outside their OWN petal rather than all the way out at the rim, so a
-     member who paid nothing keeps their figures near the middle instead of
-     stranded at the edge. Each one is then walked outwards until it clears
-     every petal, the dashed fair line and the hub.                        */
-  function layout(sc){
-    const fn=FN*sc, fv=FV*sc, fd=FD*sc, L2=fv*1.35, L3=L2+fd*1.2;
-    const wid=lab.map(l=>Math.max(l.name.length*fn*0.58,
-      l.amt.length*fv*0.62, l.del.length*fd*0.62));
-    let R1=C-46;
-    lab.forEach((l,i)=>{
-      const k=Math.abs(Math.cos((l.mid-90)*Math.PI/180));
-      if(k>0.08) R1=Math.min(R1,(C-wid[i]-4)/k-OFF);
-    });
-    R1=Math.max(R1,HUB+34);
-    const SCL=(R1-R0-MIN)/maxPaid, rFair=R0+MIN+share*SCL;
-    const reach=rows.map(p=>R0+MIN+Math.max(0,p.paid)*SCL);
-    /* a probe grid over the text block: is any of it sitting on a petal or
-       the dashed line, or on the hub?                                     */
-    const clear=b=>{
-      for(const px of [b.x0,(b.x0+b.x1)/2,b.x1])
-        for(const py of [b.y0,(b.y0+b.y1)/2,b.y1]){
-          const dx=px-C, dy=py-C, r=Math.hypot(dx,dy);
-          if(r<HUB+5) return false;
-          if(r<rFair+5) return false;          // clear of the dashed fair line
-          let a=Math.atan2(dy,dx)*180/Math.PI+90; a=((a%360)+360)%360;
-          const wi=Math.min(n-1,Math.floor(a/(360/n)));
-          if(r<reach[wi]+3) return false;
-        }
-      return true;
-    };
-    const boxes=lab.map((l,i)=>{
-      let rr=Math.max(reach[i],rFair,HUB+34)+OFF, box=null;
-      for(let step=0; step<40; step++){
-        const P=_pt(C,C,rr,l.mid), dx=P[0]-C;
-        const an=Math.abs(dx)<20?'middle':dx<0?'end':'start';
-        const x0=an==='middle'?P[0]-wid[i]/2:an==='end'?P[0]-wid[i]:P[0];
-        box={an:an,x:P[0],y:P[1],w:wid[i],x0:x0,x1:x0+wid[i],
-          y0:P[1]-fn,y1:P[1]+L3+fd*0.28};
-        if(clear(box)) break;
-        rr+=5;
-      }
-      return box;
+  /* Every block sits on ONE shared radius so the labels read as a tidy ring
+     whoever paid what. That radius wants to be just inside the dashed line,
+     but the dashed line collapses toward the hub when one person paid most
+     of the tab — so the radius is floored clear of the hub, then stepped
+     outward, and the type steps down, until nothing collides.            */
+  function layout(sc,LR){
+    const fn=FN*sc, fv=FV*sc, fd=FD*sc;
+    const d1=-8*sc, d2=7*sc, d3=22*sc;
+    const boxes=lab.map(l=>{
+      const w=Math.max(l.name.length*fn*0.58, l.amt.length*fv*0.62, l.del.length*fd*0.62);
+      const P=_pt(C,C,LR,l.mid);
+      return {x:P[0],y:P[1],w:w,d1:d1,d2:d2,d3:d3,fn:fn,fv:fv,fd:fd,
+        x0:P[0]-w/2,x1:P[0]+w/2,y0:P[1]+d1-fn*0.75,y1:P[1]+d3+fd*0.25};
     });
     let ok=true;
+    /* clear of the hub, and still inside the outer rim */
+    boxes.forEach(b=>{
+      for(const px of [b.x0,(b.x0+b.x1)/2,b.x1])
+        for(const py of [b.y0,(b.y0+b.y1)/2,b.y1]){
+          const r=Math.hypot(px-C,py-C);
+          if(r<HUB+4||r>R1-3) ok=false;
+        }
+    });
     for(let a=0;a<boxes.length&&ok;a++)
       for(let b=a+1;b<boxes.length;b++)
         if(boxes[a].x0<boxes[b].x1-2 && boxes[b].x0<boxes[a].x1-2
         && boxes[a].y0<boxes[b].y1-2 && boxes[b].y0<boxes[a].y1-2){ ok=false; break; }
-    return {ok:ok,R1:R1,rFair:rFair,reach:reach,boxes:boxes,fn:fn,fv:fv,fd:fd,L2:L2,L3:L3};
+    return {ok:ok,boxes:boxes};
   }
-  /* step the type down until nothing collides */
+  const LR0=Math.max(HUB+30,Math.min(rFair-28,R1-40));
   let out=null;
-  for(let sc=1; sc>=0.499; sc-=0.05){ out=layout(sc); if(out.ok) break; }
-  const {R1,rFair,reach,boxes,fn,fv,fd,L2,L3}=out;
-  /* the drawing is cropped to its own bounds rather than sitting in a fixed
-     square, so the card gives the rose every pixel it has and no empty band
-     is left where a wedge happens not to reach.                            */
-  let x0=C-R1, x1=C+R1, y0=C-R1, y1=C+R1;
+  outer:
+  for(let sc=1; sc>=0.549; sc-=0.05)
+    for(let k=0;k<9;k++){
+      const LR=Math.min(LR0+k*10,R1-32);
+      const t=layout(sc,LR);
+      if(t.ok){ out=t; break outer; }
+      out=out||t;
+    }
+  const boxes=out.boxes;
   let body='', labels='';
   rows.forEach((p,i)=>{
     const a0=i*360/n, a1=(i+1)*360/n, col=memColor(trip,p.m), b=boxes[i], l=lab[i];
     body+='<path d="'+petal(R0,reach[i],a0,a1)+'" fill="'+col+'" fill-opacity=".16"/>';
     body+='<path d="'+petal(Math.max(R0,reach[i]-7),reach[i],a0,a1)+'" fill="'+col+'"/>';
-    x0=Math.min(x0,b.x0); x1=Math.max(x1,b.x1);
-    y0=Math.min(y0,b.y0); y1=Math.max(y1,b.y1);
-    labels+='<text class="rn" font-size="'+_n(fn)+'" x="'+_n(b.x)+'" y="'+_n(b.y)
-        +'" text-anchor="'+b.an+'" fill="'+col+'">'+esc(p.m)+'</text>'
-      +'<text class="rv" font-size="'+_n(fv)+'" x="'+_n(b.x)+'" y="'+_n(b.y+L2)
-        +'" text-anchor="'+b.an+'">'+l.amt+'</text>'
-      +'<text class="rd" font-size="'+_n(fd)+'" x="'+_n(b.x)+'" y="'+_n(b.y+L3)
-        +'" text-anchor="'+b.an+'" fill="'+(l.d>=0?'#5EEAD4':'#F87171')+'">'+l.del+'</text>';
+    labels+='<text class="rn" font-size="'+_n(b.fn)+'" x="'+_n(b.x)+'" y="'+_n(b.y+b.d1)
+        +'" text-anchor="middle" fill="'+col+'">'+esc(p.m)+'</text>'
+      +'<text class="rv" font-size="'+_n(b.fv)+'" x="'+_n(b.x)+'" y="'+_n(b.y+b.d2)
+        +'" text-anchor="middle">'+l.amt+'</text>'
+      +'<text class="rd" font-size="'+_n(b.fd)+'" x="'+_n(b.x)+'" y="'+_n(b.y+b.d3)
+        +'" text-anchor="middle" fill="'+(l.d>=0?'#5EEAD4':'#F87171')+'">'+l.del+'</text>';
   });
   /* fair share and hub paint last so they read on top of every petal */
   body+='<circle cx="'+C+'" cy="'+C+'" r="'+_n(rFair)+'" fill="none" stroke="#F2F4F6"'
@@ -748,11 +736,10 @@ function rose(trip,people,sym){
     body+='<text class="'+HK[i]+'" font-size="'+_n(l.f)+'" x="'+C+'" y="'+_n(l.y)+'"'
       +' text-anchor="middle"'+(HF[i]?' fill="'+HF[i]+'"':'')+'>'+l.t+'</text>';
   });
-  /* the crop is symmetric about the centre, so the hub always lands in the
-     middle of the card however lopsided the labels happen to be.          */
-  const P=3, hx=Math.max(C-x0,x1-C)+P, hy=Math.max(C-y0,y1-C)+P;
-  return '<svg viewBox="'+_n(C-hx)+' '+_n(C-hy)+' '+_n(2*hx)+' '+_n(2*hy)+'"'
-    +' width="100%" style="display:block" aria-hidden="true">'+body+labels+'</svg>';
+  /* labels come after the rings so nothing can paint over text; the box is a
+     plain square, so the hub is centred in the card by construction.      */
+  return '<svg viewBox="0 0 '+S+' '+S+'" width="100%" style="display:block" aria-hidden="true">'
+    +body+labels+'</svg>';
 }
 
 /* ---- the settle wheel ----
