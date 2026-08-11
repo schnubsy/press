@@ -619,7 +619,7 @@ function rose(trip,people,sym){
   if(!n) return '';
   /* laid out on a 384 grid, then cropped to the drawing's own bounds */
   const S=384,C=S/2,HUB=50,R0=HUB+7,MIN=6,GAP=5,OFF=13;
-  const FN=12,FV=12,FD=12;                   // name, paid, ± all one size
+  const FN=8.4,FV=8.4,FD=8.4;                // name, paid, ± all one size
   const maxPaid=Math.max.apply(null,rows.map(p=>Math.max(0,p.paid)).concat([1]));
   const share=rows.reduce((a,p)=>a+p.share,0)/n;
   const total=rows.reduce((a,p)=>a+p.paid,0);
@@ -642,7 +642,7 @@ function rose(trip,people,sym){
      outside their OWN petal rather than all the way out at the rim, so a
      member who paid nothing keeps their figures near the middle instead of
      stranded at the edge. Each one is then walked outwards until it clears
-     every petal and the hub.                                              */
+     every petal, the dashed fair line and the hub.                        */
   function layout(sc){
     const fn=FN*sc, fv=FV*sc, fd=FD*sc, L2=fv*1.35, L3=L2+fd*1.2;
     const wid=lab.map(l=>Math.max(l.name.length*fn*0.58,
@@ -656,12 +656,13 @@ function rose(trip,people,sym){
     const SCL=(R1-R0-MIN)/maxPaid, rFair=R0+MIN+share*SCL;
     const reach=rows.map(p=>R0+MIN+Math.max(0,p.paid)*SCL);
     /* a probe grid over the text block: is any of it sitting on a petal or
-       on the hub?                                                         */
+       the dashed line, or on the hub?                                     */
     const clear=b=>{
       for(const px of [b.x0,(b.x0+b.x1)/2,b.x1])
         for(const py of [b.y0,(b.y0+b.y1)/2,b.y1]){
           const dx=px-C, dy=py-C, r=Math.hypot(dx,dy);
           if(r<HUB+5) return false;
+          if(r<rFair+5) return false;          // clear of the dashed fair line
           let a=Math.atan2(dy,dx)*180/Math.PI+90; a=((a%360)+360)%360;
           const wi=Math.min(n-1,Math.floor(a/(360/n)));
           if(r<reach[wi]+3) return false;
@@ -714,21 +715,43 @@ function rose(trip,people,sym){
   body+='<circle cx="'+C+'" cy="'+C+'" r="'+_n(rFair)+'" fill="none" stroke="#F2F4F6"'
     +' stroke-width="1.5" stroke-opacity=".6" stroke-dasharray="4 4"/>'
     +'<circle cx="'+C+'" cy="'+C+'" r="'+HUB+'" fill="#0E1114" fill-opacity=".95" stroke="#2C3238" stroke-width="1"/>';
-  /* the hub carries the trip total and the per-head figure, sized down until
-     both lines sit inside the black disc.                                  */
+  /* the hub reads caption / total, then a beat, then the per-head figure and
+     its caption. Four short lines stack into the disc far better than two
+     wide ones, so the block fills the circle vertically as well as across.
+     The type steps down until every line sits inside the black.           */
   const custom=rows.some(p=>Math.abs(p.share-share)>1);
-  const c1='\u00A0total', c2=custom?'\u00A0avg each':'\u00A0each';
+  const c1='total', c2=custom?'avg each':'each';
   const t1=fmt(total,sym), t2=fmt(Math.round(share),sym);
-  const un=(a,c)=>a.length*0.60+c.length*0.62*0.55;
-  const FT=Math.max(7,Math.min(15,
-    (2*Math.sqrt(HUB*HUB-24*24)-8)/Math.max(un(t1,c1),un(t2,c2))));
-  const FC=FT*0.62, ty=C-FT*0.5;
-  body+='<text class="rt" font-size="'+_n(FT)+'" x="'+C+'" y="'+_n(ty)+'" text-anchor="middle">'
-      +t1+'<tspan class="rk" font-size="'+_n(FC)+'">'+c1+'</tspan></text>'
-    +'<text class="rt" font-size="'+_n(FT)+'" x="'+C+'" y="'+_n(ty+FT*1.5)+'" text-anchor="middle">'
-      +t2+'<tspan class="rk" font-size="'+_n(FC)+'">'+c2+'</tspan></text>';
-  const P=3;
-  return '<svg viewBox="'+_n(x0-P)+' '+_n(y0-P)+' '+_n(x1-x0+2*P)+' '+_n(y1-y0+2*P)+'"'
+  let FT=16, hub=null;
+  for(; FT>=6; FT-=0.25){
+    const FC=FT*0.62;
+    const ln=[{t:c1,f:FC,w:c1.length*FC*0.55},
+              {t:t1,f:FT,w:t1.length*FT*0.60},
+              {t:t2,f:FT,w:t2.length*FT*0.60},
+              {t:c2,f:FC,w:c2.length*FC*0.55}];
+    const d=[0, FT*1.15, FT*1.55, FC*1.25];      // baseline-to-baseline steps
+    let y=0; ln.forEach((l,i)=>{ y+=d[i]; l.y=y; });
+    const H=ln[0].f*0.75+ln[3].y+ln[3].f*0.25;
+    const top=C-H/2+ln[0].f*0.75;
+    let fits=true;
+    ln.forEach(l=>{
+      l.y+=top;
+      for(const yy of [l.y-l.f*0.75,l.y+l.f*0.25])
+        for(const xx of [C-l.w/2,C+l.w/2])
+          if(Math.hypot(xx-C,yy-C)>HUB-3) fits=false;
+    });
+    if(fits){ hub=ln; break; }
+  }
+  if(!hub) hub=[];
+  const HK=['rk','rt','rt','rk'], HF=['','','#7C5CFF',''];
+  hub.forEach((l,i)=>{
+    body+='<text class="'+HK[i]+'" font-size="'+_n(l.f)+'" x="'+C+'" y="'+_n(l.y)+'"'
+      +' text-anchor="middle"'+(HF[i]?' fill="'+HF[i]+'"':'')+'>'+l.t+'</text>';
+  });
+  /* the crop is symmetric about the centre, so the hub always lands in the
+     middle of the card however lopsided the labels happen to be.          */
+  const P=3, hx=Math.max(C-x0,x1-C)+P, hy=Math.max(C-y0,y1-C)+P;
+  return '<svg viewBox="'+_n(C-hx)+' '+_n(C-hy)+' '+_n(2*hx)+' '+_n(2*hy)+'"'
     +' width="100%" style="display:block" aria-hidden="true">'+body+labels+'</svg>';
 }
 
