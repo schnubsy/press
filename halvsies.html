@@ -80,12 +80,18 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 
 /* trip bar */
 .tripbar{display:flex;gap:8px;margin-bottom:10px}
+/* Edit lives with the trip you are editing, so it is reachable from every
+   card instead of only the tab. It sits inside the picker, just left of
+   the chevron, and the picker's padding leaves it the room.            */
+.pickwrap{position:relative;flex:1;display:flex;min-width:0}
+.pickwrap .editbtn{position:absolute;right:32px;top:50%;transform:translateY(-50%)}
 .trippick{flex:1;display:flex;align-items:baseline;gap:6px;
   background:linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.035));
   border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);border-radius:13px;
   padding:10px 13px;box-shadow:0 10px 34px rgba(10,7,22,.5),inset 0 1px 0 rgba(255,255,255,.12);
   text-align:left;min-width:0}
+.trippick span{padding-right:52px}
 .trippick b{font-size:14.5px;font-weight:800;white-space:nowrap}
 .trippick span{font-size:10.5px;color:var(--faint);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex:1;min-width:0}
 .trippick i{font-style:normal;color:var(--muted);font-size:15px;line-height:1}
@@ -259,16 +265,13 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 /* the rose's own labels — no legend table any more, position does the
    connecting. Size is set per render so the type can step down when a
    crowded trip would otherwise collide; these only carry face and colour. */
-/* Four shadows, each applied to the result of the last, so they compound
-   into a proper pool of dark rather than one soft blur. The two tight ones
-   hug the letterforms - that is what holds a coral name up against a coral
-   arc - and the wide ones darken the petal underneath. Still no stroke, so
-   nothing reads as a drawn outline.                                      */
+/* Now that a label never lands on its own bright arc, the halo only has to
+   lift type off a flat wash - so it is back to a whisper: one hairline to
+   define the edges and one wide, soft pool to darken what is behind. Any
+   heavier and it reads as a dark blob around every word.                */
 .orbits .rn,.orbits .rv,.orbits .rd,.orbits .rt,.orbits .rk{
-  filter:drop-shadow(0 0 1.2px rgba(14,17,20,.98))
-         drop-shadow(0 0 2.5px rgba(14,17,20,.95))
-         drop-shadow(0 1px 3px rgba(14,17,20,.9))
-         drop-shadow(0 0 9px rgba(14,17,20,.95))}
+  filter:drop-shadow(0 0 1px rgba(14,17,20,.85))
+         drop-shadow(0 1px 5px rgba(14,17,20,.7))}
 .orbits .rn{font-weight:700}
 .orbits .rv{fill:var(--ink);font-family:var(--mono)}
 .orbits .rd{font-weight:700;font-family:var(--mono)}
@@ -463,7 +466,10 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 <main class="wrap">
 
   <section class="tripbar" id="tripbar" hidden>
-    <button class="trippick" id="tripPick"><b id="tpName"></b><span id="tpMembers"></span><i>▾</i></button>
+    <div class="pickwrap">
+      <button class="trippick" id="tripPick"><b id="tpName"></b><span id="tpMembers"></span><i>▾</i></button>
+      <button class="editbtn" id="editTripBtn">Edit</button>
+    </div>
     <button class="plus" id="newTripBtn" aria-label="New trip">+</button>
   </section>
 
@@ -518,10 +524,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   <div class="pane">
   <!-- THE TAB -->
   <section class="card" id="tabCard" hidden>
-    <div class="hrow">
-      <h2 class="h2">the tab <em id="forTrip0"></em></h2>
-      <button class="editbtn" id="editTripBtn">Edit</button>
-    </div>
+    <h2 class="h2">the tab <em id="forTrip0"></em></h2>
     <div id="needMembers" class="needmembers" hidden>
       No members yet — <button id="addMembersBtn">add everyone going</button> to start.
     </div>
@@ -822,7 +825,9 @@ function rose(trip,people,sym){
      is what stops a name being struck through by its own petal.        */
   function layout(sc,LR){
     const fn=FN*sc, fv=FV*sc, fd=FD*sc;
-    const d1=-8*sc, d2=7*sc, d3=22*sc;
+    /* three lines want real leading - at this size 15 units between
+       baselines had them touching                                    */
+    const d1=-13*sc, d2=7*sc, d3=27*sc;
     const boxes=lab.map(l=>{
       const w=Math.max(l.name.length*fn*0.58, l.amt.length*fv*0.62, l.del.length*fd*0.62);
       const P=_pt(C,C,LR,l.mid);
@@ -855,15 +860,19 @@ function rose(trip,people,sym){
        it actually buys a cleaner placement.                            */
     return {ok:bad===0,bad:bad+(1-sc)*9,boxes:boxes};
   }
+  /* Every radius at every size gets scored and the best wins outright.
+     Taking the first perfect fit instead used to hand a crowded trip tiny
+     type: a placement that shrank the labels by a third to dodge two arcs
+     scored as "perfect" and won, when full-size type touching two arcs
+     reads far better - which is exactly what the scale cost is for.    */
   const LR0=Math.max(HUB+30,Math.min(rFair-28,R1-40));
   let out=null;
-  outer:
   for(let sc=1; sc>=0.499; sc-=0.04)
-    for(let k=0;k<9;k++){
-      const LR=Math.min(LR0+k*10,R1-32);
+    for(let k=0;k<15;k++){
+      const LR=Math.min(LR0+k*5,R1-32);
       const t=layout(sc,LR);
-      if(t.ok){ out=t; break outer; }
       if(!out||t.bad<out.bad) out=t;
+      if(out.bad===0&&sc===1) break;
     }
   const boxes=out.boxes;
   let body='', labels='';
@@ -947,14 +956,37 @@ function settleFlow(trip,rows,sym){
   ac=TOP; payees.forEach(m=>{rT[m]=ac; ac+=inT[m]/grand*rS+GAP;});
   const lc={},rc={},mx=(LX+RX)/2;
   const pctX=v=>_n(v/W*100)+'%', pctY=v=>_n(v/H*100)+'%';
+  /* Anything placed beside a bank is placed at the middle of that person's
+     bar, and two small bars can sit almost on top of each other. So every
+     column gets the same treatment: sort down the page, push apart to a
+     minimum gap, then slide the whole run back inside the frame.       */
+  const spread=(list,key,gap)=>{
+    if(list.length<2) return;
+    list.sort((p,q)=>p[key]-q[key]);
+    for(let k=1;k<list.length;k++) if(list[k][key]-list[k-1][key]<gap) list[k][key]=list[k-1][key]+gap;
+    /* the block is centred on its y, so half of it has to stay inside */
+    const edge=gap/2;
+    const over=list[list.length-1][key]-(H-edge);
+    if(over>0) list.forEach(s=>{ s[key]-=over; });
+    if(list[0][key]<edge){ const d=edge-list[0][key]; list.forEach(s=>{ s[key]+=d; }); }
+  };
+  /* a three-line name block is about this tall once drawn */
+  const NAME=56;
+  const lN=payers.map(m=>({m:m,y:lT[m]+outT[m]/grand*lS/2}));
+  const rN=payees.map(m=>({m:m,y:rT[m]+inT[m]/grand*rS/2}));
+  spread(lN,'y',NAME); spread(rN,'y',NAME);
   let svg='<svg viewBox="0 0 '+W+' '+H+'" aria-hidden="true">', names='';
   payers.forEach(m=>{
     svg+='<path d="M'+(LX-9)+' '+_n(lT[m])+'h8v'+_n(outT[m]/grand*lS)+'h-8Z" fill="'+memColor(trip,m)+'" fill-opacity=".95"/>';
-    names+='<div class="sfn l" style="left:'+pctX(LX-14)+';top:'+pctY(lT[m]+outT[m]/grand*lS/2)+';transform:translate(-100%,-50%);color:'+memColor(trip,m)+'">'+esc(m)+'<i>pays<b>'+fmt(outT[m],sym)+'</b></i></div>';
   });
   payees.forEach(m=>{
     svg+='<path d="M'+(RX+1)+' '+_n(rT[m])+'h8v'+_n(inT[m]/grand*rS)+'h-8Z" fill="'+memColor(trip,m)+'" fill-opacity=".95"/>';
-    names+='<div class="sfn" style="left:'+pctX(RX+14)+';top:'+pctY(rT[m]+inT[m]/grand*rS/2)+';transform:translateY(-50%);color:'+memColor(trip,m)+'">'+esc(m)+'<i>gets<b>'+fmt(inT[m],sym)+'</b></i></div>';
+  });
+  lN.forEach(p=>{
+    names+='<div class="sfn l" style="left:'+pctX(LX-14)+';top:'+pctY(p.y)+';transform:translate(-100%,-50%);color:'+memColor(trip,p.m)+'">'+esc(p.m)+'<i>pays<b>'+fmt(outT[p.m],sym)+'</b></i></div>';
+  });
+  rN.forEach(p=>{
+    names+='<div class="sfn" style="left:'+pctX(RX+14)+';top:'+pctY(p.y)+';transform:translateY(-50%);color:'+memColor(trip,p.m)+'">'+esc(p.m)+'<i>gets<b>'+fmt(inT[p.m],sym)+'</b></i></div>';
   });
   const seat=[];
   rows.forEach((r,i)=>{
@@ -967,18 +999,9 @@ function settleFlow(trip,rows,sym){
     seat.push({i:i,a:y0+th/2,b:y1+th2/2,paid:!!r.paid});
   });
   /* a thin ribbon is shorter than a pill is tall, so two pills on one bank
-     can collide. Each bank gets pushed apart to a minimum gap, then the
-     whole run is slid back inside the frame.                             */
-  const spread=(list,key)=>{
-    if(!list.length) return;
-    list.sort((p,q)=>p[key]-q[key]);
-    for(let k=1;k<list.length;k++) if(list[k][key]-list[k-1][key]<PILL) list[k][key]=list[k-1][key]+PILL;
-    const over=list[list.length-1][key]-(H-9);
-    if(over>0) list.forEach(s=>{ s[key]-=over; });
-    if(list[0][key]<9){ const d=9-list[0][key]; list.forEach(s=>{ s[key]+=d; }); }
-  };
-  spread(seat.filter(s=>!s.paid),'a');
-  spread(seat.filter(s=>s.paid),'b');
+     can collide either - same treatment, smaller gap.                   */
+  spread(seat.filter(s=>!s.paid),'a',PILL);
+  spread(seat.filter(s=>s.paid),'b',PILL);
   let pills='';
   seat.forEach(s=>{
     const r=rows[s.i], mine=memColor(trip,r.from);
