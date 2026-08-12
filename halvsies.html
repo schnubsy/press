@@ -106,6 +106,138 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .empty p{color:var(--muted);font-size:13.5px;max-width:300px;margin:0 auto 16px}
 .empty .go{max-width:220px;margin:0 auto}
 
+/* ---- the deck ----
+   The three cards do not stack. They are one horizontal deck - add an
+   expense, then the tab, then settle up - and every pane is the same
+   height, whatever is left of the screen below the trip bar. Each pane
+   scrolls inside itself, so the page never scrolls and the cards never
+   jump about as content changes. Same deck everywhere; a phone swipes it
+   and a desktop uses the arrows.                                       */
+/* Coverflow: the three panes are stacked in the same box, and depth tells
+   you where you are. The live card sits square in the foreground and the
+   others are pushed back and off to the side, so only one is ever in view
+   at rest - you see the others only mid-move, as one sinks away and the
+   next rises to meet you.                                             */
+.deckstage{display:flex;align-items:center;gap:14px}
+.deck{position:relative;overflow:hidden;flex:1;min-width:0;
+  height:var(--paneh,64vh);perspective:1150px;perspective-origin:50% 46%}
+.deckrail{position:absolute;inset:0;transform-style:preserve-3d}
+.pane{position:absolute;inset:0;padding:2px 16px 4px;
+  overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
+  touch-action:pan-y;scrollbar-width:none;
+  will-change:transform,opacity;backface-visibility:hidden}
+.pane::-webkit-scrollbar{display:none}
+.pane.rest{transition:transform .44s cubic-bezier(.25,.8,.3,1),
+                      opacity .44s cubic-bezier(.25,.8,.3,1)}
+.pane.back{pointer-events:none}
+.pane>:last-child{margin-bottom:0}
+/* a lone card fills its pane, so every screen is the same shape */
+.pane>.card:only-child{min-height:calc(100% - 6px);display:flex;
+  flex-direction:column}
+.pane>.card:only-child>.orbits{flex:1;display:flex;align-items:center;
+  justify-content:center;padding:2px 0;margin:0 -11px}
+.pane>.card:only-child>.orbits>svg{width:100%}
+#settleCard>#settleList{flex:1;display:flex;flex-direction:column;
+  justify-content:center}
+/* three dashes, the live one stretched. Enough to say there is more
+   sideways without asking for attention.                             */
+.dots{display:flex;gap:6px;justify-content:center;align-items:center;
+  padding:10px 0 2px}
+.dots button{width:7px;height:4px;border-radius:99px;flex:none;
+  background:rgba(255,255,255,.20);transition:.26s cubic-bezier(.22,.61,.36,1)}
+.dots button.on{width:20px;background:var(--vio)}
+/* a desktop has no swipe, so it gets arrows instead. They sit beside the
+   deck rather than on top of it, so nothing covers the card.          */
+.nav{display:none}
+@media (max-width:700px){
+  .deck{margin:0 -16px}
+  /* the cards are a whole screen tall now, so everything on them steps up
+     a size rather than floating in the middle of all that room.        */
+  .h2{font-size:19px}
+  .pane>.card:only-child{padding:16px 14px 18px}
+  .ex{padding:11px 12px}
+  .ex .t{font-size:15px}
+  .ex .m{font-size:11px}
+  .ex .a{font-size:14.5px}
+  .ex .av{width:33px;height:33px;border-radius:11px;font-size:13px}
+  .sfn{font-size:14px}
+  .sfn i{font-size:10.5px}
+  .sfp{font-size:12.5px;padding:6px 12px;gap:7px}
+  .sfa{font-size:18px}
+  .sfu{font-size:16px}
+  .gl{font-size:11px}
+  .allsq{font-size:15px;padding:14px 16px}
+  .flabel{font-size:12px}
+  .fin{font-size:16px}
+  .pc{font-size:13.5px;padding:9px 7px}
+  .splitbtn{font-size:12.5px}
+  .go{font-size:15.5px;padding:13px}
+  .datewrap .fin{font-size:14px}
+}
+/* ---- the same deck, given a desktop's room ----
+   More width means the cards can be bigger, but a rose is square and the
+   flow diagram is tall, so past a point width is not the constraint -
+   height is. Both are pinned to the pane height and centred, which is why
+   the .sfw box carries the diagram's own aspect ratio: the pills are
+   placed as percentages of that box, so it has to match the drawing
+   exactly or they land in the wrong place.                            */
+@media (min-width:701px){
+  .wrap{max-width:860px}
+  .pane{padding:2px 3px 4px}
+  .pane>.card:only-child{padding:22px 24px 24px}
+  .pane>.card:only-child>.orbits{margin:0;padding:6px 0}
+  .pane>.card:only-child>.orbits>svg{width:auto;height:100%;max-width:100%}
+  .sfw{height:100%;width:auto;aspect-ratio:364/430;max-width:100%}
+  .sfw svg{width:100%;height:100%}
+  .h2{font-size:22px}
+  .editbtn{font-size:12px;padding:8px 15px}
+  .ex{padding:13px 15px}
+  .ex .t{font-size:16px}
+  .ex .m{font-size:12px}
+  .ex .a{font-size:16px}
+  .ex .av{width:38px;height:38px;border-radius:12px;font-size:15px}
+  .sfn{font-size:16px}
+  .sfn i{font-size:11.5px}
+  .sfp{font-size:14px;padding:7px 14px;gap:8px}
+  .sfa{font-size:20px}
+  .sfu{font-size:18px}
+  .gl{font-size:12px}
+  .allsq{font-size:17px;padding:16px 20px}
+  .flabel{font-size:12px}
+  .fin{font-size:17px}
+  .amount-in .fin,.datewrap .fin{height:46px}
+  .datewrap .fin{font-size:15px}
+  .pc{font-size:15px;padding:11px 9px}
+  .splitbtn{font-size:14px}
+  .go{font-size:17px;padding:15px}
+  .sgn{width:31px;height:31px;font-size:16px}
+  .nav{display:flex;align-items:center;justify-content:center;flex:none;
+    width:42px;height:42px;border-radius:50%;font-size:22px;line-height:1;
+    color:var(--muted);background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.09);transition:.15s}
+  .nav:hover{background:rgba(255,255,255,.12);color:var(--ink)}
+  .nav:active{transform:scale(.92)}
+  .nav[disabled]{opacity:.22;cursor:default;background:rgba(255,255,255,.04)}
+  .nav[disabled]:hover{color:var(--muted)}
+}
+/* ---- swipe a row away ----
+   The row rides on top of a delete panel: drag it left to uncover, tap to
+   remove. Two deliberate moves, so there is no dialog in the way.       */
+.exw{position:relative;overflow:hidden;border-radius:13px;margin-bottom:6px}
+.exw .ex{margin-bottom:0;position:relative;z-index:1;
+  transition:transform .22s cubic-bezier(.22,.61,.36,1)}
+.exw.drag .ex{transition:none}
+.exw.open .ex,.exw.open .ex:active{transform:translateX(-88px)}
+/* the row sits on translucent glass, so the panel would otherwise show
+   straight through it. It stays invisible until the row starts moving. */
+.exdel{position:absolute;top:0;right:0;bottom:0;width:88px;display:flex;
+  align-items:center;justify-content:center;font-weight:800;font-size:12.5px;
+  letter-spacing:.02em;color:#F87171;border-radius:13px;
+  background:linear-gradient(90deg,rgba(248,113,113,.10),rgba(248,113,113,.30));
+  opacity:0;pointer-events:none;transition:opacity .16s linear}
+.exw.drag .exdel,.exw.open .exdel{opacity:1;pointer-events:auto}
+.exdel:active{background:rgba(248,113,113,.42);color:#fff}
+
 /* one heading style everywhere */
 .h2{font-weight:800;font-size:15px;letter-spacing:-.01em}
 .h2 em{font-style:normal;color:var(--vio)}
@@ -127,12 +259,16 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 /* the rose's own labels — no legend table any more, position does the
    connecting. Size is set per render so the type can step down when a
    crowded trip would otherwise collide; these only carry face and colour. */
-/* two shadows carry the labels over a bright petal: the tight one gives the
-   letterforms an edge, the wide diffuse one darkens the petal behind them.
-   No stroke, so nothing reads as a drawn outline.                         */
+/* Four shadows, each applied to the result of the last, so they compound
+   into a proper pool of dark rather than one soft blur. The two tight ones
+   hug the letterforms - that is what holds a coral name up against a coral
+   arc - and the wide ones darken the petal underneath. Still no stroke, so
+   nothing reads as a drawn outline.                                      */
 .orbits .rn,.orbits .rv,.orbits .rd,.orbits .rt,.orbits .rk{
-  filter:drop-shadow(0 1px 1px rgba(14,17,20,.55))
-         drop-shadow(0 0 6px rgba(14,17,20,.85))}
+  filter:drop-shadow(0 0 1.2px rgba(14,17,20,.98))
+         drop-shadow(0 0 2.5px rgba(14,17,20,.95))
+         drop-shadow(0 1px 3px rgba(14,17,20,.9))
+         drop-shadow(0 0 9px rgba(14,17,20,.95))}
 .orbits .rn{font-weight:700}
 .orbits .rv{fill:var(--ink);font-family:var(--mono)}
 .orbits .rd{font-weight:700;font-family:var(--mono)}
@@ -154,10 +290,13 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .sfr{transition:fill .38s cubic-bezier(.4,0,.2,1),fill-opacity .38s cubic-bezier(.4,0,.2,1)}
 .sfn{position:absolute;white-space:nowrap;font-weight:700;font-size:11.5px;line-height:1.25;
   pointer-events:none}
-/* the caption says which way the money goes, so the two banks never have to
-   be guessed at. Same colour, dropped back so the name still leads.      */
+/* the caption says which way the money goes and how much of it in total,
+   so a person splitting across two others reads as one sum. Same colour,
+   dropped back so the name still leads.                                 */
 .sfn i{display:block;font-style:normal;font-weight:600;font-size:9px;
-  letter-spacing:.08em;text-transform:uppercase;opacity:.72}
+  letter-spacing:.08em;text-transform:uppercase;opacity:.72;margin-top:2px}
+.sfn i b{display:block;margin-top:2px;font-family:var(--mono);font-weight:700;
+  letter-spacing:0;font-size:1.2em;opacity:1}
 .sfn.l{text-align:right}
 .sfp{position:absolute;appearance:none;cursor:pointer;display:flex;align-items:center;
   gap:6px;padding:4px 9px;border-radius:99px;background:rgba(14,17,20,.86);
@@ -170,9 +309,11 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .sfu{font-size:13.5px;font-weight:400;top:-1px}
 @keyframes sfnudge{0%,100%{transform:translateX(0);opacity:.8}
   50%{transform:translateX(2.5px);opacity:1}}
-.allsq{display:flex;align-items:center;gap:8px;color:var(--st-ink);font-weight:700;font-size:13px;
+.allsq{display:flex;align-items:center;justify-content:center;text-align:center;
+  gap:8px;color:var(--st-ink);font-weight:700;font-size:13px;
   background:rgba(13,148,136,.16);border:1px solid rgba(13,148,136,.3);border-radius:12px;padding:11px 13px;margin-bottom:14px}
 .allsq:last-child{margin-bottom:0}
+.allsq.dim{background:var(--soft);border-color:var(--line);color:var(--muted);font-weight:600}
 
 /* entry */
 .editing-note{display:none;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
@@ -185,7 +326,16 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .fin::placeholder{color:var(--faint)}
 .amount-in{position:relative;flex:1}
 .amount-in .cur{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-weight:700;color:var(--muted);font-size:13px}
-.amount-in .fin{width:100%;padding-left:32px;font-family:var(--mono);font-weight:600}
+.amount-in .fin{width:100%;padding-left:32px;padding-right:38px;font-family:var(--mono);font-weight:600}
+/* the number keypad has no minus key, so the sign gets its own. Small and
+   quiet while it says plus; it only speaks up once the amount turns.    */
+.sgn{position:absolute;right:5px;top:50%;transform:translateY(-50%);
+  width:27px;height:27px;border-radius:8px;font-family:var(--mono);
+  font-size:14px;font-weight:700;line-height:1;color:var(--faint);
+  background:rgba(255,255,255,.055);transition:.14s}
+.sgn:active{transform:translateY(-50%) scale(.9)}
+.amount-in.neg .sgn{color:var(--st-ink);background:rgba(94,234,212,.18)}
+.amount-in.neg .fin{color:var(--st-ink)}
 .datewrap{flex:1;position:relative}
 .datewrap .fin{width:100%;height:40px;padding:0 12px;font-size:13px;color:var(--muted);font-weight:600;
   -webkit-appearance:none;appearance:none;min-height:0;line-height:normal}
@@ -219,6 +369,9 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 
 /* expenses */
 .lh{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 7px;gap:8px}
+/* the logged expenses are a separate thing from the form above them, so a
+   hairline says so without another card edge.                          */
+#listWrap{border-top:1.5px solid rgba(255,255,255,.22);padding-top:16px;margin-top:15px}
 .lh .h2{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sort{display:flex;gap:4px;flex:none}
 .sc{font-size:9px;font-weight:700;color:var(--muted);border-radius:99px;padding:4px 9px;
@@ -320,33 +473,18 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
     <button class="go" id="emptyNewBtn">Create a trip</button>
   </section>
 
-  <!-- THE TAB -->
-  <section class="card" id="tabCard" hidden>
-    <div class="hrow">
-      <h2 class="h2">the tab <em id="forTrip0"></em></h2>
-      <button class="editbtn" id="editTripBtn">Edit</button>
-    </div>
-    <div id="needMembers" class="needmembers" hidden>
-      No members yet — <button id="addMembersBtn">add everyone going</button> to start.
-    </div>
-    <div class="orbits" id="orbits" hidden></div>
-    <div class="totC" id="totC"><span id="totalLbl"></span></div>
-    <div class="offtab" id="offtabLine" hidden></div>
-  </section>
+  <div class="deckstage" id="deckStage" hidden>
+  <button class="nav" id="deckPrev" aria-label="Previous card">‹</button>
+  <div class="deck" id="deck"><div class="deckrail" id="deckRail">
 
-  <!-- SETTLE -->
-  <section class="card" id="settleCard" hidden>
-    <h2 class="h2">to settle up <em id="forTrip3"></em></h2>
-    <div id="settleList"></div>
-  </section>
-
+  <div class="pane">
   <!-- ENTRY -->
   <section class="card" id="entryCard" hidden>
     <span class="editing-note">Editing expense</span>
     <h2 class="h2">add an expense <em id="forTrip1"></em></h2>
     <div class="frow"><input type="text" class="fin" id="expTitle" placeholder="Dinner, fuel, tickets…" autocomplete="off"></div>
     <div class="frow">
-      <div class="amount-in"><span class="cur" id="curSym">$</span><input type="text" class="fin" id="expAmount" inputmode="text" placeholder="0.00" autocomplete="off"></div>
+      <div class="amount-in"><span class="cur" id="curSym">$</span><input type="text" class="fin" id="expAmount" inputmode="decimal" enterkeyhint="done" placeholder="0.00" autocomplete="off"><button type="button" class="sgn" id="signBtn" aria-label="Switch between money spent and money coming back">+</button></div>
       <div class="datewrap"><input type="date" class="fin" id="expDate"></div>
     </div>
     <div class="flabel">Paid by</div>
@@ -366,7 +504,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   <!-- LIST -->
   <section id="listWrap" hidden>
     <div class="lh">
-      <h2 class="h2">expenses <em id="forTrip2"></em></h2>
+      <h2 class="h2">expense log <em id="forTrip2"></em></h2>
       <div class="sort" id="sortRow">
         <button class="sc" data-sort="date">date</button>
         <button class="sc" data-sort="user">user</button>
@@ -375,6 +513,40 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
     </div>
     <div id="expList"></div>
   </section>
+  </div>
+
+  <div class="pane">
+  <!-- THE TAB -->
+  <section class="card" id="tabCard" hidden>
+    <div class="hrow">
+      <h2 class="h2">the tab <em id="forTrip0"></em></h2>
+      <button class="editbtn" id="editTripBtn">Edit</button>
+    </div>
+    <div id="needMembers" class="needmembers" hidden>
+      No members yet — <button id="addMembersBtn">add everyone going</button> to start.
+    </div>
+    <div class="orbits" id="orbits" hidden></div>
+    <div class="totC" id="totC"><span id="totalLbl"></span></div>
+    <div class="offtab" id="offtabLine" hidden></div>
+  </section>
+  </div>
+
+  <div class="pane">
+  <!-- SETTLE -->
+  <section class="card" id="settleCard" hidden>
+    <h2 class="h2">to settle up <em id="forTrip3"></em></h2>
+    <div id="settleList"></div>
+  </section>
+  </div>
+
+  </div></div>
+  <button class="nav" id="deckNext" aria-label="Next card">›</button>
+  </div>
+  <div class="dots" id="deckDots" hidden>
+    <button data-p="0" aria-label="Add an expense"></button>
+    <button data-p="1" aria-label="The tab" class="on"></button>
+    <button data-p="2" aria-label="Settle up"></button>
+  </div>
 
 </main>
 
@@ -618,8 +790,8 @@ function rose(trip,people,sym){
   if(!n) return '';
   /* The rim is 14px off the edge instead of ~58: the labels moved INSIDE, so
      the petals get the margin back and the rose fills the card.           */
-  const S=384,C=S/2,HUB=50,R0=HUB+7,R1=C-14,MIN=7,GAP=5;
-  const FN=12.5,FV=11.5,FD=11.5;
+  const S=384,C=S/2,HUB=59,R0=HUB+7,R1=C-10,MIN=7,GAP=5;
+  const FN=17.5,FV=16,FD=16;
   const maxPaid=Math.max.apply(null,rows.map(p=>Math.max(0,p.paid)).concat([1]));
   const share=rows.reduce((a,p)=>a+p.share,0)/n;
   const total=rows.reduce((a,p)=>a+p.paid,0);
@@ -645,6 +817,9 @@ function rose(trip,people,sym){
      but the dashed line collapses toward the hub when one person paid most
      of the tab — so the radius is floored clear of the hub, then stepped
      outward, and the type steps down, until nothing collides.            */
+  /* a member's label rides that member's own wedge, so the one thing it can
+     collide with is that member's own bright outer band. Checking it here
+     is what stops a name being struck through by its own petal.        */
   function layout(sc,LR){
     const fn=FN*sc, fv=FV*sc, fd=FD*sc;
     const d1=-8*sc, d2=7*sc, d3=22*sc;
@@ -654,30 +829,41 @@ function rose(trip,people,sym){
       return {x:P[0],y:P[1],w:w,d1:d1,d2:d2,d3:d3,fn:fn,fv:fv,fd:fd,
         x0:P[0]-w/2,x1:P[0]+w/2,y0:P[1]+d1-fn*0.75,y1:P[1]+d3+fd*0.25};
     });
-    let ok=true;
-    /* clear of the hub, and still inside the outer rim */
-    boxes.forEach(b=>{
+    /* violations are counted rather than flagged, so that when no placement
+       is perfect - a crowded eight-person trip - the least bad one wins
+       instead of whichever was tried first.                             */
+    let bad=0;
+    /* clear of the hub, inside the outer rim, and off its own petal band */
+    boxes.forEach((b,i)=>{
+      let lo=1e9, hi=0;
       for(const px of [b.x0,(b.x0+b.x1)/2,b.x1])
         for(const py of [b.y0,(b.y0+b.y1)/2,b.y1]){
           const r=Math.hypot(px-C,py-C);
-          if(r<HUB+4||r>R1-3) ok=false;
+          if(r<lo) lo=r; if(r>hi) hi=r;
+          if(r<HUB+4||r>R1-3) bad+=6;
         }
+      const bandLo=reach[i]-9, bandHi=reach[i]+2;
+      /* sitting on your own arc is a nuisance the halo can carry, so it
+         counts for far less than two labels landing on each other.     */
+      if(lo<bandHi&&bandLo<hi) bad+=1;
     });
-    for(let a=0;a<boxes.length&&ok;a++)
+    for(let a=0;a<boxes.length;a++)
       for(let b=a+1;b<boxes.length;b++)
         if(boxes[a].x0<boxes[b].x1-2 && boxes[b].x0<boxes[a].x1-2
-        && boxes[a].y0<boxes[b].y1-2 && boxes[b].y0<boxes[a].y1-2){ ok=false; break; }
-    return {ok:ok,boxes:boxes};
+        && boxes[a].y0<boxes[b].y1-2 && boxes[b].y0<boxes[a].y1-2) bad+=12;
+    /* shrinking the type is itself a cost, so the walker only does it when
+       it actually buys a cleaner placement.                            */
+    return {ok:bad===0,bad:bad+(1-sc)*9,boxes:boxes};
   }
   const LR0=Math.max(HUB+30,Math.min(rFair-28,R1-40));
   let out=null;
   outer:
-  for(let sc=1; sc>=0.549; sc-=0.05)
+  for(let sc=1; sc>=0.499; sc-=0.04)
     for(let k=0;k<9;k++){
       const LR=Math.min(LR0+k*10,R1-32);
       const t=layout(sc,LR);
       if(t.ok){ out=t; break outer; }
-      out=out||t;
+      if(!out||t.bad<out.bad) out=t;
     }
   const boxes=out.boxes;
   let body='', labels='';
@@ -703,7 +889,7 @@ function rose(trip,people,sym){
   const custom=rows.some(p=>Math.abs(p.share-share)>1);
   const c1='total', c2=custom?'avg each':'each';
   const t1=fmt0(total,sym), t2=fmt0(Math.round(share),sym);
-  let FT=16, hub=null;
+  let FT=22, hub=null;
   for(; FT>=6; FT-=0.25){
     const FC=FT*0.62;
     const ln=[{t:c1,f:FC,w:c1.length*FC*0.55},
@@ -746,7 +932,7 @@ function rose(trip,people,sym){
    builds - {from,to,amt,paid,id}.                                        */
 function settleFlow(trip,rows,sym){
   if(!rows||!rows.length) return '';
-  const W=364,H=188,LX=74,RX=290,TOP=14,GAP=12,PILL=26,TEAL='#5EEAD4';
+  const W=364,H=430,LX=78,RX=286,TOP=20,GAP=18,PILL=33,TEAL='#5EEAD4';
   const payers=[],payees=[],outT={},inT={};
   rows.forEach(r=>{
     if(outT[r.from]==null){outT[r.from]=0;payers.push(r.from);} outT[r.from]+=r.amt;
@@ -763,12 +949,12 @@ function settleFlow(trip,rows,sym){
   const pctX=v=>_n(v/W*100)+'%', pctY=v=>_n(v/H*100)+'%';
   let svg='<svg viewBox="0 0 '+W+' '+H+'" aria-hidden="true">', names='';
   payers.forEach(m=>{
-    svg+='<path d="M'+(LX-7)+' '+_n(lT[m])+'h6v'+_n(outT[m]/grand*lS)+'h-6Z" fill="'+memColor(trip,m)+'" fill-opacity=".95"/>';
-    names+='<div class="sfn l" style="left:'+pctX(LX-14)+';top:'+pctY(lT[m]+outT[m]/grand*lS/2)+';transform:translate(-100%,-50%);color:'+memColor(trip,m)+'">'+esc(m)+'<i>pays</i></div>';
+    svg+='<path d="M'+(LX-9)+' '+_n(lT[m])+'h8v'+_n(outT[m]/grand*lS)+'h-8Z" fill="'+memColor(trip,m)+'" fill-opacity=".95"/>';
+    names+='<div class="sfn l" style="left:'+pctX(LX-14)+';top:'+pctY(lT[m]+outT[m]/grand*lS/2)+';transform:translate(-100%,-50%);color:'+memColor(trip,m)+'">'+esc(m)+'<i>pays<b>'+fmt(outT[m],sym)+'</b></i></div>';
   });
   payees.forEach(m=>{
-    svg+='<path d="M'+(RX+1)+' '+_n(rT[m])+'h6v'+_n(inT[m]/grand*rS)+'h-6Z" fill="'+memColor(trip,m)+'" fill-opacity=".95"/>';
-    names+='<div class="sfn" style="left:'+pctX(RX+14)+';top:'+pctY(rT[m]+inT[m]/grand*rS/2)+';transform:translateY(-50%);color:'+memColor(trip,m)+'">'+esc(m)+'<i>gets</i></div>';
+    svg+='<path d="M'+(RX+1)+' '+_n(rT[m])+'h8v'+_n(inT[m]/grand*rS)+'h-8Z" fill="'+memColor(trip,m)+'" fill-opacity=".95"/>';
+    names+='<div class="sfn" style="left:'+pctX(RX+14)+';top:'+pctY(rT[m]+inT[m]/grand*rS/2)+';transform:translateY(-50%);color:'+memColor(trip,m)+'">'+esc(m)+'<i>gets<b>'+fmt(inT[m],sym)+'</b></i></div>';
   });
   const seat=[];
   rows.forEach((r,i)=>{
@@ -829,6 +1015,7 @@ function renderAll(rebuildForm){
   $('tripbar').hidden=!trips.length;
   $('emptyState').hidden=!!trips.length;
   $('tabCard').hidden=!sel;
+  $('deckStage').hidden=!sel; $('deckDots').hidden=!sel;
   $('settleCard').hidden=true;
   $('whoChip').hidden=!sel;
 
@@ -869,13 +1056,17 @@ function renderAll(rebuildForm){
   $('curSym').textContent=sym;
   renderWhoChip();
   if(rebuildForm!==false) renderForm();
+  closeRows(); deckSize();
 }
 
 function renderSettle(trip,exps,r,sym){
   const pays=exps.filter(isPay).sort((a,b)=>expDate(b).localeCompare(expDate(a)));
+  /* the settle pane is one of three fixed cards now, so it always shows -
+     when there is nothing on the tab it says so rather than vanishing.  */
+  $('settleCard').hidden=false;
   const show=r.count||pays.length;
-  $('settleCard').hidden=!show;
-  if(!show) return;
+  if(!show){ $('settleList').innerHTML=
+    '<div class="allsq dim">Nothing to settle yet \u2014 add an expense first.</div>'; return; }
   /* open debts and settled ones live in ONE diagram: a ribbon per payment,
      ordered biggest payer first. Paying one changes how it looks and where
      its pill sits, never which ribbon it is.                             */
@@ -888,7 +1079,7 @@ function renderSettle(trip,exps,r,sym){
     || a.from.localeCompare(b.from)
     || (b.amt-a.amt));
   const html = (!r.settle.length&&r.count)
-    ? '<div class="allsq">✓ All square — this trip is fully settled 🎉</div>' : '';
+    ? '<div class="allsq">All square — this trip is fully settled</div>' : '';
   $('settleList').innerHTML=html+settleFlow(trip,rows,sym);
 }
 
@@ -910,25 +1101,27 @@ function renderList(trip,exps,sym){
     const col=memColor(trip,x.paid_by);
     if(isSide(x)){                                   // money handed straight over
       const to=(x.split_members||[])[0]||'?', ct=memColor(trip,to);
-      return '<button class="ex xfer" data-id="'+esc(x.expense_id)+'">'
+      return '<div class="exw"><button class="exdel" data-del="'+esc(x.expense_id)+'">Delete</button>'
+        +'<button class="ex xfer" data-id="'+esc(x.expense_id)+'">'
         +'<span class="av" style="background:'+col+'">'+esc(initial(x.paid_by))+'</span>'
         +'<span class="mid"><span class="t">'+esc(x.title)+'</span>'
         +'<span class="m"><b style="color:'+col+'">'+esc(x.paid_by)+'</b> → '
         +'<b style="color:'+ct+'">'+esc(to)+'</b> · '+fmtDate(expDate(x))
         +' · <span class="xtag">transfer</span></span></span>'
-        +'<span class="a xf">'+fmt(Math.round(x.amount*100),sym)+'</span></button>';
+        +'<span class="a xf">'+fmt(Math.round(x.amount*100),sym)+'</span></button></div>';
     }
     const parts=x.excluded?'':(x.split_members&&x.split_members.length
       ? ' · split '+x.split_members.length+' way'+(x.split_members.length>1?'s':'')
         +' ('+esc(x.split_members.join(', '))+')'
       : ' · everyone');
-    return '<button class="ex'+(x.excluded?' off':'')+'" data-id="'+esc(x.expense_id)+'">'
+    return '<div class="exw"><button class="exdel" data-del="'+esc(x.expense_id)+'">Delete</button>'
+      +'<button class="ex'+(x.excluded?' off':'')+'" data-id="'+esc(x.expense_id)+'">'
       +'<span class="av" style="background:'+col+'">'+esc(initial(x.paid_by))+'</span>'
       +'<span class="mid"><span class="t">'+esc(x.title)+'</span>'
       +'<span class="m"><b style="color:'+col+'">'+esc(x.paid_by)+'</b> · '+fmtDate(expDate(x))+parts
       +(isRefund(x)?' · <span class="rtag">refund</span>':'')
       +(x.excluded?' · <span class="offtag">off the tab</span>':'')+'</span></span>'
-      +'<span class="a'+(x.amount<0?' cr':'')+'">'+fmt(Math.round(x.amount*100),sym)+'</span></button>';
+      +'<span class="a'+(x.amount<0?' cr':'')+'">'+fmt(Math.round(x.amount*100),sym)+'</span></button></div>';
   };
   let html='';
   if(sortMode==='user'){
@@ -1000,6 +1193,7 @@ function renderForm(){
   $('splitToggle').hidden=$('excludedT').checked;
   if($('excludedT').checked) $('splitGrid').hidden=true;
   if(!$('expDate').value) $('expDate').value=todayStr();
+  syncSign();
 }
 
 function resetForm(){
@@ -1065,9 +1259,15 @@ function startEdit(id){
 function deleteExpense(){
   if(!editingId) return;
   if(!confirm('Delete this expense for everyone?')) return;
-  const id=editingId;
+  dropExpense(editingId);
+}
+/* the swipe path comes here straight: uncovering the panel and tapping it
+   are already two deliberate moves, so it does not ask again.          */
+function dropExpense(id){
+  if(!id) return;
   db.expenses=db.expenses.filter(x=>x.expense_id!==id);
-  saveLocal(); resetForm(); renderAll(false); cloudDeleteExp(id); flash('Deleted');
+  if(editingId===id) resetForm();
+  saveLocal(); renderAll(false); cloudDeleteExp(id); flash('Deleted');
 }
 function recordPayment(from,to,amtCents){
   const row={expense_id:uid(),trip_id:sel,title:'Payment',amount:amtCents/100,paid_by:from,
@@ -1252,10 +1452,128 @@ $('saveBtn').addEventListener('click',saveExpense);
 $('cancelEditBtn').addEventListener('click',resetForm);
 $('deleteExpBtn').addEventListener('click',deleteExpense);
 $('expList').addEventListener('click',e=>{
+  const d=e.target.closest('.exdel');
+  if(d){ dropExpense(d.dataset.del); return; }
   const b=e.target.closest('.ex'); if(!b) return;
+  /* an open row swallows the first tap - it closes instead of opening the
+     expense, which is what every list with a swipe panel does.         */
+  if(b.closest('.exw.open')){ closeRows(); return; }
   const x=db.expenses.find(z=>z.expense_id===b.dataset.id);
   if(x&&isSide(x)) undoPayment(x.expense_id); else startEdit(b.dataset.id);
 });
+
+/* ---- driving the deck ----
+   One horizontal gesture layer for the whole deck. A drag that starts on an
+   expense row belongs to that row; anywhere else it moves the deck. Which
+   one it is gets decided on the first few pixels of movement, so a vertical
+   scroll is never stolen by either of them.                             */
+const DEL_W=88;
+let pane=1, deckW=0, grab=null;
+function closeRows(){
+  document.querySelectorAll('.exw.open,.exw.drag').forEach(r=>{
+    r.classList.remove('open','drag');
+    const b=r.querySelector('.ex'); if(b) b.style.transform='';
+  });
+}
+/* one number drives the whole carousel: how far along the deck we are, in
+   panes. 1.4 means pane 1 is sliding away and pane 2 is coming forward.
+   Distance from that number decides each pane's slide, scale, depth and
+   fade, so a finger-drag and a snap use exactly the same maths.        */
+function applyDeck(prog,snap){
+  const panes=document.querySelectorAll('#deckRail .pane');
+  for(let i=0;i<panes.length;i++){
+    const p=panes[i];
+    const d=i-prog, a=Math.min(Math.abs(d),1.6);
+    p.classList.toggle('rest',snap!==false);
+    p.classList.toggle('back',Math.abs(d)>0.5);
+    p.style.transform='translateX('+(d*104).toFixed(2)+'%) scale('
+      +(1-a*0.19).toFixed(4)+') translateZ('+(-a*150).toFixed(1)+'px)';
+    p.style.opacity=Math.max(0,1-a*0.5).toFixed(3);
+    p.style.zIndex=String(20-Math.round(a*10));
+  }
+}
+function setPane(i,snap){
+  pane=Math.max(0,Math.min(2,i));
+  applyDeck(pane,snap);
+  const ds=$('deckDots').children;
+  for(let k=0;k<ds.length;k++) ds[k].classList.toggle('on',k===pane);
+  $('deckPrev').disabled=pane===0; $('deckNext').disabled=pane===2;
+  closeRows();
+}
+/* every pane is the same height: whatever the screen has left underneath
+   the trip bar, less the dots. Measured rather than guessed, so the iOS
+   toolbars and the safe area are all accounted for.                    */
+function deckSize(){
+  const deck=$('deck'); if(!deck||$('deckStage').hidden) return;
+  deckW=deck.clientWidth||1;
+  const vh=(window.visualViewport&&window.visualViewport.height)||window.innerHeight;
+  const top=deck.getBoundingClientRect().top;
+  const dots=$('deckDots').offsetHeight||0;
+  deck.style.setProperty('--paneh',Math.max(240,Math.round(vh-top-dots-12))+'px');
+  applyDeck(pane,false);
+}
+$('deckDots').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(b) setPane(+b.dataset.p,true);
+});
+$('deck').addEventListener('touchstart',e=>{
+  if($('deckStage').hidden||e.touches.length>1){ grab=null; return; }
+  const t=e.touches[0], row=e.target.closest('.exw');
+  grab={x:t.clientX,y:t.clientY,ax:null,row:row,
+    from:row&&row.classList.contains('open')?-DEL_W:0};
+},{passive:true});
+$('deck').addEventListener('touchmove',e=>{
+  if(!grab) return;
+  const t=e.touches[0], dx=t.clientX-grab.x, dy=t.clientY-grab.y;
+  if(grab.ax===null){
+    if(Math.abs(dx)<7&&Math.abs(dy)<7) return;
+    grab.ax=Math.abs(dx)>Math.abs(dy)?'x':'y';
+    if(grab.ax==='x'){ if(grab.row) grab.row.classList.add('drag'); else closeRows(); }
+  }
+  if(grab.ax!=='x') return;
+  e.preventDefault();
+  if(grab.row){
+    const v=Math.max(-DEL_W-24,Math.min(0,grab.from+dx));
+    const b=grab.row.querySelector('.ex'); if(b) b.style.transform='translateX('+v+'px)';
+  }else{
+    /* past either end the deck follows at a third speed, so it feels held
+       rather than stuck                                                */
+    let v=pane-dx/deckW;
+    if(v<0) v*=.34;
+    if(v>2) v=2+(v-2)*.34;
+    applyDeck(v,false);
+  }
+},{passive:false});
+function deckRelease(e){
+  const g=grab; grab=null;
+  if(!g||g.ax!=='x') return;
+  const dx=(e.changedTouches?e.changedTouches[0].clientX:g.x)-g.x;
+  if(g.row){
+    const b=g.row.querySelector('.ex');
+    g.row.classList.remove('drag');
+    if(b) b.style.transform='';
+    const open=(g.from+dx)<-DEL_W/2;
+    closeRows();
+    g.row.classList.toggle('open',open);
+  }else{
+    setPane(pane+(dx<-44?1:dx>44?-1:0),true);
+  }
+}
+$('deck').addEventListener('touchend',deckRelease);
+$('deck').addEventListener('touchcancel',deckRelease);
+/* the arrows are the desktop's swipe, and the keys work alongside them */
+$('deckPrev').addEventListener('click',()=>setPane(pane-1,true));
+$('deckNext').addEventListener('click',()=>setPane(pane+1,true));
+document.addEventListener('keydown',e=>{
+  if(sheetOpen||$('deckStage').hidden) return;
+  const t=e.target.tagName;
+  if(t==='INPUT'||t==='SELECT'||t==='TEXTAREA') return;
+  if(e.key==='ArrowLeft') setPane(pane-1,true);
+  else if(e.key==='ArrowRight') setPane(pane+1,true);
+});
+window.addEventListener('resize',deckSize);
+window.addEventListener('orientationchange',()=>setTimeout(deckSize,220));
+if(window.visualViewport) window.visualViewport.addEventListener('resize',deckSize);
+
 $('settleList').addEventListener('click',e=>{
   const b=e.target.closest('.sfp'); if(!b) return;
   /* the pill crosses to the far bank first - that travel is the whole
@@ -1278,6 +1596,19 @@ $('sortRow').addEventListener('click',e=>{
   const trip=curTrip(); if(trip) renderList(trip,tripExps(),trip.currency);
 });
 $('expAmount').addEventListener('keydown',e=>{ if(e.key==='Enter') saveExpense(); });
+/* a leading minus IS the state - nothing is stored alongside it, so the key
+   and the field can never disagree.                                     */
+function syncSign(){
+  const f=$('expAmount'), neg=f.value.trim().startsWith('-');
+  $('signBtn').textContent=neg?'\u2212':'+';
+  f.parentNode.classList.toggle('neg',neg);
+}
+$('expAmount').addEventListener('input',syncSign);
+$('signBtn').addEventListener('click',()=>{
+  const f=$('expAmount'), v=f.value.trim();
+  f.value=v.startsWith('-')?v.slice(1):('-'+v);
+  syncSign(); f.focus();
+});
 
 /* ---- live-ish sync ---- */
 const canRefresh=()=>!sheetOpen&&!editingId&&!inflight&&!pendingPut.size&&!pendingDel.size;
