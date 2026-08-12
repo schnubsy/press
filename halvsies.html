@@ -134,7 +134,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   filter:drop-shadow(0 1px 1px rgba(14,17,20,.55))
          drop-shadow(0 0 6px rgba(14,17,20,.85))}
 .orbits .rn{font-weight:700}
-.orbits .rv{fill:var(--muted);font-family:var(--mono)}
+.orbits .rv{fill:var(--ink);font-family:var(--mono)}
 .orbits .rd{font-weight:700;font-family:var(--mono)}
 .orbits .rt{font-weight:700;fill:var(--ink);font-family:var(--mono)}
 .orbits .rk{fill:var(--faint);font-family:var(--font);font-weight:600}
@@ -152,8 +152,13 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .sfw{position:relative;width:100%;margin:0 auto}
 .sfw svg{display:block;width:100%;height:auto;overflow:visible}
 .sfr{transition:fill .38s cubic-bezier(.4,0,.2,1),fill-opacity .38s cubic-bezier(.4,0,.2,1)}
-.sfn{position:absolute;white-space:nowrap;font-weight:700;font-size:11.5px;line-height:1;
+.sfn{position:absolute;white-space:nowrap;font-weight:700;font-size:11.5px;line-height:1.25;
   pointer-events:none}
+/* the caption says which way the money goes, so the two banks never have to
+   be guessed at. Same colour, dropped back so the name still leads.      */
+.sfn i{display:block;font-style:normal;font-weight:600;font-size:9px;
+  letter-spacing:.08em;text-transform:uppercase;opacity:.72}
+.sfn.l{text-align:right}
 .sfp{position:absolute;appearance:none;cursor:pointer;display:flex;align-items:center;
   gap:6px;padding:4px 9px;border-radius:99px;background:rgba(14,17,20,.86);
   border:1px solid;font-family:var(--mono);font-size:10px;font-weight:700;
@@ -436,6 +441,10 @@ function toCents(v){ let s=String(v).replace(/[^0-9.,-]/g,'');
   if(s.includes('.')&&s.includes(',')) s=s.replace(/,/g,''); else s=s.replace(',','.');
   const n=parseFloat(s); return isFinite(n)?Math.round(n*100):NaN; }
 function fmt(cents,sym){ const v=Math.abs(cents)/100; return (cents<0?'-':'')+(sym||'$')+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+/* the rose speaks in whole dollars - at label size the cents are noise, and
+   dropping them buys the room the figures need. Display only.          */
+function fmt0(cents,sym){ const v=Math.round(Math.abs(cents)/100);
+  return (cents<0?'-':'')+(sym||'$')+v.toLocaleString(); }
 function fmtShort(cents,sym){ const v=Math.abs(cents)/100;
   return (sym||'$')+(v>=1000?Math.round(v).toLocaleString():v.toLocaleString(undefined,{maximumFractionDigits:0})); }
 function fmtDate(d){ if(!d) return ''; try{ const dt=new Date(d.length>10?d:d+'T00:00:00');
@@ -617,10 +626,10 @@ function rose(trip,people,sym){
   const SCL=(R1-R0-MIN)/maxPaid, rFair=R0+MIN+share*SCL;
   const reach=rows.map(p=>R0+MIN+Math.max(0,p.paid)*SCL);
   /* the two mono numbers are padded to a common character count so their
-     decimal points sit on the same vertical                              */
+     last digits sit on the same vertical                                */
   const lab=rows.map((p,i)=>{
-    const amt=fmt(p.paid,sym), d=p.paid-p.share;
-    const del=(d>0?'+':d<0?'\u2212':'')+fmt(Math.abs(d),sym);
+    const amt=fmt0(p.paid,sym), d=p.paid-p.share;
+    const del=(d>0?'+':d<0?'\u2212':'')+fmt0(Math.abs(d),sym);
     const w=Math.max(amt.length,del.length), pad=t=>'\u00A0'.repeat(w-t.length)+t;
     return {name:p.m,amt:pad(amt),del:pad(del),d:d,mid:(i+0.5)*360/n};
   });
@@ -685,7 +694,7 @@ function rose(trip,people,sym){
   });
   /* fair share and hub paint last so they read on top of every petal */
   body+='<circle cx="'+C+'" cy="'+C+'" r="'+_n(rFair)+'" fill="none" stroke="#F2F4F6"'
-    +' stroke-width="1.5" stroke-opacity=".6" stroke-dasharray="4 4"/>'
+    +' stroke-width="1" stroke-opacity=".42" stroke-linecap="round" stroke-dasharray="0.1 5"/>'
     +'<circle cx="'+C+'" cy="'+C+'" r="'+HUB+'" fill="#0E1114" fill-opacity=".95" stroke="#2C3238" stroke-width="1"/>';
   /* the hub reads caption / total, then a beat, then the per-head figure and
      its caption. Four short lines stack into the disc far better than two
@@ -693,7 +702,7 @@ function rose(trip,people,sym){
      The type steps down until every line sits inside the black.           */
   const custom=rows.some(p=>Math.abs(p.share-share)>1);
   const c1='total', c2=custom?'avg each':'each';
-  const t1=fmt(total,sym), t2=fmt(Math.round(share),sym);
+  const t1=fmt0(total,sym), t2=fmt0(Math.round(share),sym);
   let FT=16, hub=null;
   for(; FT>=6; FT-=0.25){
     const FC=FT*0.62;
@@ -755,11 +764,11 @@ function settleFlow(trip,rows,sym){
   let svg='<svg viewBox="0 0 '+W+' '+H+'" aria-hidden="true">', names='';
   payers.forEach(m=>{
     svg+='<path d="M'+(LX-7)+' '+_n(lT[m])+'h6v'+_n(outT[m]/grand*lS)+'h-6Z" fill="'+memColor(trip,m)+'" fill-opacity=".95"/>';
-    names+='<div class="sfn" style="left:'+pctX(LX-14)+';top:'+pctY(lT[m]+outT[m]/grand*lS/2)+';transform:translate(-100%,-50%);color:'+memColor(trip,m)+'">'+esc(m)+'</div>';
+    names+='<div class="sfn l" style="left:'+pctX(LX-14)+';top:'+pctY(lT[m]+outT[m]/grand*lS/2)+';transform:translate(-100%,-50%);color:'+memColor(trip,m)+'">'+esc(m)+'<i>pays</i></div>';
   });
   payees.forEach(m=>{
     svg+='<path d="M'+(RX+1)+' '+_n(rT[m])+'h6v'+_n(inT[m]/grand*rS)+'h-6Z" fill="'+memColor(trip,m)+'" fill-opacity=".95"/>';
-    names+='<div class="sfn" style="left:'+pctX(RX+14)+';top:'+pctY(rT[m]+inT[m]/grand*rS/2)+';transform:translateY(-50%);color:'+memColor(trip,m)+'">'+esc(m)+'</div>';
+    names+='<div class="sfn" style="left:'+pctX(RX+14)+';top:'+pctY(rT[m]+inT[m]/grand*rS/2)+';transform:translateY(-50%);color:'+memColor(trip,m)+'">'+esc(m)+'<i>gets</i></div>';
   });
   const seat=[];
   rows.forEach((r,i)=>{
