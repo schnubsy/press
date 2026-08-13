@@ -130,8 +130,10 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .deckrail{position:absolute;inset:0;transform-style:preserve-3d}
 .pane{position:absolute;inset:0;padding:2px 16px 4px;
   overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
-  touch-action:pan-y;scrollbar-width:none;
-  will-change:transform,opacity;backface-visibility:hidden}
+  touch-action:pan-y;scrollbar-width:none;backface-visibility:hidden}
+.deckrail.moving .pane{will-change:transform,opacity}
+/* nothing animates on a card you cannot see */
+.pane.back .sfa{animation:none}
 .pane::-webkit-scrollbar{display:none}
 .pane.rest{transition:transform .44s cubic-bezier(.25,.8,.3,1),
                       opacity .44s cubic-bezier(.25,.8,.3,1)}
@@ -155,31 +157,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 /* a desktop has no swipe, so it gets arrows instead. They sit beside the
    deck rather than on top of it, so nothing covers the card.          */
 .nav{display:none}
-@media (max-width:700px){
-  .deck{margin:0 -16px}
-  /* the cards are a whole screen tall now, so everything on them steps up
-     a size rather than floating in the middle of all that room.        */
-  .h2{font-size:19px}
-  .pane>.card:only-child{padding:16px 14px 18px}
-  .ex{padding:11px 12px}
-  .ex .t{font-size:15px}
-  .ex .m{font-size:11px}
-  .ex .a{font-size:14.5px}
-  .ex .av{width:33px;height:33px;border-radius:11px;font-size:13px}
-  .sfn{font-size:14px}
-  .sfn i{font-size:10.5px}
-  .sfp{font-size:12.5px;padding:6px 12px;gap:7px}
-  .sfa{font-size:18px}
-  .sfu{font-size:16px}
-  .gl{font-size:11px}
-  .allsq{font-size:15px;padding:14px 16px}
-  .flabel{font-size:12px}
-  .fin{font-size:16px}
-  .pc{font-size:13.5px;padding:9px 7px}
-  .splitbtn{font-size:12.5px}
-  .go{font-size:15.5px;padding:13px}
-  .datewrap .fin{font-size:14px}
-}
+
 /* ---- the same deck, given a desktop's room ----
    More width means the cards can be bigger, but a rose is square and the
    flow diagram is tall, so past a point width is not the constraint -
@@ -187,45 +165,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
    the .sfw box carries the diagram's own aspect ratio: the pills are
    placed as percentages of that box, so it has to match the drawing
    exactly or they land in the wrong place.                            */
-@media (min-width:701px){
-  .wrap{max-width:860px}
-  .pane{padding:2px 3px 4px}
-  .pane>.card:only-child{padding:22px 24px 24px}
-  .pane>.card:only-child>.orbits{margin:0;padding:6px 0}
-  .pane>.card:only-child>.orbits>svg{width:auto;height:100%;max-width:100%}
-  .sfw{height:100%;width:auto;aspect-ratio:364/430;max-width:100%}
-  .sfw svg{width:100%;height:100%}
-  .h2{font-size:22px}
-  .editbtn{font-size:12px;padding:8px 15px}
-  .ex{padding:13px 15px}
-  .ex .t{font-size:16px}
-  .ex .m{font-size:12px}
-  .ex .a{font-size:16px}
-  .ex .av{width:38px;height:38px;border-radius:12px;font-size:15px}
-  .sfn{font-size:16px}
-  .sfn i{font-size:11.5px}
-  .sfp{font-size:14px;padding:7px 14px;gap:8px}
-  .sfa{font-size:20px}
-  .sfu{font-size:18px}
-  .gl{font-size:12px}
-  .allsq{font-size:17px;padding:16px 20px}
-  .flabel{font-size:12px}
-  .fin{font-size:17px}
-  .amount-in .fin,.datewrap .fin{height:46px}
-  .datewrap .fin{font-size:15px}
-  .pc{font-size:15px;padding:11px 9px}
-  .splitbtn{font-size:14px}
-  .go{font-size:17px;padding:15px}
-  .sgn{width:31px;height:31px;font-size:16px}
-  .nav{display:flex;align-items:center;justify-content:center;flex:none;
-    width:42px;height:42px;border-radius:50%;font-size:22px;line-height:1;
-    color:var(--muted);background:rgba(255,255,255,.06);
-    border:1px solid rgba(255,255,255,.09);transition:.15s}
-  .nav:hover{background:rgba(255,255,255,.12);color:var(--ink)}
-  .nav:active{transform:scale(.92)}
-  .nav[disabled]{opacity:.22;cursor:default;background:rgba(255,255,255,.04)}
-  .nav[disabled]:hover{color:var(--muted)}
-}
+
 /* ---- swipe a row away ----
    The row rides on top of a delete panel: drag it left to uncover, tap to
    remove. Two deliberate moves, so there is no dialog in the way.       */
@@ -449,6 +389,77 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 :focus-visible{outline:2px solid var(--vio);outline-offset:2px}
+/* ---- size overrides ----
+   These two blocks sit last on purpose. Every rule in them competes with a
+   base rule of the same weight, so source order alone decides the winner -
+   anywhere earlier and they are silently ignored.                       */
+@media (max-width:700px){
+  .deck{margin:0 -16px}
+  /* the cards are a whole screen tall now, so everything on them steps up
+     a size rather than floating in the middle of all that room.        */
+  .h2{font-size:19px}
+  .pane>.card:only-child{padding:16px 14px 18px}
+  .ex{padding:11px 12px}
+  .ex .t{font-size:15px}
+  .ex .m{font-size:11px}
+  .ex .a{font-size:14.5px}
+  .ex .av{width:33px;height:33px;border-radius:11px;font-size:13px}
+  .sfn{font-size:14px}
+  .sfn i{font-size:10.5px}
+  .sfp{font-size:12.5px;padding:6px 12px;gap:7px}
+  .sfa{font-size:18px}
+  .sfu{font-size:16px}
+  .gl{font-size:11px}
+  .allsq{font-size:15px;padding:14px 16px}
+  .flabel{font-size:12px}
+  /* iOS zooms the page in whenever a focused input is under 16px, and it
+     does not zoom back out afterwards - which left the whole app sitting
+     enlarged and off-centre for the rest of the session. Every field on a
+     phone is pinned to 16px for that reason alone.                     */
+  .fin,.amount-in .fin,.datewrap .fin,.field .fin,.memrow .fin{font-size:16px}
+  .pc{font-size:13.5px;padding:9px 7px}
+  .splitbtn{font-size:12.5px}
+  .go{font-size:15.5px;padding:13px}
+}
+@media (min-width:701px){
+  .wrap{max-width:860px}
+  .pane{padding:2px 3px 4px}
+  .pane>.card:only-child{padding:22px 24px 24px}
+  .pane>.card:only-child>.orbits{margin:0;padding:6px 0}
+  .pane>.card:only-child>.orbits>svg{width:auto;height:100%;max-width:100%}
+  .sfw{height:100%;width:auto;aspect-ratio:364/430;max-width:100%}
+  .sfw svg{width:100%;height:100%}
+  .h2{font-size:22px}
+  .editbtn{font-size:12px;padding:8px 15px}
+  .ex{padding:13px 15px}
+  .ex .t{font-size:16px}
+  .ex .m{font-size:12px}
+  .ex .a{font-size:16px}
+  .ex .av{width:38px;height:38px;border-radius:12px;font-size:15px}
+  .sfn{font-size:16px}
+  .sfn i{font-size:11.5px}
+  .sfp{font-size:14px;padding:7px 14px;gap:8px}
+  .sfa{font-size:20px}
+  .sfu{font-size:18px}
+  .gl{font-size:12px}
+  .allsq{font-size:17px;padding:16px 20px}
+  .flabel{font-size:12px}
+  .fin{font-size:17px}
+  .amount-in .fin,.datewrap .fin{height:46px}
+  .datewrap .fin{font-size:16px}
+  .pc{font-size:15px;padding:11px 9px}
+  .splitbtn{font-size:14px}
+  .go{font-size:17px;padding:15px}
+  .sgn{width:31px;height:31px;font-size:16px}
+  .nav{display:flex;align-items:center;justify-content:center;flex:none;
+    width:42px;height:42px;border-radius:50%;font-size:22px;line-height:1;
+    color:var(--muted);background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.09);transition:.15s}
+  .nav:hover{background:rgba(255,255,255,.12);color:var(--ink)}
+  .nav:active{transform:scale(.92)}
+  .nav[disabled]{opacity:.22;cursor:default;background:rgba(255,255,255,.04)}
+  .nav[disabled]:hover{color:var(--muted)}
+}
 </style>
 </head>
 <body>
@@ -608,20 +619,26 @@ const PAL=['#7C5CFF','#FF6B5E','#14B8A6','#F59E0B','#3B82F6','#EC4899','#84CC16'
 
 /* ---- helpers ---- */
 const $=id=>document.getElementById(id);
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ESCMAP={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>ESCMAP[c]);
 const uid=()=> (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10));
 const nowIso=()=>new Date().toISOString();
 const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 function toCents(v){ let s=String(v).replace(/[^0-9.,-]/g,'');
   if(s.includes('.')&&s.includes(',')) s=s.replace(/,/g,''); else s=s.replace(',','.');
   const n=parseFloat(s); return isFinite(n)?Math.round(n*100):NaN; }
-function fmt(cents,sym){ const v=Math.abs(cents)/100; return (cents<0?'-':'')+(sym||'$')+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+/* Number.toLocaleString builds a fresh formatter on every call, which makes
+   it about forty times dearer than reusing one - and a busy trip formats a
+   hundred-odd amounts per render. Same output, held once.              */
+const NF2=new Intl.NumberFormat(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const NF0=new Intl.NumberFormat(undefined,{maximumFractionDigits:0});
+function fmt(cents,sym){ const v=Math.abs(cents)/100; return (cents<0?'-':'')+(sym||'$')+NF2.format(v); }
 /* the rose speaks in whole dollars - at label size the cents are noise, and
    dropping them buys the room the figures need. Display only.          */
 function fmt0(cents,sym){ const v=Math.round(Math.abs(cents)/100);
-  return (cents<0?'-':'')+(sym||'$')+v.toLocaleString(); }
+  return (cents<0?'-':'')+(sym||'$')+NF0.format(v); }
 function fmtShort(cents,sym){ const v=Math.abs(cents)/100;
-  return (sym||'$')+(v>=1000?Math.round(v).toLocaleString():v.toLocaleString(undefined,{maximumFractionDigits:0})); }
+  return (sym||'$')+NF0.format(v>=1000?Math.round(v):v); }
 function fmtDate(d){ if(!d) return ''; try{ const dt=new Date(d.length>10?d:d+'T00:00:00');
   return dt.toLocaleDateString(undefined,{month:'short',day:'numeric'}); }catch(e){ return ''; } }
 function fmtDay(d){ if(!d) return 'No date'; try{ const dt=new Date(d.length>10?d:d+'T00:00:00');
@@ -637,6 +654,7 @@ function shade(hex,f){ const n=parseInt(hex.slice(1),16);
 /* ---- state ---- */
 let db={trips:[],expenses:[]};
 let sel=localStorage.getItem('press:halvsies:trip')||null;
+let lastSel=sel;
 let editingId=null;
 let formPay=null, formSplit=null, splitOpen=false;
 let sortMode='date', sortDir=-1;
@@ -681,8 +699,13 @@ async function loadCloud(silent){
     const [trips,exps]=await Promise.all([rt.json(),re.json()]);
     let rows=exps.map(normExp).filter(x=>!pendingDel.has(x.expense_id));
     pendingPut.forEach((row,id)=>{ if(!rows.some(x=>x.expense_id===id)) rows=rows.concat([row]); });
-    db={trips:trips.map(normTrip),expenses:rows};
-    saveLocal(); renderAll(false);
+    /* the poll runs every thirty seconds whether or not anything moved, and
+       a re-render throws away the rose, the flow diagram and any half-open
+       swipe. So compare first and only redraw when the answer changed.  */
+    const next={trips:trips.map(normTrip),expenses:rows};
+    if(JSON.stringify(next)!==JSON.stringify(db)){
+      db=next; saveLocal(); renderAll(false);
+    }
     if(!silent) flash('Synced','#7C5CFF');
   }catch(e){ renderAll(false); if(!silent) flash('Offline · showing saved copy','#B45309'); }
 }
@@ -867,13 +890,17 @@ function rose(trip,people,sym){
      reads far better - which is exactly what the scale cost is for.    */
   const LR0=Math.max(HUB+30,Math.min(rFair-28,R1-40));
   let out=null;
-  for(let sc=1; sc>=0.499; sc-=0.04)
+  for(let sc=1; sc>=0.499; sc-=0.04){
+    /* shrinking already costs (1-sc)*9, so once that alone exceeds the best
+       score so far, no smaller size can win and the search is finished. */
+    if(out&&(1-sc)*9>=out.bad) break;
     for(let k=0;k<15;k++){
       const LR=Math.min(LR0+k*5,R1-32);
       const t=layout(sc,LR);
       if(!out||t.bad<out.bad) out=t;
       if(out.bad===0&&sc===1) break;
     }
+  }
   const boxes=out.boxes;
   let body='', labels='';
   rows.forEach((p,i)=>{
@@ -920,6 +947,16 @@ function rose(trip,people,sym){
   }
   if(!hub) hub=[];
   const HK=['rk','rt','rt','rk'], HF=['','','#7C5CFF',''];
+  /* a hairline between the trip total and the per-head figure: the hub says
+     two different things and they should not read as one stack. Kept inside
+     the disc and well short of its edge, so it whispers.               */
+  if(hub.length===4){
+    const my=(hub[1].y+hub[2].y)/2-hub[2].f*0.34;
+    const chord=Math.sqrt(Math.max(0,HUB*HUB-(my-C)*(my-C)));
+    const hw=Math.min(chord*0.66,HUB*0.58);
+    body+='<line x1="'+_n(C-hw)+'" y1="'+_n(my)+'" x2="'+_n(C+hw)+'" y2="'+_n(my)
+      +'" stroke="#F2F4F6" stroke-opacity=".13" stroke-width="1" stroke-linecap="round"/>';
+  }
   hub.forEach((l,i)=>{
     body+='<text class="'+HK[i]+'" font-size="'+_n(l.f)+'" x="'+C+'" y="'+_n(l.y)+'"'
       +' text-anchor="middle"'+(HF[i]?' fill="'+HF[i]+'"':'')+'>'+l.t+'</text>';
@@ -1033,7 +1070,12 @@ const expDate=x=>(x.extras&&x.extras.date)||String(x.created_at||'').slice(0,10)
 function renderAll(rebuildForm){
   const trips=tripsSorted();
   if(!trips.find(t=>t.trip_id===sel)) sel=trips.length?trips[0].trip_id:null;
-  if(sel) localStorage.setItem('press:halvsies:trip',sel); else localStorage.removeItem('press:halvsies:trip');
+  /* a synchronous storage write on every render, for a value that changes
+     only when you pick a different trip                                */
+  if(sel!==lastSel){
+    if(sel) localStorage.setItem('press:halvsies:trip',sel); else localStorage.removeItem('press:halvsies:trip');
+    lastSel=sel;
+  }
 
   $('tripbar').hidden=!trips.length;
   $('emptyState').hidden=!!trips.length;
@@ -1502,8 +1544,24 @@ function closeRows(){
    panes. 1.4 means pane 1 is sliding away and pane 2 is coming forward.
    Distance from that number decides each pane's slide, scale, depth and
    fade, so a finger-drag and a snap use exactly the same maths.        */
+/* the pane list never changes, so it is looked up once instead of on every
+   frame of a drag                                                       */
+let PANES=null;
+const panesOf=()=>PANES||(PANES=$('deckRail').querySelectorAll('.pane'));
+let moveT=0;
+/* will-change keeps a full-screen compositor layer alive per pane, which is
+   real memory on a phone for something that only moves while you move it. */
+function deckMoving(){
+  const r=$('deckRail'); if(!r) return;
+  r.classList.add('moving');
+  clearTimeout(moveT);
+  /* a drag re-arms this sixty times a second so it stays on; the timer only
+     runs out once the deck has actually come to rest.                   */
+  moveT=setTimeout(()=>r.classList.remove('moving'),480);
+}
 function applyDeck(prog,snap){
-  const panes=document.querySelectorAll('#deckRail .pane');
+  const panes=panesOf();
+  deckMoving();
   for(let i=0;i<panes.length;i++){
     const p=panes[i];
     const d=i-prog, a=Math.min(Math.abs(d),1.6);
@@ -1526,7 +1584,15 @@ function setPane(i,snap){
 /* every pane is the same height: whatever the screen has left underneath
    the trip bar, less the dots. Measured rather than guessed, so the iOS
    toolbars and the safe area are all accounted for.                    */
+/* measuring forces a synchronous layout, and this runs on every render and
+   on every step of the iOS keyboard animation - so it is folded into the
+   next frame rather than done on the spot.                              */
+let sizeQ=0;
 function deckSize(){
+  if(sizeQ) return;
+  sizeQ=requestAnimationFrame(()=>{ sizeQ=0; deckMeasure(); });
+}
+function deckMeasure(){
   const deck=$('deck'); if(!deck||$('deckStage').hidden) return;
   deckW=deck.clientWidth||1;
   const vh=(window.visualViewport&&window.visualViewport.height)||window.innerHeight;
