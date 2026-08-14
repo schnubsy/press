@@ -91,10 +91,11 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   -webkit-backdrop-filter:blur(16px);border-radius:13px;
   padding:10px 13px;box-shadow:0 10px 34px rgba(10,7,22,.5),inset 0 1px 0 rgba(255,255,255,.12);
   text-align:left;min-width:0}
-.trippick span{padding-right:52px}
+/* room for the Edit trip button, which sits over this line */
+.trippick span{padding-right:92px}
 .trippick b{font-size:14.5px;font-weight:800;white-space:nowrap}
 .trippick span{font-size:10.5px;color:var(--faint);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex:1;min-width:0}
-.trippick i{font-style:normal;color:var(--muted);font-size:15px;line-height:1}
+.trippick i{font-style:normal;color:var(--muted);font-size:21px;line-height:1}
 .trippick:active{transform:scale(.99)}
 .plus{width:42px;flex:none;border-radius:13px;background:linear-gradient(135deg,var(--vio),var(--cor));
   color:#fff;font-size:21px;font-weight:600;box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;transition:.15s}
@@ -124,7 +125,10 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
    others are pushed back and off to the side, so only one is ever in view
    at rest - you see the others only mid-move, as one sinks away and the
    next rises to meet you.                                             */
-.deckstage{display:flex;align-items:center;gap:14px}
+/* the arrows straddle the card's edge rather than sitting in the row, so
+   the deck keeps the full page width and every card lines up with the trip
+   bar above it.                                                        */
+.deckstage{position:relative}
 .deck{position:relative;overflow:hidden;flex:1;min-width:0;
   height:var(--paneh,64vh);perspective:1150px;perspective-origin:50% 46%}
 .deckrail{position:absolute;inset:0;transform-style:preserve-3d}
@@ -139,14 +143,17 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
                       opacity .44s cubic-bezier(.25,.8,.3,1)}
 .pane.back{pointer-events:none}
 .pane>:last-child{margin-bottom:0}
-/* a lone card fills its pane, so every screen is the same shape */
-.pane>.card:only-child{min-height:calc(100% - 6px);display:flex;
+/* A lone card is exactly its pane, not merely at least that tall. With a
+   minimum the card grew to fit the drawing while the drawing measured
+   itself from the card, so neither ever gave up the room the all-square
+   banner needed and the diagram ran off the bottom.                   */
+.pane>.card:only-child{height:calc(100% - 6px);display:flex;
   flex-direction:column}
 .pane>.card:only-child>.orbits{flex:1;display:flex;align-items:center;
   justify-content:center;padding:2px 0;margin:0 -11px}
 .pane>.card:only-child>.orbits>svg{width:100%}
 #settleCard>#settleList{flex:1;display:flex;flex-direction:column;
-  justify-content:center}
+  justify-content:center;align-items:center;min-height:0}
 /* three dashes, the live one stretched. Enough to say there is more
    sideways without asking for attention.                             */
 .dots{display:flex;gap:6px;justify-content:center;align-items:center;
@@ -171,8 +178,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
    remove. Two deliberate moves, so there is no dialog in the way.       */
 .exw{position:relative;overflow:hidden;border-radius:13px;margin-bottom:6px}
 .exw .ex{margin-bottom:0;position:relative;z-index:1;
-  transition:transform .22s cubic-bezier(.22,.61,.36,1)}
-.exw.drag .ex{transition:none}
+  transition:transform .26s cubic-bezier(.3,1.4,.5,1)}
 .exw.open .ex,.exw.open .ex:active{transform:translateX(-88px)}
 /* the row sits on translucent glass, so the panel would otherwise show
    straight through it. It stays invisible until the row starts moving. */
@@ -181,7 +187,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   letter-spacing:.02em;color:#F87171;border-radius:13px;
   background:linear-gradient(90deg,rgba(248,113,113,.10),rgba(248,113,113,.30));
   opacity:0;pointer-events:none;transition:opacity .16s linear}
-.exw.drag .exdel,.exw.open .exdel{opacity:1;pointer-events:auto}
+.exw.open .exdel{opacity:1;pointer-events:auto}
 .exdel:active{background:rgba(248,113,113,.42);color:#fff}
 
 /* one heading style everywhere */
@@ -228,8 +234,16 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
    on the right, every payment a ribbon with a pill riding it. The pill's
    travel from one bank to the other is the confirmation, so there is no
    button, no status line and no progress bar.                             */
-.sfw{position:relative;width:100%;margin:0 auto}
-.sfw svg{display:block;width:100%;height:auto;overflow:visible}
+/* The pills and names are placed as percentages of this box, so it has to
+   match the drawing exactly or they land in the wrong place. Height:100%
+   plus aspect-ratio could not resolve inside a flex column and collapsed
+   to the SVG's intrinsic size, which is why it shrank on a wide screen -
+   so the width is measured and set outright instead.                  */
+/* both sides are measured and set, so the box is exactly the drawing's
+   shape - the pills are placed as percentages of it and would drift the
+   moment the two disagreed.                                           */
+.sfw{position:relative;width:var(--sfww,100%);height:var(--sfwh,auto);margin:0 auto}
+.sfw svg{display:block;width:100%;height:100%;overflow:visible}
 .sfr{transition:fill .38s cubic-bezier(.4,0,.2,1),fill-opacity .38s cubic-bezier(.4,0,.2,1)}
 .sfn{position:absolute;white-space:nowrap;font-weight:700;font-size:11.5px;line-height:1.25;
   pointer-events:none}
@@ -241,11 +255,20 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .sfn i b{display:block;margin-top:2px;font-family:var(--mono);font-weight:700;
   letter-spacing:0;font-size:1.2em;opacity:1}
 .sfn.l{text-align:right}
+/* The pill is anchored by its left edge on one bank and its right edge on
+   the other, so settling changes its transform as well as its position -
+   and animating that mix of percentages and layout properties is what made
+   the move jump. Nothing here animates but transform: the pill is put in
+   its final place instantly, then pushed back to where it was in plain
+   pixels, and only that push is animated away. One property, no layout,
+   and room for a proper overshoot at the end.                          */
 .sfp{position:absolute;appearance:none;cursor:pointer;display:flex;align-items:center;
   gap:6px;padding:4px 9px;border-radius:99px;background:rgba(14,17,20,.86);
   border:1px solid;font-family:var(--mono);font-size:10px;font-weight:700;
-  transition:left .38s cubic-bezier(.4,0,.2,1),top .38s cubic-bezier(.4,0,.2,1),
-             border-color .2s,color .2s}
+  transition:transform .52s cubic-bezier(.22,1.8,.44,1),
+             border-color .24s ease,color .24s ease}
+/* used for the instant, un-animated half of the move */
+.sfp.nofx{transition:none}
 .sfp:active{filter:brightness(1.25)}
 .sfg{line-height:1;position:relative}
 .sfa{font-size:15px;font-weight:700;animation:sfnudge 1.8s ease-in-out infinite}
@@ -255,6 +278,9 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .allsq{display:flex;align-items:center;justify-content:center;text-align:center;
   gap:8px;color:var(--st-ink);font-weight:700;font-size:13px;
   background:rgba(13,148,136,.16);border:1px solid rgba(13,148,136,.3);border-radius:12px;padding:11px 13px;margin-bottom:14px}
+/* equal air above and below, so it sits halfway between the heading and
+   the top of the drawing                                             */
+#settleList .allsq{margin:15px 0}
 .allsq:last-child{margin-bottom:0}
 .allsq.dim{background:var(--soft);border-color:var(--line);color:var(--muted);font-weight:600}
 
@@ -294,7 +320,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .splitline:has(.splitbtn[hidden]){justify-content:flex-end}
 .splitbtn{font-size:11px;color:var(--muted);font-weight:600;text-align:left}
 .splitbtn b{color:var(--ink);font-weight:800}
-.splitbtn i{font-style:normal;color:var(--vio);font-weight:800}
+.splitbtn i{font-style:normal;color:var(--vio);font-weight:800;font-size:1.18em}
 .offmini{font-size:9.5px;color:var(--faint);font-weight:700;display:flex;align-items:center;gap:5px;flex:none}
 .sw{width:26px;height:15px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:.15s}
 .sw::after{content:"";position:absolute;left:2px;top:2px;width:11px;height:11px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:.15s}
@@ -306,17 +332,59 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .splitgrid .pc{flex:1 1 auto}
 .go{width:100%;border-radius:12px;padding:11px;font-size:14px;font-weight:800;background:var(--vio);color:#fff;transition:.15s;margin-top:10px;display:block;text-align:center}
 .go:active{transform:scale(.98)}
-.go.ghost{background:none;color:var(--muted);border:1.5px solid var(--line);padding:9px;margin-top:7px}
+/* the border eats 3px of height, so the padding gives it back - every
+   button in the card is the same size as the one that saves it.       */
+.go.ghost{background:none;color:var(--muted);border:1.5px solid var(--line);
+  padding:calc(11px - 1.5px)}
 .go.danger{background:var(--red-soft);color:var(--red)}
-.btnrow{display:flex;gap:8px}
+.btnrow{display:flex;flex-direction:column;gap:6px}
+.btnrow .go{width:100%;margin-top:0}
 
 /* expenses */
-.lh{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 7px;gap:8px}
+.lh{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 7px;gap:8px;
+  transition:gap .36s cubic-bezier(.22,.61,.36,1)}
 /* the logged expenses are a separate thing from the form above them, so a
    hairline says so without another card edge.                          */
-#listWrap{border-top:1.5px solid rgba(255,255,255,.22);padding-top:16px;margin-top:15px}
-.lh .h2{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sort{display:flex;gap:4px;flex:none}
+#listWrap{border-top:1.5px solid rgba(255,255,255,.22);padding-top:20px;margin-top:24px}
+/* the log is a reference, not the main event, so it starts folded and the
+   heading is the handle                                                 */
+.lhbtn{display:flex;align-items:center;gap:8px;flex:1;min-width:0;text-align:left;padding:2px 0}
+/* folded, the count and chevron sit hard right so the title has the whole
+   line. Opening slides them back in as the sort buttons take the space. */
+.lhtail{display:flex;align-items:center;gap:8px;margin-left:auto;flex:none}
+.lhchev{font-style:normal;font-size:16px;color:var(--muted);line-height:1;
+  transition:transform .3s cubic-bezier(.22,.61,.36,1)}
+#listWrap.collapsed .lhchev{transform:rotate(-90deg)}
+.lhcount{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--muted);
+  background:rgba(255,255,255,.07);border-radius:99px;padding:2px 8px;
+  opacity:0;transition:opacity .22s}
+#listWrap.collapsed .lhcount{opacity:1}
+/* folded, the log leaves a shadow of itself: three fading bars that say
+   there are rows under here without spelling it out. They fold away on the
+   same curve as the list they stand in for.                            */
+/* named .lghost, not .ghost - the file already uses `go ghost` for its
+   outline buttons, and a bare .ghost rule was blanking every one of them. */
+.lghost{display:grid;grid-template-rows:0fr;opacity:0;pointer-events:none;
+  transition:grid-template-rows .34s cubic-bezier(.22,.61,.36,1),opacity .3s ease}
+.lghostin{overflow:hidden;min-height:0;display:flex;flex-direction:column;
+  align-items:center;gap:7px;padding-top:11px}
+.lghost span{display:block;height:7px;border-radius:99px;
+  background:linear-gradient(90deg,rgba(255,255,255,.13),rgba(255,255,255,.05))}
+.lghost span:nth-child(1){width:62%}
+.lghost span:nth-child(2){width:48%;opacity:.6}
+.lghost span:nth-child(3){width:34%;opacity:.32}
+#listWrap.collapsed .lghost{grid-template-rows:1fr;opacity:1}
+#expList{display:grid;grid-template-rows:1fr;
+  transition:grid-template-rows .34s cubic-bezier(.22,.61,.36,1)}
+#expList>.ei{overflow:hidden;min-height:0}
+#listWrap.collapsed #expList{grid-template-rows:0fr}
+#listWrap.collapsed .sort{opacity:0;max-width:0;pointer-events:none}
+#listWrap.collapsed .lh{gap:0}
+/* no size of its own - it is a card heading like any other, and setting a
+   size here quietly beat the responsive ones further down.            */
+.lh .h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.sort{display:flex;gap:4px;flex:none;overflow:hidden;max-width:220px;
+  transition:opacity .26s ease,max-width .36s cubic-bezier(.22,.61,.36,1)}
 .sc{font-size:9px;font-weight:700;color:var(--muted);border-radius:99px;padding:4px 9px;
   background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
   border:1px solid rgba(255,255,255,.09);
@@ -420,15 +488,35 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   .pc{font-size:13.5px;padding:9px 7px}
   .splitbtn{font-size:12.5px}
   .go{font-size:15.5px;padding:13px}
+  .go.ghost{padding:calc(13px - 1.5px)}
+  /* the form was the tightest thing on the page - every row now has room
+     to breathe instead of stacking straight onto the next.            */
+  #entryCard{padding:18px 16px 20px}
+  #entryCard .h2{margin-bottom:3px}
+  #entryCard .frow{margin-top:13px;gap:9px}
+  #entryCard .fin{padding:12px 14px;border-radius:12px}
+  #entryCard .amount-in .fin{padding-left:34px;padding-right:42px}
+  #entryCard .amount-in .fin,#entryCard .datewrap .fin{height:48px}
+  #entryCard .amount-in .cur{font-size:15px;left:13px}
+  #entryCard .flabel{margin:17px 0 8px}
+  #entryCard .chips{gap:8px}
+  #entryCard .splitline{margin-top:15px;min-height:26px}
+  #entryCard .splitgrid{margin-top:11px}
+  #entryCard .go{margin-top:17px}
+  #entryCard .btnrow{margin-top:6px}
+  /* an id-scoped margin was beating .btnrow .go and prising the three
+     buttons apart; this puts the row back in charge of its own spacing */
+  #entryCard .btnrow .go{margin-top:0}
+  .lhcount{font-size:11px}
+  .lhchev{font-size:18px}
+  .trippick i{font-size:23px}
 }
 @media (min-width:701px){
   .wrap{max-width:860px}
-  .pane{padding:2px 3px 4px}
+  .pane{padding:2px 0 4px}
   .pane>.card:only-child{padding:22px 24px 24px}
   .pane>.card:only-child>.orbits{margin:0;padding:6px 0}
   .pane>.card:only-child>.orbits>svg{width:auto;height:100%;max-width:100%}
-  .sfw{height:100%;width:auto;aspect-ratio:364/430;max-width:100%}
-  .sfw svg{width:100%;height:100%}
   .h2{font-size:22px}
   .editbtn{font-size:12px;padding:8px 15px}
   .ex{padding:13px 15px}
@@ -450,15 +538,43 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   .pc{font-size:15px;padding:11px 9px}
   .splitbtn{font-size:14px}
   .go{font-size:17px;padding:15px}
+  .go.ghost{padding:calc(15px - 1.5px)}
   .sgn{width:31px;height:31px;font-size:16px}
-  .nav{display:flex;align-items:center;justify-content:center;flex:none;
-    width:42px;height:42px;border-radius:50%;font-size:22px;line-height:1;
-    color:var(--muted);background:rgba(255,255,255,.06);
-    border:1px solid rgba(255,255,255,.09);transition:.15s}
+  .nav{display:flex;align-items:center;justify-content:center;
+    position:absolute;top:50%;transform:translateY(-50%);z-index:30;
+    width:42px;height:42px;border-radius:50%;font-size:26px;line-height:1;
+    color:var(--muted);background:rgba(20,23,27,.72);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,.11);transition:.15s}
+  #deckPrev{left:-21px}
+  #deckNext{right:-21px}
+  /* the arrows hang over the card edge, and the log's count and chevron sit
+     exactly where the right one lands                                    */
+  .lh{padding-right:28px}
+  /* on a narrow desktop there is no page margin to hang them in */
+  @media (max-width:940px){ #deckPrev{left:2px} #deckNext{right:2px} }
   .nav:hover{background:rgba(255,255,255,.12);color:var(--ink)}
-  .nav:active{transform:scale(.92)}
+  .nav:active{transform:translateY(-50%) scale(.92)}
   .nav[disabled]{opacity:.22;cursor:default;background:rgba(255,255,255,.04)}
   .nav[disabled]:hover{color:var(--muted)}
+  /* same again, with a desktop's room to spend */
+  #entryCard{padding:26px 26px 28px}
+  #entryCard .h2{margin-bottom:5px}
+  #entryCard .frow{margin-top:16px;gap:12px}
+  #entryCard .fin{padding:14px 16px;border-radius:13px}
+  #entryCard .amount-in .fin{padding-left:38px;padding-right:48px}
+  #entryCard .amount-in .fin,#entryCard .datewrap .fin{height:54px}
+  #entryCard .amount-in .cur{font-size:17px;left:15px}
+  #entryCard .flabel{margin:21px 0 10px}
+  #entryCard .chips{gap:10px}
+  #entryCard .splitline{margin-top:18px;min-height:30px}
+  #entryCard .splitgrid{margin-top:13px}
+  #entryCard .go{margin-top:21px}
+  #entryCard .btnrow{margin-top:6px}
+  #entryCard .btnrow .go{margin-top:0}
+  .lhcount{font-size:12px;padding:3px 10px}
+  .lhchev{font-size:20px}
+  .trippick i{font-size:25px}
 }
 </style>
 </head>
@@ -479,7 +595,7 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
   <section class="tripbar" id="tripbar" hidden>
     <div class="pickwrap">
       <button class="trippick" id="tripPick"><b id="tpName"></b><span id="tpMembers"></span><i>▾</i></button>
-      <button class="editbtn" id="editTripBtn">Edit</button>
+      <button class="editbtn" id="editTripBtn">Edit trip</button>
     </div>
     <button class="plus" id="newTripBtn" aria-label="New trip">+</button>
   </section>
@@ -513,21 +629,25 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
     <div class="splitgrid" id="splitGrid" hidden></div>
     <button class="go" id="saveBtn">Add expense</button>
     <div class="btnrow" id="editBtns" hidden>
+      <button class="go danger" id="deleteExpBtn">Delete</button>
       <button class="go ghost" id="cancelEditBtn">Cancel</button>
-      <button class="go danger" id="deleteExpBtn" style="margin-top:7px">Delete</button>
     </div>
   </section>
 
   <!-- LIST -->
   <section id="listWrap" hidden>
     <div class="lh">
-      <h2 class="h2">expense log <em id="forTrip2"></em></h2>
+      <button class="lhbtn" id="logToggle" aria-expanded="false" aria-controls="expList">
+        <span class="h2">expense log <em id="forTrip2"></em></span>
+        <span class="lhtail"><span class="lhcount" id="logCount"></span><i class="lhchev">▾</i></span>
+      </button>
       <div class="sort" id="sortRow">
         <button class="sc" data-sort="date">date</button>
         <button class="sc" data-sort="user">user</button>
         <button class="sc" data-sort="amount">amt</button>
       </div>
     </div>
+    <div class="lghost" id="logGhost" aria-hidden="true"><div class="lghostin"><span></span><span></span><span></span></div></div>
     <div id="expList"></div>
   </section>
   </div>
@@ -637,19 +757,17 @@ function fmt(cents,sym){ const v=Math.abs(cents)/100; return (cents<0?'-':'')+(s
    dropping them buys the room the figures need. Display only.          */
 function fmt0(cents,sym){ const v=Math.round(Math.abs(cents)/100);
   return (cents<0?'-':'')+(sym||'$')+NF0.format(v); }
-function fmtShort(cents,sym){ const v=Math.abs(cents)/100;
-  return (sym||'$')+NF0.format(v>=1000?Math.round(v):v); }
-function fmtDate(d){ if(!d) return ''; try{ const dt=new Date(d.length>10?d:d+'T00:00:00');
-  return dt.toLocaleDateString(undefined,{month:'short',day:'numeric'}); }catch(e){ return ''; } }
-function fmtDay(d){ if(!d) return 'No date'; try{ const dt=new Date(d.length>10?d:d+'T00:00:00');
-  return dt.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return d; } }
+/* toLocaleDateString builds a formatter every call and costs about a
+   hundred times what reusing one does - and the log formats a date for
+   every row and every day heading.                                     */
+const DF1=new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric'});
+const DF2=new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric'});
+function fmtDate(d){ if(!d) return ''; try{ return DF1.format(new Date(d.length>10?d:d+'T00:00:00')); }catch(e){ return ''; } }
+function fmtDay(d){ if(!d) return 'No date'; try{ return DF2.format(new Date(d.length>10?d:d+'T00:00:00')); }catch(e){ return d; } }
 const initial=n=>String(n||'?').trim().charAt(0).toUpperCase()||'?';
 const isPay=x=>x.extras&&x.extras.kind==='payment';
 const isSide=x=>isPay(x)&&x.extras.side===true;      // a handover you typed in
 const isRefund=x=>!isPay(x)&&x.amount<0;             // money back on the tab
-function shade(hex,f){ const n=parseInt(hex.slice(1),16);
-  const r=Math.round(((n>>16)&255)*f), g=Math.round(((n>>8)&255)*f), b=Math.round((n&255)*f);
-  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1); }
 
 /* ---- state ---- */
 let db={trips:[],expenses:[]};
@@ -967,6 +1085,15 @@ function rose(trip,people,sym){
     +body+labels+'</svg>';
 }
 
+/* height over width of the settle card's drawing area; replaced by the first
+   real measurement                                                       */
+let flowRatio=430/364;
+/* how much of the frame each side gives up to the names, as a fraction of
+   its width; measured from the labels once they exist                   */
+let flowGut=.28;
+/* the frame's own top margin, as a fraction of its height - the banner has
+   to know about it to sit halfway between the heading and the first bar  */
+const FLOW_TOP=.047;
 /* ---- the settle flow ----
    Payers on the left, receivers on the right. Each person's bar is that
    person's total and the ribbons leaving it are its exact slices, so the
@@ -978,7 +1105,15 @@ function rose(trip,people,sym){
    builds - {from,to,amt,paid,id}.                                        */
 function settleFlow(trip,rows,sym){
   if(!rows||!rows.length) return '';
-  const W=364,H=430,LX=78,RX=286,TOP=20,GAP=18,PILL=33,TEAL='#5EEAD4';
+  /* The frame takes the shape of the space it is in rather than a fixed
+     430-tall one, so the drawing fills the card at any size instead of
+     sitting in a letterbox. Only the frame changes - the banks stay at the
+     same fractions across it, so the labels keep their gutters and the
+     geometry is untouched.                                             */
+  const W=364,H=Math.round(W*flowRatio);
+  const LX=Math.round(W*flowGut),RX=W-LX;
+  const TOP=Math.round(H*FLOW_TOP),GAP=Math.round(H*.042);
+  const PILL=Math.round(H*.077),TEAL='#5EEAD4';
   const payers=[],payees=[],outT={},inT={};
   rows.forEach(r=>{
     if(outT[r.from]==null){outT[r.from]=0;payers.push(r.from);} outT[r.from]+=r.amt;
@@ -1008,7 +1143,7 @@ function settleFlow(trip,rows,sym){
     if(list[0][key]<edge){ const d=edge-list[0][key]; list.forEach(s=>{ s[key]+=d; }); }
   };
   /* a three-line name block is about this tall once drawn */
-  const NAME=56;
+  const NAME=Math.round(H*.131);
   const lN=payers.map(m=>({m:m,y:lT[m]+outT[m]/grand*lS/2}));
   const rN=payees.map(m=>({m:m,y:rT[m]+inT[m]/grand*rS/2}));
   spread(lN,'y',NAME); spread(rN,'y',NAME);
@@ -1020,10 +1155,10 @@ function settleFlow(trip,rows,sym){
     svg+='<path d="M'+(RX+1)+' '+_n(rT[m])+'h8v'+_n(inT[m]/grand*rS)+'h-8Z" fill="'+memColor(trip,m)+'" fill-opacity=".95"/>';
   });
   lN.forEach(p=>{
-    names+='<div class="sfn l" style="left:'+pctX(LX-14)+';top:'+pctY(p.y)+';transform:translate(-100%,-50%);color:'+memColor(trip,p.m)+'">'+esc(p.m)+'<i>pays<b>'+fmt(outT[p.m],sym)+'</b></i></div>';
+    names+='<div class="sfn l" style="left:'+pctX(LX-14)+';top:'+pctY(p.y)+';transform:translate(-100%,-50%);color:'+memColor(trip,p.m)+'">'+esc(p.m)+'<i>pays<b>'+fmt0(outT[p.m],sym)+'</b></i></div>';
   });
   rN.forEach(p=>{
-    names+='<div class="sfn" style="left:'+pctX(RX+14)+';top:'+pctY(p.y)+';transform:translateY(-50%);color:'+memColor(trip,p.m)+'">'+esc(p.m)+'<i>gets<b>'+fmt(inT[p.m],sym)+'</b></i></div>';
+    names+='<div class="sfn" style="left:'+pctX(RX+14)+';top:'+pctY(p.y)+';transform:translateY(-50%);color:'+memColor(trip,p.m)+'">'+esc(p.m)+'<i>gets<b>'+fmt0(inT[p.m],sym)+'</b></i></div>';
   });
   const seat=[];
   rows.forEach((r,i)=>{
@@ -1215,7 +1350,11 @@ function renderList(trip,exps,sym){
     const s=items.slice().sort((a,b)=>sortDir*(b.amount-a.amount));
     html=s.map(row).join('');
   }
-  $('expList').innerHTML=html;
+  /* one wrapper so the list can be folded away by animating the grid row
+     from 1fr to 0fr - the only way to ease to a height nobody knows.  */
+  $('expList').innerHTML='<div class="ei">'+html+'</div>';
+  $('logCount').textContent=items.length||'';
+  syncLog();
 }
 
 function renderWhoChip(){
@@ -1520,8 +1659,9 @@ $('expList').addEventListener('click',e=>{
   const d=e.target.closest('.exdel');
   if(d){ dropExpense(d.dataset.del); return; }
   const b=e.target.closest('.ex'); if(!b) return;
-  /* an open row swallows the first tap - it closes instead of opening the
-     expense, which is what every list with a swipe panel does.         */
+  /* the tap that ends a press-and-hold must not also open the expense */
+  if(heldOpen){ heldOpen=false; return; }
+  /* and an open row swallows the next tap, closing instead of opening */
   if(b.closest('.exw.open')){ closeRows(); return; }
   const x=db.expenses.find(z=>z.expense_id===b.dataset.id);
   if(x&&isSide(x)) undoPayment(x.expense_id); else startEdit(b.dataset.id);
@@ -1532,13 +1672,10 @@ $('expList').addEventListener('click',e=>{
    expense row belongs to that row; anywhere else it moves the deck. Which
    one it is gets decided on the first few pixels of movement, so a vertical
    scroll is never stolen by either of them.                             */
-const DEL_W=88;
 let pane=1, deckW=0, grab=null;
 function closeRows(){
-  document.querySelectorAll('.exw.open,.exw.drag').forEach(r=>{
-    r.classList.remove('open','drag');
-    const b=r.querySelector('.ex'); if(b) b.style.transform='';
-  });
+  heldOpen=false;
+  document.querySelectorAll('.exw.open').forEach(r=>r.classList.remove('open'));
 }
 /* one number drives the whole carousel: how far along the deck we are, in
    panes. 1.4 means pane 1 is sliding away and pane 2 is coming forward.
@@ -1546,13 +1683,14 @@ function closeRows(){
    fade, so a finger-drag and a snap use exactly the same maths.        */
 /* the pane list never changes, so it is looked up once instead of on every
    frame of a drag                                                       */
-let PANES=null;
-const panesOf=()=>PANES||(PANES=$('deckRail').querySelectorAll('.pane'));
+let PANES=null, RAIL=null, heldOpen=false;
+const railOf=()=>RAIL||(RAIL=$('deckRail'));
+const panesOf=()=>PANES||(PANES=railOf().querySelectorAll('.pane'));
 let moveT=0;
 /* will-change keeps a full-screen compositor layer alive per pane, which is
    real memory on a phone for something that only moves while you move it. */
 function deckMoving(){
-  const r=$('deckRail'); if(!r) return;
+  const r=railOf(); if(!r) return;
   r.classList.add('moving');
   clearTimeout(moveT);
   /* a drag re-arms this sixty times a second so it stays on; the timer only
@@ -1599,53 +1737,110 @@ function deckMeasure(){
   const top=deck.getBoundingClientRect().top;
   const dots=$('deckDots').offsetHeight||0;
   deck.style.setProperty('--paneh',Math.max(240,Math.round(vh-top-dots-12))+'px');
+  sizeFlow();
   applyDeck(pane,false);
+}
+/* the diagram is as wide as it can be without growing taller than the room
+   it has - measured, because no combination of CSS resolves it reliably
+   inside a centred flex column.                                        */
+/* The drawing takes the whole card, so the shape of the card decides the
+   shape of the frame. That ratio is measured here and used on the next
+   draw; when it moves enough to matter the settle card is redrawn on its
+   own, which settles in one pass because the second measurement matches. */
+function sizeFlow(){
+  const list=$('settleList'); if(!list) return;
+  if(!list.querySelector('.sfw')) return;
+  const w=list.clientWidth, h=list.clientHeight;
+  if(!w||!h) return;
+  /* anything sharing the card with the drawing - the all-square banner -
+     takes its height off the top, or the drawing sizes itself to the whole
+     card and shoves the banner up under the heading.                    */
+  let used=0;
+  const banner=list.querySelector('.allsq');
+  if(banner){
+    /* The drawing carries its own top margin inside the frame, so matching
+       the banner's two margins still leaves it sitting high. Solve for the
+       top margin that puts equal air above the banner and between it and
+       the first bar - one pass, because the answer accounts for the way it
+       shortens the frame it is measuring against.                       */
+    const mb=parseFloat(getComputedStyle(banner).marginBottom)||0;
+    const bh=banner.offsetHeight;
+    const mt=Math.max(mb,(mb+FLOW_TOP*(h-bh-mb))/(1+FLOW_TOP));
+    banner.style.marginTop=Math.round(mt)+'px';
+    used=bh+Math.round(mt)+mb;
+  }
+  const fh=Math.max(160,h-used);
+  list.style.setProperty('--sfww',w+'px');
+  list.style.setProperty('--sfwh',fh+'px');
+  const r=Math.max(.55,Math.min(2.4,fh/w));
+  /* The names are as wide as the names are - so rather than guessing a
+     gutter, measure the widest one and give the drawing everything else.
+     Short names leave the banks far apart; long ones pull them in. The
+     text does not change width when the banks move, so one redraw is
+     always enough to settle it.                                        */
+  let lab=0;
+  list.querySelectorAll('.sfn').forEach(n=>{ if(n.offsetWidth>lab) lab=n.offsetWidth; });
+  let g=flowGut;
+  if(lab){
+    /* and never so wide that the pills have nowhere to sit */
+    const cap=Math.max(.1,(w-170)/(2*w));
+    g=Math.min(.34,cap,Math.max(.1,(lab+13)/w));
+  }
+  if(Math.abs(r-flowRatio)>0.02||Math.abs(g-flowGut)>0.008){
+    flowRatio=r; flowGut=g;
+    const t=curTrip();
+    if(t){ const ex=tripExps(); renderSettle(t,ex,compute(t,ex),t.currency||'$'); }
+  }
 }
 $('deckDots').addEventListener('click',e=>{
   const b=e.target.closest('button'); if(b) setPane(+b.dataset.p,true);
 });
+/* A horizontal drag now always belongs to the deck, wherever it starts, so
+   the cards can be swiped from anywhere on the page. Delete moved to press
+   and hold: it is a gesture measured in time rather than direction, so the
+   two can never be mistaken for each other, and it needs no button.    */
+let holdT=0, holdRow=null;
+function cancelHold(){ clearTimeout(holdT); holdT=0; holdRow=null; }
+function armHold(row){
+  cancelHold(); if(!row) return;
+  holdRow=row;
+  holdT=setTimeout(()=>{
+    holdT=0; closeRows(); row.classList.add('open'); heldOpen=true;
+    if(navigator.vibrate) navigator.vibrate(11);
+  },480);
+}
 $('deck').addEventListener('touchstart',e=>{
-  if($('deckStage').hidden||e.touches.length>1){ grab=null; return; }
-  const t=e.touches[0], row=e.target.closest('.exw');
-  grab={x:t.clientX,y:t.clientY,ax:null,row:row,
-    from:row&&row.classList.contains('open')?-DEL_W:0};
+  if($('deckStage').hidden||e.touches.length>1){ grab=null; cancelHold(); return; }
+  const t=e.touches[0];
+  grab={x:t.clientX,y:t.clientY,ax:null};
+  /* the suppression only ever covers the one tap that ends a hold */
+  heldOpen=false;
+  armHold(e.target.closest('.exw'));
 },{passive:true});
 $('deck').addEventListener('touchmove',e=>{
   if(!grab) return;
   const t=e.touches[0], dx=t.clientX-grab.x, dy=t.clientY-grab.y;
+  if(Math.abs(dx)>8||Math.abs(dy)>8) cancelHold();
   if(grab.ax===null){
     if(Math.abs(dx)<7&&Math.abs(dy)<7) return;
     grab.ax=Math.abs(dx)>Math.abs(dy)?'x':'y';
-    if(grab.ax==='x'){ if(grab.row) grab.row.classList.add('drag'); else closeRows(); }
+    if(grab.ax==='x') closeRows();
   }
   if(grab.ax!=='x') return;
   e.preventDefault();
-  if(grab.row){
-    const v=Math.max(-DEL_W-24,Math.min(0,grab.from+dx));
-    const b=grab.row.querySelector('.ex'); if(b) b.style.transform='translateX('+v+'px)';
-  }else{
-    /* past either end the deck follows at a third speed, so it feels held
-       rather than stuck                                                */
-    let v=pane-dx/deckW;
-    if(v<0) v*=.34;
-    if(v>2) v=2+(v-2)*.34;
-    applyDeck(v,false);
-  }
+  /* past either end the deck follows at a third speed, so it feels held
+     rather than stuck                                                  */
+  let v=pane-dx/deckW;
+  if(v<0) v*=.34;
+  if(v>2) v=2+(v-2)*.34;
+  applyDeck(v,false);
 },{passive:false});
 function deckRelease(e){
+  cancelHold();
   const g=grab; grab=null;
   if(!g||g.ax!=='x') return;
   const dx=(e.changedTouches?e.changedTouches[0].clientX:g.x)-g.x;
-  if(g.row){
-    const b=g.row.querySelector('.ex');
-    g.row.classList.remove('drag');
-    if(b) b.style.transform='';
-    const open=(g.from+dx)<-DEL_W/2;
-    closeRows();
-    g.row.classList.toggle('open',open);
-  }else{
-    setPane(pane+(dx<-44?1:dx>44?-1:0),true);
-  }
+  setPane(pane+(dx<-44?1:dx>44?-1:0),true);
 }
 $('deck').addEventListener('touchend',deckRelease);
 $('deck').addEventListener('touchcancel',deckRelease);
@@ -1669,13 +1864,41 @@ $('settleList').addEventListener('click',e=>{
      confirmation - and only then does the file's own record/undo run.  */
   const rib=$('sfr'+b.dataset.r);
   if(rib){ rib.setAttribute('fill',b.dataset.gr); rib.setAttribute('fill-opacity',b.dataset.gro); }
+  /* where it is now */
+  const was=b.getBoundingClientRect();
+  /* put it where it belongs, with nothing animating */
+  b.classList.add('nofx');
   b.style.left=b.dataset.gx; b.style.top=b.dataset.gy; b.style.transform=b.dataset.gt;
+  const now=b.getBoundingClientRect();
+  /* shove it back to where it started, in pixels this time */
+  b.style.transform='translate('+_n(was.left-now.left)+'px,'+_n(was.top-now.top)+'px) '+b.dataset.gt;
+  b.getBoundingClientRect();
+  /* and let it slide home */
+  b.classList.remove('nofx');
+  b.style.transform=b.dataset.gt;
   b.style.borderColor=b.dataset.gc; b.style.color=b.dataset.gc;
   setTimeout(()=>{
     if(b.dataset.pay){ const a=b.dataset.pay.split('|'); recordPayment(a[0],a[1],parseInt(a[2],10)); }
     else if(b.dataset.undo){ undoPayment(b.dataset.undo,true); }
     renderAll(false);
-  },380);
+  },560);
+});
+/* folded or not is a preference, so it outlives the session */
+const LOGKEY='press:halvsies:log';
+let logOpen=localStorage.getItem(LOGKEY)==='1';
+function syncLog(){
+  $('listWrap').classList.toggle('collapsed',!logOpen);
+  $('logToggle').setAttribute('aria-expanded',logOpen?'true':'false');
+}
+$('logToggle').addEventListener('click',()=>{
+  logOpen=!logOpen;
+  localStorage.setItem(LOGKEY,logOpen?'1':'0');
+  syncLog();
+});
+/* a mouse has no press-and-hold, so a right-click does the same job */
+$('expList').addEventListener('contextmenu',e=>{
+  const row=e.target.closest('.exw'); if(!row) return;
+  e.preventDefault(); closeRows(); row.classList.add('open');
 });
 $('sortRow').addEventListener('click',e=>{
   const b=e.target.closest('[data-sort]'); if(!b) return;
