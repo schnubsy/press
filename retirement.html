@@ -903,7 +903,7 @@ window.__def("src/assets/accounts.js", function(module, exports, require){
 /* =============================================================================
  * src/assets/accounts.js — US investment/cash accounts + contributions.
  *
- * SOURCE: Fidelity/NetBenefits snapshots 28 Aug / 31 Jul 2026 (V).
+ * SOURCE: Fidelity/NetBenefits snapshots (V), balances as of the dates noted in facts _meta.
  *   pre-tax  = 401(k) pre-tax + company + QNEC + BRP  (ordinary on withdrawal)
  *   roth     = Shell Roth + Roth in-plan + both Roth IRAs  (tax-free)
  *   taxable  = joint brokerage  (long-term capital gains on the gain fraction)
@@ -1017,7 +1017,7 @@ function escrow0(F) { return leafNum(houseBlk(F).escrow); }
 
 // Decimal year the P&I stops (earliest of maturity / payoff / downsize).
 function mortEndDec(F, IN) {
-  let end = decDate(leaf(houseBlk(F).mortgage_paid)); // 2041-05
+  let end = decDate(leaf(houseBlk(F).mortgage_paid)); // maturity date (facts leaf)
   if (IN.payoffOn) end = Math.min(end, IN.payoffYear + 0 / 12);
   if (IN.downsizeOn) end = Math.min(end, IN.downsizeYear + 0 / 12);
   return end;
@@ -1109,9 +1109,9 @@ window.__def("src/assets/withdrawals.js", function(module, exports, require){
  * Rolling it to an IRA destroys the exemption and re-imposes the 59½ rule.
  *   - If IN.retireYear >= 2032, pre-tax draws are penalty-free from retirement.
  *   - If IN.retireYear < 2032, the Rule of 55 does NOT apply; pre-tax draws
- *     before the primary person's 59½ date (3 Nov 2036) incur the 10% penalty (IRC 72(t)).
+ *     before the primary person's 59½ date (derived from their DOB) incur the 10% penalty (IRC 72(t)).
  *   - A warning is emitted either way: never roll the Shell 401(k) to an IRA
- *     before Nov 2036.
+ *     before that 59½ date.
  *
  * The solver draws buckets in a chosen order to meet an AFTER-TAX cash need,
  * recomputing federal tax (brackets + capital-gains stacking + SS + NIIT) and
@@ -1477,7 +1477,11 @@ function defaultInputs(rawF) {
     // rothConvStart is DERIVED from the retirement year (WO11 Phase 2.1); the window
     // END stays derived from the IRMAA lookback in strategy.js (age65Year → −3).
     rothConvAnnual: 0, rothConvStart: retYear, rothConvEnd: 2039,
-    rothConvFill: true, harvestGains: true,
+    // WO22 Phase 2 — who gets the 0% low-tax room: 'convert' (default; conversions
+    // first, harvest takes the leftover = nothing on this plan), 'harvest' (harvest
+    // the 0% capital-gains band first, cap conversions to what's left), or 'off' (no
+    // harvesting). Default 'convert' is byte-identical to the pre-WO22 harvestGains:true.
+    rothConvFill: true, lowTaxRoomPriority: 'convert',
     doNothing: false, // global "show the do-nothing plan" toggle turns the strategy off
     targetConversionBracket: gl('target_conversion_bracket', 0.22),
     charitableGivingAnnual: gl('charitable_giving_annual', 0),
@@ -1523,7 +1527,7 @@ function buildFlags(Y, ageM, ageB, IN, shortfall, survivor) {
 function buildModel(rawF, IN) {
   const F = factsMod.load(rawF);
   // A2: the "show the do-nothing plan" toggle turns the whole strategy off.
-  if (IN.doNothing) IN = Object.assign({}, IN, { rothConvFill: false, harvestGains: false });
+  if (IN.doNothing) IN = Object.assign({}, IN, { rothConvFill: false, lowTaxRoomPriority: 'off' });
   const inflation = IN.inflation;
   const infl = (Y) => inflFactor(Y, inflation);
   const retireYear = IN.retireYear;
@@ -2166,7 +2170,9 @@ const CONTROLLER_SCHEMA = {
     ] },
     { id: 'taxable', label: 'US Joint (taxable)', color: 'taxable', inputs: [
       { kind: 'fact', path: 'assets.accounts.joint_taxable', label: 'Joint brokerage', type: 'money' },
-      { kind: 'in', key: 'growth', label: 'Investment return', type: 'pct', min: 0, max: 0.10, step: 0.005 },
+      // WO22 Phase 3 — `growth` is a PLAN-WIDE assumption; its single home is the
+      // globals band ("Investment return"). It was editable here too — an input in
+      // two places. Removed from the pane (band ∩ controllers must be ∅).
     ] },
     { id: 'ukfunds', label: 'UK pension funds', color: 'uk', inputs: [
       { kind: 'fact', path: 'income.uk_private_pension.lg_gbp', label: 'L&G (£)', type: 'money' },
@@ -2182,13 +2188,19 @@ const CONTROLLER_SCHEMA = {
   row3: [
     { id: 'conversions', label: 'Roth conversions', color: 'convert', inputs: [
       { kind: 'in', key: 'rothConvFill', label: 'Fill to bracket', type: 'bool' },
-      { kind: 'in', key: 'targetConversionBracket', label: 'Target bracket', type: 'select', options: [[0.12, '12%'], [0.22, '22%'], [0.24, '24%']] },
+      // WO22 Phase 3 — `targetConversionBracket` also lived in the globals band
+      // ("Roth conversions up to"), an input in two places. The band is its single
+      // home (a plan-wide tax assumption); removed from the pane.
     ] },
-    { id: 'harvest', label: 'Gain harvesting', color: 'harvest', inputs: [{ kind: 'in', key: 'harvestGains', label: 'Harvest 0% gains', type: 'bool' }] },
+    { id: 'harvest', label: 'Gain harvesting', color: 'harvest', inputs: [{ kind: 'in', key: 'lowTaxRoomPriority', label: '0% low-tax room', type: 'select', options: [['convert', 'Conversions first'], ['harvest', 'Harvest gains first'], ['off', 'Off']] }] },
     // WO12 Phase 1.7 — charitable giving via a DAF; custom multi-entry editor (the
     // simple annual lever + explicit gifts + the bunching A/B live inside it).
     { id: 'giving', label: 'Charitable giving', color: 'qcd', editor: 'giving', inputs: [] },
-    { id: 'heirs', label: 'Heirs', color: 'rmd', inputs: [{ kind: 'in', key: 'childrenMarginalRate', label: "Children's tax rate", type: 'pct', min: 0, max: 0.5, step: 0.01 }] },
+    // WO22 Phase 3 — the 'heirs' pane held only `childrenMarginalRate`, which is a
+    // plan-wide assumption already on the globals band ("Heirs' tax rate"). With its
+    // one input removed as a band∩controller duplicate, the pane had nothing left, so
+    // it is gone. The 'rmd' chart series still highlights (BAND_TO_CAT drops its entry);
+    // the heirs' rate is edited on the band.
   ],
 };
 
@@ -2795,11 +2807,11 @@ window.__def("src/income/au-super.js", function(module, exports, require){
 /* =============================================================================
  * src/income/au-super.js — Australian superannuation (ANZ Smart Choice).
  *
- * SOURCE: Finance doc Apr 2026 (V). An immaterial balance — kept for completeness
+ * SOURCE: Finance doc (V). An immaterial balance — kept for completeness
  * and the open CPA classification question. Preservation
- * age 60 → accessible May 2037. Converted at the fixed AUD_USD rate.
+ * age 60 → accessible at the anz_access facts leaf. Converted at the fixed AUD_USD rate.
  *
- * Part C (30 Aug 2026): no US tax while held; drawn GROSS and taxed in the
+ * Treaty position (per the source docs): no US tax while held; drawn GROSS and taxed in the
  * US as ORDINARY income on drawdown (subject to the open question of whether the
  * IRS treats the fund as a foreign grantor trust — a filing question captured in
  * compliance.md, NOT a projection input). Folded into the 'tiny' bucket.
@@ -2813,7 +2825,7 @@ registerAsset({
   id: 'income.au_super.anz',
   key: 'anz_aud', wdKey: 'tiny', currency: 'AUD', taxClass: 'ordinary', grows: 'growth',
   initial: (F) => leafNum(F.income.au_super.anz_aud),
-  accessDec: (F) => decDate(leaf((F.income.au_super || {}).anz_access)), // 2037-05
+  accessDec: (F) => decDate(leaf((F.income.au_super || {}).anz_access)), // preservation-age access (facts leaf)
   available: (F) => hasBlock(F, 'income.au_super'),
   catalogue: Object.assign({ factsPath: 'income.au_super' }, SOURCE_SPEC_BY_ID.au_super),
 });
@@ -2878,8 +2890,9 @@ function retireDateDec(IN) {
 }
 
 // Decimal-year date a person's salary stops for a given stop AGE. The month is
-// chosen so the default ages reproduce the fact end dates exactly: person 1 age 55
-// -> Jan 2032 (their last full accumulation year), person 2 age 55 -> Jul 2037.
+// chosen so the default ages reproduce the fact end dates exactly: a person's stop
+// date is their birth month in the year they reach the stop age (derived from the
+// DOB leaf — no date literal here; a prose date in a comment compiles into the build).
 function ageStopDate(F, person, age) {
   const by = birthYearOf(F, person);   // F optional — falls back to per-person birth-year literals
   const monthOffset = person === 'mark' ? 0 / 12 : 6 / 12;
@@ -2960,7 +2973,7 @@ window.__def("src/income/shell-pension.js", function(module, exports, require){
  * Rules this module owns:
  *  - 50% vs 100% joint-&-survivor election (IN.js) picks the benefit table.
  *  - SSO step-down: the Social-Security-Offset supplement ends at the primary person's SSNRA
- *    (facts.shell_pension.sso_end_date = May 2044), dropping the 80-Point amount.
+ *    (facts.shell_pension.sso_end_date leaf), dropping the 80-Point amount.
  *  - APF election (IN.apfMode): 'annuity' pays j50_monthly from the pension
  *    start; 'defer' pays the higher deferred annuity from Jun 2037; 'lump' pays
  *    no annuity (the lump is rolled to pre-tax — see retirementLumps()).
@@ -3014,7 +3027,7 @@ registerIncome({
     const pensionerAlive = ctx.aliveP1 !== false; // the primary person (P1) is the Shell pensioner
     const spouseAlive = ctx.aliveP2 !== false;
     const startDec = pensionStartDec(IN);
-    const stepDownDec = decDate(leaf(F.income.shell_pension.sso_end_date)); // 2044-05
+    const stepDownDec = decDate(leaf(F.income.shell_pension.sso_end_date)); // primary person's SSNRA (facts leaf)
     const js = eightyPointTable(F, IN);
     const p80_start = leaf(js.start), p80_after = leaf(js.after_2044_05);
     const p80_survivor = leaf(js.survivor);
@@ -3310,11 +3323,11 @@ window.__def("src/income/uk-private-pension.js", function(module, exports, requi
  * withdrawn), so they register as ASSET buckets; but they belong to the income
  * category because their whole purpose is retirement income.
  *
- * SOURCE: L&G statement + screenshot 29 Aug 2026 (V); Aviva balance is a 2024
- * PLACEHOLDER — flagged in facts. Access: UK minimum pension age 57 →
- * L&G from May 2034 (primary person at 57), Aviva from Jul 2039 (second person at 57).
+ * SOURCE: L&G statement + screenshot (V); the Aviva balance is a
+ * PLACEHOLDER — flagged in facts. Access: UK minimum pension age 57 → each pot
+ * unlocks at its own access date (lg_access / aviva_access facts leaves).
  *
- * Part C (30 Aug 2026): no US tax while held; drawn GROSS under the UK–US
+ * Treaty position (UK–US, per the source docs): no US tax while held; drawn GROSS under the UK–US
  * treaty; taxed in the US as ORDINARY income on drawdown. So both buckets carry
  * taxClass 'ordinary'. L&G is a first-class withdrawal bucket ('lg', shown on
  * the chart); Aviva is immaterial and folded into the 'tiny' bucket.
@@ -3331,7 +3344,7 @@ registerAsset({
   id: 'income.uk_private_pension.lg',
   key: 'lg_gbp', wdKey: 'lg', currency: 'GBP', taxClass: 'ordinary', grows: 'growth',
   initial: (F) => leafNum(F.income.uk_private_pension.lg_gbp),
-  accessDec: (F) => decDate(leaf((F.income.uk_private_pension || {}).lg_access)), // 2034-05
+  accessDec: (F) => decDate(leaf((F.income.uk_private_pension || {}).lg_access)), // pot's own access date (facts leaf)
   available: UK_PP_AVAILABLE, catalogue: UK_PP_CATALOGUE,
 });
 
@@ -3354,11 +3367,11 @@ window.__def("src/income/uk-state-pension.js", function(module, exports, require
  * src/income/uk-state-pension.js — UK State Pension, both people (separate).
  *
  * SOURCE: gov.uk forecasts (V). Full new State Pension (today's £),
- * rises with the triple lock (modelled here with general inflation). Separate
- * start dates: person 1 6 May 2044 (age 67; SPA-rise risk to 2045 noted in facts),
- * person 2 18 Jul 2050 (age 68). Converted to USD at IN.fx.
+ * rises with the triple lock (modelled here with general inflation). Each person
+ * starts at their own State Pension age (mark_start / barb_start facts leaves; the
+ * SPA-rise risk for the earlier claimant is noted in facts). Converted to USD at IN.fx.
  *
- * Part C (30 Aug 2026): received GROSS under the UK–US treaty (no UK
+ * Treaty position (UK–US, per the source docs): received GROSS (no UK
  * withholding) and taxed in the US as ordinary income on drawdown. No holding-
  * period tax. Tagged taxClass 'ordinary'.
  *
@@ -3441,8 +3454,8 @@ registerIncome({
     const { Y, IN, F, fac, fx } = ctx;
     const uk = F.income.uk_state_pension || {};
     const ukMo0 = leafNum(uk.gbp_monthly);
-    const markStart = decDate(leaf(uk.mark_start)); // 2044-05
-    const barbStart = decDate(leaf(uk.barb_start)); // 2050-07
+    const markStart = decDate(leaf(uk.mark_start)); // each person's own SPA (facts leaf)
+    const barbStart = decDate(leaf(uk.barb_start));
 
     // WO15 Phase 2 — pro-rate each person's full-rate amount by their qualifying years.
     const frac1 = entitlementFraction(uk.qualifying_years_p1);
@@ -5184,6 +5197,24 @@ function planYear(ctx) {
 
   // ---- Rules 3 & 4: Roth conversions (derived window; funding-aware cap) ----
   let conv = 0;
+  // WO22 Phase 2 — lowTaxRoomPriority decides who gets the scarce 0% low-tax room:
+  //   'convert' (default) — conversions first; harvest only takes the leftover (none,
+  //               on this plan, because conversions fill the low brackets every bridge
+  //               year). Byte-identical to the pre-WO22 harvestGains:true behaviour.
+  //   'harvest'  — harvesting claims the 0% capital-gains band FIRST; the conversion is
+  //               then capped so ordinary + realized + harvested gains stay in the band
+  //               (a conversion may only use the room the gains leave). The trade-off is
+  //               real: gains stack ON TOP of ordinary income, so every converted dollar
+  //               pushes a dollar of gain out of the 0% band.
+  //   'off'      — never harvest; conversions as today (== old harvestGains:false).
+  // The `harvestGains` fallback keeps a stored pre-WO22 IN loading (persist migrates it).
+  const priority = IN.lowTaxRoomPriority || (IN.harvestGains === false ? 'off' : 'convert');
+  const zeroTopCG = capgains.breakpoints(Y, inflation, filing).zeroTop;
+  // Gains realizable at 0% given a solve's ordinary income + realized gain and the
+  // taxable pot left after that solve's draw (LTCG stack on top of ordinary income).
+  const harvestable0 = (s) => Math.min(
+    Math.max(0, zeroTopCG - (s.tax.ordinaryTaxable + s.realizedGain)),
+    Math.max(0, (bal.taxable - s.wd.taxable) * gainFrac));
   const target = IN.targetConversionBracket || 0.22;
   const medicareYear = age65Year(F, 'mark');             // 2042 (primary person turns 65)
   const convEnd = irmaa.conversionEndYear(medicareYear); // 2039 (= 2042 − 3)
@@ -5194,6 +5225,9 @@ function planYear(ctx) {
   // MAGI the mandatory spending withdrawals produce on their own.
   const prelim = trySolve(0);
   const niit0 = prelim.tax.niit || 0;
+  // Under 'harvest' priority the harvest claims the 0% band FIRST (measured on the
+  // no-conversion solve); the conversion below is capped to leave that room.
+  const plannedHarvest = (priority === 'harvest') ? harvestable0(prelim) : 0;
 
   if (wantConv) {
     const ceilingTaxable = brackets.topOfBracket(target, Y, inflation, filing); // top of the target band, taxable-income space
@@ -5203,7 +5237,12 @@ function planYear(ctx) {
     // of the target bracket AND (inside the IRMAA lookback) under the next tier.
     const fits = (c) => {
       const s = trySolve(c);
-      return s.tax.ordinaryTaxable <= ceilingTaxable + 0.5 && s.tax.magi <= cliff + 0.5;
+      if (!(s.tax.ordinaryTaxable <= ceilingTaxable + 0.5 && s.tax.magi <= cliff + 0.5)) return false;
+      // 'harvest' priority: a conversion adds ordinary income, pushing gains out of the
+      // 0% band — cap it so ordinary + realized + the planned harvest still fit the band.
+      if (priority === 'harvest')
+        return (s.tax.ordinaryTaxable + s.realizedGain + plannedHarvest) <= zeroTopCG + 0.5;
+      return true;
     };
     // Upper bound: can't convert more than exists, and (streams-only) headroom
     // to the bracket top is an upper bound because withdrawals only ADD income.
@@ -5240,8 +5279,10 @@ function planYear(ctx) {
     } else {
       decisions.push({ rule: 'Roth conversion', action: 'none', amount: 0,
         why: (IN.rothConvFill || IN.rothConvAnnual > 0)
-          ? 'No room to convert this year without pushing ordinary income past the ' + Math.round(target * 100) +
-            '% bracket (or across an IRMAA tier) — the spending withdrawals already fill the low brackets.'
+          ? (priority === 'harvest'
+              ? 'No Roth conversion this year — you chose to prioritise 0% capital-gains harvesting, which claims the low-tax room first. A conversion would push those gains out of the 0% band.'
+              : 'No room to convert this year without pushing ordinary income past the ' + Math.round(target * 100) +
+                '% bracket (or across an IRMAA tier) — the spending withdrawals already fill the low brackets.')
           : 'The conversion window is open, but conversions are off. Turning them on in these low-income years shrinks the forced RMDs at 75 — it reduces them, it does not remove them, because the balance keeps growing after the window closes in 2039.' });
     }
   }
@@ -5265,17 +5306,28 @@ function planYear(ctx) {
   // consume basis credit used by this year's taxable draw
   basisCredit -= Math.min(basisCredit, wd.taxable * gainFrac);
 
-  // ---- Rule 2: harvest LTCG into remaining 0% headroom (opt-in) ------------
+  // ---- Rule 2: harvest LTCG into remaining 0% headroom (priority-driven) ---
   let harvest = 0;
   {
-    const zeroTop = capgains.breakpoints(Y, inflation, filing).zeroTop;
-    const extraAt0 = Math.max(0, zeroTop - (tax.ordinaryTaxable + solve.realizedGain));
-    const remainingTaxableGain = Math.max(0, (bal.taxable - wd.taxable) * gainFrac);
-    const harvestable = Math.min(extraAt0, remainingTaxableGain);
-    if (conv > 0) {
+    const harvestable = harvestable0(solve);
+    if (priority === 'harvest') {
+      // Harvest FIRST — realize the gains the (capped) conversion left inside the 0%
+      // band. By construction ordinary + realized + harvest <= zeroTop, so the
+      // harvested slice is taxed at exactly 0%; basisCredit steps up for future years.
+      if (harvestable > 1) {
+        harvest = harvestable;
+        basisCredit += harvest;
+        decisions.push({ rule: 'Gain harvest', action: 'harvest-0pct', amount: harvest,
+          why: 'Realized ' + m0(harvest) + ' of gains that fall in the 0% capital-gains band — free to take, and it lowers tax on future sales.' });
+      } else {
+        decisions.push({ rule: 'Gain harvest', action: 'none', amount: 0,
+          why: 'Harvesting has priority, but there is no 0% capital-gains room left this year — guaranteed income and withdrawals already fill the low band.' });
+      }
+    } else if (conv > 0) {
+      // 'convert' / 'off' — the conversion took the low-tax room; nothing to harvest.
       if (harvestable > 1) decisions.push({ rule: 'Gain harvest', action: 'skipped', amount: 0,
         why: 'Skipped 0% gain harvesting — the low-tax room is being used for a Roth conversion, which is worth more this year.' });
-    } else if (harvestable > 1 && IN.harvestGains) {
+    } else if (harvestable > 1 && priority === 'convert') {
       harvest = harvestable;
       basisCredit += harvest; // stepped-up basis lowers future taxable gains
       decisions.push({ rule: 'Gain harvest', action: 'harvest-0pct', amount: harvest,
@@ -5632,21 +5684,38 @@ window.__def("src/view/persist.js", function(module, exports, require){
  * WO10 (B3): STORE_VER is bumped to 2 and the payload now carries `planId` (which
  * plan these edits belong to) and `facts` (the WORKING facts snapshot). Carrying
  * the working facts is the fix for the finding that fact edits were lost on
- * reload — persist packed only IN, so a changed balance silently reverted. An old
- * v1 payload no longer parses and falls back cleanly to defaults (the user has not run
- * v1.4 yet, so nothing of value is lost).
+ * reload — persist packed only IN, so a changed balance silently reverted.
+ *
+ * WO22: STORE_VER -> 3 (the harvestGains bool became the lowTaxRoomPriority 3-way).
+ * A stored v2 payload still LOADS — it is accepted and its IN is MIGRATED
+ * (harvestGains:true -> 'convert', false -> 'off') rather than discarded, so a saved
+ * "do-nothing"/harvest choice survives the upgrade. A v1 (or unknown) payload still
+ * falls back cleanly to defaults (never a half-restore).
  *
  * pack(state) -> JSON string stamped with the schema version.
  * restore(str, defaultIN) -> { planId, IN, facts, curMode, fitMode, panel } with
- *   the stored IN merged ONTO the current defaults (so new input keys always
- *   exist), or null if the string is missing, corrupt, or from a different schema
- *   version — in which case the caller falls back cleanly (never a half-restore).
+ *   the stored IN migrated then merged ONTO the current defaults (so new input keys
+ *   always exist), or null if the string is missing, corrupt, or from a schema
+ *   version we can neither read nor migrate.
  * ========================================================================== */
 
 const panelMod = require('./panel.js');
 
 const STORE_KEY = 'retirement_v1'; // key name unchanged; payload is versioned inside
-const STORE_VER = 2;
+const STORE_VER = 3;
+const READABLE_VERS = [2, 3];      // v2 is migrated forward; v3 is current
+
+// WO22 — a pre-WO22 IN carried the harvestGains bool; map it to lowTaxRoomPriority.
+// Shared with scenarios.js so both persistence surfaces migrate identically.
+function migrateIN(IN) {
+  if (!IN || typeof IN !== 'object') return IN;
+  if (IN.lowTaxRoomPriority === undefined && 'harvestGains' in IN) {
+    IN = Object.assign({}, IN);
+    IN.lowTaxRoomPriority = (IN.harvestGains === false) ? 'off' : 'convert';
+    delete IN.harvestGains;
+  }
+  return IN;
+}
 
 function pack(state) {
   return JSON.stringify({
@@ -5664,7 +5733,7 @@ function parse(str) {
   try {
     if (!str) return null;
     const o = JSON.parse(str);
-    if (!o || o.v !== STORE_VER || !o.IN || typeof o.IN !== 'object') return null; // version/shape mismatch
+    if (!o || READABLE_VERS.indexOf(o.v) === -1 || !o.IN || typeof o.IN !== 'object') return null; // version/shape mismatch
     return o;
   } catch (e) { return null; }
 }
@@ -5674,7 +5743,7 @@ function restore(str, defaultIN) {
   if (!o) return null;
   return {
     planId: (typeof o.planId === 'string') ? o.planId : null,
-    IN: Object.assign({}, defaultIN, o.IN),
+    IN: Object.assign({}, defaultIN, migrateIN(o.IN)),
     facts: (o.facts && typeof o.facts === 'object') ? o.facts : null,
     curMode: o.curMode === 'nominal' ? 'nominal' : 'today',
     fitMode: o.fitMode === 'fit' ? 'fit' : 'scroll',
@@ -5682,7 +5751,7 @@ function restore(str, defaultIN) {
   };
 }
 
-module.exports = { STORE_KEY, STORE_VER, pack, parse, restore };
+module.exports = { STORE_KEY, STORE_VER, pack, parse, restore, migrateIN };
 
 });
 
@@ -5897,13 +5966,20 @@ window.__def("src/view/scenarios.js", function(module, exports, require){
  * sidesteps a whole class of merge bugs. SCEN_VER is bumped to 2; the existing
  * skip-mismatched path drops any v1 scenario cleanly (surfaced as `skipped`).
  *
+ * WO22: SCEN_VER -> 3 (harvestGains bool -> lowTaxRoomPriority 3-way). A stored v2
+ * scenario is MIGRATED forward on read (its IN's harvestGains is translated) rather
+ * than skipped — a saved "Plan A" survives the upgrade. v1 is still dropped cleanly.
+ *
  * Stored as a VERSIONED structure kept SEPARATE from the live settings
  * (persist.js) and the plans store (plans.js) so a schema change to one can never
  * corrupt the others. Pure + node-testable.
  * ========================================================================== */
 
+const { migrateIN } = require('./persist.js');   // one source of truth for IN migration
+
 const SCEN_KEY = 'retirement_scenarios_v1';
-const SCEN_VER = 2;   // per-scenario schema version (bumped for the facts snapshot)
+const SCEN_VER = 3;   // per-scenario schema version (WO22: lowTaxRoomPriority)
+const READABLE_VERS = [2, 3];   // v2 is migrated forward; v3 is current
 
 function clone(x) { return x == null ? x : JSON.parse(JSON.stringify(x)); }
 
@@ -5920,8 +5996,10 @@ function read(str) {
   const raw = (o && Array.isArray(o.list)) ? o.list : [];
   const list = [], skipped = [];
   for (const s of raw) {
-    if (s && typeof s === 'object' && s.v === SCEN_VER && s.IN && typeof s.IN === 'object' && typeof s.name === 'string') list.push(s);
-    else if (s && typeof s === 'object') skipped.push(s);
+    if (s && typeof s === 'object' && READABLE_VERS.indexOf(s.v) !== -1 && s.IN && typeof s.IN === 'object' && typeof s.name === 'string') {
+      // migrate a v2 scenario forward (IN.harvestGains -> lowTaxRoomPriority), stamp current.
+      list.push(s.v === SCEN_VER ? s : Object.assign({}, s, { v: SCEN_VER, IN: migrateIN(s.IN) }));
+    } else if (s && typeof s === 'object') skipped.push(s);
   }
   return { list, skipped };
 }
@@ -5950,7 +6028,7 @@ function save(list, name, IN, factsObj, planId, stamp, id) {
 function load(list, id) {
   const s = list.find(x => x.id === id);
   if (!s) return null;
-  return { IN: clone(s.IN), facts: s.facts ? clone(s.facts) : null };
+  return { IN: clone(migrateIN(s.IN)), facts: s.facts ? clone(s.facts) : null };
 }
 function rename(list, id, name) {
   const nm = String(name == null ? '' : name).trim();
@@ -7557,10 +7635,10 @@ const BAND_TO_CAT = {
   1: { salary:'salary', shell:'shell', ss:'ss', uk:'uk', draw:'draw' },
   2: { pretax:'pretax', roth:'roth', taxable:'taxable', ukfunds:'ukfunds', ausuper:'ausuper', house:'house', cash:'cash' },
   3: { convert:'conversions', ordinary:'conversions', niit:'conversions', irmaa:'conversions',
-       harvest:'harvest', capgains:'harvest', qcd:'giving', rmd:'heirs' },
+       harvest:'harvest', capgains:'harvest', qcd:'giving' },   // WO22 P3: no 'heirs' pane (rmd series still highlights)
 };
 // The series key to highlight when a controller category is the one in focus.
-const CAT_FOCUS_KEY = { 3: { conversions:'convert', harvest:'harvest', giving:'qcd', heirs:'rmd' } };
+const CAT_FOCUS_KEY = { 3: { conversions:'convert', harvest:'harvest', giving:'qcd' } };
 function catFocusKey(rid,catId){ return (CAT_FOCUS_KEY[rid] && CAT_FOCUS_KEY[rid][catId]) || catId; }
 function bandToCat(rid,key){ const m=BAND_TO_CAT[rid]; return (m && m[key]) || null; }
 function catIndexById(rid,catId){ const cats=catsFor(rid); for(let i=0;i<cats.length;i++) if(cats[i].id===catId) return i; return -1; }
@@ -8107,7 +8185,31 @@ function renderSummary3(){ const el=document.getElementById('sum3'); if(!CF){ el
     +'<div class="sumrow"><span>Forced RMDs cut by</span><b>'+pct(CF.rmdReductionPct)+'</b></div>'
     +'<div class="sum-sub faint">Roth conversions in the low-income bridge years fill the '+pct(IN.targetConversionBracket)+' bracket and cut the forced RMDs by '+pct(CF.rmdReductionPct)+' versus doing nothing — they shrink them, they don’t remove them, because the balance keeps growing after the conversion window closes in 2039.</div>'
     +harvestDisclosure()
+    +harvestPriorityNote()
     +rothEstateNote();
+}
+/* WO22 Phase 2.3 — convert-first vs harvest-first, computed on THIS plan. The 0%
+ * low-tax room can go to Roth conversions OR to selling gains tax-free; they compete
+ * (a converted dollar of income pushes a dollar of gain out of the 0% band). Both are
+ * run on deep-clone models (base untouched) so the user sees which rule wins on their
+ * own numbers. Plain English (story-mode jargon ban applies). */
+function harvestPriorityNote(){
+  let conv, harv;
+  try{
+    conv=buildModel(FACTS, Object.assign({}, IN, {lowTaxRoomPriority:'convert', doNothing:false}));
+    harv=buildModel(FACTS, Object.assign({}, IN, {lowTaxRoomPriority:'harvest', doNothing:false}));
+  }catch(e){ return ''; }
+  const cur=IN.lowTaxRoomPriority||'convert';
+  const winner = conv.kpis.legacyAfterTaxToday >= harv.kpis.legacyAfterTaxToday ? 'convert' : 'harvest';
+  const name = (p)=> p==='convert'?'conversions first':(p==='harvest'?'harvesting first':'no harvesting');
+  return '<div class="dec" style="border-left-color:var(--c-harvest);margin-top:10px">'
+    +'<div class="dr" style="color:var(--c-harvest)">Convert first vs harvest first — on your plan</div>'
+    +'The low-tax years can be spent two ways: fill them with <b>Roth conversions</b>, or use them to <b>sell investment gains at 0% tax</b>. They compete — a converted dollar of income pushes a dollar of gain out of the 0% band — so here is each, run on your own numbers:'
+    +'<div class="sumrow" style="margin-top:6px"><span>Conversions first → left for the children</span><b>'+moneyK(conv.kpis.legacyAfterTaxToday)+'</b></div>'
+    +'<div class="sumrow"><span>Harvest gains first → left for the children</span><b>'+moneyK(harv.kpis.legacyAfterTaxToday)+'</b></div>'
+    +'<div class="sumrow"><span>Lifetime tax — convert vs harvest</span><b>'+moneyK(conv.kpis.lifetimeTaxToday)+' → '+moneyK(harv.kpis.lifetimeTaxToday)+'</b></div>'
+    +'<div class="sumrow"><span>Gains sold tax-free — convert vs harvest</span><b>'+moneyK(conv.kpis.totalHarvestedToday)+' → '+moneyK(harv.kpis.totalHarvestedToday)+'</b></div>'
+    +'<div class="sum-sub faint" style="margin-top:4px">On your plan, <b>'+name(winner)+'</b> leaves more for the children. You are set to <b>'+name(cur)+'</b> — change it on the “Gain harvesting” card.</div></div>';
 }
 /* WO15 Phase 1.2/1.5 — tell the truth about 0% gain harvesting. The strategy is
  * often described as "conversions PLUS gain harvesting", but on the shipped plan
@@ -8285,7 +8387,7 @@ function renderStatement(){
 
   html.push(stSec('Pensions — US (Shell)',[
     stRow('80-Point pension (J&amp;S 50%)', money(V('income.shell_pension.eighty_point.j50.start'))+'/mo · nominal 2032 $', L('income.shell_pension.eighty_point.j50.start')),
-    stRow('80-Point — after May 2044', money(V('income.shell_pension.eighty_point.j50.after_2044_05'))+'/mo', L('income.shell_pension.eighty_point.j50.after_2044_05')),
+    stRow('80-Point — after SSO step-down', money(V('income.shell_pension.eighty_point.j50.after_2044_05'))+'/mo', L('income.shell_pension.eighty_point.j50.after_2044_05')),
     stRow('Annuity Pension Fund (J&amp;S 50%)', money(V('income.shell_pension.apf.j50_monthly'))+'/mo', L('income.shell_pension.apf.j50_monthly')),
     stRow('APF lump option (2032)', money(V('income.shell_pension.apf.lump_2032')), L('income.shell_pension.apf.lump_2032')),
     stRow('BRP lump (2032)', money(V('income.shell_pension.brp_lump_2032')), L('income.shell_pension.brp_lump_2032')),
@@ -8341,7 +8443,7 @@ function renderStatement(){
     +'</tbody></table>'
     +'<p><b>The open ANZ-super question:</b> if the ANZ Smart Choice super is “social security” under Article 18(2) of the US–Australia treaty, no 3520/3520-A is due; if the IRS treats it as a foreign grantor trust, 3520 and 3520-A may be required — with steep penalties for non-filing, even though the balance is immaterial. The dollars are trivial; the filing risk is not. '
     +'<b>CPA Q2:</b> whether the UK L&amp;G 25% tax-free lump sum is also tax-free in the US (currently modelled as fully US-taxable — conservative). '
-    +'Treaty position (30 Aug 2026, not yet CPA-confirmed): no US tax while held; drawn gross; US-taxable as ordinary income on distribution.</p></div>');
+    +'Treaty position (not yet CPA-confirmed): no US tax while held; drawn gross; US-taxable as ordinary income on distribution.</p></div>');
 
   const out=html.join('');
   document.getElementById('stmtPage').innerHTML=out;
