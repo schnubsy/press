@@ -326,7 +326,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v3.1.1</span>
+    <span class="nav-badge">v3.2.0</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -1169,6 +1169,19 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         </details>
       </div>
 
+      <div class="instr i-hand" id="cap-arc">
+        <span class="who">Owner: Forge · trigger — "arc" / "run the arc" / "batch these slices"</span>
+        <h4>Arc</h4>
+        <p class="instr-sum">The default shape of a work order — one order runs N slices back-to-back to completion instead of relaying them one at a time. Each slice tests, builds, captures its own proof, commits, and hands off before the next begins.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Full detail — the order contract</summary>
+          <div class="facet-body">
+            <p>An <b class="ink">arc-shaped order is the default</b> for any coding work order; a single-slice order is the exception — a one-line fix, or when one slice cannot be specified until the previous slice's output exists. Every emitted order carries the same fixed frame: the repo path and a session branch, the standing-rules block (solo repo, merge to main at the close, never move a worktree mid-order, publishing stays the Principal's, staging by name), <b class="ink">plan mode once</b> to gather every decision into a single up-front checkpoint, then the numbered slices — each with scope, files, detail, and explicit done-criteria — run back-to-back, with independent pieces fanned out to parallel sub-agents. The <b class="ink">per-slice discipline loop</b> is the same every time: extend the tests, build and lint clean, run it, capture a done-proof artifact, commit the slice, hand off, continue — returning only at arc-complete or a genuine blocker. The close merges the branch to main, deletes it, and reports.</p>
+            <p>The referenced arc file is <b class="ink"><code>ARC.md</code></b> at the project root — a fourth control file alongside <code>CLAUDE.md</code>, <code>HANDOFF.md</code>, and <code>ORCHESTRATION.md</code>. It is <b class="ink">append-only</b>: the orchestration layer adds dated slices and decisions, the executing agent consumes them, and the handoff routine ticks the completed slices and — once every slice is done — folds the arc into <code>CLAUDE.md</code> and <code>HANDOFF.md</code>, truncating <code>ARC.md</code> back to empty.</p>
+          </div>
+        </details>
+      </div>
+
       <!-- Garrick (Hand lead) -->
       <div class="instr i-hand" id="cap-optimize">
         <span class="who">Owner: Garrick + Steward · trigger — "optimization review" / quarterly</span>
@@ -1504,7 +1517,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <footer>
   <div class="footer-in">
     <div>The Council · a private prospectus · generated from PERSONAS.md + skills</div>
-    <div class="mono">council v3.1.1 · last updated 2026-09-07</div>
+    <div class="mono">council v3.2.0 · last updated 2026-09-09</div>
   </div>
 </footer>
 
