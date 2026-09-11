@@ -326,7 +326,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v3.2.2</span>
+    <span class="nav-badge">v3.2.3</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -1083,13 +1083,13 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <details class="facet">
           <summary><span class="fmk">&#9656;</span>Detect — what it checks for drift</summary>
           <div class="facet-body">
-            <p><b class="ink">Detect:</b> diffs <code>plugin.json</code> against the four version-stamp locations (guide nav badge + footer, and the <code>Version:</code> headers in <code>PERSONAS.md</code> and <code>CAPABILITIES.md</code>), flags annex entries newer than the guide's stamp, checks skills against the cast (<code>PERSONAS.md</code>) and against the instrument index (every registered instrument needs its one-line entry in <code>skills/hand/SKILL.md</code>), catches capabilities used but never registered, and detects a <b class="ink">stale bundle</b> — a <code>dist/council.plugin</code> older than the newest committed source means Cowork + web/mobile are out of date, whether <code>MANUAL.md</code> (the separate environment repo) trails the plugin's version, and whether the published Press copy of this guide (<code>schnubsy/press/council.html</code>) has fallen behind the generated version — a <b class="ink">stale Press copy</b> is flagged as drift, so a missed publish is caught next run.</p>
+            <p><b class="ink">Detect:</b> eleven checks. It diffs <code>plugin.json</code> against the four version-stamp locations (guide nav badge + footer, and the <code>Version:</code> headers in <code>PERSONAS.md</code> and <code>CAPABILITIES.md</code>), flags annex entries newer than the guide's stamp, checks skills against the cast (<code>PERSONAS.md</code>) and against the instrument index (every registered instrument needs its one-line entry in <code>skills/hand/SKILL.md</code>), catches capabilities used but never registered, and detects a <b class="ink">stale bundle</b> — a <code>dist/council.plugin</code> older than the newest committed source means Cowork + web/mobile are out of date, whether <code>MANUAL.md</code> (the separate environment repo) trails the plugin's version, and whether the published Press copy of this guide (<code>schnubsy/press/council-guide.html</code>) has fallen behind the generated version — a <b class="ink">stale Press copy</b> is flagged as drift, so a missed publish is caught next run. It also runs <code>build.py --check</code> to catch a <b class="ink">stale <code>manual.html</code></b> (generated from <code>MANUAL.md</code>), and an <b class="ink">ACR storage watch</b> (<code>az acr show-usage</code>, read-only) that flags the registry approaching its included quota.</p>
           </div>
         </details>
         <details class="facet">
           <summary><span class="fmk">&#9656;</span>Repair &amp; propagate</summary>
           <div class="facet-body">
-            <p><b class="ink">Repair (automatable):</b> fixes all four stamps to match <code>plugin.json</code> and regenerates this guide from its sources. <b class="ink">Propagate:</b> on a chat surface it <i>emits</i> ready-to-paste Claude Code prompts to commit + push and to rebuild the bundle; run instead as the <code>/council:audit</code> command in Claude Code, those same steps <i>execute</i> directly. Either way you get a manual checklist for the two steps no tool can do — reloading <code>dist/council.plugin</code> in Desktop (the single action that refreshes Cowork and claude.ai web/mobile together) and a fresh-chat cast check to verify. It separates what it fixed itself from what waits on your manual reload. When a run regenerates this guide, propagate also <b class="ink">republishes it to the public Press copy</b> (<code>council.html</code>) — gated on the guide having actually changed, lane-aware by size, and hash-verified — so the published prospectus never lags the generated one.</p>
+            <p><b class="ink">Repair (automatable):</b> fixes all four stamps to match <code>plugin.json</code> and regenerates this guide from its sources. <b class="ink">Propagate:</b> on a chat surface it <i>emits</i> ready-to-paste Claude Code prompts to commit + push and to rebuild the bundle; run instead as the <code>/council:audit</code> command in Claude Code, those same steps <i>execute</i> directly. Either way you get a manual checklist for the two steps no tool can do — reloading <code>dist/council.plugin</code> in Desktop (the single action that refreshes Cowork and claude.ai web/mobile together) and a fresh-chat cast check to verify. It separates what it fixed itself from what waits on your manual reload. When the published copy is out of sync, propagate also <b class="ink">republishes this guide to the public Press copy</b> (<code>council-guide.html</code>) — lane-aware by size and hash-verified — so the published prospectus never lags the generated one.</p>
           </div>
         </details>
         <details class="facet">
@@ -1517,7 +1517,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <footer>
   <div class="footer-in">
     <div>The Council · a private prospectus · generated from PERSONAS.md + skills</div>
-    <div class="mono">council v3.2.2 · last updated 2026-09-08</div>
+    <div class="mono">council v3.2.3 · last updated 2026-09-11</div>
   </div>
 </footer>
 
