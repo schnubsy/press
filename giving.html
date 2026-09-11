@@ -127,10 +127,30 @@
   .empty .big { font-family:var(--serif); font-size:1.05rem; color:var(--ink); margin-bottom:4px; }
 
   .footnote { color:var(--muted); font-size:0.75rem; text-align:center; margin-top:26px; }
+  /* z-index above .sheet (20) so a toast — including a Log-sheet validation error — is
+     never hidden behind an open sheet. (Shakedown fix, slice 0.) */
   #toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:var(--surface-2);
     color:var(--ink); border:1px solid var(--line); padding:10px 16px; border-radius:10px; font-size:0.85rem;
-    box-shadow:0 6px 20px rgba(0,0,0,0.35); opacity:0; transition:opacity .2s; pointer-events:none; max-width:90vw; }
+    box-shadow:0 6px 20px rgba(0,0,0,0.35); opacity:0; transition:opacity .2s; pointer-events:none; max-width:90vw;
+    z-index:50; }
   #toast.show { opacity:1; }
+  #toast.err { border-color:var(--danger); color:var(--danger); }
+
+  /* ---- header save-status pill (replaces the manual Save button, slice 0) ---- */
+  .savepill { background:var(--surface-2); border:1px solid var(--line); color:var(--muted);
+    border-radius:999px; padding:6px 11px; font-size:0.74rem; font-weight:600; display:inline-flex;
+    align-items:center; gap:6px; transition:opacity .3s; white-space:nowrap; }
+  .savepill .dot { width:7px; height:7px; border-radius:50%; background:var(--muted); flex:0 0 auto; }
+  .savepill[data-state="saving"] .dot { background:var(--ember); }
+  .savepill[data-state="saved"] { color:var(--ledger); }
+  .savepill[data-state="saved"] .dot { background:var(--ledger); }
+  .savepill[data-state="error"], .savepill[data-state="conflict"] {
+    color:var(--danger); border-color:var(--danger); }
+  .savepill.tap { cursor:pointer; }
+  .savepill:not(.tap) { cursor:default; }
+  /* gear (and any) icon-only header button */
+  .iconbtn.ic { display:inline-flex; align-items:center; justify-content:center; padding:7px 9px; line-height:0; }
+  .iconbtn.ic svg { display:block; }
 
   /* ---- charities sheet ---- */
   .sheet { position:fixed; inset:0; z-index:20; background:var(--bg); overflow-y:auto; }
@@ -223,6 +243,15 @@
   .runtot .rv { font-family:var(--serif); font-size:1.4rem; font-weight:600; }
   .acq { border-top:1px dotted var(--line); margin-top:8px; padding-top:8px; }
 
+  /* ---- receipt attachments (slice 6) ---- */
+  .attachchip { display:flex; align-items:center; gap:8px; padding:8px 6px; border-bottom:1px dotted var(--line); }
+  .attachchip:last-child { border-bottom:0; }
+  .attachchip .athumb { width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--line); flex:0 0 auto; }
+  .attachchip .afile { width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-size:1.1rem;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:6px; flex:0 0 auto; }
+  .attachchip .aname { flex:1; min-width:0; font-size:0.86rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .attachchip .asz { color:var(--muted); font-size:0.74rem; flex:0 0 auto; }
+
   /* ---- savings card ---- */
   .savings { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 20px; margin-bottom:18px; }
   .savings .lab { color:var(--muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em; }
@@ -230,6 +259,14 @@
   .savings .sub { color:var(--muted); font-size:0.82rem; }
   .savings .adv { color:var(--muted); font-size:0.74rem; margin-top:8px; font-style:italic; }
   .savings.prompt .fig { color:var(--ink); font-size:1.05rem; font-family:var(--sans); font-weight:600; }
+  /* saved-tax-profile confirmation: a brief highlight on the savings card (slice 0) */
+  .savings.flash { animation:cardflash 1.6s ease; }
+  @keyframes cardflash { 0%,100%{ box-shadow:0 0 0 0 rgba(0,0,0,0); border-color:var(--line); }
+    25%{ box-shadow:0 0 0 3px var(--ember); border-color:var(--ember); } }
+  /* inline field validation (tax profile) */
+  .txt.inerr, select.inerr { border-color:var(--danger) !important; outline-color:var(--danger); }
+  .fielderr { color:var(--danger); font-size:0.72rem; margin-top:4px; font-weight:600; }
+  .fielderr:empty { display:none; }
   .radio { display:flex; gap:8px; }
   .radio button { flex:1; background:var(--bg); border:1px solid var(--line); color:var(--muted);
     border-radius:9px; padding:10px; font-size:0.9rem; font-weight:600; }
@@ -243,6 +280,30 @@
   .exbtn .xt { font-weight:700; font-size:0.95rem; }
   .exbtn .xd { color:var(--muted); font-size:0.78rem; margin-top:2px; font-weight:400; }
   .exbtn .arr { color:var(--ember-soft); font-weight:700; }
+
+  /* ---- needs-review inbox (slice 4) ---- */
+  .inboxbadge { display:inline-block; background:var(--ember); color:#1a120b; border-radius:999px;
+    font-size:0.64rem; font-weight:800; padding:1px 6px; margin-left:6px; min-width:16px; text-align:center; }
+  .qcard { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:12px; }
+  .qcard .qh { display:flex; align-items:center; gap:9px; }
+  .qcard .qsrc { font-size:1.05rem; flex:0 0 auto; }
+  .qcard .qwho { font-weight:600; font-size:0.98rem; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .qcard .qamt { font-family:var(--mono); font-weight:600; font-size:0.98rem; flex:0 0 auto; }
+  .qcard .qamt.needed { color:var(--ember-soft); font-family:var(--sans); font-weight:700; font-size:0.78rem; }
+  .qcard .qmeta { color:var(--muted); font-size:0.78rem; margin:7px 0 10px; display:flex; flex-wrap:wrap; gap:7px; align-items:center; }
+  .qbadge { font-size:0.66rem; font-weight:700; padding:2px 7px; border-radius:999px; }
+  .qbadge.into { background:rgba(127,174,134,0.18); color:var(--ledger); }
+  .qbadge.via { background:var(--surface-2); color:var(--muted); }
+  .qbadge.cash { background:var(--surface-2); color:var(--muted); }
+  .qhint { font-size:0.7rem; font-weight:700; padding:2px 7px; border-radius:999px; }
+  .qhint.dup { background:rgba(217,138,78,0.16); color:var(--ember-soft); }
+  .qhint.chk { background:rgba(217,138,138,0.16); color:var(--danger); }
+  .qacts { display:flex; gap:6px; flex-wrap:wrap; }
+  .inbox-empty { padding:34px 20px; text-align:center; color:var(--muted); }
+  .inbox-empty .big { font-family:var(--serif); font-size:1.05rem; color:var(--ink); margin-bottom:4px; }
+  .readybar { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:11px; padding:10px 14px; }
+  .readybar .rl { color:var(--muted); font-size:0.82rem; font-weight:600; }
 
   /* ---- settings extras (slice 6) ---- */
   .mono { font-family:var(--mono); letter-spacing:0.02em; }
@@ -302,11 +363,14 @@
     <div class="brand"><span class="mark"></span><h1>Giving Tracker</h1></div>
     <span class="spacer"></span>
     <span id="idPill" class="idpill"></span>
+    <button id="savePill" class="savepill" hidden><span class="dot"></span><span id="savePillTxt">Saved</span></button>
     <button id="btnLog" class="iconbtn">+ Log</button>
+    <button id="btnInbox" class="iconbtn">Inbox<span id="inboxBadge" class="inboxbadge" hidden>0</span></button>
     <button id="btnCharities" class="iconbtn">Charities</button>
     <button id="btnExport" class="iconbtn">Export</button>
-    <button id="btnSettings" class="iconbtn">Settings</button>
-    <button id="btnSave" class="iconbtn">Save</button>
+    <button id="btnSettings" class="iconbtn ic" aria-label="Settings" title="Settings">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H2a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 3.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H8a1.65 1.65 0 0 0 1-1.51V2a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V8a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    </button>
     <button id="btnTheme" class="iconbtn" title="Toggle theme">◑</button>
     <button id="btnSignout" class="iconbtn">Sign out</button>
   </div>
@@ -440,6 +504,37 @@
       <p class="hint">Merges donations + charities from a JSON backup into this book (duplicates by id are skipped).</p>
       <input id="exImportFile" type="file" accept="application/json,.json" class="txt">
     </div>
+  </div>
+</div>
+
+<!-- ============================== NEEDS-REVIEW INBOX SHEET ============================== -->
+<div id="inboxSheet" class="sheet" hidden>
+  <div class="sheet-top">
+    <h2>Needs review</h2>
+    <span class="spacer"></span>
+    <button id="btnInboxReload" class="iconbtn">Refresh</button>
+    <button id="btnInboxClose" class="iconbtn">Done</button>
+  </div>
+  <div class="sheet-body">
+    <p class="hint">Captured from your email. Review each one — approve it, merge it into a match, or dismiss it.
+      Nothing is added to your book until you approve it.</p>
+    <div id="inboxReady"></div>
+    <div id="inboxList"></div>
+  </div>
+</div>
+
+<!-- ============================== CSV COLUMN MAPPER SHEET ============================== -->
+<div id="csvMapSheet" class="sheet" hidden>
+  <div class="sheet-top">
+    <h2>Map your CSV columns</h2>
+    <span class="spacer"></span>
+    <button id="btnCsvMapClose" class="iconbtn">Cancel</button>
+  </div>
+  <div class="sheet-body">
+    <p class="hint">We guessed the columns from your file — fix any that are wrong, then import. Rows land in the review inbox.</p>
+    <div class="card"><div class="card-h">Columns</div><div id="csvMapFields"></div></div>
+    <div class="card"><div class="card-h">Preview <span id="csvPreviewCnt" class="cnt"></span></div><div id="csvPreview"></div></div>
+    <button id="btnCsvImport" class="btn">Import to inbox</button>
   </div>
 </div>
 
@@ -744,6 +839,7 @@ function normalizeDonation(doc, d) {
 
   d.deductible = deductibleOf(d);                        // false for daf_grant, never overridable
   if (d.date) d.tax_year = Number(String(d.date).slice(0, 4));
+  if (!Array.isArray(d.sources)) d.sources = [];         // capture provenance (email/import/ynab) — preserved
   return d;
 }
 
@@ -831,14 +927,26 @@ function dashboardTotals(doc, year) {
 //   - ackNeeded: number of deductible gifts ≥ $250 without a recorded acknowledgment
 //   - form8283:  total deductible non-cash (items + stock, incl. DAF contributions) > $500
 //   - appraisal: any single item line ≥ $5,000
+// A receipt source (email/import) counts as evidence for the acknowledgment.
+function hasReceiptSource(d) {
+  if (!Array.isArray(d.sources)) return false;
+  for (var i = 0; i < d.sources.length; i++) {
+    var s = (d.sources[i] && d.sources[i].source) || '';
+    if (s === 'email' || s === 'import') return true;
+  }
+  return false;
+}
+
 function complianceFlags(doc, year) {
-  var y = Number(year), ackNeeded = 0, noncash = 0, appraisal = false;
+  var y = Number(year), ackNeeded = 0, noncash = 0, appraisal = false, ackMissing = 0;
   for (var i = 0; i < doc.donations.length; i++) {
     var d = doc.donations[i];
     if (Number(d.tax_year) !== y) continue;
     if (!deductibleOf(d)) continue;
     var amt = Number(d.amount) || 0;
     if (amt >= ACK_THRESHOLD && !d.acknowledgment_received) ackNeeded++;
+    // ack-missing: a cash gift ≥ $250 with no emailed/imported receipt on file (SPEC §3 / FEATURES)
+    if (d.type === 'money' && amt >= ACK_THRESHOLD && !d.acknowledgment_received && !hasReceiptSource(d)) ackMissing++;
     if (d.type === 'items' || d.type === 'stock') noncash += amt;
     if (d.type === 'items' && Array.isArray(d.items)) {
       for (var j = 0; j < d.items.length; j++) {
@@ -846,7 +954,7 @@ function complianceFlags(doc, year) {
       }
     }
   }
-  return { ackNeeded: ackNeeded, form8283: noncash > NONCASH_8283, appraisal: appraisal, noncashTotal: round2(noncash) };
+  return { ackNeeded: ackNeeded, form8283: noncash > NONCASH_8283, appraisal: appraisal, ackMissing: ackMissing, noncashTotal: round2(noncash) };
 }
 
 module.exports = {
@@ -867,6 +975,208 @@ module.exports = {
   deductibleOf: deductibleOf,
   countsForDeductible: countsForDeductible, countsForGiving: countsForGiving,
   dashboardTotals: dashboardTotals, complianceFlags: complianceFlags,
+};
+
+});
+
+/* ---- src/core/review.js ---- */
+window.__def("src/core/review.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/core/review.js — turn an opened capture item into a review DRAFT, find
+ * likely duplicates, and merge a draft into an existing donation.
+ *
+ * A capture row is a sealed box; the app opens it (src/sync/seal.js) to
+ * { extraction, meta, receipt_text }. review.toDraft maps that to a proposed
+ * donation + charity resolution + UI hints. Nothing here is destructive — approve/
+ * merge write through model.addDonation / model.editDonation so the DAF split and
+ * every other invariant are enforced. Pure + node-testable: no DOM, no network.
+ *
+ * The defining rule survives capture: daf_grant -> type 'daf_grant' (never
+ * deductible); daf_contribution -> type 'stock', daf_contribution=true, charity =
+ * the locked Fidelity sponsor.
+ * ========================================================================== */
+
+var model = require('./model.js');
+
+var LOW_CONFIDENCE = 0.7;
+var DUP_DAYS = 3;
+var DUP_DOLLARS = 1;
+
+function normName(s) { return String(s == null ? '' : s).trim().toLowerCase(); }
+function parseDay(s) {
+  if (!s) return null;
+  var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s));
+  if (!m) return null;
+  return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+function withinDays(a, b, n) {
+  var da = parseDay(a), db = parseDay(b);
+  if (da == null || db == null) return false;
+  return Math.abs(da - db) <= n * 86400000;
+}
+
+// Resolve a charity against the doc: EIN first, then normalized name. daf_contribution
+// always targets the locked Fidelity sponsor.
+function resolveCharity(doc, extraction) {
+  if (extraction.kind === 'daf_contribution') {
+    var sp = model.dafSponsor(doc);
+    return { charity_id: sp ? sp.id : null, charity_name: sp ? sp.name : 'Fidelity Charitable', charity_ein: sp ? sp.ein : null, needsCharity: false };
+  }
+  var ein = model.normEin(extraction.charity_ein);
+  var name = String(extraction.charity_name || '').trim();
+  var chars = doc.charities || [];
+  var match = null, i;
+  if (ein) { for (i = 0; i < chars.length; i++) if (model.normEin(chars[i].ein) === ein) { match = chars[i]; break; } }
+  if (!match && name) { var ln = normName(name); for (i = 0; i < chars.length; i++) if (normName(chars[i].name) === ln) { match = chars[i]; break; } }
+  if (match) return { charity_id: match.id, charity_name: match.name, charity_ein: match.ein || null, needsCharity: false };
+  return { charity_id: null, charity_name: name || null, charity_ein: ein ? extraction.charity_ein : null, needsCharity: true };
+}
+
+// opened = { extraction, meta, receipt_text }; rowMeta = { id, source }.
+function toDraft(opened, doc, rowMeta) {
+  opened = opened || {}; rowMeta = rowMeta || {};
+  var ex = opened.extraction || {};
+  var res = resolveCharity(doc, ex);
+  var type = 'money', dafc = false;
+  if (ex.kind === 'daf_grant') type = 'daf_grant';
+  else if (ex.kind === 'daf_contribution') { type = 'stock'; dafc = true; }
+  else type = (ex.amount_type === 'items') ? 'items' : 'money';
+  var amount = (ex.amount == null) ? null : Number(ex.amount);
+  var conf = Number(ex.confidence) || 0;
+  return {
+    id: rowMeta.id || null,
+    source: rowMeta.source || 'email',
+    kind: ex.kind || 'charity_receipt',
+    type: type,
+    daf_contribution: dafc,
+    charity_id: res.charity_id,
+    charity_name: res.charity_name,
+    charity_ein: res.charity_ein,
+    needsCharity: res.needsCharity,
+    date: ex.date || null,
+    amount: amount,
+    amount_type: ex.amount_type || 'unknown',
+    amountNeeded: amount == null,
+    stock: ex.stock || null,
+    goods_or_services: ex.goods_or_services || null,
+    confidence: conf,
+    lowConfidence: conf < LOW_CONFIDENCE,
+    missing_fields: Array.isArray(ex.missing_fields) ? ex.missing_fields.slice() : [],
+    evidence: ex.evidence || null,
+    meta: opened.meta || null,
+    receipt_text: opened.receipt_text || null,
+    source_ref: (opened.meta && opened.meta.message_id) || null,
+  };
+}
+
+// Identity key for matching a draft/donation's charity.
+function identity(doc, charityId, name, ein) {
+  var c = charityId ? model.charityById(doc, charityId) : null;
+  return { ein: model.normEin(ein || (c && c.ein)), name: normName((c && c.name) || name) };
+}
+function sameCharity(a, b) { if (a.ein && b.ein) return a.ein === b.ein; return !!a.name && a.name === b.name; }
+
+// Duplicate = same charity AND date ±3 days AND amount ±$1. An amount-null draft matches
+// on charity + date ±3 only, flagged amountNeeded. Compares existing donations AND other
+// pending drafts.
+function findDuplicates(draft, doc, otherDrafts) {
+  otherDrafts = otherDrafts || [];
+  var di = identity(doc, draft.charity_id, draft.charity_name, draft.charity_ein);
+  var matches = [];
+  var ds = (doc && doc.donations) || [], i;
+  for (i = 0; i < ds.length; i++) {
+    var d = ds[i];
+    if (!sameCharity(di, identity(doc, d.charity_id, null, null))) continue;
+    if (!withinDays(draft.date, d.date, DUP_DAYS)) continue;
+    if (draft.amount == null) { matches.push({ kind: 'donation', id: d.id, donation: d, amountNeeded: true }); continue; }
+    if (d.amount != null && Math.abs(Number(d.amount) - Number(draft.amount)) <= DUP_DOLLARS) matches.push({ kind: 'donation', id: d.id, donation: d });
+  }
+  for (i = 0; i < otherDrafts.length; i++) {
+    var o = otherDrafts[i];
+    if (!o || o === draft || o.id === draft.id) continue;
+    if (!sameCharity(di, identity(doc, o.charity_id, o.charity_name, o.charity_ein))) continue;
+    if (!withinDays(draft.date, o.date, DUP_DAYS)) continue;
+    if (draft.amount == null || o.amount == null) { matches.push({ kind: 'draft', id: o.id, draft: o, amountNeeded: true }); continue; }
+    if (Math.abs(Number(o.amount) - Number(draft.amount)) <= DUP_DOLLARS) matches.push({ kind: 'draft', id: o.id, draft: o });
+  }
+  return { matches: matches, isDuplicate: matches.length > 0, amountNeeded: draft.amount == null };
+}
+
+function sourceRecord(draft) {
+  return {
+    source: draft.source || 'email',
+    message_id: draft.source_ref || null,
+    kind: draft.kind || null,
+    captured_at: new Date().toISOString(),
+    evidence: draft.evidence || null,
+  };
+}
+
+// Merge a draft into an existing donation: fill BLANKS only, then append to sources[].
+// Never overwrites a value already present; never flips deductibility.
+function merge(existing, draft) {
+  if (!Array.isArray(existing.sources)) existing.sources = [];
+  if ((existing.amount == null || existing.amount === 0) && draft.amount != null) existing.amount = Number(draft.amount);
+  if (!existing.date && draft.date) { existing.date = draft.date; existing.tax_year = Number(String(draft.date).slice(0, 4)); }
+  if (!existing.notes && draft.evidence) existing.notes = draft.evidence;
+  existing.sources.push(sourceRecord(draft));
+  return existing;
+}
+
+// The model.addDonation payload for approving a draft as a NEW donation.
+function draftPayload(draft) {
+  var p = {
+    type: draft.type, charity_id: draft.charity_id, date: draft.date,
+    notes: draft.evidence || null, source: draft.source || 'email', sources: [sourceRecord(draft)],
+  };
+  if (draft.receipt_text) p.receipt_text = draft.receipt_text;   // keep the emailed receipt on the donation
+
+  if (draft.type === 'items') {
+    p.items = (Array.isArray(draft.items) && draft.items.length)
+      ? draft.items
+      : [{ category: 'Other', description: 'Donated goods', condition: 'good', qty: 1, unit_value: Number(draft.amount) || 0 }];
+  } else {
+    p.amount = Number(draft.amount) || 0;
+  }
+  if (draft.daf_contribution) {
+    p.daf_contribution = true;
+    if (draft.stock) { p.security = draft.stock.symbol || null; p.shares = (draft.stock.shares != null ? Number(draft.stock.shares) : null); }
+    p.long_term = true;   // default; Review lets Mark set basis/acquired (blank allowed)
+  }
+  if (draft.goods_or_services && draft.goods_or_services.received && draft.goods_or_services.value != null) {
+    p.goods_received = true; p.goods_value = Number(draft.goods_or_services.value) || 0;
+  }
+  return p;
+}
+
+// "Approve all ready": has an amount and a date, and is not a likely duplicate.
+function isReady(draft, dupResult) {
+  return draft.amount != null && !!draft.date && !(dupResult && dupResult.isDuplicate);
+}
+
+// Orchestrate an approve/merge with the CORRECT ordering: write to the model (DAF split
+// enforced), persist locally, await a SUCCESSFUL cloud save, and ONLY THEN remove the
+// queue row. A failed save keeps the row so nothing is lost. `steps` is injected:
+//   apply()      -> model write (may throw; then the row is kept)
+//   persist()    -> local cache + kick the saver (no throw expected)
+//   saveOnce()   -> Promise<boolean>: true only when the cloud save actually succeeded
+//   removeRow()  -> Promise: delete the queue row
+async function commitApproval(steps) {
+  steps.apply();
+  if (steps.persist) steps.persist();
+  var ok = false;
+  try { ok = await steps.saveOnce(); } catch (e) { ok = false; }
+  if (ok) { await steps.removeRow(); return { removed: true }; }
+  return { removed: false };
+}
+
+module.exports = {
+  LOW_CONFIDENCE: LOW_CONFIDENCE, DUP_DAYS: DUP_DAYS, DUP_DOLLARS: DUP_DOLLARS,
+  toDraft: toDraft, resolveCharity: resolveCharity,
+  findDuplicates: findDuplicates, merge: merge, sourceRecord: sourceRecord,
+  draftPayload: draftPayload, isReady: isReady, withinDays: withinDays,
+  commitApproval: commitApproval,
 };
 
 });
@@ -1113,6 +1423,108 @@ module.exports = { VALUE_GUIDE: VALUE_GUIDE, guideFor: guideFor, subcategoriesFo
 
 });
 
+/* ---- src/data/files.js ---- */
+window.__def("src/data/files.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/data/files.js — client-encrypted receipt attachments (press_giving_files).
+ *
+ * Each file is AES-256-GCM encrypted in the browser with a RANDOM PER-FILE key that
+ * lives only inside the encrypted giving document (doc.attachments[].key). The mime
+ * type and filename ride INSIDE the ciphertext, so a stored row is opaque without the
+ * key. Transport is header-gated on the sync id (x-plan-id), exactly like client.js /
+ * queue.js. Pure + node-testable: crypto uses WebCrypto; every network call takes an
+ * injectable fetch.
+ * ========================================================================== */
+
+var crypto = require('../sync/crypto.js');   // reuse bytesToB64 / b64ToBytes
+var client = require('../sync/client.js');    // SB_URL / headers / anon key
+
+var TABLE = 'press_giving_files';
+var REST = client.SB_URL + '/rest/v1/' + TABLE;
+var BUDGET_BYTES = 50 * 1024 * 1024;          // warn past ~50MB (free-tier DB is 500MB)
+
+function webcrypto() {
+  var g = (typeof globalThis !== 'undefined' && globalThis.crypto) || null;
+  if (!g || !g.subtle) throw new Error('WebCrypto unavailable');
+  return g;
+}
+function randomBytes(n) { var a = new Uint8Array(n); webcrypto().getRandomValues(a); return a; }
+
+async function genKey() {
+  return webcrypto().subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+}
+async function keyToB64(key) { var raw = await webcrypto().subtle.exportKey('raw', key); return crypto.bytesToB64(new Uint8Array(raw)); }
+async function keyFromB64(b64) { return webcrypto().subtle.importKey('raw', crypto.b64ToBytes(b64), { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']); }
+
+// Encrypt file bytes (+ mime/filename) under a fresh per-file key.
+//   bytes: Uint8Array; meta: { mime, filename }
+//   -> { key(b64), iv(b64), ciphertext(b64), bytes:int }
+async function encryptFile(bytes, meta) {
+  meta = meta || {};
+  var key = await genKey();
+  var payload = { mime: meta.mime || 'application/octet-stream', filename: meta.filename || 'receipt', data: crypto.bytesToB64(bytes) };
+  var iv = randomBytes(12);
+  var ct = await webcrypto().subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, new TextEncoder().encode(JSON.stringify(payload)));
+  return { key: await keyToB64(key), iv: crypto.bytesToB64(iv), ciphertext: crypto.bytesToB64(new Uint8Array(ct)), bytes: bytes.length };
+}
+
+// Decrypt a stored file. FAILS CLOSED (throws) on a wrong key / tampered ciphertext.
+//   -> { mime, filename, bytes:Uint8Array }
+async function decryptFile(ciphertextB64, ivB64, keyB64) {
+  var key = await keyFromB64(keyB64);
+  var pt = await webcrypto().subtle.decrypt({ name: 'AES-GCM', iv: crypto.b64ToBytes(ivB64) }, key, crypto.b64ToBytes(ciphertextB64));
+  var obj = JSON.parse(new TextDecoder().decode(pt));
+  return { mime: obj.mime, filename: obj.filename, bytes: crypto.b64ToBytes(obj.data) };
+}
+
+// Would adding `addBytes` push the encrypted store past the ~50MB budget?
+function overBudget(existingBytes, addBytes) { return (Number(existingBytes) || 0) + (Number(addBytes) || 0) > BUDGET_BYTES; }
+
+// ---- transport (header-gated; injectable fetch) ---------------------------
+function theFetch(deps) { var f = (deps && deps.fetch) || (typeof fetch !== 'undefined' ? fetch : null); if (!f) throw new Error('fetch unavailable'); return f; }
+
+async function put(syncId, row, deps) {
+  var f = theFetch(deps);
+  var body = { id: row.id, sync_id: syncId, donation_id: row.donation_id, ciphertext: row.ciphertext, iv: row.iv, bytes: row.bytes || 0 };
+  var res = await f(REST, { method: 'POST', headers: client.headers(syncId), body: JSON.stringify(body) });
+  if (!res.ok) throw new Error('file put failed (HTTP ' + res.status + ')');
+  return true;
+}
+// Metadata for a donation's files (no ciphertext) — for the thumbnails list.
+async function listMeta(syncId, donationId, deps) {
+  var f = theFetch(deps);
+  var url = REST + '?sync_id=eq.' + encodeURIComponent(syncId) + '&donation_id=eq.' + encodeURIComponent(donationId) + '&select=id,donation_id,bytes,created_at&order=created_at.asc';
+  var res = await f(url, { headers: client.headers(syncId) });
+  if (!res.ok) throw new Error('file list failed (HTTP ' + res.status + ')');
+  var rows = await res.json();
+  return Array.isArray(rows) ? rows : [];
+}
+// Fetch one file's ciphertext + iv to decrypt for viewing.
+async function get(syncId, id, deps) {
+  var f = theFetch(deps);
+  var url = REST + '?id=eq.' + encodeURIComponent(id) + '&select=id,ciphertext,iv';
+  var res = await f(url, { headers: client.headers(syncId) });
+  if (!res.ok) throw new Error('file get failed (HTTP ' + res.status + ')');
+  var rows = await res.json();
+  return (Array.isArray(rows) && rows[0]) ? rows[0] : null;
+}
+async function remove(syncId, id, deps) {
+  var f = theFetch(deps);
+  var url = REST + '?id=eq.' + encodeURIComponent(id) + '&sync_id=eq.' + encodeURIComponent(syncId);
+  var res = await f(url, { method: 'DELETE', headers: client.headers(syncId) });
+  if (!res.ok) throw new Error('file remove failed (HTTP ' + res.status + ')');
+  return true;
+}
+
+module.exports = {
+  TABLE: TABLE, REST: REST, BUDGET_BYTES: BUDGET_BYTES,
+  encryptFile: encryptFile, decryptFile: decryptFile, overBudget: overBudget,
+  put: put, listMeta: listMeta, get: get, remove: remove,
+};
+
+});
+
 /* ---- src/data/propublica.js ---- */
 window.__def("src/data/propublica.js", function(module, exports, require){
 'use strict';
@@ -1232,6 +1644,56 @@ module.exports = {
   searchUrl: searchUrl, orgUrl: orgUrl,
   search: search, getByEin: getByEin,
 };
+
+});
+
+/* ---- src/data/queue.js ---- */
+window.__def("src/data/queue.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/data/queue.js — the review-queue transport (press_review_queue).
+ *
+ * Header-gated exactly like src/sync/client.js: the sync id rides the `x-plan-id`
+ * request header, so a request sees only its own rows (no listing / no enumeration)
+ * and can only delete its own row. Rows carry a SEALED box only (no plaintext); the
+ * app opens them with its capture private key (src/sync/seal.js).
+ *
+ * Pure + node-testable: every call takes an INJECTABLE fetch (deps.fetch). Nothing
+ * fires at import time.
+ * ========================================================================== */
+
+var client = require('../sync/client.js');   // reuse SB_URL/SB_KEY/headers + press project
+
+var TABLE = 'press_review_queue';
+var REST = client.SB_URL + '/rest/v1/' + TABLE;
+
+function theFetch(deps) {
+  var f = (deps && deps.fetch) || (typeof fetch !== 'undefined' ? fetch : null);
+  if (!f) throw new Error('fetch unavailable');
+  return f;
+}
+
+// List this sync id's queued items (sealed), oldest first. -> [{ id, kind, source, sealed, created_at }]
+async function list(syncId, deps) {
+  var f = theFetch(deps);
+  var url = REST + '?sync_id=eq.' + encodeURIComponent(syncId) +
+    '&select=id,kind,source,sealed,created_at&order=created_at.asc';
+  var res = await f(url, { headers: client.headers(syncId) });
+  if (!res.ok) throw new Error('queue list failed (HTTP ' + res.status + ')');
+  var rows = await res.json();
+  return Array.isArray(rows) ? rows : [];
+}
+
+// Delete one queued item (header-gated: only a row with this sync id). Resolves on success.
+async function remove(syncId, id, deps) {
+  var f = theFetch(deps);
+  var url = REST + '?id=eq.' + encodeURIComponent(id) + '&sync_id=eq.' + encodeURIComponent(syncId);
+  var res = await f(url, { method: 'DELETE', headers: client.headers(syncId) });
+  if (!res.ok) throw new Error('queue remove failed (HTTP ' + res.status + ')');
+  return true;
+}
+
+module.exports = { TABLE: TABLE, REST: REST, list: list, remove: remove };
 
 });
 
@@ -1365,7 +1827,7 @@ var TYPE_ORDER = ['money', 'items', 'stock', 'mileage'];
 var TYPE_HEADING = {
   money: 'Money',
   items: 'Items',
-  stock: 'Stock / securities (into your donor-advised fund)',
+  stock: 'Stock / securities',
   mileage: 'Mileage & travel',
 };
 
@@ -1483,6 +1945,7 @@ function itemsCards(list) {
 
 function stockCards(list) {
   return list.slice().sort(byDate).map(function (d) {
+    var intoDaf = d.daf_contribution === true;
     var f =
       field('Security', d.security || '(name the security)') +
       field('Shares', d.shares != null ? d.shares : '—') +
@@ -1491,18 +1954,27 @@ function stockCards(list) {
       field('Cost basis', d.cost_basis != null ? fmtMoney(d.cost_basis) : '—') +
       field('Date acquired', d.acquired_date) +
       field('Held more than one year?', yesNo(d.long_term !== false));
-    var note = '<div class="note-inline">This is a contribution <strong>into</strong> your donor-advised ' +
-      'fund (Fidelity Charitable) — the deductible event. Enter it in TurboTax as a stock/securities ' +
-      'donation to Fidelity Charitable. Appreciated stock held &gt; 1 year is capped at 30% of AGI and ' +
-      'needs Form 8283.</div>';
-    return card('Stock into DAF · ' + fmtMoney(d.amount), f + note);
+    var note = intoDaf
+      ? '<div class="note-inline">A contribution <strong>into</strong> your donor-advised fund ' +
+        '(Fidelity Charitable) — the deductible event. Enter it in TurboTax as a stock/securities gift ' +
+        'to Fidelity Charitable. Appreciated stock held &gt; 1 year is capped at 30% of AGI and needs Form 8283.</div>'
+      : '<div class="note-inline">A <strong>direct</strong> gift of securities to this charity. Enter it in ' +
+        'TurboTax as a stock/securities donation. Appreciated stock held &gt; 1 year is deducted at fair-market ' +
+        'value, capped at 30% of AGI, and needs Form 8283 (basis/acquired-date if held ≤ 1 year).</div>';
+    return card((intoDaf ? 'Stock into DAF · ' : 'Stock gift · ') + fmtMoney(d.amount), f + note);
   }).join('');
 }
 
 function mileageCards(list) {
   return list.slice().sort(byDate).map(function (d) {
-    var f = field('Date / purpose', (d.date || '') + (d.notes ? ' · ' + d.notes : '')) +
-      field('Deductible amount (14¢/mile + parking/tolls)', fmtMoney(d.amount));
+    var miles = (d.miles != null ? d.miles : null);
+    var park = (d.parking_tolls != null ? d.parking_tolls : 0);
+    var f = field('Date', d.date) +
+      field('Purpose of the trip', d.purpose || d.notes || '(charitable purpose)') +
+      field('Miles driven', miles != null ? miles : '—') +
+      field('Charitable mileage rate', '14¢ / mile (statutory, IRC §170(i))') +
+      field('Parking & tolls', fmtMoney(park)) +
+      field('Deductible amount (miles × 14¢ + parking/tolls)', fmtMoney(d.amount));
     return card('Mileage · ' + fmtMoney(d.amount), f);
   }).join('');
 }
@@ -1605,6 +2077,7 @@ sections + empty +
 '<div class="totals"><table>\n' +
 '<tr><td>Cash</td><td class="n">' + escHtml(fmtMoney(totals.breakdown.cash)) + '</td></tr>\n' +
 '<tr><td>Items (non-cash)</td><td class="n">' + escHtml(fmtMoney(totals.breakdown.items)) + '</td></tr>\n' +
+(totals.breakdown.stock ? '<tr><td>Stock (direct)</td><td class="n">' + escHtml(fmtMoney(totals.breakdown.stock)) + '</td></tr>\n' : '') +
 '<tr><td>Stock into DAF</td><td class="n">' + escHtml(fmtMoney(totals.breakdown.intoDaf)) + '</td></tr>\n' +
 (totals.breakdown.mileage ? '<tr><td>Mileage</td><td class="n">' + escHtml(fmtMoney(totals.breakdown.mileage)) + '</td></tr>\n' : '') +
 '<tr class="grand"><td>Total deductible this year</td><td class="n">' + escHtml(fmtMoney(totals.deductibleThisYear)) + '</td></tr>\n' +
@@ -2388,6 +2861,339 @@ module.exports = { buildTxf: buildTxf };
 
 });
 
+/* ---- src/import/csv-import.js ---- */
+window.__def("src/import/csv-import.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/import/csv-import.js — generic donation CSV import (deductable.ai /
+ * ItsDeductible / any spreadsheet) with a column mapper.
+ *
+ * Unlike fidelity.js (which knows the Fidelity history shape), this handles an
+ * arbitrary CSV: parse -> guess a column mapping -> let the user confirm/adjust it
+ * (in the UI) -> build review DRAFTS that land in the same "Needs review" inbox,
+ * where dedupe + "Approve all ready" apply. Column names are [inferred]; the mapper
+ * makes any layout work.
+ *
+ * Pure + node-testable: no DOM, no network.
+ * ========================================================================== */
+
+var review = require('../core/review.js');
+
+// The fields a row can map to. `item_*` build a single non-cash line.
+var FIELDS = ['date', 'charity', 'ein', 'type', 'amount', 'item_name', 'item_qty', 'item_condition', 'item_value', 'notes'];
+
+// --- RFC-4180 parse -> { headers, rows } -----------------------------------
+function parse(text) {
+  var rows = [], row = [], field = '', i = 0, inQ = false, s = String(text || '');
+  while (i < s.length) {
+    var ch = s[i];
+    if (inQ) {
+      if (ch === '"') { if (s[i + 1] === '"') { field += '"'; i += 2; continue; } inQ = false; i++; continue; }
+      field += ch; i++; continue;
+    }
+    if (ch === '"') { inQ = true; i++; continue; }
+    if (ch === ',') { row.push(field); field = ''; i++; continue; }
+    if (ch === '\r') { i++; continue; }
+    if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; i++; continue; }
+    field += ch; i++;
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  rows = rows.filter(function (r) { return r.length && !(r.length === 1 && r[0].trim() === ''); });
+  var headers = rows.length ? rows[0] : [];
+  return { headers: headers, rows: rows.slice(1) };
+}
+
+function firstMatch(headers, needles) {
+  for (var i = 0; i < headers.length; i++) {
+    var h = String(headers[i] || '').trim().toLowerCase();
+    for (var j = 0; j < needles.length; j++) if (h.indexOf(needles[j]) >= 0) return i;
+  }
+  return -1;
+}
+
+// Guess a mapping from the header names (the UI lets the user fix it).
+function guessMapping(headers) {
+  return {
+    date: firstMatch(headers, ['date']),
+    charity: firstMatch(headers, ['charity', 'organization', 'recipient', 'donee', 'payee']),
+    ein: firstMatch(headers, ['ein', 'tax id', 'taxid']),
+    type: firstMatch(headers, ['type', 'kind']),
+    amount: firstMatch(headers, ['amount', 'total', 'cash']),
+    item_name: firstMatch(headers, ['item', 'description', 'goods']),
+    item_qty: firstMatch(headers, ['qty', 'quantity', 'count']),
+    item_condition: firstMatch(headers, ['condition']),
+    item_value: firstMatch(headers, ['value', 'fmv', 'fair']),
+    notes: firstMatch(headers, ['note', 'memo', 'comment']),
+  };
+}
+
+function parseAmount(s) {
+  var n = Number(String(s == null ? '' : s).replace(/[^0-9.\-]/g, ''));
+  return isFinite(n) ? Math.abs(n) : null;
+}
+function parseDate(s) {
+  s = String(s == null ? '' : s).trim();
+  var iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+  if (iso) return iso[1] + '-' + iso[2] + '-' + iso[3];
+  var us = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/.exec(s);
+  if (us) { var y = us[3].length === 2 ? '20' + us[3] : us[3]; return y + '-' + ('0' + us[1]).slice(-2) + '-' + ('0' + us[2]).slice(-2); }
+  return null;
+}
+function normCond(s) {
+  var c = String(s || '').trim().toLowerCase();
+  if (c === 'excellent' || c === 'very good' || c === 'good') return c;
+  return 'good';   // condition must be good-or-better; default up
+}
+
+// One CSV row -> a review draft (local, source 'import').
+function rowToDraft(cells, mapping, doc, id) {
+  var get = function (f) { var i = mapping[f]; return (i != null && i >= 0) ? String(cells[i] == null ? '' : cells[i]).trim() : ''; };
+  var typeStr = get('type').toLowerCase();
+  var itemName = get('item_name');
+  var isItems = /item|noncash|good|cloth|household|furnitur/.test(typeStr) || (!!itemName && !/cash|money|mileage|stock|grant/.test(typeStr));
+  var kind = 'charity_receipt', type = 'money';
+  if (/grant/.test(typeStr)) { kind = 'daf_grant'; type = 'daf_grant'; }
+  else if (/stock|secur/.test(typeStr)) { type = 'stock'; }
+  else if (/mileage|miles/.test(typeStr)) { type = 'mileage'; }
+  else if (isItems) { type = 'items'; }
+
+  var ein = get('ein') || null;
+  var res = review.resolveCharity(doc, { kind: kind, charity_name: get('charity'), charity_ein: ein });
+  var amount = parseAmount(get('amount'));
+  var draft = {
+    id: id, source: 'import', local: true, kind: kind, type: type, daf_contribution: false,
+    charity_id: res.charity_id, charity_name: res.charity_name, charity_ein: res.charity_ein, needsCharity: res.needsCharity,
+    date: parseDate(get('date')), amount: (type === 'items' ? null : amount),
+    amount_type: (type === 'items' ? 'items' : 'cash'), amountNeeded: false,
+    stock: null, goods_or_services: null, confidence: 1, lowConfidence: false,
+    missing_fields: [], evidence: get('notes') || null, meta: null, receipt_text: null, source_ref: null,
+  };
+  if (type === 'items') {
+    var qty = Number(get('item_qty')) || 1;
+    var val = parseAmount(get('item_value') || get('amount')) || 0;
+    draft.items = [{ category: 'Other', subcategory: null, description: itemName || 'Donated goods', condition: normCond(get('item_condition')), qty: qty, unit_value: val }];
+    draft.amount = Math.round(qty * val * 100) / 100;
+  }
+  draft.amountNeeded = !(Number(draft.amount) > 0);
+  return draft;
+}
+
+// Build drafts from parsed rows + a mapping. Skips fully-empty rows.
+function buildDrafts(parsed, mapping, doc) {
+  var rows = (parsed && parsed.rows) || [];
+  var out = [];
+  for (var i = 0; i < rows.length; i++) {
+    var cells = rows[i];
+    if (!cells || !cells.some(function (c) { return String(c || '').trim() !== ''; })) continue;
+    out.push(rowToDraft(cells, mapping, doc, 'csv_' + i));
+  }
+  return out;
+}
+
+module.exports = {
+  FIELDS: FIELDS,
+  parse: parse, guessMapping: guessMapping, rowToDraft: rowToDraft, buildDrafts: buildDrafts,
+};
+
+});
+
+/* ---- src/import/fidelity.js ---- */
+window.__def("src/import/fidelity.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/import/fidelity.js — parse a Fidelity Charitable Giving Account history
+ * (CSV) into review drafts, reconciled against what's already known.
+ *
+ * WHY (ARC.md §6): Fidelity grant EMAILS carry only the recipient — no amount, no
+ * date. The Giving Account history export is therefore the real source of amounts
+ * (both contributions INTO the DAF and grants OUT). Importing it:
+ *   - contribution rows -> "Into DAF" stock drafts (deductible);
+ *   - grant rows        -> daf_grant drafts (never deductible);
+ *   - cancelled/pending rows are skipped.
+ * Reconcile: a grant that matches an existing "amount needed" inbox draft, or an
+ * existing ledger grant (recipient + date ±7 days), FILLS the amount instead of
+ * adding a duplicate; an exact already-recorded gift is skipped.
+ *
+ * Pure + node-testable: no DOM, no network. The PDF path lives in a separate Edge
+ * Function (import-extract); this module handles the in-app CSV path and the
+ * reconcile that both paths share (reconcile takes already-parsed records).
+ * ========================================================================== */
+
+var model = require('../core/model.js');
+var review = require('../core/review.js');
+
+var RECONCILE_DAYS = 7;
+
+// --- a small RFC-4180 CSV reader (quotes, commas, CRLF) --------------------
+function parseCsvRows(text) {
+  var rows = [], row = [], field = '', i = 0, inQ = false, s = String(text || '');
+  while (i < s.length) {
+    var ch = s[i];
+    if (inQ) {
+      if (ch === '"') { if (s[i + 1] === '"') { field += '"'; i += 2; continue; } inQ = false; i++; continue; }
+      field += ch; i++; continue;
+    }
+    if (ch === '"') { inQ = true; i++; continue; }
+    if (ch === ',') { row.push(field); field = ''; i++; continue; }
+    if (ch === '\r') { i++; continue; }
+    if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; i++; continue; }
+    field += ch; i++;
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(function (r) { return r.length && !(r.length === 1 && r[0].trim() === ''); });
+}
+
+function findCol(headers, needles) {
+  for (var i = 0; i < headers.length; i++) {
+    var h = String(headers[i] || '').trim().toLowerCase();
+    for (var j = 0; j < needles.length; j++) if (h.indexOf(needles[j]) >= 0) return i;
+  }
+  return -1;
+}
+
+function parseAmount(s) {
+  var n = Number(String(s == null ? '' : s).replace(/[^0-9.\-]/g, ''));
+  return isFinite(n) ? Math.abs(n) : null;
+}
+// Fidelity dates are typically MM/DD/YYYY; also accept ISO.
+function parseDate(s) {
+  s = String(s == null ? '' : s).trim();
+  var iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+  if (iso) return iso[1] + '-' + iso[2] + '-' + iso[3];
+  var us = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/.exec(s);
+  if (us) {
+    var y = us[3].length === 2 ? ('20' + us[3]) : us[3];
+    return y + '-' + ('0' + us[1]).slice(-2) + '-' + ('0' + us[2]).slice(-2);
+  }
+  return null;
+}
+
+// Parse the CSV text -> normalized records. Header auto-detected; unknown columns ignored.
+//   record = { kind:'daf_contribution'|'daf_grant'|null, date, amount, recipient, status, skip }
+function parseFidelity(text) {
+  var rows = parseCsvRows(text);
+  if (!rows.length) return [];
+  var headers = rows[0];
+  var ci = {
+    date: findCol(headers, ['date']),
+    type: findCol(headers, ['type', 'transaction', 'activity']),
+    recipient: findCol(headers, ['recipient', 'charity', 'organization', 'grantee']),
+    amount: findCol(headers, ['amount']),
+    status: findCol(headers, ['status']),
+  };
+  var out = [];
+  for (var r = 1; r < rows.length; r++) {
+    var row = rows[r];
+    var typeStr = (ci.type >= 0 ? String(row[ci.type] || '') : '').toLowerCase();
+    var recip = ci.recipient >= 0 ? String(row[ci.recipient] || '').trim() : '';
+    var status = (ci.status >= 0 ? String(row[ci.status] || '') : '').toLowerCase();
+    var kind = null;
+    if (typeStr.indexOf('contribution') >= 0) kind = 'daf_contribution';
+    else if (typeStr.indexOf('grant') >= 0) kind = 'daf_grant';
+    var skip = (status.indexOf('cancel') >= 0 || status.indexOf('pending') >= 0);
+    if (kind === 'daf_grant' && !recip) skip = true;      // a grant with no recipient is unusable
+    out.push({
+      kind: kind, date: parseDate(ci.date >= 0 ? row[ci.date] : null),
+      amount: parseAmount(ci.amount >= 0 ? row[ci.amount] : null),
+      recipient: recip, status: status, skip: skip || !kind,
+    });
+  }
+  return out;
+}
+
+function normName(s) { return String(s == null ? '' : s).trim().toLowerCase(); }
+function recordCharityName(rec) { return rec.kind === 'daf_contribution' ? 'Fidelity Charitable' : rec.recipient; }
+
+// Build a draft (via review.toDraft, so charity resolution + flags match the email path).
+function recordToDraft(rec, doc, id) {
+  var opened = {
+    extraction: {
+      kind: rec.kind, charity_name: recordCharityName(rec), charity_ein: null,
+      date: rec.date, amount: rec.amount, amount_type: rec.kind === 'daf_contribution' ? 'stock' : 'unknown',
+      confidence: 1, missing_fields: rec.amount == null ? ['amount'] : [], evidence: 'Fidelity Charitable history import',
+    },
+    meta: { from: 'fidelity-history', subject: 'Fidelity Charitable history', date: rec.date, message_id: null },
+    receipt_text: null,
+  };
+  var d = review.toDraft(opened, doc, { id: id, source: 'import' });
+  d.confidence = 1; d.lowConfidence = false; d.local = true;   // no server row — lives in the app only
+  return d;
+}
+
+// Does a Fidelity record match this draft/donation's recipient?
+function sameRecipient(doc, name, charityId) {
+  var c = charityId ? model.charityById(doc, charityId) : null;
+  return normName((c && c.name) || name);
+}
+function withinRecon(a, b) { return review.withinDays(a, b, RECONCILE_DAYS); }
+
+// Reconcile parsed records against existing inbox drafts + the ledger.
+//   inboxDrafts: current review drafts (email/import). An "amount needed" draft with a
+//     matching recipient (and date within ±7 if it has one) is FILLED in place.
+//   doc.donations: an existing grant/contribution (recipient + date ±7) is filled if its
+//     amount is missing, or counted "already recorded" if it already has one.
+// Returns { drafts:[new local drafts], summary:{new, filled, recorded, skipped}, changedDoc }.
+function reconcile(records, doc, inboxDrafts) {
+  inboxDrafts = inboxDrafts || [];
+  var out = { drafts: [], summary: { new: 0, filled: 0, recorded: 0, skipped: 0 }, changedDoc: false };
+  var idSeq = 0;
+  for (var i = 0; i < records.length; i++) {
+    var rec = records[i];
+    if (rec.skip) { out.summary.skipped++; continue; }
+    var name = normName(recordCharityName(rec));
+
+    // 1) fill an existing amount-needed inbox draft (same recipient; date within ±7 if it has one)
+    var filledDraft = null;
+    for (var j = 0; j < inboxDrafts.length; j++) {
+      var dr = inboxDrafts[j];
+      if (!dr || !dr.amountNeeded) continue;
+      if (dr.kind !== rec.kind) continue;
+      if (sameRecipient(doc, dr.charity_name, dr.charity_id) !== name) continue;
+      if (dr.date && !withinRecon(dr.date, rec.date)) continue;
+      dr.amount = rec.amount; dr.amountNeeded = (rec.amount == null);
+      if (!dr.date && rec.date) dr.date = rec.date;
+      filledDraft = dr; break;
+    }
+    if (filledDraft) { out.summary.filled++; continue; }
+
+    // 2) match an existing ledger donation of the same kind (recipient + date ±7)
+    var ds = doc.donations || [], match = null;
+    for (var k = 0; k < ds.length; k++) {
+      var don = ds[k];
+      var donKind = (don.type === 'daf_grant') ? 'daf_grant' : (don.daf_contribution ? 'daf_contribution' : null);
+      if (donKind !== rec.kind) continue;
+      if (sameRecipient(doc, null, don.charity_id) !== name) continue;
+      if (!withinRecon(don.date, rec.date)) continue;
+      match = don; break;
+    }
+    if (match) {
+      if (match.amount == null || match.amount === 0) {
+        model.editDonation(doc, match.id, { amount: rec.amount });
+        out.summary.filled++; out.changedDoc = true;
+      } else { out.summary.recorded++; }
+      continue;
+    }
+
+    // 3) otherwise a new local draft
+    out.drafts.push(recordToDraft(rec, doc, 'fid_' + (idSeq++) + '_' + i));
+    out.summary.new++;
+  }
+  return out;
+}
+
+// Convenience: parse + reconcile in one call (the CSV path).
+function importCsv(text, doc, inboxDrafts) {
+  return reconcile(parseFidelity(text), doc, inboxDrafts);
+}
+
+module.exports = {
+  RECONCILE_DAYS: RECONCILE_DAYS,
+  parseCsvRows: parseCsvRows, parseFidelity: parseFidelity,
+  recordToDraft: recordToDraft, reconcile: reconcile, importCsv: importCsv,
+};
+
+});
+
 /* ---- src/sync/client.js ---- */
 window.__def("src/sync/client.js", function(module, exports, require){
 'use strict';
@@ -2656,14 +3462,274 @@ module.exports = {
 
 });
 
+/* ---- src/sync/saver.js ---- */
+window.__def("src/sync/saver.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/sync/saver.js — a small, correct save scheduler for the encrypted sync.
+ *
+ * The shell used to fire a raw saveNow() on every change, which could:
+ *   - race two saves on the same loaded version (a false "conflict"),
+ *   - drop the newest edit if it landed while a save was in flight,
+ *   - and never retry a save that failed because the device was offline.
+ *
+ * This module owns the save lifecycle so the UI can just call request(doc) after
+ * every change and watch a single status stream. Pure + node-testable: every
+ * effect (the actual network save, the clock, the "online" signal, version
+ * persistence, and the state callback) is INJECTED. Nothing here touches the DOM.
+ *
+ * Guarantees:
+ *   - ONE save in flight at a time. Changes during a save mark the saver dirty;
+ *     when the in-flight save resolves, EXACTLY ONE follow-up save runs, using the
+ *     server version the first save returned (so it never self-conflicts).
+ *   - A real version conflict (another device wrote first) -> 'conflict' state; the
+ *     local document is kept and the cloud is NEVER clobbered. The saver waits for
+ *     the app to reload from cloud (reset()).
+ *   - A failed save (offline / network) retries with backoff (2s, 10s, 30s, then
+ *     30s…) and immediately on the next 'online' event. Success resets the backoff.
+ *
+ * States emitted to onState(state, info): 'saving' | 'saved' | 'offline' | 'error'
+ *   | 'conflict' | 'idle'. 'offline' vs 'error' is decided by isOnline() at failure.
+ * ========================================================================== */
+
+var DEFAULT_BACKOFF = [2000, 10000, 30000];
+
+// deps = {
+//   save(doc, version) -> Promise<{status:'ok', server:{version}} | {status:'conflict', server}>
+//                         (throws / rejects on a network failure)
+//   getVersion() -> number|null        current loaded version
+//   setVersion(v)                      persist a new loaded version (e.g. to cfg)
+//   onState(state, info)               UI callback (optional)
+//   isOnline() -> bool                 navigator.onLine (optional, default true)
+//   onOnline(cb)                       register an 'online' listener (optional)
+//   setTimer(fn, ms) -> handle         default setTimeout
+//   clearTimer(handle)                 default clearTimeout
+//   backoff                            array of ms (optional)
+// }
+function createSaver(deps) {
+  deps = deps || {};
+  var save = deps.save;
+  if (typeof save !== 'function') throw new Error('saver: deps.save is required');
+  var getVersion = deps.getVersion || function () { return null; };
+  var setVersion = deps.setVersion || function () {};
+  var emit = deps.onState || function () {};
+  var isOnline = deps.isOnline || function () { return true; };
+  var setTimer = deps.setTimer || (typeof setTimeout !== 'undefined' ? setTimeout : null);
+  var clearTimer = deps.clearTimer || (typeof clearTimeout !== 'undefined' ? clearTimeout : null);
+  var backoff = deps.backoff || DEFAULT_BACKOFF;
+
+  var latestDoc = null;       // the newest document handed to us
+  var inFlight = false;       // a save is currently running
+  var dirty = false;          // a change arrived while a save was in flight
+  var conflicted = false;     // a real conflict is unresolved (block further saves)
+  var retryTimer = null;
+  var backoffIx = 0;
+  var state = 'idle';
+
+  if (deps.onOnline) deps.onOnline(function () { if (retryTimer != null || state === 'offline' || state === 'error') retryNow(); });
+
+  function setState(s, info) { state = s; emit(s, info); }
+  function clearRetry() { if (retryTimer != null && clearTimer) { clearTimer(retryTimer); } retryTimer = null; }
+
+  // Ask the saver to persist `doc`. Safe to call on every change.
+  function request(doc) {
+    latestDoc = doc;
+    if (conflicted) return;              // a conflict must be resolved (reset) first
+    if (inFlight) { dirty = true; return; }
+    run();
+  }
+
+  function run() {
+    inFlight = true; dirty = false;
+    clearRetry();
+    setState('saving');
+    var docAtStart = latestDoc;
+    Promise.resolve()
+      .then(function () { return save(docAtStart, getVersion()); })
+      .then(function (r) {
+        inFlight = false;
+        if (r && r.status === 'conflict') {
+          conflicted = true;
+          setState('conflict', r.server || null);   // keep local; never clobber
+          return;
+        }
+        // success
+        if (r && r.server && typeof r.server.version === 'number') setVersion(r.server.version);
+        backoffIx = 0;
+        if (dirty || latestDoc !== docAtStart) { run(); return; }   // exactly one follow-up
+        setState('saved');
+      })
+      .catch(function () {
+        inFlight = false;
+        // network/offline failure — keep local, retry with backoff (and on 'online').
+        setState(isOnline() ? 'error' : 'offline');
+        scheduleRetry();
+      });
+  }
+
+  function scheduleRetry() {
+    if (!setTimer) return;
+    var ms = backoff[Math.min(backoffIx, backoff.length - 1)];
+    backoffIx++;
+    clearRetry();
+    retryTimer = setTimer(function () { retryTimer = null; if (!inFlight && !conflicted) run(); }, ms);
+  }
+
+  // "tap to retry" — force an immediate save attempt now.
+  function retryNow() {
+    clearRetry();
+    if (!inFlight && !conflicted && latestDoc) run();
+  }
+
+  // Called after the app reloads the doc from cloud (conflict resolved) with the
+  // fresh server version already applied via setVersion. Re-enables saving.
+  function reset() {
+    conflicted = false; dirty = false; backoffIx = 0; clearRetry();
+    setState('idle');
+  }
+
+  function getState() { return state; }
+  function isConflicted() { return conflicted; }
+
+  return {
+    request: request,
+    retryNow: retryNow,
+    reset: reset,
+    getState: getState,
+    isConflicted: isConflicted,
+  };
+}
+
+module.exports = { createSaver: createSaver, DEFAULT_BACKOFF: DEFAULT_BACKOFF };
+
+});
+
+/* ---- src/sync/seal.js ---- */
+window.__def("src/sync/seal.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/sync/seal.js — a public-key SEALED BOX for the capture queue (browser side).
+ *
+ * WHY. The review queue (press_review_queue) must hold NO readable donation data at
+ * rest — stricter than the old "minimal plaintext" allowance. The app makes a capture
+ * key pair ONCE, keeps the private half inside the encrypted giving document, and
+ * publishes only the PUBLIC half (in the GIVING_SETUP_BUNDLE secret). The Edge Function
+ * seals every extracted item to that public key; only this app, holding the private
+ * key, can open it. A leaked queue row is ciphertext to everyone but Mark's device.
+ *
+ * SCHEME — ECIES-style sealed box over WebCrypto (present in browsers + Deno + Node 20+):
+ *   - recipient key pair: ECDH P-256 (the app's capture keys)
+ *   - per-message: a fresh EPHEMERAL P-256 key pair on the sender; ECDH(eph_priv,
+ *     recipient_pub) -> 32-byte shared secret; HKDF-SHA-256 (salt = empty, info =
+ *     "giving-tracker/capture/v1") -> AES-256 key; AES-256-GCM with a random 96-bit IV.
+ *   - wire format: { v:1, epk, iv, ct }  (epk = raw uncompressed P-256 point, all b64)
+ *   Opening recomputes the same shared secret from ECDH(recipient_priv, epk). The GCM
+ *   tag makes a wrong key / tampered ct FAIL CLOSED (decrypt throws).
+ *
+ * This file is the browser/Node (CommonJS) side: generateCaptureKeys() + openSealed().
+ * The SENDER half (seal()) is supabase/functions/_shared/seal.mjs — identical algorithm,
+ * ESM for Deno. test.js proves .mjs seal -> .js open round-trips and fails closed.
+ * Pure + node-testable: no DOM, injectable nothing needed (WebCrypto only).
+ * ========================================================================== */
+
+var INFO = 'giving-tracker/capture/v1';   // HKDF info — binds the key to this purpose
+var CURVE = 'P-256';
+
+function webcrypto() {
+  var c = (typeof globalThis !== 'undefined' && globalThis.crypto) || (typeof crypto !== 'undefined' ? crypto : null);
+  if (!c || !c.subtle) throw new Error('WebCrypto (crypto.subtle) unavailable');
+  return c;
+}
+function subtle() { return webcrypto().subtle; }
+function randomBytes(n) { var a = new Uint8Array(n); webcrypto().getRandomValues(a); return a; }
+
+function bytesToB64(bytes) {
+  bytes = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  var s = ''; for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]); return btoa(s);
+}
+function b64ToBytes(b64) {
+  var s = atob(String(b64)); var a = new Uint8Array(s.length);
+  for (var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a;
+}
+
+// Import a raw uncompressed P-256 point as an ECDH public key (no usages needed).
+function importEphPublic(rawBytes) {
+  return subtle().importKey('raw', rawBytes, { name: 'ECDH', namedCurve: CURVE }, false, []);
+}
+// Import a private key JWK for ECDH bit derivation.
+function importPrivate(jwk) {
+  return subtle().importKey('jwk', jwk, { name: 'ECDH', namedCurve: CURVE }, false, ['deriveBits']);
+}
+
+// ECDH -> shared bits -> HKDF-SHA-256 -> AES-256-GCM key.
+async function aesKeyFromShared(privateKey, publicKey) {
+  var bits = await subtle().deriveBits({ name: 'ECDH', public: publicKey }, privateKey, 256);
+  var base = await subtle().importKey('raw', bits, 'HKDF', false, ['deriveKey']);
+  return subtle().deriveKey(
+    { name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(0), info: new TextEncoder().encode(INFO) },
+    base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+
+// Generate the app's capture key pair. Returns JWKs; the PRIVATE jwk lives only inside
+// the encrypted giving document, the PUBLIC jwk is published in the setup bundle.
+async function generateCaptureKeys() {
+  var kp = await subtle().generateKey({ name: 'ECDH', namedCurve: CURVE }, true, ['deriveBits']);
+  var publicJwk = await subtle().exportKey('jwk', kp.publicKey);
+  var privateJwk = await subtle().exportKey('jwk', kp.privateKey);
+  return { publicJwk: publicJwk, privateJwk: privateJwk };
+}
+
+// Open a sealed box { v, epk, iv, ct } with the recipient's private JWK. Returns the
+// object, or throws (wrong key / tampered ct -> GCM auth failure). Callers that want a
+// soft failure should catch.
+async function openSealed(sealed, privateJwk) {
+  if (!sealed || sealed.v !== 1 || !sealed.epk || !sealed.iv || !sealed.ct) throw new Error('bad sealed box');
+  var priv = await importPrivate(privateJwk);
+  var eph = await importEphPublic(b64ToBytes(sealed.epk));
+  var key = await aesKeyFromShared(priv, eph);
+  var pt = await subtle().decrypt({ name: 'AES-GCM', iv: b64ToBytes(sealed.iv) }, key, b64ToBytes(sealed.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+
+// Seal an object to a recipient PUBLIC JWK (the sender half — also here so the browser
+// can self-test / seal locally; the Deno function uses the identical .mjs). Returns
+// { v:1, epk, iv, ct }.
+async function seal(obj, publicJwk) {
+  var recipient = await subtle().importKey('jwk', publicJwk, { name: 'ECDH', namedCurve: CURVE }, false, []);
+  var eph = await subtle().generateKey({ name: 'ECDH', namedCurve: CURVE }, true, ['deriveBits']);
+  var key = await aesKeyFromShared(eph.privateKey, recipient);
+  var iv = randomBytes(12);
+  var ct = await subtle().encrypt({ name: 'AES-GCM', iv: iv }, key, new TextEncoder().encode(JSON.stringify(obj)));
+  var epkRaw = await subtle().exportKey('raw', eph.publicKey);
+  return { v: 1, epk: bytesToB64(epkRaw), iv: bytesToB64(iv), ct: bytesToB64(new Uint8Array(ct)) };
+}
+
+module.exports = {
+  INFO: INFO,
+  generateCaptureKeys: generateCaptureKeys,
+  openSealed: openSealed,
+  seal: seal,
+  bytesToB64: bytesToB64,
+  b64ToBytes: b64ToBytes,
+};
+
+});
+
 /* ===== bootstrap: expose the pure modules on window.GT (zero personal data embedded) ===== */
 window.GT = {
   crypto: window.__require('src/sync/crypto.js'),
   client: window.__require('src/sync/client.js'),
+  saver:  window.__require('src/sync/saver.js'),
+  seal:   window.__require('src/sync/seal.js'),
   model:  window.__require('src/core/model.js'),
   valueguide: window.__require('src/core/valueguide.js'),
   tax:    window.__require('src/core/tax.js'),
-  propublica: window.__require('src/data/propublica.js')
+  review: window.__require('src/core/review.js'),
+  propublica: window.__require('src/data/propublica.js'),
+  queue:  window.__require('src/data/queue.js'),
+  files:  window.__require('src/data/files.js'),
+  fidelity: window.__require('src/import/fidelity.js'),
+  csvImport: window.__require('src/import/csv-import.js')
 };
 /* export writers (slice 5) — the Export sheet reads these off window.GT.exp */
 window.GT.exp = {
@@ -2681,11 +3747,13 @@ window.GT.exp = {
 <script>
 (function(){
   'use strict';
-  var GT = window.GT, M = GT.model, C = GT.client, X = GT.crypto, P = GT.propublica, V = GT.valueguide, T = GT.tax;
+  var GT = window.GT, M = GT.model, C = GT.client, X = GT.crypto, P = GT.propublica, V = GT.valueguide, T = GT.tax, S = GT.saver;
+  var Q = GT.queue, RV = GT.review, SEAL = GT.seal, F = GT.files;
   var LS = window.localStorage;
   var DOC_KEY = 'giving_doc_v1';
   var $ = function(id){ return document.getElementById(id); };
-  var state = { cfg:null, doc:null, year:(new Date()).getFullYear(), charResults:[], group:'date', log:null };
+  var state = { cfg:null, doc:null, year:(new Date()).getFullYear(), charResults:[], group:'date', log:null,
+    inbox:{ drafts:[], localDrafts:[], unopenable:[], loading:false, pulledOnce:false } };
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(ch){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
@@ -2698,7 +3766,7 @@ window.GT.exp = {
   function writeDocCache(doc){ try { LS.setItem(DOC_KEY, JSON.stringify(doc)); } catch(e){} }
 
   var toastT;
-  function toast(msg){ var t=$('toast'); t.textContent=msg; t.classList.add('show');
+  function toast(msg, isErr){ var t=$('toast'); t.textContent=msg; t.classList.toggle('err', !!isErr); t.classList.add('show');
     clearTimeout(toastT); toastT=setTimeout(function(){ t.classList.remove('show'); }, 2600); }
 
   function money(n){ n=Number(n)||0;
@@ -2719,7 +3787,7 @@ window.GT.exp = {
     var seg=$('themeSeg'); if(seg) seg.querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-theme')===t?'true':'false'); });
   }
   function setTheme(t){ if(!state.doc||THEMES.indexOf(t)<0) return;
-    state.doc.settings.theme=t; applyTheme(); writeDocCache(state.doc); }
+    state.doc.settings.theme=t; applyTheme(); persistDoc(); }   // theme now syncs too (slice 0)
   function toggleTheme(){ if(!state.doc) return;
     var cur=state.doc.settings.theme||'dark'; var i=THEMES.indexOf(cur);
     setTheme(THEMES[(i<0?0:i+1)%THEMES.length]);
@@ -2825,6 +3893,7 @@ window.GT.exp = {
     var f=M.complianceFlags(state.doc, state.year); var box=$('flags'); box.innerHTML='';
     var chips=[];
     if(f.ackNeeded>0) chips.push([f.ackNeeded+' gift'+(f.ackNeeded>1?'s':'')+' ≥ $250 need an acknowledgment', false]);
+    if(f.ackMissing>0) chips.push([f.ackMissing+' cash gift'+(f.ackMissing>1?'s':'')+' ≥ $250 with no receipt on file — acknowledgment letter missing', false]);
     if(f.form8283) chips.push(['Non-cash over $500 → Form 8283', false]);
     if(f.appraisal) chips.push(['Item ≥ $5,000 → appraisal required', false]);
     if(!chips.length){ box.innerHTML='<span class="flag ok">No compliance flags for '+state.year+'</span>'; return; }
@@ -2841,9 +3910,9 @@ window.GT.exp = {
     var amt=document.createElement('span'); amt.className='amt'; amt.textContent=money(d.amount);
     var acts=document.createElement('span'); acts.className='acts';
     var e=document.createElement('button'); e.textContent='Edit'; e.addEventListener('click',function(){ openLog(logKeyFor(d), d.id); });
-    var dup=document.createElement('button'); dup.textContent='Dup'; dup.addEventListener('click',function(){ M.duplicateDonation(state.doc,d.id); persistDoc(); });
+    var dup=document.createElement('button'); dup.textContent='Dup'; dup.addEventListener('click',function(){ M.duplicateDonation(state.doc,d.id); persistDoc(); toast('Donation duplicated ✓'); });
     var del=document.createElement('button'); del.className='del'; del.textContent='Del';
-    del.addEventListener('click',function(){ if(confirm('Delete this donation?')){ M.deleteDonation(state.doc,d.id); persistDoc(); } });
+    del.addEventListener('click',function(){ if(confirm('Delete this donation?')){ M.deleteDonation(state.doc,d.id); persistDoc(); toast('Donation deleted'); } });
     acts.appendChild(e); acts.appendChild(dup); acts.appendChild(del);
     amtwrap.appendChild(amt); amtwrap.appendChild(acts);
     el.appendChild(left); el.appendChild(who); el.appendChild(amtwrap);
@@ -2882,30 +3951,72 @@ window.GT.exp = {
   }
   function byDateDesc(a,b){ return String(b.date||'').localeCompare(String(a.date||'')); }
 
-  // ---- sync ----
+  // ---- sync (saver-driven, slice 0) ----
+  // A single saver owns the save lifecycle: one save in flight, a coalesced follow-up
+  // for changes made mid-save, backoff retries, and a conflict that keeps local + never
+  // clobbers. The header pill (not toasts) reflects the state.
+  var theSaver = null;
+  function setPill(st){
+    var pill=$('savePill'), txt=$('savePillTxt'); if(!pill) return;
+    var map={ saving:['Saving…',false], saved:['Saved',false],
+      offline:['Offline — saved on this device',false],
+      error:['Couldn’t sync — tap to retry',true],
+      conflict:['Newer data on another device — tap to reload',true], idle:['',false] };
+    var m=map[st]||map.idle;
+    clearTimeout(pill._fade);
+    if(!m[0]){ pill.hidden=true; return; }
+    pill.hidden=false; pill.setAttribute('data-state', st); txt.textContent=m[0];
+    pill.classList.toggle('tap', !!m[1]);
+    if(st==='saved'){ pill._fade=setTimeout(function(){ if(pill.getAttribute('data-state')==='saved') pill.hidden=true; }, 2000); }
+  }
+  // The concrete save the saver drives: encrypt, then PATCH/INSERT under optimistic version.
+  async function pushSave(doc, version){
+    writeDocCache(doc);
+    var blob = await X.encryptDoc(doc, state.cfg.passphrase);
+    blob.updated_label = state.cfg.label || 'this device';
+    return C.save(state.cfg.id, blob, version);   // {status:'ok'|'conflict', server}
+  }
+  function ensureSaver(){
+    if(theSaver || !C.isEnabled(state.cfg)) return theSaver;
+    theSaver = S.createSaver({
+      save: pushSave,
+      getVersion: function(){ return state.cfg.loadedVersion; },
+      setVersion: function(v){ state.cfg.loadedVersion=v; writeCfg(state.cfg); },
+      onState: setPill,
+      isOnline: function(){ try{ return navigator.onLine!==false; }catch(e){ return true; } },
+      onOnline: function(cb){ try{ window.addEventListener('online', cb); }catch(e){} },
+    });
+    return theSaver;
+  }
+
+  // Pull the cloud copy on boot / focus. Returns quietly; the app is already usable offline.
   async function syncPull(){
     if(!C.isEnabled(state.cfg)) return;
+    ensureSaver();
     try {
       var r = await C.load(state.cfg.id);
       if(r.found){
         var doc = await X.decryptDoc(r.record, state.cfg.passphrase);
         if(doc){ state.doc=doc; state.cfg.loadedVersion=r.record.version; writeCfg(state.cfg);
           writeDocCache(doc); render(); }
-        else { toast('Cloud copy found, but the passphrase does not match this device.'); }
+        else { toast('Cloud copy found, but the passphrase does not match this device.', true); }
       }
-    } catch(e){ toast('Working offline — changes save on this device.'); }
+    } catch(e){ /* offline — the pill/saver report status on the next save */ }
   }
 
-  async function saveNow(){
-    if(!C.isEnabled(state.cfg)){ return; }
-    writeDocCache(state.doc);
+  // Conflict resolution: reload the newer cloud copy, then re-enable saving.
+  async function reloadFromCloud(){
+    setPill('saving');
     try {
-      var blob = await X.encryptDoc(state.doc, state.cfg.passphrase);
-      blob.updated_label = state.cfg.label || 'this device';
-      var r = await C.save(state.cfg.id, blob, state.cfg.loadedVersion);
-      if(r.status==='ok'){ state.cfg.loadedVersion = r.server.version; writeCfg(state.cfg); toast('Saved to cloud ✓'); }
-      else { toast('Save conflict — another device has newer data. Not overwritten.'); }
-    } catch(e){ toast('Saved on this device (cloud unavailable).'); }
+      var r = await C.load(state.cfg.id);
+      if(r.found){
+        var doc = await X.decryptDoc(r.record, state.cfg.passphrase);
+        if(doc){ state.doc=doc; state.cfg.loadedVersion=r.record.version; writeCfg(state.cfg);
+          writeDocCache(doc); if(theSaver) theSaver.reset(); render();
+          toast('Reloaded the newer data from your other device.'); return; }
+      }
+      toast('Could not reload — passphrase mismatch or no cloud copy.', true); setPill('idle');
+    } catch(e){ toast('Could not reach the cloud to reload.', true); setPill('conflict'); }
   }
 
   // ---- boot / auth ----
@@ -2917,6 +4028,7 @@ window.GT.exp = {
     if(state.doc.settings && state.doc.settings.theme) applyTheme();
     showApp(); render();
     syncPull();   // background refresh; app is already usable
+    pullQueue();  // pull the review inbox (guards on capture being set up)
   }
 
   // create flow
@@ -2935,8 +4047,7 @@ window.GT.exp = {
     writeCfg(state.cfg);
     state.doc = M.seededDoc(); writeDocCache(state.doc);
     pending=null; $('cPass').value='';
-    showApp(); render();
-    saveNow();   // first write inserts the row (best-effort)
+    showApp(); persistDoc();   // first write inserts the row via the saver
   }
 
   async function doConnect(){
@@ -2977,8 +4088,9 @@ window.GT.exp = {
   function openCharities(){ if(!state.doc) return; $('charitiesSheet').hidden=false; renderCharList(); }
   function closeCharities(){ $('charitiesSheet').hidden=true; }
 
-  // persist any doc change: local cache now, redraw the dashboard, encrypted sync best-effort.
-  function persistDoc(){ writeDocCache(state.doc); render(); saveNow(); }
+  // persist any doc change: local cache now, redraw the dashboard, and hand the doc to the
+  // saver (coalesced + retried encrypted sync; the header pill shows progress).
+  function persistDoc(){ writeDocCache(state.doc); render(); var sv=ensureSaver(); if(sv) sv.request(state.doc); }
   // persist after a charity change also redraws the charities list.
   function persistCharities(){ renderCharList(); persistDoc(); }
 
@@ -3053,13 +4165,13 @@ window.GT.exp = {
     }
     if(c.archived){
       var un=document.createElement('button'); un.className='btn sm ghost'; un.textContent='Unarchive';
-      un.addEventListener('click', function(){ M.archiveCharity(state.doc, c.id, false); persistCharities(); });
+      un.addEventListener('click', function(){ M.archiveCharity(state.doc, c.id, false); persistCharities(); toast('Unarchived '+c.name); });
       el.appendChild(un); return el;
     }
     var ed=document.createElement('button'); ed.className='btn sm ghost'; ed.textContent='Edit';
     ed.addEventListener('click', function(){ startEdit(c); });
     var ar=document.createElement('button'); ar.className='btn sm danger'; ar.textContent='Archive';
-    ar.addEventListener('click', function(){ M.archiveCharity(state.doc, c.id, true); persistCharities(); });
+    ar.addEventListener('click', function(){ M.archiveCharity(state.doc, c.id, true); persistCharities(); toast('Archived '+c.name); });
     el.appendChild(ed); el.appendChild(ar);
     return el;
   }
@@ -3077,12 +4189,13 @@ window.GT.exp = {
     save.addEventListener('click', function(){
       var get=function(f){ return form.querySelector('[data-f="'+f+'"]'); };
       try {
-        M.updateCharity(state.doc, c.id, {
+        var up=M.updateCharity(state.doc, c.id, {
           name:(get('name').value||'').trim(), ein:(get('ein').value||'').trim()||null,
           address:(get('address').value||'').trim()||null, deductible:get('deductible').checked
         });
         persistCharities();
-      } catch(e){ toast(e.message||'Could not save.'); }
+        toast('Saved '+up.name);
+      } catch(e){ toast(e.message||'Could not save.', true); }
     });
     cancel.addEventListener('click', renderCharList);
     actions.appendChild(save); actions.appendChild(cancel); form.appendChild(actions);
@@ -3093,8 +4206,8 @@ window.GT.exp = {
   // ---- donation entry sheet ----
   var LOG_TABS = [
     { key:'money', label:'Money' }, { key:'items', label:'Items' },
+    { key:'stock', label:'Stock' }, { key:'mileage', label:'Mileage' },
     { key:'into_daf', label:'Into DAF' }, { key:'grant', label:'Grant via DAF' },
-    { key:'stock', label:'Stock', disabled:true }, { key:'mileage', label:'Mileage', disabled:true },
   ];
   function today(){ return new Date().toISOString().slice(0,10); }
   function logKeyFor(d){
@@ -3102,7 +4215,14 @@ window.GT.exp = {
     if(d.daf_contribution===true) return 'into_daf';
     return d.type;   // money | items | stock | mileage
   }
-  function needsCharity(key){ return key==='money'||key==='items'||key==='grant'; }
+  function needsCharity(key){ return key!=='into_daf'; }
+  var MILEAGE_RATE = 0.14;   // statutory charitable mileage rate, IRC §170(i) (unchanged)
+  function computeLongTerm(acquired, transfer){
+    if(!acquired || !transfer) return true;   // default: assume long-term when unknown
+    var a=new Date(acquired), t=new Date(transfer);
+    if(isNaN(a)||isNaN(t)) return true;
+    return (t - a) > 366*86400000;             // held more than one year
+  }
   function activeGiftCharities(){ return M.activeCharities(state.doc).filter(function(c){ return !c.is_daf_sponsor; }); }
   function defaultCharityId(){
     var list=activeGiftCharities(), last=state.doc.settings.lastCharityId;
@@ -3116,14 +4236,19 @@ window.GT.exp = {
     }).join('')+'</select>';
   }
 
-  function openLog(key, editingId){
+  function openLog(key, editingId, opts){
     if(!state.doc) return;
     var tab=LOG_TABS.filter(function(t){return t.key===key;})[0];
     if(tab && tab.disabled) return;
-    var ed = editingId ? M.donationById(state.doc, editingId) : null;
-    state.log = { key:key||'money', editingId:editingId||null,
+    opts = opts || {};
+    // a Review carries a queue row id + a prefill + the source draft; preserve across tab switches.
+    var reviewQueueId = (opts.reviewQueueId!=null) ? opts.reviewQueueId : (state.log && state.log.reviewQueueId) || null;
+    var reviewDraft = opts.draft || (state.log && state.log.reviewDraft) || null;
+    var prefillEd = opts.ed || null;
+    var ed = editingId ? M.donationById(state.doc, editingId) : prefillEd;
+    state.log = { key:key||'money', editingId:editingId||null, reviewQueueId:reviewQueueId, reviewDraft:reviewDraft, prefillEd:prefillEd,
       items: (ed && ed.type==='items' && Array.isArray(ed.items)) ? JSON.parse(JSON.stringify(ed.items)) : [] };
-    $('logTitle').textContent = ed ? 'Edit donation' : 'Log a donation';
+    $('logTitle').textContent = editingId ? 'Edit donation' : (reviewQueueId ? 'Review captured item' : 'Log a donation');
     buildLogTabs();
     buildLogForm(ed);
     $('logSheet').hidden=false;
@@ -3151,7 +4276,7 @@ window.GT.exp = {
       $('btnLogSave').hidden=true; return;
     }
     $('btnLogSave').hidden=false;
-    var selId = (key==='grant'||key==='money'||key==='items') ? (d.charity_id || defaultCharityId()) : null;
+    var selId = (key!=='into_daf') ? (d.charity_id || defaultCharityId()) : null;
     var html='';
     if(key==='money'){
       html += '<div class="field"><label>Charity</label>'+charitySelectHtml(selId)+'</div>'
@@ -3167,6 +4292,26 @@ window.GT.exp = {
         + '<div class="runtot"><span class="rl">Drop-off total</span><span class="rv" id="itemsTotal">$0</span></div>'
         + '<label class="chk"><input type="checkbox" id="fAck"'+(d.acknowledgment_received?' checked':'')+'> Written acknowledgment received</label>'
         + '<div class="field" style="margin-top:12px;"><label>Notes</label><textarea id="fNotes">'+esc(notes)+'</textarea></div>';
+    } else if(key==='stock'){
+      html += '<div class="field"><label>Charity</label>'+charitySelectHtml(selId)+'</div>'
+        + '<div class="grid2"><div class="field"><label>Security</label><input class="txt" id="fSecurity" placeholder="e.g. AAPL" value="'+esc(d.security||'')+'"></div>'
+        + '<div class="field"><label>Shares</label><input type="number" class="txt" id="fShares" step="any" min="0" value="'+(d.shares||'')+'"></div></div>'
+        + '<div class="grid2"><div class="field"><label>Transfer date</label><input type="date" class="txt" id="fDate" value="'+dt+'"></div>'
+        + '<div class="field"><label>FMV total ($)</label><input type="number" class="txt" id="fAmount" step="0.01" min="0" value="'+(d.amount||'')+'"></div></div>'
+        + '<div class="field"><label>…or FMV per share ($)</label><input type="number" class="txt" id="fPer" step="0.01" min="0" value=""><div class="ghint">If you enter per-share, total = per-share × shares.</div></div>'
+        + '<div class="grid2"><div class="field"><label>Cost basis ($)</label><input type="number" class="txt" id="fBasis" step="0.01" min="0" value="'+(d.cost_basis||'')+'"></div>'
+        + '<div class="field"><label>Date acquired</label><input type="date" class="txt" id="fAcq" value="'+(d.acquired_date||'')+'"></div></div>'
+        + '<label class="chk"><input type="checkbox" id="fLong"'+(d.long_term===false?'':' checked')+'> Held more than 1 year (auto from dates)</label>'
+        + '<p class="ghint">A <strong>direct</strong> gift of securities — counts toward both totals. Appreciated stock held &gt; 1 year is deducted at FMV, capped at 30% of AGI.</p>'
+        + '<div class="field" style="margin-top:6px;"><label>Notes</label><textarea id="fNotes">'+esc(notes)+'</textarea></div>';
+    } else if(key==='mileage'){
+      html += '<div class="field"><label>Charity</label>'+charitySelectHtml(selId)+'</div>'
+        + '<div class="grid2"><div class="field"><label>Date</label><input type="date" class="txt" id="fDate" value="'+dt+'"></div>'
+        + '<div class="field"><label>Miles driven</label><input type="number" class="txt" id="fMiles" step="any" min="0" value="'+(d.miles||'')+'"></div></div>'
+        + '<div class="field"><label>Purpose of the trip</label><input class="txt" id="fPurpose" placeholder="e.g. deliver meals" value="'+esc(d.purpose||'')+'"></div>'
+        + '<div class="field"><label>Parking &amp; tolls ($)</label><input type="number" class="txt" id="fPark" step="0.01" min="0" value="'+(d.parking_tolls||'')+'"></div>'
+        + '<div class="runtot"><span class="rl">Deductible (miles × 14¢ + parking)</span><span class="rv" id="mileTotal">$0</span></div>'
+        + '<div class="field" style="margin-top:6px;"><label>Notes</label><textarea id="fNotes">'+esc(notes)+'</textarea></div>';
     } else if(key==='into_daf'){
       html += '<div class="field"><label>Donor-advised fund</label><input class="txt" value="Fidelity Charitable" disabled></div>'
         + '<div class="grid2"><div class="field"><label>Security</label><input class="txt" id="fSecurity" placeholder="e.g. AAPL" value="'+esc(d.security||'')+'"></div>'
@@ -3192,6 +4337,17 @@ window.GT.exp = {
       $('btnAddItem').addEventListener('click', function(){ addItemLine(); });
       renderItems();
     }
+    if(key==='stock'){
+      var syncLong=function(){ var lt=computeLongTerm($('fAcq').value, $('fDate').value);
+        if($('fAcq').value && $('fDate').value) $('fLong').checked=lt; };
+      $('fAcq').addEventListener('change', syncLong); $('fDate').addEventListener('change', syncLong);
+    }
+    if(key==='mileage'){
+      var mt=function(){ var m=parseFloat($('fMiles').value)||0, p=parseFloat($('fPark').value)||0;
+        $('mileTotal').textContent=money(Math.round((m*MILEAGE_RATE+p)*100)/100); };
+      $('fMiles').addEventListener('input', mt); $('fPark').addEventListener('input', mt); mt();
+    }
+    appendAttachSection(f);
     var amt=$('fAmount'); if(amt) setTimeout(function(){ try{amt.focus();}catch(e){} },40);
   }
 
@@ -3269,39 +4425,170 @@ window.GT.exp = {
     recomputeItemsTotal();
   }
 
+  // ---- receipt attachments (slice 6) ----
+  function attSize(b){ b=Number(b)||0; return b>=1048576 ? (Math.round(b/104857.6)/10+' MB') : (Math.round(b/1024)+' KB'); }
+  function currentAttachments(){
+    if(!state.log || !state.log.editingId) return [];
+    return (state.doc.attachments||[]).filter(function(a){ return a.donation_id===state.log.editingId; });
+  }
+  function totalAttachBytes(){ return (state.doc.attachments||[]).reduce(function(s,a){ return s+(Number(a.bytes)||0); },0); }
+  function downscaleImage(file, maxDim, quality){
+    return new Promise(function(resolve, reject){
+      var url=URL.createObjectURL(file); var img=new Image();
+      img.onload=function(){
+        var w=img.width, h=img.height, scale=Math.min(1, maxDim/Math.max(w,h)||1);
+        var cw=Math.max(1,Math.round(w*scale)), ch=Math.max(1,Math.round(h*scale));
+        var cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
+        cv.getContext('2d').drawImage(img,0,0,cw,ch); URL.revokeObjectURL(url);
+        resolve(cv.toDataURL('image/jpeg', quality));
+      };
+      img.onerror=function(){ URL.revokeObjectURL(url); reject(new Error('Could not read that image.')); };
+      img.src=url;
+    });
+  }
+  async function processFile(file){
+    if(/^image\//.test(file.type)){
+      var dataUrl=await downscaleImage(file, 1600, 0.75);
+      var bytes=X.b64ToBytes(dataUrl.split(',')[1]);
+      return { bytes:bytes, mime:'image/jpeg', filename:(String(file.name||'receipt').replace(/\.[^.]+$/,'')||'receipt')+'.jpg', thumbUrl:dataUrl };
+    }
+    if(file.type==='application/pdf'){
+      if(file.size > 2*1024*1024) throw new Error('That PDF is over 2MB — please shrink it first.');
+      var buf=await file.arrayBuffer(); return { bytes:new Uint8Array(buf), mime:'application/pdf', filename:String(file.name||'receipt.pdf'), thumbUrl:null };
+    }
+    throw new Error('Attach a photo or a PDF.');
+  }
+  async function onAttachFile(e){
+    var file=e.target.files && e.target.files[0]; if(!file){ return; } e.target.value='';
+    try {
+      var proc=await processFile(file);
+      if(F.overBudget(totalAttachBytes(), proc.bytes.length)) toast('Heads up — your receipts now exceed ~50MB.', true);
+      var enc=await F.encryptFile(proc.bytes, { mime:proc.mime, filename:proc.filename });
+      var att={ id:M.newId('file'), key:enc.key, mime:proc.mime, filename:proc.filename, bytes:enc.bytes, created_at:new Date().toISOString(), thumbUrl:proc.thumbUrl||null };
+      if(state.log.editingId){
+        att.donation_id=state.log.editingId;
+        await F.put(state.cfg.id, { id:att.id, donation_id:att.donation_id, ciphertext:enc.ciphertext, iv:enc.iv, bytes:enc.bytes });
+        state.doc.attachments=state.doc.attachments||[]; state.doc.attachments.push(att); persistDoc();
+        renderAttachSection(); toast('Receipt attached ✓');
+      } else {
+        state.log.pendingAttach=state.log.pendingAttach||[]; state.log.pendingAttach.push({ att:att, enc:enc });
+        renderAttachSection(); toast('Receipt staged — it attaches when you save.');
+      }
+    } catch(err){ toast(err.message||'Could not attach that file.', true); }
+  }
+  function renderAttachSection(){
+    var area=$('attachArea'); if(!area) return;
+    var atts = state.log.editingId ? currentAttachments() : ((state.log.pendingAttach||[]).map(function(p){ return p.att; }));
+    area.innerHTML='';
+    if(!atts.length){ area.innerHTML='<div class="ghint">No receipts yet — attach a photo or PDF below.</div>'; return; }
+    atts.forEach(function(a){
+      var chip=document.createElement('div'); chip.className='attachchip';
+      chip.innerHTML=(a.thumbUrl?('<img class="athumb" src="'+a.thumbUrl+'">'):'<span class="afile">📎</span>')
+        + '<span class="aname">'+esc(a.filename)+'</span><span class="asz">'+attSize(a.bytes)+'</span>';
+      var view=document.createElement('button'); view.type='button'; view.className='btn sm ghost'; view.textContent='View';
+      view.addEventListener('click', function(){ viewAttachment(a); });
+      var del=document.createElement('button'); del.type='button'; del.className='btn sm danger'; del.textContent='Delete';
+      del.addEventListener('click', function(){ deleteAttachment(a); });
+      chip.appendChild(view); chip.appendChild(del); area.appendChild(chip);
+    });
+  }
+  async function viewAttachment(a){
+    try {
+      if(a.thumbUrl){ window.open(a.thumbUrl, '_blank'); return; }
+      var row=await F.get(state.cfg.id, a.id); if(!row){ toast('Receipt not found.', true); return; }
+      var dec=await F.decryptFile(row.ciphertext, row.iv, a.key);
+      var blob=new Blob([dec.bytes], { type:dec.mime }); var url=URL.createObjectURL(blob);
+      window.open(url, '_blank'); setTimeout(function(){ URL.revokeObjectURL(url); }, 30000);
+    } catch(e){ toast('Could not open that receipt.', true); }
+  }
+  async function deleteAttachment(a){
+    if(!confirm('Delete this receipt?')) return;
+    try {
+      if(state.log.editingId){ await F.remove(state.cfg.id, a.id);
+        state.doc.attachments=(state.doc.attachments||[]).filter(function(x){ return x.id!==a.id; }); persistDoc(); }
+      else { state.log.pendingAttach=(state.log.pendingAttach||[]).filter(function(p){ return p.att.id!==a.id; }); }
+      renderAttachSection(); toast('Receipt deleted');
+    } catch(e){ toast('Could not delete that receipt.', true); }
+  }
+  function appendAttachSection(f){
+    var wrap=document.createElement('div'); wrap.className='acq'; wrap.style.marginTop='12px';
+    wrap.innerHTML='<label style="display:block;font-size:0.78rem;color:var(--muted);margin-bottom:6px;font-weight:600;">Receipts</label>'
+      + '<div id="attachArea"></div>'
+      + '<input id="attachFile" type="file" accept="image/*,application/pdf" capture="environment" class="txt" style="margin-top:8px;">';
+    f.appendChild(wrap);
+    $('attachFile').addEventListener('change', onAttachFile);
+    renderAttachSection();
+  }
+
   function saveLog(){
     if(!state.log) return;
     var key=state.log.key;
     var dt = ($('fDate')&&$('fDate').value) || '';
     var notes = ($('fNotes')&&$('fNotes').value.trim()) || null;
-    if(!dt){ toast('Pick a date.'); return; }
+    if(!dt){ toast('Pick a date.', true); return; }
     var payload;
     if(key==='money'){
       var cid=$('fCharity').value, amt=parseFloat($('fAmount').value);
-      if(!cid){ toast('Pick a charity.'); return; } if(!(amt>0)){ toast('Enter an amount.'); return; }
+      if(!cid){ toast('Pick a charity.', true); return; } if(!(amt>0)){ toast('Enter an amount.', true); return; }
       payload={ type:'money', charity_id:cid, amount:amt, date:dt, notes:notes, acknowledgment_received:$('fAck').checked };
     } else if(key==='items'){
       var cidi=$('fCharity').value;
-      if(!cidi){ toast('Pick a charity.'); return; }
+      if(!cidi){ toast('Pick a charity.', true); return; }
       var lines=state.log.items.filter(function(it){ return (Number(it.qty)||0)>0 && (Number(it.unit_value)||0)>=0 && it.description; });
-      if(!lines.length){ toast('Add at least one item line with a description and value.'); return; }
+      if(!lines.length){ toast('Add at least one item line with a description and value.', true); return; }
       payload={ type:'items', charity_id:cidi, items:lines, date:dt, notes:notes, acknowledgment_received:$('fAck').checked };
     } else if(key==='into_daf'){
       var sp=M.dafSponsor(state.doc); var fmv=parseFloat($('fAmount').value);
-      if(!(fmv>0)){ toast('Enter the FMV on the transfer date.'); return; }
+      if(!(fmv>0)){ toast('Enter the FMV on the transfer date.', true); return; }
       payload={ type:'stock', daf_contribution:true, charity_id:sp.id, amount:fmv, date:dt, notes:notes,
         security:($('fSecurity').value||'').trim()||null, shares:parseFloat($('fShares').value)||null,
         cost_basis:parseFloat($('fBasis').value)||null, acquired_date:$('fAcq').value||null, long_term:$('fLong').checked };
+    } else if(key==='stock'){
+      var cids=$('fCharity').value; if(!cids){ toast('Pick a charity.', true); return; }
+      var sh=parseFloat($('fShares').value)||null, per=parseFloat($('fPer').value)||null, fmv=parseFloat($('fAmount').value);
+      var amount = (fmv>0) ? fmv : ((per>0 && sh>0) ? Math.round(per*sh*100)/100 : NaN);
+      if(!(amount>0)){ toast('Enter the FMV — a total, or per-share × shares.', true); return; }
+      payload={ type:'stock', charity_id:cids, amount:amount, date:dt, notes:notes,
+        security:($('fSecurity').value||'').trim()||null, shares:sh,
+        cost_basis:parseFloat($('fBasis').value)||null, acquired_date:$('fAcq').value||null, long_term:$('fLong').checked };
+    } else if(key==='mileage'){
+      var cidm=$('fCharity').value; if(!cidm){ toast('Pick a charity.', true); return; }
+      var miles=parseFloat($('fMiles').value)||0, park=parseFloat($('fPark').value)||0;
+      if(!(miles>0)){ toast('Enter the miles driven.', true); return; }
+      var mamt=Math.round((miles*MILEAGE_RATE+park)*100)/100;
+      payload={ type:'mileage', charity_id:cidm, amount:mamt, date:dt, notes:notes,
+        miles:miles, parking_tolls:park, purpose:($('fPurpose').value||'').trim()||null, rate:MILEAGE_RATE };
     } else if(key==='grant'){
       var cidg=$('fCharity').value, amtg=parseFloat($('fAmount').value);
-      if(!cidg){ toast('Pick the recipient charity.'); return; } if(!(amtg>0)){ toast('Enter an amount.'); return; }
+      if(!cidg){ toast('Pick the recipient charity.', true); return; } if(!(amtg>0)){ toast('Enter an amount.', true); return; }
       payload={ type:'daf_grant', charity_id:cidg, amount:amtg, date:dt, notes:notes, grant_ref:($('fRef').value||'').trim()||null };
     } else { return; }
+    var rqid = state.log.reviewQueueId, rdraft = state.log.reviewDraft;
+    if(rqid && rdraft) payload.sources = [RV.sourceRecord(rdraft)];   // keep capture provenance
+    var saved;
     try {
-      if(state.log.editingId) M.editDonation(state.doc, state.log.editingId, payload);
-      else M.addDonation(state.doc, payload);
-    } catch(e){ toast(e.message||'Could not save this donation.'); return; }
-    persistDoc(); closeLog(); toast('Donation saved ✓');
+      saved = state.log.editingId ? M.editDonation(state.doc, state.log.editingId, payload) : M.addDonation(state.doc, payload);
+    } catch(e){ toast(e.message||'Could not save this donation.', true); return; }
+    // upload any receipts staged on a NEW donation, now that it has an id
+    var pending = state.log.pendingAttach || [];
+    if(pending.length && saved && saved.id){
+      state.doc.attachments=state.doc.attachments||[];
+      pending.forEach(function(p){
+        p.att.donation_id=saved.id;
+        F.put(state.cfg.id, { id:p.att.id, donation_id:saved.id, ciphertext:p.enc.ciphertext, iv:p.enc.iv, bytes:p.enc.bytes }).catch(function(){});
+        state.doc.attachments.push(p.att);
+      });
+    }
+    if(rqid){
+      // Reviewed a captured item: save to cloud first, then clear the queue row.
+      writeDocCache(state.doc); render(); closeLog();
+      saveOnce().then(function(ok){
+        if(ok){ Promise.resolve(removeDraftRow(rdraft||{id:rqid})).catch(function(){}).then(function(){ if(rdraft&&rdraft.local){ updateInboxBadge(); if(!$('inboxSheet').hidden) renderInbox(); } else { pullQueue(); } }); toast('Reviewed & saved ✓'); }
+        else { var sv=ensureSaver(); if(sv) sv.request(state.doc); toast('Saved on this device — clears from the inbox once it syncs.'); }
+      });
+    } else {
+      persistDoc(); closeLog(); toast('Donation saved ✓');
+    }
   }
 
   function setGroup(g){ state.group=g;
@@ -3326,12 +4613,71 @@ window.GT.exp = {
       + '<div class="kv"><span class="k">Sync id</span><span class="v mono" id="idShow">'+esc(masked)+'</span>'
       +   '<button type="button" class="btn sm ghost" id="btnCopyId">Copy id</button></div>'
       + '<button type="button" class="btn danger ghost" id="btnSignout2">Sign out on this device</button>'
-      + '<p class="hint">Signing out clears this browser only — your synced book is untouched.</p></div>';
+      + '<p class="hint">Signing out clears this browser only — your synced book is untouched.</p></div>'
+      + captureCardHtml()
+      + '<div class="card"><div class="card-h">Import Fidelity Charitable history</div>'
+      + '<p class="hint">Import your Giving Account history (CSV or PDF) to fill grant amounts and record contributions. It opens in the review inbox.</p>'
+      + '<button type="button" class="btn sm ghost" id="btnOpenImport">Open review inbox to import</button></div>';
     var seg2=$('themeSeg'); if(seg2) seg2.querySelectorAll('button').forEach(function(b){
       b.addEventListener('click', function(){ setTheme(b.getAttribute('data-theme')); }); });
     var cpy=$('btnCopyId'); if(cpy) cpy.addEventListener('click', function(){
-      try{ navigator.clipboard.writeText(id); toast('Sync id copied'); }catch(e){ toast('Copy not available — id is in Settings.'); } });
+      try{ navigator.clipboard.writeText(id); toast('Sync id copied'); }catch(e){ toast('Copy not available — id is in Settings.', true); } });
     var so=$('btnSignout2'); if(so) so.addEventListener('click', function(){ if(confirm('Sign out on this device? Your synced book is untouched.')){ closeSettings(); signOut(); } });
+    wireCaptureCard();
+    var oi=$('btnOpenImport'); if(oi) oi.addEventListener('click', function(){ closeSettings(); openInbox(); });
+  }
+
+  // ---- capture setup (slice 1): key pair lives in the encrypted doc; only the PUBLIC
+  // half (with the sync id) is shared as the GIVING_SETUP_BUNDLE function secret. ----
+  function captureBundle(){
+    var cap=state.doc && state.doc.capture;
+    if(!cap || !cap.publicJwk) return '';
+    return btoa(JSON.stringify({ sync_id: state.cfg.id, public_jwk: cap.publicJwk }));
+  }
+  function captureCardHtml(){
+    var cap=state.doc && state.doc.capture;
+    if(cap && cap.publicJwk){
+      var created=cap.created_at ? new Date(cap.created_at).toLocaleDateString() : '';
+      return '<div class="card"><div class="card-h">Email &amp; bank capture</div>'
+        + '<p class="hint">Receipt and grant emails (and, later, YNAB + imports) can be captured automatically into a “Needs review” inbox. Every captured item is <strong>sealed to this device’s key</strong> — nothing readable is ever stored in the queue.</p>'
+        + '<div class="kv"><span class="k">Status</span><span class="v" style="color:var(--ledger)">Keys set up'+(created?(' · '+esc(created)):'')+'</span></div>'
+        + '<p class="hint">Store this <strong>setup bundle</strong> as the Supabase function secret <span class="mono">GIVING_SETUP_BUNDLE</span>. It holds your public key + sync id — <strong>never</strong> your private key.</p>'
+        + '<div id="capBundle" class="reveal-id" hidden></div>'
+        + '<div class="search-row"><button type="button" class="btn sm ghost" id="btnCapShow">Show setup bundle</button>'
+        + '<button type="button" class="btn sm ghost" id="btnCapCopy">Copy bundle</button>'
+        + '<button type="button" class="btn sm danger" id="btnCapRotate">Rotate keys</button></div></div>';
+    }
+    return '<div class="card"><div class="card-h">Email &amp; bank capture</div>'
+      + '<p class="hint">Set up automatic capture of receipt + grant emails into a “Needs review” inbox. This makes a key pair on this device: the private half stays inside your encrypted book; only the public half is shared, so the server can seal items that <em>only</em> your device can open.</p>'
+      + '<button type="button" class="btn sm" id="btnCapSetup">Set up capture</button></div>';
+  }
+  async function setupCapture(){
+    if(state.doc.capture && state.doc.capture.privateJwk) return;
+    try {
+      var keys=await GT.seal.generateCaptureKeys();
+      state.doc.capture={ privateJwk:keys.privateJwk, publicJwk:keys.publicJwk, created_at:new Date().toISOString() };
+      persistDoc(); renderSettingsExtra();
+      toast('Capture keys created ✓ — copy the setup bundle below.');
+    } catch(e){ toast('Could not create capture keys on this device.', true); }
+  }
+  async function rotateCapture(){
+    if(!confirm('Rotate capture keys? Any items already waiting in the review inbox were sealed to the OLD key and can no longer be opened — dismiss them. You must also update the GIVING_SETUP_BUNDLE secret with the new bundle.')) return;
+    try {
+      var keys=await GT.seal.generateCaptureKeys();
+      state.doc.capture={ privateJwk:keys.privateJwk, publicJwk:keys.publicJwk, created_at:new Date().toISOString() };
+      persistDoc(); renderSettingsExtra();
+      toast('Capture keys rotated — update the setup bundle secret.');
+    } catch(e){ toast('Could not rotate capture keys on this device.', true); }
+  }
+  function wireCaptureCard(){
+    var b;
+    if((b=$('btnCapSetup'))) b.addEventListener('click', setupCapture);
+    if((b=$('btnCapRotate'))) b.addEventListener('click', rotateCapture);
+    if((b=$('btnCapShow'))) b.addEventListener('click', function(){ var el=$('capBundle'); el.textContent=captureBundle(); el.hidden=false; });
+    if((b=$('btnCapCopy'))) b.addEventListener('click', function(){
+      var bundle=captureBundle();
+      try{ navigator.clipboard.writeText(bundle); toast('Setup bundle copied'); }
+      catch(e){ var el=$('capBundle'); el.textContent=bundle; el.hidden=false; toast('Copy not available — bundle shown below.', true); } });
   }
 
   function renderTaxForm(){
@@ -3360,18 +4706,41 @@ window.GT.exp = {
     refreshAuto();
   }
 
+  function setFieldErr(id, msg){ var el=$(id); if(!el) return; el.classList.add('inerr');
+    var e=el.parentNode.querySelector('.fielderr'); if(!e){ e=document.createElement('div'); e.className='fielderr'; el.parentNode.appendChild(e); } e.textContent=msg; }
+  function clearFieldErr(id){ var el=$(id); if(!el) return; el.classList.remove('inerr');
+    var e=el.parentNode.querySelector('.fielderr'); if(e) e.textContent=''; }
+
   function saveTaxProfile(){
-    var y=state.year, rp=$('sRate').value;
+    var y=state.year;
+    var rp=$('sRate').value, agiRaw=$('sAgi').value, stRaw=$('sState').value;
+    var agi=(agiRaw===''?0:Number(agiRaw));
+    var rate=(rp===''? null : Number(rp));
+    var st=(stRaw===''?0:Number(stRaw));
+    clearFieldErr('sAgi'); clearFieldErr('sRate'); clearFieldErr('sState');
+    var bad=false;
+    if(isNaN(agi) || agi<0){ setFieldErr('sAgi','AGI must be 0 or more.'); bad=true; }
+    if(rate!==null && (isNaN(rate) || rate<0 || rate>50)){ setFieldErr('sRate','Enter a rate between 0 and 50%.'); bad=true; }
+    if(isNaN(st) || st<0 || st>15){ setFieldErr('sState','Enter a rate between 0 and 15%.'); bad=true; }
+    if(bad){ toast('Check the highlighted fields.', true); return; }
     state.doc.taxProfiles = state.doc.taxProfiles || {};
     state.doc.taxProfiles[y] = {
       filing_status: $('sStatus').value,
-      agi: Number($('sAgi').value)||0,
-      marginal_rate: (rp!==''? Number(rp)/100 : null),
+      agi: agi,
+      marginal_rate: (rate!==null ? rate/100 : null),
       itemizing: $('mItem').getAttribute('aria-pressed')==='true',
-      state_rate: (Number($('sState').value)||0)/100,
+      state_rate: st/100,
     };
     persistDoc();
-    toast('Tax profile saved for '+y);
+    closeSettings();
+    // scroll to + briefly highlight the savings card so the change is unmistakable
+    var box=$('savings');
+    if(box){ try{ box.scrollIntoView({ behavior:'smooth', block:'center' }); }catch(e){}
+      var inner=box.querySelector('.savings')||box;
+      inner.classList.add('flash'); setTimeout(function(){ inner.classList.remove('flash'); }, 1600); }
+    var r=T.estimateSavings(state.doc.taxProfiles[y], state.doc, y);
+    toast(agi>0 ? ('Tax profile saved — est. savings '+money(r.savings)+' for '+y)
+                : ('Tax profile saved — add AGI to see savings for '+y));
   }
 
   // ---- export ----
@@ -3393,9 +4762,9 @@ window.GT.exp = {
   function openExport(){ if(!state.doc) return; $('exYearLabel').textContent='· '+state.year; $('exportSheet').hidden=false; }
   function closeExport(){ $('exportSheet').hidden=true; }
   function ex(){ return window.GT.exp; }
-  function exGuide(){ printHtml(ex().guide.buildGuideHtml(state.doc, state.year)); }
-  function exReport(){ printHtml(ex().report.buildReportHtml(state.doc, state.year)); }
-  function exHistory(){ printHtml(ex().history.buildHistoryHtml(state.doc, state.year)); }
+  function exGuide(){ printHtml(ex().guide.buildGuideHtml(state.doc, state.year)); toast('Opening the Entry Guide to print…'); }
+  function exReport(){ printHtml(ex().report.buildReportHtml(state.doc, state.year)); toast('Opening the donation report to print…'); }
+  function exHistory(){ printHtml(ex().history.buildHistoryHtml(state.doc, state.year)); toast('Opening giving history to print…'); }
   function exCsv(){ download('giving-'+state.year+'.csv', ex().csv.buildCsv(state.doc, state.year), 'text/csv'); toast('CSV downloaded'); }
   function exJson(){ download('giving-'+state.year+'.json', ex().json.exportJson(state.doc, state.year), 'application/json'); toast('JSON backup downloaded'); }
   function exTxf(){ download('giving-'+state.year+'.txf', ex().txf.buildTxf(state.doc, state.year), 'text/plain'); toast('TXF downloaded (TurboTax Desktop only)'); }
@@ -3411,13 +4780,340 @@ window.GT.exp = {
     reader.readAsText(file);
   }
 
+  // ---- needs-review inbox (slice 4) ----
+  function captureReady(){ return !!(state.doc && state.doc.capture && state.doc.capture.privateJwk && C.isEnabled(state.cfg)); }
+
+  // A single awaited encrypted cloud save; returns true only on a confirmed write.
+  async function saveOnce(){
+    if(!C.isEnabled(state.cfg)) return false;
+    setPill('saving');
+    try {
+      writeDocCache(state.doc);
+      var blob = await X.encryptDoc(state.doc, state.cfg.passphrase);
+      blob.updated_label = state.cfg.label || 'this device';
+      var r = await C.save(state.cfg.id, blob, state.cfg.loadedVersion);
+      if(r.status==='ok'){ state.cfg.loadedVersion=r.server.version; writeCfg(state.cfg); setPill('saved'); return true; }
+      setPill('conflict'); return false;
+    } catch(e){ setPill('offline'); return false; }
+  }
+
+  function allDrafts(){ return state.inbox.drafts.concat(state.inbox.localDrafts); }
+  function updateInboxBadge(){
+    var n=(state.inbox.drafts.length + state.inbox.localDrafts.length + state.inbox.unopenable.length);
+    var b=$('inboxBadge'); if(!b) return;
+    b.textContent=String(n); b.hidden = !(n>0);
+  }
+  // remove a draft's backing: a server draft deletes its queue row; a local (import) draft
+  // just drops out of the in-memory list.
+  function removeDraftRow(d){
+    if(d && d.local){ state.inbox.localDrafts=state.inbox.localDrafts.filter(function(x){ return x!==d && x.id!==d.id; }); return Promise.resolve(); }
+    return Q.remove(state.cfg.id, d.id);
+  }
+
+  // Pull the queue, open each sealed row with the capture key, map to drafts.
+  async function pullQueue(){
+    if(!captureReady()) return;
+    state.inbox.loading=true;
+    try {
+      var rows = await Q.list(state.cfg.id);
+      var drafts=[], unopenable=[];
+      for(var i=0;i<rows.length;i++){
+        try {
+          var openedPayload = await SEAL.openSealed(rows[i].sealed, state.doc.capture.privateJwk);
+          drafts.push(RV.toDraft(openedPayload, state.doc, { id: rows[i].id, source: rows[i].source }));
+        } catch(e){ unopenable.push({ id: rows[i].id }); }
+      }
+      state.inbox.drafts=drafts; state.inbox.unopenable=unopenable; state.inbox.pulledOnce=true;
+    } catch(e){ /* offline — leave the last known inbox */ }
+    finally { state.inbox.loading=false; updateInboxBadge(); if(!$('inboxSheet').hidden) renderInbox(); }
+  }
+
+  function otherDrafts(except){ return allDrafts().filter(function(d){ return d!==except; }); }
+
+  function sourceIcon(src){ return src==='ynab'?'🏦':src==='import'?'📄':'✉️'; }
+  function draftBadge(d){
+    if(d.type==='daf_grant') return '<span class="qbadge via">via DAF · not deductible</span>';
+    if(d.daf_contribution) return '<span class="qbadge into">Into DAF</span>';
+    if(d.type==='items') return '<span class="qbadge cash">Items</span>';
+    return '<span class="qbadge cash">Cash</span>';
+  }
+
+  function openInbox(){ if(!state.doc) return; $('inboxSheet').hidden=false; renderInbox(); pullQueue(); }
+  function closeInbox(){ $('inboxSheet').hidden=true; }
+
+  function renderInbox(){
+    var list=$('inboxList'), ready=$('inboxReady'); if(!list) return;
+    var drafts=allDrafts(), un=state.inbox.unopenable;
+    // Imports (Fidelity + CSV) are always available — they make LOCAL drafts and don't
+    // need the capture key. Only pulling email/YNAB items needs capture set up.
+    ready.innerHTML=importControlHtml();
+    if(!captureReady()){
+      var note=document.createElement('div'); note.className='ghint'; note.style.margin='0 0 12px';
+      note.innerHTML='Email &amp; bank capture isn’t set up yet (Settings → Email &amp; bank capture). You can still import a CSV or PDF below.';
+      ready.insertBefore(note, ready.firstChild);
+    }
+    var readyDrafts=drafts.filter(function(d){ return RV.isReady(d, RV.findDuplicates(d, state.doc, otherDrafts(d))); });
+    if(readyDrafts.length){
+      var rb=document.createElement('div'); rb.className='readybar';
+      rb.innerHTML='<span class="rl">'+readyDrafts.length+' ready to approve (no missing fields, no duplicates)</span>';
+      var ab=document.createElement('button'); ab.className='btn sm'; ab.textContent='Approve all ready';
+      ab.addEventListener('click', function(){ approveAllReady(); }); rb.appendChild(ab); ready.appendChild(rb);
+    }
+    wireImportControl();
+    list.innerHTML='';
+    if(!drafts.length && !un.length){
+      list.innerHTML='<div class="inbox-empty"><div class="big">'+(state.inbox.loading?'Checking for new items…':'Nothing to review.')+'</div>'
+        + (state.inbox.loading?'':'Captured receipts, grants, and imports appear here.')+'</div>';
+      return;
+    }
+    drafts.forEach(function(d){ list.appendChild(draftCard(d)); });
+    un.forEach(function(u){ list.appendChild(unopenableCard(u)); });
+  }
+
+  // ---- Fidelity Charitable history import (CSV in-app; PDF via the import-extract fn) ----
+  function importControlHtml(){
+    return '<div class="card" style="margin-bottom:12px;"><div class="card-h">Import Fidelity Charitable history</div>'
+      + '<p class="hint">Fidelity grant emails carry no amount — import your Giving Account history (CSV or PDF) to fill amounts and record contributions. Rows reconcile against what’s already here.</p>'
+      + '<input id="fidFile" type="file" accept=".csv,text/csv,application/pdf,.pdf" class="txt">'
+      + '<div id="fidSummary" class="ghint" style="margin-top:8px;"></div></div>'
+      + '<div class="card" style="margin-bottom:12px;"><div class="card-h">Import donations from a CSV</div>'
+      + '<p class="hint">From deductable.ai, ItsDeductible, or any spreadsheet. You’ll map the columns, then rows land here to review.</p>'
+      + '<input id="csvFile" type="file" accept=".csv,text/csv" class="txt"></div>';
+  }
+  function wireImportControl(){
+    var el=$('fidFile'); if(el) el.addEventListener('change', onFidelityFile);
+    var cf=$('csvFile'); if(cf) cf.addEventListener('change', onCsvFile);
+  }
+  function onFidelityFile(e){
+    var file=e.target.files && e.target.files[0]; if(!file){ return; }
+    var isPdf = /pdf$/i.test(file.type) || /\.pdf$/i.test(file.name);
+    if(isPdf) importFidelityPdf(file); else importFidelityCsv(file);
+    e.target.value='';
+  }
+  function applyReconcile(res){
+    if(res.changedDoc){ persistDoc(); }
+    state.inbox.localDrafts = state.inbox.localDrafts.concat(res.drafts);
+    updateInboxBadge(); renderInbox();
+    var s=res.summary;
+    var msg=s.new+' new · '+s.filled+' amount'+(s.filled===1?'':'s')+' filled · '+s.recorded+' already recorded'
+      + (s.skipped?(' · '+s.skipped+' skipped'):'');
+    var fs=$('fidSummary'); if(fs) fs.textContent=msg;
+    toast('Fidelity import: '+msg);
+  }
+  function importFidelityCsv(file){
+    var reader=new FileReader();
+    reader.onload=function(){ try{
+      var res=GT.fidelity.importCsv(String(reader.result), state.doc, allDrafts());
+      applyReconcile(res);
+    } catch(err){ toast('Could not read that CSV.', true); } };
+    reader.readAsText(file);
+  }
+  function importFidelityPdf(file){
+    var reader=new FileReader();
+    reader.onload=async function(){
+      try {
+        var b64=String(reader.result).split(',')[1] || '';
+        var records=await extractFidelityPdf(b64);
+        var res=GT.fidelity.reconcile(records, state.doc, allDrafts());
+        applyReconcile(res);
+      } catch(err){ toast(err.message||'Could not extract that PDF.', true); }
+    };
+    reader.readAsDataURL(file);
+  }
+  // POST the PDF to the import-extract Edge Function (x-plan-id = sync id). Returns records[].
+  async function extractFidelityPdf(pdfB64){
+    var url=C.SB_URL+'/functions/v1/import-extract';
+    var res=await fetch(url, { method:'POST',
+      headers:{ 'apikey':C.SB_KEY, 'Authorization':'Bearer '+C.SB_KEY, 'x-plan-id':state.cfg.id, 'Content-Type':'application/json' },
+      body: JSON.stringify({ kind:'fidelity', pdf_base64: pdfB64 }) });
+    if(res.status===401) throw new Error('PDF import isn’t set up on the server yet.');
+    if(!res.ok) throw new Error('PDF extraction failed.');
+    var j=await res.json();
+    return Array.isArray(j.records)?j.records:[];
+  }
+
+  function draftCard(d){
+    var dup=RV.findDuplicates(d, state.doc, otherDrafts(d));
+    var el=document.createElement('div'); el.className='qcard';
+    var amtHtml = d.amountNeeded ? '<span class="qamt needed">amount needed</span>'
+      : '<span class="qamt">'+money(d.amount)+'</span>';
+    var dateHtml = d.date ? esc(d.date) : 'no date';
+    var hints='';
+    if(dup.isDuplicate) hints+='<span class="qhint dup">likely duplicate</span>';
+    if(d.lowConfidence) hints+='<span class="qhint chk">check this</span>';
+    el.innerHTML='<div class="qh"><span class="qsrc">'+sourceIcon(d.source)+'</span>'
+      + '<span class="qwho">'+esc(d.charity_name||'Unknown charity')+'</span>'+amtHtml+'</div>'
+      + '<div class="qmeta">'+dateHtml+' '+draftBadge(d)+' '+hints+'</div>';
+    var acts=document.createElement('div'); acts.className='qacts';
+    var rev=document.createElement('button'); rev.className='btn sm ghost'; rev.textContent='Review';
+    rev.addEventListener('click', function(){ reviewDraft(d); });
+    var appr=document.createElement('button'); appr.className='btn sm'; appr.textContent='Approve';
+    appr.addEventListener('click', function(){ approveDraft(d); });
+    acts.appendChild(rev); acts.appendChild(appr);
+    if(dup.matches.filter(function(m){return m.kind==='donation';}).length){
+      var mrg=document.createElement('button'); mrg.className='btn sm ghost'; mrg.textContent='Merge into match';
+      mrg.addEventListener('click', function(){ mergeDraft(d); }); acts.appendChild(mrg);
+    }
+    var dis=document.createElement('button'); dis.className='btn sm danger'; dis.textContent='Dismiss';
+    dis.addEventListener('click', function(){ dismissDraft(d); }); acts.appendChild(dis);
+    el.appendChild(acts);
+    return el;
+  }
+  function unopenableCard(u){
+    var el=document.createElement('div'); el.className='qcard';
+    el.innerHTML='<div class="qh"><span class="qsrc">🔒</span><span class="qwho">Can’t open this item</span></div>'
+      + '<div class="qmeta">Sealed to a different key — did you rotate your capture keys?</div>';
+    var acts=document.createElement('div'); acts.className='qacts';
+    var dis=document.createElement('button'); dis.className='btn sm danger'; dis.textContent='Dismiss';
+    dis.addEventListener('click', function(){ dismissDraft({ id:u.id }); }); acts.appendChild(dis); el.appendChild(acts);
+    return el;
+  }
+
+  // ---- generic CSV import + column mapper ----
+  var csvState={ parsed:null, mapping:null };
+  var CSV_FIELD_LABELS={ date:'Date', charity:'Charity', ein:'EIN', type:'Type', amount:'Amount',
+    item_name:'Item name', item_qty:'Item qty', item_condition:'Item condition', item_value:'Item value', notes:'Notes' };
+  function onCsvFile(e){
+    var file=e.target.files && e.target.files[0]; if(!file){ return; }
+    var reader=new FileReader();
+    reader.onload=function(){ try{
+      var parsed=GT.csvImport.parse(String(reader.result));
+      if(!parsed.headers.length){ toast('That CSV has no header row.', true); return; }
+      csvState.parsed=parsed; csvState.mapping=GT.csvImport.guessMapping(parsed.headers);
+      openCsvMap();
+    } catch(err){ toast('Could not read that CSV.', true); } };
+    reader.readAsText(file); e.target.value='';
+  }
+  function openCsvMap(){ $('csvMapSheet').hidden=false; renderCsvMap(); }
+  function closeCsvMap(){ $('csvMapSheet').hidden=true; }
+  function renderCsvMap(){
+    var box=$('csvMapFields'); var headers=csvState.parsed.headers;
+    var opts=function(sel){ return '<option value="-1">(none)</option>'+headers.map(function(h,i){ return '<option value="'+i+'"'+(i===sel?' selected':'')+'>'+esc(h)+'</option>'; }).join(''); };
+    box.innerHTML=GT.csvImport.FIELDS.map(function(f){
+      return '<div class="field"><label>'+esc(CSV_FIELD_LABELS[f]||f)+'</label><select data-csvf="'+f+'">'+opts(csvState.mapping[f])+'</select></div>';
+    }).join('');
+    box.querySelectorAll('[data-csvf]').forEach(function(sel){
+      sel.addEventListener('change', function(){ csvState.mapping[sel.getAttribute('data-csvf')]=Number(sel.value); renderCsvPreview(); });
+    });
+    renderCsvPreview();
+  }
+  function renderCsvPreview(){
+    var drafts=GT.csvImport.buildDrafts(csvState.parsed, csvState.mapping, state.doc);
+    $('csvPreviewCnt').textContent = drafts.length ? (drafts.length+' rows') : '';
+    var box=$('csvPreview');
+    if(!drafts.length){ box.innerHTML='<p class="hint">No rows to import.</p>'; return; }
+    box.innerHTML='<div class="receipt">'+drafts.slice(0,6).map(function(d){
+      var amt = d.amountNeeded ? 'amount needed' : money(d.amount);
+      return '<div class="row"><span class="date">'+esc(String(d.date||'—')).slice(5)+'</span>'
+        + '<span class="who"><div class="nm">'+esc(d.charity_name||'Unknown')+'</div><div class="ty">'+esc(d.type)+'</div></span>'
+        + '<span class="amt">'+esc(amt)+'</span></div>';
+    }).join('')+'</div>'+(drafts.length>6?('<p class="hint">…and '+(drafts.length-6)+' more.</p>'):'');
+  }
+  function doCsvImport(){
+    var drafts=GT.csvImport.buildDrafts(csvState.parsed, csvState.mapping, state.doc);
+    if(!drafts.length){ toast('Nothing to import.', true); return; }
+    state.inbox.localDrafts=state.inbox.localDrafts.concat(drafts);
+    closeCsvMap(); updateInboxBadge();
+    if($('inboxSheet').hidden) openInbox(); else renderInbox();
+    toast('Imported '+drafts.length+' row'+(drafts.length===1?'':'s')+' to review');
+  }
+
+  // Ensure the draft's charity exists in the book (ProPublica by EIN, then name+TX, else manual).
+  async function ensureDraftCharity(d){
+    if(d.charity_id) return d.charity_id;
+    var found=null;
+    try {
+      if(d.charity_ein){ found=await P.getByEin(d.charity_ein); }
+      if(!found && d.charity_name){ var rows=await P.search(d.charity_name, 'TX'); found=(rows&&rows[0])||null; }
+    } catch(e){ found=null; }
+    var saved = found ? M.upsertCharity(state.doc, found)
+      : M.upsertCharity(state.doc, { name: d.charity_name || 'Unknown charity', ein: d.charity_ein || null, deductible: !!d.charity_ein, source: d.source||'email' });
+    return saved.id;
+  }
+
+  async function approveDraft(d){
+    try {
+      d.charity_id = await ensureDraftCharity(d);
+      var payload = RV.draftPayload(d);
+      var res = await RV.commitApproval({
+        apply: function(){ M.addDonation(state.doc, payload); },
+        persist: function(){ writeDocCache(state.doc); render(); },
+        saveOnce: saveOnce,
+        removeRow: function(){ return removeDraftRow(d); },
+      });
+      if(res.removed){ if(d.local){ updateInboxBadge(); renderInbox(); } else { await pullQueue(); } toast('Approved ✓'); }
+      else { updateInboxBadge(); renderInbox(); toast('Saved on this device — it clears from the inbox once it syncs.'); }
+    } catch(e){ toast(e.message||'Could not approve.', true); }
+  }
+
+  async function mergeDraft(d){
+    var dup=RV.findDuplicates(d, state.doc, otherDrafts(d));
+    var target=dup.matches.filter(function(m){return m.kind==='donation';})[0];
+    if(!target){ toast('No matching donation to merge into.', true); return; }
+    try {
+      var res = await RV.commitApproval({
+        apply: function(){ RV.merge(target.donation, d); M.editDonation(state.doc, target.id, {}); },
+        persist: function(){ writeDocCache(state.doc); render(); },
+        saveOnce: saveOnce,
+        removeRow: function(){ return removeDraftRow(d); },
+      });
+      if(res.removed){ if(d.local){ updateInboxBadge(); renderInbox(); } else { await pullQueue(); } toast('Merged ✓'); }
+      else { renderInbox(); toast('Saved on this device — it clears once it syncs.'); }
+    } catch(e){ toast(e.message||'Could not merge.', true); }
+  }
+
+  async function dismissDraft(d){
+    if(d && d.local){ removeDraftRow(d); updateInboxBadge(); renderInbox(); toast('Dismissed'); return; }
+    try { await Q.remove(state.cfg.id, d.id); toast('Dismissed'); }
+    catch(e){ toast('Could not reach the cloud to dismiss — try again.', true); }
+    await pullQueue();
+  }
+
+  async function approveAllReady(){
+    var readyDrafts=allDrafts().filter(function(d){ return RV.isReady(d, RV.findDuplicates(d, state.doc, otherDrafts(d))); });
+    if(!readyDrafts.length){ toast('Nothing is ready to approve.'); return; }
+    var n=0;
+    for(var i=0;i<readyDrafts.length;i++){
+      var d=readyDrafts[i];
+      try {
+        d.charity_id = await ensureDraftCharity(d);
+        var res = await RV.commitApproval({
+          apply: (function(p){ return function(){ M.addDonation(state.doc, p); }; })(RV.draftPayload(d)),
+          persist: function(){ writeDocCache(state.doc); },
+          saveOnce: saveOnce,
+          removeRow: (function(dd){ return function(){ return removeDraftRow(dd); }; })(d),
+        });
+        if(res.removed) n++;
+      } catch(e){ /* keep going */ }
+    }
+    render(); await pullQueue();
+    toast('Approved '+n+' item'+(n===1?'':'s')+' ✓');
+  }
+
+  // Review = open the entry sheet prefilled; approving happens on Save (row removed then).
+  async function reviewDraft(d){
+    try { d.charity_id = await ensureDraftCharity(d); renderCharList(); } catch(e){}
+    var key = d.type==='daf_grant' ? 'grant' : (d.daf_contribution ? 'into_daf' : (d.type==='items' ? 'items' : 'money'));
+    var ed = {
+      date: d.date || today(), amount: (d.amount!=null? d.amount : ''), charity_id: d.charity_id,
+      notes: d.evidence || '', security: (d.stock&&d.stock.symbol)||'', shares: (d.stock&&d.stock.shares)||'',
+      long_term: true, acknowledgment_received: false,
+    };
+    closeInbox();
+    openLog(key, null, { ed: ed, reviewQueueId: d.id, draft: d });
+  }
+
   // ---- wire events ----
   $('tabCreate').addEventListener('click', function(){ selectTab('create'); });
   $('tabConnect').addEventListener('click', function(){ selectTab('connect'); });
   $('btnCreate').addEventListener('click', doCreate);
   $('btnRevealDone').addEventListener('click', confirmCreate);
   $('btnConnect').addEventListener('click', doConnect);
-  $('btnSave').addEventListener('click', saveNow);
+  $('savePill').addEventListener('click', function(){
+    var st=$('savePill').getAttribute('data-state');
+    if(st==='error'){ if(theSaver) theSaver.retryNow(); }
+    else if(st==='conflict'){ reloadFromCloud(); }
+  });
   $('btnTheme').addEventListener('click', function(){ toggleTheme(); });
   $('btnSignout').addEventListener('click', signOut);
   $('yearSel').addEventListener('change', function(e){ state.year=Number(e.target.value); render(); });
@@ -3427,6 +5123,12 @@ window.GT.exp = {
   $('charQ').addEventListener('keydown', function(e){ if(e.key==='Enter') doCharSearch(); });
   $('btnCharAdd').addEventListener('click', addManual);
   $('btnLog').addEventListener('click', function(){ openLog('money'); });
+  $('btnInbox').addEventListener('click', openInbox);
+  $('btnInboxClose').addEventListener('click', closeInbox);
+  $('btnInboxReload').addEventListener('click', function(){ pullQueue(); toast('Checking for new items…'); });
+  $('btnCsvMapClose').addEventListener('click', closeCsvMap);
+  $('btnCsvImport').addEventListener('click', doCsvImport);
+  try { window.addEventListener('focus', function(){ if(!$('app').hidden) pullQueue(); }); } catch(e){}
   $('btnLogClose').addEventListener('click', closeLog);
   $('btnLogSave').addEventListener('click', saveLog);
   $('grpDate').addEventListener('click', function(){ setGroup('date'); });
