@@ -200,6 +200,36 @@
     background:var(--surface); color:var(--ember-soft); }
   .flag.ok { color:var(--ledger); }
 
+  /* ---- capture heartbeat warning chip (S1) ---- */
+  .capwarn { display:flex; gap:10px; align-items:flex-start; margin-bottom:14px; padding:11px 14px;
+    border:1px solid var(--danger); border-radius:12px; background:rgba(217,138,138,0.10); color:var(--ink);
+    font-size:0.84rem; line-height:1.4; }
+  .capwarn .ic { font-size:1rem; line-height:1.3; }
+  .capwarn .tx { flex:1; }
+  .capwarn .tx b { color:var(--danger); }
+
+  /* ---- charts view (S5) ---- */
+  .viewswitch { display:inline-flex; gap:2px; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:3px; margin:2px 0 14px; }
+  .viewswitch button { background:transparent; border:0; color:var(--muted); font-weight:700; font-size:0.85rem; padding:6px 16px; border-radius:8px; cursor:pointer; }
+  .viewswitch button[aria-selected="true"] { background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,0.15); }
+  .chartcard { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:14px; }
+  .chart-h { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+  .chart-h h3 { margin:0; font-size:0.95rem; font-weight:700; }
+  .chart { width:100%; height:auto; display:block; overflow:visible; }
+  .chart .cx { fill:var(--muted); font-size:9px; }
+  .chart .cx.bl { fill:var(--ink); font-size:10px; font-weight:600; }
+  .chart-alt { margin:8px 2px 0; color:var(--muted); font-size:0.78rem; line-height:1.4; }
+  .chart-empty { color:var(--muted); font-size:0.85rem; padding:18px 4px; text-align:center; }
+  .cmeasure { display:inline-flex; gap:2px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:2px; }
+  .cmeasure button { background:transparent; border:0; color:var(--muted); font-weight:600; font-size:0.76rem; padding:4px 10px; border-radius:6px; cursor:pointer; }
+  .cmeasure button[aria-pressed="true"] { background:var(--surface); color:var(--ink); }
+  .clegend { display:inline-flex; gap:12px; font-size:0.74rem; color:var(--muted); }
+  .clegend .lg { display:inline-flex; align-items:center; gap:5px; }
+  .clegend .lg::before { content:""; width:10px; height:10px; border-radius:2px; background:var(--muted); display:inline-block; }
+  .clegend .lg.ember::before { background:var(--ember); }
+  .clegend .lg.ledger::before { background:var(--ledger); }
+  .clegend .lg.muted::before { background:var(--muted); }
+
   /* ---- donation list controls + row actions ---- */
   .listctl { display:flex; gap:6px; }
   .listctl button { background:var(--surface-2); border:1px solid var(--line); color:var(--muted);
@@ -256,6 +286,26 @@
     padding:5px 10px; font-size:0.74rem; font-weight:600; }
   .chip[aria-pressed="true"] { border-color:var(--ember); color:var(--ink); background:var(--surface); }
   .ghint { color:var(--muted); font-size:0.74rem; margin-top:4px; }
+  /* ---- searchable item-type picker + "your usual" (S2) ---- */
+  .guidepick { display:flex; flex-direction:column; gap:4px; margin-bottom:8px; max-height:196px; overflow:auto;
+    border:1px solid var(--line); border-radius:9px; padding:5px; background:var(--bg); }
+  .gpick { display:flex; align-items:center; gap:8px; width:100%; text-align:left; background:transparent;
+    border:0; border-radius:7px; padding:7px 8px; color:var(--ink); cursor:pointer; font-size:0.8rem; }
+  .gpick:hover { background:var(--surface); }
+  .gpick .gp-n { font-weight:600; flex:1; }
+  .gpick .gp-c { color:var(--muted); font-size:0.72rem; }
+  .gpick .gp-r { font-family:var(--mono); color:var(--ledger); font-size:0.74rem; white-space:nowrap; }
+  .gpnone { color:var(--muted); font-size:0.76rem; padding:6px 8px; }
+  .usual { display:flex; align-items:center; gap:10px; margin-top:6px; }
+  .usual .ut { color:var(--ledger); font-size:0.78rem; font-weight:600; }
+  /* ---- photo -> items (S3) ---- */
+  .photorow { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:6px 0 4px; }
+  .photomark { margin-top:6px; padding:8px 10px; border-radius:9px; border:1px solid var(--line); background:var(--bg); }
+  .photomark .mk { font-size:0.76rem; color:var(--muted); }
+  .photomark .mk b { color:var(--ember-soft); }
+  .photomark .btn.xs { margin-top:6px; }
+  .photomark .nudge { margin-top:6px; font-size:0.76rem; color:var(--danger); font-weight:600; }
+  .btn.xs { width:auto; margin:0; padding:4px 9px; font-size:0.74rem; border-radius:8px; }
   .runtot { display:flex; justify-content:space-between; align-items:baseline; margin:10px 2px 4px; }
   .runtot .rl { color:var(--muted); font-size:0.82rem; font-weight:600; }
   .runtot .rv { font-family:var(--serif); font-size:1.4rem; font-weight:600; }
@@ -298,6 +348,12 @@
   .exbtn .xt { font-weight:700; font-size:0.95rem; }
   .exbtn .xd { color:var(--muted); font-size:0.78rem; margin-top:2px; font-weight:400; }
   .exbtn .arr { color:var(--ember-soft); font-weight:700; }
+  .exbtn.primary { background:var(--ember); border-color:var(--ember); color:#1a1410; }
+  .exbtn.primary .xt { color:#1a1410; }
+  .exbtn.primary .xd { color:rgba(26,20,16,0.72); }
+  .exbtn.primary .arr { color:#1a1410; }
+  .exbtn.primary:hover { filter:brightness(1.05); }
+  .exbtn[disabled] { opacity:0.6; }
 
   /* ---- needs-review inbox (slice 4) ---- */
   .inboxbadge { display:inline-block; background:var(--ember); color:#1a120b; border-radius:999px;
@@ -402,6 +458,7 @@
   </div>
 
   <main>
+    <div id="captureWarn" class="capwarn" hidden></div>
     <div class="yearbar">
       <label for="yearSel" style="color:var(--muted);font-size:0.85rem;font-weight:600;">Tax year</label>
       <select id="yearSel"></select>
@@ -430,17 +487,25 @@
     <div id="flags" class="flags"></div>
     <div id="savings"></div>
 
-    <div class="section-h">
-      <h2>Receipts</h2>
-      <div class="listctl">
-        <span id="rcptCnt" class="cnt" style="margin-right:8px;align-self:center;"></span>
-        <button id="sortDir" title="Sort by date">Newest first ↓</button>
-        <button id="btnSelect" title="Select gifts to bundle">Select</button>
-        <button id="grpDate" aria-pressed="true">By date</button>
-        <button id="grpCharity" aria-pressed="false">By charity</button>
-      </div>
+    <div class="viewswitch" role="tablist" aria-label="Dashboard view">
+      <button id="viewList" role="tab" aria-selected="true">List</button>
+      <button id="viewCharts" role="tab" aria-selected="false">Charts</button>
     </div>
-    <div id="receipt"></div>
+
+    <div id="listView">
+      <div class="section-h">
+        <h2>Receipts</h2>
+        <div class="listctl">
+          <span id="rcptCnt" class="cnt" style="margin-right:8px;align-self:center;"></span>
+          <button id="sortDir" title="Sort by date">Newest first ↓</button>
+          <button id="btnSelect" title="Select gifts to bundle">Select</button>
+          <button id="grpDate" aria-pressed="true">By date</button>
+          <button id="grpCharity" aria-pressed="false">By charity</button>
+        </div>
+      </div>
+      <div id="receipt"></div>
+    </div>
+    <div id="chartsView" hidden></div>
 
     <p class="footnote">Estimates are for planning only — not tax advice.
       Grants from your donor-advised fund were deducted when contributed and are excluded from tax totals.</p>
@@ -515,6 +580,14 @@
   </div>
   <div class="sheet-body">
     <div class="card">
+      <div class="card-h">Year-end pack <span id="exPackYear" class="cnt"></span></div>
+      <p class="hint">Everything for the year in one ZIP — the Entry Guide, donation report + 8283,
+        giving history, full CSV/JSON, TXF, a compliance checklist, and every attached receipt
+        (decrypted on this device). No email; the file downloads straight to this device.</p>
+      <button class="exbtn primary" id="exPack"><span><span class="xt">📦 Year-end pack (ZIP)</span><div class="xd" id="exPackDesc">Download · one folder with everything below + receipts</div></span><span class="arr" id="exPackArr">Download ›</span></button>
+      <div id="exPackProgress" class="ghint" style="margin-top:8px;"></div>
+    </div>
+    <div class="card">
       <div class="card-h">Export <span id="exYearLabel" class="cnt"></span></div>
       <p class="hint">TurboTax Online has no donation import — the Entry Guide makes manual entry
         copy-down-the-list trivial. Tax outputs include deductible gifts only and exclude DAF grants.</p>
@@ -544,6 +617,7 @@
     <button id="btnInboxClose" class="iconbtn">Done</button>
   </div>
   <div class="sheet-body">
+    <div id="inboxWarn" class="capwarn" hidden></div>
     <p class="hint">Captured from your email. Review each one — approve it, merge it into a match, or dismiss it.
       Nothing is added to your book until you approve it.</p>
     <div id="inboxReady"></div>
@@ -614,6 +688,246 @@
     return m.exports;
   };
 })();
+
+/* ---- src/core/charts.js ---- */
+window.__def("src/core/charts.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/core/charts.js — PURE data prep for the dashboard charts (v0.4 / S5).
+ *
+ * The DAF split (SPEC §2A) is enforced in the numbers, not just the labels:
+ *   - a GIVEN series counts direct gifts + DAF grants (countsForGiving) and NEVER an
+ *     into-DAF contribution;
+ *   - a DEDUCTIBLE series counts direct gifts + into-DAF contributions (countsForDeductible)
+ *     and NEVER a DAF grant.
+ * Every chart total equals one of the two dashboard headline numbers (model.dashboardTotals):
+ * the "given" series sum to givenToCharities, the "deductible" series to deductibleThisYear.
+ * Recurring-series gifts count individually (each donation is its own row — series only group
+ * the UI). No DOM, no SVG here — just arrays of {label, value}. buildchart SVG lives in the shell.
+ * ========================================================================== */
+
+var model = require('./model.js');
+
+function round2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
+
+var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// month index 1..12 for a donation (from its ISO date); invalid -> 12 so it still totals.
+function monthOf(d) {
+  var m = parseInt(String(d && d.date || '').slice(5, 7), 10);
+  return (m >= 1 && m <= 12) ? m : 12;
+}
+
+function yearDonations(doc, year) {
+  var y = Number(year);
+  return ((doc && doc.donations) || []).filter(function (d) { return Number(d.tax_year) === y; });
+}
+
+// measureFn: 'given' -> countsForGiving+amount ; 'deductible' -> countsForDeductible+amount
+function amountFor(d, measure) {
+  var amt = Number(d.amount) || 0;
+  if (measure === 'deductible') return model.countsForDeductible(d) ? amt : 0;
+  return model.countsForGiving(d) ? amt : 0;   // default 'given'
+}
+
+// monthByMonth(doc, year, measure) -> [{label:'Jan', month:1, value}] × 12. Sum == the headline.
+function monthByMonth(doc, year, measure) {
+  var buckets = [];
+  for (var i = 0; i < 12; i++) buckets.push({ label: MONTHS[i], month: i + 1, value: 0 });
+  yearDonations(doc, year).forEach(function (d) { buckets[monthOf(d) - 1].value += amountFor(d, measure); });
+  buckets.forEach(function (b) { b.value = round2(b.value); });
+  return buckets;
+}
+
+// topCharities(doc, year, limit) -> [{label, value}] by GIVEN (grants attributed to the
+// recipient charity; into-DAF contributions excluded — they are not gifts to a cause). Desc.
+function topCharities(doc, year, limit) {
+  var by = {};
+  yearDonations(doc, year).forEach(function (d) {
+    if (!model.countsForGiving(d)) return;                 // excludes into-DAF
+    var amt = Number(d.amount) || 0; if (!amt) return;
+    var c = model.charityById(doc, d.charity_id);
+    var name = c ? c.name : '(unknown)';
+    by[name] = (by[name] || 0) + amt;
+  });
+  var rows = Object.keys(by).map(function (k) { return { label: k, value: round2(by[k]) }; });
+  rows.sort(function (a, b) { return b.value - a.value; });
+  if (limit && rows.length > limit) {
+    var head = rows.slice(0, limit - 1);
+    var rest = rows.slice(limit - 1).reduce(function (s, r) { return s + r.value; }, 0);
+    if (rest > 0) head.push({ label: 'Other', value: round2(rest), isOther: true });
+    return head;
+  }
+  return rows;
+}
+
+// givenByType(doc, year) -> [{label, value}] of the GIVEN total split by kind:
+// Cash, Items, Stock, Mileage, DAF grants. into-DAF is excluded (not a gift to a cause).
+function givenByType(doc, year) {
+  var t = { cash: 0, items: 0, stock: 0, mileage: 0, grants: 0 };
+  yearDonations(doc, year).forEach(function (d) {
+    if (!model.countsForGiving(d)) return;
+    var amt = Number(d.amount) || 0;
+    if (d.type === 'daf_grant') t.grants += amt;
+    else if (d.type === 'money') t.cash += amt;
+    else if (d.type === 'items') t.items += amt;
+    else if (d.type === 'stock') t.stock += amt;
+    else if (d.type === 'mileage') t.mileage += amt;
+  });
+  return [
+    { label: 'Cash', value: round2(t.cash) },
+    { label: 'Items', value: round2(t.items) },
+    { label: 'Stock', value: round2(t.stock) },
+    { label: 'Mileage', value: round2(t.mileage) },
+    { label: 'DAF grants', value: round2(t.grants) },
+  ].filter(function (r) { return r.value > 0; });
+}
+
+// deductibleMakeup(doc, year) -> [{label:'Direct gifts'|'Into DAF', value}]. Sum == deductible.
+function deductibleMakeup(doc, year) {
+  var direct = 0, intoDaf = 0;
+  yearDonations(doc, year).forEach(function (d) {
+    if (!model.countsForDeductible(d)) return;
+    var amt = Number(d.amount) || 0;
+    if (d.daf_contribution === true) intoDaf += amt; else direct += amt;
+  });
+  return [
+    { label: 'Direct gifts', value: round2(direct) },
+    { label: 'Into DAF', value: round2(intoDaf) },
+  ].filter(function (r) { return r.value > 0; });
+}
+
+// The tax years that have any donations, ascending.
+function yearsWithData(doc) {
+  var set = {};
+  ((doc && doc.donations) || []).forEach(function (d) { if (d.tax_year != null) set[Number(d.tax_year)] = true; });
+  return Object.keys(set).map(Number).sort(function (a, b) { return a - b; });
+}
+
+// yearOverYear(doc) -> [{year, given, deductible}] for every year with data (ascending).
+function yearOverYear(doc) {
+  return yearsWithData(doc).map(function (y) {
+    var t = model.dashboardTotals(doc, y);
+    return { year: y, label: String(y), given: t.givenToCharities, deductible: t.deductibleThisYear };
+  });
+}
+
+// onPace(doc, year, measure) -> { year, prevYear, thisYear:[{month,label,cum}], lastYear:[...] }
+// cumulative running total by month for `year` and `year-1`, one measure at a time.
+function onPace(doc, year, measure) {
+  var y = Number(year);
+  function cum(yr) {
+    var m = monthByMonth(doc, yr, measure), run = 0;
+    return m.map(function (b) { run += b.value; return { month: b.month, label: b.label, cum: round2(run) }; });
+  }
+  return { year: y, prevYear: y - 1, measure: (measure === 'deductible' ? 'deductible' : 'given'), thisYear: cum(y), lastYear: cum(y - 1) };
+}
+
+// The exact totals the charts must equal (for the invariant + the text alternatives).
+function totals(doc, year) {
+  var t = model.dashboardTotals(doc, year);
+  return { given: t.givenToCharities, deductible: t.deductibleThisYear };
+}
+
+module.exports = {
+  MONTHS: MONTHS, monthOf: monthOf,
+  monthByMonth: monthByMonth, topCharities: topCharities, givenByType: givenByType,
+  deductibleMakeup: deductibleMakeup, yearsWithData: yearsWithData, yearOverYear: yearOverYear,
+  onPace: onPace, totals: totals,
+};
+
+});
+
+/* ---- src/core/heartbeat.js ---- */
+window.__def("src/core/heartbeat.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/core/heartbeat.js — read the capture "last checked" heartbeat (v0.4 / S1).
+ *
+ * The Gmail Apps Script POSTs a heartbeat (counts only) to the `capture-status` Edge
+ * Function at the end of EVERY run — including a run that found no new mail and the
+ * 401-stop path. The app GETs it and this pure helper turns the response into a state +
+ * human strings for the Settings card and the dashboard/Inbox warning chip. A dead trigger
+ * (no check-in) or a stopped run is otherwise SILENT — this is the whole point (HANDOFF #7).
+ *
+ * hb — the GET body { last_run_at, counts:{run_at,sent,queued,skipped,errors,stopped},
+ *                      stopped } — or null (no heartbeat row yet), or undefined (not fetched).
+ * Pure + node-testable: no DOM, no network. `now` is injectable (defaults to Date.now()).
+ * ========================================================================== */
+
+var STALE_MIN = 60;        // no check-in for longer than this -> a warning (ARC S1)
+
+function minsAgo(iso, now) {
+  if (!iso) return null;
+  var t = Date.parse(iso);
+  if (isNaN(t)) return null;
+  var d = Math.floor((now - t) / 60000);
+  return d < 0 ? 0 : d;
+}
+
+// Human "N min ago" / "N hr ago" / "N days ago" from a minute count.
+function agoLabel(mins) {
+  if (mins == null) return 'never';
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + ' min ago';
+  var hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + (hrs === 1 ? ' hr ago' : ' hr ago');
+  var days = Math.floor(hrs / 24);
+  return days + (days === 1 ? ' day ago' : ' days ago');
+}
+
+// heartbeatStatus(hb, now?) ->
+//   { state:'unknown'|'none'|'fresh'|'stale'|'stopped', warn:bool, ageMin:int|null,
+//     lastRun:iso|null, label:<settings line>, chip:<warning chip text>|null }
+// state:
+//   'unknown' — not fetched yet (hb === undefined): no card line, no chip.
+//   'none'    — fetched, but no heartbeat row exists: "Waiting for first check-in…", chip on.
+//   'stopped' — the last run stopped on an auth failure (bad CAPTURE_SECRET): chip on.
+//   'stale'   — last check-in older than STALE_MIN minutes: chip on.
+//   'fresh'   — checked in within STALE_MIN minutes and not stopped: no chip.
+function heartbeatStatus(hb, now) {
+  now = now || Date.now();
+  if (hb === undefined) {
+    return { state: 'unknown', warn: false, ageMin: null, lastRun: null, label: '', chip: null };
+  }
+  if (hb === null || !hb.last_run_at) {
+    return {
+      state: 'none', warn: true, ageMin: null, lastRun: null,
+      label: 'Waiting for first check-in (update the Apps Script).',
+      chip: 'Email capture hasn’t checked in yet — update the Apps Script (see Settings).',
+    };
+  }
+  var mins = minsAgo(hb.last_run_at, now);
+  var stopped = (hb.stopped === true || hb.stopped === 'auth' ||
+    (hb.counts && (hb.counts.stopped === true || hb.counts.stopped === 'auth')));
+  var ago = agoLabel(mins);
+  if (stopped) {
+    return {
+      state: 'stopped', warn: true, ageMin: mins, lastRun: hb.last_run_at,
+      label: 'Stopped ' + ago + ' — the capture secret was rejected.',
+      chip: 'Email capture stopped — the capture secret was rejected (last run ' + ago + '). See Settings.',
+    };
+  }
+  if (mins == null || mins > STALE_MIN) {
+    return {
+      state: 'stale', warn: true, ageMin: mins, lastRun: hb.last_run_at,
+      label: 'Last checked ' + ago + '.',
+      chip: 'Email capture hasn’t checked in since ' + ago + '. Is the Apps Script trigger running?',
+    };
+  }
+  return {
+    state: 'fresh', warn: false, ageMin: mins, lastRun: hb.last_run_at,
+    label: 'Last checked ' + ago + '.',
+    chip: null,
+  };
+}
+
+module.exports = {
+  STALE_MIN: STALE_MIN,
+  minsAgo: minsAgo, agoLabel: agoLabel, heartbeatStatus: heartbeatStatus,
+};
+
+});
 
 /* ---- src/core/inbox.js ---- */
 window.__def("src/core/inbox.js", function(module, exports, require){
@@ -1299,6 +1613,98 @@ module.exports = {
 
 });
 
+/* ---- src/core/photoitems.js ---- */
+window.__def("src/core/photoitems.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/core/photoitems.js — value a photo-derived item list (v0.4 / S3).
+ *
+ * The `import-extract` {kind:'photo_items'} call returns items with NO dollar value — only
+ * {category, subcategory, description, qty, condition_guess, confidence}. Mark's decision:
+ * value each line at the HIGH end of the guide range (× qty), and mark the line visibly. A
+ * high-end value normally implies very good / excellent condition, so when the guessed
+ * condition is only "good" we surface a nudge to double-check. Everything stays editable
+ * before saving; "use middle" and "use my usual" are one-tap alternatives.
+ *
+ * Pure + node-testable: no DOM, no network. Reads the guide + Mark's saved history via
+ * valueguide.js; produces DRAFT item lines (the transient guide/from_photo/nudge markers
+ * are for the editor only — model.normalizeItemLine drops them on save).
+ * ========================================================================== */
+
+var V = require('./valueguide.js');
+var model = require('./model.js');
+
+var NUDGE = 'High end usually means very good / excellent — check the value.';
+
+// guideKeys() -> ["Category|Subcategory", ...] for EVERY guide pair, to send to the model
+// so it can only pick a subcategory the app knows how to value.
+function guideKeys() {
+  var out = [];
+  var cats = V.categories();
+  for (var i = 0; i < cats.length; i++) {
+    var subs = V.subcategoriesFor(cats[i]);
+    for (var j = 0; j < subs.length; j++) out.push(cats[i] + '|' + subs[j]);
+  }
+  return out;
+}
+
+function round2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
+
+// The three one-tap valuations for a guide range.
+function highValue(g) { return g ? round2(g.high) : 0; }
+function middleValue(g) { return g ? round2((g.low + g.high) / 2) : 0; }
+
+// Turn ONE normalized photo item into a DRAFT item line valued at the guide high end.
+//   item = { category, subcategory, description, qty, condition_guess, confidence }
+// Returns a line compatible with the items editor (state.log.items) + transient markers.
+function photoLine(doc, item) {
+  item = item || {};
+  var category = item.category || 'Other';
+  var subcategory = (item.subcategory && item.subcategory !== '_default') ? item.subcategory : null;
+  var g = V.guideFor(category, subcategory);
+  var condition = (['good', 'very good', 'excellent'].indexOf(item.condition_guess) >= 0) ? item.condition_guess : 'good';
+  var qty = Math.max(1, Math.trunc(Number(item.qty)) || 1);
+  var unit_value = highValue(g);
+  return {
+    category: category,
+    subcategory: subcategory,
+    description: item.description || '',
+    condition: condition,
+    qty: qty,
+    unit_value: unit_value,
+    acquired_how: null, acquired_date: null, cost_basis: null,
+    // transient editor markers (not persisted):
+    from_photo: true,
+    guide_low: g ? g.low : null,
+    guide_high: g ? g.high : null,
+    guide_inf: !!(g && g.inf),
+    at_high_end: true,
+    confidence: (item.confidence != null ? Number(item.confidence) : null),
+    nudge: (condition === 'good' && unit_value > 0) ? NUDGE : null,
+  };
+}
+
+// Map a whole photo_items result's items[] to draft lines.
+function photoLines(doc, items) {
+  return (items || []).map(function (it) { return photoLine(doc, it); });
+}
+
+// Recompute a line's nudge (call after the user edits condition or value): a nudge shows only
+// while the value is at the guide high end AND the condition is merely "good".
+function nudgeFor(line) {
+  if (!line) return null;
+  var atHigh = (line.guide_high != null) && (Number(line.unit_value) >= Number(line.guide_high));
+  return (atHigh && line.condition === 'good' && Number(line.unit_value) > 0) ? NUDGE : null;
+}
+
+module.exports = {
+  NUDGE: NUDGE,
+  guideKeys: guideKeys, highValue: highValue, middleValue: middleValue,
+  photoLine: photoLine, photoLines: photoLines, nudgeFor: nudgeFor,
+};
+
+});
+
 /* ---- src/core/review.js ---- */
 window.__def("src/core/review.js", function(module, exports, require){
 'use strict';
@@ -1871,99 +2277,256 @@ module.exports = {
 window.__def("src/core/valueguide.js", function(module, exports, require){
 'use strict';
 /* =============================================================================
- * src/core/valueguide.js — a small static FMV value guide for donated items.
+ * src/core/valueguide.js — a static FMV value guide for donated goods (v0.4 / S2).
  *
- * No free FMV API exists (SPEC §1.6), so this seeds typical thrift-shop resale ranges
- * (Goodwill / Salvation Army published guidance) by category → subcategory. It is a HINT
- * shown next to the item entry — Mark always types the value he'll actually claim. Pure,
- * node-testable, no DOM. Ranges are USD {low, high} for a single item in good-or-better
- * condition; widen with your own judgment for very good / excellent.
+ * No free FMV API exists (SPEC §1.6), so this seeds typical thrift-shop resale ranges by
+ * category -> subcategory. It is a HINT next to the item entry — Mark always types the
+ * value he'll actually claim, and the IRS rule is fair market (resale) value in good used
+ * condition or better.
+ *
+ * SOURCES (public donation value guides, figures as published / compiled 2025):
+ *   - The Salvation Army "Donation Value Guide" (satruck.org valuation guide) — clothing,
+ *     furniture, household, appliances, kitchenware, linens.
+ *   - Goodwill Industries "Donation Valuation Guide" (published PDFs) — corroborating ranges
+ *     for the same categories.
+ * Ranges are USD {low, high} for ONE item in good-or-better condition; widen with your own
+ * judgment for very good / excellent (the item editor nudges you toward the high end only for
+ * better condition — S3). Where the two guides disagree, the wider band is used.
+ *
+ * Entries NOT taken directly from those guides carry `inf: true` and are the author's
+ * reasonable estimate ([inferred]) — chiefly modern electronics (secondhand-market prices),
+ * vehicles (use Kelley Blue Book / actual FMV), and appraisal-track items (fine jewelry, fine
+ * art, collectibles, antiques) whose value is item-specific. Treat any `inf` range as a rough
+ * starting point, and remember a single item/group >= $5,000 needs a qualified appraisal.
+ *
+ * Pure + node-testable: no DOM, no network. Categories mirror model.ITEM_CATEGORIES.
  * ========================================================================== */
+
+// r(low, high, inferred?) — a range; inferred entries are tagged for honesty (see header).
+function r(low, high, inf) { return inf ? { low: low, high: high, inf: true } : { low: low, high: high }; }
 
 var VALUE_GUIDE = {
   'Clothing & accessories': {
-    'Coat / jacket': { low: 8, high: 40 },
-    'Dress': { low: 5, high: 30 },
-    'Shirt / top': { low: 3, high: 16 },
-    'Pants / jeans': { low: 5, high: 22 },
-    'Sweater': { low: 5, high: 18 },
-    'Handbag': { low: 4, high: 30 },
-    '_default': { low: 3, high: 25 },
+    'Blouse / shirt / top': r(2.5, 12),
+    'T-shirt': r(1, 6, true),
+    'Dress': r(4, 19),
+    'Formal / evening dress': r(8, 30),
+    'Skirt': r(3, 10),
+    'Pants / jeans': r(3.5, 12),
+    'Shorts': r(2, 8),
+    'Sweater': r(3.75, 15),
+    'Suit / blazer': r(6, 40),
+    'Coat / winter coat': r(10, 40),
+    'Jacket': r(4, 20),
+    'Raincoat': r(5, 20, true),
+    'Sleepwear / robe': r(2, 12, true),
+    'Handbag / purse': r(2, 20),
+    'Belt': r(2, 8),
+    'Hat / cap': r(1, 8),
+    'Scarf': r(1, 8),
+    'Gloves': r(1, 8),
+    'Tie': r(1, 4),
+    '_default': r(2, 25),
   },
   'Shoes': {
-    'Everyday shoes': { low: 4, high: 25 },
-    'Boots': { low: 8, high: 40 },
-    '_default': { low: 4, high: 30 },
+    'Everyday shoes': r(2, 25),
+    'Dress shoes': r(4, 30),
+    'Boots': r(4, 40),
+    'Sneakers / athletic': r(3, 25),
+    'Sandals': r(2, 15),
+    "Kids' shoes": r(2.5, 10),
+    '_default': r(3, 30),
   },
   'Household items': {
-    'Kitchenware': { low: 2, high: 20 },
-    'Linens / bedding': { low: 3, high: 24 },
-    'Decor': { low: 3, high: 30 },
-    'Lamp': { low: 5, high: 40 },
-    '_default': { low: 2, high: 30 },
+    'Dishes / plates (each)': r(0.5, 3),
+    'Glassware / mugs (each)': r(0.5, 2),
+    'Pots & pans (each)': r(1, 10),
+    'Kitchen utensils / gadgets': r(0.5, 5),
+    'Coffee maker': r(4, 15),
+    'Blender / mixer': r(4, 15),
+    'Linens / sheets (set)': r(2, 12),
+    'Towels (each)': r(0.5, 4),
+    'Blanket / comforter': r(3, 24),
+    'Curtains (pair)': r(2, 15),
+    'Pillow': r(2, 8),
+    'Rug': r(5, 93),
+    'Lamp': r(4, 40),
+    'Clock': r(2, 15),
+    'Decor / knick-knack': r(1, 15),
+    'Picture / wall art': r(3, 30),
+    'Vase': r(2, 15, true),
+    'Mirror': r(5, 40, true),
+    'Candles / holder': r(1, 10, true),
+    '_default': r(1, 30),
   },
   'Furniture': {
-    'Chair': { low: 15, high: 90 },
-    'Table': { low: 25, high: 150 },
-    'Sofa / couch': { low: 50, high: 300 },
-    'Dresser': { low: 30, high: 150 },
-    'Bed frame': { low: 30, high: 175 },
-    '_default': { low: 20, high: 200 },
+    'Dining chair': r(2.5, 10),
+    'Accent / arm chair': r(5, 75),
+    'Recliner': r(25, 100, true),
+    'Sofa / couch': r(35, 200),
+    'Loveseat': r(30, 150),
+    'Coffee table': r(15, 65),
+    'End / side table': r(10, 75),
+    'Dining table': r(25, 150),
+    'Desk': r(25, 140),
+    'Dresser': r(20, 100),
+    'Nightstand': r(5, 50, true),
+    'Bookcase / shelf': r(10, 65),
+    'Bed frame': r(30, 170),
+    'Mattress': r(12, 75),
+    'China cabinet / hutch': r(40, 200),
+    'Wardrobe / armoire': r(18, 130),
+    'Filing cabinet': r(5, 30, true),
+    'Ottoman / footstool': r(5, 30, true),
+    '_default': r(10, 175),
   },
   'Electronics & computers': {
-    'Laptop': { low: 50, high: 400 },
-    'Tablet': { low: 30, high: 250 },
-    'Monitor': { low: 15, high: 120 },
-    'Phone': { low: 20, high: 300 },
-    '_default': { low: 10, high: 250 },
+    'Television (flat-screen)': r(30, 225),
+    'Radio / clock radio': r(7.5, 50),
+    'Stereo / speakers': r(15, 75),
+    'DVD / Blu-ray player': r(8, 25),
+    'Laptop': r(50, 400, true),
+    'Desktop computer': r(50, 300, true),
+    'Tablet': r(30, 250, true),
+    'Monitor': r(15, 120, true),
+    'Phone / smartphone': r(20, 300, true),
+    'Printer': r(5, 150),
+    'Keyboard / mouse': r(2, 20, true),
+    'Camera': r(10, 150, true),
+    'Headphones / earbuds': r(3, 60, true),
+    'Game console': r(20, 150, true),
+    '_default': r(8, 250),
   },
   'Appliances': {
-    'Microwave': { low: 10, high: 60 },
-    'Small appliance': { low: 5, high: 40 },
-    'Vacuum': { low: 15, high: 80 },
-    '_default': { low: 10, high: 120 },
+    'Microwave': r(10, 50),
+    'Toaster': r(2, 8),
+    'Toaster oven': r(5, 15),
+    'Coffee maker': r(4, 15),
+    'Blender': r(4, 12),
+    'Stand mixer': r(5, 30),
+    'Vacuum cleaner': r(15, 65),
+    'Iron': r(2, 10, true),
+    'Fan': r(4, 12),
+    'Space heater': r(7, 22),
+    'Air conditioner (window)': r(20, 90),
+    'Refrigerator': r(50, 250),
+    'Washer': r(75, 400),
+    'Dryer': r(45, 300),
+    'Dishwasher': r(25, 100, true),
+    'Range / stove': r(50, 300, true),
+    'Sewing machine': r(10, 75, true),
+    '_default': r(5, 120),
   },
   'Books, music, movies': {
-    'Book (hardcover)': { low: 1, high: 8 },
-    'Book (paperback)': { low: 1, high: 4 },
-    'DVD / Blu-ray': { low: 1, high: 6 },
-    'Vinyl record': { low: 2, high: 15 },
-    '_default': { low: 1, high: 10 },
+    'Book (hardcover)': r(1, 3),
+    'Book (paperback)': r(0.75, 1.5),
+    "Children's book": r(0.5, 2),
+    'Textbook': r(1, 10, true),
+    'CD': r(2, 5),
+    'DVD / Blu-ray': r(2, 6),
+    'Vinyl record': r(2, 15),
+    'Video game': r(2, 20, true),
+    'Magazine / sheet music': r(0.25, 2, true),
+    '_default': r(1, 8),
   },
   'Sporting goods': {
-    'Bicycle': { low: 20, high: 150 },
-    'Exercise equipment': { low: 15, high: 120 },
-    '_default': { low: 5, high: 100 },
+    'Bicycle (adult)': r(20, 100),
+    'Bicycle (child)': r(4, 20),
+    'Exercise equipment': r(20, 120),
+    'Treadmill / elliptical': r(40, 300, true),
+    'Golf clubs (set)': r(15, 100),
+    'Golf club (each)': r(2, 25),
+    'Tennis / racquet': r(2, 20),
+    'Skates / rollerblades': r(3, 15),
+    'Skis / snowboard': r(5, 50),
+    'Weights / dumbbells': r(2, 25, true),
+    'Camping tent': r(10, 60, true),
+    'Sleeping bag': r(3, 25, true),
+    'Fishing rod': r(3, 25, true),
+    'Helmet': r(2, 15, true),
+    '_default': r(3, 100),
   },
   'Toys & games': {
-    'Board game': { low: 2, high: 15 },
-    'Toy': { low: 1, high: 20 },
-    '_default': { low: 1, high: 25 },
+    'Board game / puzzle': r(0.5, 3),
+    'Action figure / doll': r(0.5, 10, true),
+    'Stuffed animal': r(0.5, 3),
+    'Building blocks / LEGO': r(2, 25, true),
+    'Ride-on / large toy': r(5, 40, true),
+    'Educational toy': r(1, 15, true),
+    'Playset': r(5, 30, true),
+    '_default': r(0.5, 25),
   },
   'Tools & garden': {
-    'Hand tool': { low: 2, high: 20 },
-    'Power tool': { low: 10, high: 90 },
-    '_default': { low: 3, high: 80 },
+    'Hand tool': r(1, 3),
+    'Power tool': r(5, 20),
+    'Drill': r(5, 15),
+    'Saw': r(4, 15),
+    'Tool set': r(5, 40, true),
+    'Lawn mower': r(15, 90, true),
+    'Garden tool (rake / shovel)': r(2, 10, true),
+    'Wheelbarrow': r(8, 40, true),
+    'Ladder': r(5, 40, true),
+    'Hose': r(2, 12, true),
+    '_default': r(2, 80),
   },
   'Baby & kids': {
-    'Stroller': { low: 15, high: 90 },
-    'Car seat': { low: 10, high: 60 },
-    'Kids clothing': { low: 1, high: 10 },
-    '_default': { low: 2, high: 60 },
+    'Crib': r(25, 100),
+    'Stroller': r(10, 90),
+    'Car seat': r(10, 30),
+    'High chair': r(10, 45),
+    'Playpen / play yard': r(10, 30),
+    'Baby carrier': r(3, 20, true),
+    'Baby clothes (each)': r(1, 6),
+    'Baby toys': r(0.5, 8, true),
+    'Changing table': r(10, 50, true),
+    'Bouncer / swing': r(5, 30, true),
+    '_default': r(2, 60),
   },
-  'Jewelry': { '_default': { low: 5, high: 120 } },
-  'Art & collectibles': { '_default': { low: 5, high: 150 } },
-  'Vehicles': { '_default': { low: 100, high: 5000 } },
-  'Other': { '_default': { low: 1, high: 50 } },
+  'Jewelry': {
+    'Costume jewelry': r(1, 10),
+    'Watch': r(2, 25, true),
+    'Necklace / bracelet': r(1, 15, true),
+    'Earrings': r(1, 10, true),
+    'Fine jewelry (gold / gems)': r(5, 120, true),
+    '_default': r(2, 25),
+  },
+  'Art & collectibles': {
+    'Framed print / poster': r(3, 30),
+    'Original art': r(10, 150, true),
+    'Figurine / collectible': r(2, 30, true),
+    'Coins / stamps': r(5, 150, true),
+    'Antique': r(10, 200, true),
+    '_default': r(5, 100),
+  },
+  'Vehicles': {
+    'Car / truck': r(500, 5000, true),
+    'Motorcycle': r(200, 3000, true),
+    'Boat': r(100, 5000, true),
+    'Trailer': r(100, 2000, true),
+    '_default': r(100, 5000, true),
+  },
+  'Other': {
+    'Miscellaneous': r(1, 50),
+    '_default': r(1, 50),
+  },
 };
 
-// guideFor(category, subcategory) -> { low, high } | null
+// guideFor(category, subcategory) -> { low, high, inf? } | null
 function guideFor(category, subcategory) {
   var cat = VALUE_GUIDE[category];
   if (!cat) return null;
   if (subcategory && cat[subcategory]) return cat[subcategory];
   return cat._default || null;
 }
+
+// True if the guide range for this category/subcategory is an [inferred] estimate.
+function isInferred(category, subcategory) {
+  var g = guideFor(category, subcategory);
+  return !!(g && g.inf);
+}
+
+// categories() -> [category names], in the guide's order (mirrors model.ITEM_CATEGORIES).
+function categories() { return Object.keys(VALUE_GUIDE); }
 
 // subcategoriesFor(category) -> [names...] (excludes the _default sentinel)
 function subcategoriesFor(category) {
@@ -1972,7 +2535,62 @@ function subcategoriesFor(category) {
   return Object.keys(cat).filter(function (k) { return k !== '_default'; });
 }
 
-module.exports = { VALUE_GUIDE: VALUE_GUIDE, guideFor: guideFor, subcategoriesFor: subcategoriesFor };
+// searchGuide(query, limit?) -> [{ category, subcategory, low, high, inf }] whose
+// "category subcategory" text contains every whitespace-separated term (case-insensitive).
+// An empty query returns the first `limit` entries. Pure — powers the searchable picker.
+function searchGuide(query, limit) {
+  limit = limit || 40;
+  var terms = String(query || '').toLowerCase().split(/\s+/).filter(Boolean);
+  var out = [];
+  var cats = Object.keys(VALUE_GUIDE);
+  for (var i = 0; i < cats.length && out.length < limit; i++) {
+    var cat = cats[i], subs = subcategoriesFor(cat);
+    for (var j = 0; j < subs.length && out.length < limit; j++) {
+      var sub = subs[j];
+      var hay = (cat + ' ' + sub).toLowerCase();
+      var ok = true;
+      for (var k = 0; k < terms.length; k++) { if (hay.indexOf(terms[k]) < 0) { ok = false; break; } }
+      if (ok) { var g = VALUE_GUIDE[cat][sub]; out.push({ category: cat, subcategory: sub, low: g.low, high: g.high, inf: !!g.inf }); }
+    }
+  }
+  return out;
+}
+
+// median(nums) -> the median of a numeric array (average of the middle two for even n), or null.
+function median(nums) {
+  var a = (nums || []).map(Number).filter(function (n) { return isFinite(n); }).sort(function (x, y) { return x - y; });
+  if (!a.length) return null;
+  var m = Math.floor(a.length / 2);
+  return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+}
+
+// usualUnitValue(doc, category, subcategory?) -> the median UNIT value Mark has previously
+// saved for this category (and subcategory when given), or null if he has none. Computed from
+// the document on the fly — NO new storage. Only positive unit values count. Pure.
+function usualUnitValue(doc, category, subcategory) {
+  var vals = [];
+  var ds = (doc && doc.donations) || [];
+  for (var i = 0; i < ds.length; i++) {
+    var d = ds[i];
+    if (d.type !== 'items' || !Array.isArray(d.items)) continue;
+    for (var j = 0; j < d.items.length; j++) {
+      var L = d.items[j];
+      if (L.category !== category) continue;
+      if (subcategory && L.subcategory !== subcategory) continue;
+      var uv = Number(L.unit_value);
+      if (isFinite(uv) && uv > 0) vals.push(uv);
+    }
+  }
+  var m = median(vals);
+  return (m == null) ? null : Math.round(m * 100) / 100;
+}
+
+module.exports = {
+  VALUE_GUIDE: VALUE_GUIDE,
+  guideFor: guideFor, isInferred: isInferred,
+  categories: categories, subcategoriesFor: subcategoriesFor,
+  searchGuide: searchGuide, median: median, usualUnitValue: usualUnitValue,
+};
 
 });
 
@@ -2247,6 +2865,153 @@ async function remove(syncId, id, deps) {
 }
 
 module.exports = { TABLE: TABLE, REST: REST, list: list, remove: remove };
+
+});
+
+/* ---- src/export/checklist.js ---- */
+window.__def("src/export/checklist.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/export/checklist.js — a year-end compliance checklist (v0.4 / S4).
+ *
+ * A plain-language "before you file" page for the year-end pack. It surfaces the gaps
+ * that would weaken a deduction, computed from the saved document (no persisted markers):
+ *   - gifts >= $250 with no written acknowledgment recorded (SPEC §1.5)
+ *   - Form 8283 owed (total non-cash > $500) and which non-cash gifts lack detail
+ *   - stock lots missing cost basis / acquisition date (needed for the holding period)
+ *   - item values pinned at the guide HIGH end while condition is only "good" — the
+ *     valuation the app nudges you to double-check (photo-derived or typed; stateless).
+ *
+ * A DAF grant is never a compliance item here (it is not deductible). Pure + node-testable:
+ * checklistData(doc, year) -> structured lists; buildChecklistHtml(doc, year) -> STRING.
+ * ========================================================================== */
+
+var model = require('../core/model.js');
+var V = require('../core/valueguide.js');
+
+var ACK = model.ACK_THRESHOLD, NONCASH = model.NONCASH_8283, APPRAISAL = model.APPRAISAL_LINE;
+
+function round2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
+function fmtMoney(n) {
+  var v = round2(n), neg = v < 0, p = Math.abs(v).toFixed(2).split('.');
+  p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return (neg ? '-$' : '$') + p.join('.');
+}
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function charityName(doc, d) { var c = model.charityById(doc, d.charity_id); return c ? c.name : '(unknown charity)'; }
+
+// checklistData(doc, year) -> { ackMissing, form8283, lotGaps, highEndItems, noncashTotal, clean }
+function checklistData(doc, year) {
+  var y = Number(year);
+  var ackMissing = [], lotGaps = [], highEndItems = [], noncashRows = [], noncash = 0, appraisal = false;
+  var ds = (doc && doc.donations) || [];
+  for (var i = 0; i < ds.length; i++) {
+    var d = ds[i];
+    if (Number(d.tax_year) !== y) continue;
+    if (!model.deductibleOf(d)) continue;                 // DAF grants + non-deductible excluded
+    var amt = Number(d.amount) || 0;
+    var name = charityName(doc, d);
+    if (amt >= ACK && !d.acknowledgment_received) ackMissing.push({ charity: name, date: d.date || null, amount: round2(amt), type: d.type });
+    if (d.type === 'items' || d.type === 'stock') {
+      noncash += amt;
+      var missing = [];
+      if (d.type === 'stock' && Array.isArray(d.lots)) {
+        for (var k = 0; k < d.lots.length; k++) {
+          var L = d.lots[k], miss = [];
+          if (L.cost_basis == null) miss.push('cost basis');
+          if (!L.acquired_date) miss.push('acquisition date');
+          if (miss.length) lotGaps.push({ charity: name, date: d.date || null, security: L.security || '(security)', missing: miss });
+        }
+        if (lotGaps.length) missing.push('lot basis/date');
+      }
+      if (d.type === 'items' && Array.isArray(d.items)) {
+        for (var j = 0; j < d.items.length; j++) {
+          var it = d.items[j], lineTot = (Number(it.qty) || 0) * (Number(it.unit_value) || 0);
+          if (lineTot >= APPRAISAL) appraisal = true;
+          if (lineTot >= 500 && (!it.acquired_date || it.cost_basis == null)) missing.push('item basis/date (>= $500 line)');
+          // high-end unreviewed: value at/above the guide high AND condition only "good"
+          var g = V.guideFor(it.category, it.subcategory);
+          if (g && String(it.condition).toLowerCase() === 'good' && Number(it.unit_value) >= Number(g.high) && Number(it.unit_value) > 0) {
+            highEndItems.push({ charity: name, date: d.date || null, description: it.description || (it.subcategory || it.category || 'item'),
+              category: it.category, subcategory: it.subcategory, unit_value: round2(it.unit_value), guide_high: g.high, guide_low: g.low, qty: Number(it.qty) || 1 });
+          }
+        }
+      }
+      noncashRows.push({ charity: name, date: d.date || null, type: d.type, amount: round2(amt), missing: missing });
+    }
+  }
+  var form8283 = { applies: noncash > NONCASH, noncashTotal: round2(noncash), appraisal: appraisal, rows: noncashRows };
+  var clean = !ackMissing.length && !lotGaps.length && !highEndItems.length && !(form8283.applies && noncashRows.some(function (r) { return r.missing.length; }));
+  return { year: y, ackMissing: ackMissing, form8283: form8283, lotGaps: lotGaps, highEndItems: highEndItems, noncashTotal: round2(noncash), clean: clean };
+}
+
+function section(title, count, bodyHtml) {
+  var badge = count ? ('<span class="n">' + count + '</span>') : '<span class="ok">✓</span>';
+  return '<div class="sec"><h2>' + badge + ' ' + escHtml(title) + '</h2>' + bodyHtml + '</div>';
+}
+
+function buildChecklistHtml(doc, year) {
+  var y = Number(year), data = checklistData(doc, y);
+
+  var ackHtml = data.ackMissing.length
+    ? '<ul>' + data.ackMissing.map(function (a) { return '<li>' + escHtml(a.charity) + ' — ' + fmtMoney(a.amount) + (a.date ? (' on ' + escHtml(a.date)) : '') + ' <span class="dim">(get a written acknowledgment before filing)</span></li>'; }).join('') + '</ul>'
+    : '<p class="none">Every deductible gift of $250 or more has an acknowledgment on record.</p>';
+
+  var f = data.form8283;
+  var f8Html;
+  if (!f.applies) {
+    f8Html = '<p class="none">Total non-cash giving is ' + fmtMoney(f.noncashTotal) + ' — at or under $500, so Form 8283 is not required.</p>';
+  } else {
+    var gaps = f.rows.filter(function (r) { return r.missing.length; });
+    f8Html = '<p>Non-cash giving is ' + fmtMoney(f.noncashTotal) + ' (over $500) — <strong>Form 8283 Section A is required</strong>. It is in <em>Donation report.html</em>.</p>'
+      + (f.appraisal ? '<p class="warn">A single item/group of $5,000 or more needs a qualified appraisal (Section B).</p>' : '')
+      + (gaps.length ? ('<p>Fill in the missing detail for:</p><ul>' + gaps.map(function (r) { return '<li>' + escHtml(r.charity) + ' — ' + escHtml(r.type) + ', ' + fmtMoney(r.amount) + ': ' + escHtml(r.missing.join('; ')) + '</li>'; }).join('') + '</ul>')
+        : '<p class="none">All non-cash gifts have the detail Form 8283 asks for.</p>');
+  }
+
+  var lotHtml = data.lotGaps.length
+    ? '<ul>' + data.lotGaps.map(function (l) { return '<li>' + escHtml(l.charity) + (l.date ? (' (' + escHtml(l.date) + ')') : '') + ' — ' + escHtml(l.security) + ': missing ' + escHtml(l.missing.join(' + ')) + '</li>'; }).join('') + '</ul>'
+    : '<p class="none">Every share lot has a cost basis and an acquisition date.</p>';
+
+  var heHtml = data.highEndItems.length
+    ? '<p>These item values sit at the <strong>high end</strong> of the guide while the condition is only <em>good</em> — high-end values usually mean very good/excellent, so double-check them:</p>'
+      + '<ul>' + data.highEndItems.map(function (h) { return '<li>' + escHtml(h.charity) + (h.date ? (' (' + escHtml(h.date) + ')') : '') + ' — ' + escHtml(h.description) + ': ' + fmtMoney(h.unit_value) + ' each (guide ' + fmtMoney(h.guide_low) + '–' + fmtMoney(h.guide_high) + ')</li>'; }).join('') + '</ul>'
+    : '<p class="none">No item values are pinned at the guide high end for "good" condition.</p>';
+
+  return '' +
+'<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n' +
+'<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+'<title>Compliance Checklist — ' + escHtml(y) + '</title>\n' +
+'<style>\n' +
+'  :root { color-scheme: light; }\n' +
+'  * { box-sizing: border-box; }\n' +
+'  body { margin:0; padding:32px; font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:#1a1a1a; background:#fff; max-width:760px; }\n' +
+'  h1 { font-family:Georgia,"Times New Roman",serif; font-size:26px; margin:0 0 4px; }\n' +
+'  .sub { color:#555; margin:0 0 20px; font-size:13px; }\n' +
+'  .sec { margin:0 0 22px; page-break-inside:avoid; }\n' +
+'  h2 { font-size:16px; margin:0 0 8px; display:flex; align-items:center; gap:8px; }\n' +
+'  .n { background:#8a1c1c; color:#fff; border-radius:999px; font-size:12px; min-width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; padding:0 6px; }\n' +
+'  .ok { background:#2a7a3a; color:#fff; border-radius:999px; width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; font-size:13px; }\n' +
+'  ul { margin:6px 0 0; padding-left:20px; } li { margin:3px 0; }\n' +
+'  .none { color:#2a7a3a; margin:4px 0 0; }\n' +
+'  .dim { color:#888; } .warn { color:#8a1c1c; }\n' +
+'  .foot { margin-top:28px; padding-top:12px; border-top:1px solid #ddd; color:#666; font-size:12px; }\n' +
+'</style>\n</head>\n<body>\n' +
+'<h1>Compliance checklist — ' + escHtml(y) + '</h1>\n' +
+'<p class="sub">' + (data.clean ? 'Everything looks in order. ' : 'A few things to tidy before you file. ') +
+'This is a planning aid, not tax advice.</p>\n' +
+section('Written acknowledgments for gifts of $250+', data.ackMissing.length, ackHtml) +
+section('Form 8283 (non-cash over $500)', (f.applies ? f.rows.filter(function (r) { return r.missing.length; }).length : 0), f8Html) +
+section('Stock lot cost basis & acquisition dates', data.lotGaps.length, lotHtml) +
+section('Item values at the high end of the guide', data.highEndItems.length, heHtml) +
+'<p class="foot">Donor-advised-fund grants are not listed here — they are not deductible (you deducted the contribution into the fund). Estimates and flags are for planning only and are not tax advice.</p>\n' +
+'</body>\n</html>\n';
+}
+
+module.exports = { checklistData: checklistData, buildChecklistHtml: buildChecklistHtml };
 
 });
 
@@ -3037,6 +3802,162 @@ module.exports = {
 
 });
 
+/* ---- src/export/pack.js ---- */
+window.__def("src/export/pack.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/export/pack.js — assemble the year-end pack (v0.4 / S4).
+ *
+ * The pack is one .zip the app downloads as a Blob (iPhone Safari friendly; no email, no
+ * server). This pure module builds the README index + the list of TEXT/HTML entries from
+ * the existing export writers; the browser adds the decrypted receipts (which need
+ * WebCrypto + the sync transport) and calls zip.buildZip. Names + the receipt-file naming
+ * (YYYY-MM-DD_Charity_amount.ext, sanitised + deduped) live here so they are node-testable.
+ *
+ * Pure + node-testable: no DOM, no network. packTextEntries(doc, year, exp) -> [{name,text}].
+ * ========================================================================== */
+
+var model = require('../core/model.js');
+var zip = require('./zip.js');
+
+function round2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
+function fmtMoney(n) {
+  var v = round2(n), neg = v < 0, p = Math.abs(v).toFixed(2).split('.');
+  p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return (neg ? '-$' : '$') + p.join('.');
+}
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function charityName(doc, d) { var c = d && model.charityById(doc, d.charity_id); return c ? c.name : 'receipt'; }
+
+// The canonical file names inside the pack (kept in one place so README + zip agree).
+var NAMES = {
+  readme: 'README.html',
+  guide: 'Entry Guide.html',
+  report: 'Donation report.html',
+  checklist: 'Compliance checklist.html',
+  history: 'Giving history.html',
+  historyCsv: function (y) { return 'data/giving-history-' + y + '.csv'; },
+  fullCsv: function (y) { return 'data/giving-' + y + '.csv'; },
+  json: function (y) { return 'data/giving-' + y + '.json'; },
+  txf: function (y) { return 'data/giving-' + y + '.txf'; },
+};
+
+// extension for a receipt from its filename/mime.
+function extOf(att) {
+  var m = /\.([a-z0-9]+)$/i.exec((att && att.filename) || '');
+  if (m) return m[1].toLowerCase();
+  var mime = (att && att.mime) || '';
+  if (/pdf/.test(mime)) return 'pdf';
+  if (/png/.test(mime)) return 'png';
+  if (/jpe?g/.test(mime)) return 'jpg';
+  if (/rfc822/.test(mime)) return 'eml';
+  return 'bin';
+}
+
+// receiptName(doc, att) -> "YYYY-MM-DD_Charity_amount.ext" (sanitised). Dedup with dedupeName.
+function receiptName(doc, att) {
+  var d = att && model.donationById(doc, att.donation_id);
+  var date = (d && d.date) || 'nodate';
+  var charity = zip.safeName(charityName(doc, d), 'receipt');
+  var amount = d ? Math.round(Number(d.amount) || 0) : '';
+  var base = date + '_' + charity + (amount !== '' ? ('_' + amount) : '');
+  return zip.safeName(base, 'receipt') + '.' + extOf(att);
+}
+
+// Ensure a name is unique within `seen` (a Set); append _2, _3, ... before the extension.
+function dedupeName(name, seen) {
+  if (!seen.has(name)) { seen.add(name); return name; }
+  var dot = name.lastIndexOf('.'), base = dot > 0 ? name.slice(0, dot) : name, ext = dot > 0 ? name.slice(dot) : '';
+  var i = 2, cand;
+  do { cand = base + '_' + i + ext; i++; } while (seen.has(cand));
+  seen.add(cand); return cand;
+}
+
+// The TEXT/HTML entries (everything except the decrypted receipts). `exp` bundles the export
+// writers: { guide, report, history, csv, json, txf, checklist }.
+function packTextEntries(doc, year, exp) {
+  var y = Number(year);
+  return [
+    { name: NAMES.readme, text: buildReadmeHtml(doc, y) },
+    { name: NAMES.guide, text: exp.guide.buildGuideHtml(doc, y) },
+    { name: NAMES.report, text: exp.report.buildReportHtml(doc, y) },
+    { name: NAMES.checklist, text: exp.checklist.buildChecklistHtml(doc, y) },
+    { name: NAMES.history, text: exp.history.buildHistoryHtml(doc, y) },
+    { name: NAMES.historyCsv(y), text: exp.history.buildHistoryCsv(doc, y) },
+    { name: NAMES.fullCsv(y), text: exp.csv.buildCsv(doc, y) },
+    { name: NAMES.json(y), text: exp.json.exportJson(doc, y) },
+    { name: NAMES.txf(y), text: exp.txf.buildTxf(doc, y) },
+  ];
+}
+
+var DAF_FOOTER =
+  'Grants from your donor-advised fund are excluded from the tax documents here — they were ' +
+  'deducted when you contributed to the fund, not when the fund granted them out.';
+
+function buildReadmeHtml(doc, year) {
+  var y = Number(year);
+  var t = model.dashboardTotals(doc, y);
+  var receipts = ((doc && doc.attachments) || []).filter(function (a) {
+    var d = model.donationById(doc, a.donation_id); return d && Number(d.tax_year) === y;
+  }).length;
+
+  var files = [
+    [NAMES.guide, 'TurboTax Online Entry Guide — walk it screen-by-screen while you enter your gifts. Print → Save as PDF for your records.'],
+    [NAMES.report, 'Donation report with Form 8283 Section A — for you and your tax preparer.'],
+    [NAMES.checklist, 'Compliance checklist — the gaps to tidy before you file.'],
+    [NAMES.history, 'Giving history — what you gave to whom. Not a tax document.'],
+    [NAMES.historyCsv(y), 'Giving history as CSV. Not a tax document.'],
+    [NAMES.fullCsv(y), 'Full data — every field, one row per line item.'],
+    [NAMES.json(y), 'JSON backup — re-importable into the Giving Tracker.'],
+    [NAMES.txf(y), 'TXF — TurboTax Desktop only (codes spec-verified, not import-tested).'],
+    ['receipts/', receipts ? (receipts + ' receipt file(s), named by date, charity and amount.') : 'No receipt files were attached for this year.'],
+  ];
+  var rows = files.map(function (f) { return '<tr><td class="fn">' + escHtml(f[0]) + '</td><td>' + escHtml(f[1]) + '</td></tr>'; }).join('');
+
+  return '' +
+'<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n' +
+'<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+'<title>Year-end giving pack — ' + escHtml(y) + '</title>\n' +
+'<style>\n' +
+'  :root { color-scheme: light; }\n  * { box-sizing:border-box; }\n' +
+'  body { margin:0; padding:32px; font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:#1a1a1a; background:#fff; max-width:780px; }\n' +
+'  h1 { font-family:Georgia,"Times New Roman",serif; font-size:26px; margin:0 0 4px; }\n' +
+'  .sub { color:#555; margin:0 0 18px; font-size:13px; }\n' +
+'  .heads { display:flex; gap:24px; margin:0 0 18px; flex-wrap:wrap; }\n' +
+'  .head { border:1px solid #e3e3e3; border-radius:10px; padding:12px 16px; }\n' +
+'  .head .k { font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:#777; }\n' +
+'  .head .v { font-family:Georgia,serif; font-size:22px; }\n' +
+'  .head .v.ded { color:#2a7a3a; }\n' +
+'  table { width:100%; border-collapse:collapse; margin:4px 0 18px; }\n' +
+'  td { padding:7px 8px; border-bottom:1px solid #eee; vertical-align:top; }\n' +
+'  td.fn { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; white-space:nowrap; color:#333; }\n' +
+'  .tip { background:#eef6ff; border:1px solid #cfe3fb; border-radius:8px; padding:12px 14px; font-size:13px; margin:0 0 16px; }\n' +
+'  .foot { margin-top:8px; color:#666; font-size:12px; border-top:1px solid #ddd; padding-top:12px; }\n' +
+'</style>\n</head>\n<body>\n' +
+'<h1>Year-end giving pack — ' + escHtml(y) + '</h1>\n' +
+'<p class="sub">Everything you need for your ' + escHtml(y) + ' charitable giving, in one folder.</p>\n' +
+'<div class="heads">' +
+'<div class="head"><div class="k">Given to charities</div><div class="v">' + fmtMoney(t.givenToCharities) + '</div></div>' +
+'<div class="head"><div class="k">Deductible this year</div><div class="v ded">' + fmtMoney(t.deductibleThisYear) + '</div></div>' +
+'</div>\n' +
+'<div class="tip"><strong>Tip:</strong> the <em>.html</em> files are made to print. Open one and choose <strong>Print → Save as PDF</strong> to keep a clean copy or email it to your preparer.</div>\n' +
+'<table><tbody>' + rows + '</tbody></table>\n' +
+'<p class="foot">' + escHtml(DAF_FOOTER) + '</p>\n' +
+'<p class="foot">Estimates and flags are for planning only and are not tax advice.</p>\n' +
+'</body>\n</html>\n';
+}
+
+module.exports = {
+  NAMES: NAMES, DAF_FOOTER: DAF_FOOTER,
+  extOf: extOf, receiptName: receiptName, dedupeName: dedupeName,
+  packTextEntries: packTextEntries, buildReadmeHtml: buildReadmeHtml,
+};
+
+});
+
 /* ---- src/export/report.js ---- */
 window.__def("src/export/report.js", function(module, exports, require){
 'use strict';
@@ -3515,6 +4436,143 @@ function buildTxf(doc, year, opts) {
 }
 
 module.exports = { buildTxf: buildTxf };
+
+});
+
+/* ---- src/export/zip.js ---- */
+window.__def("src/export/zip.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/export/zip.js — a hand-written, STORE-ONLY ZIP writer (v0.4 / S4).
+ *
+ * The year-end pack bundles the HTML/CSV/JSON/TXF exports + decrypted receipts into one
+ * .zip the browser downloads as a Blob (works on iPhone Safari; no email, no library, no
+ * npm). Store-only (method 0, no compression) keeps it tiny and dependency-free — the app
+ * already has no runtime deps (HARD RULE). We emit local file headers, a central directory
+ * and the end-of-central-directory record per PKZIP APPNOTE, with the UTF-8 name flag (bit
+ * 11) set so non-ASCII charity names survive.
+ *
+ * Pure + node-testable: no DOM, no Node Buffer — Uint8Array + TextEncoder only (present in
+ * browsers + Node 20+). buildZip(entries) -> Uint8Array. Each entry = { name, bytes|text }.
+ * ========================================================================== */
+
+// ---- CRC-32 (IEEE 802.3, reflected) ----
+var CRC_TABLE = (function () {
+  var t = new Uint32Array(256);
+  for (var n = 0; n < 256; n++) {
+    var c = n;
+    for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(bytes) {
+  var c = 0xFFFFFFFF;
+  for (var i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+function utf8(str) { return new TextEncoder().encode(String(str == null ? '' : str)); }
+
+// DOS date/time (a fixed, valid timestamp keeps the writer pure + reproducible).
+var DOS_TIME = 0;                 // 00:00:00
+var DOS_DATE = ((2026 - 1980) << 9) | (1 << 5) | 1;   // 2026-01-01
+
+function toBytes(entry) {
+  if (entry.bytes != null) return entry.bytes instanceof Uint8Array ? entry.bytes : new Uint8Array(entry.bytes);
+  return utf8(entry.text || '');
+}
+
+// buildZip(entries) -> Uint8Array. entries: [{ name, bytes | text }]. Store method only.
+function buildZip(entries) {
+  entries = entries || [];
+  var centrals = [];
+  var offset = 0;
+  var chunks = [];
+
+  for (var i = 0; i < entries.length; i++) {
+    var e = entries[i];
+    var nameBytes = utf8(e.name);
+    var data = toBytes(e);
+    var crc = crc32(data);
+    var size = data.length;
+
+    // ---- local file header (30 bytes + name) ----
+    var lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true);      // signature
+    lh.setUint16(4, 20, true);              // version needed
+    lh.setUint16(6, 0x0800, true);          // flags: bit 11 = UTF-8 name
+    lh.setUint16(8, 0, true);               // method 0 = store
+    lh.setUint16(10, DOS_TIME, true);
+    lh.setUint16(12, DOS_DATE, true);
+    lh.setUint32(14, crc, true);
+    lh.setUint32(18, size, true);           // compressed size (= size, stored)
+    lh.setUint32(22, size, true);           // uncompressed size
+    lh.setUint16(26, nameBytes.length, true);
+    lh.setUint16(28, 0, true);              // extra len
+    var lhBytes = new Uint8Array(lh.buffer);
+
+    chunks.push(lhBytes, nameBytes, data);
+    var localOffset = offset;
+    offset += lhBytes.length + nameBytes.length + data.length;
+
+    // ---- central directory record (46 bytes + name) ----
+    var cd = new DataView(new ArrayBuffer(46));
+    cd.setUint32(0, 0x02014b50, true);      // signature
+    cd.setUint16(4, 20, true);              // version made by
+    cd.setUint16(6, 20, true);              // version needed
+    cd.setUint16(8, 0x0800, true);          // flags: UTF-8
+    cd.setUint16(10, 0, true);              // method store
+    cd.setUint16(12, DOS_TIME, true);
+    cd.setUint16(14, DOS_DATE, true);
+    cd.setUint32(16, crc, true);
+    cd.setUint32(20, size, true);
+    cd.setUint32(24, size, true);
+    cd.setUint16(28, nameBytes.length, true);
+    cd.setUint16(30, 0, true);              // extra len
+    cd.setUint16(32, 0, true);              // comment len
+    cd.setUint16(34, 0, true);              // disk number
+    cd.setUint16(36, 0, true);              // internal attrs
+    cd.setUint32(38, 0, true);              // external attrs
+    cd.setUint32(42, localOffset, true);    // local header offset
+    centrals.push(new Uint8Array(cd.buffer), nameBytes);
+  }
+
+  var cdStart = offset;
+  var cdSize = 0;
+  for (var c = 0; c < centrals.length; c++) { chunks.push(centrals[c]); cdSize += centrals[c].length; }
+
+  // ---- end of central directory (22 bytes) ----
+  var eocd = new DataView(new ArrayBuffer(22));
+  eocd.setUint32(0, 0x06054b50, true);
+  eocd.setUint16(4, 0, true);               // disk
+  eocd.setUint16(6, 0, true);               // cd start disk
+  eocd.setUint16(8, entries.length, true);  // entries on disk
+  eocd.setUint16(10, entries.length, true); // total entries
+  eocd.setUint32(12, cdSize, true);
+  eocd.setUint32(16, cdStart, true);
+  eocd.setUint16(20, 0, true);              // comment len
+  chunks.push(new Uint8Array(eocd.buffer));
+
+  // concat
+  var total = 0, j; for (j = 0; j < chunks.length; j++) total += chunks[j].length;
+  var out = new Uint8Array(total), pos = 0;
+  for (j = 0; j < chunks.length; j++) { out.set(chunks[j], pos); pos += chunks[j].length; }
+  return out;
+}
+
+// Sanitise a path segment for a ZIP name (portable across OSes; collapse odd chars). ASCII-only
+// escapes in the regexes so they survive the build (no raw control bytes in source).
+function safeName(s, fallback) {
+  s = String(s == null ? '' : s);
+  s = s.replace(/[\x00-\x1f]+/g, ' ');            // control chars -> space
+  s = s.replace(/[\\/:*?"<>|]+/g, ' ');           // path / illegal chars -> space
+  s = s.replace(/\s+/g, ' ').trim();
+  s = s.replace(/^\.+/, '').slice(0, 120).trim();
+  return s || (fallback || 'file');
+}
+
+module.exports = { crc32: crc32, buildZip: buildZip, safeName: safeName };
 
 });
 
@@ -4656,6 +5714,9 @@ window.GT = {
   inbox:  window.__require('src/core/inbox.js'),
   series: window.__require('src/core/series.js'),
   valueguide: window.__require('src/core/valueguide.js'),
+  photoitems: window.__require('src/core/photoitems.js'),
+  charts:  window.__require('src/core/charts.js'),
+  heartbeat: window.__require('src/core/heartbeat.js'),
   tax:    window.__require('src/core/tax.js'),
   review: window.__require('src/core/review.js'),
   propublica: window.__require('src/data/propublica.js'),
@@ -4673,7 +5734,10 @@ window.GT.exp = {
   history: window.__require('src/export/history.js'),
   csv:     window.__require('src/export/csv.js'),
   json:    window.__require('src/export/json.js'),
-  txf:     window.__require('src/export/txf.js')
+  txf:     window.__require('src/export/txf.js'),
+  checklist: window.__require('src/export/checklist.js'),
+  zip:     window.__require('src/export/zip.js'),
+  pack:    window.__require('src/export/pack.js')
 };
 
 </script>
@@ -4683,14 +5747,18 @@ window.GT.exp = {
 (function(){
   'use strict';
   var GT = window.GT, M = GT.model, C = GT.client, X = GT.crypto, P = GT.propublica, V = GT.valueguide, T = GT.tax, S = GT.saver;
-  var Q = GT.queue, RV = GT.review, SEAL = GT.seal, F = GT.files, LF = GT.logform, IB = GT.inbox, SER = GT.series;
+  var Q = GT.queue, RV = GT.review, SEAL = GT.seal, F = GT.files, LF = GT.logform, IB = GT.inbox, SER = GT.series, HB = GT.heartbeat, PH = GT.photoitems, CH = GT.charts;
   var LS = window.localStorage;
   var DOC_KEY = 'giving_doc_v1';
   var $ = function(id){ return document.getElementById(id); };
   var SORT_KEY = 'giving_sortdir_v1';
+  var VIEW_KEY = 'giving_view_v1', CMEASURE_KEY = 'giving_chartmeasure_v1';
   function readSortDir(){ try{ var s=LS.getItem(SORT_KEY); return s==='asc'?'asc':'desc'; }catch(e){ return 'desc'; } }
+  function readView(){ try{ return LS.getItem(VIEW_KEY)==='charts'?'charts':'list'; }catch(e){ return 'list'; } }
+  function readChartMeasure(){ try{ return LS.getItem(CMEASURE_KEY)==='deductible'?'deductible':'given'; }catch(e){ return 'given'; } }
   var state = { cfg:null, doc:null, year:(new Date()).getFullYear(), charResults:[], group:'date', sortDir:readSortDir(), log:null,
-    selecting:false, selected:{}, autoAdded:[],
+    view:readView(), chartMeasure:readChartMeasure(),
+    selecting:false, selected:{}, autoAdded:[], heartbeat:undefined,
     inbox:{ drafts:[], unopenable:[], loading:false, pulledOnce:false } };
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(ch){
@@ -4786,8 +5854,10 @@ window.GT.exp = {
 
     renderBreakdown(t);
     renderFlags();
+    renderCaptureWarn();
     renderSavings(t);
     renderList();
+    applyView();
   }
 
   function taxProfileFor(year){ return (state.doc.taxProfiles && state.doc.taxProfiles[year]) || null; }
@@ -4911,6 +5981,126 @@ window.GT.exp = {
     var entries=toEntries(rows);
     entries.sort(function(a,b){ return M.compareByDate(state.sortDir)({date:entryDate(a)},{date:entryDate(b)}); });
     entries.forEach(function(e){ if(e.kind==='single') card.appendChild(donationRow(e.donation)); else appendSeriesRow(card, e.id, e.gifts); });
+  }
+
+  // ================= charts view (S5) — hand-built inline SVG, no libraries =================
+  function setView(v){ state.view = (v==='charts'?'charts':'list'); try{ LS.setItem(VIEW_KEY, state.view); }catch(e){} applyView(); }
+  function applyView(){
+    var charts=state.view==='charts';
+    $('viewList').setAttribute('aria-selected', charts?'false':'true');
+    $('viewCharts').setAttribute('aria-selected', charts?'true':'false');
+    $('listView').hidden=charts; $('chartsView').hidden=!charts;
+    if(charts) renderCharts();
+  }
+  function setChartMeasure(m){ state.chartMeasure=(m==='deductible'?'deductible':'given'); try{ LS.setItem(CMEASURE_KEY, state.chartMeasure); }catch(e){} renderCharts(); }
+  function money0(n){ n=Math.round(Number(n)||0); return '$'+String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  function trunc(s, n){ s=String(s||''); return s.length>n ? (s.slice(0,n-1)+'…') : s; }
+  function svgEsc(s){ return esc(s); }
+
+  // vertical bars (12 months). color = a CSS var string.
+  function svgVBars(data, color){
+    var W=340,H=150,padB=22,padT=8;
+    var max=Math.max.apply(null, data.map(function(d){return d.value;}).concat([1]));
+    var bw=(W)/data.length;
+    var bars=data.map(function(d,i){
+      var h=max>0?(H-padB-padT)*(d.value/max):0, x=i*bw, y=H-padB-h;
+      return '<g><rect x="'+(x+2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw-4).toFixed(1)+'" height="'+Math.max(0,h).toFixed(1)+'" rx="2" fill="'+color+'"><title>'+svgEsc(d.label+': '+money(d.value))+'</title></rect>'
+        + '<text x="'+(x+bw/2).toFixed(1)+'" y="'+(H-padB+12)+'" text-anchor="middle" class="cx">'+svgEsc(d.label.charAt(0))+'</text></g>';
+    }).join('');
+    return '<svg viewBox="0 0 '+W+' '+H+'" role="img" class="chart" preserveAspectRatio="xMidYMid meet">'+bars+'</svg>';
+  }
+  // horizontal bars with a label above each; color a CSS var.
+  function svgHBars(data, color){
+    if(!data.length) return '';
+    var W=340,rowH=34,H=data.length*rowH+4;
+    var max=Math.max.apply(null, data.map(function(d){return d.value;}).concat([1]));
+    var rows=data.map(function(d,i){
+      var y=i*rowH+4, bw=max>0?(W-96)*(d.value/max):0;
+      return '<text x="0" y="'+(y+10)+'" class="cx bl">'+svgEsc(trunc(d.label,26))+'</text>'
+        + '<rect x="0" y="'+(y+14)+'" width="'+Math.max(0,bw).toFixed(1)+'" height="12" rx="2" fill="'+(d.isOther?'var(--muted)':color)+'"><title>'+svgEsc(d.label+': '+money(d.value))+'</title></rect>'
+        + '<text x="'+(bw+6).toFixed(1)+'" y="'+(y+24)+'" class="cx">'+svgEsc(money0(d.value))+'</text>';
+    }).join('');
+    return '<svg viewBox="0 0 '+W+' '+H+'" role="img" class="chart" preserveAspectRatio="xMidYMid meet">'+rows+'</svg>';
+  }
+  // grouped vertical bars: rows [{label, given, deductible}].
+  function svgGrouped(rows){
+    var W=340,H=160,padB=22,padT=8;
+    var max=Math.max.apply(null, rows.reduce(function(a,r){ return a.concat([r.given, r.deductible]); },[]).concat([1]));
+    var gw=W/rows.length;
+    var bars=rows.map(function(r,i){
+      var x=i*gw, bw=(gw-10)/2;
+      function bar(val,dx,color,lbl){ var h=max>0?(H-padB-padT)*(val/max):0, y=H-padB-h;
+        return '<rect x="'+(x+5+dx).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(0,h).toFixed(1)+'" rx="2" fill="'+color+'"><title>'+svgEsc(lbl+' '+r.label+': '+money(val))+'</title></rect>'; }
+      return '<g>'+bar(r.given,0,'var(--ember)','Given')+bar(r.deductible,bw+2,'var(--ledger)','Deductible')
+        + '<text x="'+(x+gw/2).toFixed(1)+'" y="'+(H-padB+12)+'" text-anchor="middle" class="cx">'+svgEsc(r.label)+'</text></g>';
+    }).join('');
+    return '<svg viewBox="0 0 '+W+' '+H+'" role="img" class="chart" preserveAspectRatio="xMidYMid meet">'+bars+'</svg>';
+  }
+  // two cumulative lines (this year vs last year).
+  function svgLines(pace){
+    var W=340,H=160,padB=22,padT=8,padL=4,padR=4;
+    var all=pace.thisYear.concat(pace.lastYear).map(function(c){return c.cum;});
+    var max=Math.max.apply(null, all.concat([1]));
+    function path(series){ return series.map(function(c,i){ var x=padL+i*((W-padL-padR)/11); var y=H-padB-(max>0?(H-padB-padT)*(c.cum/max):0); return (i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1); }).join(' '); }
+    function dots(series,color){ return series.map(function(c,i){ var x=padL+i*((W-padL-padR)/11); var y=H-padB-(max>0?(H-padB-padT)*(c.cum/max):0); return '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="6" fill="transparent"><title>'+svgEsc(c.label+' '+pace.year+': '+money(c.cum))+'</title></circle>'; }).join(''); }
+    var months=pace.thisYear.map(function(c,i){ return (i%2===0)?('<text x="'+(padL+i*((W-padL-padR)/11)).toFixed(1)+'" y="'+(H-padB+12)+'" text-anchor="middle" class="cx">'+svgEsc(c.label.charAt(0))+'</text>'):''; }).join('');
+    return '<svg viewBox="0 0 '+W+' '+H+'" role="img" class="chart" preserveAspectRatio="xMidYMid meet">'
+      + '<path d="'+path(pace.lastYear)+'" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="4 3"/>'
+      + '<path d="'+path(pace.thisYear)+'" fill="none" stroke="var(--ember)" stroke-width="2.5"/>'
+      + dots(pace.thisYear,'var(--ember)') + months + '</svg>';
+  }
+  function measureToggle(){
+    var g=state.chartMeasure==='given';
+    return '<div class="cmeasure" role="group" aria-label="Measure">'
+      + '<button type="button" data-m="given" aria-pressed="'+(g?'true':'false')+'">Given</button>'
+      + '<button type="button" data-m="deductible" aria-pressed="'+(!g?'true':'false')+'">Deductible</button></div>';
+  }
+  function chartCard(title, controlsHtml, svg, altText){
+    return '<div class="chartcard"><div class="chart-h"><h3>'+esc(title)+'</h3>'+(controlsHtml||'')+'</div>'
+      + (svg || '<div class="chart-empty">Nothing to chart for this year yet.</div>')
+      + '<p class="chart-alt">'+esc(altText)+'</p></div>';
+  }
+  function topOf(data){ return data.length ? (data.slice().sort(function(a,b){return b.value-a.value;})[0]) : null; }
+  function renderCharts(){
+    var box=$('chartsView'); if(!box) return;
+    var y=state.year, doc=state.doc, measure=state.chartMeasure;
+    var tot=CH.totals(doc, y);
+    var measWord=measure==='given'?'Given':'Deductible';
+    // 1) month by month (measure toggle)
+    var m=CH.monthByMonth(doc, y, measure), mTop=topOf(m), mSum=m.reduce(function(s,b){return s+b.value;},0);
+    var c1=chartCard(measWord+' by month · '+y, measureToggle(),
+      mSum>0?svgVBars(m, measure==='given'?'var(--ember)':'var(--ledger)'):null,
+      mSum>0?('Total '+measWord.toLowerCase()+' '+money(mSum)+'. Biggest month: '+mTop.label+' '+money(mTop.value)+'.'):'No '+measWord.toLowerCase()+' gifts this year.');
+    // 2) top charities by Given
+    var tc=CH.topCharities(doc, y, 6);
+    var c2=chartCard('Top charities by Given · '+y, '',
+      tc.length?svgHBars(tc, 'var(--ember)'):null,
+      tc.length?('Given to '+tc.length+' recipient'+(tc.length>1?'s':'')+', led by '+tc[0].label+' ('+money(tc[0].value)+'). Grants attributed to the recipient; into-DAF excluded.'):'No gifts to charities this year.');
+    // 3a) given by type
+    var gt=CH.givenByType(doc, y);
+    var c3=chartCard('How you gave (Given by type) · '+y, '',
+      gt.length?svgHBars(gt, 'var(--ember)'):null,
+      gt.length?('Given '+money(tot.given)+' across '+gt.length+' type'+(gt.length>1?'s':'')+'. Into-DAF is not a gift to a cause, so it is excluded.'):'No gifts this year.');
+    // 3b) deductible makeup
+    var dm=CH.deductibleMakeup(doc, y);
+    var c4=chartCard('Deductible makeup (direct vs into-DAF) · '+y, '',
+      dm.length?svgHBars(dm, 'var(--ledger)'):null,
+      dm.length?('Deductible '+money(tot.deductible)+': '+dm.map(function(r){return r.label+' '+money(r.value);}).join(', ')+'. DAF grants are never deductible.'):'No deductible gifts this year.');
+    // 4) year over year
+    var yoy=CH.yearOverYear(doc);
+    var c5=chartCard('Year over year', '<div class="clegend"><span class="lg ember">Given</span><span class="lg ledger">Deductible</span></div>',
+      yoy.length?svgGrouped(yoy):null,
+      yoy.length?('Given vs deductible for '+yoy.length+' year'+(yoy.length>1?'s':'')+' ('+yoy[0].label+'–'+yoy[yoy.length-1].label+').'):'No history yet.');
+    // 5) on pace (measure toggle)
+    var pace=CH.onPace(doc, y, measure);
+    var thisEnd=pace.thisYear[11].cum, lastEnd=pace.lastYear[11].cum;
+    var c6=chartCard('On pace · '+measWord+' cumulative', measureToggle()+'<div class="clegend"><span class="lg ember">'+y+'</span><span class="lg muted">'+(y-1)+'</span></div>',
+      (thisEnd>0||lastEnd>0)?svgLines(pace):null,
+      (thisEnd>0||lastEnd>0)?(y+' at '+money(thisEnd)+' vs '+(y-1)+' at '+money(lastEnd)+' by year-end ('+measWord.toLowerCase()+').'):'No data to pace yet.');
+
+    box.innerHTML=c1+c2+c3+c4+c5+c6;
+    // wire the two measure toggles + hover value bubble
+    box.querySelectorAll('.cmeasure button').forEach(function(b){ b.addEventListener('click', function(){ setChartMeasure(b.getAttribute('data-m')); }); });
   }
 
   function renderList(){
@@ -5117,6 +6307,7 @@ window.GT.exp = {
     showApp(); render();
     syncPull();   // background refresh; app is already usable
     pullQueue();  // pull the review inbox (guards on capture being set up)
+    fetchHeartbeat();  // capture "last checked" (guards on capture being set up)
   }
 
   // create flow
@@ -5153,7 +6344,7 @@ window.GT.exp = {
       }
     } catch(e){ toast('Could not reach the cloud — connect again when online.'); return; }
     state.cfg = cfg; writeCfg(state.cfg); writeDocCache(state.doc);
-    $('kPass').value=''; showApp(); render();
+    $('kPass').value=''; showApp(); render(); fetchHeartbeat();
   }
 
   function signOut(){ clearCfg(); state.cfg=null; state.doc=null;
@@ -5424,6 +6615,10 @@ window.GT.exp = {
     } else if(key==='items'){
       html += '<div class="field"><label>Charity</label>'+charitySelectHtml(selId)+'</div>'
         + '<div class="field"><label>Drop-off date</label><input type="date" class="txt" id="fDate" value="'+dt+'"></div>'
+        + '<div class="photorow"><button type="button" id="btnPhotoItems" class="btn sm">📷 Add from photos</button>'
+        + '<input id="photoInput" type="file" accept="image/*" capture="environment" multiple hidden>'
+        + '<span class="ghint" id="photoHint">Snap or pick up to 5 photos — the app lists the items and values them at the high end of the guide for you to check.</span></div>'
+        + '<div id="photoProgress" class="ghint" style="margin:4px 2px;"></div>'
         + '<div id="logItems"></div>'
         + '<button type="button" id="btnAddItem" class="btn sm ghost">+ Add item line</button>'
         + '<div class="runtot"><span class="rl">Drop-off total</span><span class="rv" id="itemsTotal">$0</span></div>'
@@ -5467,6 +6662,8 @@ window.GT.exp = {
     if(key==='items'){
       if(!state.log.items.length) addItemLine();
       $('btnAddItem').addEventListener('click', function(){ addItemLine(); });
+      $('btnPhotoItems').addEventListener('click', function(){ $('photoInput').click(); });
+      $('photoInput').addEventListener('change', onPhotoItems);
       renderItems();
     }
     if(key==='stock' || key==='into_daf'){
@@ -5526,6 +6723,8 @@ window.GT.exp = {
     var el=document.createElement('div'); el.className='itemline';
     el.innerHTML =
       '<div class="top"><span class="lt" data-lt>$0</span><button type="button" class="rm" data-rm>Remove</button></div>'
+      + '<div class="field"><label>Find item type</label><input class="txt" data-search placeholder="Search e.g. coat, sofa, laptop, book…" autocomplete="off"></div>'
+      + '<div class="guidepick" data-results hidden></div>'
       + '<div class="chips" data-chips></div>'
       + '<div class="grid2"><div class="field"><label>Item type</label><select data-f="subcategory">'+subcatOptions(it.category,it.subcategory)+'</select></div>'
       + '<div class="field"><label>Description</label><input class="txt" data-f="description" value="'+esc(it.description||'')+'"></div></div>'
@@ -5533,6 +6732,8 @@ window.GT.exp = {
       + '<div class="field"><label>Qty</label><input type="number" class="txt" data-f="qty" min="0" step="1" value="'+(it.qty!=null?it.qty:1)+'"></div></div>'
       + '<div class="field"><label>Value each ($)</label><input type="number" class="txt" data-f="unit_value" min="0" step="0.01" value="'+(it.unit_value||'')+'"></div>'
       + '<div class="ghint" data-guide></div>'
+      + '<div class="photomark" data-mark hidden></div>'
+      + '<div class="usual" data-usual hidden></div>'
       + '<div class="acq" data-acq hidden><div class="grid2">'
       +   '<div class="field"><label>How acquired</label><input class="txt" data-f="acquired_how" value="'+esc(it.acquired_how||'')+'"></div>'
       +   '<div class="field"><label>Date acquired</label><input type="date" class="txt" data-f="acquired_date" value="'+(it.acquired_date||'')+'"></div></div>'
@@ -5550,6 +6751,24 @@ window.GT.exp = {
       });
       chips.appendChild(b);
     });
+    // searchable item-type picker (category + subcategory in one tap) — S2
+    var srch=el.querySelector('[data-search]'), results=el.querySelector('[data-results]');
+    function renderResults(){
+      var q=srch.value;
+      if(!q){ results.hidden=true; results.innerHTML=''; return; }
+      var rs=V.searchGuide(q, 14);
+      results.innerHTML='';
+      if(!rs.length){ results.innerHTML='<div class="gpnone">No match — pick a category below and type your own value.</div>'; results.hidden=false; return; }
+      rs.forEach(function(rr){
+        var b=document.createElement('button'); b.type='button'; b.className='gpick';
+        b.innerHTML='<span class="gp-n">'+esc(rr.subcategory)+'</span><span class="gp-c">'+esc(rr.category)+'</span>'
+          + '<span class="gp-r">$'+rr.low+'–$'+rr.high+(rr.inf?' *':'')+'</span>';
+        b.addEventListener('click', function(){ it.category=rr.category; it.subcategory=rr.subcategory; srch.value=''; results.hidden=true; renderItems(); });
+        results.appendChild(b);
+      });
+      results.hidden=false;
+    }
+    srch.addEventListener('input', renderResults);
     // bind fields
     el.querySelectorAll('[data-f]').forEach(function(inp){
       var fld=inp.getAttribute('data-f');
@@ -5565,9 +6784,40 @@ window.GT.exp = {
     var tot=(Number(it.qty)||0)*(Number(it.unit_value)||0);
     el.querySelector('[data-lt]').textContent=money(tot);
     var g=V.guideFor(it.category, it.subcategory);
-    el.querySelector('[data-guide]').textContent = g ? ('Thrift-value guide: $'+g.low+'–$'+g.high+' each') : '';
+    var gtxt = g ? ('Guide: $'+g.low+'–$'+g.high+' each'+(g.inf?' (estimate)':'')) : '';
+    // "your usual" — median of what Mark has saved for this subcategory (no new storage, S2)
+    var usualBox=el.querySelector('[data-usual]');
+    var u=V.usualUnitValue(state.doc, it.category, it.subcategory);
+    if(u!=null){
+      usualBox.hidden=false; usualBox.innerHTML='';
+      var sp=document.createElement('span'); sp.className='ut'; sp.textContent='Your usual: '+money(u)+' each';
+      var ub=document.createElement('button'); ub.type='button'; ub.className='btn xs ghost'; ub.textContent='Use my usual';
+      ub.addEventListener('click', function(){ it.unit_value=u; var uv=el.querySelector('[data-f="unit_value"]'); if(uv) uv.value=u; updateLine(i, el); });
+      usualBox.appendChild(sp); usualBox.appendChild(ub);
+    } else { usualBox.hidden=true; usualBox.innerHTML=''; }
+    // photo-derived line: "high end of guide" mark + "use middle" + the condition nudge (S3)
+    var markBox=el.querySelector('[data-mark]');
+    if(it.from_photo){
+      var g2=V.guideFor(it.category, it.subcategory);
+      var lo=g2?g2.low:it.guide_low, hi=g2?g2.high:it.guide_high;
+      var atHigh=(hi!=null)&&(Number(it.unit_value)>=Number(hi));
+      markBox.hidden=false; markBox.innerHTML='';
+      var mk=document.createElement('div'); mk.className='mk';
+      mk.innerHTML='📷 From photo · '+((hi!=null)?(atHigh?('valued at the <b>high end</b> of the guide ($'+lo+'–$'+hi+')'):('guide $'+lo+'–$'+hi+' each')):'set a value');
+      markBox.appendChild(mk);
+      if(g2){
+        var mid=PH.middleValue(g2);
+        var mb=document.createElement('button'); mb.type='button'; mb.className='btn xs ghost'; mb.textContent='Use middle ($'+mid+')';
+        mb.addEventListener('click', function(){ it.unit_value=mid; var uv=el.querySelector('[data-f="unit_value"]'); if(uv) uv.value=mid; updateLine(i, el); });
+        markBox.appendChild(mb);
+      }
+      var nudge=PH.nudgeFor({ unit_value:it.unit_value, condition:it.condition, guide_high:hi });
+      if(nudge){ var nd=document.createElement('div'); nd.className='nudge'; nd.textContent='⚠️ '+nudge; markBox.appendChild(nd); }
+    } else { markBox.hidden=true; markBox.innerHTML=''; }
     var acq=el.querySelector('[data-acq]'); acq.hidden = !(tot>=M.APPRAISAL_LINE || tot>=500);
-    if(tot>=M.APPRAISAL_LINE){ el.querySelector('[data-guide]').textContent += '  ⚑ ≥ $5,000: appraisal required'; }
+    if(tot>=M.APPRAISAL_LINE){ gtxt += '  ⚑ ≥ $5,000: appraisal required'; }
+    else if(tot>=500){ gtxt += '  ⚑ ≥ $500: record how/when acquired + cost basis'; }
+    el.querySelector('[data-guide]').textContent = gtxt;
     recomputeItemsTotal();
   }
 
@@ -5693,6 +6943,53 @@ window.GT.exp = {
       }
     } catch(err){ toast(err.message||'Could not attach that file.', true); }
   }
+  // ---- photo -> item list (S3) ----
+  function setPhotoProgress(msg){ var p=$('photoProgress'); if(p) p.textContent=msg||''; }
+  // POST photos to import-extract {kind:'photo_items'} -> { items:[...] } (reuses extractFile's transport/auth).
+  async function extractPhotoItems(images){ return await extractFile({ kind:'photo_items', images_base64:images, guide_keys:PH.guideKeys() }); }
+  // Stage one already-downscaled photo as a client-encrypted receipt (untickable — attaches by default).
+  async function stagePhotoReceipt(s){
+    var bytes=X.b64ToBytes(s.b64);
+    var filename=(String(s.name||'photo').replace(/\.[^.]+$/,'')||'photo')+'.jpg';
+    var enc=await F.encryptFile(bytes, { mime:'image/jpeg', filename:filename });
+    var att={ id:M.newId('file'), key:enc.key, mime:'image/jpeg', filename:filename, bytes:enc.bytes, created_at:new Date().toISOString(), thumbUrl:s.dataUrl };
+    if(state.log.editingId){
+      att.donation_id=state.log.editingId;
+      await F.put(state.cfg.id, { id:att.id, donation_id:att.donation_id, ciphertext:enc.ciphertext, iv:enc.iv, bytes:enc.bytes });
+      state.doc.attachments=state.doc.attachments||[]; state.doc.attachments.push(att); persistDoc();
+    } else {
+      state.log.pendingAttach=state.log.pendingAttach||[]; state.log.pendingAttach.push({ att:att, enc:enc });
+    }
+  }
+  async function onPhotoItems(e){
+    var files=[].slice.call((e.target&&e.target.files)||[]).slice(0,5); if(e.target) e.target.value='';
+    if(!files.length) return;
+    setPhotoProgress('Reading '+files.length+' photo'+(files.length>1?'s':'')+'…');
+    try {
+      var images=[], staged=[];
+      for(var i=0;i<files.length;i++){
+        if(!/^image\//.test(files[i].type)) continue;
+        var dataUrl=await downscaleImage(files[i], 1600, 0.75); var b64=dataUrl.split(',')[1];
+        images.push(b64); staged.push({ dataUrl:dataUrl, b64:b64, name:files[i].name });
+      }
+      if(!images.length){ setPhotoProgress('Those files were not photos.'); return; }
+      setPhotoProgress('Reading '+images.length+' photo'+(images.length>1?'s':'')+' — finding items…');
+      var res=await extractPhotoItems(images);
+      var items=(res&&res.items)||[];
+      if(items.length){
+        // drop the initial blank line if it's still empty
+        state.log.items=state.log.items.filter(function(it){ return it.from_photo || it.description || (Number(it.unit_value)||0)>0; });
+        PH.photoLines(state.doc, items).forEach(function(l){ state.log.items.push(l); });
+        renderItems();
+        setPhotoProgress(items.length+' item'+(items.length>1?'s':'')+' added at the high end of the guide — check each value.');
+      } else {
+        setPhotoProgress('No items recognized — add lines by hand, or try a clearer photo.');
+      }
+      for(var j=0;j<staged.length;j++){ await stagePhotoReceipt(staged[j]); }   // photos attach as receipts (default)
+      renderAttachSection();
+    } catch(err){ setPhotoProgress(''); toast(err.message||'Could not read those photos.', true); }
+  }
+
   function renderAttachSection(){
     var area=$('attachArea'); if(!area) return;
     var atts = state.log.editingId ? currentAttachments() : ((state.log.pendingAttach||[]).map(function(p){ return p.att; }));
@@ -5812,7 +7109,7 @@ window.GT.exp = {
     $('grpCharity').setAttribute('aria-pressed', g==='charity'?'true':'false'); renderList(); }
 
   // ---- settings: tax profile ----
-  function openSettings(){ if(!state.doc) return; $('taxYearLabel').textContent='· '+state.year; renderTaxForm(); renderSettingsExtra(); $('settingsSheet').hidden=false; }
+  function openSettings(){ if(!state.doc) return; $('taxYearLabel').textContent='· '+state.year; renderTaxForm(); renderSettingsExtra(); $('settingsSheet').hidden=false; fetchHeartbeat(); }
   function closeSettings(){ $('settingsSheet').hidden=true; }
   function renderSettingsExtra(){
     var box=$('settingsExtra'); if(!box) return;
@@ -5854,9 +7151,13 @@ window.GT.exp = {
     var cap=state.doc && state.doc.capture;
     if(cap && cap.publicJwk){
       var created=cap.created_at ? new Date(cap.created_at).toLocaleDateString() : '';
+      var hbSt=HB.heartbeatStatus(state.heartbeat);
+      var hbColor=hbSt.state==='fresh'?'var(--ledger)':hbSt.state==='unknown'?'var(--muted)':'var(--danger)';
+      var hbLine=hbSt.label ? ('<div class="kv"><span class="k">Last checked</span><span class="v" style="color:'+hbColor+'">'+esc(hbSt.label)+'</span></div>') : '';
       return '<div class="card"><div class="card-h">Email &amp; bank capture</div>'
         + '<p class="hint">Receipt and grant emails (and, later, YNAB + imports) can be captured automatically into a “Needs review” inbox. Every captured item is <strong>sealed to this device’s key</strong> — nothing readable is ever stored in the queue.</p>'
         + '<div class="kv"><span class="k">Status</span><span class="v" style="color:var(--ledger)">Keys set up'+(created?(' · '+esc(created)):'')+'</span></div>'
+        + hbLine
         + '<p class="hint">Store this <strong>setup bundle</strong> as the Supabase function secret <span class="mono">GIVING_SETUP_BUNDLE</span>. It holds your public key + sync id — <strong>never</strong> your private key.</p>'
         + '<div id="capBundle" class="reveal-id" hidden></div>'
         + '<div class="search-row"><button type="button" class="btn sm ghost" id="btnCapShow">Show setup bundle</button>'
@@ -5975,7 +7276,7 @@ window.GT.exp = {
     w.document.open(); w.document.write(html); w.document.close(); w.focus();
     setTimeout(function(){ try{ w.print(); }catch(e){} }, 300);
   }
-  function openExport(){ if(!state.doc) return; $('exYearLabel').textContent='· '+state.year; $('exportSheet').hidden=false; }
+  function openExport(){ if(!state.doc) return; $('exYearLabel').textContent='· '+state.year; $('exPackYear').textContent='· '+state.year; setPackProgress(''); $('exportSheet').hidden=false; }
   function closeExport(){ $('exportSheet').hidden=true; }
   function ex(){ return window.GT.exp; }
   function exGuide(){ printHtml(ex().guide.buildGuideHtml(state.doc, state.year)); toast('Opening the Entry Guide to print…'); }
@@ -5984,6 +7285,49 @@ window.GT.exp = {
   function exCsv(){ download('giving-'+state.year+'.csv', ex().csv.buildCsv(state.doc, state.year), 'text/csv'); toast('CSV downloaded'); }
   function exJson(){ download('giving-'+state.year+'.json', ex().json.exportJson(state.doc, state.year), 'application/json'); toast('JSON backup downloaded'); }
   function exTxf(){ download('giving-'+state.year+'.txf', ex().txf.buildTxf(state.doc, state.year), 'text/plain'); toast('TXF downloaded (TurboTax Desktop only)'); }
+
+  // ---- year-end pack (one ZIP) — S4 ----
+  function downloadBytes(filename, bytes, mime){
+    try {
+      var blob=new Blob([bytes], { type:mime||'application/octet-stream' });
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement('a'); a.href=url; a.download=filename;   // Blob download works on iPhone Safari
+      document.body.appendChild(a); a.click();
+      setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 400);
+    } catch(e){ toast('Download failed on this device.', true); }
+  }
+  function setPackProgress(msg){ var p=$('exPackProgress'); if(p) p.textContent=msg||''; }
+  // Decrypt this year's receipt attachments into zip entries {name, bytes} (client-side).
+  async function packReceiptEntries(year){
+    var atts=(state.doc.attachments||[]).filter(function(a){ var d=M.donationById(state.doc, a.donation_id); return d && Number(d.tax_year)===Number(year); });
+    var entries=[], seen=(typeof Set!=='undefined')?new Set():{ has:function(){return false;}, add:function(){} }, total=0;
+    for(var i=0;i<atts.length;i++){
+      var a=atts[i]; setPackProgress('Decrypting receipt '+(i+1)+'/'+atts.length+'…');
+      try {
+        var row=await F.get(state.cfg.id, IB.attFileId(a)); if(!row) continue;
+        var dec=await F.decryptFile(row.ciphertext, row.iv, a.key);
+        var name='receipts/'+ex().pack.dedupeName(ex().pack.receiptName(state.doc, a), seen);
+        entries.push({ name:name, bytes:dec.bytes }); total+=dec.bytes.length;
+      } catch(e){ /* skip an unreadable receipt */ }
+    }
+    return { entries:entries, bytes:total };
+  }
+  async function exPack(){
+    var btn=$('exPack'); if(btn) btn.disabled=true;
+    setPackProgress('Building the '+state.year+' pack…');
+    try {
+      var textEntries=ex().pack.packTextEntries(state.doc, state.year, ex());
+      var rec=await packReceiptEntries(state.year);
+      var entries=textEntries.concat(rec.entries);
+      setPackProgress('Zipping '+entries.length+' files…');
+      var bytes=ex().zip.buildZip(entries);
+      if(bytes.length > 50*1024*1024) toast('Heads up — the pack is over ~50MB.', true);
+      downloadBytes('giving-pack-'+state.year+'.zip', bytes, 'application/zip');
+      setPackProgress('Pack downloaded — '+entries.length+' files'+(rec.entries.length?(' incl. '+rec.entries.length+' receipt'+(rec.entries.length>1?'s':'')):'')+' ('+attSize(bytes.length)+').');
+      toast('Year-end pack downloaded ✓');
+    } catch(e){ setPackProgress(''); toast('Could not build the pack: '+(e.message||'error'), true); }
+    finally { if(btn) btn.disabled=false; }
+  }
   function exImport(e){
     var file=e.target.files && e.target.files[0]; if(!file) return;
     var reader=new FileReader();
@@ -5994,6 +7338,35 @@ window.GT.exp = {
       toast('Imported '+r.added.donations+' donations, '+r.added.charities+' charities ('+r.skipped+' skipped)');
     } catch(err){ toast('Could not read that file.'); } finally { e.target.value=''; } };
     reader.readAsText(file);
+  }
+
+  // ---- capture "last checked" heartbeat (S1) ----
+  // GET capture-status with the sync id (== the bundle sync_id). Stores state.heartbeat
+  // (undefined until fetched; null when no row yet) and repaints the warning chips.
+  async function fetchHeartbeat(){
+    if(!captureReady()) return;
+    try {
+      var url=C.SB_URL+'/functions/v1/capture-status';
+      var res=await fetch(url, { method:'GET', headers:{ 'x-plan-id': state.cfg.id } });
+      if(res.status===401 || res.status===503){ return; }   // not set up on the server yet — stay quiet
+      if(!res.ok){ return; }
+      state.heartbeat = await res.json();
+    } catch(e){ /* offline — leave the last known heartbeat */ }
+    renderCaptureWarn();
+    if(!$('settingsSheet').hidden) renderSettingsExtra();   // refresh the "Last checked" line
+  }
+  function captureWarnHtml(st){
+    return '<span class="ic">⚠️</span><div class="tx"><b>Email capture</b> · '+esc(st.chip)+'</div>';
+  }
+  // Paint the dashboard + Inbox warning chips from the heartbeat status. Only warns once
+  // capture is set up on this device (otherwise the whole feature is off and silence is correct).
+  function renderCaptureWarn(){
+    var st = captureReady() ? HB.heartbeatStatus(state.heartbeat) : { warn:false };
+    ['captureWarn','inboxWarn'].forEach(function(id){
+      var box=$(id); if(!box) return;
+      if(st.warn){ box.innerHTML=captureWarnHtml(st); box.hidden=false; }
+      else { box.innerHTML=''; box.hidden=true; }
+    });
   }
 
   // ---- needs-review inbox (slice 4) ----
@@ -6129,11 +7502,12 @@ window.GT.exp = {
     return '<span class="qbadge cash">Cash</span>';
   }
 
-  function openInbox(){ if(!state.doc) return; $('inboxSheet').hidden=false; renderInbox(); pullQueue(); }
+  function openInbox(){ if(!state.doc) return; $('inboxSheet').hidden=false; renderInbox(); pullQueue(); fetchHeartbeat(); }
   function closeInbox(){ $('inboxSheet').hidden=true; }
 
   function renderInbox(){
     var list=$('inboxList'), ready=$('inboxReady'); if(!list) return;
+    renderCaptureWarn();
     var drafts=allDrafts(), un=state.inbox.unopenable;
     // Imports (Fidelity + CSV) are always available — they make LOCAL drafts and don't
     // need the capture key. Only pulling email/YNAB items needs capture set up.
@@ -6257,7 +7631,36 @@ window.GT.exp = {
       throw new Error('Unsupported file: '+file.name);
     }
     var result=await extractFile(payload);
+    // a dropped IMAGE the classifier calls a photo of donatable goods -> an Items draft (S3)
+    if(kind==='image' && result && result.doc_kind==='goods_photo'){
+      setDropProgress('Reading items in '+file.name+'…');
+      var pr=await extractPhotoItems([payload.image_base64]);
+      var items=(pr&&pr.items)||[];
+      if(items.length){
+        var draft=goodsPhotoDraft(items, stagedFile, file.name);
+        IB.addPending(state.doc, draft); summary.proposed++;
+      } else { summary.skipped++; }
+      return;
+    }
     absorbResult(result, stagedFile, file.name, summary);
+  }
+
+  // Build a persisted-inbox Items draft from photo-derived item lines (drop-zone goods photo, S3).
+  function goodsPhotoDraft(items, file, sourceRef){
+    var lines=PH.photoLines(state.doc, items).map(function(l){
+      return { category:l.category, subcategory:l.subcategory, description:l.description||'Donated goods',
+        condition:l.condition, qty:l.qty, unit_value:l.unit_value, from_photo:true,
+        guide_low:l.guide_low, guide_high:l.guide_high, at_high_end:true };
+    });
+    var amount=M.round2(lines.reduce(function(s,l){ return s+(Number(l.qty)||0)*(Number(l.unit_value)||0); },0));
+    return {
+      id:'photo_'+M.newId('imp'), source:'import', local:true, kind:'charity_receipt', type:'items', daf_contribution:false,
+      charity_id:null, charity_name:null, charity_ein:null, needsCharity:true,
+      date:null, amount:amount, amount_type:'items', amountNeeded:false,
+      lots:null, items:lines, goods_or_services:null, confidence:0.6, lowConfidence:false,
+      missing_fields:['charity','date'], evidence:'From a photo of donated goods — values at the high end of the guide, check each one.',
+      meta:null, receipt_text:null, source_ref:sourceRef, file:file,
+    };
   }
 
   async function handleDroppedFiles(files){
@@ -6399,6 +7802,7 @@ window.GT.exp = {
       date: d.date || today(), amount: (d.amount!=null? d.amount : ''), charity_id: d.charity_id,
       notes: d.evidence || '', security: (d.stock&&d.stock.symbol)||'', shares: (d.stock&&d.stock.shares)||'',
       long_term: true, acknowledgment_received: false,
+      items: (d.type==='items' && Array.isArray(d.items)) ? d.items : undefined,   // goods-photo / items draft lines (S3)
     };
     closeInbox();
     openLog(key, null, { ed: ed, reviewQueueId: d.id, draft: d });
@@ -6435,6 +7839,8 @@ window.GT.exp = {
   $('btnSeriesClose').addEventListener('click', closeSeriesEditor);
   $('grpDate').addEventListener('click', function(){ setGroup('date'); });
   $('grpCharity').addEventListener('click', function(){ setGroup('charity'); });
+  $('viewList').addEventListener('click', function(){ setView('list'); });
+  $('viewCharts').addEventListener('click', function(){ setView('charts'); });
   $('btnSettings').addEventListener('click', openSettings);
   $('btnSettingsClose').addEventListener('click', closeSettings);
   $('btnExport').addEventListener('click', openExport);
@@ -6445,6 +7851,7 @@ window.GT.exp = {
   $('exCsv').addEventListener('click', exCsv);
   $('exJson').addEventListener('click', exJson);
   $('exTxf').addEventListener('click', exTxf);
+  $('exPack').addEventListener('click', exPack);
   $('exImportFile').addEventListener('change', exImport);
 
   boot();
