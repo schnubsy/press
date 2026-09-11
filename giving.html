@@ -216,6 +216,24 @@
   .row.nondeduct .amt { color:var(--muted); }
   .amtbtn { display:flex; align-items:center; gap:10px; }
 
+  /* ---- recurring series (S6) ---- */
+  .row.seriesrow { background:var(--surface-2); }
+  .row.seriesrow .date { color:var(--ember-soft); font-size:0.95rem; }
+  .row.subrow { padding-left:30px; }
+  .row.subrow .date { color:var(--muted); }
+  .selchk { flex:0 0 auto; margin-right:2px; }
+  .selchk input { width:16px; height:16px; accent-color:var(--ember); }
+  .selbar { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:10px 0 12px;
+    background:var(--surface-2); border:1px solid var(--ember); border-radius:11px; padding:10px 14px; }
+  .selbar .sl { color:var(--ink); font-size:0.85rem; font-weight:600; }
+  .duestrip, .autostrip { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    border-radius:11px; padding:10px 14px; margin-bottom:10px; }
+  .duestrip { background:rgba(217,138,78,0.14); border:1px solid var(--ember); }
+  .autostrip { background:rgba(127,174,134,0.14); border:1px solid var(--ledger); }
+  .duestrip .dl, .autostrip .al { font-size:0.84rem; font-weight:600; }
+  .duestrip .acts, .autostrip .acts { display:flex; gap:6px; }
+  .qhint.series { background:rgba(127,174,134,0.16); color:var(--ledger); }
+
   /* ---- donation entry sheet ---- */
   .dtabs { display:flex; gap:6px; background:var(--surface-2); padding:4px; border-radius:10px; margin-bottom:16px;
     overflow-x:auto; }
@@ -304,6 +322,14 @@
   .readybar { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;
     background:var(--surface-2); border:1px solid var(--line); border-radius:11px; padding:10px 14px; }
   .readybar .rl { color:var(--muted); font-size:0.82rem; font-weight:600; }
+
+  /* ---- "Import a file" drop zone (S5) ---- */
+  .dropzone.dragover { border-color:var(--ember); background:var(--surface-2); }
+  .dropinner { border:1px dashed var(--line); border-radius:11px; padding:18px 14px; text-align:center; }
+  .dropzone.dragover .dropinner { border-color:var(--ember); }
+  .dropinner .dropbig { font-family:var(--serif); font-size:1.05rem; margin-bottom:4px; }
+  .dropinner .dropsub { color:var(--muted); font-size:0.8rem; margin:6px 0; }
+  .dropinner input[type=file] { margin-top:6px; }
 
   /* ---- settings extras (slice 6) ---- */
   .mono { font-family:var(--mono); letter-spacing:0.02em; }
@@ -408,6 +434,8 @@
       <h2>Receipts</h2>
       <div class="listctl">
         <span id="rcptCnt" class="cnt" style="margin-right:8px;align-self:center;"></span>
+        <button id="sortDir" title="Sort by date">Newest first ↓</button>
+        <button id="btnSelect" title="Select gifts to bundle">Select</button>
         <button id="grpDate" aria-pressed="true">By date</button>
         <button id="grpCharity" aria-pressed="false">By charity</button>
       </div>
@@ -523,18 +551,18 @@
   </div>
 </div>
 
-<!-- ============================== CSV COLUMN MAPPER SHEET ============================== -->
-<div id="csvMapSheet" class="sheet" hidden>
+<!-- (S5) The CSV column-mapper sheet was retired — non-Fidelity CSVs are read by the AI
+     extractor via the Inbox drop zone; the Fidelity CSV keeps its exact no-AI reader. -->
+
+<!-- ============================== RECURRING SERIES EDITOR SHEET ============================== -->
+<div id="seriesSheet" class="sheet" hidden>
   <div class="sheet-top">
-    <h2>Map your CSV columns</h2>
+    <h2 id="seriesTitle">Recurring gift</h2>
     <span class="spacer"></span>
-    <button id="btnCsvMapClose" class="iconbtn">Cancel</button>
+    <button id="btnSeriesClose" class="iconbtn">Done</button>
   </div>
   <div class="sheet-body">
-    <p class="hint">We guessed the columns from your file — fix any that are wrong, then import. Rows land in the review inbox.</p>
-    <div class="card"><div class="card-h">Columns</div><div id="csvMapFields"></div></div>
-    <div class="card"><div class="card-h">Preview <span id="csvPreviewCnt" class="cnt"></span></div><div id="csvPreview"></div></div>
-    <button id="btnCsvImport" class="btn">Import to inbox</button>
+    <div class="card"><div id="seriesForm"></div></div>
   </div>
 </div>
 
@@ -587,6 +615,183 @@
   };
 })();
 
+/* ---- src/core/inbox.js ---- */
+window.__def("src/core/inbox.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/core/inbox.js — the PERSISTENT Needs-review inbox (S4 / ARC §1a gap).
+ *
+ * Before v0.3, import-made review drafts lived only in memory (state.inbox.localDrafts),
+ * so a reload before approving lost them. Now they live INSIDE the encrypted giving
+ * document at doc.inbox.pending[] — saved by the saver, surviving reload and sign-out/in,
+ * removed only on approve / merge / dismiss (after a successful cloud save). Server (email
+ * capture) drafts are unchanged — they stay in the sealed press_review_queue.
+ *
+ * A pending draft may carry a receipt FILE (draft.file = { id, key, mime, filename, bytes }):
+ * the ciphertext is uploaded once to press_giving_files (src/data/files.js) and ONLY the
+ * file id + key live in the (encrypted) doc. On approve the one stored file is attached to
+ * every donation it created (no duplicate upload); on dismiss the file row is deleted once
+ * nothing — no pending draft AND no attachment — still references it.
+ *
+ * Pure + node-testable: no DOM, no network. The file id + key never leave the encrypted doc
+ * (json export excludes doc.inbox and doc.attachments — see src/export/json.js).
+ * ========================================================================== */
+
+var model = require('./model.js');
+
+function ensureInbox(doc) {
+  if (!doc.inbox || typeof doc.inbox !== 'object') doc.inbox = { pending: [] };
+  if (!Array.isArray(doc.inbox.pending)) doc.inbox.pending = [];
+  return doc.inbox;
+}
+
+// Add an import draft to the persisted inbox (dedupe by id). Returns the pending list.
+function addPending(doc, draft) {
+  var ib = ensureInbox(doc);
+  if (draft && draft.id && !ib.pending.some(function (d) { return d.id === draft.id; })) ib.pending.push(draft);
+  return ib.pending;
+}
+
+function pendingList(doc) { return ensureInbox(doc).pending.slice(); }
+
+// The file-row id an attachment points at (legacy attachments used `id` as the file id).
+function attFileId(a) { return a ? (a.file_id || a.id) : null; }
+
+// Is a stored file (by file-row id) still referenced by ANY pending draft or ANY attachment?
+function fileReferenced(doc, fileId) {
+  if (!fileId) return false;
+  var ib = ensureInbox(doc);
+  for (var i = 0; i < ib.pending.length; i++) {
+    var f = ib.pending[i] && ib.pending[i].file;
+    if (f && f.id === fileId) return true;
+  }
+  var atts = doc.attachments || [];
+  for (var j = 0; j < atts.length; j++) if (attFileId(atts[j]) === fileId) return true;
+  return false;
+}
+
+// Remove a pending draft by id. Returns { removed, orphanFileId }: orphanFileId is the
+// draft's file id IFF, after removal, nothing references it (the caller deletes that file row).
+function removePending(doc, id) {
+  var ib = ensureInbox(doc);
+  var draft = null;
+  ib.pending = ib.pending.filter(function (d) { if (d.id === id) { draft = d; return false; } return true; });
+  var orphan = null;
+  if (draft && draft.file && draft.file.id && !fileReferenced(doc, draft.file.id)) orphan = draft.file.id;
+  return { removed: !!draft, orphanFileId: orphan };
+}
+
+// Attach a draft's receipt file (if any) to the donation(s) it created — sharing ONE stored
+// file (no duplicate upload). Mutates doc.attachments; returns the new attachment records.
+function attachFileToDonations(doc, draft, donationIds) {
+  if (!draft || !draft.file || !draft.file.id) return [];
+  doc.attachments = doc.attachments || [];
+  var added = [];
+  (donationIds || []).forEach(function (did) {
+    if (!did) return;
+    var a = {
+      att_id: model.newId('att'), file_id: draft.file.id, key: draft.file.key,
+      mime: draft.file.mime || 'application/octet-stream', filename: draft.file.filename || 'receipt',
+      bytes: draft.file.bytes || 0, donation_id: did,
+    };
+    doc.attachments.push(a); added.push(a);
+  });
+  return added;
+}
+
+module.exports = {
+  ensureInbox: ensureInbox, addPending: addPending, pendingList: pendingList,
+  attFileId: attFileId, fileReferenced: fileReferenced,
+  removePending: removePending, attachFileToDonations: attachFileToDonations,
+};
+
+});
+
+/* ---- src/core/logform.js ---- */
+window.__def("src/core/logform.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/core/logform.js — the donation entry sheet's WORKING DRAFT (pure logic).
+ *
+ * WHY (ARC §1c, 🔴): before v0.3, clicking a type tab in the Log sheet re-opened an
+ * EMPTY form and dropped the edit identity, so a Save after switching type ADDED a
+ * second donation and lost everything typed. The fix is one working draft that
+ * survives type switches, plus keeping editingId. The DOM glue lives in shell.html;
+ * the state machine — what carries across a switch, and how the recipient is
+ * remembered when the Into-DAF tab hides the charity picker — lives here so it is
+ * node-testable.
+ *
+ * The draft is a FLAT bag of every field across all six types (money / items / stock /
+ * mileage / into_daf / grant). items[] and lots[] are edited live elsewhere and are not
+ * part of this bag. Pure + node-testable: no DOM, no network.
+ * ========================================================================== */
+
+var model = require('./model.js');
+
+// The Into-DAF tab has no recipient picker (it always targets the locked sponsor), so a
+// switch INTO it must not overwrite the remembered recipient charity.
+function needsCharity(key) { return key !== 'into_daf'; }
+
+// A fresh draft from an existing donation (edit / review prefill) or {} (a new gift).
+// The charity is remembered only when it is a real recipient — never the locked DAF
+// sponsor — so switching Into-DAF → back restores the last recipient (ARC §1c).
+function initDraft(doc, ed, key) {
+  ed = ed || {};
+  var draft = {
+    charity_id: null,
+    date: ed.date || null,
+    notes: ed.notes || '',
+    amount: (ed.amount != null && ed.amount !== '') ? ed.amount : '',
+    acknowledgment_received: !!ed.acknowledgment_received,
+    security: ed.security || '',
+    shares: (ed.shares != null ? ed.shares : ''),
+    cost_basis: (ed.cost_basis != null ? ed.cost_basis : ''),
+    acquired_date: ed.acquired_date || '',
+    long_term: (ed.long_term !== false),
+    miles: (ed.miles != null ? ed.miles : ''),
+    parking_tolls: (ed.parking_tolls != null ? ed.parking_tolls : ''),
+    purpose: ed.purpose || '',
+    grant_ref: ed.grant_ref || '',
+  };
+  if (ed.charity_id) {
+    var c = model.charityById(doc, ed.charity_id);
+    if (c && !c.is_daf_sponsor) draft.charity_id = ed.charity_id;
+  }
+  return draft;
+}
+
+// Merge a values bag (read from the DOM of the CURRENT tab `key`) into the draft, so
+// nothing typed is lost when the type changes. Only keys PRESENT in the bag are applied
+// (an absent field — e.g. no charity picker on into_daf — leaves the draft untouched, which
+// is what preserves the remembered recipient). A blank date never clobbers a good one.
+function mergeForm(draft, key, values) {
+  draft = draft || {};
+  var v = values || {};
+  if ('date' in v && v.date) draft.date = v.date;
+  if ('notes' in v) draft.notes = v.notes;
+  if ('acknowledgment_received' in v) draft.acknowledgment_received = !!v.acknowledgment_received;
+  if ('charity_id' in v && needsCharity(key) && v.charity_id) draft.charity_id = v.charity_id;
+  if ('amount' in v) draft.amount = v.amount;
+  if ('security' in v) draft.security = v.security;
+  if ('shares' in v) draft.shares = v.shares;
+  if ('cost_basis' in v) draft.cost_basis = v.cost_basis;
+  if ('acquired_date' in v) draft.acquired_date = v.acquired_date;
+  if ('long_term' in v) draft.long_term = !!v.long_term;
+  if ('miles' in v) draft.miles = v.miles;
+  if ('parking_tolls' in v) draft.parking_tolls = v.parking_tolls;
+  if ('purpose' in v) draft.purpose = v.purpose;
+  if ('grant_ref' in v) draft.grant_ref = v.grant_ref;
+  return draft;
+}
+
+module.exports = {
+  needsCharity: needsCharity,
+  initDraft: initDraft,
+  mergeForm: mergeForm,
+};
+
+});
+
 /* ---- src/core/model.js ---- */
 window.__def("src/core/model.js", function(module, exports, require){
 'use strict';
@@ -608,7 +813,7 @@ window.__def("src/core/model.js", function(module, exports, require){
  * ========================================================================== */
 
 var SCHEMA = 'giving-doc';
-var DOC_VER = 1;
+var DOC_VER = 2;   // v2 (S3): stock donations carry lots[]
 
 // Fidelity Charitable — Mark's DAF sponsor. Pre-seeded and LOCKED. [verified EIN]
 var FIDELITY = {
@@ -657,6 +862,8 @@ function emptyDoc() {
     charities: [],
     donations: [],
     taxProfiles: {},                 // { <year>: { filing_status, agi, marginal_rate, itemizing, state_rate } }
+    inbox: { pending: [] },          // persisted Needs-review drafts from file imports (S4)
+    series: [],                      // recurring-gift series (S6)
     settings: { theme: 'dark', lastCharityId: null },
     meta: { created_at: nowIso() },
   };
@@ -809,8 +1016,61 @@ function normalizeItemLine(line) {
   return L;
 }
 
+// Long-term = held more than one year (acquired -> transfer). Unknown dates -> assume
+// long-term (the common, favorable case). Shared by the model + the entry UI (S3).
+function computeLongTerm(acquired, transfer) {
+  if (!acquired || !transfer) return true;
+  var a = new Date(acquired), t = new Date(transfer);
+  if (isNaN(a.getTime()) || isNaN(t.getTime())) return true;
+  return (t - a) > 366 * 86400000;
+}
+
+// Normalize one share LOT of a stock / into-DAF contribution (S3 / ARC §1d). Each lot is a
+// distinct acquisition: { id, security, shares, acquired_date, cost_basis, fmv, long_term }.
+// long_term is computed from acquired_date vs the donation's transfer date, but an explicit
+// boolean (a user override) is kept.
+function normalizeLot(lot, transferDate) {
+  var L = Object.assign({ id: null, security: null, shares: null, acquired_date: null, cost_basis: null, fmv: 0, long_term: undefined }, lot || {});
+  if (!L.id) L.id = newId('lot');
+  L.security = (L.security != null && String(L.security).trim()) ? String(L.security).trim() : null;
+  L.shares = (L.shares == null || L.shares === '') ? null : Number(L.shares);
+  L.acquired_date = L.acquired_date || null;
+  L.cost_basis = (L.cost_basis == null || L.cost_basis === '') ? null : round2(L.cost_basis);
+  L.fmv = round2(L.fmv);
+  L.long_term = (typeof L.long_term === 'boolean') ? L.long_term : computeLongTerm(L.acquired_date, transferDate);
+  return L;
+}
+
+// Build a stock donation's lots[] from either its lots (preferred) or the legacy single-lot
+// fields (security/shares/cost_basis/acquired_date/long_term + amount as the FMV). Always at
+// least one lot. transferDate = d.date.
+function stockLots(d) {
+  var transfer = d.date;
+  if (Array.isArray(d.lots) && d.lots.length) {
+    return d.lots.map(function (L) { return normalizeLot(L, transfer); });
+  }
+  return [normalizeLot({
+    security: d.security, shares: d.shares, acquired_date: d.acquired_date,
+    cost_basis: d.cost_basis, fmv: d.amount,
+    long_term: (typeof d.long_term === 'boolean' ? d.long_term : undefined),
+  }, transfer)];
+}
+
+// The DEDUCTIBLE value of a stock/into-DAF donation: per lot, FMV if long-term else cost basis
+// (short-term appreciated property is deducted at basis). Sum across lots. Used by tax.js.
+function stockDeductibleValue(d) {
+  var lots = (Array.isArray(d.lots) && d.lots.length) ? d.lots : stockLots(d);
+  var v = 0;
+  for (var i = 0; i < lots.length; i++) {
+    var L = lots[i];
+    v += (L.long_term !== false) ? (Number(L.fmv) || 0) : (Number(L.cost_basis) || 0);
+  }
+  return round2(v);
+}
+
 // Apply every donation invariant in one place (shared by add + edit). Mutates and returns d.
 //   - items: amount = Σ line totals (condition-validated);
+//   - stock: lots[] normalized (legacy single-lot migrated in), amount = Σ lot FMV;
 //   - daf_grant: deductible=false, daf_contribution=false (never overridable);
 //   - daf_contribution=true: must target the locked DAF sponsor;
 //   - deductible derived; tax_year from date.
@@ -821,6 +1081,17 @@ function normalizeDonation(doc, d) {
     var lines = Array.isArray(d.items) ? d.items : [];
     d.items = lines.map(normalizeItemLine);
     d.amount = round2(d.items.reduce(function (s, L) { return s + (Number(L.total) || 0); }, 0));
+  } else if (d.type === 'stock') {
+    d.items = null;
+    var lots = stockLots(d);
+    d.lots = lots;
+    d.amount = round2(lots.reduce(function (s, L) { return s + (Number(L.fmv) || 0); }, 0));
+    // keep the legacy single-lot fields DERIVABLE from the first lot (old readers) + an
+    // aggregate long_term (short-term if ANY lot is short-term).
+    var first = lots[0] || {};
+    d.security = first.security; d.shares = first.shares;
+    d.cost_basis = first.cost_basis; d.acquired_date = first.acquired_date;
+    d.long_term = lots.every(function (L) { return L.long_term !== false; });
   } else {
     d.items = null;
     d.amount = round2(d.amount);
@@ -861,6 +1132,32 @@ function donationById(doc, id) {
   return null;
 }
 
+// Migrate a LOADED document to the current shape, idempotently (HARD RULE: doc-shape changes
+// are additive, versioned, migrated on load; old records keep reading). v0.3 / S3 adds stock
+// lots[]: a stock donation without lots gets ONE lot built from its legacy single-lot fields;
+// a donation already carrying lots is left untouched (re-running is a no-op). Never throws.
+function migrateDoc(doc) {
+  if (!doc || typeof doc !== 'object') return doc;
+  // v0.3 additive shape: the persisted Needs-review inbox (S4) + series (S6).
+  if (!doc.inbox || typeof doc.inbox !== 'object') doc.inbox = { pending: [] };
+  if (!Array.isArray(doc.inbox.pending)) doc.inbox.pending = [];
+  if (!Array.isArray(doc.series)) doc.series = [];
+  var ds = Array.isArray(doc.donations) ? doc.donations : [];
+  for (var i = 0; i < ds.length; i++) {
+    var d = ds[i];
+    if (d && d.type === 'stock' && !(Array.isArray(d.lots) && d.lots.length)) {
+      d.lots = stockLots(d);
+      d.amount = round2(d.lots.reduce(function (s, L) { return s + (Number(L.fmv) || 0); }, 0));
+      var first = d.lots[0] || {};
+      d.security = first.security; d.shares = first.shares;
+      d.cost_basis = first.cost_basis; d.acquired_date = first.acquired_date;
+      d.long_term = d.lots.every(function (L) { return L.long_term !== false; });
+    }
+  }
+  if (Number(doc.v) < DOC_VER) doc.v = DOC_VER;
+  return doc;
+}
+
 // Edit in place: apply the patch, then re-run every invariant (amount, DAF split, deductible).
 function editDonation(doc, id, patch) {
   var d = donationById(doc, id);
@@ -885,6 +1182,20 @@ function deleteDonation(doc, id) {
   var before = doc.donations.length;
   doc.donations = doc.donations.filter(function (x) { return x.id !== id; });
   return doc.donations.length < before;
+}
+
+// Compare two donations by date for the receipt list (S2). dir 'asc' = oldest first,
+// 'desc' (default) = newest first. A missing/empty date always sorts LAST, both directions.
+function compareByDate(dir) {
+  var sign = (dir === 'asc') ? 1 : -1;
+  return function (a, b) {
+    var da = (a && a.date) ? String(a.date) : '';
+    var db = (b && b.date) ? String(b.date) : '';
+    if (!da && !db) return 0;
+    if (!da) return 1;              // a has no date -> after b (regardless of direction)
+    if (!db) return -1;             // b has no date -> after a
+    return da < db ? -sign : da > db ? sign : 0;
+  };
 }
 
 // Counts toward "Deductible this year": direct gifts + DAF contributions; excludes DAF grants.
@@ -938,7 +1249,7 @@ function hasReceiptSource(d) {
 }
 
 function complianceFlags(doc, year) {
-  var y = Number(year), ackNeeded = 0, noncash = 0, appraisal = false, ackMissing = 0;
+  var y = Number(year), ackNeeded = 0, noncash = 0, appraisal = false, ackMissing = 0, stockLotsMissing = 0;
   for (var i = 0; i < doc.donations.length; i++) {
     var d = doc.donations[i];
     if (Number(d.tax_year) !== y) continue;
@@ -953,8 +1264,15 @@ function complianceFlags(doc, year) {
         if ((Number(d.items[j].total) || 0) >= APPRAISAL_LINE) appraisal = true;
       }
     }
+    // stock lots owing basis / acquired date (needed for the holding period + Form 8283) — S3
+    if (d.type === 'stock' && Array.isArray(d.lots)) {
+      for (var k = 0; k < d.lots.length; k++) {
+        var L = d.lots[k];
+        if (!L.acquired_date || L.cost_basis == null) stockLotsMissing++;
+      }
+    }
   }
-  return { ackNeeded: ackNeeded, form8283: noncash > NONCASH_8283, appraisal: appraisal, ackMissing: ackMissing, noncashTotal: round2(noncash) };
+  return { ackNeeded: ackNeeded, form8283: noncash > NONCASH_8283, appraisal: appraisal, ackMissing: ackMissing, stockLotsMissing: stockLotsMissing, noncashTotal: round2(noncash) };
 }
 
 module.exports = {
@@ -970,9 +1288,11 @@ module.exports = {
   upsertCharity: upsertCharity, updateCharity: updateCharity,
   archiveCharity: archiveCharity, activeCharities: activeCharities,
   normalizeItemLine: normalizeItemLine, normalizeDonation: normalizeDonation,
+  computeLongTerm: computeLongTerm, normalizeLot: normalizeLot, stockLots: stockLots,
+  stockDeductibleValue: stockDeductibleValue, migrateDoc: migrateDoc,
   donationById: donationById, editDonation: editDonation,
   duplicateDonation: duplicateDonation, deleteDonation: deleteDonation,
-  deductibleOf: deductibleOf,
+  deductibleOf: deductibleOf, compareByDate: compareByDate,
   countsForDeductible: countsForDeductible, countsForGiving: countsForGiving,
   dashboardTotals: dashboardTotals, complianceFlags: complianceFlags,
 };
@@ -1136,13 +1456,19 @@ function draftPayload(draft) {
     p.items = (Array.isArray(draft.items) && draft.items.length)
       ? draft.items
       : [{ category: 'Other', description: 'Donated goods', condition: 'good', qty: 1, unit_value: Number(draft.amount) || 0 }];
+  } else if (draft.type === 'stock') {
+    // a stock/into-DAF draft may carry share lots[] (S5 file drop / S3) — approve preserves them
+    if (Array.isArray(draft.lots) && draft.lots.length) p.lots = draft.lots;
+    else p.amount = Number(draft.amount) || 0;
   } else {
     p.amount = Number(draft.amount) || 0;
   }
   if (draft.daf_contribution) {
     p.daf_contribution = true;
-    if (draft.stock) { p.security = draft.stock.symbol || null; p.shares = (draft.stock.shares != null ? Number(draft.stock.shares) : null); }
-    p.long_term = true;   // default; Review lets Mark set basis/acquired (blank allowed)
+    if (!(Array.isArray(p.lots) && p.lots.length)) {
+      if (draft.stock) { p.security = draft.stock.symbol || null; p.shares = (draft.stock.shares != null ? Number(draft.stock.shares) : null); }
+      p.long_term = true;   // default; Review lets Mark set basis/acquired (blank allowed)
+    }
   }
   if (draft.goods_or_services && draft.goods_or_services.received && draft.goods_or_services.value != null) {
     p.goods_received = true; p.goods_value = Number(draft.goods_or_services.value) || 0;
@@ -1177,6 +1503,233 @@ module.exports = {
   findDuplicates: findDuplicates, merge: merge, sourceRecord: sourceRecord,
   draftPayload: draftPayload, isReady: isReady, withinDays: withinDays,
   commitApproval: commitApproval,
+};
+
+});
+
+/* ---- src/core/series.js ---- */
+window.__def("src/core/series.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/core/series.js — recurring-gift series (S6 / ARC §1e).
+ *
+ * GROUP, don't merge: a recurring series (e.g. "BibleProject · monthly") is ONE row, but
+ * every gift stays its own donation with its own date/amount/receipt — so totals, the DAF
+ * split, the per-gift $250 acknowledgment flag and every export value are unchanged. A
+ * donation joins a series via donation.series_id. A series is doc.series[]:
+ *   { id, charity_id, type:'money'|'daf_grant', amount, cadence, start, end|null, active,
+ *     source:'manual'|'bundled', skipped:[ISO,...] }
+ *
+ * A series NEVER mixes DAF grants with deductible gifts — its type is fixed and bundling
+ * refuses a mixed selection. Nothing is ever auto-created for a HAND-made series: the app
+ * only FLAGS a due period ("Gift due — confirm?"). Auto-add from capture is a separate,
+ * undo-able path in the app (shell.html) that runs through the normal approve.
+ *
+ * Pure + node-testable: no DOM, no network.
+ * ========================================================================== */
+
+var model = require('./model.js');
+
+var CADENCES = ['weekly', 'monthly', 'quarterly', 'yearly'];
+var GRACE = { weekly: 2, monthly: 7, quarterly: 14, yearly: 30 };   // days past expected before "due"
+var DUP_DOLLARS = 1;
+
+function round2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
+function parseISO(s) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || '')); return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) : null; }
+function toISO(ms) { var d = new Date(ms); return d.getUTCFullYear() + '-' + ('0' + (d.getUTCMonth() + 1)).slice(-2) + '-' + ('0' + d.getUTCDate()).slice(-2); }
+function daysMs(n) { return n * 86400000; }
+
+// Add n cadence steps to an ISO date, CLAMPING month-ends (Jan 31 + 1 month -> Feb 28/29).
+function addCadence(iso, cadence, n) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso)); if (!m) return iso;
+  var y = +m[1], mo = +m[2] - 1, day = +m[3];
+  if (cadence === 'weekly') return toISO(Date.UTC(y, mo, day) + daysMs(7 * n));
+  var addMonths = cadence === 'quarterly' ? 3 * n : cadence === 'yearly' ? 12 * n : n;   // default monthly
+  var total = mo + addMonths, ny = y + Math.floor(total / 12), nm = ((total % 12) + 12) % 12;
+  var lastDay = new Date(Date.UTC(ny, nm + 1, 0)).getUTCDate();
+  return toISO(Date.UTC(ny, nm, Math.min(day, lastDay)));
+}
+
+function cadenceOf(series) { return CADENCES.indexOf(series && series.cadence) >= 0 ? series.cadence : 'monthly'; }
+function graceDays(series) { return GRACE[cadenceOf(series)] || 7; }
+
+// Every expected gift date from start up to `upToISO` (bounded by series.end).
+function expectedDates(series, upToISO) {
+  var out = []; if (!series || !series.start) return out;
+  var end = series.end ? parseISO(series.end) : null;
+  var upTo = parseISO(upToISO); if (upTo == null) upTo = Date.now();
+  for (var i = 0; i < 2000; i++) {
+    var d = addCadence(series.start, cadenceOf(series), i), ms = parseISO(d);
+    if (ms == null || ms > upTo || (end != null && ms > end)) break;
+    out.push(d);
+  }
+  return out;
+}
+
+// Which calendar bucket an ISO date sits in for this cadence (weekly uses the grace window instead).
+function bucketKey(cadence, iso) {
+  var m = /^(\d{4})-(\d{2})/.exec(String(iso)); if (!m) return String(iso);
+  if (cadence === 'yearly') return m[1];
+  if (cadence === 'quarterly') return m[1] + '-Q' + Math.ceil((+m[2]) / 3);
+  if (cadence === 'monthly') return m[1] + '-' + m[2];
+  return String(iso);
+}
+// Would a gift on giftISO fill the expected period at expectedISO?
+function isFilledByGift(series, expectedISO, giftISO) {
+  if (!giftISO) return false;
+  var g = parseISO(giftISO), e = parseISO(expectedISO); if (g == null || e == null) return false;
+  if (Math.abs(g - e) <= daysMs(graceDays(series))) return true;
+  return cadenceOf(series) !== 'weekly' && bucketKey(cadenceOf(series), giftISO) === bucketKey(cadenceOf(series), expectedISO);
+}
+
+function seriesGifts(doc, seriesId) { return (doc.donations || []).filter(function (d) { return d.series_id === seriesId; }); }
+function isPeriodFilled(series, gifts, expectedISO) {
+  for (var i = 0; i < gifts.length; i++) if (isFilledByGift(series, expectedISO, gifts[i].date)) return true;
+  return false;
+}
+
+// The latest expected date that is past its grace, has no gift, and isn't skipped — or null.
+function dueDate(series, gifts, nowISO) {
+  if (!series || !series.active) return null;
+  var now = parseISO(nowISO); if (now == null) now = Date.now();
+  var exps = expectedDates(series, toISO(now)), skipped = series.skipped || [], due = null;
+  for (var i = 0; i < exps.length; i++) {
+    var e = exps[i];
+    if (now <= parseISO(e) + daysMs(graceDays(series))) continue;   // still within grace
+    if (skipped.indexOf(e) >= 0) continue;
+    if (isPeriodFilled(series, gifts, e)) continue;
+    due = e;                                                        // keep the latest missed period
+  }
+  return due;
+}
+
+// Guess a cadence from a set of gift dates (scale-robust nearest by log ratio).
+function guessCadence(dates) {
+  var ds = (dates || []).map(parseISO).filter(function (x) { return x != null; }).sort(function (a, b) { return a - b; });
+  if (ds.length < 2) return 'monthly';
+  var gaps = []; for (var i = 1; i < ds.length; i++) gaps.push((ds[i] - ds[i - 1]) / 86400000);
+  gaps.sort(function (a, b) { return a - b; });
+  var med = gaps[Math.floor(gaps.length / 2)] || 30;
+  var cands = [['weekly', 7], ['monthly', 30], ['quarterly', 91], ['yearly', 365]], best = 'monthly', bd = Infinity;
+  cands.forEach(function (c) { var d = Math.abs(Math.log(med / c[1])); if (d < bd) { bd = d; best = c[0]; } });
+  return best;
+}
+function guessAmount(amounts) {
+  var a = (amounts || []).map(Number).filter(function (x) { return isFinite(x) && x > 0; }).sort(function (x, y) { return x - y; });
+  return a.length ? round2(a[Math.floor(a.length / 2)]) : 0;   // median
+}
+
+function newSeries(fields) {
+  return Object.assign({
+    id: model.newId('ser'), charity_id: null, type: 'money', amount: 0, cadence: 'monthly',
+    start: null, end: null, active: true, source: 'manual', skipped: [],
+  }, fields || {});
+}
+function seriesById(doc, id) { for (var i = 0; i < (doc.series || []).length; i++) if (doc.series[i].id === id) return doc.series[i]; return null; }
+function donationSeriesType(d) { return d.type === 'daf_grant' ? 'daf_grant' : d.type === 'money' ? 'money' : null; }
+
+// Bundle selected donations into ONE recurring series. All must share a charity and be the
+// same bundle-able type (money OR daf_grant — never mixed, so a series never mixes grants
+// with deductible gifts). Guesses cadence + amount (both editable after). Returns the series.
+function bundle(doc, donationIds, opts) {
+  opts = opts || {};
+  var ds = (donationIds || []).map(function (id) { return model.donationById(doc, id); }).filter(Boolean);
+  if (ds.length < 2) throw new Error('Select at least two gifts to bundle.');
+  var type = donationSeriesType(ds[0]);
+  if (!type) throw new Error('Only cash gifts or DAF grants can be made recurring.');
+  var charity = ds[0].charity_id;
+  for (var i = 0; i < ds.length; i++) {
+    if (ds[i].charity_id !== charity) throw new Error('All gifts must be to the same charity.');
+    if (donationSeriesType(ds[i]) !== type) throw new Error('A series can’t mix cash gifts and DAF grants.');
+  }
+  var dates = ds.map(function (d) { return d.date; }).filter(Boolean).sort();
+  var s = newSeries({
+    charity_id: charity, type: type, source: 'bundled',
+    amount: (opts.amount != null ? round2(opts.amount) : guessAmount(ds.map(function (d) { return d.amount; }))),
+    cadence: opts.cadence || guessCadence(dates),
+    start: opts.start || dates[0] || null,
+  });
+  if (!Array.isArray(doc.series)) doc.series = [];
+  doc.series.push(s);
+  ds.forEach(function (d) { d.series_id = s.id; });
+  return s;
+}
+
+// Make ONE donation the seed of a manual recurring series ("Make this recurring").
+function makeRecurring(doc, donationId, opts) {
+  opts = opts || {};
+  var d = model.donationById(doc, donationId);
+  if (!d) throw new Error('donation not found');
+  var type = donationSeriesType(d);
+  if (!type) throw new Error('Only cash gifts or DAF grants can be made recurring.');
+  var s = newSeries({
+    charity_id: d.charity_id, type: type, source: 'manual',
+    amount: (opts.amount != null ? round2(opts.amount) : round2(d.amount)),
+    cadence: opts.cadence || 'monthly', start: opts.start || d.date || null,
+  });
+  if (!Array.isArray(doc.series)) doc.series = [];
+  doc.series.push(s);
+  d.series_id = s.id;
+  return s;
+}
+
+// Un-bundle: clear series_id on the members and remove the series.
+function unbundle(doc, seriesId) {
+  (doc.donations || []).forEach(function (d) { if (d.series_id === seriesId) delete d.series_id; });
+  doc.series = (doc.series || []).filter(function (s) { return s.id !== seriesId; });
+  return true;
+}
+
+// Summary for the collapsed list row (respects a year filter; totals unchanged by bundling).
+function seriesSummary(doc, seriesId, year) {
+  var gifts = seriesGifts(doc, seriesId);
+  if (year != null) gifts = gifts.filter(function (d) { return Number(d.tax_year) === Number(year); });
+  var total = 0, dates = [];
+  gifts.forEach(function (d) { total += Number(d.amount) || 0; if (d.date) dates.push(d.date); });
+  dates.sort();
+  return { count: gifts.length, total: round2(total), earliest: dates[0] || null, latest: dates[dates.length - 1] || null, dates: dates };
+}
+
+function normName(s) { return String(s == null ? '' : s).trim().toLowerCase(); }
+function charityMatchesSeries(doc, series, draft) {
+  var sc = model.charityById(doc, series.charity_id); if (!sc) return false;
+  if (draft.charity_id && draft.charity_id === series.charity_id) return true;
+  var ein = model.normEin(draft.charity_ein), scEin = model.normEin(sc.ein);
+  if (ein && scEin) return ein === scEin;
+  var dn = normName(draft.charity_name), sn = normName(sc.name);
+  return !!dn && dn === sn;
+}
+function draftSeriesType(draft) { return draft.type === 'daf_grant' ? 'daf_grant' : draft.type === 'money' ? 'money' : null; }
+
+// Does a captured draft match an active series (same charity, same type, amount ±$1, its date
+// fills an as-yet-unfilled expected period, not low-confidence)? -> { series, period } or null.
+function matchSeriesForDraft(doc, draft) {
+  if (!draft || draft.amount == null || draft.lowConfidence || !draft.date) return null;
+  var st = draftSeriesType(draft); if (!st) return null;
+  var list = (doc.series || []).filter(function (s) { return s.active && s.type === st; });
+  for (var i = 0; i < list.length; i++) {
+    var s = list[i];
+    if (Math.abs(Number(s.amount) - Number(draft.amount)) > DUP_DOLLARS) continue;
+    if (!charityMatchesSeries(doc, s, draft)) continue;
+    var exps = expectedDates(s, draft.date);
+    var nextE = addCadence(s.start, cadenceOf(s), exps.length);   // allow a gift slightly ahead of the last computed period
+    var candidates = exps.concat([nextE]), gifts = seriesGifts(doc, s.id), fill = null;
+    for (var j = 0; j < candidates.length; j++) if (isFilledByGift(s, candidates[j], draft.date)) fill = candidates[j];
+    if (!fill) continue;
+    if (isPeriodFilled(s, gifts, fill)) continue;                 // that period already has a gift
+    return { series: s, period: fill };
+  }
+  return null;
+}
+
+module.exports = {
+  CADENCES: CADENCES, GRACE: GRACE,
+  addCadence: addCadence, expectedDates: expectedDates, isFilledByGift: isFilledByGift,
+  seriesGifts: seriesGifts, isPeriodFilled: isPeriodFilled, dueDate: dueDate,
+  guessCadence: guessCadence, guessAmount: guessAmount,
+  newSeries: newSeries, seriesById: seriesById, bundle: bundle, makeRecurring: makeRecurring,
+  unbundle: unbundle, seriesSummary: seriesSummary, matchSeriesForDraft: matchSeriesForDraft,
+  donationSeriesType: donationSeriesType,
 };
 
 });
@@ -1255,7 +1808,7 @@ function taxComponents(doc, year) {
     var amt = Number(d.amount) || 0;
     if (d.type === 'money') { cash += amt; if (d.daf_contribution !== true) cashNI += amt; }
     else if (d.type === 'items') { noncash += amt; }
-    else if (d.type === 'stock') { noncash += (d.long_term === false ? (Number(d.cost_basis) || 0) : amt); }
+    else if (d.type === 'stock') { noncash += model.stockDeductibleValue(d); }   // per-lot: FMV if long-term, else basis (S3)
     else if (d.type === 'mileage') { miles += amt; }
   }
   return { cash: round2(cash), noncash: round2(noncash), cashNonItemizer: round2(cashNI), miles: round2(miles) };
@@ -1719,6 +2272,9 @@ var HEADERS = [
   'date', 'charity', 'ein', 'type', 'deductible', 'daf_contribution',
   'description', 'category', 'condition', 'qty', 'unit_value', 'line_total',
   'donation_amount', 'notes', 'acknowledgment_received',
+  // stock lot columns (S3) — one row per lot; blank for non-stock rows
+  'lot_security', 'lot_shares', 'lot_acquired_date', 'lot_cost_basis', 'lot_fmv', 'lot_long_term',
+  'series_id',   // recurring-series id (S6), blank if not part of a series
 ];
 
 // RFC-4180: quote a field iff it contains a comma, double quote, CR, or LF; double
@@ -1772,14 +2328,30 @@ function buildCsv(doc, year) {
           d.date, name, ein, d.type, deductible, dafContribution,
           L.description, L.category, L.condition, L.qty, L.unit_value, L.total,
           d.amount, d.notes, d.acknowledgment_received,
+          null, null, null, null, null, null,
+          d.series_id || null,
+        ]));
+      }
+    } else if (d.type === 'stock' && Array.isArray(d.lots) && d.lots.length > 0) {
+      // One row PER LOT (S3) — the lot columns carry the per-lot detail.
+      for (var s = 0; s < d.lots.length; s++) {
+        var LL = d.lots[s] || {};
+        rows.push(row([
+          d.date, name, ein, d.type, deductible, dafContribution,
+          null, null, null, null, null, null,
+          d.amount, d.notes, d.acknowledgment_received,
+          LL.security, LL.shares, LL.acquired_date, LL.cost_basis, LL.fmv, (LL.long_term !== false),
+          d.series_id || null,
         ]));
       }
     } else {
-      // One row for money / stock / mileage / daf_grant (and any empty items donation).
+      // One row for money / mileage / daf_grant (and any empty items/stock donation).
       rows.push(row([
         d.date, name, ein, d.type, deductible, dafContribution,
         null, null, null, null, null, null,
         d.amount, d.notes, d.acknowledgment_received,
+        null, null, null, null, null, null,
+        d.series_id || null,
       ]));
     }
   }
@@ -1905,14 +2477,39 @@ function yesNo(b) { return b ? 'Yes' : 'No'; }
 
 // ---- per-type renderers (each returns the cards HTML for that type) ---------
 
-function moneyCards(list) {
-  return list.slice().sort(byDate).map(function (d) {
-    var f = field('Date', d.date) + field('Amount', fmtMoney(d.amount)) +
-      field('Any goods or services received in return?', yesNo(d.goods_received));
-    if (d.goods_received) f += field('Value of those goods/services', fmtMoney(d.goods_value));
-    if (d.acknowledgment_received) f += field('Written acknowledgment on file', 'Yes');
-    return card('Cash gift · ' + fmtMoney(d.amount), f);
+function moneyGiftFields(d, prefix) {
+  var p = prefix || '';
+  var f = field(p + 'Date', d.date) + field(p + 'Amount', fmtMoney(d.amount)) +
+    field(p + 'Any goods or services received in return?', yesNo(d.goods_received));
+  if (d.goods_received) f += field(p + 'Value of those goods/services', fmtMoney(d.goods_value));
+  if (d.acknowledgment_received) f += field(p + 'Written acknowledgment on file', 'Yes');
+  return f;
+}
+// Cash gifts. A recurring SERIES (S6) collapses to ONE card — the year's total + each dated
+// gift (every field TurboTax asks is kept). Standalone gifts render one card each.
+function moneyCards(list, doc) {
+  var bySeries = {}, order = [], singles = [];
+  list.forEach(function (d) {
+    if (d.series_id) { if (!bySeries[d.series_id]) { bySeries[d.series_id] = []; order.push(d.series_id); } bySeries[d.series_id].push(d); }
+    else singles.push(d);
+  });
+  var out = '';
+  order.forEach(function (sid) {
+    var gifts = bySeries[sid].slice().sort(byDate);
+    var total = gifts.reduce(function (s, d) { return round2(s + (Number(d.amount) || 0)); }, 0);
+    var ser = (doc && doc.series) ? doc.series.filter(function (x) { return x.id === sid; })[0] : null;
+    var cad = ser ? ser.cadence : 'recurring';
+    var f = field('Recurring', cad + ' · ' + gifts.length + ' gift' + (gifts.length > 1 ? 's' : '')) +
+      field('Total for the year', fmtMoney(total));
+    gifts.forEach(function (d, i) {
+      f += '<div class="itemline"><div class="iln">Gift ' + (i + 1) + ' — ' + escHtml(d.date || '') + '</div>' + moneyGiftFields(d, '  ') + '</div>';
+    });
+    out += card('Recurring cash (' + cad + ') · ' + fmtMoney(total), f);
+  });
+  out += singles.slice().sort(byDate).map(function (d) {
+    return card('Cash gift · ' + fmtMoney(d.amount), moneyGiftFields(d, ''));
   }).join('');
+  return out;
 }
 
 function itemsCards(list) {
@@ -1943,17 +2540,28 @@ function itemsCards(list) {
   }).join('');
 }
 
+// One card per stock/into-DAF donation; each share LOT listed on its own (S3 / ARC §1d).
+function stockLotsOf(d) {
+  if (Array.isArray(d.lots) && d.lots.length) return d.lots;
+  return [{ security: d.security, shares: d.shares, acquired_date: d.acquired_date, cost_basis: d.cost_basis, fmv: Number(d.amount) || 0, long_term: d.long_term !== false }];
+}
 function stockCards(list) {
   return list.slice().sort(byDate).map(function (d) {
     var intoDaf = d.daf_contribution === true;
-    var f =
-      field('Security', d.security || '(name the security)') +
-      field('Shares', d.shares != null ? d.shares : '—') +
-      field('Date of transfer', d.date) +
-      field('Fair-market value on that date', fmtMoney(d.amount)) +
-      field('Cost basis', d.cost_basis != null ? fmtMoney(d.cost_basis) : '—') +
-      field('Date acquired', d.acquired_date) +
-      field('Held more than one year?', yesNo(d.long_term !== false));
+    var lots = stockLotsOf(d);
+    var head = field('Date of transfer', d.date) +
+      field('Number of lots', lots.length) +
+      field('Total fair-market value', fmtMoney(d.amount));
+    var lotsHtml = lots.map(function (L, i) {
+      var parts =
+        field('  Security', L.security || '(name the security)') +
+        field('  Shares', L.shares != null ? L.shares : '—') +
+        field('  Fair-market value', fmtMoney(L.fmv)) +
+        field('  Cost basis', L.cost_basis != null ? fmtMoney(L.cost_basis) : '—') +
+        field('  Date acquired', L.acquired_date) +
+        field('  Held more than one year?', yesNo(L.long_term !== false));
+      return '<div class="itemline"><div class="iln">Lot ' + (i + 1) + '</div>' + parts + '</div>';
+    }).join('');
     var note = intoDaf
       ? '<div class="note-inline">A contribution <strong>into</strong> your donor-advised fund ' +
         '(Fidelity Charitable) — the deductible event. Enter it in TurboTax as a stock/securities gift ' +
@@ -1961,7 +2569,7 @@ function stockCards(list) {
       : '<div class="note-inline">A <strong>direct</strong> gift of securities to this charity. Enter it in ' +
         'TurboTax as a stock/securities donation. Appreciated stock held &gt; 1 year is deducted at fair-market ' +
         'value, capped at 30% of AGI, and needs Form 8283 (basis/acquired-date if held ≤ 1 year).</div>';
-    return card((intoDaf ? 'Stock into DAF · ' : 'Stock gift · ') + fmtMoney(d.amount), f + note);
+    return card((intoDaf ? 'Stock into DAF · ' : 'Stock gift · ') + fmtMoney(d.amount), head + lotsHtml + note);
   }).join('');
 }
 
@@ -2003,7 +2611,8 @@ function buildGuideHtml(doc, year) {
     var typeBlocks = TYPE_ORDER.map(function (t) {
       var rows = g.byType[t] || [];
       if (!rows.length) return '';
-      return '<div class="tblock"><h3>' + escHtml(TYPE_HEADING[t]) + '</h3>' + RENDERERS[t](rows) + '</div>';
+      var cards = (t === 'money') ? moneyCards(rows, doc) : RENDERERS[t](rows);
+      return '<div class="tblock"><h3>' + escHtml(TYPE_HEADING[t]) + '</h3>' + cards + '</div>';
     }).join('');
     return '<section class="charity">' +
       '<h2>' + escHtml(name) + (g.charity && g.charity.ein ? ' <span class="ein">EIN ' + escHtml(g.charity.ein) + '</span>' : '') + '</h2>' +
@@ -2339,6 +2948,13 @@ function exportJson(doc, year) {
     charities: (doc.charities || []),
     donations: donations,
     taxProfile: (doc.taxProfiles && doc.taxProfiles[year]) || null,
+    // recurring series referenced by this year's donations (S6). donation.series_id rides
+    // inside each donation already; the series definitions come along so a re-import keeps
+    // the grouping. NOTE: doc.inbox + doc.attachments are deliberately NOT exported (no file keys).
+    series: (function () {
+      var used = {}; donations.forEach(function (d) { if (d.series_id) used[d.series_id] = true; });
+      return (doc.series || []).filter(function (s) { return used[s.id]; });
+    })(),
   };
   return JSON.stringify(payload, null, 2);
 }
@@ -2388,6 +3004,17 @@ function importJson(doc, jsonString) {
       }
       doc.donations.push(copy);
       added.donations++;
+    }
+
+    // merge recurring series (dedupe by id) so donation.series_id groupings survive (S6)
+    var inSeries = Array.isArray(parsed.series) ? parsed.series : [];
+    if (inSeries.length && !Array.isArray(doc.series)) doc.series = [];
+    for (var k = 0; k < inSeries.length; k++) {
+      var s = inSeries[k];
+      if (!s || !s.id) continue;
+      var exists = false;
+      for (var q = 0; q < doc.series.length; q++) if (doc.series[q].id === s.id) { exists = true; break; }
+      if (!exists) doc.series.push(Object.assign({}, s));
     }
 
     return { doc: doc, added: added, skipped: skipped };
@@ -2514,11 +3141,15 @@ function donationDetail(d) {
     }).join('');
   }
   if (d.type === 'stock') {
-    return '<div class="det">• ' + escHtml(d.security || 'security') +
-      (d.shares != null ? ', ' + escHtml(d.shares) + ' shares' : '') +
-      ', FMV ' + escHtml(fmtMoney(d.amount)) +
-      (d.cost_basis != null ? ', basis ' + escHtml(fmtMoney(d.cost_basis)) : '') +
-      (d.acquired_date ? ', acquired ' + escHtml(d.acquired_date) : '') + '</div>';
+    var lots = (Array.isArray(d.lots) && d.lots.length) ? d.lots
+      : [{ security: d.security, shares: d.shares, fmv: d.amount, cost_basis: d.cost_basis, acquired_date: d.acquired_date }];
+    return lots.map(function (L) {
+      return '<div class="det">• ' + escHtml(L.security || 'security') +
+        (L.shares != null ? ', ' + escHtml(L.shares) + ' shares' : '') +
+        ', FMV ' + escHtml(fmtMoney(L.fmv)) +
+        (L.cost_basis != null ? ', basis ' + escHtml(fmtMoney(L.cost_basis)) : '') +
+        (L.acquired_date ? ', acquired ' + escHtml(L.acquired_date) : '') + '</div>';
+    }).join('');
   }
   if (d.notes) return '<div class="det dim">' + escHtml(d.notes) + '</div>';
   return '';
@@ -2546,13 +3177,39 @@ function form8283Rows(doc, donations) {
         });
       }
     } else if (d.type === 'stock') {
-      rows.push({
-        donee: donee, address: address,
-        desc: (d.security || 'Publicly traded security') + (d.shares != null ? ', ' + d.shares + ' shares' : ''),
-        dateGiven: d.date, dateAcq: d.acquired_date, how: null,
-        basis: d.cost_basis, fmv: Number(d.amount) || 0, method: 'Publicly traded — market quotation',
-        sectionB: false, // publicly traded securities stay in Section A at any amount
-      });
+      // One Section A row PER SECURITY, lots summarised (S3 / ARC §1d). Multiple acquisition
+      // dates collapse to "Various": IRS 2023 Form 8283 instructions, Section A column (e) —
+      // "If you are donating a group of similar items and you acquired the items on various
+      // dates (but have held all the items for at least 12 months), you can enter 'Various.'"
+      // (irs.gov/instructions/i8283, verified 2026-09-11). Publicly traded securities are
+      // reported in Section A at ANY amount and are exempt from a qualified appraisal (same
+      // instructions) — so sectionB stays false.
+      var lots = (Array.isArray(d.lots) && d.lots.length) ? d.lots
+        : [{ security: d.security, shares: d.shares, fmv: Number(d.amount) || 0, cost_basis: d.cost_basis, acquired_date: d.acquired_date, long_term: d.long_term !== false }];
+      var bySec = {}, secOrder = [];
+      for (var li = 0; li < lots.length; li++) {
+        var L = lots[li];
+        var sk = (L.security || 'Publicly traded security');
+        if (!bySec[sk]) { bySec[sk] = { security: L.security, shares: 0, fmv: 0, basis: 0, basisKnown: true, dates: {}, anyShort: false }; secOrder.push(sk); }
+        var g = bySec[sk];
+        g.shares += Number(L.shares) || 0;
+        g.fmv += Number(L.fmv) || 0;
+        if (L.cost_basis == null) g.basisKnown = false; else g.basis += Number(L.cost_basis) || 0;
+        if (L.acquired_date) g.dates[L.acquired_date] = true;
+        if (L.long_term === false) g.anyShort = true;
+      }
+      for (var si = 0; si < secOrder.length; si++) {
+        var gg = bySec[secOrder[si]];
+        var dks = Object.keys(gg.dates);
+        var dateAcq = dks.length === 0 ? null : (dks.length === 1 ? dks[0] : 'Various');
+        rows.push({
+          donee: donee, address: address,
+          desc: (gg.security || 'Publicly traded security') + (gg.shares ? ', ' + gg.shares + ' shares' : '') + (gg.anyShort ? ' (some lots held ≤ 1 year — attach a statement)' : ''),
+          dateGiven: d.date, dateAcq: dateAcq, how: null,
+          basis: (gg.basisKnown ? round2(gg.basis) : null), fmv: round2(gg.fmv), method: 'Publicly traded — market quotation',
+          sectionB: false,
+        });
+      }
     }
   }
   return rows;
@@ -2997,6 +3654,148 @@ module.exports = {
 
 });
 
+/* ---- src/import/eml.js ---- */
+window.__def("src/import/eml.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/import/eml.js — parse a saved email (.eml, RFC 822 / MIME) in the browser.
+ *
+ * A dropped .eml is read locally (never uploaded raw): we pull From / Subject / Date and
+ * a plain-text body (text/plain, else HTML stripped to text), decoding quoted-printable
+ * and base64, and the FIRST PDF attachment (base64) if any. The result feeds the
+ * import-extract function as { kind:'file', text | pdf_base64, meta:{from,subject,date} }.
+ *
+ * Pure + node-testable: no DOM, no network. Deliberately pragmatic — it handles the common
+ * single-/multipart shapes real receipts use, not every MIME edge case.
+ * ========================================================================== */
+
+// atob/btoa exist in browsers + Deno; Node 16+ has them global too. Fall back to Buffer.
+function b64decodeToBytes(b64) {
+  b64 = String(b64 || '').replace(/\s+/g, '');
+  if (typeof atob === 'function') {
+    var s = atob(b64), a = new Uint8Array(s.length);
+    for (var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i);
+    return a;
+  }
+  return new Uint8Array(Buffer.from(b64, 'base64'));
+}
+function bytesToUtf8(bytes) {
+  if (typeof TextDecoder === 'function') return new TextDecoder('utf-8').decode(bytes);
+  return Buffer.from(bytes).toString('utf8');
+}
+
+// Decode Quoted-Printable to a UTF-8 string.
+function decodeQuotedPrintable(s) {
+  s = String(s || '').replace(/=\r?\n/g, '');                 // soft line breaks
+  var bytes = [];
+  for (var i = 0; i < s.length; i++) {
+    if (s[i] === '=' && /[0-9A-Fa-f]{2}/.test(s.substr(i + 1, 2))) { bytes.push(parseInt(s.substr(i + 1, 2), 16)); i += 2; }
+    else bytes.push(s.charCodeAt(i) & 0xff);
+  }
+  return bytesToUtf8(new Uint8Array(bytes));
+}
+
+// Split a raw message (or MIME part) into { headers:{lower->value}, body }.
+function splitHeadersBody(raw) {
+  raw = String(raw || '');
+  var m = raw.match(/\r?\n\r?\n/);
+  var headText = m ? raw.slice(0, m.index) : raw;
+  var body = m ? raw.slice(m.index + m[0].length) : '';
+  // unfold continuation lines (a line starting with space/tab continues the previous header)
+  var unfolded = headText.replace(/\r?\n[ \t]+/g, ' ');
+  var headers = {};
+  unfolded.split(/\r?\n/).forEach(function (line) {
+    var i = line.indexOf(':');
+    if (i > 0) headers[line.slice(0, i).trim().toLowerCase()] = line.slice(i + 1).trim();
+  });
+  return { headers: headers, body: body };
+}
+
+function contentType(headers) { return String(headers['content-type'] || 'text/plain').toLowerCase(); }
+function boundaryOf(ct) { var m = /boundary="?([^";]+)"?/i.exec(ct); return m ? m[1] : null; }
+function filenameOf(headers) {
+  var cd = headers['content-disposition'] || '', ct = headers['content-type'] || '';
+  var m = /filename="?([^";]+)"?/i.exec(cd) || /name="?([^";]+)"?/i.exec(ct);
+  return m ? m[1] : null;
+}
+
+// Decode a part's body text per its transfer encoding.
+function decodeText(headers, body) {
+  var cte = String(headers['content-transfer-encoding'] || '').toLowerCase();
+  if (cte.indexOf('base64') >= 0) return bytesToUtf8(b64decodeToBytes(body));
+  if (cte.indexOf('quoted-printable') >= 0) return decodeQuotedPrintable(body);
+  return body;
+}
+
+// Strip HTML to readable text (drop script/style, tags -> space, decode a few entities).
+function htmlToText(html) {
+  return String(html || '')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<\/?(p|div|br|tr|li|h[1-6])[^>]*>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+    .replace(/&#(\d+);/g, function (_m, n) { return String.fromCharCode(Number(n)); })
+    .replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').replace(/[ \t]{2,}/g, ' ').trim();
+}
+
+// Recursively collect text + pdf parts from a message/part.
+function collect(node, out) {
+  var ctRaw = String(node.headers['content-type'] || 'text/plain');   // keep case (boundary is case-sensitive)
+  var ct = ctRaw.toLowerCase();
+  if (ct.indexOf('multipart/') === 0) {
+    var b = boundaryOf(ctRaw);
+    if (!b) return;
+    var parts = node.body.split('--' + b);
+    for (var i = 0; i < parts.length; i++) {
+      var seg = parts[i];
+      if (!seg || /^--\s*$/.test(seg.trim())) continue;
+      seg = seg.replace(/^\r?\n/, '');
+      collect(splitHeadersBody(seg), out);
+    }
+    return;
+  }
+  if (ct.indexOf('application/pdf') === 0 || (filenameOf(node.headers) || '').toLowerCase().slice(-4) === '.pdf') {
+    out.pdfs.push({ filename: filenameOf(node.headers) || 'attachment.pdf', data: String(node.body || '').replace(/\s+/g, '') });
+    return;
+  }
+  if (ct.indexOf('text/plain') === 0) { out.textParts.push(decodeText(node.headers, node.body)); return; }
+  if (ct.indexOf('text/html') === 0) { out.htmlParts.push(decodeText(node.headers, node.body)); return; }
+}
+
+// Decode an RFC 2047 encoded-word subject (=?utf-8?B?...?= / =?utf-8?Q?...?=), best-effort.
+function decodeHeaderWord(s) {
+  return String(s || '').replace(/=\?[^?]+\?([BbQq])\?([^?]*)\?=/g, function (_m, enc, data) {
+    try { return enc.toUpperCase() === 'B' ? bytesToUtf8(b64decodeToBytes(data)) : decodeQuotedPrintable(data.replace(/_/g, ' ')); }
+    catch (e) { return data; }
+  });
+}
+
+// parseEml(raw) -> { from, subject, date, text, html, pdfs:[{filename,data(base64)}] }
+function parseEml(raw) {
+  var root = splitHeadersBody(raw);
+  var out = { textParts: [], htmlParts: [], pdfs: [] };
+  collect(root, out);
+  var text = out.textParts.join('\n\n').trim();
+  var html = out.htmlParts.join('\n\n').trim();
+  if (!text && html) text = htmlToText(html);
+  return {
+    from: decodeHeaderWord(root.headers['from'] || ''),
+    subject: decodeHeaderWord(root.headers['subject'] || ''),
+    date: root.headers['date'] || '',
+    text: text,
+    html: html,
+    pdfs: out.pdfs,
+  };
+}
+
+module.exports = {
+  parseEml: parseEml, htmlToText: htmlToText,
+  decodeQuotedPrintable: decodeQuotedPrintable, decodeHeaderWord: decodeHeaderWord,
+};
+
+});
+
 /* ---- src/import/fidelity.js ---- */
 window.__def("src/import/fidelity.js", function(module, exports, require){
 'use strict';
@@ -3190,6 +3989,137 @@ module.exports = {
   RECONCILE_DAYS: RECONCILE_DAYS,
   parseCsvRows: parseCsvRows, parseFidelity: parseFidelity,
   recordToDraft: recordToDraft, reconcile: reconcile, importCsv: importCsv,
+};
+
+});
+
+/* ---- src/import/filedrop.js ---- */
+window.__def("src/import/filedrop.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/import/filedrop.js — route a dropped file to the right importer (S5 / ARC §1a).
+ *
+ * One "Import a file" drop zone accepts a PDF, image, .eml, .txt/.html or CSV. The pure
+ * routing here decides HOW to read each:
+ *   - a Fidelity Charitable Giving Account CSV (detected by its headers) -> the existing
+ *     no-AI reader (src/import/fidelity.js);
+ *   - everything else -> the import-extract Edge Function (kind:'file'), whose normalized
+ *     records this module turns into review drafts (src/core/review-compatible) that land
+ *     in the persisted Needs-review inbox (S4).
+ * A CSV is chunked (~150 data rows per call) so a big export fits the model context.
+ *
+ * Pure + node-testable: no DOM, no network. mime sniffing takes a plain { name, type }.
+ * ========================================================================== */
+
+var review = require('../core/review.js');
+var model = require('../core/model.js');
+var csvImport = require('./csv-import.js');
+
+var ROWS_PER_CHUNK = 150;
+var MAX_CSV_ROWS = 3000;         // hard cap; beyond this we import the first MAX and say so
+
+// Categorise a dropped file by name/type: 'csv' | 'pdf' | 'image' | 'eml' | 'text' | 'unknown'.
+function sniffKind(file) {
+  var name = String((file && file.name) || '').toLowerCase();
+  var type = String((file && file.type) || '').toLowerCase();
+  if (type === 'text/csv' || /\.csv$/.test(name)) return 'csv';
+  if (type === 'application/pdf' || /\.pdf$/.test(name)) return 'pdf';
+  if (type.indexOf('image/') === 0 || /\.(png|jpe?g|gif|webp|heic|heif)$/.test(name)) return 'image';
+  if (type === 'message/rfc822' || /\.eml$/.test(name)) return 'eml';
+  if (type.indexOf('text/') === 0 || /\.(txt|html?|md)$/.test(name)) return 'text';
+  return 'unknown';
+}
+
+// Is this CSV a Fidelity Charitable Giving Account history (route to the no-AI reader)?
+// Detected by headers: a transaction-type column + a recipient/organization column + amount.
+function isFidelityCsv(headers) {
+  var h = (headers || []).map(function (x) { return String(x || '').toLowerCase(); });
+  var hasType = h.some(function (x) { return x.indexOf('type') >= 0 || x.indexOf('transaction') >= 0 || x.indexOf('activity') >= 0; });
+  var hasRecip = h.some(function (x) { return x.indexOf('recipient') >= 0 || x.indexOf('grantee') >= 0 || x.indexOf('organization') >= 0 || x.indexOf('charity') >= 0; });
+  var hasAmount = h.some(function (x) { return x.indexOf('amount') >= 0; });
+  return hasType && hasRecip && hasAmount;
+}
+
+// Serialize a header + rows back to CSV text (RFC-4180 quoting).
+function csvField(v) { var s = (v == null) ? '' : String(v); return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+function serializeCsv(headers, rows) {
+  var out = [headers.map(csvField).join(',')];
+  for (var i = 0; i < rows.length; i++) out.push(rows[i].map(csvField).join(','));
+  return out.join('\n') + '\n';
+}
+
+// Split a CSV into chunks of ~ROWS_PER_CHUNK data rows (header repeated on each). Returns
+// { chunks:[csvText], total, truncated }. A file over MAX_CSV_ROWS is truncated with a flag.
+function csvChunks(text, opts) {
+  opts = opts || {};
+  var per = opts.rowsPerChunk || ROWS_PER_CHUNK, max = opts.maxRows || MAX_CSV_ROWS;
+  var parsed = csvImport.parse(text);
+  var rows = parsed.rows || [], headers = parsed.headers || [];
+  var truncated = rows.length > max;
+  if (truncated) rows = rows.slice(0, max);
+  var chunks = [];
+  for (var i = 0; i < rows.length; i += per) chunks.push(serializeCsv(headers, rows.slice(i, i + per)));
+  return { chunks: chunks, total: rows.length, truncated: truncated, headers: headers };
+}
+
+// Adapt a normalized import-extract record to the Fidelity reconcile-row shape (client-side
+// mirror of import-core.toFidelityRecord) for a doc_kind='fidelity_history' file.
+function toReconcileRecord(rec) {
+  rec = rec || {};
+  var kind = rec.kind === 'daf_contribution' ? 'daf_contribution' : rec.kind === 'daf_grant' ? 'daf_grant' : null;
+  var recipient = rec.kind === 'daf_grant' ? (rec.charity_name || '') : '';
+  var status = String(rec.status || '').toLowerCase();
+  var skip = !kind || status.indexOf('cancel') >= 0 || status.indexOf('pending') >= 0 || (kind === 'daf_grant' && !recipient);
+  return { kind: kind, date: rec.date || null, amount: (rec.amount == null ? null : Number(rec.amount)), recipient: recipient, status: status, skip: skip };
+}
+
+function sumFmv(lots) { var s = 0; for (var i = 0; i < (lots || []).length; i++) s += Number(lots[i].fmv) || 0; return model.round2(s); }
+
+// Turn ONE normalized extraction record into a review draft (persisted-inbox compatible).
+// opts: { id, meta, source_ref, file }. Skips a not_a_donation record (returns null).
+function recordToDraft(rec, doc, opts) {
+  rec = rec || {}; opts = opts || {};
+  if (rec.kind === 'not_a_donation') return null;
+  var res = review.resolveCharity(doc, rec);
+  var type = 'money', dafc = false, lots = null, items = null;
+  if (rec.kind === 'daf_grant') { type = 'daf_grant'; }
+  else if (rec.kind === 'daf_contribution') { type = 'stock'; dafc = true; lots = (rec.lots && rec.lots.length) ? rec.lots : null; }
+  else if (rec.amount_type === 'items') { type = 'items'; }
+  else if (rec.amount_type === 'stock' || (rec.lots && rec.lots.length)) { type = 'stock'; lots = (rec.lots && rec.lots.length) ? rec.lots : null; }
+  var amount = (rec.amount == null) ? null : Number(rec.amount);
+  if (type === 'stock' && lots) amount = sumFmv(lots);
+  if (type === 'items' && !items) items = [{ category: 'Other', subcategory: null, description: 'Donated goods', condition: 'good', qty: 1, unit_value: amount || 0 }];
+  var conf = (rec.confidence != null) ? Number(rec.confidence) : 1;
+  var draft = {
+    id: opts.id, source: 'import', local: true, kind: rec.kind || 'charity_receipt', type: type, daf_contribution: dafc,
+    charity_id: res.charity_id, charity_name: res.charity_name, charity_ein: res.charity_ein, needsCharity: res.needsCharity,
+    date: rec.date || null, amount: amount, amount_type: rec.amount_type || 'unknown', amountNeeded: (amount == null),
+    lots: lots, items: (type === 'items' ? items : null), stock: null, goods_or_services: rec.goods_or_services || null,
+    confidence: conf, lowConfidence: (conf < review.LOW_CONFIDENCE),
+    missing_fields: Array.isArray(rec.missing_fields) ? rec.missing_fields.slice() : [],
+    evidence: rec.evidence || null, meta: opts.meta || null, receipt_text: null, source_ref: opts.source_ref || null,
+  };
+  if (opts.file) draft.file = opts.file;   // attach the dropped file as the receipt (S4)
+  return draft;
+}
+
+// Map an import-extract result's records[] to drafts (doc_kind='donations'). idPrefix keeps ids unique.
+function recordsToDrafts(records, doc, opts) {
+  opts = opts || {};
+  var out = [];
+  for (var i = 0; i < (records || []).length; i++) {
+    var d = recordToDraft(records[i], doc, { id: (opts.idPrefix || 'drop') + '_' + i + '_' + Date.now().toString(36),
+      meta: opts.meta, source_ref: opts.source_ref, file: opts.file });
+    if (d) out.push(d);
+  }
+  return out;
+}
+
+module.exports = {
+  ROWS_PER_CHUNK: ROWS_PER_CHUNK, MAX_CSV_ROWS: MAX_CSV_ROWS,
+  sniffKind: sniffKind, isFidelityCsv: isFidelityCsv,
+  serializeCsv: serializeCsv, csvChunks: csvChunks,
+  toReconcileRecord: toReconcileRecord, recordToDraft: recordToDraft, recordsToDrafts: recordsToDrafts,
 };
 
 });
@@ -3722,6 +4652,9 @@ window.GT = {
   saver:  window.__require('src/sync/saver.js'),
   seal:   window.__require('src/sync/seal.js'),
   model:  window.__require('src/core/model.js'),
+  logform: window.__require('src/core/logform.js'),
+  inbox:  window.__require('src/core/inbox.js'),
+  series: window.__require('src/core/series.js'),
   valueguide: window.__require('src/core/valueguide.js'),
   tax:    window.__require('src/core/tax.js'),
   review: window.__require('src/core/review.js'),
@@ -3729,7 +4662,9 @@ window.GT = {
   queue:  window.__require('src/data/queue.js'),
   files:  window.__require('src/data/files.js'),
   fidelity: window.__require('src/import/fidelity.js'),
-  csvImport: window.__require('src/import/csv-import.js')
+  csvImport: window.__require('src/import/csv-import.js'),
+  eml:    window.__require('src/import/eml.js'),
+  filedrop: window.__require('src/import/filedrop.js')
 };
 /* export writers (slice 5) — the Export sheet reads these off window.GT.exp */
 window.GT.exp = {
@@ -3748,12 +4683,15 @@ window.GT.exp = {
 (function(){
   'use strict';
   var GT = window.GT, M = GT.model, C = GT.client, X = GT.crypto, P = GT.propublica, V = GT.valueguide, T = GT.tax, S = GT.saver;
-  var Q = GT.queue, RV = GT.review, SEAL = GT.seal, F = GT.files;
+  var Q = GT.queue, RV = GT.review, SEAL = GT.seal, F = GT.files, LF = GT.logform, IB = GT.inbox, SER = GT.series;
   var LS = window.localStorage;
   var DOC_KEY = 'giving_doc_v1';
   var $ = function(id){ return document.getElementById(id); };
-  var state = { cfg:null, doc:null, year:(new Date()).getFullYear(), charResults:[], group:'date', log:null,
-    inbox:{ drafts:[], localDrafts:[], unopenable:[], loading:false, pulledOnce:false } };
+  var SORT_KEY = 'giving_sortdir_v1';
+  function readSortDir(){ try{ var s=LS.getItem(SORT_KEY); return s==='asc'?'asc':'desc'; }catch(e){ return 'desc'; } }
+  var state = { cfg:null, doc:null, year:(new Date()).getFullYear(), charResults:[], group:'date', sortDir:readSortDir(), log:null,
+    selecting:false, selected:{}, autoAdded:[],
+    inbox:{ drafts:[], unopenable:[], loading:false, pulledOnce:false } };
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(ch){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
@@ -3903,6 +4841,12 @@ window.GT.exp = {
   function donationRow(d){
     var c = M.charityById(state.doc, d.charity_id);
     var el=document.createElement('div'); el.className='row'+(!M.deductibleOf(d)?' nondeduct':'');
+    if(state.selecting && (d.type==='money'||d.type==='daf_grant')){
+      var chk=document.createElement('span'); chk.className='selchk';
+      var cb=document.createElement('input'); cb.type='checkbox'; cb.checked=!!state.selected[d.id];
+      cb.addEventListener('change', function(){ if(cb.checked) state.selected[d.id]={ id:d.id, charity_id:d.charity_id, type:d.type }; else delete state.selected[d.id]; renderSelBar(); });
+      chk.appendChild(cb); el.appendChild(chk);
+    }
     var left=document.createElement('span'); left.className='date'; left.textContent=String(d.date||'').slice(5);
     var who=document.createElement('span'); who.className='who';
     who.innerHTML='<div class="nm">'+esc(c?c.name:'—')+donBadge(d)+'</div><div class="ty">'+esc(typeLabel(d))+'</div>';
@@ -3919,13 +4863,69 @@ window.GT.exp = {
     return el;
   }
 
+  // A recurring series folds into ONE expandable summary row within the receipt card (S6).
+  function appendSeriesRow(card, seriesId, gifts){
+    var ser=SER.seriesById(state.doc, seriesId);
+    if(!ser){ gifts.forEach(function(g){ card.appendChild(donationRow(g)); }); return; }
+    var c=M.charityById(state.doc, ser.charity_id);
+    var total=gifts.reduce(function(s,g){ return s+(M.countsForGiving(g)?(Number(g.amount)||0):0); },0);
+    var row=document.createElement('div'); row.className='row seriesrow';
+    var left=document.createElement('span'); left.className='date'; left.textContent='↻';
+    var who=document.createElement('span'); who.className='who';
+    var badge= ser.type==='daf_grant' ? '<span class="badge via">via DAF</span>' : '';
+    who.innerHTML='<div class="nm">'+esc(c?c.name:'—')+badge+'</div><div class="ty">'+esc(ser.cadence)+' · '+gifts.length+' gift'+(gifts.length>1?'s':'')+(ser.active?'':' · paused')+'</div>';
+    var amtwrap=document.createElement('span'); amtwrap.className='amtbtn';
+    var amt=document.createElement('span'); amt.className='amt'; amt.textContent=money(total);
+    var acts=document.createElement('span'); acts.className='acts';
+    var exp=document.createElement('button'); exp.textContent='Expand ▸';
+    var ed=document.createElement('button'); ed.textContent='Edit'; ed.addEventListener('click', function(e){ e.stopPropagation(); openSeriesEditor(seriesId); });
+    acts.appendChild(exp); acts.appendChild(ed);
+    amtwrap.appendChild(amt); amtwrap.appendChild(acts);
+    row.appendChild(left); row.appendChild(who); row.appendChild(amtwrap);
+    card.appendChild(row);
+    var subRows=[];
+    exp.addEventListener('click', function(e){ e.stopPropagation();
+      if(subRows.length){ subRows.forEach(function(r){ r.remove(); }); subRows=[]; exp.textContent='Expand ▸'; return; }
+      var after=row;
+      gifts.slice().sort(M.compareByDate(state.sortDir)).forEach(function(g){ var r=donationRow(g); r.classList.add('subrow'); row.parentNode.insertBefore(r, after.nextSibling); after=r; subRows.push(r); });
+      exp.textContent='Collapse ▾';
+    });
+  }
+
+  // Group a year's donations into entries: a series (one row) or a single donation.
+  function toEntries(rows){
+    var map={}, entries=[];
+    rows.forEach(function(d){
+      var sid=d.series_id && SER.seriesById(state.doc,d.series_id) ? d.series_id : null;
+      if(sid){ if(!map[sid]){ map[sid]={ kind:'series', id:sid, gifts:[] }; entries.push(map[sid]); } map[sid].gifts.push(d); }
+      else entries.push({ kind:'single', donation:d });
+    });
+    return entries;
+  }
+  function entryDate(e){
+    if(e.kind==='single') return e.donation.date||'';
+    var ds=e.gifts.map(function(g){return g.date||'';}).filter(Boolean).sort();
+    return state.sortDir==='asc' ? (ds[0]||'') : (ds[ds.length-1]||'');   // series rows sort by earliest/latest gift
+  }
+  function appendEntries(card, rows){
+    var entries=toEntries(rows);
+    entries.sort(function(a,b){ return M.compareByDate(state.sortDir)({date:entryDate(a)},{date:entryDate(b)}); });
+    entries.forEach(function(e){ if(e.kind==='single') card.appendChild(donationRow(e.donation)); else appendSeriesRow(card, e.id, e.gifts); });
+  }
+
   function renderList(){
     var rows = (state.doc.donations||[]).filter(function(d){ return Number(d.tax_year)===Number(state.year); });
     var box=$('receipt'); box.innerHTML='';
+    var sb=$('sortDir'); if(sb){ sb.textContent = state.sortDir==='asc' ? 'Oldest first ↑' : 'Newest first ↓'; sb.setAttribute('aria-pressed', state.sortDir==='asc'?'true':'false'); }
+    var bsel=$('btnSelect'); if(bsel) bsel.setAttribute('aria-pressed', state.selecting?'true':'false');
     $('rcptCnt').textContent = rows.length ? (rows.length+' this year') : '';
+    renderAutoStrip(box);
+    renderDueStrips(box);
+    renderSelBar();
     if(!rows.length){
-      box.innerHTML = '<div class="empty"><div class="big">No donations logged for '+state.year+' yet.</div>'
-        + 'Tap “+ Log” to record a gift. Add charities first from “Charities”.</div>';
+      var empt=document.createElement('div'); empt.className='empty';
+      empt.innerHTML='<div class="big">No donations logged for '+state.year+' yet.</div>Tap “+ Log” to record a gift. Add charities first from “Charities”.';
+      box.appendChild(empt);
       return;
     }
     if(state.group==='charity'){
@@ -3940,16 +4940,104 @@ window.GT.exp = {
         h.innerHTML='<span>'+esc(c?c.name:'—')+'</span><span class="gt">'+money(sub)+' given</span>';
         box.appendChild(h);
         var card=document.createElement('div'); card.className='receipt';
-        groups[k].sort(byDateDesc).forEach(function(d){ card.appendChild(donationRow(d)); });
+        appendEntries(card, groups[k]);
         box.appendChild(card);
       });
     } else {
       var card=document.createElement('div'); card.className='receipt';
-      rows.slice().sort(byDateDesc).forEach(function(d){ card.appendChild(donationRow(d)); });
+      appendEntries(card, rows);
       box.appendChild(card);
     }
   }
-  function byDateDesc(a,b){ return String(b.date||'').localeCompare(String(a.date||'')); }
+
+  // ---- recurring: due strips, selection bar, editor sheet, auto-add (S6) ----
+  function renderDueStrips(box){
+    var series=(state.doc.series||[]).filter(function(s){ return s.active; });
+    series.forEach(function(s){
+      var gifts=SER.seriesGifts(state.doc, s.id);
+      var due=SER.dueDate(s, gifts, today());
+      if(!due) return;
+      var c=M.charityById(state.doc, s.charity_id);
+      var strip=document.createElement('div'); strip.className='duestrip';
+      var msg=document.createElement('span'); msg.className='dl';
+      msg.textContent='Gift due — '+(c?c.name:'a charity')+' '+s.cadence+' (expected '+due+'). Nothing counts until you confirm.';
+      var acts=document.createElement('span'); acts.className='acts';
+      var conf=document.createElement('button'); conf.className='btn sm'; conf.textContent='Confirm';
+      conf.addEventListener('click', function(){ confirmDue(s, due); });
+      var skip=document.createElement('button'); skip.className='btn sm ghost'; skip.textContent='Skip';
+      skip.addEventListener('click', function(){ s.skipped=s.skipped||[]; if(s.skipped.indexOf(due)<0) s.skipped.push(due); persistDoc(); toast('Skipped '+due); });
+      acts.appendChild(conf); acts.appendChild(skip); strip.appendChild(msg); strip.appendChild(acts);
+      box.appendChild(strip);
+    });
+  }
+  // Confirm a due period -> create the real donation (editable), joined to the series.
+  function confirmDue(s, expectedDate){
+    var payload;
+    if(s.type==='daf_grant') payload={ type:'daf_grant', charity_id:s.charity_id, amount:s.amount, date:expectedDate, series_id:s.id };
+    else payload={ type:'money', charity_id:s.charity_id, amount:s.amount, date:expectedDate, daf_contribution:false, series_id:s.id };
+    var d=M.addDonation(state.doc, payload); d.series_id=s.id;
+    persistDoc(); toast('Gift confirmed — edit it if the amount differs.');
+    openLog(logKeyFor(d), d.id);   // open for a quick edit
+  }
+  function renderSelBar(){
+    var host=$('receipt'); if(!host) return;
+    var existing=document.getElementById('selBar'); if(existing) existing.remove();
+    if(!state.selecting) return;
+    var ids=Object.keys(state.selected);
+    var bar=document.createElement('div'); bar.id='selBar'; bar.className='selbar';
+    var sameCharity=true, sameType=true, first=ids.length?state.selected[ids[0]]:null;
+    ids.forEach(function(k){ var s=state.selected[k]; if(first){ if(s.charity_id!==first.charity_id) sameCharity=false; if((s.type==='daf_grant'?'daf_grant':'money')!==(first.type==='daf_grant'?'daf_grant':'money')) sameType=false; } });
+    var canBundle = ids.length>=2 && sameCharity && sameType;
+    var lab=document.createElement('span'); lab.className='sl';
+    lab.textContent = ids.length+' selected'+(ids.length>=2 && !canBundle ? ' — pick gifts to ONE charity of the same type' : '');
+    var acts=document.createElement('span'); acts.style.display='flex'; acts.style.gap='6px';
+    var b=document.createElement('button'); b.className='btn sm'; b.textContent='Bundle into recurring'; b.disabled=!canBundle;
+    b.addEventListener('click', function(){ doBundle(ids); });
+    var x=document.createElement('button'); x.className='btn sm ghost'; x.textContent='Done';
+    x.addEventListener('click', function(){ state.selecting=false; state.selected={}; renderList(); });
+    acts.appendChild(b); acts.appendChild(x); bar.appendChild(lab); bar.appendChild(acts);
+    host.insertBefore(bar, host.firstChild);
+  }
+  function toggleSelect(){ state.selecting=!state.selecting; state.selected={}; renderList(); }
+  function doBundle(ids){
+    try {
+      var s=SER.bundle(state.doc, ids);
+      state.selecting=false; state.selected={};
+      persistDoc();
+      openSeriesEditor(s.id);   // guessed cadence + amount are editable now
+      toast('Bundled · '+s.cadence+' · '+money(s.amount));
+    } catch(e){ toast(e.message||'Could not bundle those gifts.', true); }
+  }
+
+  function openSeriesEditor(seriesId){
+    var s=SER.seriesById(state.doc, seriesId); if(!s) return;
+    var c=M.charityById(state.doc, s.charity_id);
+    $('seriesTitle').textContent='Recurring — '+(c?c.name:'gift');
+    var cadOpts=SER.CADENCES.map(function(k){ return '<option value="'+k+'"'+(k===s.cadence?' selected':'')+'>'+k+'</option>'; }).join('');
+    $('seriesForm').innerHTML=
+      '<div class="field"><label>Charity</label><input class="txt" value="'+esc(c?c.name:'—')+'" disabled></div>'
+      + '<div class="field"><label>Type</label><input class="txt" value="'+(s.type==='daf_grant'?'DAF grant':'Cash')+'" disabled></div>'
+      + '<div class="grid2"><div class="field"><label>Cadence</label><select id="serCad">'+cadOpts+'</select></div>'
+      + '<div class="field"><label>Typical amount ($)</label><input type="number" class="txt" id="serAmt" step="0.01" min="0" value="'+(s.amount||'')+'"></div></div>'
+      + '<div class="grid2"><div class="field"><label>Started</label><input type="date" class="txt" id="serStart" value="'+(s.start||'')+'"></div>'
+      + '<div class="field"><label>Ends (optional)</label><input type="date" class="txt" id="serEnd" value="'+(s.end||'')+'"></div></div>'
+      + '<label class="chk"><input type="checkbox" id="serActive"'+(s.active?' checked':'')+'> Active (expect a gift each period)</label>'
+      + '<div class="search-row" style="margin-top:14px;"><button class="btn sm" id="serSave">Save</button>'
+      + '<button class="btn sm danger" id="serUnbundle">Un-bundle</button></div>'
+      + '<p class="ghint" style="margin-top:8px;">Un-bundling keeps every gift; it only removes the grouping.</p>';
+    $('serSave').addEventListener('click', function(){
+      s.cadence=$('serCad').value; s.amount=Number($('serAmt').value)||0;
+      s.start=$('serStart').value||s.start; s.end=$('serEnd').value||null; s.active=$('serActive').checked;
+      persistDoc(); closeSeriesEditor(); toast('Recurring gift saved');
+    });
+    $('serUnbundle').addEventListener('click', function(){
+      if(confirm('Un-bundle this recurring series? Each gift stays; only the grouping is removed.')){ SER.unbundle(state.doc, seriesId); persistDoc(); closeSeriesEditor(); toast('Un-bundled'); }
+    });
+    $('seriesSheet').hidden=false;
+  }
+  function closeSeriesEditor(){ $('seriesSheet').hidden=true; }
+  function setSortDir(dir){ state.sortDir = (dir==='asc'?'asc':'desc'); try{ LS.setItem(SORT_KEY, state.sortDir); }catch(e){} renderList(); }
+  function toggleSortDir(){ setSortDir(state.sortDir==='asc'?'desc':'asc'); }
 
   // ---- sync (saver-driven, slice 0) ----
   // A single saver owns the save lifecycle: one save in flight, a coalesced follow-up
@@ -3997,7 +5085,7 @@ window.GT.exp = {
       var r = await C.load(state.cfg.id);
       if(r.found){
         var doc = await X.decryptDoc(r.record, state.cfg.passphrase);
-        if(doc){ state.doc=doc; state.cfg.loadedVersion=r.record.version; writeCfg(state.cfg);
+        if(doc){ M.migrateDoc(doc); state.doc=doc; state.cfg.loadedVersion=r.record.version; writeCfg(state.cfg);
           writeDocCache(doc); render(); }
         else { toast('Cloud copy found, but the passphrase does not match this device.', true); }
       }
@@ -4011,7 +5099,7 @@ window.GT.exp = {
       var r = await C.load(state.cfg.id);
       if(r.found){
         var doc = await X.decryptDoc(r.record, state.cfg.passphrase);
-        if(doc){ state.doc=doc; state.cfg.loadedVersion=r.record.version; writeCfg(state.cfg);
+        if(doc){ M.migrateDoc(doc); state.doc=doc; state.cfg.loadedVersion=r.record.version; writeCfg(state.cfg);
           writeDocCache(doc); if(theSaver) theSaver.reset(); render();
           toast('Reloaded the newer data from your other device.'); return; }
       }
@@ -4024,7 +5112,7 @@ window.GT.exp = {
     state.cfg = readCfg();
     if(!C.isEnabled(state.cfg)){ selectTab('create'); showLock(); return; }
     // Identity present in localStorage -> stay signed in, no passphrase re-entry.
-    state.doc = readDocCache() || M.seededDoc();
+    state.doc = M.migrateDoc(readDocCache() || M.seededDoc());
     if(state.doc.settings && state.doc.settings.theme) applyTheme();
     showApp(); render();
     syncPull();   // background refresh; app is already usable
@@ -4059,7 +5147,7 @@ window.GT.exp = {
       if(r.found){
         var doc = await X.decryptDoc(r.record, pass);
         if(!doc){ toast('That passphrase does not match this id.'); return; }
-        state.doc = doc; cfg.loadedVersion = r.record.version;
+        M.migrateDoc(doc); state.doc = doc; cfg.loadedVersion = r.record.version;
       } else {
         state.doc = M.seededDoc();   // valid id, nothing stored yet
       }
@@ -4217,12 +5305,7 @@ window.GT.exp = {
   }
   function needsCharity(key){ return key!=='into_daf'; }
   var MILEAGE_RATE = 0.14;   // statutory charitable mileage rate, IRC §170(i) (unchanged)
-  function computeLongTerm(acquired, transfer){
-    if(!acquired || !transfer) return true;   // default: assume long-term when unknown
-    var a=new Date(acquired), t=new Date(transfer);
-    if(isNaN(a)||isNaN(t)) return true;
-    return (t - a) > 366*86400000;             // held more than one year
-  }
+  // computeLongTerm now lives in the model (M.computeLongTerm), shared with the lots editor (S3).
   function activeGiftCharities(){ return M.activeCharities(state.doc).filter(function(c){ return !c.is_daf_sponsor; }); }
   function defaultCharityId(){
     var list=activeGiftCharities(), last=state.doc.settings.lastCharityId;
@@ -4236,37 +5319,91 @@ window.GT.exp = {
     }).join('')+'</select>';
   }
 
+  // Build the flat working draft (pure logic in GT.logform). Held on state.log so switching
+  // the type tab never loses what's been entered (S1). The charity is remembered only for a
+  // real recipient (never the locked DAF sponsor), so Into-DAF → back restores it.
+  function initLogDraft(ed, key){
+    var draft = LF.initDraft(state.doc, ed, key);
+    if(!draft.date) draft.date = today();
+    return draft;
+  }
+
+  // Snapshot the CURRENT form's DOM into a values bag, then merge into the draft (skipping the
+  // charity on into_daf — that tab has no recipient picker). items + lots are edited live.
+  function readLogForm(){
+    if(!state.log) return;
+    var v={};
+    if($('fDate')) v.date=$('fDate').value;
+    if($('fNotes')) v.notes=$('fNotes').value;
+    if($('fAck')) v.acknowledgment_received=$('fAck').checked;
+    if($('fCharity')) v.charity_id=$('fCharity').value;
+    if($('fAmount')) v.amount=$('fAmount').value;
+    if($('fSecurity')) v.security=$('fSecurity').value;
+    if($('fShares')) v.shares=$('fShares').value;
+    if($('fBasis')) v.cost_basis=$('fBasis').value;
+    if($('fAcq')) v.acquired_date=$('fAcq').value;
+    if($('fLong')) v.long_term=$('fLong').checked;
+    if($('fMiles')) v.miles=$('fMiles').value;
+    if($('fPark')) v.parking_tolls=$('fPark').value;
+    if($('fPurpose')) v.purpose=$('fPurpose').value;
+    if($('fRef')) v.grant_ref=$('fRef').value;
+    LF.mergeForm(state.log.draft, state.log.key, v);
+  }
+
   function openLog(key, editingId, opts){
     if(!state.doc) return;
+    key = key || 'money';
     var tab=LOG_TABS.filter(function(t){return t.key===key;})[0];
     if(tab && tab.disabled) return;
     opts = opts || {};
-    // a Review carries a queue row id + a prefill + the source draft; preserve across tab switches.
-    var reviewQueueId = (opts.reviewQueueId!=null) ? opts.reviewQueueId : (state.log && state.log.reviewQueueId) || null;
-    var reviewDraft = opts.draft || (state.log && state.log.reviewDraft) || null;
-    var prefillEd = opts.ed || null;
-    var ed = editingId ? M.donationById(state.doc, editingId) : prefillEd;
-    state.log = { key:key||'money', editingId:editingId||null, reviewQueueId:reviewQueueId, reviewDraft:reviewDraft, prefillEd:prefillEd,
-      items: (ed && ed.type==='items' && Array.isArray(ed.items)) ? JSON.parse(JSON.stringify(ed.items)) : [] };
+    // a Review carries a queue row id + the source draft; both live on state.log for the session.
+    var reviewQueueId = (opts.reviewQueueId!=null) ? opts.reviewQueueId : null;
+    var reviewDraft = opts.draft || null;
+    var ed = editingId ? M.donationById(state.doc, editingId) : (opts.ed || null);
+    state.log = {
+      key: key, editingId: editingId||null, reviewQueueId: reviewQueueId, reviewDraft: reviewDraft,
+      draft: initLogDraft(ed, key),
+      items: (ed && Array.isArray(ed.items)) ? JSON.parse(JSON.stringify(ed.items)) : [],
+      lots:  (ed && Array.isArray(ed.lots) && ed.lots.length) ? JSON.parse(JSON.stringify(ed.lots))
+             : ((key==='stock'||key==='into_daf') && ed && (ed.amount!=null || ed.security))
+               ? [{ id:M.newId('lot'), security:ed.security||'', shares:(ed.shares!=null?ed.shares:''), acquired_date:ed.acquired_date||'',
+                    cost_basis:(ed.cost_basis!=null?ed.cost_basis:''), fmv:(ed.amount!=null?ed.amount:''), long_term:(ed.long_term!==false) }]
+               : [],
+      pendingAttach: [],
+    };
     $('logTitle').textContent = editingId ? 'Edit donation' : (reviewQueueId ? 'Review captured item' : 'Log a donation');
     buildLogTabs();
-    buildLogForm(ed);
+    buildLogForm();
     $('logSheet').hidden=false;
   }
   function closeLog(){ $('logSheet').hidden=true; state.log=null; }
+
+  // Switch the entry TYPE without losing the working draft OR the edit identity (S1 fix).
+  // Before v0.3 the tab click re-opened an EMPTY form and dropped editingId, so a Save after
+  // a type switch ADDED a second donation. Now we snapshot the DOM into the draft, keep
+  // editingId/reviewQueueId, and rebuild the new tab pre-filled from the draft.
+  function switchLogType(newKey){
+    if(!state.log || newKey===state.log.key) return;
+    var tab=LOG_TABS.filter(function(t){return t.key===newKey;})[0];
+    if(tab && tab.disabled) return;
+    readLogForm();
+    state.log.key=newKey;
+    buildLogTabs();
+    buildLogForm();
+  }
 
   function buildLogTabs(){
     var box=$('logTabs'); box.innerHTML='';
     LOG_TABS.forEach(function(t){
       var b=document.createElement('button'); b.textContent=t.label + (t.disabled?' · coming':'');
       b.setAttribute('aria-selected', t.key===state.log.key?'true':'false');
-      if(t.disabled){ b.disabled=true; } else { b.addEventListener('click', function(){ openLog(t.key, state.log.editingId && logKeyFor(M.donationById(state.doc,state.log.editingId))===t.key ? state.log.editingId : null); }); }
+      if(t.disabled){ b.disabled=true; } else { b.addEventListener('click', function(){ switchLogType(t.key); }); }
       box.appendChild(b);
     });
   }
 
-  function buildLogForm(ed){
-    var f=$('logForm'); var key=state.log.key; var d=ed||{};
+  function buildLogForm(){
+    var f=$('logForm'); var key=state.log.key; var d=state.log.draft || {};
     var dt = d.date || today();
     var notes = d.notes || '';
     if(needsCharity(key) && !activeGiftCharities().length){
@@ -4294,15 +5431,12 @@ window.GT.exp = {
         + '<div class="field" style="margin-top:12px;"><label>Notes</label><textarea id="fNotes">'+esc(notes)+'</textarea></div>';
     } else if(key==='stock'){
       html += '<div class="field"><label>Charity</label>'+charitySelectHtml(selId)+'</div>'
-        + '<div class="grid2"><div class="field"><label>Security</label><input class="txt" id="fSecurity" placeholder="e.g. AAPL" value="'+esc(d.security||'')+'"></div>'
-        + '<div class="field"><label>Shares</label><input type="number" class="txt" id="fShares" step="any" min="0" value="'+(d.shares||'')+'"></div></div>'
-        + '<div class="grid2"><div class="field"><label>Transfer date</label><input type="date" class="txt" id="fDate" value="'+dt+'"></div>'
-        + '<div class="field"><label>FMV total ($)</label><input type="number" class="txt" id="fAmount" step="0.01" min="0" value="'+(d.amount||'')+'"></div></div>'
-        + '<div class="field"><label>…or FMV per share ($)</label><input type="number" class="txt" id="fPer" step="0.01" min="0" value=""><div class="ghint">If you enter per-share, total = per-share × shares.</div></div>'
-        + '<div class="grid2"><div class="field"><label>Cost basis ($)</label><input type="number" class="txt" id="fBasis" step="0.01" min="0" value="'+(d.cost_basis||'')+'"></div>'
-        + '<div class="field"><label>Date acquired</label><input type="date" class="txt" id="fAcq" value="'+(d.acquired_date||'')+'"></div></div>'
-        + '<label class="chk"><input type="checkbox" id="fLong"'+(d.long_term===false?'':' checked')+'> Held more than 1 year (auto from dates)</label>'
-        + '<p class="ghint">A <strong>direct</strong> gift of securities — counts toward both totals. Appreciated stock held &gt; 1 year is deducted at FMV, capped at 30% of AGI.</p>'
+        + '<div class="field"><label>Transfer date</label><input type="date" class="txt" id="fDate" value="'+dt+'"></div>'
+        + '<div id="logLots"></div>'
+        + '<button type="button" id="btnAddLot" class="btn sm ghost">+ Add lot</button>'
+        + '<div class="runtot"><span class="rl">Total FMV</span><span class="rv" id="lotsFmv">$0</span></div>'
+        + '<div class="runtot" style="margin-top:2px;"><span class="rl">Deductible value</span><span class="rv" id="lotsDed" style="font-size:1.05rem;">$0</span></div>'
+        + '<p class="ghint">A <strong>direct</strong> gift of securities — counts toward both totals. Add every lot in the transfer; each lot deducts at FMV if held &gt; 1 year, else at cost basis. Appreciated stock held &gt; 1 year is capped at 30% of AGI.</p>'
         + '<div class="field" style="margin-top:6px;"><label>Notes</label><textarea id="fNotes">'+esc(notes)+'</textarea></div>';
     } else if(key==='mileage'){
       html += '<div class="field"><label>Charity</label>'+charitySelectHtml(selId)+'</div>'
@@ -4314,14 +5448,12 @@ window.GT.exp = {
         + '<div class="field" style="margin-top:6px;"><label>Notes</label><textarea id="fNotes">'+esc(notes)+'</textarea></div>';
     } else if(key==='into_daf'){
       html += '<div class="field"><label>Donor-advised fund</label><input class="txt" value="Fidelity Charitable" disabled></div>'
-        + '<div class="grid2"><div class="field"><label>Security</label><input class="txt" id="fSecurity" placeholder="e.g. AAPL" value="'+esc(d.security||'')+'"></div>'
-        + '<div class="field"><label>Shares</label><input type="number" class="txt" id="fShares" step="any" min="0" value="'+(d.shares||'')+'"></div></div>'
-        + '<div class="grid2"><div class="field"><label>Transfer date</label><input type="date" class="txt" id="fDate" value="'+dt+'"></div>'
-        + '<div class="field"><label>FMV on date ($)</label><input type="number" class="txt" id="fAmount" step="0.01" min="0" value="'+(d.amount||'')+'"></div></div>'
-        + '<div class="grid2"><div class="field"><label>Cost basis ($)</label><input type="number" class="txt" id="fBasis" step="0.01" min="0" value="'+(d.cost_basis||'')+'"></div>'
-        + '<div class="field"><label>Date acquired</label><input type="date" class="txt" id="fAcq" value="'+(d.acquired_date||'')+'"></div></div>'
-        + '<label class="chk"><input type="checkbox" id="fLong"'+(d.long_term===false?'':' checked')+'> Held more than 1 year</label>'
-        + '<p class="ghint">Counts toward your <strong>deductible</strong> total — a contribution into the DAF. Excluded from “given to charities”.</p>'
+        + '<div class="field"><label>Transfer date</label><input type="date" class="txt" id="fDate" value="'+dt+'"></div>'
+        + '<div id="logLots"></div>'
+        + '<button type="button" id="btnAddLot" class="btn sm ghost">+ Add lot</button>'
+        + '<div class="runtot"><span class="rl">Total FMV (deductible)</span><span class="rv" id="lotsFmv">$0</span></div>'
+        + '<div class="runtot" style="margin-top:2px;"><span class="rl">Deductible value</span><span class="rv" id="lotsDed" style="font-size:1.05rem;">$0</span></div>'
+        + '<p class="ghint">Counts toward your <strong>deductible</strong> total — a contribution into the DAF, excluded from “given to charities”. Add every lot in this transfer.</p>'
         + '<div class="field" style="margin-top:6px;"><label>Notes</label><textarea id="fNotes">'+esc(notes)+'</textarea></div>';
     } else if(key==='grant'){
       html += '<div class="field"><label>Recipient charity</label>'+charitySelectHtml(selId)+'</div>'
@@ -4337,10 +5469,11 @@ window.GT.exp = {
       $('btnAddItem').addEventListener('click', function(){ addItemLine(); });
       renderItems();
     }
-    if(key==='stock'){
-      var syncLong=function(){ var lt=computeLongTerm($('fAcq').value, $('fDate').value);
-        if($('fAcq').value && $('fDate').value) $('fLong').checked=lt; };
-      $('fAcq').addEventListener('change', syncLong); $('fDate').addEventListener('change', syncLong);
+    if(key==='stock' || key==='into_daf'){
+      if(!state.log.lots.length) addLotLine();
+      $('btnAddLot').addEventListener('click', function(){ addLotLine(); });
+      renderLots();
+      $('fDate').addEventListener('change', recomputeLotLongTerm);
     }
     if(key==='mileage'){
       var mt=function(){ var m=parseFloat($('fMiles').value)||0, p=parseFloat($('fPark').value)||0;
@@ -4348,6 +5481,19 @@ window.GT.exp = {
       $('fMiles').addEventListener('input', mt); $('fPark').addEventListener('input', mt); mt();
     }
     appendAttachSection(f);
+    // "Make this recurring" — only when editing an existing cash gift / DAF grant not yet in a series (S6)
+    if(state.log.editingId && (key==='money'||key==='grant')){
+      var edd=M.donationById(state.doc, state.log.editingId);
+      if(edd && !edd.series_id){
+        var mr=document.createElement('button'); mr.type='button'; mr.className='btn sm ghost'; mr.style.marginTop='12px';
+        mr.textContent='↻ Make this recurring';
+        mr.addEventListener('click', function(){
+          try { var s=SER.makeRecurring(state.doc, edd.id, {}); persistDoc(); closeLog(); openSeriesEditor(s.id); }
+          catch(e){ toast(e.message||'Could not make this recurring.', true); }
+        });
+        f.appendChild(mr);
+      }
+    }
     var amt=$('fAmount'); if(amt) setTimeout(function(){ try{amt.focus();}catch(e){} },40);
   }
 
@@ -4425,6 +5571,77 @@ window.GT.exp = {
     recomputeItemsTotal();
   }
 
+  // ---- share-lots editor (Stock + Into DAF, S3 / ARC §1d) ----
+  function transferDateVal(){ var el=$('fDate'); return el ? el.value : ''; }
+  function addLotLine(){
+    state.log.lots.push({ id:M.newId('lot'), security:'', shares:'', acquired_date:'', cost_basis:'', fmv:'', long_term:true });
+    renderLots();
+  }
+  function lotDeductible(L, transfer){
+    var lt = (typeof L.long_term==='boolean') ? L.long_term : M.computeLongTerm(L.acquired_date, transfer);
+    return lt ? (Number(L.fmv)||0) : (Number(L.cost_basis)||0);
+  }
+  function recomputeLotTotals(){
+    var transfer=transferDateVal(), fmv=0, ded=0;
+    (state.log.lots||[]).forEach(function(L){ fmv += Number(L.fmv)||0; ded += lotDeductible(L, transfer); });
+    var a=$('lotsFmv'); if(a) a.textContent=money(Math.round(fmv*100)/100);
+    var b=$('lotsDed'); if(b) b.textContent=money(Math.round(ded*100)/100);
+  }
+  // Transfer date changed -> re-evaluate each lot's held->1yr checkbox from the dates.
+  function recomputeLotLongTerm(){
+    var transfer=transferDateVal(), box=$('logLots'); if(!box) return;
+    state.log.lots.forEach(function(L,i){ L.long_term=M.computeLongTerm(L.acquired_date, transfer);
+      var el=box.children[i]; if(el){ var c=el.querySelector('[data-f="long_term"]'); if(c) c.checked=L.long_term!==false; } });
+    recomputeLotTotals();
+  }
+  function updateLotLine(i, el){
+    var L=state.log.lots[i];
+    el.querySelector('[data-lt]').textContent=money(Math.round((Number(L.fmv)||0)*100)/100);
+    recomputeLotTotals();
+  }
+  function lotLineEl(i){
+    var L=state.log.lots[i];
+    var el=document.createElement('div'); el.className='itemline';
+    el.innerHTML =
+      '<div class="top"><span class="lt" data-lt>$0</span><button type="button" class="rm" data-rm>Remove</button></div>'
+      + '<div class="grid2"><div class="field"><label>Security</label><input class="txt" data-f="security" placeholder="e.g. AAPL" value="'+esc(L.security||'')+'"></div>'
+      +   '<div class="field"><label>Shares</label><input type="number" class="txt" data-f="shares" step="any" min="0" value="'+(L.shares!=null?L.shares:'')+'"></div></div>'
+      + '<div class="grid2"><div class="field"><label>FMV ($)</label><input type="number" class="txt" data-f="fmv" step="0.01" min="0" value="'+(L.fmv!=null?L.fmv:'')+'"></div>'
+      +   '<div class="field"><label>Cost basis ($)</label><input type="number" class="txt" data-f="cost_basis" step="0.01" min="0" value="'+(L.cost_basis!=null?L.cost_basis:'')+'"></div></div>'
+      + '<div class="grid2"><div class="field"><label>Date acquired</label><input type="date" class="txt" data-f="acquired_date" value="'+(L.acquired_date||'')+'"></div>'
+      +   '<div class="field" style="display:flex;align-items:flex-end;"><label class="chk"><input type="checkbox" data-f="long_term"'+(L.long_term!==false?' checked':'')+'> Held &gt; 1 year</label></div></div>';
+    el.querySelectorAll('[data-f]').forEach(function(inp){
+      var fld=inp.getAttribute('data-f');
+      var handler=function(){
+        if(fld==='long_term'){ L.long_term=inp.checked; }
+        else if(fld==='shares'||fld==='fmv'||fld==='cost_basis'){ L[fld]=(inp.value===''?'':Number(inp.value)); }
+        else { L[fld]=inp.value; }
+        if(fld==='acquired_date'){ L.long_term=M.computeLongTerm(L.acquired_date, transferDateVal());
+          var c=el.querySelector('[data-f="long_term"]'); if(c) c.checked=L.long_term!==false; }
+        updateLotLine(i, el);
+      };
+      inp.addEventListener('input', handler); inp.addEventListener('change', handler);
+    });
+    el.querySelector('[data-rm]').addEventListener('click', function(){ state.log.lots.splice(i,1); if(!state.log.lots.length) addLotLine(); else renderLots(); });
+    updateLotLine(i, el);
+    return el;
+  }
+  function renderLots(){
+    var box=$('logLots'); if(!box) return; box.innerHTML='';
+    state.log.lots.forEach(function(L,i){ box.appendChild(lotLineEl(i)); });
+    recomputeLotTotals();
+  }
+  // Collect the lots for a save: keep only lots with a positive FMV; normalize long_term.
+  function collectLots(){
+    var transfer=($('fDate')&&$('fDate').value)||'';
+    return (state.log.lots||[]).filter(function(L){ return Number(L.fmv)>0; }).map(function(L){
+      return { id:L.id||M.newId('lot'), security:(String(L.security||'').trim())||null,
+        shares:(L.shares===''||L.shares==null)?null:Number(L.shares),
+        acquired_date:L.acquired_date||null, cost_basis:(L.cost_basis===''||L.cost_basis==null)?null:Number(L.cost_basis),
+        fmv:Number(L.fmv)||0, long_term:(typeof L.long_term==='boolean')?L.long_term:M.computeLongTerm(L.acquired_date, transfer) };
+    });
+  }
+
   // ---- receipt attachments (slice 6) ----
   function attSize(b){ b=Number(b)||0; return b>=1048576 ? (Math.round(b/104857.6)/10+' MB') : (Math.round(b/1024)+' KB'); }
   function currentAttachments(){
@@ -4495,7 +5712,7 @@ window.GT.exp = {
   async function viewAttachment(a){
     try {
       if(a.thumbUrl){ window.open(a.thumbUrl, '_blank'); return; }
-      var row=await F.get(state.cfg.id, a.id); if(!row){ toast('Receipt not found.', true); return; }
+      var row=await F.get(state.cfg.id, IB.attFileId(a)); if(!row){ toast('Receipt not found.', true); return; }
       var dec=await F.decryptFile(row.ciphertext, row.iv, a.key);
       var blob=new Blob([dec.bytes], { type:dec.mime }); var url=URL.createObjectURL(blob);
       window.open(url, '_blank'); setTimeout(function(){ URL.revokeObjectURL(url); }, 30000);
@@ -4504,8 +5721,12 @@ window.GT.exp = {
   async function deleteAttachment(a){
     if(!confirm('Delete this receipt?')) return;
     try {
-      if(state.log.editingId){ await F.remove(state.cfg.id, a.id);
-        state.doc.attachments=(state.doc.attachments||[]).filter(function(x){ return x.id!==a.id; }); persistDoc(); }
+      if(state.log.editingId){
+        var fid=IB.attFileId(a), key=(a.att_id||a.id);
+        state.doc.attachments=(state.doc.attachments||[]).filter(function(x){ return (x.att_id||x.id)!==key; });
+        if(!IB.fileReferenced(state.doc, fid)){ await F.remove(state.cfg.id, fid); }   // delete the file row only when unreferenced
+        persistDoc();
+      }
       else { state.log.pendingAttach=(state.log.pendingAttach||[]).filter(function(p){ return p.att.id!==a.id; }); }
       renderAttachSection(); toast('Receipt deleted');
     } catch(e){ toast('Could not delete that receipt.', true); }
@@ -4530,33 +5751,28 @@ window.GT.exp = {
     if(key==='money'){
       var cid=$('fCharity').value, amt=parseFloat($('fAmount').value);
       if(!cid){ toast('Pick a charity.', true); return; } if(!(amt>0)){ toast('Enter an amount.', true); return; }
-      payload={ type:'money', charity_id:cid, amount:amt, date:dt, notes:notes, acknowledgment_received:$('fAck').checked };
+      payload={ type:'money', charity_id:cid, amount:amt, date:dt, notes:notes, daf_contribution:false, acknowledgment_received:$('fAck').checked };
     } else if(key==='items'){
       var cidi=$('fCharity').value;
       if(!cidi){ toast('Pick a charity.', true); return; }
       var lines=state.log.items.filter(function(it){ return (Number(it.qty)||0)>0 && (Number(it.unit_value)||0)>=0 && it.description; });
       if(!lines.length){ toast('Add at least one item line with a description and value.', true); return; }
-      payload={ type:'items', charity_id:cidi, items:lines, date:dt, notes:notes, acknowledgment_received:$('fAck').checked };
+      payload={ type:'items', charity_id:cidi, items:lines, date:dt, notes:notes, daf_contribution:false, acknowledgment_received:$('fAck').checked };
     } else if(key==='into_daf'){
-      var sp=M.dafSponsor(state.doc); var fmv=parseFloat($('fAmount').value);
-      if(!(fmv>0)){ toast('Enter the FMV on the transfer date.', true); return; }
-      payload={ type:'stock', daf_contribution:true, charity_id:sp.id, amount:fmv, date:dt, notes:notes,
-        security:($('fSecurity').value||'').trim()||null, shares:parseFloat($('fShares').value)||null,
-        cost_basis:parseFloat($('fBasis').value)||null, acquired_date:$('fAcq').value||null, long_term:$('fLong').checked };
+      var sp=M.dafSponsor(state.doc); var idLots=collectLots();
+      if(!idLots.length){ toast('Add at least one lot with an FMV.', true); return; }
+      payload={ type:'stock', daf_contribution:true, charity_id:sp.id, date:dt, notes:notes, lots:idLots };
     } else if(key==='stock'){
       var cids=$('fCharity').value; if(!cids){ toast('Pick a charity.', true); return; }
-      var sh=parseFloat($('fShares').value)||null, per=parseFloat($('fPer').value)||null, fmv=parseFloat($('fAmount').value);
-      var amount = (fmv>0) ? fmv : ((per>0 && sh>0) ? Math.round(per*sh*100)/100 : NaN);
-      if(!(amount>0)){ toast('Enter the FMV — a total, or per-share × shares.', true); return; }
-      payload={ type:'stock', charity_id:cids, amount:amount, date:dt, notes:notes,
-        security:($('fSecurity').value||'').trim()||null, shares:sh,
-        cost_basis:parseFloat($('fBasis').value)||null, acquired_date:$('fAcq').value||null, long_term:$('fLong').checked };
+      var stLots=collectLots();
+      if(!stLots.length){ toast('Add at least one lot with an FMV.', true); return; }
+      payload={ type:'stock', charity_id:cids, date:dt, notes:notes, daf_contribution:false, lots:stLots };
     } else if(key==='mileage'){
       var cidm=$('fCharity').value; if(!cidm){ toast('Pick a charity.', true); return; }
       var miles=parseFloat($('fMiles').value)||0, park=parseFloat($('fPark').value)||0;
       if(!(miles>0)){ toast('Enter the miles driven.', true); return; }
       var mamt=Math.round((miles*MILEAGE_RATE+park)*100)/100;
-      payload={ type:'mileage', charity_id:cidm, amount:mamt, date:dt, notes:notes,
+      payload={ type:'mileage', charity_id:cidm, amount:mamt, date:dt, notes:notes, daf_contribution:false,
         miles:miles, parking_tolls:park, purpose:($('fPurpose').value||'').trim()||null, rate:MILEAGE_RATE };
     } else if(key==='grant'){
       var cidg=$('fCharity').value, amtg=parseFloat($('fAmount').value);
@@ -4615,9 +5831,9 @@ window.GT.exp = {
       + '<button type="button" class="btn danger ghost" id="btnSignout2">Sign out on this device</button>'
       + '<p class="hint">Signing out clears this browser only — your synced book is untouched.</p></div>'
       + captureCardHtml()
-      + '<div class="card"><div class="card-h">Import Fidelity Charitable history</div>'
-      + '<p class="hint">Import your Giving Account history (CSV or PDF) to fill grant amounts and record contributions. It opens in the review inbox.</p>'
-      + '<button type="button" class="btn sm ghost" id="btnOpenImport">Open review inbox to import</button></div>';
+      + '<div class="card"><div class="card-h">Import a file</div>'
+      + '<p class="hint">Drop a receipt, statement, email or CSV into the review inbox — the app reads it and proposes entries. A Fidelity Giving Account CSV imports directly; everything else is read by AI.</p>'
+      + '<button type="button" class="btn sm ghost" id="btnOpenImport">Open the review inbox</button></div>';
     var seg2=$('themeSeg'); if(seg2) seg2.querySelectorAll('button').forEach(function(b){
       b.addEventListener('click', function(){ setTheme(b.getAttribute('data-theme')); }); });
     var cpy=$('btnCopyId'); if(cpy) cpy.addEventListener('click', function(){
@@ -4797,16 +6013,26 @@ window.GT.exp = {
     } catch(e){ setPill('offline'); return false; }
   }
 
-  function allDrafts(){ return state.inbox.drafts.concat(state.inbox.localDrafts); }
+  // Persisted import drafts live in the encrypted doc (doc.inbox.pending, S4); server capture
+  // drafts live in the sealed queue (state.inbox.drafts).
+  function localDrafts(){ return state.doc ? IB.pendingList(state.doc) : []; }
+  function allDrafts(){ return state.inbox.drafts.concat(localDrafts()); }
   function updateInboxBadge(){
-    var n=(state.inbox.drafts.length + state.inbox.localDrafts.length + state.inbox.unopenable.length);
+    var n=(state.inbox.drafts.length + localDrafts().length + state.inbox.unopenable.length);
     var b=$('inboxBadge'); if(!b) return;
     b.textContent=String(n); b.hidden = !(n>0);
   }
-  // remove a draft's backing: a server draft deletes its queue row; a local (import) draft
-  // just drops out of the in-memory list.
+  // remove a draft's backing: a server draft deletes its sealed queue row; a persisted import
+  // draft drops out of doc.inbox.pending (and its receipt file is deleted if now unreferenced),
+  // then the doc is saved. Returns a Promise so commitApproval's ordering still holds.
   function removeDraftRow(d){
-    if(d && d.local){ state.inbox.localDrafts=state.inbox.localDrafts.filter(function(x){ return x!==d && x.id!==d.id; }); return Promise.resolve(); }
+    if(d && d.local){
+      var r=IB.removePending(state.doc, d.id);
+      var p=Promise.resolve();
+      if(r.orphanFileId){ p=F.remove(state.cfg.id, r.orphanFileId).catch(function(){}); }
+      persistDoc();
+      return p;
+    }
     return Q.remove(state.cfg.id, d.id);
   }
 
@@ -4824,8 +6050,73 @@ window.GT.exp = {
         } catch(e){ unopenable.push({ id: rows[i].id }); }
       }
       state.inbox.drafts=drafts; state.inbox.unopenable=unopenable; state.inbox.pulledOnce=true;
+      await autoAddMatches();   // S6: silently approve captures that match an active series
     } catch(e){ /* offline — leave the last known inbox */ }
     finally { state.inbox.loading=false; updateInboxBadge(); if(!$('inboxSheet').hidden) renderInbox(); }
+  }
+
+  // ---- auto-add captured gifts that match an active recurring series (S6) ----
+  async function tryAutoAdd(d, m){
+    d.charity_id = await ensureDraftCharity(d);
+    var created=null;
+    var res=await RV.commitApproval({
+      apply: function(){ var p=RV.draftPayload(d); p.series_id=m.series.id; var c=M.addDonation(state.doc,p); c.series_id=m.series.id; created=c; },
+      persist: function(){ writeDocCache(state.doc); },
+      saveOnce: saveOnce,
+      removeRow: function(){ return removeDraftRow(d); },
+    });
+    if(res.removed && created){
+      state.inbox.drafts=state.inbox.drafts.filter(function(x){ return x!==d; });
+      state.autoAdded.push({ donationId:created.id, draftJson:JSON.stringify(d), seriesId:m.series.id, charity:d.charity_name, amount:created.amount });
+      return true;
+    }
+    return false;
+  }
+  async function autoAddMatches(){
+    if(!state.doc) return false;
+    var candidates=state.inbox.drafts.slice(), any=false;
+    for(var i=0;i<candidates.length;i++){
+      var d=candidates[i]; if(!d) continue;
+      var m=SER.matchSeriesForDraft(state.doc, d); if(!m) continue;
+      if(RV.findDuplicates(d, state.doc, otherDrafts(d)).isDuplicate) continue;   // never double-count
+      try { if(await tryAutoAdd(d, m)) any=true; } catch(e){ /* leave as a normal card */ }
+    }
+    if(any) render();   // dashboard + strips reflect the auto-added gifts
+    return any;
+  }
+  function undoAutoAdd(entry){
+    M.deleteDonation(state.doc, entry.donationId);
+    var d; try{ d=JSON.parse(entry.draftJson); }catch(e){ d=null; }
+    if(d){ d.local=true; d.id='auto_'+M.newId('imp'); IB.addPending(state.doc, d); }   // back in the persisted inbox
+    state.autoAdded=state.autoAdded.filter(function(x){ return x!==entry; });
+    persistDoc(); if(!$('inboxSheet').hidden) renderInbox(); toast('Undone — back in your inbox');
+  }
+  function renderAutoStrip(box){
+    if(!state.autoAdded.length) return;
+    var strip=document.createElement('div'); strip.className='autostrip';
+    var lab=document.createElement('span'); lab.className='al';
+    lab.textContent='Added automatically ('+state.autoAdded.length+') — matched your recurring gifts.';
+    var acts=document.createElement('span'); acts.className='acts';
+    var undo=document.createElement('button'); undo.className='btn sm ghost'; undo.textContent='Undo last';
+    undo.addEventListener('click', function(){ if(state.autoAdded.length) undoAutoAdd(state.autoAdded[state.autoAdded.length-1]); });
+    var ok=document.createElement('button'); ok.className='btn sm'; ok.textContent='Keep all';
+    ok.addEventListener('click', function(){ state.autoAdded=[]; render(); if(!$('inboxSheet').hidden) renderInbox(); });
+    acts.appendChild(undo); acts.appendChild(ok); strip.appendChild(lab); strip.appendChild(acts);
+    box.appendChild(strip);
+  }
+  // A draft that resembles a series (same charity + type) but did NOT auto-add — for the hint.
+  function looksLikeSeries(d){
+    var st = SER.donationSeriesType(d);
+    if(!st) return null;
+    var list=(state.doc.series||[]).filter(function(s){ return s.active && s.type===st; });
+    for(var i=0;i<list.length;i++){ if(SER.seriesById(state.doc,list[i].id) && charitySeriesMatch(list[i], d)) return list[i]; }
+    return null;
+  }
+  function charitySeriesMatch(s, d){
+    var sc=M.charityById(state.doc, s.charity_id); if(!sc) return false;
+    if(d.charity_id && d.charity_id===s.charity_id) return true;
+    var e1=M.normEin(d.charity_ein), e2=M.normEin(sc.ein); if(e1&&e2) return e1===e2;
+    return !!(d.charity_name) && String(d.charity_name).trim().toLowerCase()===String(sc.name||'').trim().toLowerCase();
   }
 
   function otherDrafts(except){ return allDrafts().filter(function(d){ return d!==except; }); }
@@ -4846,10 +6137,12 @@ window.GT.exp = {
     var drafts=allDrafts(), un=state.inbox.unopenable;
     // Imports (Fidelity + CSV) are always available — they make LOCAL drafts and don't
     // need the capture key. Only pulling email/YNAB items needs capture set up.
-    ready.innerHTML=importControlHtml();
+    ready.innerHTML='';
+    renderAutoStrip(ready);   // "Added automatically (N)" strip (S6)
+    var impWrap=document.createElement('div'); impWrap.innerHTML=importControlHtml(); while(impWrap.firstChild) ready.appendChild(impWrap.firstChild);
     if(!captureReady()){
       var note=document.createElement('div'); note.className='ghint'; note.style.margin='0 0 12px';
-      note.innerHTML='Email &amp; bank capture isn’t set up yet (Settings → Email &amp; bank capture). You can still import a CSV or PDF below.';
+      note.innerHTML='Email &amp; bank capture isn’t set up yet (Settings → Email &amp; bank capture). You can still import a file below.';
       ready.insertBefore(note, ready.firstChild);
     }
     var readyDrafts=drafts.filter(function(d){ return RV.isReady(d, RV.findDuplicates(d, state.doc, otherDrafts(d))); });
@@ -4870,66 +6163,117 @@ window.GT.exp = {
     un.forEach(function(u){ list.appendChild(unopenableCard(u)); });
   }
 
-  // ---- Fidelity Charitable history import (CSV in-app; PDF via the import-extract fn) ----
+  // ---- one "Import a file" drop zone (S5): PDF / image / .eml / text / CSV ----
   function importControlHtml(){
-    return '<div class="card" style="margin-bottom:12px;"><div class="card-h">Import Fidelity Charitable history</div>'
-      + '<p class="hint">Fidelity grant emails carry no amount — import your Giving Account history (CSV or PDF) to fill amounts and record contributions. Rows reconcile against what’s already here.</p>'
-      + '<input id="fidFile" type="file" accept=".csv,text/csv,application/pdf,.pdf" class="txt">'
-      + '<div id="fidSummary" class="ghint" style="margin-top:8px;"></div></div>'
-      + '<div class="card" style="margin-bottom:12px;"><div class="card-h">Import donations from a CSV</div>'
-      + '<p class="hint">From deductable.ai, ItsDeductible, or any spreadsheet. You’ll map the columns, then rows land here to review.</p>'
-      + '<input id="csvFile" type="file" accept=".csv,text/csv" class="txt"></div>';
+    return '<div class="card dropzone" id="dropZone" style="margin-bottom:12px;">'
+      + '<div class="card-h">Import a file</div>'
+      + '<p class="hint">Drop a receipt or statement — <strong>PDF, photo, email (.eml), text, or a CSV</strong> — or tap to choose. The app reads it and proposes entries below to review. A Fidelity Giving Account CSV imports directly; everything else is read by AI. Dropped PDFs, photos and emails attach as the receipt.</p>'
+      + '<div class="dropinner" id="dropInner"><div class="dropbig">Drop a file here</div><div class="dropsub">or choose one</div>'
+      + '<input id="dropInput" type="file" accept=".pdf,.csv,.eml,.txt,.html,.htm,image/*,application/pdf,text/csv" class="txt"></div>'
+      + '<div id="dropProgress" class="ghint" style="margin-top:8px;"></div></div>';
   }
   function wireImportControl(){
-    var el=$('fidFile'); if(el) el.addEventListener('change', onFidelityFile);
-    var cf=$('csvFile'); if(cf) cf.addEventListener('change', onCsvFile);
+    var dz=$('dropZone');
+    if(dz){
+      ['dragenter','dragover'].forEach(function(ev){ dz.addEventListener(ev, function(e){ e.preventDefault(); dz.classList.add('dragover'); }); });
+      ['dragleave','drop'].forEach(function(ev){ dz.addEventListener(ev, function(e){ e.preventDefault(); if(ev==='dragleave' && dz.contains(e.relatedTarget)) return; dz.classList.remove('dragover'); }); });
+      dz.addEventListener('drop', function(e){ var f=e.dataTransfer && e.dataTransfer.files; if(f && f.length) handleDroppedFiles(f); });
+    }
+    var di=$('dropInput'); if(di) di.addEventListener('change', function(e){ if(e.target.files && e.target.files.length) handleDroppedFiles(e.target.files); e.target.value=''; });
   }
-  function onFidelityFile(e){
-    var file=e.target.files && e.target.files[0]; if(!file){ return; }
-    var isPdf = /pdf$/i.test(file.type) || /\.pdf$/i.test(file.name);
-    if(isPdf) importFidelityPdf(file); else importFidelityCsv(file);
-    e.target.value='';
+  function setDropProgress(msg){ var p=$('dropProgress'); if(p) p.textContent=msg; }
+
+  // Encrypt + upload a dropped file to press_giving_files (placeholder donation_id until
+  // approve). Returns { id, key, mime, filename, bytes } or null if the upload fails (offline).
+  async function stagePendingFile(bytes, mime, filename){
+    var enc=await F.encryptFile(bytes, { mime:mime, filename:filename });
+    var fileId=M.newId('file');
+    await F.put(state.cfg.id, { id:fileId, donation_id:'pending_'+fileId, ciphertext:enc.ciphertext, iv:enc.iv, bytes:enc.bytes });
+    return { id:fileId, key:enc.key, mime:mime, filename:filename, bytes:enc.bytes };
   }
-  function applyReconcile(res){
-    if(res.changedDoc){ persistDoc(); }
-    state.inbox.localDrafts = state.inbox.localDrafts.concat(res.drafts);
-    updateInboxBadge(); renderInbox();
-    var s=res.summary;
-    var msg=s.new+' new · '+s.filled+' amount'+(s.filled===1?'':'s')+' filled · '+s.recorded+' already recorded'
-      + (s.skipped?(' · '+s.skipped+' skipped'):'');
-    var fs=$('fidSummary'); if(fs) fs.textContent=msg;
-    toast('Fidelity import: '+msg);
-  }
-  function importFidelityCsv(file){
-    var reader=new FileReader();
-    reader.onload=function(){ try{
-      var res=GT.fidelity.importCsv(String(reader.result), state.doc, allDrafts());
-      applyReconcile(res);
-    } catch(err){ toast('Could not read that CSV.', true); } };
-    reader.readAsText(file);
-  }
-  function importFidelityPdf(file){
-    var reader=new FileReader();
-    reader.onload=async function(){
-      try {
-        var b64=String(reader.result).split(',')[1] || '';
-        var records=await extractFidelityPdf(b64);
-        var res=GT.fidelity.reconcile(records, state.doc, allDrafts());
-        applyReconcile(res);
-      } catch(err){ toast(err.message||'Could not extract that PDF.', true); }
-    };
-    reader.readAsDataURL(file);
-  }
-  // POST the PDF to the import-extract Edge Function (x-plan-id = sync id). Returns records[].
-  async function extractFidelityPdf(pdfB64){
+  async function tryStageFile(bytes, mime, filename){ try{ return await stagePendingFile(bytes, mime, filename); }catch(e){ return null; } }
+
+  // POST a dropped file to import-extract (x-plan-id = sync id). Returns { doc_kind, records }.
+  async function extractFile(payload){
     var url=C.SB_URL+'/functions/v1/import-extract';
     var res=await fetch(url, { method:'POST',
       headers:{ 'apikey':C.SB_KEY, 'Authorization':'Bearer '+C.SB_KEY, 'x-plan-id':state.cfg.id, 'Content-Type':'application/json' },
-      body: JSON.stringify({ kind:'fidelity', pdf_base64: pdfB64 }) });
-    if(res.status===401) throw new Error('PDF import isn’t set up on the server yet.');
-    if(!res.ok) throw new Error('PDF extraction failed.');
-    var j=await res.json();
-    return Array.isArray(j.records)?j.records:[];
+      body: JSON.stringify(payload) });
+    if(res.status===401) throw new Error('File import isn’t set up on the server yet.');
+    if(res.status===413) throw new Error('That file is too large.');
+    if(!res.ok) throw new Error('Could not read that file.');
+    return await res.json();
+  }
+
+  function absorbReconcile(res, file, summary){
+    res.drafts.forEach(function(d){ if(file) d.file=file; IB.addPending(state.doc, d); });
+    var s=res.summary; summary.proposed+=s.new; summary.filled+=s.filled; summary.recorded+=s.recorded; summary.skipped+=s.skipped;
+  }
+  function absorbResult(result, file, sourceRef, summary){
+    var records=(result && result.records) || [];
+    if(result && result.doc_kind==='fidelity_history'){
+      var recon=records.map(GT.filedrop.toReconcileRecord);
+      absorbReconcile(GT.fidelity.reconcile(recon, state.doc, allDrafts()), file, summary); return;
+    }
+    var drafts=GT.filedrop.recordsToDrafts(records, state.doc, { idPrefix:'drop', source_ref:sourceRef, file:file });
+    drafts.forEach(function(d){ IB.addPending(state.doc, d); });
+    summary.proposed+=drafts.length; summary.skipped+=Math.max(0, records.length-drafts.length);
+  }
+
+  async function importOneFile(file, summary){
+    var kind=GT.filedrop.sniffKind(file);
+    if(kind==='csv'){
+      var text=await file.text();
+      var parsed=GT.csvImport.parse(text);
+      if(GT.filedrop.isFidelityCsv(parsed.headers)){
+        absorbReconcile(GT.fidelity.importCsv(text, state.doc, allDrafts()), null, summary); return;   // Fidelity CSV -> no-AI reader; a spreadsheet is not a receipt
+      }
+      var ch=GT.filedrop.csvChunks(text);
+      var recs=[];
+      for(var c=0;c<ch.chunks.length;c++){ setDropProgress('Reading '+file.name+' '+(c+1)+'/'+ch.chunks.length+'…');
+        var r=await extractFile({ kind:'file', mime:'text/csv', filename:file.name, text:ch.chunks[c] }); recs=recs.concat((r&&r.records)||[]); }
+      absorbResult({ doc_kind:'donations', records:recs }, null, file.name, summary);
+      if(ch.truncated) toast('Large CSV — imported the first '+ch.total+' rows only.', true);
+      return;
+    }
+    var payload={ kind:'file', filename:file.name, mime:file.type||undefined }, stagedFile=null;
+    if(kind==='pdf'){
+      var bytes=new Uint8Array(await file.arrayBuffer());
+      payload.pdf_base64=X.bytesToB64(bytes); payload.mime='application/pdf';
+      stagedFile=await tryStageFile(bytes, 'application/pdf', file.name);
+    } else if(kind==='image'){
+      var dataUrl=await downscaleImage(file, 1600, 0.75); var b64=dataUrl.split(',')[1];
+      payload.image_base64=b64; payload.mime='image/jpeg';
+      stagedFile=await tryStageFile(X.b64ToBytes(b64), 'image/jpeg', (String(file.name||'receipt').replace(/\.[^.]+$/,'')||'receipt')+'.jpg');
+    } else if(kind==='eml'){
+      var raw=await file.text(); var em=GT.eml.parseEml(raw);
+      payload.meta={ from:em.from, subject:em.subject, date:em.date };
+      if(em.pdfs && em.pdfs.length){ payload.pdf_base64=em.pdfs[0].data; payload.mime='application/pdf'; }
+      else { payload.text=em.text; payload.mime='text/plain'; }
+      stagedFile=await tryStageFile(new TextEncoder().encode(raw), 'message/rfc822', file.name);   // attach the email itself
+    } else if(kind==='text'){
+      payload.text=await file.text(); payload.mime='text/plain';                                   // text is not a receipt -> no attach
+    } else {
+      throw new Error('Unsupported file: '+file.name);
+    }
+    var result=await extractFile(payload);
+    absorbResult(result, stagedFile, file.name, summary);
+  }
+
+  async function handleDroppedFiles(files){
+    if(!state.doc){ return; }
+    var summary={ proposed:0, filled:0, recorded:0, skipped:0, files:0 };
+    for(var i=0;i<files.length;i++){
+      var file=files[i]; summary.files++;
+      setDropProgress('Reading '+file.name+'…');
+      try { await importOneFile(file, summary); }
+      catch(e){ summary.skipped++; toast(e.message||('Could not read '+file.name), true); }
+    }
+    persistDoc(); updateInboxBadge(); renderInbox();
+    var msg=summary.proposed+' proposed'
+      + (summary.filled?(' · '+summary.filled+' filled'):'')
+      + ' · '+summary.recorded+' already recorded · '+summary.skipped+' skipped';
+    setDropProgress(msg); toast('Import: '+msg);
   }
 
   function draftCard(d){
@@ -4941,6 +6285,7 @@ window.GT.exp = {
     var hints='';
     if(dup.isDuplicate) hints+='<span class="qhint dup">likely duplicate</span>';
     if(d.lowConfidence) hints+='<span class="qhint chk">check this</span>';
+    var lk=looksLikeSeries(d); if(lk){ var lc=M.charityById(state.doc, lk.charity_id); hints+='<span class="qhint series">looks like your '+esc(lk.cadence)+' '+esc(lc?lc.name:'')+' gift</span>'; }
     el.innerHTML='<div class="qh"><span class="qsrc">'+sourceIcon(d.source)+'</span>'
       + '<span class="qwho">'+esc(d.charity_name||'Unknown charity')+'</span>'+amtHtml+'</div>'
       + '<div class="qmeta">'+dateHtml+' '+draftBadge(d)+' '+hints+'</div>';
@@ -4969,54 +6314,10 @@ window.GT.exp = {
     return el;
   }
 
-  // ---- generic CSV import + column mapper ----
-  var csvState={ parsed:null, mapping:null };
-  var CSV_FIELD_LABELS={ date:'Date', charity:'Charity', ein:'EIN', type:'Type', amount:'Amount',
-    item_name:'Item name', item_qty:'Item qty', item_condition:'Item condition', item_value:'Item value', notes:'Notes' };
-  function onCsvFile(e){
-    var file=e.target.files && e.target.files[0]; if(!file){ return; }
-    var reader=new FileReader();
-    reader.onload=function(){ try{
-      var parsed=GT.csvImport.parse(String(reader.result));
-      if(!parsed.headers.length){ toast('That CSV has no header row.', true); return; }
-      csvState.parsed=parsed; csvState.mapping=GT.csvImport.guessMapping(parsed.headers);
-      openCsvMap();
-    } catch(err){ toast('Could not read that CSV.', true); } };
-    reader.readAsText(file); e.target.value='';
-  }
-  function openCsvMap(){ $('csvMapSheet').hidden=false; renderCsvMap(); }
-  function closeCsvMap(){ $('csvMapSheet').hidden=true; }
-  function renderCsvMap(){
-    var box=$('csvMapFields'); var headers=csvState.parsed.headers;
-    var opts=function(sel){ return '<option value="-1">(none)</option>'+headers.map(function(h,i){ return '<option value="'+i+'"'+(i===sel?' selected':'')+'>'+esc(h)+'</option>'; }).join(''); };
-    box.innerHTML=GT.csvImport.FIELDS.map(function(f){
-      return '<div class="field"><label>'+esc(CSV_FIELD_LABELS[f]||f)+'</label><select data-csvf="'+f+'">'+opts(csvState.mapping[f])+'</select></div>';
-    }).join('');
-    box.querySelectorAll('[data-csvf]').forEach(function(sel){
-      sel.addEventListener('change', function(){ csvState.mapping[sel.getAttribute('data-csvf')]=Number(sel.value); renderCsvPreview(); });
-    });
-    renderCsvPreview();
-  }
-  function renderCsvPreview(){
-    var drafts=GT.csvImport.buildDrafts(csvState.parsed, csvState.mapping, state.doc);
-    $('csvPreviewCnt').textContent = drafts.length ? (drafts.length+' rows') : '';
-    var box=$('csvPreview');
-    if(!drafts.length){ box.innerHTML='<p class="hint">No rows to import.</p>'; return; }
-    box.innerHTML='<div class="receipt">'+drafts.slice(0,6).map(function(d){
-      var amt = d.amountNeeded ? 'amount needed' : money(d.amount);
-      return '<div class="row"><span class="date">'+esc(String(d.date||'—')).slice(5)+'</span>'
-        + '<span class="who"><div class="nm">'+esc(d.charity_name||'Unknown')+'</div><div class="ty">'+esc(d.type)+'</div></span>'
-        + '<span class="amt">'+esc(amt)+'</span></div>';
-    }).join('')+'</div>'+(drafts.length>6?('<p class="hint">…and '+(drafts.length-6)+' more.</p>'):'');
-  }
-  function doCsvImport(){
-    var drafts=GT.csvImport.buildDrafts(csvState.parsed, csvState.mapping, state.doc);
-    if(!drafts.length){ toast('Nothing to import.', true); return; }
-    state.inbox.localDrafts=state.inbox.localDrafts.concat(drafts);
-    closeCsvMap(); updateInboxBadge();
-    if($('inboxSheet').hidden) openInbox(); else renderInbox();
-    toast('Imported '+drafts.length+' row'+(drafts.length===1?'':'s')+' to review');
-  }
+  // (S5) The generic-CSV column mapper is retired — a dropped non-Fidelity CSV is now read by
+  // the import-extract AI extractor (see handleDroppedFiles / importOneFile above). The
+  // Fidelity Giving Account CSV keeps its exact no-AI reader (GT.fidelity.importCsv), routed
+  // by GT.filedrop.isFidelityCsv.
 
   // Ensure the draft's charity exists in the book (ProPublica by EIN, then name+TX, else manual).
   async function ensureDraftCharity(d){
@@ -5036,7 +6337,7 @@ window.GT.exp = {
       d.charity_id = await ensureDraftCharity(d);
       var payload = RV.draftPayload(d);
       var res = await RV.commitApproval({
-        apply: function(){ M.addDonation(state.doc, payload); },
+        apply: function(){ var c=M.addDonation(state.doc, payload); IB.attachFileToDonations(state.doc, d, [c.id]); },
         persist: function(){ writeDocCache(state.doc); render(); },
         saveOnce: saveOnce,
         removeRow: function(){ return removeDraftRow(d); },
@@ -5052,7 +6353,7 @@ window.GT.exp = {
     if(!target){ toast('No matching donation to merge into.', true); return; }
     try {
       var res = await RV.commitApproval({
-        apply: function(){ RV.merge(target.donation, d); M.editDonation(state.doc, target.id, {}); },
+        apply: function(){ RV.merge(target.donation, d); M.editDonation(state.doc, target.id, {}); IB.attachFileToDonations(state.doc, d, [target.id]); },
         persist: function(){ writeDocCache(state.doc); render(); },
         saveOnce: saveOnce,
         removeRow: function(){ return removeDraftRow(d); },
@@ -5078,7 +6379,7 @@ window.GT.exp = {
       try {
         d.charity_id = await ensureDraftCharity(d);
         var res = await RV.commitApproval({
-          apply: (function(p){ return function(){ M.addDonation(state.doc, p); }; })(RV.draftPayload(d)),
+          apply: (function(p, dd){ return function(){ var c=M.addDonation(state.doc, p); IB.attachFileToDonations(state.doc, dd, [c.id]); }; })(RV.draftPayload(d), d),
           persist: function(){ writeDocCache(state.doc); },
           saveOnce: saveOnce,
           removeRow: (function(dd){ return function(){ return removeDraftRow(dd); }; })(d),
@@ -5126,11 +6427,12 @@ window.GT.exp = {
   $('btnInbox').addEventListener('click', openInbox);
   $('btnInboxClose').addEventListener('click', closeInbox);
   $('btnInboxReload').addEventListener('click', function(){ pullQueue(); toast('Checking for new items…'); });
-  $('btnCsvMapClose').addEventListener('click', closeCsvMap);
-  $('btnCsvImport').addEventListener('click', doCsvImport);
   try { window.addEventListener('focus', function(){ if(!$('app').hidden) pullQueue(); }); } catch(e){}
   $('btnLogClose').addEventListener('click', closeLog);
   $('btnLogSave').addEventListener('click', saveLog);
+  $('sortDir').addEventListener('click', toggleSortDir);
+  $('btnSelect').addEventListener('click', toggleSelect);
+  $('btnSeriesClose').addEventListener('click', closeSeriesEditor);
   $('grpDate').addEventListener('click', function(){ setGroup('date'); });
   $('grpCharity').addEventListener('click', function(){ setGroup('charity'); });
   $('btnSettings').addEventListener('click', openSettings);
