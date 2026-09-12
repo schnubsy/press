@@ -326,7 +326,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v3.4.1</span>
+    <span class="nav-badge">v3.5.0</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -1025,6 +1025,91 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <p class="lede">The cast is fixed; the toolbelt grows. Every new capability the Council gains joins as an <b class="ink">instrument</b> — a named, owner-assigned, deterministic procedure — never as a new persona. Instruments are registered in <code>CAPABILITIES.md</code> at the repo root (the canonical registry) with a one-line index in the Hand's skill, which is what makes them invocable from every surface. More instruments are coming; the cast that wields them does not.</p>
       </div>
 
+      <!-- ========== THE EYE ========== -->
+      <div class="cap-head h-eye">
+        <img class="cap-seal" src="council-assets/seals/seal_eye.svg" alt="The Eye — seal" width="130" height="130" loading="lazy">
+        <div class="cap-head-txt">
+          <span class="eyebrow c-eye">The Eye · Design</span>
+          <h3>The Eye's instruments</h3>
+          <p>Design and UX. Three instruments — the <b class="ink">Deck</b> (finished slide decks from your content, Quill consulted on narrative), the <b class="ink">Canvas</b>, where an Eye engagement crosses from choosing a direction into building and tweaking real, editable UI, and <b class="ink">Render</b>, general-purpose image generation for any asset the Council needs.</p>
+        </div>
+      </div>
+
+      <div class="instr i-eye" id="cap-deck">
+        <span class="who">Owner: Marlowe (Eye lead) · Quill consulted · trigger — "build me a deck" / "make slides" / "beautify these slides"</span>
+        <h4>Deck</h4>
+        <p class="instr-sum">Turns your content into a finished, well-designed <code>.pptx</code> — either composed from slide descriptions, or by beautifying slides you already have. The Eye offers a couple of quick look-options first, unless you say "skip Eye".</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Input modes, the Eye consult &amp; where it runs</summary>
+          <div class="facet-body">
+            <p>Produces a finished, nicely-designed <b class="ink"><code>.pptx</code></b> from the Principal's content, in one of <b class="ink">two input modes</b>: <b class="ink">compose</b> — text descriptions of the slides go in, the Eye authors the deck (pptx skill), Quill consulted on slide narrative — or <b class="ink">beautify</b> — existing slides supplied as either a <code>.pptx</code> on disk <i>or</i> pasted text and screenshots. This is the tool of record for slide decks; render remains the tool for standalone imagery, and Design (Canvas) for editable web and UI elements.</p>
+            <p><b class="ink">The Eye consults on look, by default.</b> Before building, the Eye offers <b class="ink">two or three quick look-options</b> — a one-line description each, such as Swiss and clean, editorial, or dark-mode executive — and the Principal's pick drives the deck's design tokens. This is the Eye running <b class="ink">LITE</b>, fast look-options rather than a full six-direction scored review. Saying <b class="ink">"skip Eye"</b> bypasses the directions entirely for a clean, professional default. The first-party <b class="ink">pptx skill</b> then builds the file, applying the chosen look, and the result is saved to <code>~/Documents/decks/</code>. Quill's slide discipline carries through (consulted): decision-first order, no padding.</p>
+            <p><b class="ink">Home surface is Cowork</b> — the pptx skill and code execution both live there, and a file-access connector alone cannot generate a <code>.pptx</code>, so a chat-only surface emits the Cowork instruction rather than pretending to build inline. Beautify <b class="ink">always writes a new file</b> and never mutates the source in place, so a bad pass leaves the original untouched and the build can simply be re-issued.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="instr i-eye" id="cap-design">
+        <span class="who">Owner: Marlowe Holm (Eye lead) · trigger — "put it on the canvas" / "tweak this in Design"</span>
+        <h4>Design (Canvas)</h4>
+        <p class="instr-sum">The Claude-hosted design canvas — where an Eye engagement crosses from direction and scoring into building and tweaking editable UI. Marlowe directs you to the canvas and hands you a paste-ready Canvas Brief to open it.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>How it works &amp; the required Canvas Brief</summary>
+          <div class="facet-body">
+            <p>The Claude-hosted design canvas — where an Eye engagement crosses from direction and scoring into building and tweaking editable visual and UI elements. It is Marlowe's instrument end to end: she directs the Principal <i>to</i> the canvas (the Desktop sidebar and <code>claude.ai/design</code> on web) and never operates it from inside a chat; it is not a mobile or in-chat tool. An instrument, never a persona — registered in the ledger like every other, though it lives under the Eye rather than a Hand seat.</p>
+            <p>Every engagement that routes to the canvas ends with a required <b class="ink">Canvas Brief</b> — a single paste-ready opening prompt Marlowe hands the Principal to drop into Design as its first message. One block, no assembly: the winning direction's name and intent, the design tokens and constraints that apply (or a pointer to the design system already seeded via <code>/design-sync</code> from Claude Code or an upload), the hard constraints (platform, responsiveness, accessibility), and what "done" means for the session. No canvas handoff is complete without it. Render, not Design, remains the tool of record for standalone imagery.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="instr i-eye" id="cap-render">
+        <span class="who">Owner: Marlowe Holm (Eye lead) · Steward consulted on CLI + config plumbing · trigger — "run render" / "generate an image"</span>
+        <h4>Render</h4>
+        <p class="instr-sum">General-purpose image generation — portraits, emblems, illustrations, any asset. Always asks you to pick a mode first and never jumps straight to a full-resolution render, to keep cost down.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>How it works — the engine &amp; ownership</summary>
+          <div class="facet-body">
+            <p>General-purpose image generation for the Council — portraits, emblems, illustrations, any asset the Principal needs. A vendored, pinned, Gemini-backed CLI does the work: text-to-image when there is no reference, and identity-preserving image-to-image when there is. The ownership is split by craft — Steward holds the mechanics (CLI wiring, the API secret sourced at call time, format conversion and transparency knockout, asset placement, guide sync); Marlowe, the Eye's lead, holds creative-direction authority over the house styles — framing, finish, lighting, presets.</p>
+            <p>Its first documented use minted this guide's own cast: each member's flat SVG was rendered into a photoreal portrait through a locked three-tier prompt — house style, the SVG identity anchor, and the persona's character read from <code>PERSONAS.md</code> — plus the three transparent gold seals. An instrument, never a persona; on Intel the CLI runs as a Claude Code work order, and heavy or bulk runs route there by default.</p>
+          </div>
+        </details>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>The three modes — cheap-first, always ask</summary>
+          <div class="facet-body">
+            <p><b class="ink">Cheap-first, always ask.</b> Before generating anything, render now asks the Principal to pick one of three modes — never a silent default, and full resolution is never the first step: <b class="ink">Small Batch</b> (several draft variations, each saved to its own file; pick a keeper, then render that exact prompt once as the final), <b class="ink">Iterate on One</b> (a single draft, refined across cheap prompt rounds, the final cut only on "make the final"), or <b class="ink">Bring a Reference</b> (an image already dialed in, passed straight through as an image-to-image reference — no drafting round). The pinned CLI exposes no resolution, seed, or batch flag, so thrift is measured in image count and in withholding the final render, not in a resolution knob — and a chosen draft is locked forward as a reference image via <code>--input-image</code>, not a replayed seed.</p>
+          </div>
+        </details>
+      </div>
+
+      <!-- ========== THE EAR ========== -->
+      <div class="cap-head h-ear">
+        <img class="cap-seal" src="council-assets/seals/seal_ear.svg" alt="The Ear — seal" width="130" height="130" loading="lazy">
+        <div class="cap-head-txt">
+          <span class="eyebrow c-ear">The Ear · Counsel</span>
+          <h3>The Ear's instruments</h3>
+          <p>Counsel — structured challenge, not parallel agreement. The Ear works live, in session today, and it's consulted across heads too (for example Pulse on market timing during a Release). Its first standing instruments — counterpoint, the mirror, and the decision record — are below.</p>
+        </div>
+      </div>
+
+      <div class="instr i-ear" id="cap-counterpoint">
+        <span class="who">Owner: the Ear (Sir Alistair Crane) · trigger — "counterpoint" / "steel man this" / "argue the other side"</span>
+        <h4>Counterpoint</h4>
+        <p class="instr-sum">The strongest honest case <em>against</em> your position — argued at full strength by the seats best placed to oppose it — and then the kit to argue back. It is the inverse of the council's usual steelman (which champions <em>your</em> idea); here the opposition gets the best of it. Always names the one point you can't yet answer, and a switch test for what would change your mind.</p>
+      </div>
+
+      <div class="instr i-ear" id="cap-mirror">
+        <span class="who">Owner: the Ear (Sir Alistair Crane) · trigger — "mirror this" / "check my reasoning" / "what am I assuming"</span>
+        <h4>The Mirror</h4>
+        <p class="instr-sum">Attacks the <em>reasoning</em>, never the conclusion. It lays your argument out as explicit steps, surfaces the premises you never stated, names the commitments you'd be signing up for if it holds, finds the weakest link, and either repairs the case around it or says plainly that it can't. It will not tell you whether you're right — that's a different mode.</p>
+      </div>
+
+      <div class="instr i-ear" id="cap-decision-record">
+        <span class="who">Owner: the Ear (Sir Alistair Crane) · trigger — "record this" / "decision record" / "log the decision"</span>
+        <h4>Decision Record</h4>
+        <p class="instr-sum">Makes counsel durable past the chat. A short, append-only record with fixed fields — the decision in a sentence, its status, the alternatives you rejected and why, the strongest objection still standing, what would change your mind, and a review-by date. Offered at the close of a full council or a counterpoint that ended in a decision; a superseded decision gets a new record, never an edit.</p>
+      </div>
+
+
       <!-- ========== THE HAND ========== -->
       <div class="cap-head h-hand">
         <img class="cap-seal" src="council-assets/seals/seal_hand.svg" alt="The Hand — seal" width="130" height="130" loading="lazy">
@@ -1108,25 +1193,6 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
           <summary><span class="fmk">&#9656;</span>Full detail — and the budget rule</summary>
           <div class="facet-body">
             <p>Cloud-cost diagnosis and the safeguards that catch the next one. Reads month-to-date spend by resource, by service, and by day to separate a genuine leak from a step-change — then reads each suspect resource's live configuration before naming a cause. Its hardest-won rule: a budget that exists is not a budget that works. Scope and notification address are verified character-for-character, because a mistyped alert email fails silently and looks exactly like a working one. Read-only throughout; mutations only on an explicit go, one at a time, each reversible.</p>
-          </div>
-        </details>
-      </div>
-
-      <div class="instr i-hand" id="cap-render">
-        <span class="who">Owner: Steward · creative authority: Marlowe (Eye) · trigger — "run render" / "generate an image"</span>
-        <h4>Render</h4>
-        <p class="instr-sum">General-purpose image generation — portraits, emblems, illustrations, any asset. Always asks you to pick a mode first and never jumps straight to a full-resolution render, to keep cost down.</p>
-        <details class="facet">
-          <summary><span class="fmk">&#9656;</span>How it works — the engine &amp; ownership</summary>
-          <div class="facet-body">
-            <p>General-purpose image generation for the Council — portraits, emblems, illustrations, any asset the Principal needs. A vendored, pinned, Gemini-backed CLI does the work: text-to-image when there is no reference, and identity-preserving image-to-image when there is. The ownership is split by craft — Steward holds the mechanics (CLI wiring, the API secret sourced at call time, format conversion and transparency knockout, asset placement, guide sync); Marlowe, the Eye's lead, holds creative-direction authority over the house styles — framing, finish, lighting, presets.</p>
-            <p>Its first documented use minted this guide's own cast: each member's flat SVG was rendered into a photoreal portrait through a locked three-tier prompt — house style, the SVG identity anchor, and the persona's character read from <code>PERSONAS.md</code> — plus the three transparent gold seals. An instrument, never a persona; on Intel the CLI runs as a Claude Code work order, and heavy or bulk runs route there by default.</p>
-          </div>
-        </details>
-        <details class="facet">
-          <summary><span class="fmk">&#9656;</span>The three modes — cheap-first, always ask</summary>
-          <div class="facet-body">
-            <p><b class="ink">Cheap-first, always ask.</b> Before generating anything, render now asks the Principal to pick one of three modes — never a silent default, and full resolution is never the first step: <b class="ink">Small Batch</b> (several draft variations, each saved to its own file; pick a keeper, then render that exact prompt once as the final), <b class="ink">Iterate on One</b> (a single draft, refined across cheap prompt rounds, the final cut only on "make the final"), or <b class="ink">Bring a Reference</b> (an image already dialed in, passed straight through as an image-to-image reference — no drafting round). The pinned CLI exposes no resolution, seed, or batch flag, so thrift is measured in image count and in withholding the final render, not in a resolution knob — and a chosen draft is locked forward as a reference image via <code>--input-image</code>, not a replayed seed.</p>
           </div>
         </details>
       </div>
@@ -1238,72 +1304,6 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
           </div>
         </details>
       </div>
-
-      <!-- ========== THE EYE ========== -->
-      <div class="cap-head h-eye">
-        <img class="cap-seal" src="council-assets/seals/seal_eye.svg" alt="The Eye — seal" width="130" height="130" loading="lazy">
-        <div class="cap-head-txt">
-          <span class="eyebrow c-eye">The Eye · Design</span>
-          <h3>The Eye's instruments</h3>
-          <p>Design and UX. Two instruments — the <b class="ink">Deck</b> (finished slide decks from your content, Quill consulted on narrative) and the <b class="ink">Canvas</b>, where an Eye engagement crosses from choosing a direction into building and tweaking real, editable UI.</p>
-        </div>
-      </div>
-
-      <div class="instr i-eye" id="cap-deck">
-        <span class="who">Owner: Marlowe (Eye lead) · Quill consulted · trigger — "build me a deck" / "make slides" / "beautify these slides"</span>
-        <h4>Deck</h4>
-        <p class="instr-sum">Turns your content into a finished, well-designed <code>.pptx</code> — either composed from slide descriptions, or by beautifying slides you already have. The Eye offers a couple of quick look-options first, unless you say "skip Eye".</p>
-        <details class="facet">
-          <summary><span class="fmk">&#9656;</span>Input modes, the Eye consult &amp; where it runs</summary>
-          <div class="facet-body">
-            <p>Produces a finished, nicely-designed <b class="ink"><code>.pptx</code></b> from the Principal's content, in one of <b class="ink">two input modes</b>: <b class="ink">compose</b> — text descriptions of the slides go in, the Eye authors the deck (pptx skill), Quill consulted on slide narrative — or <b class="ink">beautify</b> — existing slides supplied as either a <code>.pptx</code> on disk <i>or</i> pasted text and screenshots. This is the tool of record for slide decks; render remains the tool for standalone imagery, and Design (Canvas) for editable web and UI elements.</p>
-            <p><b class="ink">The Eye consults on look, by default.</b> Before building, the Eye offers <b class="ink">two or three quick look-options</b> — a one-line description each, such as Swiss and clean, editorial, or dark-mode executive — and the Principal's pick drives the deck's design tokens. This is the Eye running <b class="ink">LITE</b>, fast look-options rather than a full six-direction scored review. Saying <b class="ink">"skip Eye"</b> bypasses the directions entirely for a clean, professional default. The first-party <b class="ink">pptx skill</b> then builds the file, applying the chosen look, and the result is saved to <code>~/Documents/decks/</code>. Quill's slide discipline carries through (consulted): decision-first order, no padding.</p>
-            <p><b class="ink">Home surface is Cowork</b> — the pptx skill and code execution both live there, and a file-access connector alone cannot generate a <code>.pptx</code>, so a chat-only surface emits the Cowork instruction rather than pretending to build inline. Beautify <b class="ink">always writes a new file</b> and never mutates the source in place, so a bad pass leaves the original untouched and the build can simply be re-issued.</p>
-          </div>
-        </details>
-      </div>
-
-      <div class="instr i-eye" id="cap-design">
-        <span class="who">Owner: Marlowe Holm (Eye lead) · trigger — "put it on the canvas" / "tweak this in Design"</span>
-        <h4>Design (Canvas)</h4>
-        <p class="instr-sum">The Claude-hosted design canvas — where an Eye engagement crosses from direction and scoring into building and tweaking editable UI. Marlowe directs you to the canvas and hands you a paste-ready Canvas Brief to open it.</p>
-        <details class="facet">
-          <summary><span class="fmk">&#9656;</span>How it works &amp; the required Canvas Brief</summary>
-          <div class="facet-body">
-            <p>The Claude-hosted design canvas — where an Eye engagement crosses from direction and scoring into building and tweaking editable visual and UI elements. It is Marlowe's instrument end to end: she directs the Principal <i>to</i> the canvas (the Desktop sidebar and <code>claude.ai/design</code> on web) and never operates it from inside a chat; it is not a mobile or in-chat tool. An instrument, never a persona — registered in the ledger like every other, though it lives under the Eye rather than a Hand seat.</p>
-            <p>Every engagement that routes to the canvas ends with a required <b class="ink">Canvas Brief</b> — a single paste-ready opening prompt Marlowe hands the Principal to drop into Design as its first message. One block, no assembly: the winning direction's name and intent, the design tokens and constraints that apply (or a pointer to the design system already seeded via <code>/design-sync</code> from Claude Code or an upload), the hard constraints (platform, responsiveness, accessibility), and what "done" means for the session. No canvas handoff is complete without it. Render, not Design, remains the tool of record for standalone imagery.</p>
-          </div>
-        </details>
-      </div>
-
-      <!-- ========== THE EAR ========== -->
-      <div class="cap-head h-ear">
-        <img class="cap-seal" src="council-assets/seals/seal_ear.svg" alt="The Ear — seal" width="130" height="130" loading="lazy">
-        <div class="cap-head-txt">
-          <span class="eyebrow c-ear">The Ear · Counsel</span>
-          <h3>The Ear's instruments</h3>
-          <p>Counsel — structured challenge, not parallel agreement. The Ear works live, in session today, and it's consulted across heads too (for example Pulse on market timing during a Release). Its first standing instruments — counterpoint, the mirror, and the decision record — are below.</p>
-        </div>
-      </div>
-
-      <div class="instr i-ear" id="cap-counterpoint">
-        <span class="who">Owner: the Ear (Sir Alistair Crane) · trigger — "counterpoint" / "steel man this" / "argue the other side"</span>
-        <h4>Counterpoint</h4>
-        <p class="instr-sum">The strongest honest case <em>against</em> your position — argued at full strength by the seats best placed to oppose it — and then the kit to argue back. It is the inverse of the council's usual steelman (which champions <em>your</em> idea); here the opposition gets the best of it. Always names the one point you can't yet answer, and a switch test for what would change your mind.</p>
-      </div>
-
-      <div class="instr i-ear" id="cap-mirror">
-        <span class="who">Owner: the Ear (Sir Alistair Crane) · trigger — "mirror this" / "check my reasoning" / "what am I assuming"</span>
-        <h4>The Mirror</h4>
-        <p class="instr-sum">Attacks the <em>reasoning</em>, never the conclusion. It lays your argument out as explicit steps, surfaces the premises you never stated, names the commitments you'd be signing up for if it holds, finds the weakest link, and either repairs the case around it or says plainly that it can't. It will not tell you whether you're right — that's a different mode.</p>
-      </div>
-
-      <div class="instr i-ear" id="cap-decision-record">
-        <span class="who">Owner: the Ear (Sir Alistair Crane) · trigger — "record this" / "decision record" / "log the decision"</span>
-        <h4>Decision Record</h4>
-        <p class="instr-sum">Makes counsel durable past the chat. A short, append-only record with fixed fields — the decision in a sentence, its status, the alternatives you rejected and why, the strongest objection still standing, what would change your mind, and a review-by date. Offered at the close of a full council or a counterpoint that ended in a decision; a superseded decision gets a new record, never an edit.</p>
-      </div>
-
 
       <h3 style="font-size:23px;margin:38px 0 4px">Adding an instrument — the standing process</h3>
       <ol class="steps">
@@ -1542,7 +1542,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <footer>
   <div class="footer-in">
     <div>The Council · a private prospectus · generated from PERSONAS.md + skills</div>
-    <div class="mono">council v3.4.1 · last updated 2026-09-12</div>
+    <div class="mono">council v3.5.0 · last updated 2026-09-12</div>
   </div>
 </footer>
 
