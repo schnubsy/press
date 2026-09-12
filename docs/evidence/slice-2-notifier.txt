@@ -1,0 +1,25 @@
+SLICE 2 — agent-health notifier: local runs of .github/scripts/agent-health-check.mjs
+Captured: 2026-09-12T21:10:33Z  (against live press views, x-app=giving)
+Workflow: .github/workflows/agent-health-notifier.yml — schedule cron '20 13 * * *' (daily), pushed to schnubsy/press.
+A non-zero exit fails the scheduled run; GitHub emails the repo owner on a failed scheduled run = the notification.
+
+############ CASE A — HEALTHY (STALE_MULTIPLIER=3, the daily default) ############
+OK — all 2 watched giving agents healthy (stale multiplier 3x cadence).
+EXIT CODE: 0   <-- 0 = healthy, no email
+
+############ CASE B — UNHEALTHY, forced via THRESHOLD OVERRIDE (STALE_MULTIPLIER=0) ############
+# No live data edited — a temporary query/threshold override, per the brief.
+::error::Giving agents — 1 issue needs attention:
+
+Agent health — Giving app — 1 issue needs attention
+========================================================
+
+• Capture: has not checked in for about 13 minutes — it should report every 10 minutes.
+  What to do: Check the "Capture" agent's schedule (cron or inlet) is still firing.
+
+(The other watched agents are fine. Checked 2026-09-12T21:10:33.764Z.)
+EXIT CODE: 1   <-- non-zero = run FAILS => GitHub emails the owner
+
+############ CASE C — MISSING SECRET (SUPABASE_PRESS_ANON_KEY unset) ############
+::error::SUPABASE_PRESS_ANON_KEY is not set. Add it as a repository secret (Settings → Secrets and variables → Actions). Until then the agent health notifier cannot run.
+EXIT CODE: 1   <-- fails loudly; add the secret (Mark's manual step)
