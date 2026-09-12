@@ -123,6 +123,7 @@
   .badge { font-size:0.66rem; font-weight:700; padding:2px 7px; border-radius:999px; margin-left:6px; }
   .badge.into { background:rgba(127,174,134,0.18); color:var(--ledger); }
   .badge.via { background:var(--surface-2); color:var(--muted); }
+  .badge.excl { background:var(--surface-2); color:var(--muted); border:1px solid var(--line); }
   .empty { padding:34px 20px; text-align:center; color:var(--muted); }
   .empty .big { font-family:var(--serif); font-size:1.05rem; color:var(--ink); margin-bottom:4px; }
 
@@ -244,17 +245,22 @@
   .row .acts button:hover { border-color:var(--ember); color:var(--ink); }
   .row .acts button.del:hover { border-color:var(--danger); color:var(--danger); }
   .row.nondeduct .amt { color:var(--muted); }
-  .amtbtn { display:flex; align-items:center; gap:10px; }
+  /* live selection (S2): rows are tappable; per-row actions show only when selected, and a
+     reserved amtbtn height keeps the row from jumping when they appear. */
+  .row { cursor:pointer; }
+  .amtbtn { display:flex; align-items:center; gap:10px; min-height:30px; }
+  .row.selected { background:rgba(217,138,78,0.12); box-shadow:inset 3px 0 0 var(--ember); }
+  .row.seriesrow.selected { background:rgba(217,138,78,0.18); }
+  .selacts { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
+  .selacts button:disabled { opacity:0.4; cursor:not-allowed; }
 
   /* ---- recurring series (S6) ---- */
   .row.seriesrow { background:var(--surface-2); }
   .row.seriesrow .date { color:var(--ember-soft); font-size:0.95rem; }
   .row.subrow { padding-left:30px; }
   .row.subrow .date { color:var(--muted); }
-  .selchk { flex:0 0 auto; margin-right:2px; }
-  .selchk input { width:16px; height:16px; accent-color:var(--ember); }
-  .selbar { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:10px 0 12px;
-    background:var(--surface-2); border:1px solid var(--ember); border-radius:11px; padding:10px 14px; }
+  .selbar { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:10px 0 12px; flex-wrap:wrap;
+    background:var(--surface-2); border:1px solid var(--ember); border-radius:11px; padding:10px 14px; position:sticky; top:8px; z-index:5; }
   .selbar .sl { color:var(--ink); font-size:0.85rem; font-weight:600; }
   .duestrip, .autostrip { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
     border-radius:11px; padding:10px 14px; margin-bottom:10px; }
@@ -319,6 +325,19 @@
     background:var(--surface-2); border:1px solid var(--line); border-radius:6px; flex:0 0 auto; }
   .attachchip .aname { flex:1; min-width:0; font-size:0.86rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .attachchip .asz { color:var(--muted); font-size:0.74rem; flex:0 0 auto; }
+  /* selectable chips (S5/§1n): tap to select; View/Delete appear only on the selected chip */
+  .attachchip { cursor:pointer; border-radius:8px; padding-left:8px; padding-right:8px; flex-wrap:wrap; }
+  .attachchip.selected { background:rgba(217,138,78,0.12); box-shadow:inset 3px 0 0 var(--ember); }
+
+  /* ---- receipt lightbox (S1) — decrypt-to-Blob image viewer; never a data: URL tab ---- */
+  .lightbox { position:fixed; inset:0; z-index:120; display:flex; align-items:center; justify-content:center;
+    background:rgba(8,6,5,0.86); padding:24px; }
+  .lightbox .lightbox-img { max-width:100%; max-height:100%; object-fit:contain; border-radius:8px;
+    box-shadow:0 8px 40px rgba(0,0,0,0.55); background:var(--surface); }
+  .lightbox-x { position:absolute; top:14px; right:14px; width:40px; height:40px; border-radius:50%;
+    background:var(--surface); border:1px solid var(--line); color:var(--ink); font-size:1.1rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .lightbox-x:hover { border-color:var(--ember); color:var(--ember); }
 
   /* ---- savings card ---- */
   .savings { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 20px; margin-bottom:18px; }
@@ -498,7 +517,6 @@
         <div class="listctl">
           <span id="rcptCnt" class="cnt" style="margin-right:8px;align-self:center;"></span>
           <button id="sortDir" title="Sort by date">Newest first ↓</button>
-          <button id="btnSelect" title="Select gifts to bundle">Select</button>
           <button id="grpDate" aria-pressed="true">By date</button>
           <button id="grpCharity" aria-pressed="false">By charity</button>
         </div>
@@ -658,6 +676,12 @@
 </div>
 
 <div id="toast"></div>
+
+<!-- ===================== receipt lightbox (S1) ===================== -->
+<div id="lightbox" class="lightbox" hidden>
+  <button type="button" id="lightboxClose" class="lightbox-x" aria-label="Close">✕</button>
+  <img id="lightboxImg" class="lightbox-img" alt="Receipt">
+</div>
 
 <!-- ===================== bundled engine (build.js) ===================== -->
 <script>
@@ -1066,6 +1090,8 @@ function initDraft(doc, ed, key) {
     parking_tolls: (ed.parking_tolls != null ? ed.parking_tolls : ''),
     purpose: ed.purpose || '',
     grant_ref: ed.grant_ref || '',
+    deductible: (ed.deductible !== false),          // exclude-from-tax flag (S4): false => excluded
+    excluded_reason: ed.excluded_reason || '',
   };
   if (ed.charity_id) {
     var c = model.charityById(doc, ed.charity_id);
@@ -1095,6 +1121,8 @@ function mergeForm(draft, key, values) {
   if ('parking_tolls' in v) draft.parking_tolls = v.parking_tolls;
   if ('purpose' in v) draft.purpose = v.purpose;
   if ('grant_ref' in v) draft.grant_ref = v.grant_ref;
+  if ('deductible' in v) draft.deductible = !!v.deductible;
+  if ('excluded_reason' in v) draft.excluded_reason = v.excluded_reason;
   return draft;
 }
 
@@ -1103,6 +1131,39 @@ module.exports = {
   initDraft: initDraft,
   mergeForm: mergeForm,
 };
+
+});
+
+/* ---- src/core/mediagate.js ---- */
+window.__def("src/core/mediagate.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/core/mediagate.js — tiny pure gates for the entry sheet's media + item lines (S5).
+ *
+ * WHY pure + node-testable: the file-type gate and the "can this items donation save"
+ * rule are behavioural but easy to get wrong, and the DOM glue in shell.html isn't
+ * node-testable. These are the same predicates shell.html uses (single source of truth).
+ *
+ * HEIC: an iPhone photo reports type 'image/heic'; a HEIC picked from macOS Finder can
+ * arrive with an EMPTY file.type. Both must pass the gate — so accept the .heic/.heif
+ * EXTENSION too. (Only Safari can DECODE HEIC; there is no decoder here — that is handled
+ * where the image is downscaled, not in the gate.) No DOM, no network.
+ * ========================================================================== */
+
+function isHeic(file) { return /\.(heic|heif)$/i.test(String((file && file.name) || '')); }
+
+// Accept anything the browser calls an image, OR a .heic/.heif by extension (empty type).
+function isImageFile(file) { return /^image\//.test((file && file.type) || '') || isHeic(file); }
+
+// The item lines that count on save: a positive qty, a non-negative value, and a description.
+// An items donation with NONE of these must be refused (never create a $0 gift) — §1o.
+function validItemLines(items) {
+  return (Array.isArray(items) ? items : []).filter(function (it) {
+    return (Number(it.qty) || 0) > 0 && (Number(it.unit_value) || 0) >= 0 && it.description;
+  });
+}
+
+module.exports = { isHeic: isHeic, isImageFile: isImageFile, validItemLines: validItemLines };
 
 });
 
@@ -1423,6 +1484,15 @@ function normalizeDonation(doc, d) {
   }
 
   d.deductible = deductibleOf(d);                        // false for daf_grant, never overridable
+  // manual exclude-from-tax reason (S4 / ARC §1i): a hand-excluded gift (deductible:false on a
+  // money/items/stock/mileage donation) carries a reason so the exports + year-end pack can say
+  // why. A daf_grant is non-deductible by nature (not a manual exclusion) and a deductible gift
+  // carries no reason.
+  if (d.type !== 'daf_grant' && d.deductible === false) {
+    if (d.excluded_reason == null || String(d.excluded_reason).trim() === '') d.excluded_reason = 'Not deductible on a US return';
+  } else {
+    d.excluded_reason = null;
+  }
   if (d.date) d.tax_year = Number(String(d.date).slice(0, 4));
   if (!Array.isArray(d.sources)) d.sources = [];         // capture provenance (email/import/ynab) — preserved
   return d;
@@ -1431,7 +1501,7 @@ function normalizeDonation(doc, d) {
 function addDonation(doc, donation) {
   var d = Object.assign({
     id: newId('don'), charity_id: null, tax_year: null, date: null, type: 'money',
-    amount: 0, items: null, daf_contribution: false, deductible: true, source: 'manual',
+    amount: 0, items: null, daf_contribution: false, deductible: true, excluded_reason: null, source: 'manual',
     goods_received: false, goods_value: 0, notes: null, acknowledgment_received: false,
     created_at: nowIso(),
   }, donation || {});
@@ -1996,7 +2066,8 @@ function isPeriodFilled(series, gifts, expectedISO) {
 
 // The latest expected date that is past its grace, has no gift, and isn't skipped — or null.
 function dueDate(series, gifts, nowISO) {
-  if (!series || !series.active) return null;
+  if (!series || series.kind === 'adhoc') return null;   // an ad-hoc group has no schedule — never due (S3)
+  if (!series.active) return null;
   var now = parseISO(nowISO); if (now == null) now = Date.now();
   var exps = expectedDates(series, toISO(now)), skipped = series.skipped || [], due = null;
   for (var i = 0; i < exps.length; i++) {
@@ -2028,7 +2099,7 @@ function guessAmount(amounts) {
 function newSeries(fields) {
   return Object.assign({
     id: model.newId('ser'), charity_id: null, type: 'money', amount: 0, cadence: 'monthly',
-    start: null, end: null, active: true, source: 'manual', skipped: [],
+    start: null, end: null, active: true, source: 'manual', skipped: [], kind: 'recurring',
   }, fields || {});
 }
 function seriesById(doc, id) { for (var i = 0; i < (doc.series || []).length; i++) if (doc.series[i].id === id) return doc.series[i]; return null; }
@@ -2061,6 +2132,34 @@ function bundle(doc, donationIds, opts) {
   return s;
 }
 
+// Group selected donations into ONE AD-HOC series (S3 / ARC §1f): same charity, same
+// bundle-able type, 2+ gifts, and NO cadence/amount guessing — it is for irregular giving.
+// kind:'adhoc' + cadence:null + active:false is belt-AND-braces: the belt is the new code
+// (dueDate short-circuits on kind, matchSeriesForDraft skips ad-hoc), the braces protect an
+// OLDER v0.4 reader (which falls back to cadenceOf->'monthly' and would raise spurious "gift
+// due" prompts, and whose matchSeriesForDraft filters on s.active). Label is optional.
+function bundleAdhoc(doc, donationIds, opts) {
+  opts = opts || {};
+  var ds = (donationIds || []).map(function (id) { return model.donationById(doc, id); }).filter(Boolean);
+  if (ds.length < 2) throw new Error('Select at least two gifts to group.');
+  var type = donationSeriesType(ds[0]);
+  if (!type) throw new Error('Only cash gifts or DAF grants can be grouped.');
+  var charity = ds[0].charity_id;
+  for (var i = 0; i < ds.length; i++) {
+    if (ds[i].charity_id !== charity) throw new Error('All gifts must be to the same charity.');
+    if (donationSeriesType(ds[i]) !== type) throw new Error('A group can’t mix cash gifts and DAF grants.');
+  }
+  var label = (opts.label != null && String(opts.label).trim()) ? String(opts.label).trim() : null;
+  var s = newSeries({
+    charity_id: charity, type: type, source: 'bundled', kind: 'adhoc',
+    cadence: null, active: false, amount: 0, start: null, label: label,
+  });
+  if (!Array.isArray(doc.series)) doc.series = [];
+  doc.series.push(s);
+  ds.forEach(function (d) { d.series_id = s.id; });
+  return s;
+}
+
 // Make ONE donation the seed of a manual recurring series ("Make this recurring").
 function makeRecurring(doc, donationId, opts) {
   opts = opts || {};
@@ -2084,6 +2183,20 @@ function unbundle(doc, seriesId) {
   (doc.donations || []).forEach(function (d) { if (d.series_id === seriesId) delete d.series_id; });
   doc.series = (doc.series || []).filter(function (s) { return s.id !== seriesId; });
   return true;
+}
+
+// Drop any series with zero surviving member donations (e.g. after a multi-delete removed
+// every gift in a group). Same "keep the gifts, drop only the grouping" semantics as unbundle.
+// Returns the ids removed. Pure; mutates doc.series in place.
+function dropEmptySeries(doc) {
+  if (!Array.isArray(doc.series)) return [];
+  var removed = [];
+  doc.series = doc.series.filter(function (s) {
+    var has = (doc.donations || []).some(function (d) { return d.series_id === s.id; });
+    if (!has) removed.push(s.id);
+    return has;
+  });
+  return removed;
 }
 
 // Summary for the collapsed list row (respects a year filter; totals unchanged by bundling).
@@ -2112,7 +2225,7 @@ function draftSeriesType(draft) { return draft.type === 'daf_grant' ? 'daf_grant
 function matchSeriesForDraft(doc, draft) {
   if (!draft || draft.amount == null || draft.lowConfidence || !draft.date) return null;
   var st = draftSeriesType(draft); if (!st) return null;
-  var list = (doc.series || []).filter(function (s) { return s.active && s.type === st; });
+  var list = (doc.series || []).filter(function (s) { return s.active && s.type === st && s.kind !== 'adhoc'; });
   for (var i = 0; i < list.length; i++) {
     var s = list[i];
     if (Math.abs(Number(s.amount) - Number(draft.amount)) > DUP_DOLLARS) continue;
@@ -2133,8 +2246,9 @@ module.exports = {
   addCadence: addCadence, expectedDates: expectedDates, isFilledByGift: isFilledByGift,
   seriesGifts: seriesGifts, isPeriodFilled: isPeriodFilled, dueDate: dueDate,
   guessCadence: guessCadence, guessAmount: guessAmount,
-  newSeries: newSeries, seriesById: seriesById, bundle: bundle, makeRecurring: makeRecurring,
-  unbundle: unbundle, seriesSummary: seriesSummary, matchSeriesForDraft: matchSeriesForDraft,
+  newSeries: newSeries, seriesById: seriesById, bundle: bundle, bundleAdhoc: bundleAdhoc,
+  makeRecurring: makeRecurring, unbundle: unbundle, dropEmptySeries: dropEmptySeries,
+  seriesSummary: seriesSummary, matchSeriesForDraft: matchSeriesForDraft,
   donationSeriesType: donationSeriesType,
 };
 
@@ -3255,7 +3369,11 @@ function moneyGiftFields(d, prefix) {
 function moneyCards(list, doc) {
   var bySeries = {}, order = [], singles = [];
   list.forEach(function (d) {
-    if (d.series_id) { if (!bySeries[d.series_id]) { bySeries[d.series_id] = []; order.push(d.series_id); } bySeries[d.series_id].push(d); }
+    // Only a RECURRING series collapses into one card. An ad-hoc group (S3) is a list-only
+    // affordance for irregular giving — it must not change the Entry Guide, so its gifts render
+    // as individual cards exactly as if they were never grouped.
+    var ser = (d.series_id && doc && Array.isArray(doc.series)) ? doc.series.filter(function (x) { return x.id === d.series_id; })[0] : null;
+    if (d.series_id && !(ser && ser.kind === 'adhoc')) { if (!bySeries[d.series_id]) { bySeries[d.series_id] = []; order.push(d.series_id); } bySeries[d.series_id].push(d); }
     else singles.push(d);
   });
   var out = '';
@@ -3582,10 +3700,15 @@ function buildHistoryHtml(doc, year) {
 
   var sections = groups.map(function (grp) {
     var rows = grp.rows.map(function (d) {
+      // a hand-excluded gift (S4) still appears in giving history, badged with its reason
+      var excl = d.deductible === false && d.type !== 'daf_grant';
+      var typeCell = escHtml(typeLabel(d)) +
+        (excl ? ' <span class="xbadge">not deductible</span>' : '') +
+        (excl && d.excluded_reason ? '<div class="xreason">' + escHtml(d.excluded_reason) + '</div>' : '');
       return '' +
         '<tr>' +
         '<td class="date">' + escHtml(d.date || '') + '</td>' +
-        '<td class="type">' + escHtml(typeLabel(d)) + '</td>' +
+        '<td class="type">' + typeCell + '</td>' +
         '<td class="amt">' + escHtml(fmtMoney(d.amount)) + '</td>' +
         '</tr>';
     }).join('');
@@ -3628,6 +3751,8 @@ function buildHistoryHtml(doc, year) {
 '  .grand { margin-top: 8px; padding-top: 12px; border-top: 3px double #222; display: flex; justify-content: space-between; align-items: baseline; }\n' +
 '  .grand .label { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: #555; }\n' +
 '  .grand .value { font-family: Georgia, "Times New Roman", serif; font-size: 24px; font-weight: 700; }\n' +
+'  .xbadge { font-size: 11px; font-weight: 600; color: #7a6a2a; background: #f3ecd2; border: 1px solid #e0d3a0; border-radius: 999px; padding: 1px 7px; white-space: nowrap; }\n' +
+'  .xreason { font-size: 12px; color: #777; margin-top: 2px; }\n' +
 '  .empty { color: #777; font-style: italic; }\n' +
 '  @media print { body { padding: 0; } .note { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }\n' +
 '</style>\n' +
@@ -3645,10 +3770,11 @@ sections + empty +
 function buildHistoryCsv(doc, year) {
   var donations = givingDonations(doc, year).slice().sort(byDate);
   var lines = [];
-  lines.push(['date', 'charity', 'ein', 'type', 'via_daf', 'amount', 'notes'].map(csvField).join(','));
+  lines.push(['date', 'charity', 'ein', 'type', 'via_daf', 'amount', 'notes', 'excluded_from_tax', 'excluded_reason'].map(csvField).join(','));
   for (var i = 0; i < donations.length; i++) {
     var d = donations[i];
     var c = d.charity_id ? model.charityById(doc, d.charity_id) : null;
+    var excl = d.deductible === false && d.type !== 'daf_grant';
     var row = [
       d.date || '',
       c ? (c.name || '') : '(unknown charity)',
@@ -3657,6 +3783,8 @@ function buildHistoryCsv(doc, year) {
       d.type === 'daf_grant' ? 'yes' : 'no',
       round2(d.amount).toFixed(2),
       d.notes || '',
+      excl ? 'yes' : 'no',
+      excl ? (d.excluded_reason || '') : '',
     ];
     lines.push(row.map(csvField).join(','));
   }
@@ -5715,6 +5843,7 @@ window.GT = {
   series: window.__require('src/core/series.js'),
   valueguide: window.__require('src/core/valueguide.js'),
   photoitems: window.__require('src/core/photoitems.js'),
+  mediagate: window.__require('src/core/mediagate.js'),
   charts:  window.__require('src/core/charts.js'),
   heartbeat: window.__require('src/core/heartbeat.js'),
   tax:    window.__require('src/core/tax.js'),
@@ -5747,7 +5876,7 @@ window.GT.exp = {
 (function(){
   'use strict';
   var GT = window.GT, M = GT.model, C = GT.client, X = GT.crypto, P = GT.propublica, V = GT.valueguide, T = GT.tax, S = GT.saver;
-  var Q = GT.queue, RV = GT.review, SEAL = GT.seal, F = GT.files, LF = GT.logform, IB = GT.inbox, SER = GT.series, HB = GT.heartbeat, PH = GT.photoitems, CH = GT.charts;
+  var Q = GT.queue, RV = GT.review, SEAL = GT.seal, F = GT.files, LF = GT.logform, IB = GT.inbox, SER = GT.series, HB = GT.heartbeat, PH = GT.photoitems, CH = GT.charts, MG = GT.mediagate;
   var LS = window.localStorage;
   var DOC_KEY = 'giving_doc_v1';
   var $ = function(id){ return document.getElementById(id); };
@@ -5758,7 +5887,7 @@ window.GT.exp = {
   function readChartMeasure(){ try{ return LS.getItem(CMEASURE_KEY)==='deductible'?'deductible':'given'; }catch(e){ return 'given'; } }
   var state = { cfg:null, doc:null, year:(new Date()).getFullYear(), charResults:[], group:'date', sortDir:readSortDir(), log:null,
     view:readView(), chartMeasure:readChartMeasure(),
-    selecting:false, selected:{}, autoAdded:[], heartbeat:undefined,
+    selected:{}, autoAdded:[], heartbeat:undefined,
     inbox:{ drafts:[], unopenable:[], loading:false, pulledOnce:false } };
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(ch){
@@ -5833,8 +5962,10 @@ window.GT.exp = {
     return d.type;
   }
   function donBadge(d){
-    return (d.type==='daf_grant') ? '<span class="badge via">via DAF · not deductible</span>'
-         : (d.daf_contribution===true) ? '<span class="badge into">Into DAF</span>' : '';
+    if(d.type==='daf_grant') return '<span class="badge via">via DAF · not deductible</span>';
+    if(d.daf_contribution===true) return '<span class="badge into">Into DAF</span>';
+    if(d.deductible===false) return '<span class="badge excl">not deductible</span>';   // manual exclude (S4)
+    return '';
   }
 
   function render(){
@@ -5908,28 +6039,37 @@ window.GT.exp = {
     chips.forEach(function(c){ var s=document.createElement('span'); s.className='flag'; s.textContent='⚑ '+c[0]; box.appendChild(s); });
   }
 
+  // Live selection (S2): tapping the row BODY toggles selection (bound to click, so a scroll
+  // never selects). Per-row Edit/Dup/Del appear only when the row is selected; they stopPropagation
+  // so tapping an action never also toggles the row. Every row type is selectable.
+  function toggleSel(entry){
+    var k=entry.key;
+    if(state.selected[k]) delete state.selected[k]; else state.selected[k]=entry;
+    renderList();
+  }
   function donationRow(d){
     var c = M.charityById(state.doc, d.charity_id);
-    var el=document.createElement('div'); el.className='row'+(!M.deductibleOf(d)?' nondeduct':'');
-    if(state.selecting && (d.type==='money'||d.type==='daf_grant')){
-      var chk=document.createElement('span'); chk.className='selchk';
-      var cb=document.createElement('input'); cb.type='checkbox'; cb.checked=!!state.selected[d.id];
-      cb.addEventListener('change', function(){ if(cb.checked) state.selected[d.id]={ id:d.id, charity_id:d.charity_id, type:d.type }; else delete state.selected[d.id]; renderSelBar(); });
-      chk.appendChild(cb); el.appendChild(chk);
-    }
+    var selected=!!state.selected[d.id];
+    var el=document.createElement('div'); el.className='row'+(!M.deductibleOf(d)?' nondeduct':'')+(selected?' selected':'');
     var left=document.createElement('span'); left.className='date'; left.textContent=String(d.date||'').slice(5);
     var who=document.createElement('span'); who.className='who';
     who.innerHTML='<div class="nm">'+esc(c?c.name:'—')+donBadge(d)+'</div><div class="ty">'+esc(typeLabel(d))+'</div>';
     var amtwrap=document.createElement('span'); amtwrap.className='amtbtn';
     var amt=document.createElement('span'); amt.className='amt'; amt.textContent=money(d.amount);
-    var acts=document.createElement('span'); acts.className='acts';
-    var e=document.createElement('button'); e.textContent='Edit'; e.addEventListener('click',function(){ openLog(logKeyFor(d), d.id); });
-    var dup=document.createElement('button'); dup.textContent='Dup'; dup.addEventListener('click',function(){ M.duplicateDonation(state.doc,d.id); persistDoc(); toast('Donation duplicated ✓'); });
-    var del=document.createElement('button'); del.className='del'; del.textContent='Del';
-    del.addEventListener('click',function(){ if(confirm('Delete this donation?')){ M.deleteDonation(state.doc,d.id); persistDoc(); toast('Donation deleted'); } });
-    acts.appendChild(e); acts.appendChild(dup); acts.appendChild(del);
-    amtwrap.appendChild(amt); amtwrap.appendChild(acts);
+    amtwrap.appendChild(amt);
+    if(selected){
+      var acts=document.createElement('span'); acts.className='acts';
+      var e=document.createElement('button'); e.textContent='Edit';
+      e.addEventListener('click',function(ev){ ev.stopPropagation(); openLog(logKeyFor(d), d.id); });
+      var dup=document.createElement('button'); dup.textContent='Dup';
+      dup.addEventListener('click',function(ev){ ev.stopPropagation(); M.duplicateDonation(state.doc,d.id); persistDoc(); toast('Donation duplicated ✓'); });
+      var del=document.createElement('button'); del.className='del'; del.textContent='Del';
+      del.addEventListener('click',function(ev){ ev.stopPropagation(); if(confirm('Delete this donation?')){ M.deleteDonation(state.doc,d.id); SER.dropEmptySeries(state.doc); delete state.selected[d.id]; persistDoc(); toast('Donation deleted'); } });
+      acts.appendChild(e); acts.appendChild(dup); acts.appendChild(del);
+      amtwrap.appendChild(acts);
+    }
     el.appendChild(left); el.appendChild(who); el.appendChild(amtwrap);
+    el.addEventListener('click', function(){ toggleSel({ key:d.id, kind:'single', id:d.id, charity_id:d.charity_id, type:d.type }); });
     return el;
   }
 
@@ -5939,20 +6079,23 @@ window.GT.exp = {
     if(!ser){ gifts.forEach(function(g){ card.appendChild(donationRow(g)); }); return; }
     var c=M.charityById(state.doc, ser.charity_id);
     var total=gifts.reduce(function(s,g){ return s+(M.countsForGiving(g)?(Number(g.amount)||0):0); },0);
-    var row=document.createElement('div'); row.className='row seriesrow';
+    var selKey='ser:'+seriesId, selected=!!state.selected[selKey];
+    var row=document.createElement('div'); row.className='row seriesrow'+(selected?' selected':'');
     var left=document.createElement('span'); left.className='date'; left.textContent='↻';
     var who=document.createElement('span'); who.className='who';
     var badge= ser.type==='daf_grant' ? '<span class="badge via">via DAF</span>' : '';
-    who.innerHTML='<div class="nm">'+esc(c?c.name:'—')+badge+'</div><div class="ty">'+esc(ser.cadence)+' · '+gifts.length+' gift'+(gifts.length>1?'s':'')+(ser.active?'':' · paused')+'</div>';
+    who.innerHTML='<div class="nm">'+esc(c?c.name:'—')+badge+'</div><div class="ty">'+esc(seriesSubtitle(ser, gifts.length))+'</div>';
     var amtwrap=document.createElement('span'); amtwrap.className='amtbtn';
     var amt=document.createElement('span'); amt.className='amt'; amt.textContent=money(total);
     var acts=document.createElement('span'); acts.className='acts';
-    var exp=document.createElement('button'); exp.textContent='Expand ▸';
-    var ed=document.createElement('button'); ed.textContent='Edit'; ed.addEventListener('click', function(e){ e.stopPropagation(); openSeriesEditor(seriesId); });
-    acts.appendChild(exp); acts.appendChild(ed);
+    var exp=document.createElement('button'); exp.textContent='Expand ▸';   // navigation, always visible
+    acts.appendChild(exp);
     amtwrap.appendChild(amt); amtwrap.appendChild(acts);
     row.appendChild(left); row.appendChild(who); row.appendChild(amtwrap);
     card.appendChild(row);
+    // tapping the series row body selects the WHOLE group (every gift joins the selection)
+    var giftIds=gifts.map(function(g){ return g.id; });
+    row.addEventListener('click', function(){ toggleSel({ key:selKey, kind:'series', seriesId:seriesId, charity_id:ser.charity_id, type:ser.type, giftIds:giftIds }); });
     var subRows=[];
     exp.addEventListener('click', function(e){ e.stopPropagation();
       if(subRows.length){ subRows.forEach(function(r){ r.remove(); }); subRows=[]; exp.textContent='Expand ▸'; return; }
@@ -5960,6 +6103,13 @@ window.GT.exp = {
       gifts.slice().sort(M.compareByDate(state.sortDir)).forEach(function(g){ var r=donationRow(g); r.classList.add('subrow'); row.parentNode.insertBefore(r, after.nextSibling); after=r; subRows.push(r); });
       exp.textContent='Collapse ▾';
     });
+  }
+  // Subtitle for a series row. A recurring series shows its cadence (+ " · paused" when inactive);
+  // an ad-hoc group (S3) shows "<label> · N gifts" / "N gifts" and NEVER a cadence or paused suffix.
+  function seriesSubtitle(ser, n){
+    var gifts=n+' gift'+(n>1?'s':'');   // returns PLAIN text; the caller esc()s it
+    if(ser.kind==='adhoc'){ return (ser.label?ser.label+' · ':'')+gifts; }
+    return ser.cadence+' · '+gifts+(ser.active?'':' · paused');
   }
 
   // Group a year's donations into entries: a series (one row) or a single donation.
@@ -6107,7 +6257,6 @@ window.GT.exp = {
     var rows = (state.doc.donations||[]).filter(function(d){ return Number(d.tax_year)===Number(state.year); });
     var box=$('receipt'); box.innerHTML='';
     var sb=$('sortDir'); if(sb){ sb.textContent = state.sortDir==='asc' ? 'Oldest first ↑' : 'Newest first ↓'; sb.setAttribute('aria-pressed', state.sortDir==='asc'?'true':'false'); }
-    var bsel=$('btnSelect'); if(bsel) bsel.setAttribute('aria-pressed', state.selecting?'true':'false');
     $('rcptCnt').textContent = rows.length ? (rows.length+' this year') : '';
     renderAutoStrip(box);
     renderDueStrips(box);
@@ -6169,39 +6318,118 @@ window.GT.exp = {
     persistDoc(); toast('Gift confirmed — edit it if the amount differs.');
     openLog(logKeyFor(d), d.id);   // open for a quick edit
   }
+  // Digest the live selection. An ENTRY is one list row: a single donation, or a whole series
+  // group (which contributes all its gift ids). rowCount drives Edit (exactly one); donationIds
+  // (deduped) drive Delete + Duplicate; Bundle needs 2+ single rows, one charity, one bundle-able type.
+  function bundleTypeOf(t){ return t==='daf_grant' ? 'daf_grant' : t==='money' ? 'money' : null; }
+  function selectionInfo(){
+    var entries=Object.keys(state.selected).map(function(k){ return state.selected[k]; });
+    var seen={}, donationIds=[];
+    entries.forEach(function(e){
+      var ids = e.kind==='series' ? (e.giftIds||[]) : [e.id];
+      ids.forEach(function(id){ if(id && !seen[id]){ seen[id]=1; donationIds.push(id); } });
+    });
+    var hasSeries=entries.some(function(e){ return e.kind==='series'; });
+    var canBundle=false;
+    if(entries.length>=2 && !hasSeries){
+      var bt=bundleTypeOf(entries[0].type), ch=entries[0].charity_id;
+      canBundle = bt!=null && entries.every(function(e){ return bundleTypeOf(e.type)===bt && e.charity_id===ch; });
+    }
+    return { entries:entries, rowCount:entries.length, donationIds:donationIds, donCount:donationIds.length, hasSeries:hasSeries, canBundle:canBundle };
+  }
+  function clearSelection(){ state.selected={}; renderList(); }
   function renderSelBar(){
     var host=$('receipt'); if(!host) return;
     var existing=document.getElementById('selBar'); if(existing) existing.remove();
-    if(!state.selecting) return;
-    var ids=Object.keys(state.selected);
+    var info=selectionInfo();
+    if(!info.rowCount) return;
     var bar=document.createElement('div'); bar.id='selBar'; bar.className='selbar';
-    var sameCharity=true, sameType=true, first=ids.length?state.selected[ids[0]]:null;
-    ids.forEach(function(k){ var s=state.selected[k]; if(first){ if(s.charity_id!==first.charity_id) sameCharity=false; if((s.type==='daf_grant'?'daf_grant':'money')!==(first.type==='daf_grant'?'daf_grant':'money')) sameType=false; } });
-    var canBundle = ids.length>=2 && sameCharity && sameType;
     var lab=document.createElement('span'); lab.className='sl';
-    lab.textContent = ids.length+' selected'+(ids.length>=2 && !canBundle ? ' — pick gifts to ONE charity of the same type' : '');
-    var acts=document.createElement('span'); acts.style.display='flex'; acts.style.gap='6px';
-    var b=document.createElement('button'); b.className='btn sm'; b.textContent='Bundle into recurring'; b.disabled=!canBundle;
-    b.addEventListener('click', function(){ doBundle(ids); });
-    var x=document.createElement('button'); x.className='btn sm ghost'; x.textContent='Done';
-    x.addEventListener('click', function(){ state.selecting=false; state.selected={}; renderList(); });
-    acts.appendChild(b); acts.appendChild(x); bar.appendChild(lab); bar.appendChild(acts);
+    lab.textContent = info.rowCount+' selected'
+      + (info.rowCount>=2 && !info.hasSeries && !info.canBundle ? ' — to bundle, pick gifts to ONE charity of the same type' : '');
+    var acts=document.createElement('span'); acts.className='selacts';
+
+    var edit=document.createElement('button'); edit.className='btn sm ghost'; edit.textContent='Edit'; edit.disabled=info.rowCount!==1;
+    edit.addEventListener('click', function(){
+      var e=info.entries[0]; if(!e) return;
+      if(e.kind==='series') openSeriesEditor(e.seriesId);
+      else { var d=M.donationById(state.doc, e.id); if(d) openLog(logKeyFor(d), d.id); }
+    });
+    var dup=document.createElement('button'); dup.className='btn sm ghost'; dup.textContent='Duplicate';
+    dup.addEventListener('click', function(){
+      var n=0; info.donationIds.forEach(function(id){ if(M.donationById(state.doc,id)){ M.duplicateDonation(state.doc,id); n++; } });
+      clearSelectionState(); persistDoc(); toast(n+' donation'+(n>1?'s':'')+' duplicated ✓');
+    });
+    var del=document.createElement('button'); del.className='btn sm danger'; del.textContent='Delete';
+    del.addEventListener('click', function(){
+      var n=info.donCount; if(!n) return;
+      if(!confirm('Delete '+n+' donation'+(n>1?'s':'')+'?')) return;
+      info.donationIds.forEach(function(id){ M.deleteDonation(state.doc, id); });   // existing single-delete path per id
+      SER.dropEmptySeries(state.doc);
+      clearSelectionState(); persistDoc(); toast(n+' donation'+(n>1?'s':'')+' deleted');
+    });
+    acts.appendChild(edit); acts.appendChild(dup); acts.appendChild(del);
+    if(info.canBundle){
+      // 2+ same-charity, same-type single rows -> offer BOTH grouping kinds (S3)
+      var brec=document.createElement('button'); brec.className='btn sm'; brec.textContent='Bundle recurring';
+      brec.addEventListener('click', function(){ doBundle(info.donationIds); });
+      var bgrp=document.createElement('button'); bgrp.className='btn sm ghost'; bgrp.textContent='Group';
+      bgrp.addEventListener('click', function(){ doGroup(info.donationIds); });
+      acts.appendChild(brec); acts.appendChild(bgrp);
+    } else {
+      var bdis=document.createElement('button'); bdis.className='btn sm'; bdis.textContent='Bundle'; bdis.disabled=true;
+      acts.appendChild(bdis);
+    }
+    var clr=document.createElement('button'); clr.className='btn sm ghost'; clr.textContent='Clear';
+    clr.addEventListener('click', clearSelection);
+    acts.appendChild(clr);
+    bar.appendChild(lab); bar.appendChild(acts);
     host.insertBefore(bar, host.firstChild);
   }
-  function toggleSelect(){ state.selecting=!state.selecting; state.selected={}; renderList(); }
+  function clearSelectionState(){ state.selected={}; }   // clear WITHOUT a re-render (caller persists/renders)
   function doBundle(ids){
     try {
       var s=SER.bundle(state.doc, ids);
-      state.selecting=false; state.selected={};
+      clearSelectionState();
       persistDoc();
       openSeriesEditor(s.id);   // guessed cadence + amount are editable now
       toast('Bundled · '+s.cadence+' · '+money(s.amount));
     } catch(e){ toast(e.message||'Could not bundle those gifts.', true); }
   }
+  // Group (no schedule) — an ad-hoc series (S3). Prompts for an optional name; skipping is fine.
+  function doGroup(ids){
+    try {
+      var name=prompt('Name this group (optional):', '');
+      var label=(name!=null && name.trim()) ? name.trim() : null;
+      var s=SER.bundleAdhoc(state.doc, ids, { label:label });
+      clearSelectionState();
+      persistDoc();
+      toast('Grouped '+ids.length+' gifts'+(label?(' · '+label):''));
+    } catch(e){ toast(e.message||'Could not group those gifts.', true); }
+  }
 
   function openSeriesEditor(seriesId){
     var s=SER.seriesById(state.doc, seriesId); if(!s) return;
     var c=M.charityById(state.doc, s.charity_id);
+    if(s.kind==='adhoc'){   // an ad-hoc group edits its LABEL only — no cadence/amount/due fields (S3)
+      $('seriesTitle').textContent='Group — '+(c?c.name:'gifts');
+      $('seriesForm').innerHTML=
+        '<div class="field"><label>Charity</label><input class="txt" value="'+esc(c?c.name:'—')+'" disabled></div>'
+        + '<div class="field"><label>Type</label><input class="txt" value="'+(s.type==='daf_grant'?'DAF grant':'Cash')+'" disabled></div>'
+        + '<div class="field"><label>Group name (optional)</label><input class="txt" id="serLabel" value="'+esc(s.label||'')+'" placeholder="e.g. drop-offs"></div>'
+        + '<div class="search-row" style="margin-top:14px;"><button class="btn sm" id="serSave">Save</button>'
+        + '<button class="btn sm danger" id="serUnbundle">Un-group</button></div>'
+        + '<p class="ghint" style="margin-top:8px;">A group just collects irregular gifts under one row — no schedule, never “gift due”. Un-grouping keeps every gift.</p>';
+      $('serSave').addEventListener('click', function(){
+        var v=($('serLabel').value||'').trim(); s.label=v||null;
+        persistDoc(); closeSeriesEditor(); toast('Group saved');
+      });
+      $('serUnbundle').addEventListener('click', function(){
+        if(confirm('Un-group these gifts? Each gift stays; only the grouping is removed.')){ SER.unbundle(state.doc, seriesId); persistDoc(); closeSeriesEditor(); toast('Un-grouped'); }
+      });
+      $('seriesSheet').hidden=false;
+      return;
+    }
     $('seriesTitle').textContent='Recurring — '+(c?c.name:'gift');
     var cadOpts=SER.CADENCES.map(function(k){ return '<option value="'+k+'"'+(k===s.cadence?' selected':'')+'>'+k+'</option>'; }).join('');
     $('seriesForm').innerHTML=
@@ -6538,6 +6766,7 @@ window.GT.exp = {
     if($('fPark')) v.parking_tolls=$('fPark').value;
     if($('fPurpose')) v.purpose=$('fPurpose').value;
     if($('fRef')) v.grant_ref=$('fRef').value;
+    if($('fExclude')){ v.deductible=!$('fExclude').checked; v.excluded_reason=($('fExcludeReason')?$('fExcludeReason').value:''); }
     LF.mergeForm(state.log.draft, state.log.key, v);
   }
 
@@ -6613,17 +6842,17 @@ window.GT.exp = {
         + '<label class="chk"><input type="checkbox" id="fAck"'+(d.acknowledgment_received?' checked':'')+'> Written acknowledgment received</label>'
         + '<div class="field" style="margin-top:12px;"><label>Notes</label><textarea id="fNotes">'+esc(notes)+'</textarea></div>';
     } else if(key==='items'){
+      // Order (S5/§1l, decided): charity -> date -> combined Receipts+Photos -> running total ->
+      // acknowledgment -> notes -> item lines (+ add). The total deliberately sits ABOVE the lines.
       html += '<div class="field"><label>Charity</label>'+charitySelectHtml(selId)+'</div>'
         + '<div class="field"><label>Drop-off date</label><input type="date" class="txt" id="fDate" value="'+dt+'"></div>'
-        + '<div class="photorow"><button type="button" id="btnPhotoItems" class="btn sm">📷 Add from photos</button>'
-        + '<input id="photoInput" type="file" accept="image/*" capture="environment" multiple hidden>'
-        + '<span class="ghint" id="photoHint">Snap or pick up to 5 photos — the app lists the items and values them at the high end of the guide for you to check.</span></div>'
-        + '<div id="photoProgress" class="ghint" style="margin:4px 2px;"></div>'
-        + '<div id="logItems"></div>'
-        + '<button type="button" id="btnAddItem" class="btn sm ghost">+ Add item line</button>'
+        + '<div id="combinedMedia" class="acq" style="margin-top:4px;"></div>'
         + '<div class="runtot"><span class="rl">Drop-off total</span><span class="rv" id="itemsTotal">$0</span></div>'
         + '<label class="chk"><input type="checkbox" id="fAck"'+(d.acknowledgment_received?' checked':'')+'> Written acknowledgment received</label>'
-        + '<div class="field" style="margin-top:12px;"><label>Notes</label><textarea id="fNotes">'+esc(notes)+'</textarea></div>';
+        + '<div class="field" style="margin-top:12px;"><label>Notes</label><textarea id="fNotes">'+esc(notes)+'</textarea></div>'
+        + '<div class="subhead">Items</div>'
+        + '<div id="logItems"></div>'
+        + '<div id="addItemWrap"></div>';
     } else if(key==='stock'){
       html += '<div class="field"><label>Charity</label>'+charitySelectHtml(selId)+'</div>'
         + '<div class="field"><label>Transfer date</label><input type="date" class="txt" id="fDate" value="'+dt+'"></div>'
@@ -6660,11 +6889,9 @@ window.GT.exp = {
     }
     f.innerHTML=html;
     if(key==='items'){
-      if(!state.log.items.length) addItemLine();
-      $('btnAddItem').addEventListener('click', function(){ addItemLine(); });
-      $('btnPhotoItems').addEventListener('click', function(){ $('photoInput').click(); });
-      $('photoInput').addEventListener('change', onPhotoItems);
-      renderItems();
+      $('combinedMedia').innerHTML=mediaSectionHtml(true);   // one Receipts + Photos section, under the date
+      wireMediaSection(true);
+      renderItems();                                         // no forced blank line (§1o) — renderItems shows the add control
     }
     if(key==='stock' || key==='into_daf'){
       if(!state.log.lots.length) addLotLine();
@@ -6677,7 +6904,8 @@ window.GT.exp = {
         $('mileTotal').textContent=money(Math.round((m*MILEAGE_RATE+p)*100)/100); };
       $('fMiles').addEventListener('input', mt); $('fPark').addEventListener('input', mt); mt();
     }
-    appendAttachSection(f);
+    appendExcludeSection(f, key);
+    if(key!=='items') appendAttachSection(f);   // items renders its combined Receipts+Photos section under the date (S5)
     // "Make this recurring" — only when editing an existing cash gift / DAF grant not yet in a series (S6)
     if(state.log.editingId && (key==='money'||key==='grant')){
       var edd=M.donationById(state.doc, state.log.editingId);
@@ -6712,7 +6940,16 @@ window.GT.exp = {
   function renderItems(){
     var box=$('logItems'); if(!box) return; box.innerHTML='';
     state.log.items.forEach(function(it,i){ box.appendChild(itemLineEl(i)); });
+    renderAddItemControl();
     recomputeItemsTotal();
+  }
+  // The add-line control (§1o): "+ Add item line" with lines present, "Add the first item" when none.
+  function renderAddItemControl(){
+    var wrap=$('addItemWrap'); if(!wrap) return; wrap.innerHTML='';
+    var b=document.createElement('button'); b.type='button'; b.className='btn sm ghost';
+    b.textContent = state.log.items.length ? '+ Add item line' : 'Add the first item';
+    b.addEventListener('click', function(){ addItemLine(); });
+    wrap.appendChild(b);
   }
   function recomputeItemsTotal(){
     var tot=0; state.log.items.forEach(function(it){ tot += (Number(it.qty)||0)*(Number(it.unit_value)||0); });
@@ -6775,7 +7012,7 @@ window.GT.exp = {
       inp.addEventListener('input', function(){ it[fld] = (fld==='qty'||fld==='unit_value'||fld==='cost_basis') ? (inp.value===''?null:Number(inp.value)) : inp.value; updateLine(i, el); });
       inp.addEventListener('change', function(){ it[fld] = (fld==='qty'||fld==='unit_value'||fld==='cost_basis') ? (inp.value===''?null:Number(inp.value)) : inp.value; updateLine(i, el); });
     });
-    el.querySelector('[data-rm]').addEventListener('click', function(){ state.log.items.splice(i,1); if(!state.log.items.length) addItemLine(); else renderItems(); });
+    el.querySelector('[data-rm]').addEventListener('click', function(){ state.log.items.splice(i,1); renderItems(); });   // zero lines allowed (§1o)
     updateLine(i, el);
     return el;
   }
@@ -6913,9 +7150,16 @@ window.GT.exp = {
       img.src=url;
     });
   }
+  // A HEIC/HEIF from an iPhone reports image/heic (or, from macOS Finder, an EMPTY file.type),
+  // so accept it by extension too. It only decodes in Safari (native) — Chrome/Firefox can't, and
+  // we ship no decoder (HARD RULE: no libs), so a decode failure gets a specific, actionable message.
+  var isHeic=MG.isHeic, isImageFile=MG.isImageFile;   // pure gates (src/core/mediagate.js)
+  var HEIC_MSG='This looks like a HEIC photo, which this browser can’t read. Open the app in Safari, or set iPhone Camera to Settings → Camera → Formats → “Most Compatible” (JPEG).';
   async function processFile(file){
-    if(/^image\//.test(file.type)){
-      var dataUrl=await downscaleImage(file, 1600, 0.75);
+    if(isImageFile(file)){
+      var dataUrl;
+      try { dataUrl=await downscaleImage(file, 1600, 0.75); }   // outputs JPEG -> import-extract stays JPEG (contract untouched)
+      catch(err){ if(isHeic(file)) throw new Error(HEIC_MSG); throw err; }
       var bytes=X.b64ToBytes(dataUrl.split(',')[1]);
       return { bytes:bytes, mime:'image/jpeg', filename:(String(file.name||'receipt').replace(/\.[^.]+$/,'')||'receipt')+'.jpg', thumbUrl:dataUrl };
     }
@@ -6968,8 +7212,11 @@ window.GT.exp = {
     try {
       var images=[], staged=[];
       for(var i=0;i<files.length;i++){
-        if(!/^image\//.test(files[i].type)) continue;
-        var dataUrl=await downscaleImage(files[i], 1600, 0.75); var b64=dataUrl.split(',')[1];
+        if(!isImageFile(files[i])) continue;
+        var dataUrl;
+        try { dataUrl=await downscaleImage(files[i], 1600, 0.75); }
+        catch(err){ if(isHeic(files[i])){ setPhotoProgress(''); toast(HEIC_MSG, true); return; } throw err; }
+        var b64=dataUrl.split(',')[1];
         images.push(b64); staged.push({ dataUrl:dataUrl, b64:b64, name:files[i].name });
       }
       if(!images.length){ setPhotoProgress('Those files were not photos.'); return; }
@@ -6994,24 +7241,60 @@ window.GT.exp = {
     var area=$('attachArea'); if(!area) return;
     var atts = state.log.editingId ? currentAttachments() : ((state.log.pendingAttach||[]).map(function(p){ return p.att; }));
     area.innerHTML='';
-    if(!atts.length){ area.innerHTML='<div class="ghint">No receipts yet — attach a photo or PDF below.</div>'; return; }
+    if(!atts.length){ area.innerHTML='<div class="ghint">No receipts or photos yet — add one below.</div>'; return; }
     atts.forEach(function(a){
-      var chip=document.createElement('div'); chip.className='attachchip';
+      var sel = state.log.selectedAttach===a.id;   // View/Delete only on the selected chip (§1n)
+      var chip=document.createElement('div'); chip.className='attachchip'+(sel?' selected':'');
       chip.innerHTML=(a.thumbUrl?('<img class="athumb" src="'+a.thumbUrl+'">'):'<span class="afile">📎</span>')
         + '<span class="aname">'+esc(a.filename)+'</span><span class="asz">'+attSize(a.bytes)+'</span>';
-      var view=document.createElement('button'); view.type='button'; view.className='btn sm ghost'; view.textContent='View';
-      view.addEventListener('click', function(){ viewAttachment(a); });
-      var del=document.createElement('button'); del.type='button'; del.className='btn sm danger'; del.textContent='Delete';
-      del.addEventListener('click', function(){ deleteAttachment(a); });
-      chip.appendChild(view); chip.appendChild(del); area.appendChild(chip);
+      chip.addEventListener('click', function(ev){
+        if(ev.target.closest('button')) return;                 // let View/Delete act
+        state.log.selectedAttach = sel ? null : a.id; renderAttachSection();
+      });
+      if(sel){
+        var view=document.createElement('button'); view.type='button'; view.className='btn sm ghost'; view.textContent='View';
+        view.addEventListener('click', function(ev){ ev.stopPropagation(); viewAttachment(a); });
+        var del=document.createElement('button'); del.type='button'; del.className='btn sm danger'; del.textContent='Delete';
+        del.addEventListener('click', function(ev){ ev.stopPropagation(); deleteAttachment(a); });
+        chip.appendChild(view); chip.appendChild(del);
+      }
+      area.appendChild(chip);
     });
   }
+  // ---- in-app image lightbox (S1) ----
+  // A data: URL can NEVER be opened as a top-level tab (every browser blocks it, and
+  // window.open from an async callback is popup-blocked on iPhone Safari), so an image
+  // receipt shows in this overlay instead. A blob URL is revoked on close.
+  var lbRevoke=null, lbKeyHandler=null;
+  function openLightbox(src, revoke){
+    var box=$('lightbox'), img=$('lightboxImg'); if(!box||!img) return;
+    lbRevoke = revoke ? src : null;
+    img.src=src; box.hidden=false;
+    lbKeyHandler=function(e){ if(e.key==='Escape') closeLightbox(); };
+    document.addEventListener('keydown', lbKeyHandler);
+  }
+  function closeLightbox(){
+    var box=$('lightbox'), img=$('lightboxImg'); if(!box) return;
+    box.hidden=true; if(img) img.removeAttribute('src');
+    if(lbKeyHandler){ document.removeEventListener('keydown', lbKeyHandler); lbKeyHandler=null; }
+    if(lbRevoke){ try{ URL.revokeObjectURL(lbRevoke); }catch(e){} lbRevoke=null; }
+  }
   async function viewAttachment(a){
+    var isImage = /^image\//.test(a.mime||'');
     try {
-      if(a.thumbUrl){ window.open(a.thumbUrl, '_blank'); return; }
-      var row=await F.get(state.cfg.id, IB.attFileId(a)); if(!row){ toast('Receipt not found.', true); return; }
-      var dec=await F.decryptFile(row.ciphertext, row.iv, a.key);
-      var blob=new Blob([dec.bytes], { type:dec.mime }); var url=URL.createObjectURL(blob);
+      if(isImage){
+        // Prefer the in-memory thumbnail (works for a not-yet-saved staged photo too); an
+        // <img src="data:…"> is safe — it is only top-level NAVIGATION to a data: URL that browsers block.
+        if(a.thumbUrl){ openLightbox(a.thumbUrl, false); return; }
+        var row=await F.get(state.cfg.id, IB.attFileId(a)); if(!row){ toast('Receipt not found.', true); return; }
+        var dec=await F.decryptFile(row.ciphertext, row.iv, a.key);
+        var blob=new Blob([dec.bytes], { type:dec.mime }); openLightbox(URL.createObjectURL(blob), true);
+        return;
+      }
+      // Non-image (PDF): decrypt to a Blob and open in a tab (unchanged).
+      var prow=await F.get(state.cfg.id, IB.attFileId(a)); if(!prow){ toast('Receipt not found.', true); return; }
+      var pdec=await F.decryptFile(prow.ciphertext, prow.iv, a.key);
+      var pblob=new Blob([pdec.bytes], { type:pdec.mime }); var url=URL.createObjectURL(pblob);
       window.open(url, '_blank'); setTimeout(function(){ URL.revokeObjectURL(url); }, 30000);
     } catch(e){ toast('Could not open that receipt.', true); }
   }
@@ -7025,19 +7308,62 @@ window.GT.exp = {
         persistDoc();
       }
       else { state.log.pendingAttach=(state.log.pendingAttach||[]).filter(function(p){ return p.att.id!==a.id; }); }
+      state.log.selectedAttach=null;
       renderAttachSection(); toast('Receipt deleted');
     } catch(e){ toast('Could not delete that receipt.', true); }
   }
-  function appendAttachSection(f){
+  // Manual "exclude from tax" flag (S4 / ARC §1i). Offered for money / items / stock / mileage —
+  // NOT a DAF grant (non-deductible by nature) and NOT an Into-DAF contribution (excluding it would
+  // break the DAF split). A checked box + optional reason set deductible:false + excluded_reason.
+  function appendExcludeSection(f, key){
+    if(['money','items','stock','mileage'].indexOf(key)<0) return;
+    var d=state.log.draft||{};
+    var excluded = d.deductible===false;
     var wrap=document.createElement('div'); wrap.className='acq'; wrap.style.marginTop='12px';
-    wrap.innerHTML='<label style="display:block;font-size:0.78rem;color:var(--muted);margin-bottom:6px;font-weight:600;">Receipts</label>'
-      + '<div id="attachArea"></div>'
-      + '<input id="attachFile" type="file" accept="image/*,application/pdf" capture="environment" class="txt" style="margin-top:8px;">';
+    wrap.innerHTML=
+      '<label class="chk"><input type="checkbox" id="fExclude"'+(excluded?' checked':'')+'> Exclude from tax deductions</label>'
+      + '<div class="field" id="fExcludeRow" style="margin-top:8px;'+(excluded?'':'display:none;')+'"><label>Reason (kept on your records)</label>'
+      + '<input class="txt" id="fExcludeReason" value="'+esc(d.excluded_reason||'')+'" placeholder="Not deductible on a US return"></div>'
+      + '<p class="ghint">Still counts in “Given to charities” and your giving history, but is left out of every tax total, the savings estimate and every tax export — for a gift a US return will not accept (e.g. a foreign charity).</p>';
     f.appendChild(wrap);
+    var cb=$('fExclude'), row=$('fExcludeRow');
+    cb.addEventListener('change', function(){ row.style.display=cb.checked?'':'none'; });
+  }
+  // The media section — Receipts (attach input), plus the "Add from photos" button when includePhotos
+  // (items only, S5/§1l/§1k). HEIC/HEIF is accepted by extension on both inputs (Safari decodes it).
+  function mediaSectionHtml(includePhotos){
+    return '<label style="display:block;font-size:0.78rem;color:var(--muted);margin-bottom:6px;font-weight:600;">'
+      + (includePhotos?'Receipts &amp; photos':'Receipts')+'</label>'
+      + '<div id="attachArea"></div>'
+      + (includePhotos
+        ? '<div class="photorow" style="margin-top:8px;"><button type="button" id="btnPhotoItems" class="btn sm">📷 Add from photos</button>'
+          + '<span class="ghint" id="photoHint">Snap or pick up to 5 photos — the app lists the items and values them at the high end of the guide for you to check.</span></div>'
+          + '<div id="photoProgress" class="ghint" style="margin:4px 2px;"></div>'
+          + '<input id="photoInput" type="file" accept="image/*,.heic,.heif" capture="environment" multiple hidden>'
+        : '')
+      + '<input id="attachFile" type="file" accept="image/*,.heic,.heif,application/pdf" capture="environment" class="txt" style="margin-top:8px;">';
+  }
+  function wireMediaSection(includePhotos){
     $('attachFile').addEventListener('change', onAttachFile);
+    if(includePhotos){
+      $('btnPhotoItems').addEventListener('click', function(){ $('photoInput').click(); });
+      $('photoInput').addEventListener('change', onPhotoItems);
+    }
     renderAttachSection();
   }
+  function appendAttachSection(f){
+    var wrap=document.createElement('div'); wrap.className='acq'; wrap.style.marginTop='12px';
+    wrap.innerHTML=mediaSectionHtml(false);
+    f.appendChild(wrap);
+    wireMediaSection(false);
+  }
 
+  // Read the exclude-from-tax controls (present only for money/items/stock/mileage). {} otherwise.
+  function excludeFields(){
+    if(!$('fExclude')) return {};
+    var ex=$('fExclude').checked;
+    return { deductible: !ex, excluded_reason: ex ? (($('fExcludeReason')&&$('fExcludeReason').value.trim())||null) : null };
+  }
   function saveLog(){
     if(!state.log) return;
     var key=state.log.key;
@@ -7052,7 +7378,7 @@ window.GT.exp = {
     } else if(key==='items'){
       var cidi=$('fCharity').value;
       if(!cidi){ toast('Pick a charity.', true); return; }
-      var lines=state.log.items.filter(function(it){ return (Number(it.qty)||0)>0 && (Number(it.unit_value)||0)>=0 && it.description; });
+      var lines=MG.validItemLines(state.log.items);   // zero valid lines -> refuse; never a $0 gift (§1o)
       if(!lines.length){ toast('Add at least one item line with a description and value.', true); return; }
       payload={ type:'items', charity_id:cidi, items:lines, date:dt, notes:notes, daf_contribution:false, acknowledgment_received:$('fAck').checked };
     } else if(key==='into_daf'){
@@ -7076,6 +7402,7 @@ window.GT.exp = {
       if(!cidg){ toast('Pick the recipient charity.', true); return; } if(!(amtg>0)){ toast('Enter an amount.', true); return; }
       payload={ type:'daf_grant', charity_id:cidg, amount:amtg, date:dt, notes:notes, grant_ref:($('fRef').value||'').trim()||null };
     } else { return; }
+    Object.assign(payload, excludeFields());   // exclude-from-tax flag (S4), no-op for grant / into_daf
     var rqid = state.log.reviewQueueId, rdraft = state.log.reviewDraft;
     if(rqid && rdraft) payload.sources = [RV.sourceRecord(rdraft)];   // keep capture provenance
     var saved;
@@ -7835,8 +8162,9 @@ window.GT.exp = {
   $('btnLogClose').addEventListener('click', closeLog);
   $('btnLogSave').addEventListener('click', saveLog);
   $('sortDir').addEventListener('click', toggleSortDir);
-  $('btnSelect').addEventListener('click', toggleSelect);
   $('btnSeriesClose').addEventListener('click', closeSeriesEditor);
+  $('lightboxClose').addEventListener('click', closeLightbox);
+  $('lightbox').addEventListener('click', function(e){ if(e.target===$('lightbox')) closeLightbox(); });
   $('grpDate').addEventListener('click', function(){ setGroup('date'); });
   $('grpCharity').addEventListener('click', function(){ setGroup('charity'); });
   $('viewList').addEventListener('click', function(){ setView('list'); });
