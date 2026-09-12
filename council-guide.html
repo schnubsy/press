@@ -326,7 +326,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v3.2.3</span>
+    <span class="nav-badge">v3.3.0</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -1083,7 +1083,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <details class="facet">
           <summary><span class="fmk">&#9656;</span>Detect — what it checks for drift</summary>
           <div class="facet-body">
-            <p><b class="ink">Detect:</b> eleven checks. It diffs <code>plugin.json</code> against the four version-stamp locations (guide nav badge + footer, and the <code>Version:</code> headers in <code>PERSONAS.md</code> and <code>CAPABILITIES.md</code>), flags annex entries newer than the guide's stamp, checks skills against the cast (<code>PERSONAS.md</code>) and against the instrument index (every registered instrument needs its one-line entry in <code>skills/hand/SKILL.md</code>), catches capabilities used but never registered, and detects a <b class="ink">stale bundle</b> — a <code>dist/council.plugin</code> older than the newest committed source means Cowork + web/mobile are out of date, whether <code>MANUAL.md</code> (the separate environment repo) trails the plugin's version, and whether the published Press copy of this guide (<code>schnubsy/press/council-guide.html</code>) has fallen behind the generated version — a <b class="ink">stale Press copy</b> is flagged as drift, so a missed publish is caught next run. It also runs <code>build.py --check</code> to catch a <b class="ink">stale <code>manual.html</code></b> (generated from <code>MANUAL.md</code>), and an <b class="ink">ACR storage watch</b> (<code>az acr show-usage</code>, read-only) that flags the registry approaching its included quota.</p>
+            <p><b class="ink">Detect:</b> twelve checks. It diffs <code>plugin.json</code> against the four version-stamp locations (guide nav badge + footer, and the <code>Version:</code> headers in <code>PERSONAS.md</code> and <code>CAPABILITIES.md</code>), flags annex entries newer than the guide's stamp, checks skills against the cast (<code>PERSONAS.md</code>) and against the instrument index (every registered instrument needs its one-line entry in <code>skills/hand/SKILL.md</code>), catches capabilities used but never registered, and detects a <b class="ink">stale bundle</b> — a <code>dist/council.plugin</code> older than the newest committed source means Cowork + web/mobile are out of date, whether <code>MANUAL.md</code> (the separate environment repo) trails the plugin's version, and whether the published Press copy of this guide (<code>schnubsy/press/council-guide.html</code>) has fallen behind the generated version — a <b class="ink">stale Press copy</b> is flagged as drift, so a missed publish is caught next run. It also runs <code>build.py --check</code> to catch a <b class="ink">stale <code>manual.html</code></b> (generated from <code>MANUAL.md</code>), and an <b class="ink">ACR storage watch</b> (<code>az acr show-usage</code>, read-only) that flags the registry approaching its included quota, and a <b class="ink">stale-agent sweep</b> that flags any enabled marquee agent gone silent past its cadence (the same signal the heartbeat cron writes).</p>
           </div>
         </details>
         <details class="facet">
@@ -1178,6 +1178,19 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
           <div class="facet-body">
             <p>An <b class="ink">arc-shaped order is the default</b> for any coding work order; a single-slice order is the exception — a one-line fix, or when one slice cannot be specified until the previous slice's output exists. Every emitted order carries the same fixed frame: the repo path and a session branch, the standing-rules block (solo repo, merge to main at the close, never move a worktree mid-order, publishing stays the Principal's, staging by name), <b class="ink">plan mode once</b> to gather every decision into a single up-front checkpoint, then the numbered slices — each with scope, files, detail, and explicit done-criteria — run back-to-back, with independent pieces fanned out to parallel sub-agents. The <b class="ink">per-slice discipline loop</b> is the same every time: extend the tests, build and lint clean, run it, capture a done-proof artifact, commit the slice, hand off, continue — returning only at arc-complete or a genuine blocker. The close merges the branch to main, deletes it, and reports.</p>
             <p>The referenced arc file is <b class="ink"><code>ARC.md</code></b> at the project root — a fourth control file alongside <code>CLAUDE.md</code>, <code>HANDOFF.md</code>, and <code>ORCHESTRATION.md</code>. It is <b class="ink">append-only</b>: the orchestration layer adds dated slices and decisions, the executing agent consumes them, and the handoff routine ticks the completed slices and — once every slice is done — folds the arc into <code>CLAUDE.md</code> and <code>HANDOFF.md</code>, truncating <code>ARC.md</code> back to empty.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="instr i-hand" id="cap-agent">
+        <span class="who">Owner: Forge · consulted Steward + Snag/sentry · trigger — "add an agent to X" / "agentize this page" / "new marquee agent"</span>
+        <h4>Agent</h4>
+        <p class="instr-sum">The repeatable way to give a marquee app an autonomous Claude-backed agent — one that reads incoming mail or a dropped file, extracts what matters, and files it for review — built from a shared template instead of hand-rolled each time. Every run is logged, and a dead agent raises a flag instead of failing in silence.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Full detail — kinds, tiers, and the run ledger</summary>
+          <div class="facet-body">
+            <p>An agent comes in one of <b class="ink">three kinds</b>: an <b class="ink">inlet</b> (an external source — a mailbox, a webhook — POSTs to a secret-guarded endpoint), an <b class="ink">on-demand</b> call (the page itself asks, and gets an answer back with nothing stored), or a <b class="ink">scheduled</b> sweep (a timer fires it). And one of <b class="ink">three privacy tiers</b>: <b class="ink">sealed</b> (the result is a locked box only the owner's device can open — nothing readable is ever kept at rest), <b class="ink">gated</b> (held behind an unguessable key), or <b class="ink">open</b> (a deliberately public, non-sensitive summary). The brief picks one of each before anything is built.</p>
+            <p>Under it all is one shared core — a single forced, schema-checked model call — and a <b class="ink">run ledger</b>: every turn writes exactly one row recording the outcome, the tokens, the cost and the latency, so an agent's health is a query, not a guess. A daily <b class="ink">heartbeat</b> marks an agent <em>dead</em> the moment it falls silent past its expected cadence, and the audit's twelfth check sweeps for the same silence. Adding an agent is a fixed ritual — scaffold, provision, wire the app's review inbox, pass the ship-gate, then a live verify — and a failed setup leaves no half-built agent behind.</p>
           </div>
         </details>
       </div>
@@ -1517,7 +1530,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <footer>
   <div class="footer-in">
     <div>The Council · a private prospectus · generated from PERSONAS.md + skills</div>
-    <div class="mono">council v3.2.3 · last updated 2026-09-11</div>
+    <div class="mono">council v3.3.0 · last updated 2026-09-11</div>
   </div>
 </footer>
 
