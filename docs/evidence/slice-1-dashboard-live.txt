@@ -1,0 +1,42 @@
+SLICE 1 — agent-health dashboard: live verification against press (eepjhpyziczrxvirczio)
+Captured: 2026-09-12T21:07:01Z
+
+== Public-view gating (anon publishable key) ==
+-- registry_public WITH x-app: giving (widened cols) --
+[{"agent":"capture","enabled":true,"kind":"inlet","cadence_minutes":10,"model":"claude-haiku-4-5","last_ok_at":"2026-09-12T20:58:02.492+00:00"}, 
+ {"agent":"import-extract","enabled":true,"kind":"on-demand","cadence_minutes":null,"model":"claude-haiku-4-5","last_ok_at":null}, 
+ {"agent":"ynab-sync","enabled":false,"kind":"scheduled","cadence_minutes":1440,"model":"-","last_ok_at":null}]
+-- runs_daily_public WITH x-app: giving (aggregate) --
+[{"agent":"capture","day":"2026-09-12","runs":12,"ok_count":2,"error_count":0,"dead_count":1,"cost_usd":0.007141,"tokens_in":6251,"tokens_out":178}]
+-- runs_public WITH x-app: giving (ONE latest row per agent) --
+[{"agent":"capture","outcome":"skipped","finished_at":"2026-09-12T20:58:02.492+00:00"}]
+-- WITHOUT x-app (each MUST be []) --
+registry: []
+daily:    []
+runs_pub: []
+-- direct base-table select MUST be denied (revoke proof) --
+{"code":"42501","details":null,"hint":"Grant the required privileges to the current role with: GRANT SELECT ON public.press_agent_runs TO anon;","message":"permission denied for table press_agent_runs"}
+
+== What the dashboard RENDERS against the above (served over http, real fetch) ==
+Verdict: "All agents healthy" (GREEN) — "Everything that should be running is running. 2 agents being watched."
+
+Capture — in the Giving app · Runs on a schedule — every 10 minutes
+  Working normally.
+  Last did something: 7 minutes ago    Next expected: in about 3 minutes
+  Last 7 days: one green bar (today); Failed runs: None in the last 7 days
+  Cost this month: <$0.01             Projected full month: ~$0.018
+  (the stale 06:15Z synthetic 'dead' heartbeat row is correctly NOT counted as a failure)
+
+Import Extract — in the Giving app · Runs on demand
+  Ready. Hasn't needed to run yet.
+  Last did something: Never yet        Next expected: Only when someone asks
+  Failed runs: None in the last 7 days
+  Cost this month: $0.00               Projected full month: ~$0.00
+  (on-demand + nothing logged = correct, NOT a fault)
+
+SWITCHED OFF — NOT COUNTED ABOVE
+Ynab Sync — in the Giving app · Currently switched off
+  Turned off — not being watched.
+  Next expected: —   (greyed; excluded from the top-line verdict)
+
+Contract check: grep of agents.html for agent names (capture|import-extract|ynab) => CLEAN (registry-driven).

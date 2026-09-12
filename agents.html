@@ -252,16 +252,18 @@ function assess(reg, byDayForAgent){
   const onDemand = reg.cadence_minutes == null;
   const lastOk = reg.last_ok_at ? new Date(reg.last_ok_at).getTime() : null;
 
-  // last-7-day window facts from the daily aggregate
+  // last-7-day window facts from the daily aggregate. NOTE 'dead' rows are the
+  // heartbeat monitor's OWN silence-marker, not an agent failure — silence is already
+  // covered by the last_ok / next-expected rule below — so 'dead' never counts as a
+  // failure and never paints the strip red. Only a real 'error' outcome does.
   const week = last7(byDayForAgent);
-  const failedWeek = week.reduce((a,d)=>a + (d.error_count||0) + (d.dead_count||0), 0);
+  const failedWeek = week.reduce((a,d)=>a + (d.error_count||0), 0);
   const ranThisWeek = week.some(d=>d.runs>0);
-  const failedToday = (() => {
-    const todayKey = dayKey(new Date());
-    const row = byDayForAgent[todayKey];
-    return row ? ((row.error_count||0)+(row.dead_count||0))>0 : false;
+  const erroredToday = (() => {
+    const row = byDayForAgent[dayKey(new Date())];
+    return row ? (row.error_count||0)>0 : false;
   })();
-  const everRan = lastOk!=null || Object.values(byDayForAgent).some(d=>d.runs>0);
+  const everRan = lastOk!=null || Object.values(byDayForAgent).some(d=>((d.runs||0)-(d.dead_count||0))>0);
 
   let state, statusText, tone, todo=null, severe=false, attention=false;
 
@@ -279,9 +281,9 @@ function assess(reg, byDayForAgent){
   } else {
     const cadMs = reg.cadence_minutes*MIN;
     const age = now - lastOk;
-    if(age <= 3*cadMs && !failedToday){
+    if(age <= 3*cadMs && !erroredToday){
       state='ok'; tone='ok'; statusText='Working normally.';
-    } else if(failedToday && age <= 3*cadMs){
+    } else if(erroredToday && age <= 3*cadMs){
       state='warn'; tone='warn'; attention=true;
       statusText='Something went wrong recently.';
       todo={tone:'warn', text:'It logged an error today — have a look at the app’s logs when you get a chance.'};
@@ -322,13 +324,14 @@ function last7(byDay){
     const dt=new Date(Date.now()-i*DAY);
     const key=dayKey(dt);
     const row=byDay[key];
+    const dead = row?(row.dead_count||0):0;
     out.push({
       key, dt,
-      runs: row?row.runs:0,
+      runs: row?Math.max(0,(row.runs||0)-dead):0,   // agent ticks only — exclude monitor 'dead' rows
       ok_count: row?(row.ok_count||0):0,
       skipped_count: row?(row.skipped_count||0):0,
       error_count: row?(row.error_count||0):0,
-      dead_count: row?(row.dead_count||0):0
+      dead_count: dead
     });
   }
   return out;
@@ -352,10 +355,10 @@ const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 function barsHTML(week){
   const max=Math.max(1,...week.map(d=>d.runs));
   return `<div class="bars">`+week.map(d=>{
-    const failed=(d.error_count+d.dead_count)>0;
+    const failed=d.error_count>0;
     const h = d.runs===0 ? 0 : Math.max(20, Math.round(d.runs/max*100));
     const cls = d.runs===0 ? 'b-empty' : (failed?'b-bad':'b-ok');
-    const label = d.runs===0 ? 'no runs' : (d.runs+' run'+(d.runs===1?'':'s')+', '+(d.error_count+d.dead_count)+' failed');
+    const label = d.runs===0 ? 'no runs' : (d.runs+' run'+(d.runs===1?'':'s')+', '+d.error_count+' failed');
     return `<div class="bar" title="${esc(DOW[d.dt.getDay()]+' '+d.dt.getDate()+' — '+label)}">`+
       `<i class="${cls}" style="height:${h}%"></i><span class="d">${DOW[d.dt.getDay()][0]}</span></div>`;
   }).join('')+`</div>`;
