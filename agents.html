@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Health</title>
+<meta name="page-title" content="Agent Health">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================================
+   PRESS — AGENT HEALTH · Twilight Cut house style (matches index.html / giving.html)
+   A plain-English status board for the marquee's autonomous agents. REGISTRY-DRIVEN:
+   every enabled press_agent_registry row renders a card automatically — no agent name
+   is ever written into this file. Read-only; refresh on load + a manual button; NO
+   polling loop (free tier). Degrades honestly — a fetch failure never shows green.
+   ============================================================================ */
+:root{
+  --tw-stage:#100C1E; --tw-ink:#EDE7F2; --tw-violet:#8E7BE8; --tw-rose:#E7A6C7;
+  --tw-muted:#9E97AE; --tw-faint:#6a6478; --tw-icon:#B7A8FF;
+  --tw-dusk-1:#151029; --tw-dusk-2:#100C1E; --tw-dusk-3:#0E0A18;
+  --tw-stage-gradient:linear-gradient(165deg,var(--tw-dusk-1),var(--tw-dusk-2) 55%,var(--tw-dusk-3));
+  --tw-glass-card:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+  --tw-border-card:rgba(255,255,255,.10); --tw-hairline:rgba(255,255,255,.06);
+  --tw-font-display:'Unbounded','Inter',system-ui,sans-serif;
+  --tw-font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --tw-font-meta:'Space Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --tw-radius-card:22px; --tw-radius-pill:100px; --tw-blur-card:16px;
+  --tw-shadow-card:0 10px 34px rgba(10,7,22,.5),inset 0 1px 0 rgba(255,255,255,.12);
+  --tw-eyebrow:10px; --tw-track-eyebrow:.16em;
+  --tw-grad-title:linear-gradient(92deg,#B7A8FF,#E7A6C7);
+  /* health palette */
+  --ok:#57C79A; --ok-glow:rgba(87,199,154,.5);
+  --warn:#E0A93B; --warn-glow:rgba(224,169,59,.5);
+  --bad:#E5606B; --bad-glow:rgba(229,96,107,.5);
+  --off:#5b5568;
+  --tw-aurora-field:radial-gradient(520px 340px at 30% -8%,rgba(142,123,232,.4),transparent 62%),
+                    radial-gradient(440px 320px at 92% 20%,rgba(231,166,199,.2),transparent 60%),
+                    radial-gradient(380px 300px at 12% 68%,rgba(142,123,232,.14),transparent 65%),
+                    radial-gradient(420px 340px at 78% 84%,rgba(231,166,199,.12),transparent 65%);
+}
+@keyframes twBreath{0%{opacity:.5;transform:translateY(0)}100%{opacity:.72;transform:translateY(-2%)}}
+@keyframes twShimmer{100%{transform:translateX(100%)}}
+@keyframes twPulse{0%,100%{opacity:.55}50%{opacity:1}}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body.tw-page{background:var(--tw-stage-gradient);color:var(--tw-ink);font-family:var(--tw-font-body);
+  -webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden;min-height:100vh}
+.tw-aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;opacity:.6;
+  background:var(--tw-aurora-field);animation:twBreath 32s ease-in-out infinite alternate}
+.tw-in{position:relative;z-index:3;max-width:620px;margin:0 auto;padding:26px 22px 48px}
+.tw-back{display:inline-flex;align-items:center;gap:7px;font-family:var(--tw-font-meta);font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);
+  padding:6px 12px;border-radius:var(--tw-radius-pill);text-decoration:none;margin-bottom:16px}
+.tw-top{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--tw-muted)}
+.tw-top b{color:var(--tw-ink);font-weight:600;letter-spacing:.02em}
+h1.tw-title{font-family:var(--tw-font-display);font-weight:500;font-size:clamp(24px,6.5vw,31px);line-height:1.2;
+  letter-spacing:.005em;margin:14px 0 6px;background:var(--tw-grad-title);-webkit-background-clip:text;
+  background-clip:text;color:transparent}
+.tw-dek{font-size:13px;color:var(--tw-muted);max-width:440px;margin-bottom:20px}
+
+/* ── the one big verdict ─────────────────────────────────────────────────── */
+.verdict{position:relative;border-radius:var(--tw-radius-card);padding:24px 22px;margin-bottom:22px;
+  border:1px solid var(--tw-border-card);background:var(--tw-glass-card);
+  backdrop-filter:blur(var(--tw-blur-card));-webkit-backdrop-filter:blur(var(--tw-blur-card));
+  box-shadow:var(--tw-shadow-card);display:flex;align-items:center;gap:18px}
+.verdict .dot{width:18px;height:18px;border-radius:50%;flex:none;margin-top:4px}
+.verdict .vtext{flex:1}
+.verdict h2{font-family:var(--tw-font-display);font-weight:500;font-size:clamp(20px,5.5vw,26px);line-height:1.15}
+.verdict p{font-size:13px;color:var(--tw-muted);margin-top:5px}
+.verdict.green{border-color:rgba(87,199,154,.4);box-shadow:0 10px 34px rgba(10,7,22,.5),0 0 40px rgba(87,199,154,.14),inset 0 1px 0 rgba(255,255,255,.12)}
+.verdict.green .dot{background:var(--ok);box-shadow:0 0 18px 3px var(--ok-glow)}
+.verdict.green h2{color:#8be0bd}
+.verdict.amber{border-color:rgba(224,169,59,.42)}
+.verdict.amber .dot{background:var(--warn);box-shadow:0 0 18px 3px var(--warn-glow)}
+.verdict.amber h2{color:#f0c877}
+.verdict.red{border-color:rgba(229,96,107,.45);box-shadow:0 10px 34px rgba(10,7,22,.5),0 0 40px rgba(229,96,107,.16),inset 0 1px 0 rgba(255,255,255,.12)}
+.verdict.red .dot{background:var(--bad);box-shadow:0 0 18px 3px var(--bad-glow)}
+.verdict.red h2{color:#f08a92}
+.verdict.grey .dot{background:var(--off)}
+.verdict.grey h2{color:var(--tw-ink)}
+
+/* ── refresh row ─────────────────────────────────────────────────────────── */
+.ctrl{display:flex;justify-content:space-between;align-items:center;margin:-8px 0 16px}
+.ctrl .stamp{font-family:var(--tw-font-meta);font-size:10.5px;color:var(--tw-faint)}
+.refresh{cursor:pointer;font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);padding:7px 14px;border-radius:var(--tw-radius-pill);
+  background:rgba(142,123,232,.08);display:inline-flex;align-items:center;gap:7px}
+.refresh:hover{border-color:var(--tw-violet);background:rgba(142,123,232,.16)}
+.refresh[aria-busy="true"]{opacity:.6;pointer-events:none}
+.refresh svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── agent cards ─────────────────────────────────────────────────────────── */
+.section-label{font-size:var(--tw-eyebrow);letter-spacing:var(--tw-track-eyebrow);text-transform:uppercase;
+  color:var(--tw-faint);margin:22px 4px 10px}
+.card{position:relative;border-radius:var(--tw-radius-card);padding:20px;margin-bottom:14px;
+  border:1px solid var(--tw-border-card);background:var(--tw-glass-card);
+  backdrop-filter:blur(var(--tw-blur-card));-webkit-backdrop-filter:blur(var(--tw-blur-card));
+  box-shadow:var(--tw-shadow-card)}
+.card.is-off{opacity:.55;filter:saturate(.5)}
+.card .head{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.card .statusdot{width:12px;height:12px;border-radius:50%;flex:none;margin-top:6px}
+.card .statusdot.s-ok{background:var(--ok);box-shadow:0 0 12px 2px var(--ok-glow)}
+.card .statusdot.s-warn{background:var(--warn);box-shadow:0 0 12px 2px var(--warn-glow)}
+.card .statusdot.s-bad{background:var(--bad);box-shadow:0 0 12px 2px var(--bad-glow);animation:twPulse 2s ease-in-out infinite}
+.card .statusdot.s-idle{background:var(--tw-violet);opacity:.7}
+.card .statusdot.s-off{background:var(--off)}
+.card .titlewrap{flex:1;min-width:0}
+.card h3{font-family:var(--tw-font-display);font-weight:400;font-size:17px;line-height:1.25}
+.card .sub{font-size:11.5px;color:var(--tw-muted);margin-top:3px}
+.card .statusline{font-size:14.5px;color:var(--tw-ink);margin:2px 0 0;font-weight:500}
+.card .statusline.warn{color:#f0c877}
+.card .statusline.bad{color:#f08a92}
+.card .statusline.ok{color:#8be0bd}
+
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin-top:6px}
+@media(max-width:440px){.meta{grid-template-columns:1fr}}
+.meta .cell .lbl{font-size:var(--tw-eyebrow);letter-spacing:.1em;text-transform:uppercase;color:var(--tw-faint);margin-bottom:3px}
+.meta .cell .val{font-size:13px;color:var(--tw-ink)}
+.meta .cell .val.mono{font-family:var(--tw-font-meta);font-size:12px}
+
+/* 7-day strip */
+.strip{grid-column:1/-1;margin-top:2px}
+.strip .lbl{font-size:var(--tw-eyebrow);letter-spacing:.1em;text-transform:uppercase;color:var(--tw-faint);margin-bottom:7px}
+.bars{display:flex;gap:5px;align-items:flex-end;height:38px}
+.bars .bar{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;height:100%;position:relative}
+.bars .bar i{display:block;border-radius:3px;width:100%;min-height:3px;transition:height .3s}
+.bars .bar i.b-ok{background:linear-gradient(180deg,#6fd6ab,#3f9d78)}
+.bars .bar i.b-bad{background:linear-gradient(180deg,#f08a92,#c94651)}
+.bars .bar i.b-empty{background:rgba(255,255,255,.06);min-height:3px;height:3px!important}
+.bars .bar .d{font-size:8px;color:var(--tw-faint);text-align:center;margin-top:4px;font-family:var(--tw-font-meta)}
+.striphint{font-size:10.5px;color:var(--tw-faint);margin-top:6px}
+
+/* what-to-do banner on unhealthy cards */
+.todo{margin-top:16px;border-radius:14px;padding:12px 14px;font-size:13px;display:flex;gap:9px;align-items:flex-start}
+.todo.warn{background:rgba(224,169,59,.10);border:1px solid rgba(224,169,59,.3);color:#f0c877}
+.todo.bad{background:rgba(229,96,107,.10);border:1px solid rgba(229,96,107,.32);color:#f08a92}
+.todo b{color:var(--tw-ink);font-weight:600}
+.todo svg{width:15px;height:15px;flex:none;margin-top:1px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* states */
+.tw-skel{padding:20px;margin-bottom:14px;border-radius:var(--tw-radius-card);background:var(--tw-glass-card);
+  border:1px solid var(--tw-border-card);height:150px;position:relative;overflow:hidden}
+.tw-skel::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);animation:twShimmer 1.8s ease-in-out infinite}
+.tw-note{padding:22px;border-radius:var(--tw-radius-card);background:var(--tw-glass-card);
+  border:1px solid var(--tw-border-card);text-align:center}
+.tw-note h3{font-family:var(--tw-font-display);font-weight:400;font-size:16px;margin-bottom:6px}
+.tw-note p{font-size:13px;color:var(--tw-muted)}
+.foot{font-size:10.5px;color:var(--tw-faint);text-align:center;margin-top:22px;line-height:1.6}
+@media(prefers-reduced-motion:reduce){.tw-aurora,.tw-skel::after,.statusdot{animation:none!important}}
+</style>
+</head>
+<body class="tw-page">
+  <div class="tw-aurora"></div>
+  <div class="tw-in">
+    <a class="tw-back" href="index.html">← the marquee</a>
+    <div class="tw-top"><span>The <b>Agents</b></span><span id="scope">watching…</span></div>
+    <h1 class="tw-title">Are the agents OK?</h1>
+    <div class="tw-dek">The little robots that read incoming mail and keep things tidy. This page checks in on them — in plain English, no jargon.</div>
+    <div class="ctrl">
+      <span class="stamp" id="stamp"></span>
+      <span class="refresh" id="refresh" role="button" tabindex="0" aria-busy="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Refresh
+      </span>
+    </div>
+    <div id="root"></div>
+    <div class="foot" id="foot"></div>
+  </div>
+
+<script>
+/* ══ SCOPE (page-level, NOT an agent list) ══════════════════════════════════
+   Exactly like index.html hardcodes OWNER/REPO='press', this dashboard is scoped
+   to ONE marquee app's agents. The app tag is the x-app header the header-gated
+   views require. Every AGENT under this app is discovered from the registry —
+   no agent name appears anywhere in this file. Override with ?app=<name> if this
+   page is ever reused for another app. */
+const APP = new URLSearchParams(location.search).get('app') || 'giving';
+
+/* The press project + its publishable (anon) key — a public const, exactly like the
+   other press pages. NOT a secret. The views are header-gated on x-app; because this
+   tag ships in page source they are effectively public — so the views expose only
+   non-sensitive columns (no input_hash, no error text, no per-run timeline). */
+const SB_URL = 'https://eepjhpyziczrxvirczio.supabase.co';
+const SB_KEY = 'sb_publishable__iv3bI7xDAsOdHUlXzbVZQ_2yyFS4uX';
+const REST   = SB_URL + '/rest/v1';
+const HEAD   = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'x-app': APP };
+
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ── plain-English helpers (never surface a raw value) ─────────────────────── */
+// Humanize an agent/app key into a friendly name — registry-driven, no per-agent table.
+const friendly = key => String(key||'').replace(/[-_]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase()).trim();
+
+const MIN=60000, HOUR=3600000, DAY=86400000;
+function ago(iso){
+  if(!iso) return null;
+  const t=new Date(iso).getTime(); if(isNaN(t)) return null;
+  let d=Date.now()-t;
+  if(d<0) d=0;
+  if(d<45*1000) return 'just now';
+  if(d<90*1000) return 'a minute ago';
+  if(d<HOUR) return Math.round(d/MIN)+' minutes ago';
+  if(d<2*HOUR) return 'about an hour ago';
+  if(d<DAY) return Math.round(d/HOUR)+' hours ago';
+  if(d<2*DAY) return 'yesterday';
+  if(d<7*DAY) return Math.round(d/DAY)+' days ago';
+  const wk=Math.round(d/(7*DAY)); if(wk<5) return wk+(wk===1?' week ago':' weeks ago');
+  return Math.round(d/(30*DAY))+' months ago';
+}
+function until(ms){ // ms in the future → "in ~10 minutes"; past → "overdue by ~5 minutes"
+  const overdue = ms<0; let d=Math.abs(ms);
+  let s;
+  if(d<90*1000) s='less than a minute';
+  else if(d<HOUR) s='about '+Math.round(d/MIN)+' minutes';
+  else if(d<2*HOUR) s='about an hour';
+  else if(d<DAY) s='about '+Math.round(d/HOUR)+' hours';
+  else s='about '+Math.round(d/DAY)+' days';
+  return overdue ? 'overdue by '+s : 'in '+s;
+}
+// friendly cadence, e.g. 10 → "every 10 minutes", 60 → "every hour", 1440 → "every day"
+function cadenceText(min){
+  if(min==null) return 'only when someone asks';
+  if(min%1440===0){const d=min/1440;return d===1?'every day':'every '+d+' days';}
+  if(min%60===0){const h=min/60;return h===1?'every hour':'every '+h+' hours';}
+  return 'every '+min+' minute'+(min===1?'':'s');
+}
+function money(n){
+  n=Number(n)||0;
+  if(n===0) return '$0.00';
+  if(n<0.01) return '<$0.01';
+  return '$'+n.toFixed(n<1?3:2);
+}
+
+/* ── data ──────────────────────────────────────────────────────────────────── */
+async function getJSON(path){
+  const r = await fetch(REST+path, {headers:HEAD, cache:'no-store'});
+  if(!r.ok) throw new Error('press '+r.status);
+  return r.json();
+}
+
+/* ── health rule ─────────────────────────────────────────────────────────────
+   healthy if last_ok_at is within 3x cadence_minutes. On-demand (cadence null) is
+   NEVER stale — it only reports its last run. Disabled rows are greyed and excluded
+   from the verdict. Severity: past 6x cadence, a never-run scheduled agent, or a
+   failure logged today = severe (red); milder lapses = amber. */
+function assess(reg, byDayForAgent){
+  const now = Date.now();
+  const enabled = reg.enabled === true;
+  const onDemand = reg.cadence_minutes == null;
+  const lastOk = reg.last_ok_at ? new Date(reg.last_ok_at).getTime() : null;
+
+  // last-7-day window facts from the daily aggregate
+  const week = last7(byDayForAgent);
+  const failedWeek = week.reduce((a,d)=>a + (d.error_count||0) + (d.dead_count||0), 0);
+  const ranThisWeek = week.some(d=>d.runs>0);
+  const failedToday = (() => {
+    const todayKey = dayKey(new Date());
+    const row = byDayForAgent[todayKey];
+    return row ? ((row.error_count||0)+(row.dead_count||0))>0 : false;
+  })();
+  const everRan = lastOk!=null || Object.values(byDayForAgent).some(d=>d.runs>0);
+
+  let state, statusText, tone, todo=null, severe=false, attention=false;
+
+  if(!enabled){
+    state='off'; tone='off';
+    statusText='Turned off — not being watched.';
+  } else if(onDemand){
+    if(everRan){ state='idle'; tone='ok'; statusText='Ready. Runs when it’s asked.'; }
+    else { state='idle'; tone='idle'; statusText='Ready. Hasn’t needed to run yet.'; }
+  } else if(lastOk==null){
+    // an enabled scheduled/inlet agent that has NEVER succeeded
+    state='bad'; tone='bad'; severe=true; attention=true;
+    statusText='Has never run successfully.';
+    todo={tone:'bad', text:'Check the agent is actually deployed and its schedule (cron or inlet) is switched on.'};
+  } else {
+    const cadMs = reg.cadence_minutes*MIN;
+    const age = now - lastOk;
+    if(age <= 3*cadMs && !failedToday){
+      state='ok'; tone='ok'; statusText='Working normally.';
+    } else if(failedToday && age <= 3*cadMs){
+      state='warn'; tone='warn'; attention=true;
+      statusText='Something went wrong recently.';
+      todo={tone:'warn', text:'It logged an error today — have a look at the app’s logs when you get a chance.'};
+    } else {
+      // overdue
+      attention=true;
+      severe = age > 6*cadMs;
+      state = severe?'bad':'warn'; tone = severe?'bad':'warn';
+      statusText = 'Hasn’t checked in when it should have.';
+      todo={tone:tone, text:'The agent has gone quiet — check its schedule (cron or inlet) is still firing.'};
+    }
+  }
+
+  // "last did something" + "next expected"
+  const lastSeen = lastOk!=null ? ago(reg.last_ok_at) : (everRan ? ago(newestRun(byDayForAgent)) : null);
+  let next;
+  if(!enabled) next='—';
+  else if(onDemand) next='Only when someone asks';
+  else if(lastOk==null) next='As soon as it first runs';
+  else next = until((lastOk + reg.cadence_minutes*MIN) - now);
+
+  return {
+    reg, enabled, onDemand, state, tone, statusText, todo, severe, attention,
+    lastSeen, next, week, failedWeek, ranThisWeek
+  };
+}
+
+// dailyRows keyed by day (YYYY-MM-DD) for one agent
+function dayKey(dt){ return dt.toISOString().slice(0,10); }
+function newestRun(byDay){
+  let m=null;
+  for(const k in byDay){ const s=byDay[k].last_started_at; if(s && (!m || s>m)) m=s; }
+  return m;
+}
+function last7(byDay){
+  const out=[];
+  for(let i=6;i>=0;i--){
+    const dt=new Date(Date.now()-i*DAY);
+    const key=dayKey(dt);
+    const row=byDay[key];
+    out.push({
+      key, dt,
+      runs: row?row.runs:0,
+      ok_count: row?(row.ok_count||0):0,
+      skipped_count: row?(row.skipped_count||0):0,
+      error_count: row?(row.error_count||0):0,
+      dead_count: row?(row.dead_count||0):0
+    });
+  }
+  return out;
+}
+function monthCost(byDay){
+  const now=new Date();
+  const y=now.getUTCFullYear(), m=now.getUTCMonth();
+  let mtd=0;
+  for(const k in byDay){
+    const d=new Date(k+'T00:00:00Z');
+    if(d.getUTCFullYear()===y && d.getUTCMonth()===m) mtd += Number(byDay[k].cost_usd)||0;
+  }
+  const dayOfMonth=now.getUTCDate();
+  const daysInMonth=new Date(Date.UTC(y,m+1,0)).getUTCDate();
+  const projected = dayOfMonth>0 ? mtd/dayOfMonth*daysInMonth : mtd;
+  return {mtd, projected};
+}
+
+/* ── render ──────────────────────────────────────────────────────────────── */
+const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function barsHTML(week){
+  const max=Math.max(1,...week.map(d=>d.runs));
+  return `<div class="bars">`+week.map(d=>{
+    const failed=(d.error_count+d.dead_count)>0;
+    const h = d.runs===0 ? 0 : Math.max(20, Math.round(d.runs/max*100));
+    const cls = d.runs===0 ? 'b-empty' : (failed?'b-bad':'b-ok');
+    const label = d.runs===0 ? 'no runs' : (d.runs+' run'+(d.runs===1?'':'s')+', '+(d.error_count+d.dead_count)+' failed');
+    return `<div class="bar" title="${esc(DOW[d.dt.getDay()]+' '+d.dt.getDate()+' — '+label)}">`+
+      `<i class="${cls}" style="height:${h}%"></i><span class="d">${DOW[d.dt.getDay()][0]}</span></div>`;
+  }).join('')+`</div>`;
+}
+function cardHTML(a){
+  const r=a.reg;
+  const cost=monthCost(byDayIndex(r.agent));
+  const dotCls = a.state==='ok'?'s-ok':a.state==='warn'?'s-warn':a.state==='bad'?'s-bad':a.state==='off'?'s-off':'s-idle';
+  const lineCls = a.tone==='ok'?'ok':a.tone==='warn'?'warn':a.tone==='bad'?'bad':'';
+  const kindText = !a.enabled ? 'Currently switched off'
+        : a.onDemand ? 'Runs on demand'
+        : 'Runs on a schedule — '+cadenceText(r.cadence_minutes);
+  const failText = a.failedWeek===0 ? 'None in the last 7 days' :
+        a.failedWeek+' in the last 7 days';
+  const todo = a.todo ? `<div class="todo ${a.todo.tone}">`+
+      `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>`+
+      `<div><b>What to do:</b> ${esc(a.todo.text)}</div></div>` : '';
+  return `<div class="card${a.enabled?'':' is-off'}">
+    <div class="head">
+      <span class="statusdot ${dotCls}"></span>
+      <div class="titlewrap">
+        <h3>${esc(friendly(r.agent))}</h3>
+        <div class="sub">in the ${esc(friendly(APP))} app · ${esc(kindText)}</div>
+        <p class="statusline ${lineCls}">${esc(a.statusText)}</p>
+      </div>
+    </div>
+    <div class="meta">
+      <div class="cell"><div class="lbl">Last did something</div><div class="val">${esc(a.lastSeen||'Never yet')}</div></div>
+      <div class="cell"><div class="lbl">Next expected</div><div class="val">${esc(a.next)}</div></div>
+      <div class="strip">
+        <div class="lbl">Last 7 days</div>
+        ${barsHTML(a.week)}
+        <div class="striphint">Failed runs: ${esc(failText)}</div>
+      </div>
+      <div class="cell"><div class="lbl">Cost this month</div><div class="val mono">${esc(money(cost.mtd))}</div></div>
+      <div class="cell"><div class="lbl">Projected full month</div><div class="val mono">~${esc(money(cost.projected))}</div></div>
+    </div>
+    ${todo}
+  </div>`;
+}
+
+let BYDAY={}; // agent → { dayKey → aggregate row }
+function byDayIndex(agent){ return BYDAY[agent]||{}; }
+
+function verdictHTML(assessed){
+  const watched = assessed.filter(a=>a.enabled);
+  const attention = watched.filter(a=>a.attention);
+  const anySevere = attention.some(a=>a.severe);
+  let cls, title, sub;
+  if(watched.length===0){
+    cls='grey'; title='No agents are switched on'; sub='Nothing to watch right now.';
+  } else if(attention.length===0){
+    cls='green'; title='All agents healthy';
+    sub='Everything that should be running is running. '+watched.length+' agent'+(watched.length===1?'':'s')+' being watched.';
+  } else {
+    cls = anySevere?'red':'amber';
+    const n=attention.length;
+    title = n+' agent'+(n===1?'':'s')+' need'+(n===1?'s':'')+' attention';
+    sub = 'The rest are fine — see the card'+(n===1?'':'s')+' below for what to do.';
+  }
+  return `<div class="verdict ${cls}"><span class="dot"></span><div class="vtext"><h2>${esc(title)}</h2><p>${esc(sub)}</p></div></div>`;
+}
+
+function render(registry){
+  const root=document.getElementById('root');
+  // enabled first (attention within enabled bubbled up), then disabled
+  const assessed = registry.map(r=>assess(r, byDayIndex(r.agent)));
+  assessed.sort((a,b)=>{
+    if(a.enabled!==b.enabled) return a.enabled?-1:1;
+    if(a.attention!==b.attention) return a.attention?-1:1;
+    return friendly(a.reg.agent).localeCompare(friendly(b.reg.agent));
+  });
+  const enabled = assessed.filter(a=>a.enabled);
+  const disabled = assessed.filter(a=>!a.enabled);
+
+  let html = verdictHTML(assessed);
+  if(enabled.length) html += enabled.map(cardHTML).join('');
+  if(disabled.length){
+    html += `<div class="section-label">Switched off — not counted above</div>`;
+    html += disabled.map(cardHTML).join('');
+  }
+  if(!assessed.length){
+    html += `<div class="tw-note"><h3>No agents registered yet</h3><p>When an agent is registered for this app it will appear here automatically.</p></div>`;
+  }
+  root.innerHTML = html;
+  document.getElementById('scope').textContent = assessed.length+' agent'+(assessed.length===1?'':'s')+' · '+friendly(APP);
+}
+
+function showError(msg){
+  // Degrade honestly — NEVER a green verdict from missing data.
+  document.getElementById('root').innerHTML =
+    `<div class="verdict grey"><span class="dot"></span><div class="vtext">`+
+    `<h2>Can’t check the agents right now</h2>`+
+    `<p>${esc(msg)} This page shows nothing rather than a false all-clear. Try Refresh in a moment.</p></div></div>`;
+  document.getElementById('scope').textContent = 'unavailable';
+}
+
+const skel = `<div class="tw-skel"></div><div class="tw-skel"></div><div class="tw-skel"></div>`;
+
+async function load(){
+  const btn=document.getElementById('refresh');
+  btn.setAttribute('aria-busy','true');
+  document.getElementById('root').innerHTML = skel;
+  try{
+    const [registry, daily] = await Promise.all([
+      getJSON('/press_agent_registry_public?select=app,agent,enabled,last_ok_at,kind,cadence_minutes,model,prompt_version,review_threshold&order=agent.asc'),
+      getJSON('/press_agent_runs_daily_public?select=agent,day,runs,ok_count,skipped_count,refused_count,error_count,dead_count,cost_usd,tokens_in,tokens_out,last_started_at&order=day.desc')
+    ]);
+    // index daily rows by agent → dayKey
+    BYDAY={};
+    for(const row of (daily||[])){
+      (BYDAY[row.agent] = BYDAY[row.agent] || {})[row.day] = row;
+    }
+    if(!Array.isArray(registry)) throw new Error('Unexpected response.');
+    render(registry);
+    document.getElementById('stamp').textContent = 'checked '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('foot').innerHTML =
+      'Reads only non-sensitive status — no message contents, no per-item timeline. '+
+      'Refreshes when you open the page or press Refresh; it does not poll.';
+  }catch(e){
+    showError('The status service didn’t answer.');
+    document.getElementById('stamp').textContent='';
+    document.getElementById('foot').textContent='';
+  }finally{
+    btn.setAttribute('aria-busy','false');
+  }
+}
+
+const btn=document.getElementById('refresh');
+btn.addEventListener('click', load);
+btn.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); load(); }});
+load();
+</script>
+</body>
+</html>
