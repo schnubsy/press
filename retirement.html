@@ -1106,7 +1106,7 @@ window.__def("src/assets/dc-pot.js", function(module, exports, require){
  * A `dc_pot` source is a drawable balance in its own currency that grows and is
  * withdrawn gross, US-taxable as ORDINARY income on receipt (UK–US / AU treaty
  * position; see the source docs). Replaces the old per-plan uk-private-pension.js
- * (L&G / Aviva) and au-super.js (ANZ) — the pots are now DATA, selected by type.
+ * and au-super.js — the pots are now DATA, selected by type.
  *
  * Each pot is its OWN withdrawal bucket keyed by the source id; its wdKey is 'lg'
  * (a first-class draw bucket) when tier is 'normal', or 'tiny' (the immaterial
@@ -1138,7 +1138,7 @@ window.__def("src/assets/house.js", function(module, exports, require){
 /* =============================================================================
  * src/assets/house.js — home, mortgage amortisation, payoff and downsize.
  *
- * SOURCE: NewRez mortgage statement + Finance doc (V). The principal, interest
+ * SOURCE: the mortgage statement + Finance doc (V). The principal, interest
  * rate, maturity date and home value are all facts.json leaves (assets.house.*),
  * read at runtime — so this header cites the authority, never the amounts or dates.
  * Payment = P&I + escrow; escrow continues after payoff.
@@ -1631,7 +1631,7 @@ const { retirementLumps } = dbPension;
 const salaryMod = require('../income/salary.js'); // self-registers + exposes entryZeroReason for the UI
 const ssMod = require('../income/social-security.js'); // self-registers + exposes the spousal report / factor notes
 const uksp = require('../income/uk-state-pension.js'); // self-registers + exposes the Class-3 consistency warning + class3 outflow
-require('../assets/dc-pot.js'); // foreign DC pots (L&G / Aviva / ANZ) as typed buckets
+require('../assets/dc-pot.js'); // foreign DC pots (from the provider statements) as typed buckets
 const strategy = require('../tax/strategy.js');
 const stress = require('../sim/stress.js');
 const { afterTaxLegacy } = require('../tax/inheritance.js');
@@ -1756,6 +1756,28 @@ function sourceEventFlags(F) {
   const seen = new Set();
   return flags.filter(fl => { const k = fl.year + '|' + fl.t; if (seen.has(k)) return false; seen.add(k); return true; });
 }
+// WO25 — the year the LAST guaranteed stream (db_pension / SS / State Pension) is
+// CONFIGURED to begin, across the plan's sources. Used to derive the "guaranteed income
+// for life" steady-state year (a decade later), replacing the hard-coded 2060/2072. It
+// reads plan CONFIGURATION, not swept levers: SS starts at the plan's DEFAULT claim age
+// (67), state pensions at their start_date, db_pensions at the retirement year (their
+// elections start at retirement unless a step-down date pushes an election later — the
+// stream still STARTS at retirement). This keeps it invariant to the death/claim levers
+// so no non-legacy fingerprint field moves. On the reference plan: p2's State Pension
+// (2050) is last ⇒ this returns 2050.
+const DEFAULT_SS_CLAIM_AGE = 67;
+function lastGuaranteedStartYear(F, retireYear) {
+  let last = retireYear; // db_pension streams begin at retirement
+  const yearOf = leafObj => { const v = leaf(leafObj); if (v == null || v === '') return null; const d = decDate(v); return d != null ? Math.floor(d) : null; };
+  for (const s of factsMod.sourcesOf(F, 'social_security')) {
+    const by = birthYearOf(F, s.owner); if (by != null) last = Math.max(last, by + DEFAULT_SS_CLAIM_AGE);
+  }
+  for (const s of factsMod.sourcesOf(F, 'state_pension')) {
+    const y = yearOf(s.start_date); if (y != null) last = Math.max(last, y);
+  }
+  return last;
+}
+
 function buildFlags(Y, ageM, ageB, IN, shortfall, survivor, sourceFlags) {
   const f = [];
   if (shortfall > 0) f.push({ t: 'shortfall', c: 'bad' });
@@ -1982,7 +2004,14 @@ function buildModel(F, IN) {
   for (let y = 2032; y <= 2039; y++) { const r = byYear[y]; if (r && r.startInvested > 0) dr.push(r.drawTotal / r.startInvested); }
   const bridgeDraw = dr.length ? dr.reduce((a, b) => a + b, 0) / dr.length : 0;
 
-  const legacyYear = p1BY + IN.ageOfDeathP1; // 2072 by default
+  // WO25 — "left for the children" is measured at the SECOND death, not the primary
+  // person's. Measuring it at the primary's death (p1BY+ageOfDeathP1) froze the estate
+  // while the survivor was still alive and still spending from it, understating what
+  // actually passes on. secondDeathYear is when the plan ends (the survivor's own
+  // horizon); a one-person plan has secondDeathYear === that person's death year, so it
+  // is unchanged. Everything downstream (legacyNominal / legacyToday / after-tax /
+  // embedded tax / house equity / the deflator) follows from legacyYear.
+  const legacyYear = Number.isFinite(secondDeathYear) ? secondDeathYear : (p1BY + IN.ageOfDeathP1);
   const legRow = byYear[legacyYear] || rows[rows.length - 1];
   const legacyNominal = legRow ? legRow.totalBal : 0;
   const legacyToday = legacyNominal / infl(legacyYear);
@@ -2048,7 +2077,18 @@ function buildModel(F, IN) {
   // this legitimately reads > 100% — that is the reassurance, and clamping it to
   // 1 made the box read "100% guaranteed" under every input. The UI leads with
   // the TIGHTEST year (the year most exposed to markets), not this figure.
-  const lifeRow = byYear[2060] || byYear[legacyYear] || byYear[2072];
+  // WO25 — the target year is DERIVED from the plan's guaranteed-source configuration,
+  // not the hard-coded 2060/2072 (which baked this plan's years into engine code). Take
+  // a DECADE after the LAST guaranteed stream (db_pension / SS / State Pension) is
+  // configured to begin, so every guaranteed stream has been flowing for years, then
+  // clamp into the projection's range. It reads the plan's CONFIGURED start years (SS at
+  // the plan's default claim age, state-pension start dates, db_pension at retirement) —
+  // NOT the swept levers — so a death/claim lever never moves this KPI (the field-scoped
+  // oracle proves fields other than legacy are byte-identical). On the reference plan the
+  // last stream (p2's State Pension) starts 2050 ⇒ 2060, so guaranteedFloorToday is unchanged.
+  const lastGuarStart = lastGuaranteedStartYear(F, retireYear);
+  const lifeYear = Math.max(START_YEAR, Math.min(END, lastGuarStart + 10));
+  const lifeRow = byYear[lifeYear] || byYear[legacyYear] || rows[rows.length - 1];
   const guaranteedShareForLife = lifeRow && lifeRow.spending > 0 ? guarOf(lifeRow) / lifeRow.spending : 0;
   const guaranteedShareForLifeYear = lifeRow ? lifeRow.year : null;
   const guaranteedFloorToday = lifeRow ? guarOf(lifeRow) / lifeRow.infl / 12 : 0;
@@ -4358,7 +4398,7 @@ window.__def("src/sim/sensitivity.js", function(module, exports, require){
  *
  * Three placeholders have carried a confidence BADGE since v0.1 — the primary
  * person's Social Security earnings factor, the 55–65 health-insurance premiums,
- * and the Aviva pot balance — and the SS factor is repeatedly called the model's
+ * and a foreign DC pot balance — and the SS factor is repeatedly called the model's
  * biggest source of error. A badge says "this is uncertain"; it does NOT say "and
  * here is what it costs you to be wrong". This pass answers that: for each flagged
  * input (plus the two UK State Pension qualifying-years fields added in WO15
@@ -4456,7 +4496,7 @@ function runOne(rawF, IN, spec, val) {
   const F = JSON.parse(JSON.stringify(rawF));
   const lo = leafObjAt(F, spec.path);
   if (!(lo && typeof lo === 'object' && 'value' in lo)) return null;
-  lo.value = val;                                  // perturb the facts leaf (read directly for SS / Aviva / qualifying years)
+  lo.value = val;                                  // perturb the facts leaf (read directly for SS / DC pot / qualifying years)
   const inputs = Object.assign({}, IN, spec.co || {});
   if (spec.inKey) inputs[spec.inKey] = val;        // …and the facts-derived input (healthcare premiums)
   return headline(engine.buildModel(F, inputs));
@@ -5385,7 +5425,7 @@ window.__def("src/tax/inheritance.js", function(module, exports, require){
  *   - Taxable (joint brokerage): STEP-UP in basis at death (IRC §1014), so the
  *                                embedded capital gain is wiped — full value.
  *   - Cash:                      already-taxed — full value.
- *   - Pre-tax 401(k)/IRA + the foreign pensions (UK L&G, UK State, AU super),
+ *   - Pre-tax 401(k)/IRA + the foreign pensions (foreign DC pots, State Pension, foreign super),
  *     which are all ordinary-income on drawdown: the heirs owe ordinary income
  *     tax over the 10-year window → discount by the children's marginal rate.
  *
@@ -5738,7 +5778,7 @@ window.__def("src/tax/strategy.js", function(module, exports, require){
  *
  * RULES, in priority order:
  *   1. Meet the spending need from the cheapest available source, honoring
- *      access-date gates (cash → taxable → L&G → pre-tax → Roth by default).
+ *      access-date gates (cash → taxable → foreign pot → pre-tax → Roth by default).
  *   2. Harvest long-term capital gains into any remaining 0% headroom.
  *   3. During the derived conversion window, fill to the top of a target
  *      ordinary bracket with Roth conversions (default 22%).
@@ -5752,7 +5792,7 @@ window.__def("src/tax/strategy.js", function(module, exports, require){
  * WO3 / A3 — CONVERSION SIZING IS FUNDING-AWARE.
  *   Rule 3 fills "to the top of the target bracket". The v1.0 code sized the
  *   conversion against the guaranteed income streams ALONE, then the spending
- *   withdrawals (L&G / pre-tax draws, all ordinary income) were added on top —
+ *   withdrawals (foreign-pot / pre-tax draws, all ordinary income) were added on top —
  *   so in the late bridge years the realised ordinary income spilled a long way
  *   into the NEXT bracket (2039: $407k ordinary taxable against a ~$291k 22%
  *   ceiling). The comment claimed "never overshoot the target bracket"; the code
@@ -6123,8 +6163,8 @@ function planYear(ctx) {
   // ---- apply withdrawals to balances (generic over the plan's buckets) -----
   // Each wdKey's drawn USD is taken from the bucket(s) carrying that wdKey, in
   // bucket order, converting each bucket's currency. The aggregate US buckets
-  // (cash/taxable/pretax/roth) are one each at rate 1; 'lg' is the L&G pot; 'tiny'
-  // spreads across the immaterial foreign pots (aviva then anz) — the split does
+  // (cash/taxable/pretax/roth) are one each at rate 1; 'lg' is the main foreign pot; 'tiny'
+  // spreads across the immaterial foreign pots — the split does
   // not affect the USD totals or tax the fingerprint reads.
   const audUsd = (IN.audUsd != null) ? IN.audUsd : audUsdOf(F);
   const rateOf = (cur) => cur === 'GBP' ? fx : (cur === 'AUD' ? audUsd : 1);
@@ -6287,7 +6327,7 @@ window.__def("src/view/bands.js", function(module, exports, require){
 
 // Five income bands, each split { p1, p2 } (nominal $/yr).
 // The drawdown band groups ALL portfolio activity that funds spending: the
-// discretionary withdrawals (income.portfolio), the L&G draw, and the taxable
+// discretionary withdrawals (income.portfolio), the foreign-pot draw, and the taxable
 // part of any RMD — minus any RMD surplus that was reinvested rather than spent
 // (that surplus is shown flowing back into the taxable account on Row 2).
 //
@@ -6619,7 +6659,18 @@ function stableStringify(o) {
   return '{' + Object.keys(o).sort().map(k => JSON.stringify(k) + ':' + stableStringify(o[k])).join(',') + '}';
 }
 function hashFacts(factsObj) {
-  const s = stableStringify(factsObj == null ? null : factsObj);
+  // WO25 — `_meta` is METADATA (description, schema tag, and the privacy identity_terms
+  // list), NOT plan financial content. WO24 deliberately put identity_terms in `_meta` so
+  // it has "no editor / sweep / stamp side-effect" — but hashFacts hashed `_meta` too, so
+  // adding a provider name to identity_terms (a privacy-gate change) would falsely mark
+  // every stored plan "older than the plan file". Exclude `_meta` from the stamp: a plan's
+  // baseline stamp now reflects its FINANCIAL content only, so a privacy-only facts edit
+  // never triggers a stale-plan re-import. (One-time: this shifts the stamp value once.)
+  let toHash = factsObj;
+  if (factsObj && typeof factsObj === 'object' && !Array.isArray(factsObj) && '_meta' in factsObj) {
+    toHash = {}; for (const key of Object.keys(factsObj)) if (key !== '_meta') toHash[key] = factsObj[key];
+  }
+  const s = stableStringify(toHash == null ? null : toHash);
   let h1 = 0x811c9dc5, h2 = 0;
   for (let i = 0; i < s.length; i++) {
     const c = s.charCodeAt(i);
@@ -8213,8 +8264,8 @@ function buildStory(model, F, IN) {
         'survivor rate if the partner who earned it was the one who died. And from now the household is taxed as one person, ' +
         'so the same income is usually taxed more.',
       detail: 'This is the single biggest change the plan models. Being taxed as one person — the widow’s penalty — roughly halves ' +
-        'the tax-free allowance and the width of each tax band, so the survivor keeps less of the same income. The projection keeps ' +
-        'running to ' + k.survivorName + '’s own horizon; what is left behind is measured here, at the first death, and carried forward.',
+        'the tax-free allowance and the width of each tax band, so the survivor keeps less of the same income. ' + k.survivorName +
+        ' carries on from here to ' + k.survivorName + '’s own horizon; what passes to the children is measured later, when the plan ends.',
       figures: figs(
         // WO24 4.4 — the widow year sits decades out; show its figures in TODAY's dollars
         // (÷ that row's inflation factor) with an explicit yearly unit, so they compare with
@@ -8238,23 +8289,30 @@ function buildStory(model, F, IN) {
       detail: '', figures: figs() });
   }
 
-  // 10) The legacy year — what is left behind.
+  // 10) The legacy year — what is left behind, measured when the PLAN ENDS (WO25). The
+  //     snapshot is taken at the SECOND death (the survivor's own horizon), so "at the end
+  //     of the plan" is now literally the moment it is measured. For a two-person plan
+  //     this year coincides with the plan-end milestone below, which then folds into this
+  //     one (they are the same moment); milestone 11 fires only in the rare case they
+  //     genuinely differ (e.g. a fallback legacyYear when no row exists at the end).
   if (k.legacyYear) { const r = rowAt(rows, k.legacyYear);
     push({ year: k.legacyYear, id: 'legacy', kind: 'legacy', salience: 'assets', icon: ICONS.legacy,
       title: 'What you leave behind',
-      plainText: 'At the end of the plan, this is roughly what passes to your children after the tax they will owe on the inherited pre-tax accounts.',
-      detail: 'Tax-free and stepped-up accounts pass cleanly; the pre-tax account carries income tax for the heirs, assumed at their own rate.',
+      plainText: 'At the end of the plan — once both partners’ horizons are reached — this is roughly what passes to your children after the tax they will owe on the inherited pre-tax accounts.',
+      detail: 'The survivor carries on spending from the plan until then, so the amount is measured when the plan ends, not at the first death. Tax-free and stepped-up accounts pass cleanly; the pre-tax account carries income tax for the heirs, assumed at their own rate.',
       figures: figs(modelFig('Left to the children', k.legacyAfterTaxToday, n => moneyK(n) + ' (today’s $)')) });
   }
 
-  // 11) The plan reaches its end (Phase 2.2) — the second partner's horizon, when it
-  //     falls after the legacy snapshot (the first death). A LIFE close on the journey.
+  // 11) The plan reaches its end (Phase 2.2) — the second partner's horizon. Under WO25
+  //     this normally coincides with the legacy snapshot (measured AT the second death),
+  //     so it folds into the legacy milestone above. It fires only when the two genuinely
+  //     differ. A LIFE close on the journey.
   if (k.secondDeathYear && k.survivorName && k.secondDeathYear !== k.legacyYear && k.secondDeathYear >= ret) {
     push({ year: k.secondDeathYear, id: 'plan-end', kind: 'finish', salience: 'life', icon: ICONS.finish,
       title: 'The plan reaches its end',
       plainText: 'This is the last year the plan looks ahead to — the point at which ' + k.survivorName +
-        '’s own horizon is reached. Everything from here has already been accounted for in what is left behind.',
-      detail: 'The projection runs to the second partner’s horizon; the amount passed on is measured earlier, at the first death, and carried forward.',
+        '’s own horizon is reached.',
+      detail: 'The projection runs to the second partner’s horizon; what passes to the children is measured here, when the plan ends.',
       figures: figs() });
   }
 
@@ -9913,7 +9971,7 @@ function renderSummary2(){ const k=MODEL.kpis; const el=document.getElementById(
     +'<div class="sumrow"><span>Tax the children owe</span><b>'+moneyK(k.legacyEmbeddedTaxToday)+'</b></div>'
     +'<div class="sumrow"><span>Their assumed rate</span><b>'+pct(k.childrenMarginalRate)+'</b></div>'
     +'<div class="sumrow"><span>House equity (extra)</span><b>'+moneyK(k.houseEquityLegacyToday)+'</b></div>'
-    +'<div class="sum-sub faint">Today’s $ at age '+IN.ageOfDeathP1+'. Roth + taxable (stepped-up) + cash pass tax-free; the 401(k) carries embedded income tax. Edit the rate in the globals bar.</div>'
+    +'<div class="sum-sub faint">Today’s $ when the plan ends'+(k.legacyYear?' ('+k.legacyYear+')':'')+' — measured at the second partner’s horizon, once the survivor is no longer drawing from it. Roth + taxable (stepped-up) + cash pass tax-free; the 401(k) carries embedded income tax. Edit the rate in the globals bar.</div>'
     +contribIndexNote();
 }
 /* WO15 Phase 4.2 — show the contribution-indexing choice where the decision is made:
@@ -10014,7 +10072,7 @@ function rothEstateNote(){
   const totalConv=rows.reduce((a,r)=>a+(r.conv||0),0);
   if(totalConv<1) return '';
   const rothDrawn=rows.reduce((a,r)=>a+((r.wd&&r.wd.roth)||0),0);
-  const legYear=RD.primaryBirthYear(FACTS)+IN.ageOfDeathP1;
+  const legYear=MODEL.kpis.legacyYear;   // WO25 — the legacy snapshot is the SECOND death (plan end), not p1's death
   const legRow=rows.find(r=>r.year===legYear)||rows[rows.length-1];
   const rothAtLeg=legRow?legRow.bal.roth:0;
   return '<div class="dec" style="border-left-color:var(--c-convert);margin-top:10px">'
