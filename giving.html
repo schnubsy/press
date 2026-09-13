@@ -94,6 +94,26 @@
   .yearbar { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
   .yearbar select { background:var(--surface); color:var(--ink); border:1px solid var(--line);
     border-radius:9px; padding:8px 12px; font-size:0.95rem; font-weight:600; }
+  .yearbar .yearlab { color:var(--muted); font-size:0.85rem; font-weight:600; flex:0 0 auto; }
+  /* endless tax-year carousel (S5/§1y): a horizontally scrollable strip, several years visible,
+     opens centred on the current year, lazily extended both ways. touch-action:pan-x keeps a
+     vertical swipe scrolling the page on iPhone Safari (no vertical hijack). */
+  .yearstrip { flex:1; min-width:0; display:flex; gap:6px; overflow-x:auto; overflow-y:hidden;
+    padding:4px 2px; overscroll-behavior-x:contain; touch-action:pan-x;
+    -webkit-overflow-scrolling:touch; }
+  .yearstrip:focus-visible { outline:2px solid var(--ember); outline-offset:2px; border-radius:8px; }
+  .yearstrip::-webkit-scrollbar { height:6px; }
+  .yearstrip::-webkit-scrollbar-thumb { background:var(--line); border-radius:3px; }
+  .ychip { flex:0 0 auto; background:var(--surface-2); border:1px solid var(--line); color:var(--muted);
+    border-radius:9px; padding:7px 13px; font-family:var(--mono); font-size:0.85rem; font-weight:600;
+    cursor:pointer; position:relative; }
+  .ychip.hasdata { color:var(--ink); }                               /* a year with donations reads solid */
+  .ychip.hasdata::after { content:""; position:absolute; left:50%; bottom:3px; transform:translateX(-50%);
+    width:4px; height:4px; border-radius:50%; background:var(--ember); }
+  .ychip:not(.hasdata) { border-style:dashed; opacity:0.72; }        /* an empty year is visibly distinct */
+  .ychip.sel { color:var(--ink); background:var(--surface); border-color:var(--ember); box-shadow:inset 0 0 0 1px var(--ember); }
+  .ychip.sel:not(.hasdata) { opacity:1; }
+  .ychip:focus-visible { outline:2px solid var(--ember); outline-offset:1px; }
 
   .hero { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:26px 24px; margin-bottom:16px; }
   .hero .lab { color:var(--muted); font-size:0.85rem; letter-spacing:0.03em; text-transform:uppercase; }
@@ -106,6 +126,14 @@
   .stat .val { font-family:var(--mono); font-size:1.5rem; font-weight:600; margin-top:4px; }
   .stat.ded .val { color:var(--ledger); }
   .stat .note { color:var(--muted); font-size:0.74rem; margin-top:4px; }
+  /* top line (S1/§1r): Given + Estimated tax savings, equal weight, side by side */
+  .topline { display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:stretch; margin-bottom:16px; }
+  .topline .hero { margin-bottom:0; height:100%; }
+  .topline #savings { display:flex; }
+  .topline #savings > .savings { flex:1; width:100%; margin-bottom:0; display:flex;
+    flex-direction:column; justify-content:center; padding:24px 24px; }
+  /* placed AFTER the .topline base rule so it wins by source order at narrow widths (S1/§1r) */
+  @media (max-width:560px) { .topline { grid-template-columns:1fr; } }
 
   .section-h { display:flex; align-items:baseline; justify-content:space-between; margin:6px 4px 8px; }
   .section-h h2 { font-family:var(--serif); font-size:1.1rem; margin:0; font-weight:600; }
@@ -245,8 +273,8 @@
   .row .acts button:hover { border-color:var(--ember); color:var(--ink); }
   .row .acts button.del:hover { border-color:var(--danger); color:var(--danger); }
   .row.nondeduct .amt { color:var(--muted); }
-  /* live selection (S2): rows are tappable; per-row actions show only when selected, and a
-     reserved amtbtn height keeps the row from jumping when they appear. */
+  /* live selection (S2/§1q): rows are tappable and a selected row highlights only — all actions
+     live on the selection bar. The series row still carries its Expand control in .amtbtn. */
   .row { cursor:pointer; }
   .amtbtn { display:flex; align-items:center; gap:10px; min-height:30px; }
   .row.selected { background:rgba(217,138,78,0.12); box-shadow:inset 3px 0 0 var(--ember); }
@@ -257,7 +285,11 @@
   /* ---- recurring series (S6) ---- */
   .row.seriesrow { background:var(--surface-2); }
   .row.seriesrow .date { color:var(--ember-soft); font-size:0.95rem; }
-  .row.subrow { padding-left:30px; }
+  /* expanded group members (S1/§1s): a deeper inset + a soft left spine so the group reads
+     as one block. The per-row spines abut into a continuous rule down the expanded group. */
+  .row.subrow { padding-left:42px; position:relative; }
+  .row.subrow::before { content:""; position:absolute; left:22px; top:0; bottom:0; width:2px;
+    background:var(--ember-soft); opacity:0.55; }
   .row.subrow .date { color:var(--muted); }
   .selbar { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:10px 0 12px; flex-wrap:wrap;
     background:var(--surface-2); border:1px solid var(--ember); border-radius:11px; padding:10px 14px; position:sticky; top:8px; z-index:5; }
@@ -328,6 +360,21 @@
   /* selectable chips (S5/§1n): tap to select; View/Delete appear only on the selected chip */
   .attachchip { cursor:pointer; border-radius:8px; padding-left:8px; padding-right:8px; flex-wrap:wrap; }
   .attachchip.selected { background:rgba(217,138,78,0.12); box-shadow:inset 3px 0 0 var(--ember); }
+
+  /* ---- ONE multipurpose file control (S4/§1v): a styled drop-or-click zone, never the grey
+     browser input. Used in the log form AND (its look) the Inbox. The <input> is visually hidden
+     inside the <label>, so a tap opens the picker and a drop is handled on the label. ---- */
+  .filectl { display:flex; flex-direction:column; align-items:center; gap:3px; text-align:center; cursor:pointer;
+    border:1.5px dashed var(--line); border-radius:12px; padding:16px 14px; margin-top:8px;
+    background:var(--surface-2); color:var(--ink); transition:border-color .15s, background .15s; }
+  .filectl:hover, .filectl.dragover { border-color:var(--ember); background:var(--surface); }
+  .filectl input { position:absolute; width:1px; height:1px; opacity:0; overflow:hidden; pointer-events:none; }
+  .filectl .big { font-weight:600; font-size:0.9rem; }
+  .filectl .sub { color:var(--muted); font-size:0.78rem; }
+  /* a field briefly highlighted after a blank-only AI prefill (S4/§1x) */
+  .prefilled { animation:prefillflash 1.6s ease; }
+  @keyframes prefillflash { 0%,100%{ box-shadow:0 0 0 0 rgba(0,0,0,0); }
+    25%{ box-shadow:0 0 0 3px var(--ledger); } }
 
   /* ---- receipt lightbox (S1) — decrypt-to-Blob image viewer; never a data: URL tab ---- */
   .lightbox { position:fixed; inset:0; z-index:120; display:flex; align-items:center; justify-content:center;
@@ -405,6 +452,7 @@
   .dropinner .dropbig { font-family:var(--serif); font-size:1.05rem; margin-bottom:4px; }
   .dropinner .dropsub { color:var(--muted); font-size:0.8rem; margin:6px 0; }
   .dropinner input[type=file] { margin-top:6px; }
+  .dropzone.dragover .filectl { border-color:var(--ember); background:var(--surface); }   /* Inbox reuses the S4 control look */
 
   /* ---- settings extras (slice 6) ---- */
   .mono { font-family:var(--mono); letter-spacing:0.02em; }
@@ -479,16 +527,23 @@
   <main>
     <div id="captureWarn" class="capwarn" hidden></div>
     <div class="yearbar">
-      <label for="yearSel" style="color:var(--muted);font-size:0.85rem;font-weight:600;">Tax year</label>
-      <select id="yearSel"></select>
+      <span class="yearlab" id="yearStripLab">Tax year</span>
+      <div id="yearStrip" class="yearstrip" role="tablist" aria-labelledby="yearStripLab" tabindex="0"></div>
     </div>
 
-    <div class="hero">
-      <div class="lab">Given to charities this year</div>
-      <div id="heroFig" class="fig">$0</div>
-      <div class="sub" id="heroSub">Direct gifts + grants from your donor-advised fund.</div>
+    <!-- Top line (S1/§1r): two equal-weight boxes side by side — Given + Estimated tax savings;
+         they stack to one column at 390px. #savings is filled by renderSavings (prompt / figure /
+         flash states all preserved). -->
+    <div class="topline">
+      <div class="hero">
+        <div class="lab">Given to charities this year</div>
+        <div id="heroFig" class="fig">$0</div>
+        <div class="sub" id="heroSub">Direct gifts + grants from your donor-advised fund.</div>
+      </div>
+      <div id="savings"></div>
     </div>
 
+    <!-- Second row (S1/§1r): Deductible keeps its full label + note, now beside Donations logged. -->
     <div class="stats">
       <div class="stat ded">
         <div class="lab">Deductible this year</div>
@@ -504,7 +559,6 @@
 
     <div id="breakdown" class="breakdown"></div>
     <div id="flags" class="flags"></div>
-    <div id="savings"></div>
 
     <div class="viewswitch" role="tablist" aria-label="Dashboard view">
       <button id="viewList" role="tab" aria-selected="true">List</button>
@@ -858,6 +912,54 @@ module.exports = {
   monthByMonth: monthByMonth, topCharities: topCharities, givenByType: givenByType,
   deductibleMakeup: deductibleMakeup, yearsWithData: yearsWithData, yearOverYear: yearOverYear,
   onPace: onPace, totals: totals,
+};
+
+});
+
+/* ---- src/core/dafgroup.js ---- */
+window.__def("src/core/dafgroup.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/core/dafgroup.js — the automatic "Donations made via DAF" group (v0.6/S3).
+ *
+ * DISPLAY-ONLY. This partitions a year's rows so the list can fold loose DAF grants
+ * into ONE collapsed, expandable row. It NEVER mutates the document: no series row is
+ * created, no `series_id` is set, nothing is persisted. A grant stays its own donation
+ * in every respect — totals, tax, charts and exports all run on the document unchanged.
+ *
+ * "Loose" grant = a `daf_grant` NOT already inside a user-made series (recurring / ad-hoc).
+ * A grant the user has explicitly bundled keeps its own series row; only ungrouped grants
+ * fold into the auto group, so a grant is never shown twice.
+ *
+ * The group's displayed amount is the sum of `countsForGiving` grants (grants always count
+ * for "given" and are never a `daf_contribution`), so it can never appear as a Deductible
+ * figure. Pure + node-testable: no DOM, no globals.
+ * ========================================================================== */
+
+var M = require('./model.js');
+var SER = require('./series.js');
+
+// A daf_grant that is not already grouped into a user-made series.
+function isLooseGrant(doc, d) {
+  return !!(d && d.type === 'daf_grant' && !(d.series_id && SER.seriesById(doc, d.series_id)));
+}
+
+// The loose grants among `rows`, in input order (the caller sorts for display).
+function looseGrants(doc, rows) {
+  return (rows || []).filter(function (d) { return isLooseGrant(doc, d); });
+}
+
+// The group's displayed total = Σ countsForGiving grant amounts. Never a Deductible figure.
+function groupTotal(doc, rows) {
+  return M.round2(looseGrants(doc, rows).reduce(function (s, d) {
+    return s + (M.countsForGiving(d) ? (Number(d.amount) || 0) : 0);
+  }, 0));
+}
+
+module.exports = {
+  isLooseGrant: isLooseGrant,
+  looseGrants: looseGrants,
+  groupTotal: groupTotal,
 };
 
 });
@@ -1772,6 +1874,42 @@ module.exports = {
   guideKeys: guideKeys, highValue: highValue, middleValue: middleValue,
   photoLine: photoLine, photoLines: photoLines, nudgeFor: nudgeFor,
 };
+
+});
+
+/* ---- src/core/prefill.js ---- */
+window.__def("src/core/prefill.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/core/prefill.js — blank-only prefill for the AI "Read this and fill in the
+ * details" action (v0.6/S4/§1x).
+ *
+ * DECIDED (Mark, 2026-09-12): a prefill must NEVER overwrite a field that already has a
+ * value. It fills only EMPTY fields. This pure function decides what to fill: given the
+ * form's CURRENT field values and the PROPOSED values from an extracted record, it returns
+ * the subset of proposed values whose current field is blank. Nothing the user typed can be
+ * lost — a proposed value for a non-blank field is dropped, whatever it says.
+ *
+ * Pure + node-testable: no DOM. `blank` = null / undefined / '' only (0 is a real value and
+ * is kept, never treated as empty).
+ * ========================================================================== */
+
+function isBlank(v) { return v == null || v === ''; }
+
+// planPrefill(current, proposed) -> { fills:{field:value}, filled:[field] }
+// A field is filled ONLY when proposed[field] is present AND current[field] is blank.
+function planPrefill(current, proposed) {
+  current = current || {};
+  proposed = proposed || {};
+  var fills = {}, filled = [];
+  Object.keys(proposed).forEach(function (k) {
+    var v = proposed[k];
+    if (!isBlank(v) && isBlank(current[k])) { fills[k] = v; filled.push(k); }
+  });
+  return { fills: fills, filled: filled };
+}
+
+module.exports = { isBlank: isBlank, planPrefill: planPrefill };
 
 });
 
@@ -5578,6 +5716,62 @@ module.exports = {
 
 });
 
+/* ---- src/sync/rekey.js ---- */
+window.__def("src/sync/rekey.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/sync/rekey.js — change the passphrase, fail-closed (v0.6/S6/§1t).
+ *
+ * DECIDED (Mark, 2026-09-12) — the order is non-negotiable and this function enforces it:
+ *   1. verify the CURRENT passphrase,
+ *   2. re-encrypt the WHOLE document under the NEW passphrase with a fresh salt + IV,
+ *   3. PATCH with the existing ?version=eq.<loaded> optimistic guard,
+ *   4. return ok ONLY after a confirmed successful write.
+ *
+ * It NEVER touches localStorage / the in-memory cfg. The caller updates the device's stored
+ * passphrase ONLY when this returns { ok:true } — so on ANY failure (wrong current, weak new,
+ * encryption error, network error, or a version conflict) the OLD passphrase still opens the
+ * book and the device is untouched. Fails closed by construction.
+ *
+ * Receipt files and the capture keypair need NO re-encryption: each file key and the capture
+ * private key live INSIDE the encrypted document, so re-keying the document re-protects them.
+ *
+ * Pure + node-testable: every effect (verify, encrypt, save) is injected; no DOM, no globals.
+ * deps = {
+ *   doc, id, currentPassphrase, newPassphrase, loadedVersion,
+ *   verify(current) -> bool,                       // is `current` the passphrase in use?
+ *   encrypt(doc, passphrase) -> Promise<blob>,     // fresh salt+IV each call (crypto.encryptDoc)
+ *   save(id, blob, version) -> Promise<{status:'ok'|'conflict', server}>,  // client.save
+ * }
+ * ========================================================================== */
+
+var MIN_LEN = 8;   // same rule as sign-up
+
+async function rekey(deps) {
+  deps = deps || {};
+  var np = String(deps.newPassphrase == null ? '' : deps.newPassphrase);
+  // 1. verify the current passphrase.
+  if (typeof deps.verify !== 'function' || !deps.verify(deps.currentPassphrase)) return { ok: false, reason: 'current' };
+  // 2. validate the new passphrase.
+  if (np.length < MIN_LEN) return { ok: false, reason: 'weak' };
+  if (np === String(deps.currentPassphrase == null ? '' : deps.currentPassphrase)) return { ok: false, reason: 'same' };
+  // 3. re-encrypt the whole document under the new passphrase (fresh salt + IV inside encrypt()).
+  var blob;
+  try { blob = await deps.encrypt(deps.doc, np); }
+  catch (e) { return { ok: false, reason: 'encrypt' }; }
+  // 4. PATCH under the existing optimistic version guard.
+  var r;
+  try { r = await deps.save(deps.id, blob, deps.loadedVersion); }
+  catch (e) { return { ok: false, reason: 'network' }; }
+  if (!r || r.status !== 'ok') return { ok: false, reason: (r && r.status === 'conflict') ? 'conflict' : 'save', server: r && r.server };
+  // 5. confirmed write — the caller may NOW update the device.
+  return { ok: true, newVersion: r.server && r.server.version, blob: blob };
+}
+
+module.exports = { MIN_LEN: MIN_LEN, rekey: rekey };
+
+});
+
 /* ---- src/sync/saver.js ---- */
 window.__def("src/sync/saver.js", function(module, exports, require){
 'use strict';
@@ -5836,11 +6030,14 @@ window.GT = {
   crypto: window.__require('src/sync/crypto.js'),
   client: window.__require('src/sync/client.js'),
   saver:  window.__require('src/sync/saver.js'),
+  rekey:  window.__require('src/sync/rekey.js'),
   seal:   window.__require('src/sync/seal.js'),
   model:  window.__require('src/core/model.js'),
   logform: window.__require('src/core/logform.js'),
   inbox:  window.__require('src/core/inbox.js'),
   series: window.__require('src/core/series.js'),
+  dafgroup: window.__require('src/core/dafgroup.js'),
+  prefill: window.__require('src/core/prefill.js'),
   valueguide: window.__require('src/core/valueguide.js'),
   photoitems: window.__require('src/core/photoitems.js'),
   mediagate: window.__require('src/core/mediagate.js'),
@@ -5875,8 +6072,8 @@ window.GT.exp = {
 <script>
 (function(){
   'use strict';
-  var GT = window.GT, M = GT.model, C = GT.client, X = GT.crypto, P = GT.propublica, V = GT.valueguide, T = GT.tax, S = GT.saver;
-  var Q = GT.queue, RV = GT.review, SEAL = GT.seal, F = GT.files, LF = GT.logform, IB = GT.inbox, SER = GT.series, HB = GT.heartbeat, PH = GT.photoitems, CH = GT.charts, MG = GT.mediagate;
+  var GT = window.GT, M = GT.model, C = GT.client, X = GT.crypto, P = GT.propublica, V = GT.valueguide, T = GT.tax, S = GT.saver, RK = GT.rekey;
+  var Q = GT.queue, RV = GT.review, SEAL = GT.seal, F = GT.files, LF = GT.logform, IB = GT.inbox, SER = GT.series, HB = GT.heartbeat, PH = GT.photoitems, CH = GT.charts, MG = GT.mediagate, DG = GT.dafgroup, PF = GT.prefill;
   var LS = window.localStorage;
   var DOC_KEY = 'giving_doc_v1';
   var $ = function(id){ return document.getElementById(id); };
@@ -5943,14 +6140,70 @@ window.GT.exp = {
   }
 
   // ---- render app ----
-  function fillYears(){
-    var sel=$('yearSel'); var now=(new Date()).getFullYear(); var years={};
-    years[now]=true; years[now-1]=true; years[state.year]=true;
-    (state.doc.donations||[]).forEach(function(d){ if(d.tax_year) years[d.tax_year]=true; });
-    var list=Object.keys(years).map(Number).sort(function(a,b){return b-a;});
-    sel.innerHTML=''; list.forEach(function(y){ var o=document.createElement('option'); o.value=y; o.textContent=y;
-      if(y===state.year)o.selected=true; sel.appendChild(o); });
+  // Endless tax-year carousel (S5/§1y). A horizontally scrollable strip of year chips, generated
+  // lazily around state.year (never a big fixed range), extended both ways as it scrolls, and opened
+  // centred on the current year. A year WITH donations reads solid + carries a dot; an empty year is
+  // dashed + muted, so a far-off empty year reads as obviously empty, never as data loss. state.year
+  // and the render() wiring are unchanged — this is a control swap.
+  var YEAR_PAD = 6, yearBuilding = false, yearGuardUntil = 0;
+  function yearsWithData(){ var s={}; (state.doc.donations||[]).forEach(function(d){ if(d.tax_year!=null) s[Number(d.tax_year)]=true; }); return s; }
+  function buildYearStrip(preserve){
+    var strip=$('yearStrip'); if(!strip) return;
+    var w=state.yearWindow, has=yearsWithData();
+    var prevLeft=strip.scrollLeft, prevWidth=strip.scrollWidth;
+    yearBuilding=true;
+    strip.innerHTML='';
+    for(var y=w.min; y<=w.max; y++){
+      var b=document.createElement('button'); b.type='button';
+      b.className='ychip'+(y===state.year?' sel':'')+(has[y]?' hasdata':'');
+      b.setAttribute('data-year', String(y)); b.setAttribute('role','tab');
+      b.setAttribute('aria-selected', y===state.year?'true':'false');
+      b.tabIndex = (y===state.year)?0:-1;
+      b.textContent=String(y);
+      (function(yy){ b.addEventListener('click', function(){ selectYear(yy); }); })(y);
+      strip.appendChild(b);
+    }
+    if(preserve==='left'){ strip.scrollLeft = prevLeft + (strip.scrollWidth - prevWidth); }
+    yearBuilding=false; yearGuardUntil=Date.now()+200;   // ignore the scroll events this rebuild causes
   }
+  function centerYear(){ var strip=$('yearStrip'); if(!strip) return; var sel=strip.querySelector('.ychip.sel');
+    if(sel){ strip.scrollLeft = sel.offsetLeft - (strip.clientWidth/2) + (sel.offsetWidth/2); yearGuardUntil=Date.now()+200; } }
+  function focusSelectedYear(){ var strip=$('yearStrip'); if(!strip) return; var sel=strip.querySelector('.ychip.sel'); if(sel) try{ sel.focus(); }catch(e){} }
+  function selectYear(y){ state.year=Number(y); render(); centerYear(); }
+  function initYearStrip(){
+    var strip=$('yearStrip'); if(!strip || strip._wired) { syncYearStrip(); return; }
+    state.yearWindow = { min: state.year-YEAR_PAD, max: state.year+YEAR_PAD };
+    buildYearStrip(); centerYear();
+    strip.addEventListener('scroll', function(){
+      if(yearBuilding || Date.now() < yearGuardUntil) return;   // ignore programmatic scrolls (center / rebuild)
+      if(strip.scrollLeft < 48){ state.yearWindow.min -= YEAR_PAD; buildYearStrip('left'); }
+      else if(strip.scrollLeft + strip.clientWidth > strip.scrollWidth - 48){ state.yearWindow.max += YEAR_PAD; buildYearStrip(); }
+    });
+    strip.addEventListener('keydown', function(e){
+      if(e.key==='ArrowRight'){ e.preventDefault(); selectYear(state.year+1); focusSelectedYear(); }
+      else if(e.key==='ArrowLeft'){ e.preventDefault(); selectYear(state.year-1); focusSelectedYear(); }
+    });
+    strip._wired = true;
+  }
+  // Called every render: keep the window covering state.year and refresh chip state without
+  // resetting the user's scroll position (a plain render must not recentre the strip).
+  function syncYearStrip(){
+    var strip=$('yearStrip'); if(!strip) return;
+    if(!strip._wired){ initYearStrip(); return; }
+    if(!state.yearWindow) state.yearWindow={ min:state.year-YEAR_PAD, max:state.year+YEAR_PAD };
+    if(state.year < state.yearWindow.min || state.year > state.yearWindow.max){
+      state.yearWindow.min=Math.min(state.yearWindow.min, state.year-YEAR_PAD);
+      state.yearWindow.max=Math.max(state.yearWindow.max, state.year+YEAR_PAD);
+      buildYearStrip(); centerYear(); return;
+    }
+    var has=yearsWithData();
+    [].forEach.call(strip.children, function(b){
+      var y=Number(b.getAttribute('data-year')); var sel=(y===state.year);
+      b.classList.toggle('sel', sel); b.setAttribute('aria-selected', sel?'true':'false');
+      b.tabIndex = sel?0:-1; b.classList.toggle('hasdata', !!has[y]);
+    });
+  }
+  function fillYears(){ syncYearStrip(); }   // render() hook — name kept for the call site
 
   function typeLabel(d){
     if(d.type==='daf_grant') return 'Grant via DAF';
@@ -6039,9 +6292,10 @@ window.GT.exp = {
     chips.forEach(function(c){ var s=document.createElement('span'); s.className='flag'; s.textContent='⚑ '+c[0]; box.appendChild(s); });
   }
 
-  // Live selection (S2): tapping the row BODY toggles selection (bound to click, so a scroll
-  // never selects). Per-row Edit/Dup/Del appear only when the row is selected; they stopPropagation
-  // so tapping an action never also toggles the row. Every row type is selectable.
+  // Live selection (S2/§1q): tapping the row BODY toggles selection (bound to click, so a scroll
+  // never selects). A selected row HIGHLIGHTS ONLY — there are no per-row action buttons; Edit /
+  // Duplicate / Delete / Bundle / Clear all live on the selection bar (renderSelBar), the single
+  // action surface. Every row type is selectable.
   function toggleSel(entry){
     var k=entry.key;
     if(state.selected[k]) delete state.selected[k]; else state.selected[k]=entry;
@@ -6057,17 +6311,6 @@ window.GT.exp = {
     var amtwrap=document.createElement('span'); amtwrap.className='amtbtn';
     var amt=document.createElement('span'); amt.className='amt'; amt.textContent=money(d.amount);
     amtwrap.appendChild(amt);
-    if(selected){
-      var acts=document.createElement('span'); acts.className='acts';
-      var e=document.createElement('button'); e.textContent='Edit';
-      e.addEventListener('click',function(ev){ ev.stopPropagation(); openLog(logKeyFor(d), d.id); });
-      var dup=document.createElement('button'); dup.textContent='Dup';
-      dup.addEventListener('click',function(ev){ ev.stopPropagation(); M.duplicateDonation(state.doc,d.id); persistDoc(); toast('Donation duplicated ✓'); });
-      var del=document.createElement('button'); del.className='del'; del.textContent='Del';
-      del.addEventListener('click',function(ev){ ev.stopPropagation(); if(confirm('Delete this donation?')){ M.deleteDonation(state.doc,d.id); SER.dropEmptySeries(state.doc); delete state.selected[d.id]; persistDoc(); toast('Donation deleted'); } });
-      acts.appendChild(e); acts.appendChild(dup); acts.appendChild(del);
-      amtwrap.appendChild(acts);
-    }
     el.appendChild(left); el.appendChild(who); el.appendChild(amtwrap);
     el.addEventListener('click', function(){ toggleSel({ key:d.id, kind:'single', id:d.id, charity_id:d.charity_id, type:d.type }); });
     return el;
@@ -6112,12 +6355,15 @@ window.GT.exp = {
     return ser.cadence+' · '+gifts+(ser.active?'':' · paused');
   }
 
-  // Group a year's donations into entries: a series (one row) or a single donation.
-  function toEntries(rows){
-    var map={}, entries=[];
+  // Group a year's donations into entries: a series (one row), the automatic display-only
+  // "Donations made via DAF" group (S3/§1p — loose grants only, when groupDaf), or a single
+  // donation. The DAF group is virtual: it is NEVER written to doc.series and sets no series_id.
+  function toEntries(rows, groupDaf){
+    var map={}, entries=[], daf=null;
     rows.forEach(function(d){
       var sid=d.series_id && SER.seriesById(state.doc,d.series_id) ? d.series_id : null;
       if(sid){ if(!map[sid]){ map[sid]={ kind:'series', id:sid, gifts:[] }; entries.push(map[sid]); } map[sid].gifts.push(d); }
+      else if(groupDaf && DG.isLooseGrant(state.doc, d)){ if(!daf){ daf={ kind:'dafgroup', gifts:[] }; entries.push(daf); } daf.gifts.push(d); }
       else entries.push({ kind:'single', donation:d });
     });
     return entries;
@@ -6125,12 +6371,43 @@ window.GT.exp = {
   function entryDate(e){
     if(e.kind==='single') return e.donation.date||'';
     var ds=e.gifts.map(function(g){return g.date||'';}).filter(Boolean).sort();
-    return state.sortDir==='asc' ? (ds[0]||'') : (ds[ds.length-1]||'');   // series rows sort by earliest/latest gift
+    return state.sortDir==='asc' ? (ds[0]||'') : (ds[ds.length-1]||'');   // group rows sort by earliest/latest gift
   }
-  function appendEntries(card, rows){
-    var entries=toEntries(rows);
+  function appendEntries(card, rows, groupDaf){
+    var entries=toEntries(rows, groupDaf);
     entries.sort(function(a,b){ return M.compareByDate(state.sortDir)({date:entryDate(a)},{date:entryDate(b)}); });
-    entries.forEach(function(e){ if(e.kind==='single') card.appendChild(donationRow(e.donation)); else appendSeriesRow(card, e.id, e.gifts); });
+    entries.forEach(function(e){
+      if(e.kind==='single') card.appendChild(donationRow(e.donation));
+      else if(e.kind==='dafgroup') appendDafGroupRow(card, e.gifts);
+      else appendSeriesRow(card, e.id, e.gifts);
+    });
+  }
+  // The automatic "Donations made via DAF" group (S3/§1p): ONE collapsed, expandable row for all
+  // loose grants in the year. Display-only — its total is Σ countsForGiving grants (never a
+  // Deductible figure), and each member stays its own donation. Expanded members respect the S2
+  // date sort and the S1 subrow indentation. No toggle, no persisted state.
+  function appendDafGroupRow(card, gifts){
+    var total=DG.groupTotal(state.doc, gifts);
+    var row=document.createElement('div'); row.className='row seriesrow';
+    var left=document.createElement('span'); left.className='date'; left.textContent='◈';
+    var who=document.createElement('span'); who.className='who';
+    who.innerHTML='<div class="nm">Donations made via DAF<span class="badge via">via DAF</span></div>'
+      + '<div class="ty">'+gifts.length+' grant'+(gifts.length>1?'s':'')+' out</div>';
+    var amtwrap=document.createElement('span'); amtwrap.className='amtbtn';
+    var amt=document.createElement('span'); amt.className='amt'; amt.textContent=money(total);
+    var acts=document.createElement('span'); acts.className='acts';
+    var exp=document.createElement('button'); exp.textContent='Expand ▸';   // navigation; the group is not selectable
+    acts.appendChild(exp);
+    amtwrap.appendChild(amt); amtwrap.appendChild(acts);
+    row.appendChild(left); row.appendChild(who); row.appendChild(amtwrap);
+    card.appendChild(row);
+    var subRows=[];
+    exp.addEventListener('click', function(e){ e.stopPropagation();
+      if(subRows.length){ subRows.forEach(function(r){ r.remove(); }); subRows=[]; exp.textContent='Expand ▸'; return; }
+      var after=row;
+      gifts.slice().sort(M.compareByDate(state.sortDir)).forEach(function(g){ var r=donationRow(g); r.classList.add('subrow'); row.parentNode.insertBefore(r, after.nextSibling); after=r; subRows.push(r); });
+      exp.textContent='Collapse ▾';
+    });
   }
 
   // ================= charts view (S5) — hand-built inline SVG, no libraries =================
@@ -6279,12 +6556,12 @@ window.GT.exp = {
         h.innerHTML='<span>'+esc(c?c.name:'—')+'</span><span class="gt">'+money(sub)+' given</span>';
         box.appendChild(h);
         var card=document.createElement('div'); card.className='receipt';
-        appendEntries(card, groups[k]);
+        appendEntries(card, groups[k], false);   // by-charity: grants already sit under their charity — no auto DAF group
         box.appendChild(card);
       });
     } else {
       var card=document.createElement('div'); card.className='receipt';
-      appendEntries(card, rows);
+      appendEntries(card, rows, true);           // by-date: fold loose grants into the auto "Donations made via DAF" group (S3)
       box.appendChild(card);
     }
   }
@@ -6889,8 +7166,8 @@ window.GT.exp = {
     }
     f.innerHTML=html;
     if(key==='items'){
-      $('combinedMedia').innerHTML=mediaSectionHtml(true);   // one Receipts + Photos section, under the date
-      wireMediaSection(true);
+      $('combinedMedia').innerHTML=mediaSectionHtml();   // one Receipts + Photos control, under the date (S4)
+      wireMediaSection();
       renderItems();                                         // no forced blank line (§1o) — renderItems shows the add control
     }
     if(key==='stock' || key==='into_daf'){
@@ -7169,72 +7446,104 @@ window.GT.exp = {
     }
     throw new Error('Attach a photo or a PDF.');
   }
-  async function onAttachFile(e){
-    var file=e.target.files && e.target.files[0]; if(!file){ return; } e.target.value='';
-    try {
-      var proc=await processFile(file);
-      if(F.overBudget(totalAttachBytes(), proc.bytes.length)) toast('Heads up — your receipts now exceed ~50MB.', true);
-      var enc=await F.encryptFile(proc.bytes, { mime:proc.mime, filename:proc.filename });
-      var att={ id:M.newId('file'), key:enc.key, mime:proc.mime, filename:proc.filename, bytes:enc.bytes, created_at:new Date().toISOString(), thumbUrl:proc.thumbUrl||null };
-      if(state.log.editingId){
-        att.donation_id=state.log.editingId;
-        await F.put(state.cfg.id, { id:att.id, donation_id:att.donation_id, ciphertext:enc.ciphertext, iv:enc.iv, bytes:enc.bytes });
-        state.doc.attachments=state.doc.attachments||[]; state.doc.attachments.push(att); persistDoc();
-        renderAttachSection(); toast('Receipt attached ✓');
-      } else {
-        state.log.pendingAttach=state.log.pendingAttach||[]; state.log.pendingAttach.push({ att:att, enc:enc });
-        renderAttachSection(); toast('Receipt staged — it attaches when you save.');
-      }
-    } catch(err){ toast(err.message||'Could not attach that file.', true); }
+  // Attach one or more files as client-encrypted receipts — NO network call (AI read is off by
+  // default, S4/§1w). The AI read is offered afterwards via "Read this and fill in the details" on
+  // the selected chip (readAndFill). The last-added chip is auto-selected so that action shows.
+  function onAttachFileChange(e){ var files=[].slice.call((e.target&&e.target.files)||[]); if(e.target) e.target.value=''; if(files.length) onAttachFiles(files); }   // copy first — a FileList empties when value is cleared
+  async function onAttachFiles(fileList){
+    var files=[].slice.call(fileList||[]); if(!files.length) return;
+    var lastId=null, ok=0;
+    for(var i=0;i<files.length;i++){
+      try {
+        var proc=await processFile(files[i]);
+        if(F.overBudget(totalAttachBytes(), proc.bytes.length)) toast('Heads up — your receipts now exceed ~50MB.', true);
+        var enc=await F.encryptFile(proc.bytes, { mime:proc.mime, filename:proc.filename });
+        var att={ id:M.newId('file'), key:enc.key, mime:proc.mime, filename:proc.filename, bytes:enc.bytes, created_at:new Date().toISOString(), thumbUrl:proc.thumbUrl||null };
+        if(state.log.editingId){
+          att.donation_id=state.log.editingId;
+          await F.put(state.cfg.id, { id:att.id, donation_id:att.donation_id, ciphertext:enc.ciphertext, iv:enc.iv, bytes:enc.bytes });
+          state.doc.attachments=state.doc.attachments||[]; state.doc.attachments.push(att); persistDoc();
+        } else {
+          state.log.pendingAttach=state.log.pendingAttach||[]; state.log.pendingAttach.push({ att:att, enc:enc });
+        }
+        lastId=att.id; ok++;
+      } catch(err){ toast(err.message||'Could not attach that file.', true); }
+    }
+    if(lastId){ state.log.selectedAttach=lastId; }   // auto-select the last add so its Read action shows
+    renderAttachSection();
+    if(ok){ setPhotoProgress(''); toast(ok>1?(ok+' files attached ✓'):'File attached — tap “Read this and fill in the details” to read it.'); }
   }
-  // ---- photo -> item list (S3) ----
+  // ---- AI read (S4/§1w) ----
   function setPhotoProgress(msg){ var p=$('photoProgress'); if(p) p.textContent=msg||''; }
   // POST photos to import-extract {kind:'photo_items'} -> { items:[...] } (reuses extractFile's transport/auth).
   async function extractPhotoItems(images){ return await extractFile({ kind:'photo_items', images_base64:images, guide_keys:PH.guideKeys() }); }
-  // Stage one already-downscaled photo as a client-encrypted receipt (untickable — attaches by default).
-  async function stagePhotoReceipt(s){
-    var bytes=X.b64ToBytes(s.b64);
-    var filename=(String(s.name||'photo').replace(/\.[^.]+$/,'')||'photo')+'.jpg';
-    var enc=await F.encryptFile(bytes, { mime:'image/jpeg', filename:filename });
-    var att={ id:M.newId('file'), key:enc.key, mime:'image/jpeg', filename:filename, bytes:enc.bytes, created_at:new Date().toISOString(), thumbUrl:s.dataUrl };
-    if(state.log.editingId){
-      att.donation_id=state.log.editingId;
-      await F.put(state.cfg.id, { id:att.id, donation_id:att.donation_id, ciphertext:enc.ciphertext, iv:enc.iv, bytes:enc.bytes });
-      state.doc.attachments=state.doc.attachments||[]; state.doc.attachments.push(att); persistDoc();
-    } else {
-      state.log.pendingAttach=state.log.pendingAttach||[]; state.log.pendingAttach.push({ att:att, enc:enc });
-    }
+  // Decrypt an attachment to plaintext bytes — from the staged pendingAttach (new donation) or the
+  // stored file row (edit). Used only by the AI read; the bytes are never persisted in the clear.
+  async function attPlainBytes(att){
+    var pend=(state.log.pendingAttach||[]).filter(function(p){ return p.att.id===att.id; })[0];
+    if(pend){ var d1=await F.decryptFile(pend.enc.ciphertext, pend.enc.iv, att.key); return d1.bytes; }
+    var row=await F.get(state.cfg.id, IB.attFileId(att)); if(!row) throw new Error('Receipt not found.');
+    var d2=await F.decryptFile(row.ciphertext, row.iv, att.key); return d2.bytes;
   }
-  async function onPhotoItems(e){
-    var files=[].slice.call((e.target&&e.target.files)||[]).slice(0,5); if(e.target) e.target.value='';
-    if(!files.length) return;
-    setPhotoProgress('Reading '+files.length+' photo'+(files.length>1?'s':'')+'…');
+  function hasOption(sel, val){ for(var i=0;i<sel.options.length;i++) if(sel.options[i].value===String(val)) return true; return false; }
+  // Blank-only prefill into the open form (S4/§1x): fill ONLY empty fields, highlight what changed,
+  // never touch anything the user typed. Returns the number of fields actually filled.
+  function applyPrefill(rec){
+    var key=state.log.key, proposed={};
+    if(rec.charity_id) proposed.charity_id=rec.charity_id;
+    if(rec.date) proposed.date=rec.date;
+    if(rec.amount!=null && (key==='money'||key==='grant')) proposed.amount=rec.amount;
+    if(key==='grant' && rec.grant_ref) proposed.grant_ref=rec.grant_ref;
+    var current={
+      charity_id: ($('fCharity')&&$('fCharity').value)||'',
+      date: ($('fDate')&&$('fDate').value)||'',
+      amount: ($('fAmount')&&$('fAmount').value)||'',
+      grant_ref: ($('fRef')&&$('fRef').value)||'',
+    };
+    var plan=PF.planPrefill(current, proposed);
+    var map={ charity_id:'fCharity', date:'fDate', amount:'fAmount', grant_ref:'fRef' };
+    var applied=0;
+    plan.filled.forEach(function(k){
+      var el=$(map[k]); if(!el) return;
+      if(k==='charity_id' && !hasOption(el, plan.fills[k])) return;   // can't select a charity we don't have
+      el.value=plan.fills[k];
+      el.classList.remove('prefilled'); void el.offsetWidth; el.classList.add('prefilled');
+      applied++;
+    });
+    return applied;
+  }
+  // "Read this and fill in the details" (S4/§1w) — the ONLY thing that makes an Anthropic call.
+  // Routed by file type x the active type tab; reuses the existing extract contracts (no server change).
+  async function readAndFill(att){
+    if(!state.log) return;
+    var key=state.log.key, isImage=/^image\//.test(att.mime||'');
+    setPhotoProgress('Reading '+att.filename+'…');
     try {
-      var images=[], staged=[];
-      for(var i=0;i<files.length;i++){
-        if(!isImageFile(files[i])) continue;
-        var dataUrl;
-        try { dataUrl=await downscaleImage(files[i], 1600, 0.75); }
-        catch(err){ if(isHeic(files[i])){ setPhotoProgress(''); toast(HEIC_MSG, true); return; } throw err; }
-        var b64=dataUrl.split(',')[1];
-        images.push(b64); staged.push({ dataUrl:dataUrl, b64:b64, name:files[i].name });
+      if(key==='items' && isImage){
+        var b64i = att.thumbUrl ? att.thumbUrl.split(',')[1] : X.bytesToB64(await attPlainBytes(att));
+        var res=await extractPhotoItems([b64i]);
+        var items=(res&&res.items)||[];
+        if(items.length){
+          state.log.items=state.log.items.filter(function(it){ return it.from_photo || it.description || (Number(it.unit_value)||0)>0; });
+          PH.photoLines(state.doc, items).forEach(function(l){ state.log.items.push(l); });
+          renderItems();
+          setPhotoProgress(items.length+' item'+(items.length>1?'s':'')+' added at the high end of the guide — check each value.');
+        } else setPhotoProgress('No items recognized — add lines by hand, or try a clearer photo.');
+        return;
       }
-      if(!images.length){ setPhotoProgress('Those files were not photos.'); return; }
-      setPhotoProgress('Reading '+images.length+' photo'+(images.length>1?'s':'')+' — finding items…');
-      var res=await extractPhotoItems(images);
-      var items=(res&&res.items)||[];
-      if(items.length){
-        // drop the initial blank line if it's still empty
-        state.log.items=state.log.items.filter(function(it){ return it.from_photo || it.description || (Number(it.unit_value)||0)>0; });
-        PH.photoLines(state.doc, items).forEach(function(l){ state.log.items.push(l); });
-        renderItems();
-        setPhotoProgress(items.length+' item'+(items.length>1?'s':'')+' added at the high end of the guide — check each value.');
-      } else {
-        setPhotoProgress('No items recognized — add lines by hand, or try a clearer photo.');
-      }
-      for(var j=0;j<staged.length;j++){ await stagePhotoReceipt(staged[j]); }   // photos attach as receipts (default)
-      renderAttachSection();
-    } catch(err){ setPhotoProgress(''); toast(err.message||'Could not read those photos.', true); }
+      var payload={ kind:'file', filename:att.filename, mime:att.mime };
+      if(isImage){ payload.image_base64 = att.thumbUrl ? att.thumbUrl.split(',')[1] : X.bytesToB64(await attPlainBytes(att)); payload.mime='image/jpeg'; }
+      else if(att.mime==='application/pdf'){ payload.pdf_base64 = X.bytesToB64(await attPlainBytes(att)); }
+      else { payload.text = new TextDecoder().decode(await attPlainBytes(att)); payload.mime='text/plain'; }
+      var result=await extractFile(payload);
+      var rec=(result&&result.records&&result.records[0])||null;
+      if(!rec || rec.kind==='not_a_donation'){ setPhotoProgress('Nothing found to fill in from that file.'); return; }
+      var draft=GT.filedrop.recordToDraft(rec, state.doc, {});
+      if(!draft){ setPhotoProgress('Nothing found to fill in from that file.'); return; }
+      var n=applyPrefill(draft);
+      setPhotoProgress(n>0 ? ('Filled '+n+' empty field'+(n>1?'s':'')+' — check them; nothing you typed was changed.')
+                          : 'Nothing new to fill — your entries were kept.');
+    } catch(e){ setPhotoProgress(''); toast(e.message||'Could not read that file.', true); }
   }
 
   function renderAttachSection(){
@@ -7254,9 +7563,17 @@ window.GT.exp = {
       if(sel){
         var view=document.createElement('button'); view.type='button'; view.className='btn sm ghost'; view.textContent='View';
         view.addEventListener('click', function(ev){ ev.stopPropagation(); viewAttachment(a); });
+        // The AI read is offered per-chip and OFF by default (S4/§1w) — the only call to Anthropic.
+        var readable = /^image\//.test(a.mime||'') || a.mime==='application/pdf';
+        if(readable){
+          var rd=document.createElement('button'); rd.type='button'; rd.className='btn sm'; rd.textContent='Read this and fill in the details';
+          rd.addEventListener('click', function(ev){ ev.stopPropagation(); readAndFill(a); });
+          chip.appendChild(rd);
+        }
+        chip.appendChild(view);
         var del=document.createElement('button'); del.type='button'; del.className='btn sm danger'; del.textContent='Delete';
         del.addEventListener('click', function(ev){ ev.stopPropagation(); deleteAttachment(a); });
-        chip.appendChild(view); chip.appendChild(del);
+        chip.appendChild(del);
       }
       area.appendChild(chip);
     });
@@ -7329,33 +7646,36 @@ window.GT.exp = {
     var cb=$('fExclude'), row=$('fExcludeRow');
     cb.addEventListener('change', function(){ row.style.display=cb.checked?'':'none'; });
   }
-  // The media section — Receipts (attach input), plus the "Add from photos" button when includePhotos
-  // (items only, S5/§1l/§1k). HEIC/HEIF is accepted by extension on both inputs (Safari decodes it).
-  function mediaSectionHtml(includePhotos){
-    return '<label style="display:block;font-size:0.78rem;color:var(--muted);margin-bottom:6px;font-weight:600;">'
-      + (includePhotos?'Receipts &amp; photos':'Receipts')+'</label>'
+  // ONE multipurpose file control (S4/§1v) — the SAME styled drop-or-click zone on EVERY log form
+  // (Items, Money, Stock, Mileage, Into DAF, Grant). A file is attached as documentation with NO
+  // network call; the AI read is offered afterwards per-chip (readAndFill). HEIC/HEIF is accepted by
+  // extension (Safari decodes it). No "Choose File" grey input, no separate photo button.
+  function mediaSectionHtml(){
+    return '<label style="display:block;font-size:0.78rem;color:var(--muted);margin-bottom:6px;font-weight:600;">Receipts &amp; photos</label>'
       + '<div id="attachArea"></div>'
-      + (includePhotos
-        ? '<div class="photorow" style="margin-top:8px;"><button type="button" id="btnPhotoItems" class="btn sm">📷 Add from photos</button>'
-          + '<span class="ghint" id="photoHint">Snap or pick up to 5 photos — the app lists the items and values them at the high end of the guide for you to check.</span></div>'
-          + '<div id="photoProgress" class="ghint" style="margin:4px 2px;"></div>'
-          + '<input id="photoInput" type="file" accept="image/*,.heic,.heif" capture="environment" multiple hidden>'
-        : '')
-      + '<input id="attachFile" type="file" accept="image/*,.heic,.heif,application/pdf" capture="environment" class="txt" style="margin-top:8px;">';
+      + '<label class="filectl" id="attachDrop">'
+      +   '<input id="attachFile" type="file" accept="image/*,.heic,.heif,application/pdf" capture="environment" multiple>'
+      +   '<span class="big">Drop a receipt or photo here</span>'
+      +   '<span class="sub">or tap to choose · attached as documentation</span>'
+      + '</label>'
+      + '<div id="photoProgress" class="ghint" style="margin:6px 2px;"></div>'
+      + '<p class="ghint" style="margin-top:2px;">Adding a file just attaches it — nothing is sent. To let AI read it and fill in the details, add it, then tap “Read this and fill in the details”.</p>';
   }
-  function wireMediaSection(includePhotos){
-    $('attachFile').addEventListener('change', onAttachFile);
-    if(includePhotos){
-      $('btnPhotoItems').addEventListener('click', function(){ $('photoInput').click(); });
-      $('photoInput').addEventListener('change', onPhotoItems);
+  function wireMediaSection(){
+    var inp=$('attachFile'); if(inp) inp.addEventListener('change', onAttachFileChange);
+    var dz=$('attachDrop');
+    if(dz){
+      ['dragenter','dragover'].forEach(function(ev){ dz.addEventListener(ev, function(e){ e.preventDefault(); dz.classList.add('dragover'); }); });
+      ['dragleave','drop'].forEach(function(ev){ dz.addEventListener(ev, function(e){ e.preventDefault(); if(ev==='dragleave' && dz.contains(e.relatedTarget)) return; dz.classList.remove('dragover'); }); });
+      dz.addEventListener('drop', function(e){ var f=e.dataTransfer && e.dataTransfer.files; if(f && f.length) onAttachFiles(f); });
     }
     renderAttachSection();
   }
   function appendAttachSection(f){
     var wrap=document.createElement('div'); wrap.className='acq'; wrap.style.marginTop='12px';
-    wrap.innerHTML=mediaSectionHtml(false);
+    wrap.innerHTML=mediaSectionHtml();
     f.appendChild(wrap);
-    wireMediaSection(false);
+    wireMediaSection();
   }
 
   // Read the exclude-from-tax controls (present only for money/items/stock/mileage). {} otherwise.
@@ -7454,6 +7774,7 @@ window.GT.exp = {
       +   '<button type="button" class="btn sm ghost" id="btnCopyId">Copy id</button></div>'
       + '<button type="button" class="btn danger ghost" id="btnSignout2">Sign out on this device</button>'
       + '<p class="hint">Signing out clears this browser only — your synced book is untouched.</p></div>'
+      + changePassCardHtml()
       + captureCardHtml()
       + '<div class="card"><div class="card-h">Import a file</div>'
       + '<p class="hint">Drop a receipt, statement, email or CSV into the review inbox — the app reads it and proposes entries. A Fidelity Giving Account CSV imports directly; everything else is read by AI.</p>'
@@ -7463,8 +7784,54 @@ window.GT.exp = {
     var cpy=$('btnCopyId'); if(cpy) cpy.addEventListener('click', function(){
       try{ navigator.clipboard.writeText(id); toast('Sync id copied'); }catch(e){ toast('Copy not available — id is in Settings.', true); } });
     var so=$('btnSignout2'); if(so) so.addEventListener('click', function(){ if(confirm('Sign out on this device? Your synced book is untouched.')){ closeSettings(); signOut(); } });
+    wireChangePassCard();
     wireCaptureCard();
     var oi=$('btnOpenImport'); if(oi) oi.addEventListener('click', function(){ closeSettings(); openInbox(); });
+  }
+
+  // ---- change passphrase (S6/§1t) — re-key the whole document, FAIL CLOSED ----
+  function changePassCardHtml(){
+    return '<div class="card"><div class="card-h">Change passphrase</div>'
+      + '<p class="hint">Re-encrypts your whole book under a new passphrase. <strong>Every other device keeps the OLD passphrase</strong> — you’ll need to enter the new one there. This device stays signed in. Your receipts and capture keys are re-protected automatically.</p>'
+      + '<div class="field"><label>Current passphrase</label><input type="password" class="txt" id="cpCur" autocomplete="off"></div>'
+      + '<div class="grid2"><div class="field"><label>New passphrase</label><input type="password" class="txt" id="cpNew" autocomplete="new-password"></div>'
+      + '<div class="field"><label>Repeat new</label><input type="password" class="txt" id="cpNew2" autocomplete="new-password"></div></div>'
+      + '<p class="ghint">At least 8 characters. If anything goes wrong, your old passphrase still works — nothing changes until the new one is safely saved.</p>'
+      + '<button type="button" class="btn sm" id="btnChangePass">Change passphrase</button></div>';
+  }
+  function wireChangePassCard(){ var b=$('btnChangePass'); if(b) b.addEventListener('click', changePassphrase); }
+  async function changePassphrase(){
+    var cur=($('cpCur')&&$('cpCur').value)||'', np=($('cpNew')&&$('cpNew').value)||'', np2=($('cpNew2')&&$('cpNew2').value)||'';
+    if(cur!==state.cfg.passphrase){ toast('Current passphrase is incorrect.', true); return; }
+    if(np.length<RK.MIN_LEN){ toast('New passphrase must be at least '+RK.MIN_LEN+' characters.', true); return; }
+    if(np!==np2){ toast('The two new passphrases do not match.', true); return; }
+    if(np===cur){ toast('That is already your passphrase.', true); return; }
+    if(theSaver && theSaver.isConflicted()){ toast('Reload the newer data first, then change your passphrase.', true); return; }
+    if(!confirm('Change your passphrase now?\n\nEvery OTHER device keeps the OLD passphrase and will need the new one entered there. This device stays signed in.')) return;
+    var btn=$('btnChangePass'); if(btn) btn.disabled=true; setPill('saving');
+    // Ordered + fail-closed in src/sync/rekey.js: verify -> re-encrypt (fresh salt+IV) -> PATCH under
+    // the loaded-version guard -> return ok ONLY on a confirmed write. localStorage is updated HERE,
+    // and ONLY on ok, so any failure leaves the OLD passphrase working and this device untouched.
+    var res;
+    try {
+      res=await RK.rekey({ doc:state.doc, id:state.cfg.id, currentPassphrase:cur, newPassphrase:np,
+        loadedVersion:state.cfg.loadedVersion, verify:function(c){ return c===state.cfg.passphrase; },
+        encrypt:function(d,p){ return X.encryptDoc(d,p); }, save:function(id,b,v){ return C.save(id,b,v); } });
+    } catch(e){ res={ ok:false, reason:'network' }; }
+    if(btn) btn.disabled=false;
+    if(!res.ok){
+      setPill(res.reason==='conflict'?'conflict':'error');
+      toast(res.reason==='conflict' ? 'Another device saved first — reload and try again. Your passphrase is unchanged.'
+          : res.reason==='network' ? 'Could not reach the cloud — your passphrase is unchanged.'
+          : res.reason==='weak' ? 'New passphrase must be at least '+RK.MIN_LEN+' characters.'
+          : 'Could not change your passphrase — it is unchanged.', true);
+      return;
+    }
+    // Confirmed write — NOW update this device (and only now).
+    state.cfg.passphrase=np; state.cfg.loadedVersion=res.newVersion; writeCfg(state.cfg); writeDocCache(state.doc);
+    setPill('saved');
+    toast('Passphrase changed ✓ — enter it on your other devices.');
+    renderSettingsExtra();
   }
 
   // ---- capture setup (slice 1): key pair lives in the encrypted doc; only the PUBLIC
@@ -7485,6 +7852,9 @@ window.GT.exp = {
         + '<p class="hint">Receipt and grant emails (and, later, YNAB + imports) can be captured automatically into a “Needs review” inbox. Every captured item is <strong>sealed to this device’s key</strong> — nothing readable is ever stored in the queue.</p>'
         + '<div class="kv"><span class="k">Status</span><span class="v" style="color:var(--ledger)">Keys set up'+(created?(' · '+esc(created)):'')+'</span></div>'
         + hbLine
+        + '<div class="search-row" style="margin-top:6px;"><button type="button" class="btn sm" id="btnSyncNow">Sync now</button>'
+        + '<span class="ghint" id="syncNowMsg"></span></div>'
+        + '<p class="ghint" style="margin-top:4px;">Gmail is scanned about every 10 minutes on Google’s side — this button can’t force that scan. It re-pulls anything already captured into your review inbox and refreshes “Last checked”, so a stale time here isn’t a failed button.</p>'
         + '<p class="hint">Store this <strong>setup bundle</strong> as the Supabase function secret <span class="mono">GIVING_SETUP_BUNDLE</span>. It holds your public key + sync id — <strong>never</strong> your private key.</p>'
         + '<div id="capBundle" class="reveal-id" hidden></div>'
         + '<div class="search-row"><button type="button" class="btn sm ghost" id="btnCapShow">Show setup bundle</button>'
@@ -7513,9 +7883,19 @@ window.GT.exp = {
       toast('Capture keys rotated — update the setup bundle secret.');
     } catch(e){ toast('Could not rotate capture keys on this device.', true); }
   }
+  // Sync now (S7/§1u): re-pull the sealed queue + refresh the heartbeat. It CANNOT force Gmail's
+  // ~10-min scan (that runs on Google's side) — the copy says so, so a stale "Last checked" doesn't
+  // read as a failed button. Re-pulling is the honest scope of this button.
+  async function syncNow(){
+    var b=$('btnSyncNow'), msg=$('syncNowMsg'); if(b) b.disabled=true; if(msg) msg.textContent='Checking…';
+    try { await pullQueue(); await fetchHeartbeat(); if(msg) msg.textContent='Re-pulled your review inbox.'; }
+    catch(e){ if(msg) msg.textContent='Could not reach the cloud — try again when online.'; }
+    if(b) b.disabled=false;
+  }
   function wireCaptureCard(){
     var b;
     if((b=$('btnCapSetup'))) b.addEventListener('click', setupCapture);
+    if((b=$('btnSyncNow'))) b.addEventListener('click', syncNow);
     if((b=$('btnCapRotate'))) b.addEventListener('click', rotateCapture);
     if((b=$('btnCapShow'))) b.addEventListener('click', function(){ var el=$('capBundle'); el.textContent=captureBundle(); el.hidden=false; });
     if((b=$('btnCapCopy'))) b.addEventListener('click', function(){
@@ -7869,8 +8249,8 @@ window.GT.exp = {
     return '<div class="card dropzone" id="dropZone" style="margin-bottom:12px;">'
       + '<div class="card-h">Import a file</div>'
       + '<p class="hint">Drop a receipt or statement — <strong>PDF, photo, email (.eml), text, or a CSV</strong> — or tap to choose. The app reads it and proposes entries below to review. A Fidelity Giving Account CSV imports directly; everything else is read by AI. Dropped PDFs, photos and emails attach as the receipt.</p>'
-      + '<div class="dropinner" id="dropInner"><div class="dropbig">Drop a file here</div><div class="dropsub">or choose one</div>'
-      + '<input id="dropInput" type="file" accept=".pdf,.csv,.eml,.txt,.html,.htm,image/*,application/pdf,text/csv" class="txt"></div>'
+      + '<label class="filectl" id="dropInner"><input id="dropInput" type="file" accept=".pdf,.csv,.eml,.txt,.html,.htm,image/*,application/pdf,text/csv">'
+      + '<span class="big">Drop a file here</span><span class="sub">or tap to choose · PDF, photo, email, text or CSV</span></label>'
       + '<div id="dropProgress" class="ghint" style="margin-top:8px;"></div></div>';
   }
   function wireImportControl(){
@@ -8148,7 +8528,7 @@ window.GT.exp = {
   });
   $('btnTheme').addEventListener('click', function(){ toggleTheme(); });
   $('btnSignout').addEventListener('click', signOut);
-  $('yearSel').addEventListener('change', function(e){ state.year=Number(e.target.value); render(); });
+  // The tax-year carousel wires itself lazily via syncYearStrip() on the first render (S5/§1y).
   $('btnCharities').addEventListener('click', openCharities);
   $('btnCharClose').addEventListener('click', closeCharities);
   $('btnCharSearch').addEventListener('click', doCharSearch);
