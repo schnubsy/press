@@ -152,7 +152,9 @@
   .receipt { background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
   .row { display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px dotted var(--line); }
   .row:last-child { border-bottom:0; }
-  .row .date { font-family:var(--mono); font-size:0.78rem; color:var(--muted); width:52px; flex:0 0 auto; }
+  /* Every row shares ONE leading column (§1ae): the date on a plain row, the glyph set on a group
+     row. Same width -> every title's left edge lines up and every amount's right edge lines up. */
+  .row .date { font-family:var(--mono); font-size:0.78rem; color:var(--muted); width:58px; flex:0 0 58px; }
   .row .who { flex:1; min-width:0; }
   .row .who .nm { font-weight:600; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .row .who .ty { color:var(--muted); font-size:0.76rem; }
@@ -226,6 +228,35 @@
   .editrow { display:grid; gap:8px; padding:12px 4px; border-bottom:1px dotted var(--line); }
   .editrow .search-row { margin-top:0; }
   .subhead { color:var(--muted); font-size:0.74rem; text-transform:uppercase; letter-spacing:0.04em; margin:16px 4px 6px; }
+  .cbadge.dup { background:rgba(217,138,78,0.16); color:var(--ember-soft); border:1px solid var(--ember); }
+
+  /* delete-refusal panel (§1ah): names the blocking donations (date/amount/year) + offers a jump */
+  .blockers { background:var(--surface-2); border:1px solid var(--ember); border-radius:12px; padding:14px 16px; margin:10px 0 4px; }
+  .blockers .bh { font-weight:600; font-size:0.9rem; margin-bottom:8px; }
+  .blockers ul { list-style:none; margin:0 0 10px; padding:0; }
+  .blockers li { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:7px 0; border-bottom:1px dotted var(--line); font-size:0.86rem; }
+  .blockers li:last-child { border-bottom:0; }
+  .blockers .bmeta { color:var(--muted); font-family:var(--mono); font-size:0.78rem; }
+  .blockers .bnote { color:var(--muted); font-size:0.78rem; margin-bottom:8px; }
+  .blockers .bacts { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+
+  /* Total giving table (§1ai): all donations, all years, sortable, horizontally scrollable. */
+  .sheet-body.wide { max-width:980px; }
+  .tgwrap { overflow-x:auto; border:1px solid var(--line); border-radius:12px; }
+  table.tgtable { width:100%; border-collapse:collapse; font-size:0.86rem; min-width:640px; }
+  .tgtable th, .tgtable td { padding:10px 12px; text-align:left; border-bottom:1px dotted var(--line); white-space:nowrap; }
+  .tgtable thead th { position:sticky; top:0; background:var(--surface-2); color:var(--muted);
+    font-size:0.74rem; text-transform:uppercase; letter-spacing:0.03em; cursor:pointer; user-select:none; }
+  .tgtable thead th:focus-visible { outline:2px solid var(--ember); outline-offset:-2px; }
+  .tgtable th .dir { color:var(--ember); margin-left:4px; }
+  .tgtable td.num, .tgtable th.num { text-align:right; font-family:var(--mono); }
+  .tgtable td.charity { white-space:normal; }
+  .tgtable tbody tr:hover { background:var(--surface); }
+  .tgtable .ded-y { color:var(--ledger); font-weight:600; }
+  .tgtable .ded-n { color:var(--muted); }
+  .tgtable tfoot td { padding:12px; font-family:var(--mono); font-weight:600; border-top:1px solid var(--line); background:var(--surface-2); }
+  .tgtable tfoot .lbl { font-family:var(--sans); font-weight:600; color:var(--muted); }
+  .tgempty { padding:30px 16px; text-align:center; color:var(--muted); }
 
   /* ---- reports: breakdown + compliance flags ---- */
   .breakdown { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
@@ -276,6 +307,10 @@
   .grp { color:var(--ember-soft); font-family:var(--serif); font-size:0.92rem; font-weight:600;
     margin:16px 4px 6px; display:flex; justify-content:space-between; }
   .grp .gt { color:var(--muted); font-family:var(--mono); font-size:0.8rem; }
+  /* deductibility group heading inside a receipt card (S5/§1ak): deductible first, non-deductible last */
+  .dedhead { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; font-weight:700;
+    color:var(--ledger); padding:11px 16px 7px; border-bottom:1px dotted var(--line); }
+  .dedhead.nd { color:var(--muted); }
   .row .acts { display:flex; gap:5px; flex:0 0 auto; }
   .row .acts button { background:transparent; border:1px solid var(--line); color:var(--muted);
     border-radius:7px; padding:4px 8px; font-size:0.72rem; font-weight:600; }
@@ -288,30 +323,51 @@
   .amtbtn { display:flex; align-items:center; gap:10px; min-height:30px; }
   .row.selected { background:rgba(217,138,78,0.12); box-shadow:inset 3px 0 0 var(--ember); }
   .row.seriesrow.selected { background:rgba(217,138,78,0.18); }
-  .selacts { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
+  /* selection-bar actions (§1af): their OWN track, always right-aligned, so nothing jumps to the
+     left as the label grows. Buttons are ≥44px tall for a comfortable touch target on iPhone. */
+  .selacts { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; flex:0 0 auto; }
+  .selacts button { min-height:44px; }
   .selacts button:disabled { opacity:0.4; cursor:not-allowed; }
-  /* leading expand/collapse icon on a group row (S2/§1aa): sits to the LEFT of the group title
-     so the amount column lines up across grouped and ungrouped rows alike (the amount is the
-     only thing in .amtbtn now). A real button — accessible name + aria-expanded reflect state. */
-  .who.grouphead { display:flex; align-items:center; gap:8px; }
-  .who.grouphead .ghtext { flex:1; min-width:0; }
-  .expicon { flex:0 0 auto; background:transparent; border:0; color:var(--ember-soft); cursor:pointer;
-    font-size:0.82rem; line-height:1; padding:3px 6px; border-radius:6px; }
-  .expicon:hover { color:var(--ink); }
-  .expicon:focus-visible { outline:2px solid var(--ember); outline-offset:2px; }
+  /* A group row's leading gutter (§1ae): the expand control now lives IN the leading column (the
+     date column's width), holding the type glyph (↻ recurring · ◈ via-DAF) + an expand chevron.
+     Because it is the same width as the date column, the group's .who (identical in structure to a
+     plain row's .who) starts on the SAME vertical line as every plain row's title, and amounts stay
+     aligned. The glyphs are large + distinct (§1ae "read as specks / hard to tell apart"). A real,
+     ≥44×44 button — accessible name + aria-expanded reflect state, keyboard, visible focus ring,
+     and its click stopPropagation()s so toggling never also toggles row selection. */
+  .row .expicon { width:58px; flex:0 0 58px; min-height:44px; display:flex; align-items:center;
+    justify-content:center; gap:5px; background:transparent; border:0; cursor:pointer; padding:0;
+    color:var(--ember-soft); border-radius:8px; }
+  .row .expicon .gtype { font-size:1.35rem; line-height:1; }
+  .row .expicon .gchev { font-size:0.85rem; line-height:1; color:var(--muted); }
+  .row .expicon:hover { color:var(--ink); background:var(--surface); }
+  .row .expicon:hover .gchev { color:var(--ink); }
+  .row .expicon:focus-visible { outline:2px solid var(--ember); outline-offset:-2px; }
 
   /* ---- recurring series (S6) ---- */
   .row.seriesrow { background:var(--surface-2); }
-  .row.seriesrow .date { color:var(--ember-soft); font-size:0.95rem; }
   /* expanded group members (S1/§1s): a deeper inset + a soft left spine so the group reads
      as one block. The per-row spines abut into a continuous rule down the expanded group. */
   .row.subrow { padding-left:42px; position:relative; }
   .row.subrow::before { content:""; position:absolute; left:22px; top:0; bottom:0; width:2px;
     background:var(--ember-soft); opacity:0.55; }
   .row.subrow .date { color:var(--muted); }
-  .selbar { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:10px 0 12px; flex-wrap:wrap;
+  /* selection bar (§1af): the actions get their OWN right-aligned track that never moves as the
+     count changes; the label is allowed to shrink (never to push the actions). Wide: label LEFT,
+     actions RIGHT on one line. Narrow (≤560px, iPhone): the label sits on its OWN line ABOVE a
+     right-aligned action row — a layout that HOLDS instead of the old two-line wrap. The label
+     reserves a fixed height (one line wide, up to two lines narrow) so the BAR HEIGHT stays
+     constant as the selection count changes. */
+  .selbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:10px 0 12px; flex-wrap:nowrap;
     background:var(--surface-2); border:1px solid var(--ember); border-radius:11px; padding:10px 14px; position:sticky; top:8px; z-index:5; }
-  .selbar .sl { color:var(--ink); font-size:0.85rem; font-weight:600; }
+  .selbar .sl { color:var(--ink); font-size:0.85rem; font-weight:600; flex:1 1 auto; min-width:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  @media (max-width:560px) {
+    .selbar { flex-direction:column; align-items:stretch; gap:8px; }
+    .selbar .sl { flex:none; white-space:normal; text-overflow:clip; line-height:1.3; height:2.6em;
+      display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+    .selbar .selacts { justify-content:flex-end; }
+  }
   .duestrip, .autostrip { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
     border-radius:11px; padding:10px 14px; margin-bottom:10px; }
   .duestrip { background:rgba(217,138,78,0.14); border:1px solid var(--ember); }
@@ -567,17 +623,18 @@
       <div id="savings"></div>
     </div>
 
-    <!-- Second row (S1/§1r): Deductible keeps its full label + note, now beside Donations logged. -->
+    <!-- Second row: Donations logged (white count) LEFT, Deductible (green currency) RIGHT (S5/§1aj —
+         swapped; presentation only, both headline numbers still always shown, SPEC §2A unchanged). -->
     <div class="stats">
-      <div class="stat ded">
-        <div class="lab">Deductible this year</div>
-        <div id="dedVal" class="val">$0</div>
-        <div class="note">Direct gifts + contributions <em>into</em> your DAF. Grants out are excluded.</div>
-      </div>
       <div class="stat">
         <div class="lab">Donations logged</div>
         <div id="cntVal" class="val">0</div>
         <div class="note" id="lastCharityNote">Log sheet defaults to your last charity.</div>
+      </div>
+      <div class="stat ded">
+        <div class="lab">Deductible this year</div>
+        <div id="dedVal" class="val">$0</div>
+        <div class="note">Direct gifts + contributions <em>into</em> your DAF. Grants out are excluded.</div>
       </div>
     </div>
 
@@ -597,6 +654,7 @@
           <button id="sortDir" title="Sort by date">Newest first ↓</button>
           <button id="grpDate" aria-pressed="true">By date</button>
           <button id="grpCharity" aria-pressed="false">By charity</button>
+          <button id="btnTotal" title="Every donation, all years">All years ⤢</button>
         </div>
       </div>
       <div id="receipt"></div>
@@ -750,6 +808,21 @@
       <div id="taxForm"></div>
     </div>
     <div id="settingsExtra"></div>
+  </div>
+</div>
+
+<!-- ============================== TOTAL GIVING SHEET (§1ai) ============================== -->
+<div id="totalGivingSheet" class="sheet" hidden>
+  <div class="sheet-top">
+    <h2>Total giving</h2>
+    <span class="spacer"></span>
+    <button id="btnTotalClose" class="iconbtn">Done</button>
+  </div>
+  <div class="sheet-body wide">
+    <p class="hint">Every donation you've logged, across every tax year. A giving record — <strong>not a tax
+      document</strong>. Tap a column to sort. The DAF split still governs the totals: <em>Given</em> counts
+      direct gifts + grants out of your DAF; <em>Deductible</em> counts direct gifts + contributions into it.</p>
+    <div id="tgWrap" class="tgwrap"></div>
   </div>
 </div>
 
@@ -1489,17 +1562,25 @@ function activeCharities(doc) {
 }
 
 // --- charity deletion (v0.7 / S3 / ARC §1ab) -------------------------------
-// Count every reference to a charity across the WHOLE document — donations (every tax year),
-// persisted inbox drafts (doc.inbox.pending[]), and series (doc.series[]). Pure + node-testable.
+// Every reference to a charity across the WHOLE document — donations (every tax year), persisted
+// inbox drafts (doc.inbox.pending[]), and series (doc.series[]). Pure + node-testable. The top-level
+// donations/inbox/series/total are COUNTS (the S3 contract); `records` additionally carries the
+// actual referencing objects so the delete refusal can NAME the blockers (date/amount/year) and
+// offer to jump to them (§1ah). Donation records are date-sorted (newest first) for display.
 function charityReferences(doc, id) {
-  var donations = 0, inbox = 0, series = 0;
+  var donations = [], inbox = [], series = [];
   var ds = Array.isArray(doc.donations) ? doc.donations : [];
-  for (var i = 0; i < ds.length; i++) if (ds[i] && ds[i].charity_id === id) donations++;
+  for (var i = 0; i < ds.length; i++) if (ds[i] && ds[i].charity_id === id) donations.push(ds[i]);
   var pend = (doc.inbox && Array.isArray(doc.inbox.pending)) ? doc.inbox.pending : [];
-  for (var j = 0; j < pend.length; j++) if (pend[j] && pend[j].charity_id === id) inbox++;
+  for (var j = 0; j < pend.length; j++) if (pend[j] && pend[j].charity_id === id) inbox.push(pend[j]);
   var srs = Array.isArray(doc.series) ? doc.series : [];
-  for (var k = 0; k < srs.length; k++) if (srs[k] && srs[k].charity_id === id) series++;
-  return { donations: donations, inbox: inbox, series: series, total: donations + inbox + series };
+  for (var k = 0; k < srs.length; k++) if (srs[k] && srs[k].charity_id === id) series.push(srs[k]);
+  donations.sort(compareByDate('desc'));
+  return {
+    donations: donations.length, inbox: inbox.length, series: series.length,
+    total: donations.length + inbox.length + series.length,
+    records: { donations: donations, inbox: inbox, series: series },
+  };
 }
 
 // Can a charity be PERMANENTLY deleted? Refused for the locked DAF sponsor (never deletable — the
@@ -1972,6 +2053,51 @@ function planPrefill(current, proposed) {
 }
 
 module.exports = { isBlank: isBlank, planPrefill: planPrefill };
+
+});
+
+/* ---- src/core/receiptgroups.js ---- */
+window.__def("src/core/receiptgroups.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * receiptgroups.js — the pure partition behind grouping the receipts list by
+ * deductibility (ARC §1ak): deductible first, non-deductible at the bottom.
+ *
+ * It operates on the UI "entries" produced by toEntries (a single donation, a
+ * recurring/ad-hoc series group, or the automatic display-only "Donations made
+ * via DAF" group) and splits them into two ordered buckets WITHOUT dropping,
+ * duplicating, or reordering within a bucket — so it changes only the visual
+ * order, never any total, chart series or export value (same invariant as §1p).
+ * Pure + node-testable.
+ * ========================================================================== */
+
+var model = require('./model.js');
+
+// The donations an entry represents (one for a single row; all members for a group).
+function entryDonations(e) {
+  if (!e) return [];
+  if (e.kind === 'single') return e.donation ? [e.donation] : [];
+  return Array.isArray(e.gifts) ? e.gifts : [];
+}
+
+// Is an entry deductible (→ top group)? The automatic DAF group is grants OUT and is never
+// deductible (→ bottom). Otherwise an entry is deductible if ANY of its donations is deductible
+// (a manually-excluded gift, §1i, or a daf_grant is not) — so a mostly-deductible series stays on
+// top while a purely-excluded/grant entry drops to the bottom.
+function entryDeductible(e) {
+  if (!e || e.kind === 'dafgroup') return false;
+  return entryDonations(e).some(function (d) { return model.deductibleOf(d) === true; });
+}
+
+// Split entries into { deductible, nondeductible }, STABLE within each bucket (so the caller's
+// existing date sort survives untouched). Every input entry lands in exactly one bucket.
+function partition(entries) {
+  var deductible = [], nondeductible = [];
+  (entries || []).forEach(function (e) { (entryDeductible(e) ? deductible : nondeductible).push(e); });
+  return { deductible: deductible, nondeductible: nondeductible };
+}
+
+module.exports = { entryDonations: entryDonations, entryDeductible: entryDeductible, partition: partition };
 
 });
 
@@ -2584,6 +2710,101 @@ module.exports = {
   bracketsFor: bracketsFor, standardDeduction: standardDeduction,
   marginalRate: marginalRate, taxComponents: taxComponents, estimateSavings: estimateSavings,
 };
+
+});
+
+/* ---- src/core/totalgiving.js ---- */
+window.__def("src/core/totalgiving.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * totalgiving.js — the pure model behind the all-years "Total giving" table
+ * (ARC §1ai). It is a READING view of the same donations the dashboard totals,
+ * NOT a second source of truth: every row is one donation from the document, and
+ * the DAF split governs what any total means (Given uses countsForGiving,
+ * Deductible uses deductibleOf) — identical to model.dashboardTotals. The
+ * invariant test asserts the rows ARE the document's donations and that per-year
+ * sums reconcile with dashboardTotals.
+ * ========================================================================== */
+
+var model = require('./model.js');
+
+// One row per donation, across EVERY tax year. `counts_giving`/`deductible` are the SAME gates the
+// dashboard uses, so any total computed from these rows matches the dashboard for the same scope.
+function buildRows(doc) {
+  var ds = Array.isArray(doc && doc.donations) ? doc.donations : [];
+  return ds.map(function (d) {
+    var c = model.charityById(doc, d.charity_id);
+    return {
+      id: d.id,
+      date: d.date || '',
+      tax_year: (d.tax_year != null) ? Number(d.tax_year) : null,
+      charity_id: d.charity_id || null,
+      charity_name: c ? c.name : '—',
+      type: d.type,
+      amount: Number(d.amount) || 0,
+      deductible: model.deductibleOf(d) === true,
+      counts_giving: model.countsForGiving(d),
+    };
+  });
+}
+
+var COLLATOR = { compare: function (a, b) { return String(a).localeCompare(String(b)); } };
+// Value used to sort each column. Missing dates sort last in BOTH directions is handled in sortRows.
+function keyOf(row, key) {
+  switch (key) {
+    case 'charity': return String(row.charity_name || '').toLowerCase();
+    case 'type': return String(row.type || '');
+    case 'amount': return Number(row.amount) || 0;
+    case 'deductible': return row.deductible ? 1 : 0;
+    case 'year': return row.tax_year == null ? -Infinity : row.tax_year;
+    case 'date': default: return String(row.date || '');
+  }
+}
+
+// Stable sort by one column. dir 'asc'|'desc'. A blank date always sorts LAST in both directions
+// (mirrors model.compareByDate). Returns a NEW array; never mutates the input.
+function sortRows(rows, key, dir) {
+  var sign = (dir === 'asc') ? 1 : -1;
+  var withIdx = rows.map(function (r, i) { return { r: r, i: i }; });
+  withIdx.sort(function (A, B) {
+    if (key === 'date') {
+      var da = A.r.date || '', db = B.r.date || '';
+      if (!da && !db) return A.i - B.i;
+      if (!da) return 1;               // blank date last, both directions
+      if (!db) return -1;
+      if (da === db) return A.i - B.i; // stable
+      return da < db ? -sign : sign;
+    }
+    var ka = keyOf(A.r, key), kb = keyOf(B.r, key);
+    var cmp;
+    if (typeof ka === 'number' && typeof kb === 'number') cmp = ka - kb;
+    else cmp = COLLATOR.compare(ka, kb);
+    if (cmp === 0) return A.i - B.i;   // stable tie-break by original order
+    return cmp * sign;
+  });
+  return withIdx.map(function (x) { return x.r; });
+}
+
+// Totals over a set of rows: Given (Σ counts_giving amounts) + Deductible (Σ deductible amounts).
+// Used for the table footer AND the reconciliation invariant.
+function totals(rows) {
+  var given = 0, deductible = 0;
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    if (r.counts_giving) given += (Number(r.amount) || 0);
+    if (r.deductible) deductible += (Number(r.amount) || 0);
+  }
+  return { given: Math.round(given * 100) / 100, deductible: Math.round(deductible * 100) / 100, count: rows.length };
+}
+
+// Distinct tax years present, newest first (for a legend / any future filter).
+function years(rows) {
+  var seen = {};
+  rows.forEach(function (r) { if (r.tax_year != null) seen[r.tax_year] = true; });
+  return Object.keys(seen).map(Number).sort(function (a, b) { return b - a; });
+}
+
+module.exports = { buildRows: buildRows, sortRows: sortRows, totals: totals, years: years, keyOf: keyOf };
 
 });
 
@@ -6099,11 +6320,13 @@ window.GT = {
   inbox:  window.__require('src/core/inbox.js'),
   series: window.__require('src/core/series.js'),
   dafgroup: window.__require('src/core/dafgroup.js'),
+  receiptgroups: window.__require('src/core/receiptgroups.js'),
   prefill: window.__require('src/core/prefill.js'),
   valueguide: window.__require('src/core/valueguide.js'),
   photoitems: window.__require('src/core/photoitems.js'),
   mediagate: window.__require('src/core/mediagate.js'),
   charts:  window.__require('src/core/charts.js'),
+  totalgiving: window.__require('src/core/totalgiving.js'),
   heartbeat: window.__require('src/core/heartbeat.js'),
   tax:    window.__require('src/core/tax.js'),
   review: window.__require('src/core/review.js'),
@@ -6135,7 +6358,7 @@ window.GT.exp = {
 (function(){
   'use strict';
   var GT = window.GT, M = GT.model, C = GT.client, X = GT.crypto, P = GT.propublica, V = GT.valueguide, T = GT.tax, S = GT.saver, RK = GT.rekey;
-  var Q = GT.queue, RV = GT.review, SEAL = GT.seal, F = GT.files, LF = GT.logform, IB = GT.inbox, SER = GT.series, HB = GT.heartbeat, PH = GT.photoitems, CH = GT.charts, MG = GT.mediagate, DG = GT.dafgroup, PF = GT.prefill;
+  var Q = GT.queue, RV = GT.review, SEAL = GT.seal, F = GT.files, LF = GT.logform, IB = GT.inbox, SER = GT.series, HB = GT.heartbeat, PH = GT.photoitems, CH = GT.charts, MG = GT.mediagate, DG = GT.dafgroup, PF = GT.prefill, TG = GT.totalgiving, RG = GT.receiptgroups;
   var LS = window.localStorage;
   var DOC_KEY = 'giving_doc_v1';
   var $ = function(id){ return document.getElementById(id); };
@@ -6147,6 +6370,7 @@ window.GT.exp = {
   var state = { cfg:null, doc:null, year:(new Date()).getFullYear(), charResults:[], group:'date', sortDir:readSortDir(), log:null,
     view:readView(), chartMeasure:readChartMeasure(),
     selected:{}, autoAdded:[], heartbeat:undefined,
+    tgSort:{ key:'date', dir:'desc' },
     inbox:{ drafts:[], unopenable:[], loading:false, pulledOnce:false } };
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(ch){
@@ -6413,23 +6637,27 @@ window.GT.exp = {
     return el;
   }
 
-  // A leading expand/collapse ICON for a group row (S2/§1aa). It sits to the LEFT of the group
-  // title (inside a .grouphead .who) so the .amtbtn holds ONLY the amount and group totals line
-  // up with every ordinary row's amount column. A real button: accessible name + aria-expanded
-  // reflect the open/closed state, keyboard-activatable, visible focus ring. Its click
-  // stopPropagation()s so toggling expansion never also toggles row selection.
-  function makeExpandIcon(){
+  // A leading expand/collapse control for a group row (§1ae). It lives IN the leading gutter (the
+  // date column's width), holding the type glyph (`↻` recurring · `◈` via-DAF) beside an expand
+  // chevron — both large + distinct. Because the gutter is the same width as the date column, the
+  // group's .who (built identically to a plain row's .who) starts on the SAME vertical line as
+  // every plain row's title, and the amounts stay aligned. A real, ≥44×44 button: accessible name
+  // + aria-expanded reflect the open/closed state, keyboard-activatable, visible focus ring. Its
+  // click stopPropagation()s so toggling expansion never also toggles row selection. (Class stays
+  // `expicon` — the v0.7/S2 contract — even though it now leads the gutter.)
+  function makeExpandIcon(glyph){
     var b=document.createElement('button'); b.type='button'; b.className='expicon';
-    b.textContent='▸'; b.setAttribute('aria-label','Expand'); b.setAttribute('aria-expanded','false');
+    b.setAttribute('aria-label','Expand'); b.setAttribute('aria-expanded','false');
+    var gt=document.createElement('span'); gt.className='gtype'; gt.textContent=glyph||'';
+    var gc=document.createElement('span'); gc.className='gchev'; gc.textContent='▸';
+    b.appendChild(gt); b.appendChild(gc);
     return b;
   }
-  // Build a .grouphead .who: the leading expand icon, then the title/subtitle stack.
-  function groupWho(exp, titleHtml, subtitle){
-    var who=document.createElement('span'); who.className='who grouphead';
-    who.appendChild(exp);
-    var txt=document.createElement('span'); txt.className='ghtext';
-    txt.innerHTML='<div class="nm">'+titleHtml+'</div><div class="ty">'+subtitle+'</div>';
-    who.appendChild(txt);
+  // Build a group row's .who — the SAME structure a plain donationRow's .who uses (.nm + .ty), so
+  // the title's left edge lines up exactly. The expand control is the SEPARATE leading gutter.
+  function groupWho(titleHtml, subtitle){
+    var who=document.createElement('span'); who.className='who';
+    who.innerHTML='<div class="nm">'+titleHtml+'</div><div class="ty">'+subtitle+'</div>';
     return who;
   }
   // Wire an expand icon to insert/remove the group's member rows after `row`. Members respect the
@@ -6437,7 +6665,7 @@ window.GT.exp = {
   function wireGroupExpand(row, exp, gifts){
     var subRows=[];
     function setOpen(open){
-      exp.textContent = open?'▾':'▸';
+      var gc=exp.querySelector('.gchev'); if(gc) gc.textContent = open?'▾':'▸';
       exp.setAttribute('aria-label', open?'Collapse':'Expand');
       exp.setAttribute('aria-expanded', open?'true':'false');
     }
@@ -6457,14 +6685,13 @@ window.GT.exp = {
     var total=gifts.reduce(function(s,g){ return s+(M.countsForGiving(g)?(Number(g.amount)||0):0); },0);
     var selKey='ser:'+seriesId, selected=!!state.selected[selKey];
     var row=document.createElement('div'); row.className='row seriesrow'+(selected?' selected':'');
-    var left=document.createElement('span'); left.className='date'; left.textContent='↻';
-    var exp=makeExpandIcon();   // navigation, always visible; leads the title
+    var exp=makeExpandIcon('↻');   // leading gutter: recurring glyph + chevron
     var badge= ser.type==='daf_grant' ? '<span class="badge via">via DAF</span>' : '';
-    var who=groupWho(exp, esc(c?c.name:'—')+badge, esc(seriesSubtitle(ser, gifts.length)));
+    var who=groupWho(esc(c?c.name:'—')+badge, esc(seriesSubtitle(ser, gifts.length)));
     var amtwrap=document.createElement('span'); amtwrap.className='amtbtn';
     var amt=document.createElement('span'); amt.className='amt'; amt.textContent=money(total);
     amtwrap.appendChild(amt);
-    row.appendChild(left); row.appendChild(who); row.appendChild(amtwrap);
+    row.appendChild(exp); row.appendChild(who); row.appendChild(amtwrap);
     card.appendChild(row);
     // tapping the series row body selects the WHOLE group (every gift joins the selection)
     var giftIds=gifts.map(function(g){ return g.id; });
@@ -6497,14 +6724,29 @@ window.GT.exp = {
     var ds=e.gifts.map(function(g){return g.date||'';}).filter(Boolean).sort();
     return state.sortDir==='asc' ? (ds[0]||'') : (ds[ds.length-1]||'');   // group rows sort by earliest/latest gift
   }
+  function appendOneEntry(card, e){
+    if(e.kind==='single') card.appendChild(donationRow(e.donation));
+    else if(e.kind==='dafgroup') appendDafGroupRow(card, e.gifts);
+    else appendSeriesRow(card, e.id, e.gifts);
+  }
+  // Receipts are grouped by deductibility — DEDUCTIBLE first, NON-DEDUCTIBLE at the bottom (S5/§1ak).
+  // The grouping is the OUTER key (pure RG.partition); the existing date sort applies WITHIN each
+  // group (partition is stable). Both views call this, so by-charity groups deductible-first too. The
+  // auto DAF group + any manually-excluded gift fall to the bottom. Presentation only — no total,
+  // chart series or export value changes (grouping never touches the document; invariant-tested).
   function appendEntries(card, rows, groupDaf){
     var entries=toEntries(rows, groupDaf);
     entries.sort(function(a,b){ return M.compareByDate(state.sortDir)({date:entryDate(a)},{date:entryDate(b)}); });
-    entries.forEach(function(e){
-      if(e.kind==='single') card.appendChild(donationRow(e.donation));
-      else if(e.kind==='dafgroup') appendDafGroupRow(card, e.gifts);
-      else appendSeriesRow(card, e.id, e.gifts);
-    });
+    var part=RG.partition(entries);
+    var both = part.deductible.length>0 && part.nondeductible.length>0;   // headings only when both exist
+    if(part.deductible.length){
+      if(both){ var hd=document.createElement('div'); hd.className='dedhead'; hd.textContent='Deductible'; card.appendChild(hd); }
+      part.deductible.forEach(function(e){ appendOneEntry(card, e); });
+    }
+    if(part.nondeductible.length){
+      if(both){ var hn=document.createElement('div'); hn.className='dedhead nd'; hn.textContent='Non-deductible'; card.appendChild(hn); }
+      part.nondeductible.forEach(function(e){ appendOneEntry(card, e); });
+    }
   }
   // The automatic "Donations made via DAF" group (S3/§1p): ONE collapsed, expandable row for all
   // loose grants in the year. Display-only — its total is Σ countsForGiving grants (never a
@@ -6517,14 +6759,13 @@ window.GT.exp = {
     // child grant rows) and the SAME "via DAF · not deductible" pill the grant rows show. Numbers
     // are unchanged; presentation only.
     var row=document.createElement('div'); row.className='row seriesrow nondeduct';
-    var left=document.createElement('span'); left.className='date'; left.textContent='◈';
-    var exp=makeExpandIcon();   // navigation; the group is not selectable
-    var who=groupWho(exp, 'Donations made via DAF<span class="badge via">via DAF · not deductible</span>',
+    var exp=makeExpandIcon('◈');   // leading gutter: via-DAF glyph + chevron; the group is not selectable
+    var who=groupWho('Donations made via DAF<span class="badge via">via DAF · not deductible</span>',
       gifts.length+' grant'+(gifts.length>1?'s':'')+' out');
     var amtwrap=document.createElement('span'); amtwrap.className='amtbtn';
     var amt=document.createElement('span'); amt.className='amt'; amt.textContent=money(total);
     amtwrap.appendChild(amt);
-    row.appendChild(left); row.appendChild(who); row.appendChild(amtwrap);
+    row.appendChild(exp); row.appendChild(who); row.appendChild(amtwrap);
     card.appendChild(row);
     wireGroupExpand(row, exp, gifts);
   }
@@ -6683,6 +6924,77 @@ window.GT.exp = {
       appendEntries(card, rows, true);           // by-date: fold loose grants into the auto "Donations made via DAF" group (S3)
       box.appendChild(card);
     }
+  }
+
+  // ================= Total giving table (S4/§1ai) — all donations, all years =================
+  // A READING view of the same donations the dashboard totals — NOT a second source of truth. The
+  // rows ARE the document's donations; the DAF split still governs the footer totals (via the pure
+  // TG.totals, which uses countsForGiving / deductibleOf). Sortable by column; scrolls horizontally.
+  var TG_COLS = [
+    { key:'date', label:'Date' },
+    { key:'charity', label:'Charity', cls:'charity' },
+    { key:'type', label:'Type' },
+    { key:'amount', label:'Amount', cls:'num' },
+    { key:'deductible', label:'Deductible?' },
+    { key:'year', label:'Tax year', cls:'num' },
+  ];
+  function openTotalGiving(){ if(!state.doc) return; $('totalGivingSheet').hidden=false; renderTotalGiving(); }
+  function closeTotalGiving(){ $('totalGivingSheet').hidden=true; }
+  function setTgSort(key){
+    if(state.tgSort.key===key) state.tgSort.dir = state.tgSort.dir==='asc'?'desc':'asc';
+    else state.tgSort = { key:key, dir: key==='amount'||key==='year'||key==='date' ? 'desc' : 'asc' };
+    renderTotalGiving();
+  }
+  function renderTotalGiving(){
+    var wrap=$('tgWrap'); if(!wrap) return;
+    var rows=TG.sortRows(TG.buildRows(state.doc), state.tgSort.key, state.tgSort.dir);
+    if(!rows.length){ wrap.innerHTML='<div class="tgempty">No donations logged yet.</div>'; return; }
+    var tot=TG.totals(rows);
+    var arrow=state.tgSort.dir==='asc'?'▲':'▼';
+    var head=TG_COLS.map(function(c){
+      var on=state.tgSort.key===c.key;
+      return '<th'+(c.cls?' class="'+c.cls+'"':'')+' role="button" tabindex="0" data-k="'+c.key+'"'
+        +(on?' aria-sort="'+(state.tgSort.dir==='asc'?'ascending':'descending')+'"':'')+'>'
+        +esc(c.label)+(on?'<span class="dir">'+arrow+'</span>':'')+'</th>';
+    }).join('');
+    var body=rows.map(function(r){
+      return '<tr data-don="'+esc(r.id)+'">'
+        +'<td>'+esc(r.date||'—')+'</td>'
+        +'<td class="charity">'+esc(r.charity_name)+'</td>'
+        +'<td>'+esc(tgTypeLabel(r.type))+'</td>'
+        +'<td class="num">'+money(r.amount)+'</td>'
+        +'<td class="'+(r.deductible?'ded-y':'ded-n')+'">'+(r.deductible?'Yes':(r.counts_giving?'No':'No · into DAF'))+'</td>'
+        +'<td class="num">'+(r.tax_year==null?'—':r.tax_year)+'</td>'
+        +'</tr>';
+    }).join('');
+    var foot='<tr><td class="lbl" colspan="3">'+rows.length+' donation'+(rows.length>1?'s':'')+' · all years</td>'
+      +'<td class="num" title="Given (direct gifts + grants out of your DAF)">'+money(tot.given)+'</td>'
+      +'<td class="ded-y num" title="Deductible (direct gifts + contributions into your DAF)">'+money(tot.deductible)+'</td>'
+      +'<td></td></tr>';
+    wrap.innerHTML='<table class="tgtable"><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody>'
+      +'<tfoot>'+foot+'</tfoot></table>';
+    wrap.querySelectorAll('thead th').forEach(function(th){
+      var k=th.getAttribute('data-k');
+      th.addEventListener('click', function(){ setTgSort(k); });
+      th.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setTgSort(k); } });
+    });
+    wrap.querySelectorAll('tbody tr').forEach(function(tr){
+      tr.addEventListener('click', function(){ jumpToDonation(tr.getAttribute('data-don')); });
+    });
+  }
+  // A plain, UI-side label for the table's Type column (mirrors typeLabel's words, no per-row detail).
+  function tgTypeLabel(t){
+    return t==='daf_grant' ? 'Grant via DAF' : t==='money' ? 'Cash' : t==='items' ? 'Items'
+      : t==='stock' ? 'Stock' : t==='mileage' ? 'Mileage' : t;
+  }
+  // Jump from a table row (or a delete-refusal blocker) straight to editing that donation: close any
+  // open sheet, switch to the donation's tax year + the list view, then open its log editor.
+  function jumpToDonation(id){
+    var d=M.donationById(state.doc, id); if(!d) return;
+    closeTotalGiving(); closeCharities();
+    if(d.tax_year!=null) state.year=Number(d.tax_year);
+    if(state.view!=='list'){ setView('list'); } else { render(); }
+    openLog(logKeyFor(d), d.id);
   }
 
   // ---- recurring: due strips, selection bar, editor sheet, auto-add (S6) ----
@@ -7039,8 +7351,18 @@ window.GT.exp = {
     toast('Added '+saved.name);
   }
 
+  // Names shared by more than one charity record (§1ah): a receipt row shows only the name, so two
+  // same-named records are otherwise indistinguishable — the source of the un-findable-blocker bug.
+  var charDupNames = {};
+  function computeCharDupNames(){
+    var counts={}; charDupNames={};
+    (state.doc.charities||[]).forEach(function(c){ var k=String(c.name||'').trim().toLowerCase(); if(k) counts[k]=(counts[k]||0)+1; });
+    Object.keys(counts).forEach(function(k){ if(counts[k]>1) charDupNames[k]=true; });
+  }
+  function isDupName(c){ return !!charDupNames[String(c.name||'').trim().toLowerCase()]; }
   function renderCharList(){
     var box=$('charList'); if(!box) return;
+    computeCharDupNames();
     var all=(state.doc.charities||[]).slice().sort(function(a,b){
       if(!!a.archived!==!!b.archived) return a.archived?1:-1;                 // active first
       if(!!a.is_daf_sponsor!==!!b.is_daf_sponsor) return a.is_daf_sponsor?-1:1; // sponsor pinned
@@ -7059,9 +7381,15 @@ window.GT.exp = {
 
   function charRow(c){
     var el=document.createElement('div'); el.className='cresult'+(c.archived?' archived':'');
-    el.innerHTML='<div class="info"><div class="nm">'+esc(c.name)
+    // §1ah: flag a shared name and ALWAYS show the EIN (or "no EIN") so two same-named records are
+    // told apart at a glance — the gap that made the blocking-donation invisible.
+    var dup = isDupName(c) && !c.locked ? ' <span class="cbadge dup">duplicate name</span>' : '';
+    var einBit = c.ein ? 'EIN '+esc(c.ein) : 'no EIN';
+    var meta = (charMeta(c) || einBit);
+    if(!c.ein && charMeta(c)) meta = charMeta(c)+' · no EIN';   // charMeta omits EIN when absent
+    el.innerHTML='<div class="info"><div class="nm">'+esc(c.name)+dup
       + (c.archived?' <span class="cbadge arch">Archived</span>':'')+'</div>'
-      + '<div class="meta">'+(charMeta(c)||'—')+' '+charBadge(c)+'</div></div>';
+      + '<div class="meta">'+meta+' '+charBadge(c)+'</div></div>';
     if(c.locked){
       var lk=document.createElement('span'); lk.className='cbadge daf'; lk.textContent='locked';
       el.appendChild(lk); return el;
@@ -7089,15 +7417,51 @@ window.GT.exp = {
     var dec=M.canDeleteCharity(state.doc, c.id);
     if(!dec.ok){
       if(dec.reason==='locked'){ toast(c.name+' can’t be deleted — it’s the locked DAF sponsor.', true); return; }
-      var r=dec.refs, parts=[];
-      if(r.donations) parts.push(r.donations+' donation'+(r.donations>1?'s':''));
-      if(r.series) parts.push(r.series+' series');
-      if(r.inbox) parts.push(r.inbox+' review draft'+(r.inbox>1?'s':''));
-      toast(c.name+' is used by '+parts.join(', ')+' — archive it instead.', true);
+      showDeleteBlockers(c, dec);   // §1ah: NAME the blockers (date/amount/year) + offer to jump
       return;
     }
     if(!confirm('Permanently delete '+c.name+'? This can’t be undone.')) return;
     M.deleteCharity(state.doc, c.id); persistCharities(); toast('Deleted '+c.name);
+  }
+  // §1ah: a delete refusal must be ACTIONABLE — name each blocking donation (date/amount/tax year)
+  // and offer to jump straight to editing it (so Mark can re-point a same-named duplicate's gift and
+  // then delete the empty record), plus the series/inbox counts and an Archive-instead shortcut.
+  function showDeleteBlockers(c, dec){
+    var host=$('charList'); if(!host) return;
+    var old=document.getElementById('charBlockers'); if(old) old.remove();
+    var refs=dec.refs, recs=(refs.records)||{ donations:[], inbox:[], series:[] };
+    var bits=[];
+    if(refs.donations) bits.push(refs.donations+' donation'+(refs.donations>1?'s':''));
+    if(refs.series) bits.push(refs.series+' series');
+    if(refs.inbox) bits.push(refs.inbox+' review draft'+(refs.inbox>1?'s':''));
+    var p=document.createElement('div'); p.id='charBlockers'; p.className='blockers';
+    var h=document.createElement('div'); h.className='bh';
+    h.textContent='“'+c.name+'” can’t be deleted yet — it’s used by '+bits.join(', ')+'.';
+    p.appendChild(h);
+    if(recs.donations.length){
+      var note=document.createElement('div'); note.className='bnote';
+      note.textContent='Re-point each of these at the charity you’re keeping, then delete this one:';
+      p.appendChild(note);
+      var ul=document.createElement('ul');
+      recs.donations.forEach(function(d){
+        var li=document.createElement('li');
+        var meta=document.createElement('span'); meta.className='bmeta';
+        meta.textContent=(d.date||'no date')+' · '+money(d.amount)+' · '+tgTypeLabel(d.type)+' · '+(d.tax_year!=null?d.tax_year:'—');
+        var go=document.createElement('button'); go.className='btn sm ghost'; go.textContent='Go to';
+        go.addEventListener('click', function(){ jumpToDonation(d.id); });
+        li.appendChild(meta); li.appendChild(go); ul.appendChild(li);
+      });
+      p.appendChild(ul);
+    }
+    var acts=document.createElement('div'); acts.className='bacts';
+    var arch=document.createElement('button'); arch.className='btn sm'; arch.textContent='Archive instead';
+    arch.addEventListener('click', function(){ M.archiveCharity(state.doc, c.id, true); persistCharities(); toast('Archived '+c.name); });
+    var dismiss=document.createElement('button'); dismiss.className='btn sm ghost'; dismiss.textContent='Dismiss';
+    dismiss.addEventListener('click', function(){ p.remove(); });
+    acts.appendChild(arch); acts.appendChild(dismiss);
+    p.appendChild(acts);
+    host.parentNode.insertBefore(p, host);
+    p.scrollIntoView({ block:'nearest' });
   }
 
   function startEdit(c){
@@ -8687,6 +9051,8 @@ window.GT.exp = {
   $('lightbox').addEventListener('click', function(e){ if(e.target===$('lightbox')) closeLightbox(); });
   $('grpDate').addEventListener('click', function(){ setGroup('date'); });
   $('grpCharity').addEventListener('click', function(){ setGroup('charity'); });
+  $('btnTotal').addEventListener('click', openTotalGiving);
+  $('btnTotalClose').addEventListener('click', closeTotalGiving);
   $('viewList').addEventListener('click', function(){ setView('list'); });
   $('viewCharts').addEventListener('click', function(){ setView('charts'); });
   $('btnSettings').addEventListener('click', openSettings);
