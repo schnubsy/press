@@ -95,25 +95,34 @@
   .yearbar select { background:var(--surface); color:var(--ink); border:1px solid var(--line);
     border-radius:9px; padding:8px 12px; font-size:0.95rem; font-weight:600; }
   .yearbar .yearlab { color:var(--muted); font-size:0.85rem; font-weight:600; flex:0 0 auto; }
-  /* endless tax-year carousel (S5/§1y): a horizontally scrollable strip, several years visible,
-     opens centred on the current year, lazily extended both ways. touch-action:pan-x keeps a
-     vertical swipe scrolling the page on iPhone Safari (no vertical hijack). */
-  .yearstrip { flex:1; min-width:0; display:flex; gap:6px; overflow-x:auto; overflow-y:hidden;
-    padding:4px 2px; overscroll-behavior-x:contain; touch-action:pan-x;
-    -webkit-overflow-scrolling:touch; }
-  .yearstrip:focus-visible { outline:2px solid var(--ember); outline-offset:2px; border-radius:8px; }
-  .yearstrip::-webkit-scrollbar { height:6px; }
-  .yearstrip::-webkit-scrollbar-thumb { background:var(--line); border-radius:3px; }
-  .ychip { flex:0 0 auto; background:var(--surface-2); border:1px solid var(--line); color:var(--muted);
-    border-radius:9px; padding:7px 13px; font-family:var(--mono); font-size:0.85rem; font-weight:600;
-    cursor:pointer; position:relative; }
-  .ychip.hasdata { color:var(--ink); }                               /* a year with donations reads solid */
-  .ychip.hasdata::after { content:""; position:absolute; left:50%; bottom:3px; transform:translateX(-50%);
-    width:4px; height:4px; border-radius:50%; background:var(--ember); }
-  .ychip:not(.hasdata) { border-style:dashed; opacity:0.72; }        /* an empty year is visibly distinct */
-  .ychip.sel { color:var(--ink); background:var(--surface); border-color:var(--ember); box-shadow:inset 0 0 0 1px var(--ember); }
-  .ychip.sel:not(.hasdata) { opacity:1; }
-  .ychip:focus-visible { outline:2px solid var(--ember); outline-offset:1px; }
+  /* ---- year DIAL (S4/§1ac+§1ad): dial chrome COPIED VERBATIM from the approved mockup
+     (design/year-dial-approved.html). Do not re-tune — three earlier attempts went wrong there.
+     Horizontal only; sine spacing + scale/fade carry depth; touch-action:pan-y so a horizontal
+     spin never steals the page's vertical scroll on iPhone Safari (load-bearing, §1y). The ONLY
+     deviation: the year-node dim is scoped as `.yr.empty` (not the mockup's bare `.empty`) so it
+     never clobbers the app's existing `.empty` empty-state panel. `.dial` is flex:1 in the
+     yearbar (in the mockup it sat in a block section). */
+  .dial{flex:1;min-width:0;position:relative;display:flex;align-items:center;gap:6px;
+        background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:8px 6px}
+  .stage{flex:1 1 auto;position:relative;overflow:hidden;height:74px;
+         display:flex;align-items:center;justify-content:center;perspective:520px;
+         cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+  .stage.drag{cursor:grabbing}
+  .stage:focus-visible{outline:2px solid var(--ember);outline-offset:3px;border-radius:10px}
+  .stage::before,.stage::after{content:"";position:absolute;top:0;bottom:0;width:46px;z-index:3;
+                               pointer-events:none}
+  .stage::before{left:0;background:linear-gradient(to right,var(--surface-2),transparent)}
+  .stage::after{right:0;background:linear-gradient(to left,var(--surface-2),transparent)}
+  .yr{position:absolute;font-family:var(--serif);font-weight:600;color:var(--muted);
+      background:none;border:0;padding:0;cursor:pointer;white-space:nowrap;
+      transition:transform .34s cubic-bezier(.22,.61,.36,1),opacity .34s,color .34s,font-size .34s}
+  .yr:focus-visible{outline:2px solid var(--ember);outline-offset:4px;border-radius:6px}
+  .yr.sel{color:var(--ink)}
+  .yr.empty{color:var(--muted);opacity:.55}                          /* a year with NO donations stays dimmed */
+  .rule{position:absolute;left:0;right:0;bottom:12px;height:1px;background:var(--line);z-index:0}
+  .pip{position:absolute;bottom:8px;left:50%;width:1px;height:9px;background:var(--ember);z-index:2}
+  @media (prefers-reduced-motion: reduce){ .yr{transition:none} }
+  @media (max-width:430px){ .stage{height:66px} }
 
   .hero { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:26px 24px; margin-bottom:16px; }
   .hero .lab { color:var(--muted); font-size:0.85rem; letter-spacing:0.03em; text-transform:uppercase; }
@@ -281,6 +290,15 @@
   .row.seriesrow.selected { background:rgba(217,138,78,0.18); }
   .selacts { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
   .selacts button:disabled { opacity:0.4; cursor:not-allowed; }
+  /* leading expand/collapse icon on a group row (S2/§1aa): sits to the LEFT of the group title
+     so the amount column lines up across grouped and ungrouped rows alike (the amount is the
+     only thing in .amtbtn now). A real button — accessible name + aria-expanded reflect state. */
+  .who.grouphead { display:flex; align-items:center; gap:8px; }
+  .who.grouphead .ghtext { flex:1; min-width:0; }
+  .expicon { flex:0 0 auto; background:transparent; border:0; color:var(--ember-soft); cursor:pointer;
+    font-size:0.82rem; line-height:1; padding:3px 6px; border-radius:6px; }
+  .expicon:hover { color:var(--ink); }
+  .expicon:focus-visible { outline:2px solid var(--ember); outline-offset:2px; }
 
   /* ---- recurring series (S6) ---- */
   .row.seriesrow { background:var(--surface-2); }
@@ -528,7 +546,13 @@
     <div id="captureWarn" class="capwarn" hidden></div>
     <div class="yearbar">
       <span class="yearlab" id="yearStripLab">Tax year</span>
-      <div id="yearStrip" class="yearstrip" role="tablist" aria-labelledby="yearStripLab" tabindex="0"></div>
+      <!-- Horizontal year DIAL (S4/§1ac+§1ad). Built on the approved mockup
+           (design/year-dial-approved.html); no scroll container, so the strip can never re-anchor. -->
+      <div class="dial">
+        <div class="stage" id="yearStage" tabindex="0" role="listbox" aria-labelledby="yearStripLab">
+          <div class="rule"></div><div class="pip"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Top line (S1/§1r): two equal-weight boxes side by side — Given + Estimated tax savings;
@@ -1464,6 +1488,43 @@ function activeCharities(doc) {
   return (doc.charities || []).filter(function (c) { return !c.archived; });
 }
 
+// --- charity deletion (v0.7 / S3 / ARC §1ab) -------------------------------
+// Count every reference to a charity across the WHOLE document — donations (every tax year),
+// persisted inbox drafts (doc.inbox.pending[]), and series (doc.series[]). Pure + node-testable.
+function charityReferences(doc, id) {
+  var donations = 0, inbox = 0, series = 0;
+  var ds = Array.isArray(doc.donations) ? doc.donations : [];
+  for (var i = 0; i < ds.length; i++) if (ds[i] && ds[i].charity_id === id) donations++;
+  var pend = (doc.inbox && Array.isArray(doc.inbox.pending)) ? doc.inbox.pending : [];
+  for (var j = 0; j < pend.length; j++) if (pend[j] && pend[j].charity_id === id) inbox++;
+  var srs = Array.isArray(doc.series) ? doc.series : [];
+  for (var k = 0; k < srs.length; k++) if (srs[k] && srs[k].charity_id === id) series++;
+  return { donations: donations, inbox: inbox, series: series, total: donations + inbox + series };
+}
+
+// Can a charity be PERMANENTLY deleted? Refused for the locked DAF sponsor (never deletable — the
+// Into-DAF path depends on it) and while ANYTHING still references it (a dangling charity_id would
+// orphan donations/drafts/series and break every export and the by-charity view — archive instead).
+// Returns { ok, reason: 'not_found'|'locked'|'referenced'|null, refs }.
+function canDeleteCharity(doc, id) {
+  var c = charityById(doc, id);
+  if (!c) return { ok: false, reason: 'not_found', refs: { donations: 0, inbox: 0, series: 0, total: 0 } };
+  var refs = charityReferences(doc, id);
+  if (c.is_daf_sponsor || c.locked) return { ok: false, reason: 'locked', refs: refs };
+  if (refs.total > 0) return { ok: false, reason: 'referenced', refs: refs };
+  return { ok: true, reason: null, refs: refs };
+}
+
+// Permanently delete an unreferenced charity. FAILS CLOSED: throws when canDeleteCharity refuses,
+// so a UI bug can never orphan a charity_id. Returns true when a row was removed.
+function deleteCharity(doc, id) {
+  var decision = canDeleteCharity(doc, id);
+  if (!decision.ok) throw new Error('cannot delete charity (' + decision.reason + '): ' + id);
+  var before = doc.charities.length;
+  doc.charities = doc.charities.filter(function (x) { return x.id !== id; });
+  return doc.charities.length < before;
+}
+
 // Derived deductibility: a DAF grant is NEVER deductible; otherwise honor an explicit
 // false, defaulting to true. (Charity-level deductibility layered in a later slice.)
 function deductibleOf(donation) {
@@ -1773,6 +1834,7 @@ module.exports = {
   normEin: normEin, charityKey: charityKey, findCharityByKey: findCharityByKey,
   upsertCharity: upsertCharity, updateCharity: updateCharity,
   archiveCharity: archiveCharity, activeCharities: activeCharities,
+  charityReferences: charityReferences, canDeleteCharity: canDeleteCharity, deleteCharity: deleteCharity,
   normalizeItemLine: normalizeItemLine, normalizeDonation: normalizeDonation,
   computeLongTerm: computeLongTerm, normalizeLot: normalizeLot, stockLots: stockLots,
   stockDeductibleValue: stockDeductibleValue, migrateDoc: migrateDoc,
@@ -6140,70 +6202,105 @@ window.GT.exp = {
   }
 
   // ---- render app ----
-  // Endless tax-year carousel (S5/§1y). A horizontally scrollable strip of year chips, generated
-  // lazily around state.year (never a big fixed range), extended both ways as it scrolls, and opened
-  // centred on the current year. A year WITH donations reads solid + carries a dot; an empty year is
-  // dashed + muted, so a far-off empty year reads as obviously empty, never as data loss. state.year
-  // and the render() wiring are unchanged — this is a control swap.
-  var YEAR_PAD = 6, yearBuilding = false, yearGuardUntil = 0;
+  // Horizontal year DIAL (S4 / §1ac + §1ad). The APPROVED design from
+  // design/year-dial-approved.html — its CSS constants, place() and pointer handling are copied
+  // VERBATIM (three earlier attempts went wrong by re-deriving them). Years sit on ONE line; sine
+  // spacing + scale/fade carry the depth; nothing moves vertically. Distances are ALWAYS whole
+  // years — dragging changes only WHICH year is centred, never HOW the years are laid out.
+  //   §1ac (centring invariant): the selected year is generated at the CENTRE every render, and
+  //   there is NO scroll container at all — so the endless-strip re-anchoring that made the old
+  //   carousel "shift completely" cannot happen. Selected year is always highlighted, always centred.
+  //   Empty years stay dimmed (.yr.empty) so a far-off empty year never reads as data loss.
+  //   state.year + the render() wiring are unchanged — this is a control swap, not a data change.
+  var DIAL_SPAN = 5, DIAL_PX_PER_YEAR = 52, DIAL_FLICK_MAX = 3, DIAL_DEAD_ZONE = 22;
+  var dialNodes = {}, dialWired = false;
+  var dialDrag = false, dialStartX = 0, dialStartSel = 0, dialLastX = 0, dialLastT = 0, dialVel = 0, dialMoved = false;
   function yearsWithData(){ var s={}; (state.doc.donations||[]).forEach(function(d){ if(d.tax_year!=null) s[Number(d.tax_year)]=true; }); return s; }
-  function buildYearStrip(preserve){
-    var strip=$('yearStrip'); if(!strip) return;
-    var w=state.yearWindow, has=yearsWithData();
-    var prevLeft=strip.scrollLeft, prevWidth=strip.scrollWidth;
-    yearBuilding=true;
-    strip.innerHTML='';
-    for(var y=w.min; y<=w.max; y++){
-      var b=document.createElement('button'); b.type='button';
-      b.className='ychip'+(y===state.year?' sel':'')+(has[y]?' hasdata':'');
-      b.setAttribute('data-year', String(y)); b.setAttribute('role','tab');
-      b.setAttribute('aria-selected', y===state.year?'true':'false');
-      b.tabIndex = (y===state.year)?0:-1;
-      b.textContent=String(y);
-      (function(yy){ b.addEventListener('click', function(){ selectYear(yy); }); })(y);
-      strip.appendChild(b);
+
+  // placement: HORIZONTAL ONLY. Verbatim from the approved mockup. Distances are always whole years.
+  function dialPlace(n, d, ad){
+    var step = 17, r = 300;
+    var ang = d * step * Math.PI / 180;
+    var x = Math.sin(ang) * r;
+    var s = Math.max(0.42, 1 - ad * 0.17);
+    n.style.fontSize = '2.05rem';
+    n.style.transform = 'translateX(' + x.toFixed(1) + 'px) scale(' + s.toFixed(3) + ')';
+    n.style.opacity = Math.max(0, 1 - ad * 0.21).toFixed(2);
+  }
+  // Lay the year window (state.year ± SPAN) onto the stage; reuse cached nodes so a drag/render
+  // never destroys the stage or its pointer capture. No per-button click handler — the tap is
+  // resolved in dialEndDrag (setPointerCapture retargets `click` away from the child buttons).
+  function dialRender(){
+    var stage=$('yearStage'); if(!stage) return;
+    var sel=state.year, has=yearsWithData();
+    for (var y = sel - DIAL_SPAN; y <= sel + DIAL_SPAN; y++){
+      if (!dialNodes[y]){
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'yr'; b.textContent = y;
+        b.setAttribute('role','option');
+        dialNodes[y] = b; stage.appendChild(b);
+      }
     }
-    if(preserve==='left'){ strip.scrollLeft = prevLeft + (strip.scrollWidth - prevWidth); }
-    yearBuilding=false; yearGuardUntil=Date.now()+200;   // ignore the scroll events this rebuild causes
-  }
-  function centerYear(){ var strip=$('yearStrip'); if(!strip) return; var sel=strip.querySelector('.ychip.sel');
-    if(sel){ strip.scrollLeft = sel.offsetLeft - (strip.clientWidth/2) + (sel.offsetWidth/2); yearGuardUntil=Date.now()+200; } }
-  function focusSelectedYear(){ var strip=$('yearStrip'); if(!strip) return; var sel=strip.querySelector('.ychip.sel'); if(sel) try{ sel.focus(); }catch(e){} }
-  function selectYear(y){ state.year=Number(y); render(); centerYear(); }
-  function initYearStrip(){
-    var strip=$('yearStrip'); if(!strip || strip._wired) { syncYearStrip(); return; }
-    state.yearWindow = { min: state.year-YEAR_PAD, max: state.year+YEAR_PAD };
-    buildYearStrip(); centerYear();
-    strip.addEventListener('scroll', function(){
-      if(yearBuilding || Date.now() < yearGuardUntil) return;   // ignore programmatic scrolls (center / rebuild)
-      if(strip.scrollLeft < 48){ state.yearWindow.min -= YEAR_PAD; buildYearStrip('left'); }
-      else if(strip.scrollLeft + strip.clientWidth > strip.scrollWidth - 48){ state.yearWindow.max += YEAR_PAD; buildYearStrip(); }
+    Object.keys(dialNodes).forEach(function(k){
+      var y = Number(k), n = dialNodes[k], d = y - sel, ad = Math.abs(d);
+      if (ad > DIAL_SPAN){ n.style.opacity = 0; n.style.pointerEvents = 'none'; return; }
+      n.style.pointerEvents = ad > DIAL_SPAN - 1 ? 'none' : 'auto';
+      n.classList.toggle('sel', d === 0);
+      n.classList.toggle('empty', !has[y]);
+      n.setAttribute('aria-selected', d === 0 ? 'true' : 'false');
+      n.tabIndex = d === 0 ? 0 : -1;
+      dialPlace(n, d, ad);
     });
-    strip.addEventListener('keydown', function(e){
-      if(e.key==='ArrowRight'){ e.preventDefault(); selectYear(state.year+1); focusSelectedYear(); }
-      else if(e.key==='ArrowLeft'){ e.preventDefault(); selectYear(state.year-1); focusSelectedYear(); }
-    });
-    strip._wired = true;
   }
-  // Called every render: keep the window covering state.year and refresh chip state without
-  // resetting the user's scroll position (a plain render must not recentre the strip).
-  function syncYearStrip(){
-    var strip=$('yearStrip'); if(!strip) return;
-    if(!strip._wired){ initYearStrip(); return; }
-    if(!state.yearWindow) state.yearWindow={ min:state.year-YEAR_PAD, max:state.year+YEAR_PAD };
-    if(state.year < state.yearWindow.min || state.year > state.yearWindow.max){
-      state.yearWindow.min=Math.min(state.yearWindow.min, state.year-YEAR_PAD);
-      state.yearWindow.max=Math.max(state.yearWindow.max, state.year+YEAR_PAD);
-      buildYearStrip(); centerYear(); return;
+  function selectYear(y){ state.year=Number(y); render(); }   // render() -> fillYears() -> dialRender()
+
+  // grab and spin: steps the selection in WHOLE years, so layout never changes shape (§1ad RULE).
+  function initYearDial(){
+    var stage=$('yearStage'); if(!stage){ return; }
+    if(dialWired){ dialRender(); return; }
+    stage.addEventListener('pointerdown', function(e){
+      dialDrag = true; dialMoved = false;
+      dialStartX = dialLastX = e.clientX; dialStartSel = state.year; dialLastT = e.timeStamp; dialVel = 0;
+      stage.classList.add('drag');
+      stage.setPointerCapture(e.pointerId);
+    });
+    stage.addEventListener('pointermove', function(e){
+      if (!dialDrag) return;
+      var dx = e.clientX - dialStartX;
+      if (Math.abs(dx) > 4) dialMoved = true;
+      var dt = Math.max(1, e.timeStamp - dialLastT);
+      dialVel = (e.clientX - dialLastX) / dt;                     // px per ms
+      dialLastX = e.clientX; dialLastT = e.timeStamp;
+      var target = dialStartSel - Math.round(dx / DIAL_PX_PER_YEAR);   // drag right -> earlier years
+      if (target !== state.year) selectYear(target);
+    });
+    function dialEndDrag(e){
+      if (!dialDrag) return;
+      dialDrag = false;
+      stage.classList.remove('drag');
+      try { stage.releasePointerCapture(e.pointerId); } catch(err){}
+      if (!dialMoved){
+        // A TAP, not a drag: step ONE year in the direction of the tap, wherever it landed.
+        var r = stage.getBoundingClientRect();
+        var dx = e.clientX - (r.left + r.width / 2);
+        if (dx > DIAL_DEAD_ZONE) selectYear(state.year + 1);
+        else if (dx < -DIAL_DEAD_ZONE) selectYear(state.year - 1);
+        return;
+      }
+      var flick = Math.max(-DIAL_FLICK_MAX, Math.min(DIAL_FLICK_MAX, Math.round(-dialVel * 9)));
+      if (flick) selectYear(state.year + flick);
+      setTimeout(function(){ dialMoved = false; }, 0);
     }
-    var has=yearsWithData();
-    [].forEach.call(strip.children, function(b){
-      var y=Number(b.getAttribute('data-year')); var sel=(y===state.year);
-      b.classList.toggle('sel', sel); b.setAttribute('aria-selected', sel?'true':'false');
-      b.tabIndex = sel?0:-1; b.classList.toggle('hasdata', !!has[y]);
+    stage.addEventListener('pointerup', dialEndDrag);
+    stage.addEventListener('pointercancel', dialEndDrag);
+    stage.addEventListener('keydown', function(e){
+      if (e.key === 'ArrowLeft'){ e.preventDefault(); selectYear(state.year - 1); }
+      if (e.key === 'ArrowRight'){ e.preventDefault(); selectYear(state.year + 1); }
     });
+    dialWired = true;
+    dialRender();
   }
-  function fillYears(){ syncYearStrip(); }   // render() hook — name kept for the call site
+  function fillYears(){ initYearDial(); }   // render() hook — first call wires the dial, later calls re-lay it
 
   function typeLabel(d){
     if(d.type==='daf_grant') return 'Grant via DAF';
@@ -6316,6 +6413,42 @@ window.GT.exp = {
     return el;
   }
 
+  // A leading expand/collapse ICON for a group row (S2/§1aa). It sits to the LEFT of the group
+  // title (inside a .grouphead .who) so the .amtbtn holds ONLY the amount and group totals line
+  // up with every ordinary row's amount column. A real button: accessible name + aria-expanded
+  // reflect the open/closed state, keyboard-activatable, visible focus ring. Its click
+  // stopPropagation()s so toggling expansion never also toggles row selection.
+  function makeExpandIcon(){
+    var b=document.createElement('button'); b.type='button'; b.className='expicon';
+    b.textContent='▸'; b.setAttribute('aria-label','Expand'); b.setAttribute('aria-expanded','false');
+    return b;
+  }
+  // Build a .grouphead .who: the leading expand icon, then the title/subtitle stack.
+  function groupWho(exp, titleHtml, subtitle){
+    var who=document.createElement('span'); who.className='who grouphead';
+    who.appendChild(exp);
+    var txt=document.createElement('span'); txt.className='ghtext';
+    txt.innerHTML='<div class="nm">'+titleHtml+'</div><div class="ty">'+subtitle+'</div>';
+    who.appendChild(txt);
+    return who;
+  }
+  // Wire an expand icon to insert/remove the group's member rows after `row`. Members respect the
+  // S2 date sort and the S1 subrow indentation. Shared by all three group kinds.
+  function wireGroupExpand(row, exp, gifts){
+    var subRows=[];
+    function setOpen(open){
+      exp.textContent = open?'▾':'▸';
+      exp.setAttribute('aria-label', open?'Collapse':'Expand');
+      exp.setAttribute('aria-expanded', open?'true':'false');
+    }
+    exp.addEventListener('click', function(e){ e.stopPropagation();
+      if(subRows.length){ subRows.forEach(function(r){ r.remove(); }); subRows=[]; setOpen(false); return; }
+      var after=row;
+      gifts.slice().sort(M.compareByDate(state.sortDir)).forEach(function(g){ var r=donationRow(g); r.classList.add('subrow'); row.parentNode.insertBefore(r, after.nextSibling); after=r; subRows.push(r); });
+      setOpen(true);
+    });
+  }
+
   // A recurring series folds into ONE expandable summary row within the receipt card (S6).
   function appendSeriesRow(card, seriesId, gifts){
     var ser=SER.seriesById(state.doc, seriesId);
@@ -6325,27 +6458,18 @@ window.GT.exp = {
     var selKey='ser:'+seriesId, selected=!!state.selected[selKey];
     var row=document.createElement('div'); row.className='row seriesrow'+(selected?' selected':'');
     var left=document.createElement('span'); left.className='date'; left.textContent='↻';
-    var who=document.createElement('span'); who.className='who';
+    var exp=makeExpandIcon();   // navigation, always visible; leads the title
     var badge= ser.type==='daf_grant' ? '<span class="badge via">via DAF</span>' : '';
-    who.innerHTML='<div class="nm">'+esc(c?c.name:'—')+badge+'</div><div class="ty">'+esc(seriesSubtitle(ser, gifts.length))+'</div>';
+    var who=groupWho(exp, esc(c?c.name:'—')+badge, esc(seriesSubtitle(ser, gifts.length)));
     var amtwrap=document.createElement('span'); amtwrap.className='amtbtn';
     var amt=document.createElement('span'); amt.className='amt'; amt.textContent=money(total);
-    var acts=document.createElement('span'); acts.className='acts';
-    var exp=document.createElement('button'); exp.textContent='Expand ▸';   // navigation, always visible
-    acts.appendChild(exp);
-    amtwrap.appendChild(amt); amtwrap.appendChild(acts);
+    amtwrap.appendChild(amt);
     row.appendChild(left); row.appendChild(who); row.appendChild(amtwrap);
     card.appendChild(row);
     // tapping the series row body selects the WHOLE group (every gift joins the selection)
     var giftIds=gifts.map(function(g){ return g.id; });
     row.addEventListener('click', function(){ toggleSel({ key:selKey, kind:'series', seriesId:seriesId, charity_id:ser.charity_id, type:ser.type, giftIds:giftIds }); });
-    var subRows=[];
-    exp.addEventListener('click', function(e){ e.stopPropagation();
-      if(subRows.length){ subRows.forEach(function(r){ r.remove(); }); subRows=[]; exp.textContent='Expand ▸'; return; }
-      var after=row;
-      gifts.slice().sort(M.compareByDate(state.sortDir)).forEach(function(g){ var r=donationRow(g); r.classList.add('subrow'); row.parentNode.insertBefore(r, after.nextSibling); after=r; subRows.push(r); });
-      exp.textContent='Collapse ▾';
-    });
+    wireGroupExpand(row, exp, gifts);
   }
   // Subtitle for a series row. A recurring series shows its cadence (+ " · paused" when inactive);
   // an ad-hoc group (S3) shows "<label> · N gifts" / "N gifts" and NEVER a cadence or paused suffix.
@@ -6388,26 +6512,21 @@ window.GT.exp = {
   // date sort and the S1 subrow indentation. No toggle, no persisted state.
   function appendDafGroupRow(card, gifts){
     var total=DG.groupTotal(state.doc, gifts);
-    var row=document.createElement('div'); row.className='row seriesrow';
+    // S1/§1z: the group heading is the most prominent number in the block, and grants OUT are
+    // never deductible (SPEC §2A) — so the row carries `nondeduct` (greys the total, matching its
+    // child grant rows) and the SAME "via DAF · not deductible" pill the grant rows show. Numbers
+    // are unchanged; presentation only.
+    var row=document.createElement('div'); row.className='row seriesrow nondeduct';
     var left=document.createElement('span'); left.className='date'; left.textContent='◈';
-    var who=document.createElement('span'); who.className='who';
-    who.innerHTML='<div class="nm">Donations made via DAF<span class="badge via">via DAF</span></div>'
-      + '<div class="ty">'+gifts.length+' grant'+(gifts.length>1?'s':'')+' out</div>';
+    var exp=makeExpandIcon();   // navigation; the group is not selectable
+    var who=groupWho(exp, 'Donations made via DAF<span class="badge via">via DAF · not deductible</span>',
+      gifts.length+' grant'+(gifts.length>1?'s':'')+' out');
     var amtwrap=document.createElement('span'); amtwrap.className='amtbtn';
     var amt=document.createElement('span'); amt.className='amt'; amt.textContent=money(total);
-    var acts=document.createElement('span'); acts.className='acts';
-    var exp=document.createElement('button'); exp.textContent='Expand ▸';   // navigation; the group is not selectable
-    acts.appendChild(exp);
-    amtwrap.appendChild(amt); amtwrap.appendChild(acts);
+    amtwrap.appendChild(amt);
     row.appendChild(left); row.appendChild(who); row.appendChild(amtwrap);
     card.appendChild(row);
-    var subRows=[];
-    exp.addEventListener('click', function(e){ e.stopPropagation();
-      if(subRows.length){ subRows.forEach(function(r){ r.remove(); }); subRows=[]; exp.textContent='Expand ▸'; return; }
-      var after=row;
-      gifts.slice().sort(M.compareByDate(state.sortDir)).forEach(function(g){ var r=donationRow(g); r.classList.add('subrow'); row.parentNode.insertBefore(r, after.nextSibling); after=r; subRows.push(r); });
-      exp.textContent='Collapse ▾';
-    });
+    wireGroupExpand(row, exp, gifts);
   }
 
   // ================= charts view (S5) — hand-built inline SVG, no libraries =================
@@ -6957,7 +7076,28 @@ window.GT.exp = {
     var ar=document.createElement('button'); ar.className='btn sm danger'; ar.textContent='Archive';
     ar.addEventListener('click', function(){ M.archiveCharity(state.doc, c.id, true); persistCharities(); toast('Archived '+c.name); });
     el.appendChild(ed); el.appendChild(ar);
+    // Delete (S3/§1ab): permanent removal, REFUSED while anything references the charity (offer
+    // archive instead, saying how many records point at it) and never for the locked DAF sponsor.
+    // The decision is the pure M.canDeleteCharity; deleteCharity itself fails closed.
+    var del=document.createElement('button'); del.className='btn sm danger'; del.textContent='Delete';
+    del.addEventListener('click', function(){ tryDeleteCharity(c); });
+    el.appendChild(del);
     return el;
+  }
+
+  function tryDeleteCharity(c){
+    var dec=M.canDeleteCharity(state.doc, c.id);
+    if(!dec.ok){
+      if(dec.reason==='locked'){ toast(c.name+' can’t be deleted — it’s the locked DAF sponsor.', true); return; }
+      var r=dec.refs, parts=[];
+      if(r.donations) parts.push(r.donations+' donation'+(r.donations>1?'s':''));
+      if(r.series) parts.push(r.series+' series');
+      if(r.inbox) parts.push(r.inbox+' review draft'+(r.inbox>1?'s':''));
+      toast(c.name+' is used by '+parts.join(', ')+' — archive it instead.', true);
+      return;
+    }
+    if(!confirm('Permanently delete '+c.name+'? This can’t be undone.')) return;
+    M.deleteCharity(state.doc, c.id); persistCharities(); toast('Deleted '+c.name);
   }
 
   function startEdit(c){
@@ -8528,7 +8668,7 @@ window.GT.exp = {
   });
   $('btnTheme').addEventListener('click', function(){ toggleTheme(); });
   $('btnSignout').addEventListener('click', signOut);
-  // The tax-year carousel wires itself lazily via syncYearStrip() on the first render (S5/§1y).
+  // The tax-year dial wires itself lazily via fillYears()->initYearDial() on the first render (S4/§1ad).
   $('btnCharities').addEventListener('click', openCharities);
   $('btnCharClose').addEventListener('click', closeCharities);
   $('btnCharSearch').addEventListener('click', doCharSearch);
