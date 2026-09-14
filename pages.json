@@ -16,5 +16,8 @@
   },
   "giving.html": {
     "title": "Giving Tracker"
+  },
+  "agent-health.html": {
+    "title": "Agent Health"
   }
 }
