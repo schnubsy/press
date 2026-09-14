@@ -94,7 +94,6 @@
   .yearbar { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
   .yearbar select { background:var(--surface); color:var(--ink); border:1px solid var(--line);
     border-radius:9px; padding:8px 12px; font-size:0.95rem; font-weight:600; }
-  .yearbar .yearlab { color:var(--muted); font-size:0.85rem; font-weight:600; flex:0 0 auto; }
   /* ---- year DIAL (S4/§1ac+§1ad): dial chrome COPIED VERBATIM from the approved mockup
      (design/year-dial-approved.html). Do not re-tune — three earlier attempts went wrong there.
      Horizontal only; sine spacing + scale/fade carry depth; touch-action:pan-y so a horizontal
@@ -159,6 +158,12 @@
   .row .who .nm { font-weight:600; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .row .who .ty { color:var(--muted); font-size:0.76rem; }
   .row .amt { font-family:var(--mono); font-weight:600; font-size:0.98rem; }
+  /* S1/§1aq: "amount needed" — a captured grant awaiting its dollar figure. Distinct from a real
+     amount (ember, sans, small caps) so it can never be mistaken for a $0 row. */
+  .row .amt.needed { font-family:var(--sans); font-weight:700; font-size:0.72rem; text-transform:uppercase;
+    letter-spacing:0.04em; color:var(--ember-soft); white-space:nowrap; }
+  .tgtable td.num.needed { font-family:var(--sans); font-weight:700; font-size:0.72rem; text-transform:uppercase;
+    letter-spacing:0.03em; color:var(--ember-soft); }
   .badge { font-size:0.66rem; font-weight:700; padding:2px 7px; border-radius:999px; margin-left:6px; }
   .badge.into { background:rgba(127,174,134,0.18); color:var(--ledger); }
   .badge.via { background:var(--surface-2); color:var(--muted); }
@@ -206,6 +211,10 @@
   .search-row { display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap; }
   .search-row .txt { flex:1; min-width:0; }
   .txt.state { flex:0 0 62px; text-transform:uppercase; text-align:center; }
+  /* §1ap: charity-search state filter is a dropdown (USA national default), not free text. */
+  .stsel { flex:0 0 auto; max-width:170px; background:var(--bg); color:var(--ink);
+    border:1px solid var(--line); border-radius:10px; padding:11px 10px; font-size:0.9rem; font-weight:600; }
+  .stsel:focus { outline:2px solid var(--ember); border-color:var(--ember); }
   .btn.inline { width:auto; margin:0; padding:11px 16px; flex:0 0 auto; }
   .btn.sm { width:auto; margin:0; padding:8px 13px; font-size:0.85rem; }
   .btn.sm.ghost { background:transparent; color:var(--muted); border:1px solid var(--line); }
@@ -268,6 +277,10 @@
   .flag { font-size:0.76rem; font-weight:600; padding:6px 11px; border-radius:999px; border:1px solid var(--line);
     background:var(--surface); color:var(--ember-soft); }
   .flag.ok { color:var(--ledger); }
+  /* S1/§1aq: the amount-needed flag is the one the user must act on (run the Fidelity import),
+     so it is the most prominent chip — solid ember border + tint, and it may wrap onto lines. */
+  .flag.need { color:var(--ink); background:rgba(217,138,78,0.14); border-color:var(--ember);
+    white-space:normal; max-width:100%; }
 
   /* ---- capture heartbeat warning chip (S1) ---- */
   .capwarn { display:flex; gap:10px; align-items:flex-start; margin-bottom:14px; padding:11px 14px;
@@ -512,6 +525,7 @@
   .qhint { font-size:0.7rem; font-weight:700; padding:2px 7px; border-radius:999px; }
   .qhint.dup { background:rgba(217,138,78,0.16); color:var(--ember-soft); }
   .qhint.chk { background:rgba(217,138,138,0.16); color:var(--danger); }
+  .qhint.ack { background:rgba(127,174,134,0.16); color:var(--ledger); }
   .qacts { display:flex; gap:6px; flex-wrap:wrap; }
   .inbox-empty { padding:34px 20px; text-align:center; color:var(--muted); }
   .inbox-empty .big { font-family:var(--serif); font-size:1.05rem; color:var(--ink); margin-bottom:4px; }
@@ -601,11 +615,14 @@
   <main>
     <div id="captureWarn" class="capwarn" hidden></div>
     <div class="yearbar">
-      <span class="yearlab" id="yearStripLab">Tax year</span>
+      <!-- §1as: the visible "Tax year" label is dropped (it is self-evident) so the dial spans the
+           full width. The accessible name moves onto the stage itself (aria-label) so screen readers
+           lose nothing. The dial's arc constants (§1ad: 17°/300px, ±5, same scale/opacity falloff)
+           are UNCHANGED — a wider stage simply shows more of the same dial, never a re-tune. -->
       <!-- Horizontal year DIAL (S4/§1ac+§1ad). Built on the approved mockup
            (design/year-dial-approved.html); no scroll container, so the strip can never re-anchor. -->
       <div class="dial">
-        <div class="stage" id="yearStage" tabindex="0" role="listbox" aria-labelledby="yearStripLab">
+        <div class="stage" id="yearStage" tabindex="0" role="listbox" aria-label="Tax year">
           <div class="rule"></div><div class="pip"></div>
         </div>
       </div>
@@ -681,10 +698,11 @@
       <div class="search-row">
         <input id="charQ" class="txt" type="text" placeholder="Charity name, e.g. Salvation Army"
           autocomplete="off" spellcheck="false">
-        <input id="charState" class="txt state" type="text" maxlength="2" value="TX" title="State filter">
+        <select id="charState" class="stsel" title="Restrict the search to one state (default: nationwide)" aria-label="State filter"></select>
         <button id="btnCharSearch" class="btn inline">Search</button>
       </div>
-      <p class="hint">Looks up the IRS Nonprofit Explorer. Only the name and state are sent — never your giving data.</p>
+      <p class="hint">Looks up the IRS Nonprofit Explorer. Only the name and state are sent — never your giving data.
+        Defaults to <strong>USA (national)</strong>.</p>
       <div id="charResults" class="results"></div>
     </div>
 
@@ -1613,6 +1631,20 @@ function deductibleOf(donation) {
   return donation.deductible !== false;
 }
 
+// "Amount needed" (v0.9 / S1 / ARC §1aq) — a captured donation whose dollar amount has not
+// arrived yet. SPEC §2A: a Fidelity grant email names only the recipient (no amount), so email
+// capture lands the grant "amount needed" and approving it creates a real donation with amount
+// 0/null. This is DOCUMENTED, INTENDED behaviour — not a bad import — and the Fidelity Giving
+// Account history import is what FILLS these amounts. The predicate is amount-only (not tied to a
+// flag) so it also catches the grants Mark approved BEFORE this was surfaced: a donation with no
+// positive amount is "amount needed", never a real $0 gift (you never log giving $0). Shared by
+// the receipts list, the dashboard flag and the Total-giving table so the rule is one place.
+function amountNeeded(d) {
+  if (!d) return false;
+  var amt = Number(d.amount);
+  return !(d.amount != null && d.amount !== '' && !isNaN(amt) && amt > 0);
+}
+
 // Normalize one item line: validate condition (good-or-better), compute the line total, and
 // set the per-line substantiation flags. Throws on a blocked/missing condition.
 function normalizeItemLine(line) {
@@ -1877,10 +1909,13 @@ function hasReceiptSource(d) {
 }
 
 function complianceFlags(doc, year) {
-  var y = Number(year), ackNeeded = 0, noncash = 0, appraisal = false, ackMissing = 0, stockLotsMissing = 0;
+  var y = Number(year), ackNeeded = 0, noncash = 0, appraisal = false, ackMissing = 0, stockLotsMissing = 0, amountNeededCount = 0;
   for (var i = 0; i < doc.donations.length; i++) {
     var d = doc.donations[i];
     if (Number(d.tax_year) !== y) continue;
+    // amount-needed (S1 / §1aq): counted across ALL donation kinds (a daf_grant is non-deductible,
+    // so it must be tallied BEFORE the deductible gate below, or it would never be seen).
+    if (amountNeeded(d)) amountNeededCount++;
     if (!deductibleOf(d)) continue;
     var amt = Number(d.amount) || 0;
     if (amt >= ACK_THRESHOLD && !d.acknowledgment_received) ackNeeded++;
@@ -1900,7 +1935,7 @@ function complianceFlags(doc, year) {
       }
     }
   }
-  return { ackNeeded: ackNeeded, form8283: noncash > NONCASH_8283, appraisal: appraisal, ackMissing: ackMissing, stockLotsMissing: stockLotsMissing, noncashTotal: round2(noncash) };
+  return { ackNeeded: ackNeeded, form8283: noncash > NONCASH_8283, appraisal: appraisal, ackMissing: ackMissing, stockLotsMissing: stockLotsMissing, amountNeeded: amountNeededCount, noncashTotal: round2(noncash) };
 }
 
 module.exports = {
@@ -1921,7 +1956,7 @@ module.exports = {
   stockDeductibleValue: stockDeductibleValue, migrateDoc: migrateDoc,
   donationById: donationById, editDonation: editDonation,
   duplicateDonation: duplicateDonation, deleteDonation: deleteDonation,
-  deductibleOf: deductibleOf, compareByDate: compareByDate,
+  deductibleOf: deductibleOf, amountNeeded: amountNeeded, compareByDate: compareByDate,
   countsForDeductible: countsForDeductible, countsForGiving: countsForGiving,
   dashboardTotals: dashboardTotals, complianceFlags: complianceFlags,
 };
@@ -2126,6 +2161,26 @@ var DUP_DAYS = 3;
 var DUP_DOLLARS = 1;
 
 function normName(s) { return String(s == null ? '' : s).trim().toLowerCase(); }
+
+// Parse an email's own Date header (RFC-2822, or an ISO string) down to yyyy-mm-dd, else null.
+// Used to pre-fill a captured donation's date from the email when the body carried none (§1am).
+function emailDay(s) {
+  if (!s) return null;
+  var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s));
+  if (m) return m[1] + '-' + m[2] + '-' + m[3];
+  var d = new Date(s);
+  if (isNaN(d.getTime())) return null;
+  return d.toISOString().slice(0, 10);
+}
+
+// A CAPTURED email receipt IS the charity's written acknowledgment (SPEC §1.5 / ARC §1al), so an
+// email-sourced draft defaults acknowledgment_received = true; a hand-entered donation keeps
+// today's default (false). Kept narrow to EMAIL capture: a dropped file / goods photo is the
+// donor's own document, not the charity's acknowledgment, so it stays false and Mark ticks it.
+function draftAckDefault(draft) {
+  return !!draft && draft.source === 'email';
+}
+
 function parseDay(s) {
   if (!s) return null;
   var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s));
@@ -2166,9 +2221,16 @@ function toDraft(opened, doc, rowMeta) {
   else type = (ex.amount_type === 'items') ? 'items' : 'money';
   var amount = (ex.amount == null) ? null : Number(ex.amount);
   var conf = Number(ex.confidence) || 0;
+  var source = rowMeta.source || 'email';
+  // §1am: pre-fill the date from the email for EVERY captured kind. Prefer the extractor's own
+  // date (from the body); fall back to the email's Date header (opened.meta.date) — exactly what
+  // capture-core already does for Fidelity grants, generalised here app-side. No function change.
+  var date = ex.date || emailDay(opened.meta && opened.meta.date) || null;
+  var mf = Array.isArray(ex.missing_fields) ? ex.missing_fields.slice() : [];
+  if (date) mf = mf.filter(function (f) { return f !== 'date'; });   // date is now filled
   return {
     id: rowMeta.id || null,
-    source: rowMeta.source || 'email',
+    source: source,
     kind: ex.kind || 'charity_receipt',
     type: type,
     daf_contribution: dafc,
@@ -2176,15 +2238,16 @@ function toDraft(opened, doc, rowMeta) {
     charity_name: res.charity_name,
     charity_ein: res.charity_ein,
     needsCharity: res.needsCharity,
-    date: ex.date || null,
+    date: date,
     amount: amount,
     amount_type: ex.amount_type || 'unknown',
     amountNeeded: amount == null,
+    ackDefault: draftAckDefault({ source: source }),   // §1al: captured email = acknowledgment
     stock: ex.stock || null,
     goods_or_services: ex.goods_or_services || null,
     confidence: conf,
     lowConfidence: conf < LOW_CONFIDENCE,
-    missing_fields: Array.isArray(ex.missing_fields) ? ex.missing_fields.slice() : [],
+    missing_fields: mf,
     evidence: ex.evidence || null,
     meta: opened.meta || null,
     receipt_text: opened.receipt_text || null,
@@ -2211,7 +2274,12 @@ function findDuplicates(draft, doc, otherDrafts) {
     var d = ds[i];
     if (!sameCharity(di, identity(doc, d.charity_id, null, null))) continue;
     if (!withinDays(draft.date, d.date, DUP_DAYS)) continue;
-    if (draft.amount == null) { matches.push({ kind: 'donation', id: d.id, donation: d, amountNeeded: true }); continue; }
+    // §1an: one transaction can produce several emails — a thank-you (often NO amount) then a tax
+    // receipt (with the amount) — and they must be recognised as the SAME gift even when only one
+    // side carries a dollar figure. An amount-based match cannot fire then, so match on charity +
+    // date proximity whenever EITHER side is amount-needed, and offer merge (which fills the blank
+    // amount from the side that has it and keeps both source references).
+    if (draft.amount == null || model.amountNeeded(d)) { matches.push({ kind: 'donation', id: d.id, donation: d, amountNeeded: true }); continue; }
     if (d.amount != null && Math.abs(Number(d.amount) - Number(draft.amount)) <= DUP_DOLLARS) matches.push({ kind: 'donation', id: d.id, donation: d });
   }
   for (i = 0; i < otherDrafts.length; i++) {
@@ -2251,6 +2319,10 @@ function draftPayload(draft) {
   var p = {
     type: draft.type, charity_id: draft.charity_id, date: draft.date,
     notes: draft.evidence || null, source: draft.source || 'email', sources: [sourceRecord(draft)],
+    // §1al: a captured email receipt IS the acknowledgment, so an emailed draft approves with
+    // acknowledgment_received=true (a hand-entered gift keeps false). The Review screen shows this
+    // pre-ticked and lets Mark untick it before approval, so it is never silently applied.
+    acknowledgment_received: draftAckDefault(draft),
   };
   if (draft.receipt_text) p.receipt_text = draft.receipt_text;   // keep the emailed receipt on the donation
 
@@ -2302,6 +2374,7 @@ async function commitApproval(steps) {
 module.exports = {
   LOW_CONFIDENCE: LOW_CONFIDENCE, DUP_DAYS: DUP_DAYS, DUP_DOLLARS: DUP_DOLLARS,
   toDraft: toDraft, resolveCharity: resolveCharity,
+  emailDay: emailDay, draftAckDefault: draftAckDefault,
   findDuplicates: findDuplicates, merge: merge, sourceRecord: sourceRecord,
   draftPayload: draftPayload, isReady: isReady, withinDays: withinDays,
   commitApproval: commitApproval,
@@ -2742,6 +2815,7 @@ function buildRows(doc) {
       charity_name: c ? c.name : '—',
       type: d.type,
       amount: Number(d.amount) || 0,
+      amount_needed: model.amountNeeded(d),   // S1/§1aq: a captured grant awaiting its amount
       deductible: model.deductibleOf(d) === true,
       counts_giving: model.countsForGiving(d),
     };
@@ -6369,7 +6443,7 @@ window.GT.exp = {
   function readChartMeasure(){ try{ return LS.getItem(CMEASURE_KEY)==='deductible'?'deductible':'given'; }catch(e){ return 'given'; } }
   var state = { cfg:null, doc:null, year:(new Date()).getFullYear(), charResults:[], group:'date', sortDir:readSortDir(), log:null,
     view:readView(), chartMeasure:readChartMeasure(),
-    selected:{}, autoAdded:[], heartbeat:undefined,
+    selected:{}, expanded:{}, autoAdded:[], heartbeat:undefined,
     tgSort:{ key:'date', dir:'desc' },
     inbox:{ drafts:[], unopenable:[], loading:false, pulledOnce:false } };
 
@@ -6572,9 +6646,12 @@ window.GT.exp = {
     var prof=taxProfileFor(state.year);
     if(!prof || !(Number(prof.agi)>0)){
       var el=document.createElement('div'); el.className='savings prompt';
+      // §1ar: the prompt figure must stay ONE line at 390px in every engine (Chromium wrapped the
+      // old 41-char string). Keep the fig short; the call-to-action detail lives in .sub (which may
+      // wrap freely — the harness only asserts .fig is one line).
       el.innerHTML='<div class="lab">Estimated tax savings</div>'
-        + '<div class="fig">Add your tax profile to estimate savings</div>'
-        + '<div class="sub">Filing status, AGI, and itemize/standard — for '+state.year+'.</div>';
+        + '<div class="fig">Add your tax profile</div>'
+        + '<div class="sub">Estimate your '+state.year+' savings — filing status, AGI, itemize/standard.</div>';
       var b=document.createElement('button'); b.className='btn sm ghost'; b.style.marginTop='10px';
       b.textContent='Set tax profile'; b.addEventListener('click', openSettings); el.appendChild(b);
       box.appendChild(el); return;
@@ -6605,12 +6682,15 @@ window.GT.exp = {
   function renderFlags(){
     var f=M.complianceFlags(state.doc, state.year); var box=$('flags'); box.innerHTML='';
     var chips=[];
+    // S1/§1aq: amount-needed grants aren't counted in "Given" until an amount arrives — say so
+    // unmissably and NAME the fix (the Fidelity Giving Account history import fills these).
+    if(f.amountNeeded>0) chips.push([f.amountNeeded+' donation'+(f.amountNeeded>1?'s need':' needs')+' an amount — not yet counted in Given. Import your Fidelity Giving Account history to fill '+(f.amountNeeded>1?'them':'it')+'.', 'need']);
     if(f.ackNeeded>0) chips.push([f.ackNeeded+' gift'+(f.ackNeeded>1?'s':'')+' ≥ $250 need an acknowledgment', false]);
     if(f.ackMissing>0) chips.push([f.ackMissing+' cash gift'+(f.ackMissing>1?'s':'')+' ≥ $250 with no receipt on file — acknowledgment letter missing', false]);
     if(f.form8283) chips.push(['Non-cash over $500 → Form 8283', false]);
     if(f.appraisal) chips.push(['Item ≥ $5,000 → appraisal required', false]);
     if(!chips.length){ box.innerHTML='<span class="flag ok">No compliance flags for '+state.year+'</span>'; return; }
-    chips.forEach(function(c){ var s=document.createElement('span'); s.className='flag'; s.textContent='⚑ '+c[0]; box.appendChild(s); });
+    chips.forEach(function(c){ var s=document.createElement('span'); s.className='flag'+(c[1]==='need'?' need':''); s.textContent=(c[1]==='need'?'◈ ':'⚑ ')+c[0]; box.appendChild(s); });
   }
 
   // Live selection (S2/§1q): tapping the row BODY toggles selection (bound to click, so a scroll
@@ -6630,7 +6710,11 @@ window.GT.exp = {
     var who=document.createElement('span'); who.className='who';
     who.innerHTML='<div class="nm">'+esc(c?c.name:'—')+donBadge(d)+'</div><div class="ty">'+esc(typeLabel(d))+'</div>';
     var amtwrap=document.createElement('span'); amtwrap.className='amtbtn';
-    var amt=document.createElement('span'); amt.className='amt'; amt.textContent=money(d.amount);
+    // S1/§1aq: a captured grant whose amount hasn't arrived must NEVER read as a normal $0 row —
+    // it carries a clear "amount needed" badge instead of money($0). Filled by the Fidelity import.
+    var amt=document.createElement('span');
+    if(M.amountNeeded(d)){ amt.className='amt needed'; amt.textContent='amount needed'; amt.title='No dollar amount yet — import your Fidelity Giving Account history to fill it.'; }
+    else { amt.className='amt'; amt.textContent=money(d.amount); }
     amtwrap.appendChild(amt);
     el.appendChild(left); el.appendChild(who); el.appendChild(amtwrap);
     el.addEventListener('click', function(){ toggleSel({ key:d.id, kind:'single', id:d.id, charity_id:d.charity_id, type:d.type }); });
@@ -6661,20 +6745,32 @@ window.GT.exp = {
     return who;
   }
   // Wire an expand icon to insert/remove the group's member rows after `row`. Members respect the
-  // S2 date sort and the S1 subrow indentation. Shared by all three group kinds.
-  function wireGroupExpand(row, exp, gifts){
+  // S2 date sort and the S1 subrow indentation. Shared by all three group kinds (recurring, ad-hoc,
+  // DAF). §1ao: the OPEN/closed state is hoisted into state.expanded[key] — NOT a closure — so a
+  // re-render (renderList runs on every selection change) restores it. wireGroupExpand opens the
+  // group inline during the rebuild when state.expanded[key] is set, so tapping a member row inside
+  // an expanded group no longer snaps the group shut and hides the row just selected.
+  function wireGroupExpand(row, exp, gifts, key){
     var subRows=[];
-    function setOpen(open){
+    function setChevron(open){
       var gc=exp.querySelector('.gchev'); if(gc) gc.textContent = open?'▾':'▸';
       exp.setAttribute('aria-label', open?'Collapse':'Expand');
       exp.setAttribute('aria-expanded', open?'true':'false');
     }
-    exp.addEventListener('click', function(e){ e.stopPropagation();
-      if(subRows.length){ subRows.forEach(function(r){ r.remove(); }); subRows=[]; setOpen(false); return; }
+    function insertRows(){
       var after=row;
       gifts.slice().sort(M.compareByDate(state.sortDir)).forEach(function(g){ var r=donationRow(g); r.classList.add('subrow'); row.parentNode.insertBefore(r, after.nextSibling); after=r; subRows.push(r); });
-      setOpen(true);
+    }
+    function apply(){
+      var open=!!state.expanded[key];
+      if(open && !subRows.length) insertRows();
+      else if(!open && subRows.length){ subRows.forEach(function(r){ r.remove(); }); subRows=[]; }
+      setChevron(open);
+    }
+    exp.addEventListener('click', function(e){ e.stopPropagation();
+      state.expanded[key]=!state.expanded[key]; apply();
     });
+    apply();   // restore the persisted open state on (re-)build
   }
 
   // A recurring series folds into ONE expandable summary row within the receipt card (S6).
@@ -6696,7 +6792,7 @@ window.GT.exp = {
     // tapping the series row body selects the WHOLE group (every gift joins the selection)
     var giftIds=gifts.map(function(g){ return g.id; });
     row.addEventListener('click', function(){ toggleSel({ key:selKey, kind:'series', seriesId:seriesId, charity_id:ser.charity_id, type:ser.type, giftIds:giftIds }); });
-    wireGroupExpand(row, exp, gifts);
+    wireGroupExpand(row, exp, gifts, 'ser:'+seriesId);   // §1ao: stable expand key survives re-render
   }
   // Subtitle for a series row. A recurring series shows its cadence (+ " · paused" when inactive);
   // an ad-hoc group (S3) shows "<label> · N gifts" / "N gifts" and NEVER a cadence or paused suffix.
@@ -6767,7 +6863,8 @@ window.GT.exp = {
     amtwrap.appendChild(amt);
     row.appendChild(exp); row.appendChild(who); row.appendChild(amtwrap);
     card.appendChild(row);
-    wireGroupExpand(row, exp, gifts);
+    // §1ao: the by-date view has ONE auto DAF group, so a constant key persists its open state.
+    wireGroupExpand(row, exp, gifts, 'dafgroup');
   }
 
   // ================= charts view (S5) — hand-built inline SVG, no libraries =================
@@ -6962,7 +7059,7 @@ window.GT.exp = {
         +'<td>'+esc(r.date||'—')+'</td>'
         +'<td class="charity">'+esc(r.charity_name)+'</td>'
         +'<td>'+esc(tgTypeLabel(r.type))+'</td>'
-        +'<td class="num">'+money(r.amount)+'</td>'
+        +'<td class="num'+(r.amount_needed?' needed':'')+'">'+(r.amount_needed?'amount needed':money(r.amount))+'</td>'
         +'<td class="'+(r.deductible?'ded-y':'ded-n')+'">'+(r.deductible?'Yes':(r.counts_giving?'No':'No · into DAF'))+'</td>'
         +'<td class="num">'+(r.tax_year==null?'—':r.tax_year)+'</td>'
         +'</tr>';
@@ -7308,6 +7405,29 @@ window.GT.exp = {
   function persistDoc(){ writeDocCache(state.doc); render(); var sv=ensureSaver(); if(sv) sv.request(state.doc); }
   // persist after a charity change also redraws the charities list.
   function persistCharities(){ renderCharList(); persistDoc(); }
+
+  // §1ap: the state filter is a dropdown of all states + "USA (national)" as the DEFAULT — most of
+  // Mark's giving is to national organisations. National = value '' ⇒ the state filter is omitted
+  // from the ProPublica call entirely (doCharSearch passes st||undefined). No Edge Function change.
+  var US_STATES = [
+    ['','USA (national)'],
+    ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],
+    ['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['DC','District of Columbia'],
+    ['FL','Florida'],['GA','Georgia'],['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],
+    ['IN','Indiana'],['IA','Iowa'],['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],
+    ['ME','Maine'],['MD','Maryland'],['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],
+    ['MS','Mississippi'],['MO','Missouri'],['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],
+    ['NH','New Hampshire'],['NJ','New Jersey'],['NM','New Mexico'],['NY','New York'],
+    ['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],['OK','Oklahoma'],['OR','Oregon'],
+    ['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],['SD','South Dakota'],
+    ['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],['VA','Virginia'],
+    ['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming'],
+  ];
+  function fillStateSelect(){
+    var sel=$('charState'); if(!sel || sel.options.length) return;
+    US_STATES.forEach(function(s){ var o=document.createElement('option'); o.value=s[0]; o.textContent=s[1]; sel.appendChild(o); });
+    sel.value='';   // USA (national) is the default
+  }
 
   async function doCharSearch(){
     var q=($('charQ').value||'').trim();
@@ -8899,6 +9019,9 @@ window.GT.exp = {
     var hints='';
     if(dup.isDuplicate) hints+='<span class="qhint dup">likely duplicate</span>';
     if(d.lowConfidence) hints+='<span class="qhint chk">check this</span>';
+    // §1al: make the acknowledgment default visible on the card so Approve is never silent — the
+    // emailed receipt counts as the written acknowledgment (Review lets Mark untick it).
+    if(RV.draftAckDefault(d)) hints+='<span class="qhint ack" title="The emailed receipt counts as the written acknowledgment. Review to change.">✓ acknowledged</span>';
     var lk=looksLikeSeries(d); if(lk){ var lc=M.charityById(state.doc, lk.charity_id); hints+='<span class="qhint series">looks like your '+esc(lk.cadence)+' '+esc(lc?lc.name:'')+' gift</span>'; }
     el.innerHTML='<div class="qh"><span class="qsrc">'+sourceIcon(d.source)+'</span>'
       + '<span class="qwho">'+esc(d.charity_name||'Unknown charity')+'</span>'+amtHtml+'</div>'
@@ -8939,7 +9062,7 @@ window.GT.exp = {
     var found=null;
     try {
       if(d.charity_ein){ found=await P.getByEin(d.charity_ein); }
-      if(!found && d.charity_name){ var rows=await P.search(d.charity_name, 'TX'); found=(rows&&rows[0])||null; }
+      if(!found && d.charity_name){ var rows=await P.search(d.charity_name); found=(rows&&rows[0])||null; }   // §1ap: national-first auto-resolve
     } catch(e){ found=null; }
     var saved = found ? M.upsertCharity(state.doc, found)
       : M.upsertCharity(state.doc, { name: d.charity_name || 'Unknown charity', ein: d.charity_ein || null, deductible: !!d.charity_ein, source: d.source||'email' });
@@ -9012,7 +9135,10 @@ window.GT.exp = {
     var ed = {
       date: d.date || today(), amount: (d.amount!=null? d.amount : ''), charity_id: d.charity_id,
       notes: d.evidence || '', security: (d.stock&&d.stock.symbol)||'', shares: (d.stock&&d.stock.shares)||'',
-      long_term: true, acknowledgment_received: false,
+      // §1al: a captured email draft defaults acknowledgment_received=true (the email IS the
+      // acknowledgment) — pre-ticked + visible in the review sheet, and Mark can untick it before
+      // approval (the Save reads $('fAck').checked, so an untick sticks).
+      long_term: true, acknowledgment_received: RV.draftAckDefault(d),
       items: (d.type==='items' && Array.isArray(d.items)) ? d.items : undefined,   // goods-photo / items draft lines (S3)
     };
     closeInbox();
@@ -9035,6 +9161,7 @@ window.GT.exp = {
   // The tax-year dial wires itself lazily via fillYears()->initYearDial() on the first render (S4/§1ad).
   $('btnCharities').addEventListener('click', openCharities);
   $('btnCharClose').addEventListener('click', closeCharities);
+  fillStateSelect();
   $('btnCharSearch').addEventListener('click', doCharSearch);
   $('charQ').addEventListener('keydown', function(e){ if(e.key==='Enter') doCharSearch(); });
   $('btnCharAdd').addEventListener('click', addManual);
