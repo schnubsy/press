@@ -98,9 +98,10 @@
      (design/year-dial-approved.html). Do not re-tune — three earlier attempts went wrong there.
      Horizontal only; sine spacing + scale/fade carry depth; touch-action:pan-y so a horizontal
      spin never steals the page's vertical scroll on iPhone Safari (load-bearing, §1y). The ONLY
-     deviation: the year-node dim is scoped as `.yr.empty` (not the mockup's bare `.empty`) so it
-     never clobbers the app's existing `.empty` empty-state panel. `.dial` is flex:1 in the
-     yearbar (in the mockup it sat in a block section). */
+     deviations: (a) §1aw adds a `.datamark` ember pip under years that HAVE donations — additive, a
+     child of the year node so it scales and fades WITH it (not in the mockup); the mockup's `.yr.empty`
+     dimming is dropped in its favour, so the DATA cue no longer rides the same channel as the DEPTH
+     falloff. (b) `.dial` is flex:1 in the yearbar (in the mockup it sat in a block section). */
   .dial{flex:1;min-width:0;position:relative;display:flex;align-items:center;gap:6px;
         background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:8px 6px}
   .stage{flex:1 1 auto;position:relative;overflow:hidden;height:74px;
@@ -117,10 +118,16 @@
       transition:transform .34s cubic-bezier(.22,.61,.36,1),opacity .34s,color .34s,font-size .34s}
   .yr:focus-visible{outline:2px solid var(--ember);outline-offset:4px;border-radius:6px}
   .yr.sel{color:var(--ink)}
-  .yr.empty{color:var(--muted);opacity:.55}                          /* a year with NO donations stays dimmed */
+  /* §1aw: mark the POSITIVE case — a small ember pip under a year that HAS donations — instead of
+     dimming empty years further. Additive: a child of the year node, so it scales and fades WITH the
+     node and moves no year by a pixel (§1ad geometry stays fixed). A year with no donations shows
+     nothing. Sits well above the apex rule/pip; pointer-events off so it never affects a tap. */
+  .yr .datamark{position:absolute;left:50%;bottom:-6px;width:5px;height:5px;margin-left:-2.5px;
+      border-radius:50%;background:var(--ember);opacity:0;pointer-events:none;transition:opacity .34s}
+  .yr.hasdata .datamark{opacity:1}
   .rule{position:absolute;left:0;right:0;bottom:12px;height:1px;background:var(--line);z-index:0}
   .pip{position:absolute;bottom:8px;left:50%;width:1px;height:9px;background:var(--ember);z-index:2}
-  @media (prefers-reduced-motion: reduce){ .yr{transition:none} }
+  @media (prefers-reduced-motion: reduce){ .yr,.yr .datamark{transition:none} }
   @media (max-width:430px){ .stage{height:66px} }
 
   .hero { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:26px 24px; margin-bottom:16px; }
@@ -6540,7 +6547,8 @@ window.GT.exp = {
   //   §1ac (centring invariant): the selected year is generated at the CENTRE every render, and
   //   there is NO scroll container at all — so the endless-strip re-anchoring that made the old
   //   carousel "shift completely" cannot happen. Selected year is always highlighted, always centred.
-  //   Empty years stay dimmed (.yr.empty) so a far-off empty year never reads as data loss.
+  //   §1aw: a year WITH donations shows an ember pip (.datamark); an empty year shows nothing — the
+  //   data cue is now separate from the depth falloff, so a far-off empty year no longer just reads as dim.
   //   state.year + the render() wiring are unchanged — this is a control swap, not a data change.
   var DIAL_SPAN = 5, DIAL_PX_PER_YEAR = 52, DIAL_FLICK_MAX = 3, DIAL_DEAD_ZONE = 22;
   var dialNodes = {}, dialWired = false;
@@ -6566,7 +6574,11 @@ window.GT.exp = {
     for (var y = sel - DIAL_SPAN; y <= sel + DIAL_SPAN; y++){
       if (!dialNodes[y]){
         var b = document.createElement('button');
-        b.type = 'button'; b.className = 'yr'; b.textContent = y;
+        b.type = 'button'; b.className = 'yr';
+        b.appendChild(document.createTextNode(y));                 // year label as a text node…
+        var dot = document.createElement('span');                 // …plus the §1aw data pip (toggled below)
+        dot.className = 'datamark'; dot.setAttribute('aria-hidden','true');
+        b.appendChild(dot);
         b.setAttribute('role','option');
         dialNodes[y] = b; stage.appendChild(b);
       }
@@ -6576,7 +6588,7 @@ window.GT.exp = {
       if (ad > DIAL_SPAN){ n.style.opacity = 0; n.style.pointerEvents = 'none'; return; }
       n.style.pointerEvents = ad > DIAL_SPAN - 1 ? 'none' : 'auto';
       n.classList.toggle('sel', d === 0);
-      n.classList.toggle('empty', !has[y]);
+      n.classList.toggle('hasdata', !!has[y]);   // §1aw: pip under years that HAVE donations; empty years show nothing
       n.setAttribute('aria-selected', d === 0 ? 'true' : 'false');
       n.tabIndex = d === 0 ? 0 : -1;
       dialPlace(n, d, ad);
@@ -7430,7 +7442,18 @@ window.GT.exp = {
   }
 
   function openCharities(){ if(!state.doc) return; $('charitiesSheet').hidden=false; renderCharList(); }
-  function closeCharities(){ $('charitiesSheet').hidden=true; }
+  function closeCharities(){
+    $('charitiesSheet').hidden=true;
+    // §1av: reset the transient lookup panes on CLOSE (not open — reopening stays instant, no stale
+    // flash of old rows). The search results, query box and state filter are a throwaway lookup view.
+    // The EIN audit output is cleared too: a stale search list is cosmetic, but a stale audit is not
+    // — Mark would act on it — so it must never linger across a close/reopen.
+    state.charResults=[];
+    var res=$('charResults'); if(res) res.innerHTML='';
+    var q=$('charQ'); if(q) q.value='';
+    var st=$('charState'); if(st) st.value='';   // back to USA (national), the default
+    var au=$('charAudit'); if(au){ au.innerHTML=''; au.hidden=true; }
+  }
 
   // persist any doc change: local cache now, redraw the dashboard, and hand the doc to the
   // saver (coalesced + retried encrypted sync; the header pill shows progress).
