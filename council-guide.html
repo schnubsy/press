@@ -326,7 +326,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v3.7.0</span>
+    <span class="nav-badge">v4.0.0</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -1217,7 +1217,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <details class="facet">
           <summary><span class="fmk">&#9656;</span>Full detail</summary>
           <div class="facet-body">
-            <p>The Council's <b class="ink">quality gate</b> — full test runs, solution review, gap analysis, regression checks, and general QC on anything the Hand produces, plus <b class="ink">data-quality validation</b>: schema checks, migration integrity, and whether the numbers survived the pipeline. It inventories what "done" claims to be, runs the project's suite end-to-end (writing targeted tests where none exist), reviews the solution against spec for gaps, edge cases, error paths, and regressions, then reports every defect with a severity flag (🔴 P0 / 🟡 watch / 🟢 fine), reproduction steps, and a verified-vs-inferred label — a clean run is an explicit green report, never silence. Read-only by nature: defect fixes route back to Forge as work orders, never patched in-line, and heavy runs execute in Claude Code, never in a Desktop chat. <b class="ink">Paired with sentry, it is the ship-gate</b> — nothing leaves Forge without both a gauntlet pass and a sentry pass; the two run as one gate.</p>
+            <p>The Council's <b class="ink">quality gate</b> — full test runs, solution review, gap analysis, regression checks, and general QC on anything the Hand produces, plus <b class="ink">data-quality validation</b>: schema checks, migration integrity, and whether the numbers survived the pipeline. It inventories what "done" claims to be, runs the project's suite end-to-end (writing targeted tests where none exist), reviews the solution against spec for gaps, edge cases, error paths, and regressions, then reports every defect with a severity flag (🔴 P0 / 🟡 watch / 🟢 fine), reproduction steps, and a verified-vs-inferred label — a clean run is an explicit green report, never silence. Read-only by nature: defect fixes route back to Forge as work orders, never patched in-line, and heavy runs execute in Claude Code, never in a chat surface. <b class="ink">Paired with sentry, it is the ship-gate</b> — nothing leaves Forge without both a gauntlet pass and a sentry pass; the two run as one gate.</p>
           </div>
         </details>
       </div>
@@ -1243,7 +1243,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
           <summary><span class="fmk">&#9656;</span>Full detail — the order contract</summary>
           <div class="facet-body">
             <p>An <b class="ink">arc-shaped order is the default</b> for any coding work order; a single-slice order is the exception — a one-line fix, or when one slice cannot be specified until the previous slice's output exists. Every emitted order carries the same fixed frame: the repo path and a session branch, the standing-rules block (solo repo, merge to main at the close, never move a worktree mid-order, publishing stays the Principal's, staging by name), <b class="ink">plan mode once</b> to gather every decision into a single up-front checkpoint, then the numbered slices — each with scope, files, detail, and explicit done-criteria — run back-to-back, with independent pieces fanned out to parallel sub-agents. The <b class="ink">per-slice discipline loop</b> is the same every time: extend the tests, build and lint clean, run it, capture a done-proof artifact, commit the slice, hand off, continue — returning only at arc-complete or a genuine blocker. The close merges the branch to main, deletes it, and reports.</p>
-            <p>The referenced arc file is <b class="ink"><code>ARC.md</code></b> at the project root — a fourth control file alongside <code>CLAUDE.md</code>, <code>HANDOFF.md</code>, and <code>ORCHESTRATION.md</code>. It is <b class="ink">append-only</b>: the orchestration layer adds dated slices and decisions, the executing agent consumes them, and the handoff routine ticks the completed slices and — once every slice is done — folds the arc into <code>CLAUDE.md</code> and <code>HANDOFF.md</code>, truncating <code>ARC.md</code> back to empty.</p>
+            <p>The referenced arc file is <b class="ink"><code>ARC.md</code></b> at the project root — one of the three control files alongside <code>CLAUDE.md</code> and <code>HANDOFF.md</code>. It is <b class="ink">append-only</b>: Cowork (the orchestrator) adds dated slices and decisions, the executing agent consumes them, and the handoff routine ticks the completed slices and — once every slice is done — folds the arc into <code>CLAUDE.md</code> and <code>HANDOFF.md</code>, truncating <code>ARC.md</code> back to empty.</p>
           </div>
         </details>
       </div>
@@ -1323,8 +1323,39 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <section class="page" data-page="together">
   <div class="wrap">
 
+    <!-- STANDARD JOURNEY (v4.0.0) -->
+    <section class="section" id="journey" style="border-top:0">
+      <style>
+        .journey-track{display:flex;gap:0;margin:20px 0 6px}
+        .journey-stop{flex:1;text-align:center;padding:0 8px;position:relative}
+        .journey-stop::before{content:"";position:absolute;top:20px;left:-50%;width:100%;height:2px;background:var(--gold-soft);z-index:0}
+        .journey-stop:first-child::before{display:none}
+        .journey-stop svg{position:relative;z-index:1}
+        .journey-stop b{display:block;margin:8px 0 4px;font-size:15px}
+        .journey-stop p{font-size:13px;line-height:1.45;margin:0}
+        .journey-cols{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:30px}
+        @media(max-width:640px){.journey-track{flex-direction:column;gap:16px}.journey-stop::before{display:none}.journey-cols{grid-template-columns:1fr}}
+      </style>
+      <div class="sect-head">
+        <span class="eyebrow">The standard journey</span>
+        <h2>Working together, start to finish</h2>
+        <p class="lede">Five stops carry an idea from a sentence to something live. You steer at the turns; the Council does the rest.</p>
+      </div>
+      <div class="journey-track">
+        <div class="journey-stop"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="var(--gold)" stroke-width="2"/><text x="20" y="26" text-anchor="middle" font-size="17" fill="var(--gold)">1</text></svg><b>Idea → Kickoff</b><p class="muted">You say the idea. The Council asks its questions once — and a repo and a spec appear.</p></div>
+        <div class="journey-stop"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="var(--gold)" stroke-width="2"/><text x="20" y="26" text-anchor="middle" font-size="17" fill="var(--gold)">2</text></svg><b>Plan the arc</b><p class="muted">In a Cowork chat you agree the slices in one conversation; the plan is written to <code>ARC.md</code>.</p></div>
+        <div class="journey-stop"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="var(--gold)" stroke-width="2"/><text x="20" y="26" text-anchor="middle" font-size="17" fill="var(--gold)">3</text></svg><b>Build</b><p class="muted">Claude Code runs every slice — building, testing itself (even the iPhone simulator), checking design and speed, fixing what fails.</p></div>
+        <div class="journey-stop"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="var(--gold)" stroke-width="2"/><text x="20" y="26" text-anchor="middle" font-size="17" fill="var(--gold)">4</text></svg><b>Ship</b><p class="muted">Tests pass ⇒ the page goes live on the marquee and the code is merged with a PR record. No waiting.</p></div>
+        <div class="journey-stop"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="var(--gold)" stroke-width="2"/><text x="20" y="26" text-anchor="middle" font-size="17" fill="var(--gold)">5</text></svg><b>Handoff</b><p class="muted">Three small files — <code>CLAUDE.md</code>, <code>ARC.md</code>, <code>HANDOFF.md</code> — carry the state; the next conversation reads them and continues. History and lessons are filed away, looked up only when needed.</p></div>
+      </div>
+      <div class="journey-cols">
+        <div><h3 style="font-size:18px;margin-bottom:6px">What you do</h3><p class="muted">Say the idea. Answer one batch of questions. Approve one plan. Read the report.</p></div>
+        <div><h3 style="font-size:18px;margin-bottom:6px">What the Council does</h3><p class="muted">Everything else — the Eye designs it, the Ear pressure-tests the thinking, and the Hand builds, tests, secures, ships, and writes it up.</p></div>
+      </div>
+    </section>
+
     <!-- RITES -->
-    <section class="section" id="rites" style="border-top:0">
+    <section class="section" id="rites">
       <div class="sect-head">
         <span class="eyebrow">Ceremony</span>
         <h2>The two rites</h2>
@@ -1336,14 +1367,14 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <li><b>Worth-building check</b> — one honest pass: names tools that already solve it, offers an Ear gut-check if the verdict is murky.</li>
         <li><b>One batched interview</b> — purpose, users, platform, stack, data sensitivity, name, git remote, v0.1 success. Every question up front; zero drip-feeding after.</li>
         <li><b>Scaffold</b> (Claude Code only) — repo under <code>~/Documents/VSCode/&lt;name&gt;</code>, git initialized, control files seeded with the real answers.</li>
-        <li><b>First arc-close</b> — runs <code>/council:handoff</code>, emits a paste-ready Claude Desktop project block, registers the project in MANUAL.md.</li>
+        <li><b>First arc-close</b> — runs <code>/council:handoff</code>, emits a paste-ready Cowork project-instructions block, registers the project in MANUAL.md.</li>
       </ol>
       <div class="modebox"><b>On any other surface</b> the rite returns a single deterministic Claude Code work order instead — nothing half-scaffolded, ever.</div>
       <h3 style="font-size:22px;margin:30px 0 4px">Handoff — closing an arc</h3>
       <p class="muted" style="margin-bottom:6px">The command: <code>/council:handoff</code> (Claude Code and Cowork).</p>
       <ol class="steps">
-        <li><b>Consumes</b> ORCHESTRATION.md — Desktop's append-only inbox of decisions, work-order summaries, and flagged RULE: entries.</li>
-        <li><b>Updates</b> CLAUDE.md (durable truth), HANDOFF.md (last-arc snapshot + exact next steps), and STATUS.html (single-writer).</li>
+        <li><b>Consumes</b> ARC.md — the arc inbox of decisions, slices, and flagged RULE: entries (Cowork appends, Claude Code consumes).</li>
+        <li><b>Updates</b> CLAUDE.md's Current stage (durable truth), appends the arc to docs/history.md, promotes lessons to docs/lessons.md, and overwrites HANDOFF.md (last-arc snapshot + exact next steps).</li>
         <li><b>Commits and pushes</b> — the arc is closed; any new chat on any surface orients from the three control files.</li>
       </ol>
     </section>
@@ -1528,7 +1559,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
             <tr>
               <td><span class="cmd">/council:handoff</span></td>
               <td class="who">The Arc-Close rite</td>
-              <td>Consumes ORCHESTRATION.md, updates CLAUDE.md / HANDOFF.md / STATUS.html, commits and pushes.</td>
+              <td>Consumes ARC.md, updates CLAUDE.md / HANDOFF.md (+ docs/history.md, docs/lessons.md), commits and pushes.</td>
             </tr>
           </tbody>
         </table>
@@ -1544,7 +1575,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <footer>
   <div class="footer-in">
     <div>The Council · a private prospectus · generated from PERSONAS.md + skills</div>
-    <div class="mono">council v3.7.0 · last updated 2026-09-12</div>
+    <div class="mono">council v4.0.0 · last updated 2026-09-14</div>
   </div>
 </footer>
 
