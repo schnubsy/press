@@ -696,12 +696,12 @@
     <div class="card">
       <div class="card-h">Find a charity</div>
       <div class="search-row">
-        <input id="charQ" class="txt" type="text" placeholder="Charity name, e.g. Salvation Army"
+        <input id="charQ" class="txt" type="text" placeholder="Name or EIN, e.g. Salvation Army or 95-1922279"
           autocomplete="off" spellcheck="false">
         <select id="charState" class="stsel" title="Restrict the search to one state (default: nationwide)" aria-label="State filter"></select>
         <button id="btnCharSearch" class="btn inline">Search</button>
       </div>
-      <p class="hint">Looks up the IRS Nonprofit Explorer. Only the name and state are sent — never your giving data.
+      <p class="hint">Looks up the IRS Nonprofit Explorer. Search by <strong>name</strong> or by <strong>EIN</strong> (e.g. 95-1922279 — an EIN ignores the state filter). Only the name/EIN and state are sent — never your giving data.
         Defaults to <strong>USA (national)</strong>.</p>
       <div id="charResults" class="results"></div>
     </div>
@@ -721,6 +721,9 @@
     <!-- saved list -->
     <div class="card">
       <div class="card-h">Your charities <span id="charCount" class="cnt"></span></div>
+      <p class="hint">A charity added by email capture is matched to the IRS record automatically. A now-fixed bug (§1at) matched some against <strong>Texas only</strong>, so a saved EIN could belong to the wrong organisation.
+        <button id="btnVerifyEins" class="btn sm ghost">Verify EINs against IRS</button></p>
+      <div id="charAudit" class="results" hidden></div>
       <div id="charList" class="charlist"></div>
     </div>
 
@@ -3379,6 +3382,29 @@ function normalizeOrg(o) {
   };
 }
 
+// §1at audit helper (pure): does a saved charity name plausibly belong to the IRS org an EIN resolves
+// to? Used to catch charities auto-matched against the WRONG organisation (the "national → Texas" bug
+// took the first Texas hit). Deliberately LENIENT — it flags only gross mismatches, so formatting
+// differences ("Inc"/"The"/punctuation/case) never cry wolf. A match if the normalized names are
+// equal, one contains the other, or they share any significant (>=3 char) token.
+function normNameForMatch(s) {
+  return String(s == null ? '' : s)
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]+/g, ' ')
+    .replace(/\b(the|inc|incorporated|co|corp|foundation|fund|fdn|org|organization|of|and|a|for)\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function nameMatchesOrg(savedName, orgName) {
+  var na = normNameForMatch(savedName), nb = normNameForMatch(orgName);
+  if (!na || !nb) return true;                                 // nothing to compare on -> don't flag
+  if (na === nb || na.indexOf(nb) >= 0 || nb.indexOf(na) >= 0) return true;
+  var setb = {};
+  nb.split(' ').forEach(function (w) { if (w.length >= 3) setb[w] = 1; });
+  var shared = na.split(' ').some(function (w) { return w.length >= 3 && setb[w]; });
+  return shared;
+}
+
 function theFetch(deps) {
   var f = (deps && deps.fetch) || (typeof fetch !== 'undefined' ? fetch : null);
   if (!f) throw new Error('fetch unavailable');
@@ -3394,11 +3420,15 @@ function orgUrl(ein) {
   return BASE + '?ein=' + encodeURIComponent(String(ein == null ? '' : ein).replace(/\D/g, ''));
 }
 
-// search(name, state='TX') -> [charity, ...]
+// search(name, state) -> [charity, ...].  state null / undefined / '' ALL mean national (the state
+// param is omitted). §1at: a lookup client carries NO hard-coded home state. The old
+// `state == null ? 'TX' : state` default silently rewrote every national search to Texas — and the
+// caller's `st || undefined` had already collapsed the national option's '' to undefined, so the two
+// idioms compounded and "USA (national)" never worked. searchUrl already drops the param for any
+// falsy state, so passing the value straight through is all that national needs.
 async function search(q, state, deps) {
   var f = theFetch(deps);
-  var st = (state == null) ? 'TX' : state;
-  var res = await f(searchUrl(q, st), { headers: { 'accept': 'application/json' } });
+  var res = await f(searchUrl(q, state), { headers: { 'accept': 'application/json' } });
   if (!res.ok) throw new Error('charity search failed (HTTP ' + res.status + ')');
   var j = await res.json();
   var rows = (j && Array.isArray(j.organizations)) ? j.organizations : [];
@@ -3418,9 +3448,11 @@ async function getByEin(ein, deps) {
 
 module.exports = {
   BASE: BASE,
+  EIN_RE: EIN_RE,
   formatEin: formatEin,
   normalizeSearchItem: normalizeSearchItem,
   normalizeOrg: normalizeOrg,
+  nameMatchesOrg: nameMatchesOrg,
   searchUrl: searchUrl, orgUrl: orgUrl,
   search: search, getByEin: getByEin,
 };
@@ -7408,7 +7440,9 @@ window.GT.exp = {
 
   // §1ap: the state filter is a dropdown of all states + "USA (national)" as the DEFAULT — most of
   // Mark's giving is to national organisations. National = value '' ⇒ the state filter is omitted
-  // from the ProPublica call entirely (doCharSearch passes st||undefined). No Edge Function change.
+  // from the ProPublica call entirely. §1at: doCharSearch passes that '' STRAIGHT THROUGH to
+  // P.search — the old `st || undefined` collapsed it to undefined, which propublica.js then defaulted
+  // to 'TX', so national silently searched Texas. No Edge Function change.
   var US_STATES = [
     ['','USA (national)'],
     ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],
@@ -7429,25 +7463,44 @@ window.GT.exp = {
     sel.value='';   // USA (national) is the default
   }
 
+  // One result row, shared by the name search and the EIN lookup (§1au).
+  function appendCharResult(c, i){
+    var el=document.createElement('div'); el.className='cresult';
+    el.innerHTML='<div class="info"><div class="nm">'+esc(c.name)+'</div>'
+      + '<div class="meta">'+(charMeta(c)||'—')+' '+charBadge(c)+'</div></div>';
+    var btn=document.createElement('button'); btn.className='btn sm'; btn.textContent='Save';
+    btn.addEventListener('click', function(){ saveSearchResult(i, btn); });
+    el.appendChild(btn); $('charResults').appendChild(el);
+  }
+
   async function doCharSearch(){
     var q=($('charQ').value||'').trim();
     var st=($('charState').value||'').trim().toUpperCase();
     var box=$('charResults');
-    if(!q){ toast('Type a charity name to search.'); return; }
+    if(!q){ toast('Type a charity name or EIN to search.'); return; }
+    // §1au: a query that is only digits/hyphens and holds exactly nine digits is an EIN — accept
+    // "95-1922279" and bare "951922279", normalise to NN-NNNNNNN, and look it up exactly, ignoring
+    // the state filter. getByEin returns null on a clean 404 → an empty state, not an error.
+    var einDigits=q.replace(/\D/g,'');
+    if(/^[0-9-]+$/.test(q) && einDigits.length===9){
+      var ein=P.formatEin(einDigits);
+      box.innerHTML='<p class="hint">Searching…</p>';
+      try {
+        var org=await P.getByEin(ein);
+        if(!org){ state.charResults=[]; box.innerHTML='<p class="hint">No organisation with EIN '+esc(ein)+'. Check the number, or add the charity manually below.</p>'; return; }
+        state.charResults=[org]; box.innerHTML=''; appendCharResult(org, 0);
+      } catch(e){
+        box.innerHTML='<p class="hint">Could not reach the charity lookup. Check your connection, or add the charity manually below.</p>';
+      }
+      return;
+    }
     box.innerHTML='<p class="hint">Searching…</p>';
     try {
-      var rows = await P.search(q, st||undefined);
+      var rows = await P.search(q, st);   // §1at: national is st='' → search() omits the state param
       state.charResults = rows;
       if(!rows.length){ box.innerHTML='<p class="hint">No matches. Try a shorter name, or add it manually below.</p>'; return; }
       box.innerHTML='';
-      rows.slice(0,25).forEach(function(c, i){
-        var el=document.createElement('div'); el.className='cresult';
-        el.innerHTML='<div class="info"><div class="nm">'+esc(c.name)+'</div>'
-          + '<div class="meta">'+(charMeta(c)||'—')+' '+charBadge(c)+'</div></div>';
-        var btn=document.createElement('button'); btn.className='btn sm'; btn.textContent='Save';
-        btn.addEventListener('click', function(){ saveSearchResult(i, btn); });
-        el.appendChild(btn); box.appendChild(el);
-      });
+      rows.slice(0,25).forEach(function(c, i){ appendCharResult(c, i); });
     } catch(e){
       box.innerHTML='<p class="hint">Could not reach the charity lookup. Check your connection, or add the charity manually below.</p>';
     }
@@ -7497,6 +7550,72 @@ window.GT.exp = {
         h.textContent='Archived'; box.appendChild(h); shownArchHead=true; }
       box.appendChild(charRow(c));
     });
+  }
+
+  // §1at/S2: read-only audit. The captured-donation charity auto-resolve (ensureDraftCharity) AUTO-
+  // SAVES the matched charity, so the "national → Texas" bug could already have written wrong rows.
+  // It re-checks every saved EIN against the live IRS record and reports TWO things, and NEVER
+  // rewrites a saved charity's EIN — Mark corrects any flagged row himself via Edit:
+  //   (1) EIN ↔ name mismatches (a typo, a bad merge, an EIN that no longer resolves), and
+  //   (2) charities that resolve to a TEXAS organisation — the bug's fingerprint. A consistently-
+  //       wrong Texas match (name AND EIN both the Texas org's) is internally consistent, so (1)
+  //       alone cannot catch it; since Mark's giving is mostly national, a Texas-resolving charity
+  //       is worth an eyeball. This is surfaced honestly as "worth a check", not "wrong".
+  async function verifyEinsAgainstIRS(btn){
+    var box=$('charAudit'); if(!box) return;
+    var list=(state.doc.charities||[]).filter(function(c){ return c.ein && !c.archived; });
+    box.hidden=false;
+    if(!list.length){ box.innerHTML='<p class="hint">No saved charity has an EIN to check.</p>'; return; }
+    if(btn){ btn.disabled=true; btn.textContent='Checking…'; }
+    box.innerHTML='<p class="hint">Checking '+list.length+' EIN'+(list.length===1?'':'s')+' against the IRS Nonprofit Explorer — read-only, nothing is changed…</p>';
+    var mismatches=[], texas=[], checked=0;
+    for(var i=0;i<list.length;i++){
+      var c=list[i], org=null, err=false;
+      try { org=await P.getByEin(c.ein); } catch(e){ err=true; }
+      checked++;
+      if(err){ mismatches.push({ c:c, kind:'error' }); continue; }
+      if(!org){ mismatches.push({ c:c, kind:'noresolve' }); continue; }
+      if(!P.nameMatchesOrg(c.name, org.name)){ mismatches.push({ c:c, kind:'mismatch', irsName:org.name, irsState:org.state }); continue; }
+      if(org.state==='TX'){ texas.push({ c:c, irsName:org.name }); }
+    }
+    renderEinAudit(box, checked, mismatches, texas);
+    if(btn){ btn.disabled=false; btn.textContent='Verify EINs against IRS'; }
+  }
+  function einAuditRow(c, msgHtml){
+    var el=document.createElement('div'); el.className='cresult';
+    el.innerHTML='<div class="info"><div class="nm">'+esc(c.name)+'</div><div class="meta">'+msgHtml+'</div></div>';
+    if(!c.locked && !c.archived){
+      var ed=document.createElement('button'); ed.className='btn sm ghost'; ed.textContent='Edit';
+      ed.addEventListener('click', function(){ startEdit(c); });
+      el.appendChild(ed);
+    }
+    return el;
+  }
+  function renderEinAudit(box, checked, mismatches, texas){
+    box.innerHTML='';
+    var head=document.createElement('p'); head.className='hint';
+    if(!mismatches.length && !texas.length){
+      head.innerHTML='✓ All '+checked+' EIN'+(checked===1?'':'s')+' match their IRS record, and none resolves to a Texas organisation.';
+      box.appendChild(head); return;
+    }
+    head.innerHTML='Checked '+checked+' EIN'+(checked===1?'':'s')+'. Nothing was changed — open Edit on a charity to correct it yourself.';
+    box.appendChild(head);
+    if(mismatches.length){
+      var h1=document.createElement('div'); h1.className='subhead'; h1.textContent=mismatches.length+' EIN'+(mismatches.length===1?' does':'s do')+' not match a name'; box.appendChild(h1);
+      mismatches.forEach(function(it){
+        var c=it.c, msg;
+        if(it.kind==='mismatch'){ msg='EIN '+esc(c.ein)+' is registered to <strong>'+esc(it.irsName)+'</strong>'+(it.irsState?(' ('+esc(it.irsState)+')'):'')+' — not this name. Likely a wrong match.'; }
+        else if(it.kind==='noresolve'){ msg='EIN '+esc(c.ein)+' did not resolve to any IRS organisation. Check the number.'; }
+        else { msg='Could not reach the IRS lookup for EIN '+esc(c.ein)+'. Try again.'; }
+        box.appendChild(einAuditRow(c, msg));
+      });
+    }
+    if(texas.length){
+      var h2=document.createElement('div'); h2.className='subhead'; h2.textContent=texas.length+' resolve'+(texas.length===1?'s':'')+' to a Texas organisation — worth a check'; box.appendChild(h2);
+      texas.forEach(function(it){
+        box.appendChild(einAuditRow(it.c, 'EIN '+esc(it.c.ein)+' is a Texas organisation ('+esc(it.irsName)+'). The now-fixed national→Texas bug (§1at) could have matched a national charity to a Texas one — confirm this is the organisation you meant.'));
+      });
+    }
   }
 
   function charRow(c){
@@ -9165,6 +9284,7 @@ window.GT.exp = {
   $('btnCharSearch').addEventListener('click', doCharSearch);
   $('charQ').addEventListener('keydown', function(e){ if(e.key==='Enter') doCharSearch(); });
   $('btnCharAdd').addEventListener('click', addManual);
+  $('btnVerifyEins').addEventListener('click', function(){ verifyEinsAgainstIRS(this); });
   $('btnLog').addEventListener('click', function(){ openLog('money'); });
   $('btnInbox').addEventListener('click', openInbox);
   $('btnInboxClose').addEventListener('click', closeInbox);
