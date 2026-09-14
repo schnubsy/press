@@ -11,10 +11,11 @@
 <style>
 /* ============================================================================
    PRESS — AGENT HEALTH · Twilight Cut house style (matches index.html / giving.html)
-   A plain-English status board for the marquee's autonomous agents. REGISTRY-DRIVEN:
-   every enabled press_agent_registry row renders a card automatically — no agent name
-   is ever written into this file. Read-only; refresh on load + a manual button; NO
-   polling loop (free tier). Degrades honestly — a fetch failure never shows green.
+   A plain-English status board for ALL apps' autonomous agents. REGISTRY-DRIVEN:
+   every enabled press_agent_health_public row renders a card automatically — no
+   agent name is ever written into this file. Grouped by app, attention-first.
+   Read-only; refresh on load + a manual button; NO polling loop (free tier).
+   Degrades honestly — a fetch failure never shows green.
    ============================================================================ */
 :root{
   --tw-stage:#100C1E; --tw-ink:#EDE7F2; --tw-violet:#8E7BE8; --tw-rose:#E7A6C7;
@@ -91,6 +92,24 @@ h1.tw-title{font-family:var(--tw-font-display);font-weight:500;font-size:clamp(2
 .refresh[aria-busy="true"]{opacity:.6;pointer-events:none}
 .refresh svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
+/* ── app group heading ───────────────────────────────────────────────────── */
+.app-group{margin-bottom:10px}
+.app-heading{display:flex;align-items:center;gap:12px;margin:28px 0 12px}
+.app-heading h2{font-family:var(--tw-font-display);font-weight:500;font-size:clamp(16px,4vw,20px);
+  background:var(--tw-grad-title);-webkit-background-clip:text;background-clip:text;color:transparent}
+.app-verdict-pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--tw-font-meta);
+  font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;
+  border-radius:var(--tw-radius-pill);border:1px solid;flex-none}
+.app-verdict-pill .pdot{width:7px;height:7px;border-radius:50%;flex:none}
+.app-verdict-pill.green{border-color:rgba(87,199,154,.4);color:#8be0bd}
+.app-verdict-pill.green .pdot{background:var(--ok)}
+.app-verdict-pill.amber{border-color:rgba(224,169,59,.4);color:#f0c877}
+.app-verdict-pill.amber .pdot{background:var(--warn)}
+.app-verdict-pill.red{border-color:rgba(229,96,107,.4);color:#f08a92}
+.app-verdict-pill.red .pdot{background:var(--bad)}
+.app-verdict-pill.grey{border-color:rgba(255,255,255,.12);color:var(--tw-muted)}
+.app-verdict-pill.grey .pdot{background:var(--off)}
+
 /* ── agent cards ─────────────────────────────────────────────────────────── */
 .section-label{font-size:var(--tw-eyebrow);letter-spacing:var(--tw-track-eyebrow);text-transform:uppercase;
   color:var(--tw-faint);margin:22px 4px 10px}
@@ -158,7 +177,7 @@ h1.tw-title{font-family:var(--tw-font-display);font-weight:500;font-size:clamp(2
     <a class="tw-back" href="index.html">← the marquee</a>
     <div class="tw-top"><span>The <b>Agents</b></span><span id="scope">watching…</span></div>
     <h1 class="tw-title">Are the agents OK?</h1>
-    <div class="tw-dek">The little robots that read incoming mail and keep things tidy. This page checks in on them — in plain English, no jargon.</div>
+    <div class="tw-dek">The little robots that read incoming mail and keep things tidy — across all apps. This page checks in on them in plain English, grouped by app, worst first.</div>
     <div class="ctrl">
       <span class="stamp" id="stamp"></span>
       <span class="refresh" id="refresh" role="button" tabindex="0" aria-busy="false">
@@ -171,22 +190,20 @@ h1.tw-title{font-family:var(--tw-font-display);font-weight:500;font-size:clamp(2
   </div>
 
 <script>
-/* ══ SCOPE (page-level, NOT an agent list) ══════════════════════════════════
-   Exactly like index.html hardcodes OWNER/REPO='press', this dashboard is scoped
-   to ONE marquee app's agents. The app tag is the x-app header the header-gated
-   views require. Every AGENT under this app is discovered from the registry —
-   no agent name appears anywhere in this file. Override with ?app=<name> if this
-   page is ever reused for another app. */
-const APP = new URLSearchParams(location.search).get('app') || 'giving';
+/* ══ ALL-APPS HEALTH DASHBOARD ══════════════════════════════════════════════
+   Reads press_agent_health_public (all apps, no x-app gate) and
+   press_agent_runs_daily_all_public (all apps, no x-app gate). Renders one
+   section per app, sorted attention-first (red→amber→green) then by name.
+   No ?app= default — this page shows everything. Degrades honestly if views
+   don't exist yet: shows a neutral "No agent data yet" state, NEVER green. */
 
 /* The press project + its publishable (anon) key — a public const, exactly like the
-   other press pages. NOT a secret. The views are header-gated on x-app; because this
-   tag ships in page source they are effectively public — so the views expose only
-   non-sensitive columns (no input_hash, no error text, no per-run timeline). */
+   other press pages. NOT a secret. These all-apps views expose only non-sensitive
+   columns (no input_hash, no error text, no per-run timeline). */
 const SB_URL = 'https://eepjhpyziczrxvirczio.supabase.co';
 const SB_KEY = 'sb_publishable__iv3bI7xDAsOdHUlXzbVZQ_2yyFS4uX';
 const REST   = SB_URL + '/rest/v1';
-const HEAD   = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'x-app': APP };
+const HEAD   = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
 
 const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
@@ -365,7 +382,7 @@ function barsHTML(week){
 }
 function cardHTML(a){
   const r=a.reg;
-  const cost=monthCost(byDayIndex(r.agent));
+  const cost=monthCost(byDayIndex(r.app, r.agent));
   const dotCls = a.state==='ok'?'s-ok':a.state==='warn'?'s-warn':a.state==='bad'?'s-bad':a.state==='off'?'s-off':'s-idle';
   const lineCls = a.tone==='ok'?'ok':a.tone==='warn'?'warn':a.tone==='bad'?'bad':'';
   const kindText = !a.enabled ? 'Currently switched off'
@@ -381,7 +398,7 @@ function cardHTML(a){
       <span class="statusdot ${dotCls}"></span>
       <div class="titlewrap">
         <h3>${esc(friendly(r.agent))}</h3>
-        <div class="sub">in the ${esc(friendly(APP))} app · ${esc(kindText)}</div>
+        <div class="sub">${esc(kindText)}</div>
         <p class="statusline ${lineCls}">${esc(a.statusText)}</p>
       </div>
     </div>
@@ -400,11 +417,36 @@ function cardHTML(a){
   </div>`;
 }
 
-let BYDAY={}; // agent → { dayKey → aggregate row }
-function byDayIndex(agent){ return BYDAY[agent]||{}; }
+// BYDAY: app → agent → { dayKey → aggregate row }
+let BYDAY={};
+function byDayIndex(app, agent){
+  return (BYDAY[app]||{})[agent]||{};
+}
 
-function verdictHTML(assessed){
+/* ── app-level verdict (worst card in the app wins) ─────────────────────── */
+function appVerdictCls(assessed){
   const watched = assessed.filter(a=>a.enabled);
+  if(watched.length===0) return 'grey';
+  if(watched.some(a=>a.attention && a.severe)) return 'red';
+  if(watched.some(a=>a.attention)) return 'amber';
+  return 'green';
+}
+function appVerdictLabel(cls, watched){
+  if(cls==='grey') return 'No active agents';
+  if(cls==='red') return 'Needs attention';
+  if(cls==='amber') return 'Check in';
+  return watched.length+' agent'+(watched.length===1?'':'s')+' healthy';
+}
+function appPillHTML(assessed){
+  const watched = assessed.filter(a=>a.enabled);
+  const cls = appVerdictCls(assessed);
+  const label = appVerdictLabel(cls, watched);
+  return `<span class="app-verdict-pill ${cls}"><span class="pdot"></span>${esc(label)}</span>`;
+}
+
+/* ── overall verdict pill (worst app verdict wins) ───────────────────────── */
+function overallVerdictHTML(allAssessed){
+  const watched = allAssessed.filter(a=>a.enabled);
   const attention = watched.filter(a=>a.attention);
   const anySevere = attention.some(a=>a.severe);
   let cls, title, sub;
@@ -412,39 +454,72 @@ function verdictHTML(assessed){
     cls='grey'; title='No agents are switched on'; sub='Nothing to watch right now.';
   } else if(attention.length===0){
     cls='green'; title='All agents healthy';
-    sub='Everything that should be running is running. '+watched.length+' agent'+(watched.length===1?'':'s')+' being watched.';
+    sub='Everything that should be running is running. '+watched.length+' agent'+(watched.length===1?'':'s')+' being watched across all apps.';
   } else {
     cls = anySevere?'red':'amber';
     const n=attention.length;
     title = n+' agent'+(n===1?'':'s')+' need'+(n===1?'s':'')+' attention';
-    sub = 'The rest are fine — see the card'+(n===1?'':'s')+' below for what to do.';
+    sub = 'The rest are fine — see the cards below for what to do.';
   }
   return `<div class="verdict ${cls}"><span class="dot"></span><div class="vtext"><h2>${esc(title)}</h2><p>${esc(sub)}</p></div></div>`;
 }
 
+/* ── app sort order: red apps first, then amber, then green, then by name ── */
+function appSortKey(cls, name){
+  const order = {red:0, amber:1, green:2, grey:3};
+  return (order[cls]??4)+'|'+name;
+}
+
 function render(registry){
   const root=document.getElementById('root');
-  // enabled first (attention within enabled bubbled up), then disabled
-  const assessed = registry.map(r=>assess(r, byDayIndex(r.agent)));
-  assessed.sort((a,b)=>{
-    if(a.enabled!==b.enabled) return a.enabled?-1:1;
-    if(a.attention!==b.attention) return a.attention?-1:1;
-    return friendly(a.reg.agent).localeCompare(friendly(b.reg.agent));
-  });
-  const enabled = assessed.filter(a=>a.enabled);
-  const disabled = assessed.filter(a=>!a.enabled);
 
-  let html = verdictHTML(assessed);
-  if(enabled.length) html += enabled.map(cardHTML).join('');
-  if(disabled.length){
-    html += `<div class="section-label">Switched off — not counted above</div>`;
-    html += disabled.map(cardHTML).join('');
+  // Group registry rows by app
+  const byApp={};
+  for(const r of registry){
+    (byApp[r.app]=byApp[r.app]||[]).push(r);
   }
-  if(!assessed.length){
-    html += `<div class="tw-note"><h3>No agents registered yet</h3><p>When an agent is registered for this app it will appear here automatically.</p></div>`;
+
+  // Assess all agents
+  const allAssessed=[];
+  const appGroups=[]; // {app, appAssessed, verdictCls}
+  for(const app of Object.keys(byApp)){
+    const appAssessed = byApp[app].map(r=>assess(r, byDayIndex(app, r.agent)));
+    allAssessed.push(...appAssessed);
+    appGroups.push({app, appAssessed, verdictCls: appVerdictCls(appAssessed)});
   }
+
+  // Sort apps: attention-first (red→amber→green→grey), then alpha
+  appGroups.sort((a,b)=>appSortKey(a.verdictCls, a.app).localeCompare(appSortKey(b.verdictCls, b.app)));
+
+  let html = overallVerdictHTML(allAssessed);
+
+  if(appGroups.length===0){
+    html += `<div class="tw-note"><h3>No agent data yet</h3><p>When agents are registered and the health views are live, they will appear here automatically.</p></div>`;
+  } else {
+    for(const {app, appAssessed, verdictCls} of appGroups){
+      // Sort cards within app: enabled+attention first, then enabled, then disabled; alpha within tiers
+      const sorted = [...appAssessed].sort((a,b)=>{
+        if(a.enabled!==b.enabled) return a.enabled?-1:1;
+        if(a.attention!==b.attention) return a.attention?-1:1;
+        return friendly(a.reg.agent).localeCompare(friendly(b.reg.agent));
+      });
+      const enabled = sorted.filter(a=>a.enabled);
+      const disabled = sorted.filter(a=>!a.enabled);
+
+      html += `<div class="app-group">`;
+      html += `<div class="app-heading"><h2>${esc(friendly(app))}</h2>${appPillHTML(appAssessed)}</div>`;
+      if(enabled.length) html += enabled.map(cardHTML).join('');
+      if(disabled.length){
+        html += `<div class="section-label">Switched off — not counted above</div>`;
+        html += disabled.map(cardHTML).join('');
+      }
+      html += `</div>`;
+    }
+  }
+
   root.innerHTML = html;
-  document.getElementById('scope').textContent = assessed.length+' agent'+(assessed.length===1?'':'s')+' · '+friendly(APP);
+  const total = allAssessed.length;
+  document.getElementById('scope').textContent = total+' agent'+(total===1?'':'s')+' across '+appGroups.length+' app'+(appGroups.length===1?'':'s');
 }
 
 function showError(msg){
@@ -456,6 +531,14 @@ function showError(msg){
   document.getElementById('scope').textContent = 'unavailable';
 }
 
+function showEmpty(){
+  // Honest degrade: views exist but returned no rows (views not yet created = 404 → showError)
+  document.getElementById('root').innerHTML =
+    `<div class="tw-note"><h3>No agent data yet</h3>`+
+    `<p>The health views are reachable but have no rows yet. Agents will appear here automatically once they’re registered.</p></div>`;
+  document.getElementById('scope').textContent = '0 agents';
+}
+
 const skel = `<div class="tw-skel"></div><div class="tw-skel"></div><div class="tw-skel"></div>`;
 
 async function load(){
@@ -464,16 +547,25 @@ async function load(){
   document.getElementById('root').innerHTML = skel;
   try{
     const [registry, daily] = await Promise.all([
-      getJSON('/press_agent_registry_public?select=app,agent,enabled,last_ok_at,kind,cadence_minutes,model,prompt_version,review_threshold&order=agent.asc'),
-      getJSON('/press_agent_runs_daily_public?select=agent,day,runs,ok_count,skipped_count,refused_count,error_count,dead_count,cost_usd,tokens_in,tokens_out,last_started_at&order=day.desc')
+      getJSON('/press_agent_health_public?select=app,agent,enabled,last_ok_at,kind,cadence_minutes,model&order=app.asc,agent.asc'),
+      getJSON('/press_agent_runs_daily_all_public?select=app,agent,day,runs,ok_count,skipped_count,refused_count,error_count,dead_count,cost_usd,tokens_in,tokens_out,last_started_at&order=day.desc')
     ]);
-    // index daily rows by agent → dayKey
+    // index daily rows by app → agent → dayKey
     BYDAY={};
     for(const row of (daily||[])){
-      (BYDAY[row.agent] = BYDAY[row.agent] || {})[row.day] = row;
+      if(!BYDAY[row.app]) BYDAY[row.app]={};
+      if(!BYDAY[row.app][row.agent]) BYDAY[row.app][row.agent]={};
+      BYDAY[row.app][row.agent][row.day] = row;
     }
-    if(!Array.isArray(registry)) throw new Error('Unexpected response.');
-    render(registry);
+    if(!Array.isArray(registry)){
+      showError('The status service didn’t answer.');
+      return;
+    }
+    if(registry.length===0){
+      showEmpty();
+    } else {
+      render(registry);
+    }
     document.getElementById('stamp').textContent = 'checked '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
     document.getElementById('foot').innerHTML =
       'Reads only non-sensitive status — no message contents, no per-item timeline. '+

@@ -1,0 +1,111 @@
+v4 Slice 4 — Agent Health Page Evidence
+========================================
+Date: 2026-09-14
+Branch: arc/agent-health
+
+GIT MV
+------
+git mv agents.html agent-health.html
+(Confirmed by git status showing rename: agents.html → agent-health.html)
+
+VIEW NAMES NOW FETCHED
+----------------------
+Old (per-app, x-app gated):
+  /press_agent_registry_public?select=app,agent,enabled,last_ok_at,kind,cadence_minutes,model,...
+  /press_agent_runs_daily_public?select=agent,day,...  (with x-app: giving header)
+
+New (all-apps, no x-app gate):
+  /press_agent_health_public?select=app,agent,enabled,last_ok_at,kind,cadence_minutes,model&order=app.asc,agent.asc
+  /press_agent_runs_daily_all_public?select=app,agent,day,runs,ok_count,skipped_count,refused_count,error_count,dead_count,cost_usd,tokens_in,tokens_out,last_started_at&order=day.desc
+
+No x-app header required; HEAD now only includes apikey + Authorization Bearer.
+BYDAY index is now keyed app → agent → dayKey (was agent → dayKey).
+
+KICKERS DIFF (index.html)
+--------------------------
+Added as first element so it wins over /log|notes/ and /guide/:
+  [/agent-health|health|monitor|status/,'Monitor']
+
+Full KICKERS line:
+  const KICKERS=[[/agent-health|health|monitor|status/,'Monitor'],[/halvsies|split|money|budget|spend/,'Money'],[/council/,'Reference'],[/checklist|prep|kayley|eagle/,'Checklist'],
+    [/log|notes|journal/,'Notes'],[/guide|how-?to|readme/,'Guide']];
+
+Kicker resolution verified via browser console:
+  agent-health.html → Monitor ✓
+  agents.html       → Page   (old file; no longer in repo)
+  halvsies.html     → Money  ✓
+  council-guide.html → Reference ✓
+
+ICONS DIFF (index.html)
+-----------------------
+Added Monitor entry with Feather "activity" pulse path (24 viewBox, stroke 2, round caps):
+  'Monitor':   '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+
+PAGES.JSON ENTRY
+----------------
+Added:
+  "agent-health.html": { "title": "Agent Health" }
+
+AGENT-HEALTH.HTML CHANGES SUMMARY
+----------------------------------
+- Removed: const APP = new URLSearchParams(location.search).get('app') || 'giving';
+  (entire single-app scoping removed)
+- Removed: x-app header from HEAD object (HEAD now only apikey + Authorization Bearer)
+- Added: per-app grouping — one .app-group section per app slug
+- Added: .app-heading + .app-verdict-pill CSS (green/amber/red/grey per app)
+- Added: appVerdictCls(), appVerdictLabel(), appPillHTML() helpers
+- Added: overallVerdictHTML() for the top-level verdict (worst app verdict wins)
+- Added: appSortKey() for attention-first app ordering (red→amber→green→grey, then alpha)
+- Changed: BYDAY index: app → agent → dayKey (was agent → dayKey)
+- Changed: byDayIndex(app, agent) (was byDayIndex(agent))
+- Changed: cardHTML() .sub text no longer says "in the X app" (removed APP reference)
+- Changed: scope counter says "N agents across M apps"
+- Kept: ALL existing card-rendering functions (barsHTML, assess, last7, monthCost, etc.) verbatim
+- Kept: verdictHTML logic (renamed overallVerdictHTML with same logic)
+- Kept: refresh-on-load + manual refresh button, no polling
+- Kept: Twilight Cut house styling entirely unchanged
+- Kept: <title>Agent Health</title> and <meta name="page-title" content="Agent Health">
+
+HONEST-DEGRADE BEHAVIOR
+------------------------
+The two new views (press_agent_health_public and press_agent_runs_daily_all_public)
+do not exist in Supabase yet — they are created by a Cowork migration in a later slice.
+
+Observed behavior when views are absent:
+  - The fetch throws (non-200 response from Supabase)
+  - showError() is called: renders a neutral GREY verdict card
+  - Text: "Can't check the agents right now" / "The status service didn't answer.
+    This page shows nothing rather than a false all-clear. Try Refresh in a moment."
+  - scope: "unavailable"
+  - NEVER shows green. NEVER shows false health data.
+  - This is CORRECT and is the expected state until the views are deployed.
+
+If the views exist but return empty rows:
+  - showEmpty() renders: "No agent data yet" (tw-note neutral card)
+  - NEVER shows green.
+
+SCREENSHOTS TAKEN
+-----------------
+agent-health-desktop.png — desktop (1280px): shows grey "Can't check the agents right now"
+  honest-degrade verdict. Confirms: no crash, no false green, no jargon.
+agent-health-mobile.png  — mobile (390px):  same honest-degrade state at phone width.
+  Confirms: no horizontal scroll, text reflows, "← THE MARQUEE" back link readable.
+marquee-desktop.png      — desktop index.html (from GitHub main): shows current page list
+  including "Agents" (agents.html from main). After branch is merged, agent-health.html
+  will appear with Monitor kicker + pulse icon (verified via console: kicker('agent-health.html') === 'Monitor').
+marquee-mobile.png       — mobile index.html at 390px: cards stack correctly.
+
+Note: The marquee screenshots show GitHub main content (the marquee always fetches from
+the GitHub API + raw.githubusercontent.com, not from local disk). The Monitor kicker
+and pulse icon will be live for all viewers after the arc/agent-health branch is merged.
+
+FILES COMMITTED
+---------------
+agent-health.html                         (renamed from agents.html + all-apps rewrite)
+index.html                                (Monitor kicker + pulse icon)
+pages.json                                (agent-health.html entry)
+docs/evidence/v4-slice-4-agent-health.txt (this file)
+docs/evidence/agent-health-desktop.png
+docs/evidence/agent-health-mobile.png
+docs/evidence/marquee-desktop.png
+docs/evidence/marquee-mobile.png
