@@ -1,0 +1,59 @@
+v4-slice-9-press — control-file contract v2 seed
+Date: 2026-09-14
+Branch: arc/control-files-v2
+
+## What was seeded
+
+Files created:
+  CLAUDE.md          — v2 project instructions (publishing-target description)
+  HANDOFF.md         — current state + next actions
+  ARC.md             — empty arc inbox
+  docs/spec.md       — portal + page contract
+  docs/history.md    — dated arc history
+  docs/lessons.md    — tag conventions + press lessons
+  docs/evidence/.gitkeep
+
+## Migration check
+
+No ORCHESTRATION.md / STATUS.html / CLAUDE-archive.md existed at root.
+Migration step skipped (nothing to migrate).
+
+## Root ls at time of seeding
+
+.DS_Store
+.git/
+.github/
+README.md
+ARC.md                  ← new
+CLAUDE.md               ← new
+HANDOFF.md              ← new
+agent-health.html
+council-assets/
+council-guide.html
+docs/
+eagle-path.html
+giving-assets/
+giving.html
+halvsies.html
+index.html
+kayley.html
+pages.json
+retirement.html
+
+Source pages (*.html), pages.json, .github — UNTOUCHED.
+
+## CLAUDE.md line count
+
+51 lines (limit: 60 ✓)
+
+## Done criteria
+
+CLAUDE.md ≤ 60 lines:                    PASS (51)
+No ORCHESTRATION.md at root:             PASS
+No STATUS.html at root:                  PASS
+No CLAUDE-archive.md at root:            PASS
+docs/spec.md exists:                     PASS
+docs/history.md exists:                  PASS
+docs/lessons.md exists:                  PASS
+source pages/pages.json/.github untouched: PASS
+NOT merged to main:                      PASS (branch only)
