@@ -19,5 +19,8 @@
   },
   "agent-health.html": {
     "title": "Agent Health"
+  },
+  "fsa.html": {
+    "title": "FSA Claims"
   }
 }

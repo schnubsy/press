@@ -46,6 +46,7 @@ has no page-title meta). No external asset — the single-file rule holds.
 | `halvsies.html` | Halvsies | `#0E1114` | `#7C5CFF → #FF6B5E` | circle split in half | inline |
 | `kayley.html` | Kayley · Upskilling Plan | `#100C1E` | `#8E7BE8 → #E7A6C7` | three ascending bars | inline |
 | `retirement.html` | Retirement Projection | `#0F1618` | `#7BC0AC → #E0BD8F` | rising line | inline |
+| `fsa.html` | FSA Claims | `#14161A` | `#00A3E0` (cyan) + `#E6E9ED` needle | gauge dial + needle | inline (flat, no gradient — Apparatus Gauge) |
 
 ## Glyph paths (24x24 box)
 

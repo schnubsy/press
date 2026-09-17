@@ -1,0 +1,1629 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#14161A">
+  <title>FSA Claims</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMTQxNjFBIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJBMkYzNiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIyIDQ5LjMyIEEyMCAyMCAwIDAgMSAxNC42OCAyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDBBM0UwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIzMiIgeTE9IjMyIiB4Mj0iNDAiIHkyPSIxOC4xNCIgc3Ryb2tlPSIjRTZFOUVEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
+  <meta name="build" content="2026-09-17T22:42:46.128Z 60769e8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="manifest" href="fsa-assets/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="fsa-assets/apple-touch-icon.png">
+  <style>
+/* styles/fonts.css */
+/* fonts.css — inlined @font-face (parse-time known so font-display:optional prevents any post-paint reflow/CLS).
+   Font FILES are fetched from fonts.gstatic.com; regenerated from the Google Fonts css2 endpoint (display=optional).
+   If Google bumps a font version and a URL 404s, the fallback renders (no CLS) — re-fetch to refresh. */
+/* latin-ext */
+@font-face {
+  font-family: 'Azeret Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: optional;
+  src: url(https://fonts.gstatic.com/s/azeretmono/v21/3XFuErsiyJsY9O_Gepph-HHvZfn23vRKV0U.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Azeret Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: optional;
+  src: url(https://fonts.gstatic.com/s/azeretmono/v21/3XFuErsiyJsY9O_Gepph-HHhZfn23vRK.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Azeret Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: optional;
+  src: url(https://fonts.gstatic.com/s/azeretmono/v21/3XFuErsiyJsY9O_Gepph-HHvZfn23vRKV0U.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Azeret Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: optional;
+  src: url(https://fonts.gstatic.com/s/azeretmono/v21/3XFuErsiyJsY9O_Gepph-HHhZfn23vRK.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: optional;
+  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb54C_k3HqUtEw.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: optional;
+  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb94C_k3HqUtEw.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: optional;
+  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: optional;
+  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb54C_k3HqUtEw.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: optional;
+  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb94C_k3HqUtEw.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: optional;
+  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: optional;
+  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb54C_k3HqUtEw.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: optional;
+  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb94C_k3HqUtEw.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: optional;
+  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* styles/tokens.css */
+/* tokens.css — Apparatus Gauge palette + type + grid. Exact hexes only; no others anywhere. */
+:root, [data-theme="dark"] {
+  --base:#14161A; --surface:#1C2026; --ink:#E6E9ED; --dim:#8C949E; --hairline:#2A2F36;
+  --accent:#00A3E0; --warn:#E0A400; --danger:#E0483A; --neutral:#6C7684; --neutral-deep:#383F48;
+  --font-display:'Space Grotesk', system-ui, sans-serif;
+  --font-mono:'Azeret Mono', ui-monospace, monospace;
+  --s1:8px; --s2:16px; --s3:24px; --s4:32px; --s5:40px; --s6:48px;
+}
+[data-theme="light"] {
+  --base:#ECEDEF; --surface:#FFFFFF; --ink:#14161A; --dim:#5A6068; --hairline:#D8DBDF;
+  --accent:#0273A8; --warn:#92650A; --danger:#B03626;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --base:#ECEDEF; --surface:#FFFFFF; --ink:#14161A; --dim:#5A6068; --hairline:#D8DBDF;
+    --accent:#0273A8; --warn:#92650A; --danger:#B03626;
+  }
+}
+
+/* styles/base.css */
+/* base.css — movement discipline: flat planes, hairlines, no radius/shadow/gradient, 8px grid. */
+* { border-radius: 0; box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--base);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 15px;
+  line-height: 1.4;
+}
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.dim { color: var(--dim); }
+.vh {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+main { max-width: 960px; margin: 0 auto; padding: 0 var(--s2) var(--s6); }
+body.preboot main { visibility: hidden; }  /* revealed after first full render — one paint, no layout shift */
+a, button, select { font-family: inherit; }
+button {
+  background: var(--surface); color: var(--ink); border: 1px solid var(--hairline);
+  padding: var(--s1); cursor: pointer; transition: border-color 120ms;
+}
+button:hover { border-color: var(--accent); }
+:focus-visible { outline: 1px solid var(--accent); outline-offset: 1px; }
+select {
+  background: var(--surface); color: var(--ink); border: 1px solid var(--hairline);
+  padding: 4px var(--s1); font-family: var(--font-mono);
+}
+
+#topbar {
+  display: flex; align-items: center; gap: var(--s2);
+  max-width: 960px; margin: 0 auto; padding: var(--s2);
+  border-bottom: 1px solid var(--hairline);
+}
+.wordmark { font-family: var(--font-display); font-weight: 600; font-size: 20px; letter-spacing: .04em; }
+#asof { font-size: 12px; }
+#theme-toggle { margin-left: auto; line-height: 1; }
+.pill-sync { font-size: 11px; border: 1px solid var(--hairline); padding: 2px 6px; color: var(--dim); }
+
+.section-h {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim);
+  font-weight: 600; margin: var(--s3) 0 var(--s1);
+}
+
+/* inbox (review queue) — flat editable cards, hairline-separated (slice 4) */
+#inbox-list .inbox-item { border-top: 1px solid var(--hairline); padding: var(--s2) 0; }
+#inbox-list .inbox-item:first-child { border-top: 0; }
+.inbox-meta { font-size: 11px; margin: 0 0 var(--s1); }
+.inbox-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--s1) var(--s2); }
+.inbox-field { display: flex; flex-direction: column; gap: 2px; }
+.inbox-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+.inbox-form input { background: var(--surface); color: var(--ink); border: 1px solid var(--hairline); padding: 4px var(--s1); font-size: 13px; }
+.inbox-actions { display: flex; flex-wrap: wrap; gap: var(--s1); margin-top: var(--s2); }
+.inbox-error { color: var(--ink); font-size: 12px; margin: var(--s1) 0 0; border-left: 2px solid var(--danger); padding-left: var(--s1); }
+
+/* agent control (slice 5) */
+#agents { display: inline-flex; align-items: center; gap: var(--s1); }
+.agent-badge { font-size: 11px; color: var(--dim); }
+
+/* styles/gauge.css */
+/* gauge.css — the hero. A single flat bar; fill = claimed, unfilled = unclaimed. (Refined in slice 3.) */
+#gauge { margin-top: var(--s3); }
+#gauge-bar {
+  position: relative; display: flex; height: 48px; width: 100%;
+  border: 1px solid var(--hairline); background: var(--surface); overflow: hidden;
+}
+#gauge-fill { background: var(--accent); height: 100%; width: 0; }
+#gauge-unfilled { position: relative; flex: 1 1 auto; height: 100%; display: flex; align-items: center; justify-content: flex-end; }
+#gauge-label { font-size: 12px; padding: 0 var(--s1); color: var(--dim); }
+#gauge-ticks { position: absolute; inset: 0; pointer-events: none; }
+#gauge-note { font-size: 11px; margin: 4px 0 0; }
+
+#readout {
+  display: grid; grid-template-columns: repeat(3, 1fr); margin-top: var(--s3);
+  border: 1px solid var(--hairline);
+}
+#readout .cell { padding: var(--s2); border-left: 1px solid var(--hairline); display: flex; flex-direction: column; gap: 4px; }
+#readout .cell:first-child { border-left: 0; }
+#readout .label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim); font-weight: 600; }
+#readout .value { font-size: 28px; color: var(--ink); }
+@media (max-width: 640px) {
+  #readout { grid-template-columns: repeat(2, 1fr); }
+  #readout .cell:nth-child(3) { border-left: 0; }  /* first cell of row 2 */
+}
+
+/* gauge tick marks + scale labels (slice 3) */
+#gauge-ticks .tick { position: absolute; bottom: 0; width: 1px; height: 25%; background: var(--hairline); }
+#gauge-ticks .tick.major { height: 55%; }
+#gauge-scale { position: relative; height: 16px; margin-top: 2px; }
+#gauge-scale .scale-label { position: absolute; top: 0; transform: translateX(-50%); font-size: 11px; color: var(--dim); white-space: nowrap; }
+#gauge-scale .scale-label.end { transform: translateX(-100%); }
+
+/* styles/table.css */
+/* table.css — chips + claims table. Flat, hairline-ruled, radius 0. (Refined in slice 3.) */
+#chips { display: flex; flex-wrap: wrap; gap: var(--s1); margin: var(--s3) 0 var(--s2); }
+.chip { background: transparent; border: 1px solid var(--hairline); color: var(--dim); padding: 4px var(--s1); font-size: 13px; }
+.chip[aria-selected="true"] { border-color: var(--accent); color: var(--ink); }
+
+#claims-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+#claims-table th, #claims-table td { text-align: left; padding: var(--s1); border-bottom: 1px solid var(--hairline); vertical-align: top; }
+#claims-table th { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); font-weight: 600; cursor: pointer; }
+#claims-table td.num, #claims-table th.num { text-align: right; }
+.col-amount, .col-claimed, .col-date, .col-docs { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.tag { font-size: 11px; color: var(--warn); background: var(--surface); padding: 0 4px; }
+.note-line { font-size: 11px; color: var(--dim); display: block; }
+.status { font-size: 12px; border: 1px solid var(--hairline); padding: 1px 6px; background: var(--surface); }
+.status.submitted { border-color: var(--neutral-deep); color: var(--ink); }
+.status.candidate { border-color: var(--accent); color: var(--accent); }
+.status.waiting, .status.needs-receipt { border-color: var(--warn); color: var(--warn); }
+.status.denied { border-color: var(--danger); color: var(--danger); }
+.status.skipped { border-color: var(--dim); color: var(--dim); }
+#nextup-list { list-style: none; padding: 0; margin: 0; }
+#nextup-list li { display: flex; gap: var(--s2); align-items: baseline; padding: var(--s1) 0; border-bottom: 1px solid var(--hairline); }
+#nextup-list .amt { font-family: var(--font-mono); font-variant-numeric: tabular-nums; min-width: 6ch; text-align: right; }
+@media (max-width: 640px) {
+  #claims-table .col-person, #claims-table .h-person { display: none; }
+}
+
+/* styles/print.css */
+/* print.css — light tokens forced; chrome hidden; table intact. (Expanded in slice 3.) */
+@media print {
+  :root, [data-theme="dark"], [data-theme="light"] {
+    --base:#FFFFFF; --surface:#FFFFFF; --ink:#14161A; --dim:#5A6068; --hairline:#D8DBDF;
+    --accent:#0273A8; --warn:#92650A; --danger:#B03626;
+  }
+  #theme-toggle, #chips, #syncpill { display: none !important; }
+  body { background: #FFFFFF; color: #14161A; }
+  #gauge-bar { border: 1px solid #D8DBDF; }
+  #claims-table th, #claims-table td { border-bottom: 1px solid #D8DBDF; font-size: 10pt; }
+  #claims-table tr { page-break-inside: avoid; }
+}
+
+@media print {
+  /* gauge as a thin outlined bar; the full sentence + percentage prints as text (from #gauge-sr) */
+  #gauge-bar { height: 14px; border: 1px solid #D8DBDF; }
+  #gauge-fill { background: #0273A8; }
+  #gauge-label { color: #14161A; }
+  #gauge-ticks, #gauge-scale { display: none; }
+  #gauge-sr { position: static !important; width: auto; height: auto; clip: auto; margin: 4px 0 0; font-size: 10pt; }
+  #nextup-list .tag, #claims-table .tag, .status { background: #FFFFFF; }
+}
+
+</style>
+</head>
+<body class="preboot">
+  <header id="topbar">
+    <span class="wordmark">FSA</span>
+    <label class="vh" for="year">Plan year</label>
+    <select id="year" aria-label="Plan year"></select>
+    <span id="asof" class="mono dim" aria-live="polite"></span>
+    <span id="syncpill" class="mono pill-sync" hidden></span>
+    <span id="agents"></span>
+    <button id="theme-toggle" type="button" aria-label="Toggle light and dark theme">◐</button>
+  </header>
+
+  <main>
+    <section id="gauge" aria-label="Reimbursement gauge">
+      <div id="gauge-bar" role="img" aria-label="Reimbursement progress">
+        <div id="gauge-fill"></div>
+        <div id="gauge-unfilled"><span id="gauge-label" class="mono"></span></div>
+        <div id="gauge-ticks" aria-hidden="true"></div>
+      </div>
+      <div id="gauge-scale" aria-hidden="true"></div>
+      <p id="gauge-note" class="dim" hidden></p>
+      <p id="gauge-sr" class="vh"></p>
+    </section>
+
+    <section id="readout" aria-label="Summary">
+      <div class="cell"><span class="label">Submitted this year</span><span class="value mono" id="r-submitted">—</span></div>
+      <div class="cell"><span class="label">Waiting on documents</span><span class="value mono" id="r-waiting">—</span></div>
+      <div class="cell"><span class="label">Eligible, not yet picked</span><span class="value mono" id="r-eligible">—</span></div>
+    </section>
+
+    <section id="nextup" aria-label="Next up">
+      <h2 class="section-h">Next up</h2>
+      <ul id="nextup-list"></ul>
+    </section>
+
+    <section id="inbox" aria-label="Inbox" hidden>
+      <h2 class="section-h" id="inbox-h">Inbox</h2>
+      <div id="inbox-list"></div>
+    </section>
+
+    <section id="claims" aria-label="Claims">
+      <div id="chips" role="tablist" aria-label="Filter claims"></div>
+      <table id="claims-table">
+        <caption class="vh">Claims for the selected plan year</caption>
+        <thead>
+          <tr>
+            <th scope="col" data-sort="date">Date</th>
+            <th scope="col" data-sort="provider">Provider</th>
+            <th scope="col" class="h-person" data-sort="person">Person</th>
+            <th scope="col" data-sort="amount">Amount</th>
+            <th scope="col" data-sort="claimed">Claimed</th>
+            <th scope="col" data-sort="status">Status</th>
+            <th scope="col">Documents</th>
+          </tr>
+        </thead>
+        <tbody id="claims-body"></tbody>
+      </table>
+      <p id="claims-empty" class="dim" hidden>No claims for this year.</p>
+    </section>
+  </main>
+
+  <script type="application/json" id="demo-fixture">{
+  "v": 2,
+  "updated_at": "2026-09-16T00:00:00.000Z",
+  "active_year": "2026",
+  "years": {
+    "2026": {
+      "election": 1000,
+      "deadline": {
+        "incur_by": "2026-12-31",
+        "claims_run_out": null
+      },
+      "claims": [
+        {
+          "id": "demo-0001",
+          "ynab_id": "d1",
+          "date": "2026-08-15",
+          "payee": "Sample Clinic",
+          "account": "Checking",
+          "amount": 200,
+          "provider": "Sample Clinic",
+          "type": "Medical Services",
+          "person": "A",
+          "eligibility": "eligible",
+          "eob_needed": false,
+          "status": "submitted",
+          "docs": [
+            "sampleclinic20260815.pdf"
+          ],
+          "documents": [
+            "sampleclinic20260815.pdf"
+          ],
+          "submitted_on": "2026-09-15",
+          "notes": []
+        },
+        {
+          "id": "demo-0002",
+          "ynab_id": "d2",
+          "date": "2026-07-02",
+          "payee": "Example Dental",
+          "account": "Checking",
+          "amount": 150,
+          "provider": "Example Dental",
+          "type": "Dental",
+          "person": "B",
+          "eligibility": "eligible",
+          "eob_needed": false,
+          "status": "submitted",
+          "docs": [
+            "exampledental20260702.pdf"
+          ],
+          "documents": [
+            "exampledental20260702.pdf"
+          ],
+          "submitted_on": "2026-09-15",
+          "notes": []
+        },
+        {
+          "id": "demo-0003",
+          "ynab_id": "d3",
+          "date": "2026-06-10",
+          "payee": "Sample Clinic",
+          "account": "Checking",
+          "amount": 180,
+          "provider": "Sample Clinic",
+          "type": "Medical Services",
+          "person": "A",
+          "eligibility": "eligible",
+          "eob_needed": true,
+          "status": "candidate",
+          "docs": [],
+          "documents": [],
+          "submitted_on": null,
+          "notes": []
+        },
+        {
+          "id": "demo-0004",
+          "ynab_id": "d4",
+          "date": "2026-05-01",
+          "payee": "Example Pharmacy",
+          "account": "Checking",
+          "amount": 90,
+          "provider": "Example Pharmacy",
+          "type": "Prescription Medication Copay/Cost",
+          "person": "A",
+          "eligibility": "eligible",
+          "eob_needed": false,
+          "status": "waiting",
+          "docs": [],
+          "documents": [],
+          "submitted_on": null,
+          "notes": [
+            "awaiting itemised receipt"
+          ]
+        },
+        {
+          "id": "demo-0005",
+          "ynab_id": "d5",
+          "date": "2026-04-12",
+          "payee": "Sample Clinic",
+          "account": "Checking",
+          "amount": 60,
+          "provider": "Sample Clinic",
+          "type": "Medical Services",
+          "person": "B",
+          "eligibility": "eligible",
+          "eob_needed": false,
+          "status": "needs-receipt",
+          "docs": [],
+          "documents": [],
+          "submitted_on": null,
+          "notes": []
+        },
+        {
+          "id": "demo-0006",
+          "ynab_id": "d6",
+          "date": "2026-03-03",
+          "payee": "Example Refund",
+          "account": "Checking",
+          "amount": -40,
+          "provider": "Example Refund",
+          "type": "Medical Services",
+          "person": "A",
+          "eligibility": "eligible",
+          "eob_needed": false,
+          "status": "skipped",
+          "docs": [],
+          "documents": [],
+          "submitted_on": null,
+          "notes": [
+            "refund"
+          ]
+        }
+      ]
+    }
+  },
+  "capture": {
+    "private_jwk": {
+      "key_ops": [
+        "deriveBits"
+      ],
+      "ext": true,
+      "kty": "EC",
+      "x": "HToaAvpgHMpONTi_afF2xRYLUnJ0XeMsE_K1V0Zqz_E",
+      "y": "yzJ9L7VAcZs6tej3HSNGiZQdW3i5O5ErEkgCgaYGiBo",
+      "crv": "P-256",
+      "d": "qJcIOTRWuW9GoSQmniqXE6wj3jNU89Swg5rCdKUb8J4"
+    },
+    "public_jwk": {
+      "key_ops": [],
+      "ext": true,
+      "kty": "EC",
+      "x": "HToaAvpgHMpONTi_afF2xRYLUnJ0XeMsE_K1V0Zqz_E",
+      "y": "yzJ9L7VAcZs6tej3HSNGiZQdW3i5O5ErEkgCgaYGiBo",
+      "crv": "P-256"
+    }
+  },
+  "inbox": {
+    "pending": []
+  }
+}</script>
+  <script type="application/json" id="demo-inbox">[
+  {
+    "id": "q-demo-good",
+    "app": "fsa",
+    "sync_id": "demo",
+    "agent": "fsa-ynab-sync",
+    "source_ref": "demo-cap-1",
+    "payload_sealed": {
+      "v": 1,
+      "epk": "BJMXDXTtiFHshWbgF6o9/HXoQAniqP02j/ch+4kQG0MqCpVswMsaB1U6fozGkJy/CEZkL1Cgrwyi6JEcP/aWqKY=",
+      "iv": "GN23C3DIJYPHmfFX",
+      "ct": "1RsMuZu8xMUyPlWFCtbLbTQv6dQ0kscyaO0+IZX0KXx60LAkltXIltuElfrLlPHL4kPbtfEkulZtbCZqH2pIBXVO9i9gX9UgwJ9tbb30d75q36nCmAA97PGZBUTfaOhWnnj677pxMZ1sJSwHYdZrMw8khBSm0xzArmOCMG60P6frCgVYCERVevUGsrwcm+zrGmSIz3Q/Pu8MnpSKTQnhmUB7/E9bcGutv3LGiwA3xvYtIdzvAqbp/PkSAJci9zzIUR2xm6IFmrHX4E6E+7VvxRAkLNm28i7TcaDn8ud2tAYsM/wW2Eh8YT2DylrcMozvasShVDBQSGK0TJ+o/s9fxzcYZ+s9tDADEuGI6B7k7xhRMLkHOx3eEtVlvjeodb6+Crs65dKJhk7sZ42Puuc8MR/O7VuF3z1TWZ2kMsn+bWoFUqggrmdEiVfkOW8XzEgmVJXHS4QpGkt1l9YFvlN899d5cIMpEWjOXPnBGe93kFVlPxBw3PWLT+9ZP/JbOXDfI4Y2Z8nyqRpkhe5zzFEw3Y8kT5eISBrvEQ=="
+    },
+    "status": "pending",
+    "created_at": "2026-09-16T12:00:00Z"
+  },
+  {
+    "id": "q-demo-good2",
+    "app": "fsa",
+    "sync_id": "demo",
+    "agent": "fsa-capture",
+    "source_ref": "demo-cap-3",
+    "payload_sealed": {
+      "v": 1,
+      "epk": "BHLyaw7Qhw0LpwdHyNW8FEyGa+Fu9GD2ywpD/OwKrR2RTvH50qAnC0eaKx9eUC8v2Fg/YuiE0y7hzJQfqKlNnFM=",
+      "iv": "Po7iu8bl46KW2YL7",
+      "ct": "S4zS8ay1B7reVKjslJyEpr+heYPg71hhu5br7zGwAG4wFACNK21eYXErl15KJSkO7ci7x473BrHJK60Smt/fDCjL1Y782IJr1YkDptfcanYsjy1yiDcgzsvcrZJGVL5pglBdjcmv6oKKlFRPBrNGb2SB86pm5acwB8p/kgZ3z4LzYBhbHRDjAphToGu4wYjhVRoNZcX2C4ekhmgQPWBb6Ny0UtVrv50/D0uhnyAH9+Xe9M0053gbodIjFg7LTSKR+1yL+8uxYUd8eXsGSoOT79VUPYyyVSjw7co1SAGmi8ECp4Gop7eCCso/KI8onxhZ/6oXMww40eMIzZN7Bg8rDP/ecfYrYutBSdWkju439Dr6dQl2tjV0KZxIhwSBURQyP424TQbFNNfPpZldVB2jgEBU6/mJo0OVdxqZJCXTFd3MThz1IAG2Jp+h5G0xYQOXtniMCa6be3nUFxnbsnlWqsodT+4aedwFhUqseIFbFrRksm2FxkL2Ab/Vrq62AG9GvOo="
+    },
+    "status": "pending",
+    "created_at": "2026-09-16T12:03:00Z"
+  },
+  {
+    "id": "q-demo-badkey",
+    "app": "fsa",
+    "sync_id": "demo",
+    "agent": "fsa-capture",
+    "source_ref": "demo-cap-2",
+    "payload_sealed": {
+      "v": 1,
+      "epk": "BAtrjgxBc+9PwR0jETgVBq6mcwsPR6It284QCMwDG5wpEMf3VAg/EKBjMI8Itu3oSzULg2U6ABpvFM7ayVf2G4k=",
+      "iv": "QObObNe2HQFRF2G9",
+      "ct": "5L+95Pw6Da3++dX9HPxsSuIf+2EFA5nTEDuE3HffVICjKx0vXzrES+K08SBULJ1E//Lu5unUTg/Vr2qzV0+dC0vkv1SywhDnb9qwTf10uuM="
+    },
+    "status": "pending",
+    "created_at": "2026-09-16T12:05:00Z"
+  }
+]</script>
+  <script type="module">
+
+/* ---- src/core/format.js ---- */
+// src/core/format.js — pure display formatters. No DOM. ESM; unit-tested.
+function money(n) {
+  const v = Number(n) || 0;
+  const sign = v < 0 ? '-' : '';
+  const abs = Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return `${sign}$${abs}`;
+}
+function moneyAbs(n) { return money(Math.abs(Number(n) || 0)); }
+function int(n) { return (Number(n) || 0).toLocaleString('en-US'); }
+function ymd(s) {
+  if (!s) return '';
+  const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : String(s);
+}
+function pluralDays(n) { return `${n} day${Math.abs(n) === 1 ? '' : 's'}`; }
+
+
+
+/* ---- src/core/doc.js ---- */
+// src/core/doc.js — the FSA document shape (v2) + pure selectors. No DOM. ESM; unit-tested.
+// claims[] preserves the ledger claim object field-for-field; additive fields only.
+// Every day/gauge computation uses (claims_run_out ?? incur_by).
+const STATUS_DOMAIN = ['submitted', 'waiting', 'candidate', 'skipped', 'denied', 'needs-receipt', 'picked', 'gathered', 'paid', 'rejected'];
+
+function activeYear(doc) {
+  return (doc && (doc.active_year || (doc.years && Object.keys(doc.years).sort().reverse()[0]))) || null;
+}
+function yearData(doc, year) {
+  return (doc && doc.years && doc.years[year]) || { election: 0, deadline: { incur_by: null, claims_run_out: null }, claims: [] };
+}
+function yearClaims(doc, year) { return yearData(doc, year).claims || []; }
+function election(doc, year) { return Number(yearData(doc, year).election) || 0; }
+
+function sumWhere(claims, pred) {
+  return round2(claims.filter(pred).reduce((a, c) => a + (Number(c.amount) || 0), 0));
+}
+function round2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
+
+function submittedTotal(doc, year) {
+  return sumWhere(yearClaims(doc, year), (c) => ['submitted', 'paid'].includes(c.status));
+}
+function unclaimed(doc, year) {
+  return round2(Math.max(0, election(doc, year) - submittedTotal(doc, year)));
+}
+function remainingToReimburse(doc, year) { return unclaimed(doc, year); }
+function waitingOnDocuments(doc, year) {
+  return sumWhere(yearClaims(doc, year), (c) => ['waiting', 'needs-receipt', 'gathered'].includes(c.status) && (Number(c.amount) || 0) > 0);
+}
+function eligibleNotPicked(doc, year) {
+  return sumWhere(yearClaims(doc, year), (c) => c.eligibility === 'eligible' && c.status === 'candidate' && (Number(c.amount) || 0) > 0);
+}
+
+function daysLeft(doc, year, today) {
+  const d = yearData(doc, year).deadline || {};
+  const target = d.claims_run_out || d.incur_by;
+  if (!target || !today) return null;
+  const a = Date.parse(`${String(today).slice(0, 10)}T00:00:00Z`);
+  const b = Date.parse(`${String(target).slice(0, 10)}T00:00:00Z`);
+  if (Number.isNaN(a) || Number.isNaN(b)) return null;
+  return Math.round((b - a) / 86400000);
+}
+function runOutConfirmed(doc, year) {
+  return Boolean((yearData(doc, year).deadline || {}).claims_run_out);
+}
+
+function needsList(claim) {
+  const needs = [];
+  if (claim.eligibility === 'needs-lmn') needs.push('needs LMN');
+  if (claim.eob_needed) needs.push('needs EOB');
+  if (claim.status === 'needs-receipt') needs.push('needs receipt');
+  return needs;
+}
+
+function nextUp(doc, year, n = 5) {
+  return yearClaims(doc, year)
+    .filter((c) => (Number(c.amount) || 0) > 0
+      && !['submitted', 'paid', 'skipped', 'denied', 'rejected'].includes(c.status)
+      && ['eligible', 'unknown'].includes(c.eligibility))
+    .sort((a, b) => (Number(b.amount) || 0) - (Number(a.amount) || 0))
+    .slice(0, n);
+}
+
+// Build the v2 document from a ledger/<year>.json object. Preserves every claim field-for-field;
+// adds only `documents` (filenames from docs[]) when absent. Pure.
+function docFromLedger(ledger, opts = {}) {
+  const year = String(ledger.year);
+  const claims = (ledger.claims || []).map((c) => ({
+    ...c,
+    documents: c.documents || (c.docs || []).map((p) => String(p).split('/').pop()),
+    notes: c.notes || [],
+  }));
+  return {
+    v: 2,
+    updated_at: opts.now || new Date().toISOString(),
+    active_year: year,
+    years: {
+      [year]: {
+        election: Number(opts.election) || 0,
+        deadline: { incur_by: opts.incur_by || null, claims_run_out: opts.claims_run_out ?? null },
+        claims,
+      },
+    },
+    capture: opts.capture || { private_jwk: null, public_jwk: null },
+    inbox: { pending: [] },
+  };
+}
+
+
+/* ---- src/core/crypto.js ---- */
+// src/core/crypto.js — client-side encryption for the FSA document.
+// Envelope matched BYTE-FOR-BYTE to giving-tracker (src/sync/crypto.js): the whole document
+// is encrypted IN THE BROWSER before it reaches the `press` Supabase project and decrypted only
+// in the browser. The server stores CIPHERTEXT ONLY; the passphrase never leaves the device.
+//
+// Scheme: AES-256-GCM (fails closed on wrong key / tamper — decrypt throws before any plaintext)
+// with a key derived by PBKDF2-HMAC-SHA-256 >= 310,000 iters, a per-document 128-bit salt and a
+// per-write 96-bit IV. kdf_iters is stored so the count can be raised without breaking old blobs.
+// Pure, node-testable (WebCrypto is in Node 20+ and every browser); btoa/atob for base64.
+
+const KDF_ITERS = 310000;
+const SALT_BYTES = 16;
+const IV_BYTES = 12;
+const KEY_BITS = 256;
+
+function webcrypto() {
+  const c = (typeof globalThis !== 'undefined' && globalThis.crypto) || (typeof crypto !== 'undefined' ? crypto : null);
+  if (!c || !c.subtle) throw new Error('WebCrypto (crypto.subtle) unavailable in this environment');
+  return c;
+}
+function randomBytes(n) { const a = new Uint8Array(n); webcrypto().getRandomValues(a); return a; }
+
+function bytesToB64(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s);
+}
+function b64ToBytes(b64) {
+  const s = atob(String(b64));
+  const a = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i);
+  return a;
+}
+
+// unguessable 128-bit sync id (a secret capability, NOT a name)
+function newSyncId() {
+  const b = randomBytes(16); let hex = '';
+  for (let i = 0; i < b.length; i++) hex += (b[i] + 0x100).toString(16).slice(1);
+  return hex;
+}
+
+async function deriveKey(passphrase, saltBytes, iters) {
+  const enc = new TextEncoder();
+  const base = await webcrypto().subtle.importKey('raw', enc.encode(String(passphrase)), { name: 'PBKDF2' }, false, ['deriveKey']);
+  return webcrypto().subtle.deriveKey(
+    { name: 'PBKDF2', salt: saltBytes, iterations: iters, hash: 'SHA-256' },
+    base,
+    { name: 'AES-GCM', length: KEY_BITS },
+    false,
+    ['encrypt', 'decrypt'],
+  );
+}
+
+// Encrypt an object -> { ciphertext, iv, salt, kdf_iters } (base64 / int).
+async function encryptDoc(docObj, passphrase, opts) {
+  opts = opts || {};
+  if (passphrase == null || String(passphrase) === '') throw new Error('passphrase required');
+  const iters = opts.kdf_iters || KDF_ITERS;
+  const salt = opts.salt ? b64ToBytes(opts.salt) : randomBytes(SALT_BYTES);
+  const iv = randomBytes(IV_BYTES);
+  const key = await deriveKey(passphrase, salt, iters);
+  const pt = new TextEncoder().encode(JSON.stringify(docObj));
+  const ct = await webcrypto().subtle.encrypt({ name: 'AES-GCM', iv }, key, pt);
+  return { ciphertext: bytesToB64(new Uint8Array(ct)), iv: bytesToB64(iv), salt: bytesToB64(salt), kdf_iters: iters };
+}
+
+// Decrypt { ciphertext, iv, salt, kdf_iters } -> object, or null. FAILS CLOSED.
+async function decryptDoc(record, passphrase) {
+  try {
+    if (!record || record.ciphertext == null || record.iv == null || record.salt == null) return null;
+    const iters = record.kdf_iters || KDF_ITERS;
+    const key = await deriveKey(passphrase, b64ToBytes(record.salt), iters);
+    const ptBuf = await webcrypto().subtle.decrypt(
+      { name: 'AES-GCM', iv: b64ToBytes(record.iv) }, key, b64ToBytes(record.ciphertext),
+    );
+    return JSON.parse(new TextDecoder().decode(ptBuf));
+  } catch (e) { return null; }
+}
+
+const CONSTS = { KDF_ITERS, SALT_BYTES, IV_BYTES, KEY_BITS };
+
+// Generate the app's ECDH P-256 capture keypair (public seals inbound items in the agents;
+// private opens them in the browser). Returns { public_jwk, private_jwk }. Generated once.
+async function generateCaptureKeypair() {
+  const kp = await webcrypto().subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']);
+  const public_jwk = await webcrypto().subtle.exportKey('jwk', kp.publicKey);
+  const private_jwk = await webcrypto().subtle.exportKey('jwk', kp.privateKey);
+  return { public_jwk, private_jwk };
+}
+
+
+/* ---- src/core/cloud.js ---- */
+// src/core/cloud.js — PostgREST client for press_fsa. Injected fetch (opts.fetchImpl) so the
+// whole thing is node-testable offline against a fake PostgREST. Sends only ciphertext.
+// The publishable (anon) key is the ONLY key embedded in the built page (safe by press convention).
+const FSA_SUPABASE_URL = 'https://eepjhpyziczrxvirczio.supabase.co';
+const FSA_REST = 'https://eepjhpyziczrxvirczio.supabase.co/rest/v1';
+const FSA_FUNCTIONS = 'https://eepjhpyziczrxvirczio.functions.supabase.co';
+const FSA_PUBLISHABLE = 'sb_publishable__iv3bI7xDAsOdHUlXzbVZQ_2yyFS4uX';
+
+class ConflictError extends Error {
+  constructor(msg) { super(msg || 'version conflict'); this.name = 'ConflictError'; }
+}
+
+function makeClient(opts = {}) {
+  const rest = opts.rest || FSA_REST;
+  const key = opts.key || FSA_PUBLISHABLE;
+  const fetchImpl = opts.fetchImpl || (typeof fetch !== 'undefined' ? fetch : null);
+  if (!fetchImpl) throw new Error('no fetch available (pass opts.fetchImpl)');
+
+  function headers(syncId, extra) {
+    return {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      'x-plan-id': syncId,
+      'Content-Type': 'application/json',
+      ...(extra || {}),
+    };
+  }
+
+  // Load the row for a sync id -> { doc, version } (the envelope + row version), or null.
+  async function load(syncId) {
+    const url = `${rest}/press_fsa?sync_id=eq.${encodeURIComponent(syncId)}&select=doc,version`;
+    const res = await fetchImpl(url, { method: 'GET', headers: headers(syncId) });
+    if (!res.ok) throw new Error(`load failed: ${res.status}`);
+    const rows = await res.json();
+    return (Array.isArray(rows) && rows[0]) ? { doc: rows[0].doc, version: rows[0].version } : null;
+  }
+
+  // Save the envelope. currentVersion null => first insert; else optimistic PATCH.
+  // Returns the new row version. Throws ConflictError if someone else wrote first.
+  async function save(syncId, envelope, currentVersion) {
+    if (currentVersion == null) {
+      const url = `${rest}/press_fsa?on_conflict=sync_id`;
+      const res = await fetchImpl(url, {
+        method: 'POST',
+        headers: headers(syncId, { Prefer: 'resolution=merge-duplicates,return=representation' }),
+        body: JSON.stringify({ sync_id: syncId, doc: envelope, version: 0, updated_at: new Date().toISOString() }),
+      });
+      if (!res.ok) throw new Error(`insert failed: ${res.status}`);
+      const rows = await res.json();
+      return (Array.isArray(rows) && rows[0]) ? rows[0].version : 0;
+    }
+    const next = currentVersion + 1;
+    const url = `${rest}/press_fsa?sync_id=eq.${encodeURIComponent(syncId)}&version=eq.${currentVersion}`;
+    const res = await fetchImpl(url, {
+      method: 'PATCH',
+      headers: headers(syncId, { Prefer: 'return=representation' }),
+      body: JSON.stringify({ doc: envelope, version: next, updated_at: new Date().toISOString() }),
+    });
+    if (!res.ok) throw new Error(`update failed: ${res.status}`);
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) throw new ConflictError('someone else wrote first');
+    return rows[0].version;
+  }
+
+  // --- review queue (sealed) ---
+  async function loadPending(syncId) {
+    const url = `${rest}/press_fsa_review_queue?sync_id=eq.${encodeURIComponent(syncId)}&status=eq.pending&select=*`;
+    const res = await fetchImpl(url, { method: 'GET', headers: headers(syncId) });
+    if (!res.ok) throw new Error(`loadPending failed: ${res.status}`);
+    const rows = await res.json();
+    return Array.isArray(rows) ? rows : [];
+  }
+  async function decideQueue(syncId, id, status) {
+    const url = `${rest}/press_fsa_review_queue?id=eq.${encodeURIComponent(id)}`;
+    const res = await fetchImpl(url, {
+      method: 'PATCH',
+      headers: headers(syncId, { Prefer: 'return=representation' }),
+      body: JSON.stringify({ status, decided_at: new Date().toISOString() }),
+    });
+    if (!res.ok) throw new Error(`decideQueue failed: ${res.status}`);
+    const rows = await res.json();
+    return (Array.isArray(rows) && rows[0]) ? rows[0] : null;
+  }
+
+  return { load, save, loadPending, decideQueue, rest, key };
+}
+
+
+/* ---- src/core/inbox.js ---- */
+// council-agent@3.4.0
+// src/core/inbox.js — the PERSISTENT needs-review inbox, vendored from the council agent instrument
+// (instruments/agent/app/inbox.js) and converted to ESM. Behaviour identical: same function names,
+// same `deps` injection contract (apply, mergeInto, save, deleteFile). A review draft lives inside the
+// app document at doc.inbox.pending[] — it survives reload and is removed only on approve/merge/dismiss
+// after a successful save. Pure and node-testable: no DOM, no network, no per-app knowledge.
+
+function ensureInbox(doc) {
+  if (!doc.inbox || typeof doc.inbox !== 'object') doc.inbox = { pending: [] };
+  if (!Array.isArray(doc.inbox.pending)) doc.inbox.pending = [];
+  return doc.inbox;
+}
+
+function addPending(doc, draft) {
+  const ib = ensureInbox(doc);
+  if (draft && draft.id && !ib.pending.some((d) => d.id === draft.id)) ib.pending.push(draft);
+  return ib.pending;
+}
+
+function pendingList(doc) { return ensureInbox(doc).pending.slice(); }
+
+function findPending(doc, id) {
+  const ib = ensureInbox(doc);
+  for (let i = 0; i < ib.pending.length; i++) if (ib.pending[i].id === id) return ib.pending[i];
+  return null;
+}
+
+function attFileId(a) { return a ? (a.file_id || a.id) : null; }
+
+function fileReferenced(doc, fileId) {
+  if (!fileId) return false;
+  const ib = ensureInbox(doc);
+  for (let i = 0; i < ib.pending.length; i++) {
+    const f = ib.pending[i] && ib.pending[i].file;
+    if (f && f.id === fileId) return true;
+  }
+  const atts = doc.attachments || [];
+  for (let j = 0; j < atts.length; j++) if (attFileId(atts[j]) === fileId) return true;
+  return false;
+}
+
+function removePending(doc, id) {
+  const ib = ensureInbox(doc);
+  let draft = null;
+  ib.pending = ib.pending.filter((d) => { if (d.id === id) { draft = d; return false; } return true; });
+  let orphan = null;
+  if (draft && draft.file && draft.file.id && !fileReferenced(doc, draft.file.id)) orphan = draft.file.id;
+  return { removed: !!draft, draft, orphanFileId: orphan };
+}
+
+async function approve(doc, id, deps) {
+  deps = deps || {};
+  const draft = findPending(doc, id);
+  if (!draft) return { ok: false, reason: 'not-found' };
+  const created = (typeof deps.apply === 'function') ? (deps.apply(doc, draft) || []) : [];
+  removePending(doc, id);
+  if (typeof deps.save === 'function') await deps.save(doc);
+  return { ok: true, created };
+}
+
+async function merge(doc, id, targetId, deps) {
+  deps = deps || {};
+  const draft = findPending(doc, id);
+  if (!draft) return { ok: false, reason: 'not-found' };
+  const merged = (typeof deps.mergeInto === 'function') ? deps.mergeInto(doc, draft, targetId) : null;
+  removePending(doc, id);
+  if (typeof deps.save === 'function') await deps.save(doc);
+  return { ok: true, merged, targetId };
+}
+
+async function dismiss(doc, id, deps) {
+  deps = deps || {};
+  const res = removePending(doc, id);
+  if (!res.removed) return { ok: false, reason: 'not-found' };
+  if (res.orphanFileId && typeof deps.deleteFile === 'function') await deps.deleteFile(res.orphanFileId);
+  if (typeof deps.save === 'function') await deps.save(doc);
+  return { ok: true, freedFileId: res.orphanFileId };
+}
+
+
+/* ---- src/core/unseal.js ---- */
+// src/core/unseal.js — the RECEIVER half of the capture sealed box (browser). Opens a box
+// { v:1, epk, iv, ct } produced by the agents' sealWithInfo(obj, PUBLIC_JWK, 'marquee/fsa/v1')
+// using the capture PRIVATE jwk stored inside the app's encrypted document. ECDH P-256 +
+// HKDF-SHA-256 (info 'marquee/fsa/v1') + AES-256-GCM. FAILS CLOSED (wrong key / tamper -> null).
+
+
+const FSA_SEAL_INFO = 'marquee/fsa/v1';
+const CURVE = 'P-256';
+
+function wc() {
+  const c = (typeof globalThis !== 'undefined' && globalThis.crypto) || (typeof crypto !== 'undefined' ? crypto : null);
+  if (!c || !c.subtle) throw new Error('WebCrypto unavailable');
+  return c;
+}
+
+async function aesKeyFromShared(privateKey, ephPublicKey, info) {
+  const bits = await wc().subtle.deriveBits({ name: 'ECDH', public: ephPublicKey }, privateKey, 256);
+  const base = await wc().subtle.importKey('raw', bits, 'HKDF', false, ['deriveKey']);
+  return wc().subtle.deriveKey(
+    { name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(0), info: new TextEncoder().encode(info) },
+    base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+}
+
+async function unseal(box, privateJwk, info = FSA_SEAL_INFO) {
+  try {
+    if (!box || box.v !== 1 || !box.epk || !box.iv || !box.ct) return null;
+    const priv = await wc().subtle.importKey('jwk', privateJwk, { name: 'ECDH', namedCurve: CURVE }, false, ['deriveBits']);
+    const eph = await wc().subtle.importKey('raw', b64ToBytes(box.epk), { name: 'ECDH', namedCurve: CURVE }, false, []);
+    const key = await aesKeyFromShared(priv, eph, info);
+    const pt = await wc().subtle.decrypt({ name: 'AES-GCM', iv: b64ToBytes(box.iv) }, key, b64ToBytes(box.ct));
+    return JSON.parse(new TextDecoder().decode(pt));
+  } catch (e) {
+    return null; // fail closed
+  }
+}
+
+
+/* ---- src/ui/auth.js ---- */
+// src/ui/auth.js — sync-id + passphrase auth (giving-tracker model). No Supabase Auth, no server
+// routes. First run generates a sync id + passphrase, shows BOTH ONCE (unrecoverable), and stores
+// them in localStorage. Sign-in accepts an existing pair. Sign-out clears creds + cached document.
+
+
+const SK = 'fsa:sync_id';
+const PK = 'fsa:pass';
+const CACHE = 'press:fsa';
+
+function loadCreds() {
+  try { return { syncId: localStorage.getItem(SK), passphrase: localStorage.getItem(PK) }; }
+  catch (_) { return { syncId: null, passphrase: null }; }
+}
+function saveCreds(syncId, passphrase) {
+  try { localStorage.setItem(SK, syncId); localStorage.setItem(PK, passphrase); } catch (_) { /* ok */ }
+}
+function clearCreds() {
+  try { localStorage.removeItem(SK); localStorage.removeItem(PK); localStorage.removeItem(CACHE); } catch (_) { /* ok */ }
+}
+function hasCreds() { const c = loadCreds(); return Boolean(c.syncId && c.passphrase); }
+
+// A strong, copy-able passphrase: 4 groups of 5 lowercase-base32 chars (~100 bits).
+function generatePassphrase() {
+  const alphabet = 'abcdefghjkmnpqrstuvwxyz23456789';
+  const bytes = new Uint8Array(20); (globalThis.crypto || crypto).getRandomValues(bytes);
+  let out = '';
+  for (let i = 0; i < 20; i++) { out += alphabet[bytes[i] % alphabet.length]; if (i % 5 === 4 && i < 19) out += '-'; }
+  return out;
+}
+function newCreds() { return { syncId: newSyncId(), passphrase: generatePassphrase() }; }
+
+// Minimal first-run / sign-in panel, created dynamically (never shown in demo mode).
+// onReady({syncId, passphrase, mode}) is called after the user confirms.
+function renderAuthPanel(root, onReady) {
+  const box = document.createElement('section');
+  box.id = 'auth-panel';
+  box.setAttribute('aria-label', 'Sign in');
+  const created = newCreds();
+  box.innerHTML = `
+    <h2 class="section-h">Unlock FSA Claims</h2>
+    <p class="dim">First time here? A new sync id + passphrase are generated below — copy BOTH somewhere
+    safe. They are unrecoverable and are the only key to your encrypted document. Already have a pair?
+    Enter it instead.</p>
+    <label class="vh" for="auth-sync">Sync id</label>
+    <input id="auth-sync" class="mono" value="${created.syncId}" spellcheck="false" autocomplete="off">
+    <label class="vh" for="auth-pass">Passphrase</label>
+    <input id="auth-pass" class="mono" value="${created.passphrase}" spellcheck="false" autocomplete="off">
+    <button id="auth-go" type="button">Unlock</button>`;
+  root.prepend(box);
+  box.querySelector('#auth-go').addEventListener('click', () => {
+    const syncId = box.querySelector('#auth-sync').value.trim();
+    const passphrase = box.querySelector('#auth-pass').value.trim();
+    if (!syncId || !passphrase) return;
+    saveCreds(syncId, passphrase);
+    box.remove();
+    onReady({ syncId, passphrase });
+  });
+}
+
+
+/* ---- src/ui/theme.js ---- */
+// src/ui/theme.js — dark-primary theme toggle, persisted to localStorage['fsa:theme']. Browser only.
+const KEY = 'fsa:theme';
+function initTheme() {
+  try {
+    const saved = localStorage.getItem(KEY);
+    if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+  } catch (_) { /* private mode */ }
+}
+function currentTheme() {
+  const attr = document.documentElement.dataset.theme;
+  if (attr) return attr;
+  try { if (window.matchMedia('(prefers-color-scheme: light)').matches) return 'light'; } catch (_) { /* ok */ }
+  return 'dark';
+}
+function toggleTheme() {
+  const next = currentTheme() === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem(KEY, next); } catch (_) { /* ok */ }
+  return next;
+}
+
+
+/* ---- src/ui/gauge.js ---- */
+// src/ui/gauge.js — the hero gauge. Pure model (gaugeModel/gaugeTicks) + DOM render.
+
+
+
+function tickLabel(v) { return money(v).replace(/\.00$/, ''); }
+
+// Tick marks: minor every $100, major every $500 (labelled). Positions as % of the election scale.
+function gaugeTicks(electionAmt) {
+  const ticks = [];
+  if (!(electionAmt > 0)) return ticks;
+  for (let v = 100; v < electionAmt; v += 100) {
+    const major = v % 500 === 0;
+    ticks.push({ value: v, pct: (v / electionAmt) * 100, major, label: major ? tickLabel(v) : null });
+  }
+  return ticks;
+}
+
+function gaugeModel(doc, year, today) {
+  const e = election(doc, year);
+  const sub = submittedTotal(doc, year);
+  const unc = unclaimed(doc, year);
+  const pct = e > 0 ? Math.min(100, (sub / e) * 100) : 0;
+  const dl = daysLeft(doc, year, today);
+  const confirmed = runOutConfirmed(doc, year);
+  const tail = dl == null ? 'no deadline set' : confirmed ? `${dl} days left` : `${dl} days to incur`;
+  const sentence = `${money(unc)} unclaimed · ${tail}`;
+  const color = dl == null ? 'dim' : dl <= 7 ? 'danger' : dl <= 30 ? 'warn' : 'dim';
+  return { election: e, submitted: sub, unclaimed: unc, pct, daysLeft: dl, confirmed, sentence, color, ticks: gaugeTicks(e) };
+}
+
+function renderGauge(doc, year, today) {
+  const bar = document.getElementById('gauge-bar');
+  const fill = document.getElementById('gauge-fill');
+  const label = document.getElementById('gauge-label');
+  const ticksEl = document.getElementById('gauge-ticks');
+  const scaleEl = document.getElementById('gauge-scale');
+  const note = document.getElementById('gauge-note');
+  const sr = document.getElementById('gauge-sr');
+  if (ticksEl) ticksEl.innerHTML = '';
+  if (scaleEl) scaleEl.innerHTML = '';
+  if (!doc) { fill.style.width = '0%'; label.textContent = ''; bar.setAttribute('aria-label', 'No plan loaded'); sr.textContent = ''; note.hidden = true; return; }
+
+  const m = gaugeModel(doc, year, today);
+  fill.style.width = m.pct.toFixed(2) + '%';
+  label.textContent = m.sentence;
+  label.style.color = `var(--${m.color})`;
+  bar.setAttribute('aria-label', m.sentence);
+  sr.textContent = `Reimbursement gauge: ${money(m.submitted)} of ${money(m.election)} submitted (${m.pct.toFixed(0)}%). ${m.sentence}.`;
+  note.hidden = m.confirmed || m.daysLeft == null;
+  if (!note.hidden) note.textContent = 'run-out date unconfirmed';
+
+  for (const t of m.ticks) {
+    const tick = document.createElement('div');
+    tick.className = 'tick' + (t.major ? ' major' : '');
+    tick.style.left = t.pct + '%';
+    ticksEl.appendChild(tick);
+    if (t.label && scaleEl) {
+      const lab = document.createElement('span');
+      lab.className = 'scale-label mono'; lab.style.left = t.pct + '%'; lab.textContent = t.label;
+      scaleEl.appendChild(lab);
+    }
+  }
+  if (scaleEl) {
+    const end = document.createElement('span');
+    end.className = 'scale-label mono end'; end.style.left = '100%'; end.textContent = tickLabel(m.election);
+    scaleEl.appendChild(end);
+  }
+}
+
+
+/* ---- src/ui/readout.js ---- */
+// src/ui/readout.js — the four-cell readout row, subordinate to the gauge.
+
+
+
+function renderReadout(doc, year) {
+  const set = (id, v) => { document.getElementById(id).textContent = doc ? money(v) : '—'; };
+  set('r-submitted', submittedTotal(doc, year));
+  set('r-waiting', waitingOnDocuments(doc, year));
+  set('r-eligible', eligibleNotPicked(doc, year));
+}
+
+
+/* ---- src/ui/nextup.js ---- */
+// src/ui/nextup.js — up to 5 biggest claimable charges, each with what it still needs.
+
+
+
+function renderNextUp(doc, year) {
+  const list = document.getElementById('nextup-list'); list.innerHTML = '';
+  const items = doc ? nextUp(doc, year, 5) : [];
+  if (!items.length) {
+    const li = document.createElement('li'); li.className = 'dim'; li.textContent = 'Nothing claimable is waiting on you.';
+    list.appendChild(li); return;
+  }
+  for (const c of items) {
+    const li = document.createElement('li');
+    const amt = document.createElement('span'); amt.className = 'amt mono'; amt.textContent = money(c.amount);
+    const prov = document.createElement('span'); prov.className = 'prov'; prov.textContent = c.provider || c.payee || '—';
+    li.append(amt, prov);
+    for (const need of needsList(c)) { const t = document.createElement('span'); t.className = 'tag'; t.textContent = need; li.append(t); }
+    list.appendChild(li);
+  }
+}
+
+
+/* ---- src/ui/inbox.js ---- */
+// src/ui/inbox.js — the review-queue inbox UI. Fetches sealed pending rows, unseals them in the
+// browser into doc.inbox.pending (dedupe by id, document-save-first), and lets Mark
+// approve / edit / reject / merge each captured item into a claim. Filenames only — never a file/PDF.
+
+
+
+
+
+// --- ingest: unseal queue rows into the persisted inbox; track rows that fail to open ---
+async function ingest(doc, rows) {
+  const errors = [];
+  for (const row of rows || []) {
+    const item = await unseal(row.payload_sealed, doc.capture && doc.capture.private_jwk);
+    if (!item) { errors.push({ id: row.id, agent: row.agent }); continue; }
+    addPending(doc, { ...item, id: row.id, agent: row.agent, captured_at: row.created_at });
+  }
+  ensureInbox(doc)._errors = errors;
+  return { opened: (rows || []).length - errors.length, errors };
+}
+
+async function loadDemoInbox(doc) {
+  const el = document.getElementById('demo-inbox');
+  let rows = []; try { rows = el ? JSON.parse(el.textContent) : []; } catch (_) { rows = []; }
+  return ingest(doc, rows);
+}
+async function loadLiveInbox(doc, syncId, client) {
+  let rows = []; try { rows = await client.loadPending(syncId); } catch (_) { rows = []; }
+  return ingest(doc, rows);
+}
+
+// --- app-specific write ops injected into the inbox core ---
+function newClaimId(draft) { return `cap-${draft.ynab_id || draft.id}`; }
+function draftToClaim(draft) {
+  return {
+    id: newClaimId(draft), ynab_id: draft.ynab_id || null, date: draft.date || null,
+    payee: draft.payee || draft.provider || '', account: draft.account || '',
+    amount: Number(draft.amount) || 0, provider: draft.provider || draft.payee || '',
+    type: draft.type || 'Medical Services', person: draft.person || '',
+    eligibility: draft.eligibility || 'unknown', eob_needed: !!draft.eob_needed,
+    status: draft.suggested_status || 'candidate',
+    docs: draft.documents || [], documents: draft.documents || [], submitted_on: null,
+    notes: draft.reason ? [draft.reason] : [],
+  };
+}
+function apply(doc, draft) {
+  const year = activeYear(doc);
+  const claim = draftToClaim(draft);
+  doc.years[year].claims.push(claim);
+  return [claim.id];
+}
+function mergeInto(doc, draft, targetId) {
+  const year = activeYear(doc);
+  const claim = yearClaims(doc, year).find((c) => c.id === targetId);
+  if (!claim) return null;
+  for (const d of (draft.documents || [])) if (!(claim.documents || []).includes(d)) (claim.documents = claim.documents || []).push(d);
+  if (draft.reason) (claim.notes = claim.notes || []).push(draft.reason);
+  return claim;
+}
+// A candidate to merge into: same provider + amount, service date within 3 days.
+function findMergeTarget(doc, draft) {
+  const year = activeYear(doc);
+  const dd = Date.parse(String(draft.date || '') + 'T00:00:00Z');
+  return yearClaims(doc, year).find((c) => c.provider === draft.provider
+    && Math.abs((Number(c.amount) || 0) - (Number(draft.amount) || 0)) < 0.005
+    && !Number.isNaN(dd) && Math.abs(Date.parse(String(c.date) + 'T00:00:00Z') - dd) <= 3 * 86400000);
+}
+
+// --- render ---
+const FIELDS = [
+  ['provider', 'Provider', 'text'], ['date', 'Date', 'text'], ['amount', 'Amount', 'number'],
+  ['person', 'Person', 'text'], ['eligibility', 'Eligibility', 'text'],
+];
+
+function renderInbox(state, deps) {
+  const section = document.getElementById('inbox');
+  const list = document.getElementById('inbox-list');
+  const head = document.getElementById('inbox-h');
+  if (!section || !list) return;
+  list.innerHTML = '';
+  const doc = state.doc;
+  const pending = doc ? pendingList(doc) : [];
+  const errors = (doc && doc.inbox && doc.inbox._errors) || [];
+  section.hidden = pending.length === 0 && errors.length === 0;
+  head.textContent = `Inbox (${pending.length})`;
+
+  for (const draft of pending) {
+    const card = document.createElement('div'); card.className = 'inbox-item'; card.dataset.id = draft.id;
+    const meta = document.createElement('p'); meta.className = 'dim mono inbox-meta';
+    meta.textContent = `${draft.agent || 'agent'} · ${ymd(draft.captured_at)} · confidence ${draft.confidence != null ? Math.round(draft.confidence * 100) + '%' : '—'}`;
+    card.appendChild(meta);
+
+    const form = document.createElement('div'); form.className = 'inbox-form';
+    for (const [key, label, type] of FIELDS) {
+      const wrap = document.createElement('label'); wrap.className = 'inbox-field';
+      const lab = document.createElement('span'); lab.className = 'inbox-label'; lab.textContent = label;
+      const input = document.createElement('input'); input.className = 'mono'; input.type = type;
+      input.value = draft[key] != null ? draft[key] : '';
+      input.setAttribute('aria-label', label);
+      input.addEventListener('input', () => { draft[key] = type === 'number' ? Number(input.value) : input.value; });
+      wrap.append(lab, input); form.appendChild(wrap);
+    }
+    card.appendChild(form);
+
+    const actions = document.createElement('div'); actions.className = 'inbox-actions';
+    const approveBtn = button('Approve', async () => {
+      await approve(doc, draft.id, { apply, save: deps.save });
+      await deps.decide(draft.id, 'approved');
+      deps.refresh();
+    });
+    const rejectBtn = button('Reject', async () => {
+      await dismiss(doc, draft.id, { save: deps.save });
+      await deps.decide(draft.id, 'rejected');
+      deps.refresh();
+    });
+    actions.append(approveBtn, rejectBtn);
+    const target = doc ? findMergeTarget(doc, draft) : null;
+    if (target) {
+      actions.appendChild(button(`Merge into ${ymd(target.date)} ${money(target.amount)}`, async () => {
+        await merge(doc, draft.id, target.id, { mergeInto, save: deps.save });
+        await deps.decide(draft.id, 'approved');
+        deps.refresh();
+      }));
+    }
+    card.appendChild(actions);
+    list.appendChild(card);
+  }
+
+  for (const err of errors) {
+    const line = document.createElement('p'); line.className = 'inbox-error';
+    line.textContent = `Couldn't open a sealed item from ${err.agent || 'an agent'} — wrong key. Skipped.`;
+    list.appendChild(line);
+  }
+}
+
+function button(text, onClick) {
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = text;
+  b.addEventListener('click', onClick); return b;
+}
+
+
+/* ---- src/ui/table.js ---- */
+// src/ui/table.js — filter chips + sortable claims table. Pure FILTERS/sortClaims + DOM render.
+
+
+
+const FILTERS = {
+  all: () => true,
+  submitted: (c) => ['submitted', 'paid'].includes(c.status),
+  waiting: (c) => ['waiting', 'needs-receipt', 'gathered'].includes(c.status),
+  candidates: (c) => ['candidate', 'picked'].includes(c.status),
+  skipped: (c) => ['skipped', 'denied', 'rejected'].includes(c.status),
+};
+const CHIP_LABELS = { all: 'All', submitted: 'Submitted', waiting: 'Waiting', candidates: 'Candidates', skipped: 'Skipped' };
+
+function sortClaims(claims, key, dir) {
+  const s = dir === 'asc' ? 1 : -1;
+  return [...claims].sort((a, b) => {
+    let av = a[key]; let bv = b[key];
+    if (key === 'amount' || key === 'claimed') { av = Number(a.amount) || 0; bv = Number(b.amount) || 0; }
+    av = av == null ? '' : av; bv = bv == null ? '' : bv;
+    if (av < bv) return -1 * s; if (av > bv) return 1 * s; return 0;
+  });
+}
+
+function td(text, cls) { const el = document.createElement('td'); if (cls) el.className = cls; el.textContent = text; return el; }
+
+function renderChips(state, onFilter) {
+  const box = document.getElementById('chips'); box.innerHTML = '';
+  for (const key of Object.keys(FILTERS)) {
+    const b = document.createElement('button');
+    b.className = 'chip'; b.type = 'button'; b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', String(key === state.filter));
+    b.textContent = CHIP_LABELS[key];
+    b.addEventListener('click', () => onFilter(key));
+    box.appendChild(b);
+  }
+}
+
+function renderTable(state, claims) {
+  const body = document.getElementById('claims-body'); body.innerHTML = '';
+  const pred = FILTERS[state.filter] || FILTERS.all;
+  const rows = sortClaims(claims.filter(pred), state.sort.key, state.sort.dir);
+  document.getElementById('claims-empty').hidden = rows.length > 0;
+
+  for (const c of rows) {
+    const tr = document.createElement('tr');
+    tr.appendChild(td(ymd(c.date), 'col-date'));
+    const prov = td('', 'col-provider');
+    const name = document.createElement('span'); name.textContent = c.provider || c.payee || '—'; prov.appendChild(name);
+    for (const need of needsList(c)) { const t = document.createElement('span'); t.className = 'tag'; t.textContent = need; prov.appendChild(t); }
+    for (const n of (c.notes || [])) { const nl = document.createElement('span'); nl.className = 'note-line'; nl.textContent = n; prov.appendChild(nl); }
+    tr.appendChild(prov);
+    tr.appendChild(td(c.person || '', 'col-person'));
+    tr.appendChild(td(money(c.amount), 'col-amount num'));
+    tr.appendChild(td(['submitted', 'paid'].includes(c.status) ? money(c.amount) : '—', 'col-claimed num'));
+    const st = td('', 'col-status');
+    const pill = document.createElement('span'); pill.className = 'status ' + c.status; pill.textContent = c.status; st.appendChild(pill);
+    tr.appendChild(st);
+    tr.appendChild(td((c.documents || c.docs || []).map((d) => String(d).split('/').pop()).join(', '), 'col-docs'));
+    body.appendChild(tr);
+  }
+
+  document.querySelectorAll('#claims-table th[data-sort]').forEach((th) => {
+    const k = th.getAttribute('data-sort');
+    th.setAttribute('aria-sort', state.sort.key === k ? (state.sort.dir === 'asc' ? 'ascending' : 'descending') : 'none');
+  });
+}
+
+
+/* ---- src/ui/agents.js ---- */
+// council-agent@3.4.0
+// src/ui/agents.js — browser-side client for the FSA council-agents (vendored from
+// instruments/agent/app/agent-client.js, ESM). callAgent posts an on-demand call with the x-plan-id
+// gate; lastRun reads the header-gated (x-app) press_agent_runs_public badge view. Plus initAgents(),
+// which (live mode only) puts a flat "Sync YNAB" control + last-run badge in the header.
+
+
+
+function pickFetch(opts) {
+  const f = (opts && opts.fetchImpl) || (typeof fetch !== 'undefined' ? fetch : null);
+  if (!f) throw new Error('agent-client: no fetch available (pass opts.fetchImpl)');
+  return f;
+}
+function badgeLabel(outcome) {
+  switch (outcome) {
+    case 'ok': return 'OK';
+    case 'skipped': return 'Skipped';
+    case 'refused': return 'Refused';
+    case 'error': return 'Error';
+    default: return 'No runs';
+  }
+}
+async function callAgent(opts) {
+  opts = opts || {};
+  if (!opts.url) throw new Error('agent-client: callAgent needs opts.url');
+  const f = pickFetch(opts);
+  const res = await f(opts.url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-plan-id': String(opts.planId || '') },
+    body: JSON.stringify(opts.body || {}),
+  });
+  let parsed = null; try { parsed = await res.json(); } catch (_e) { parsed = null; }
+  return { status: res.status, ok: !!res.ok, body: parsed };
+}
+async function lastRun(opts) {
+  opts = opts || {};
+  if (!opts.baseUrl || !opts.app || !opts.agent) throw new Error('agent-client: lastRun needs baseUrl, app, agent');
+  const f = pickFetch(opts);
+  const url = opts.baseUrl.replace(/\/$/, '')
+    + '/rest/v1/press_agent_runs_public?agent=eq.' + encodeURIComponent(opts.agent)
+    + '&select=app,agent,outcome,finished_at&order=finished_at.desc&limit=1';
+  const headers = { 'x-app': String(opts.app) };
+  if (opts.anonKey) { headers.apikey = opts.anonKey; headers.Authorization = 'Bearer ' + opts.anonKey; }
+  const res = await f(url, { headers });
+  let rows = []; try { rows = await res.json(); } catch (_e) { rows = []; }
+  if (!res.ok || !Array.isArray(rows) || rows.length === 0) return { outcome: null, finished_at: null, label: badgeLabel(null) };
+  const row = rows[0];
+  return { outcome: row.outcome, finished_at: row.finished_at, label: badgeLabel(row.outcome) };
+}
+
+// Header control (live mode only). deps: { syncId, refresh }.
+function initAgents(state, deps) {
+  const slot = document.getElementById('agents');
+  if (!slot || !deps || !deps.syncId) return; // demo / signed-out: no control
+  slot.innerHTML = '';
+  const badge = document.createElement('span'); badge.className = 'mono agent-badge'; badge.id = 'ynab-badge'; badge.textContent = '…';
+  const btn = document.createElement('button'); btn.type = 'button'; btn.id = 'sync-ynab'; btn.textContent = 'Sync YNAB';
+  slot.append(btn, badge);
+
+  const refreshBadge = async () => {
+    try {
+      const r = await lastRun({ baseUrl: FSA_SUPABASE_URL, anonKey: FSA_PUBLISHABLE, app: 'fsa', agent: 'fsa-ynab-sync' });
+      badge.textContent = r.label + (r.finished_at ? ' · ' + String(r.finished_at).slice(0, 10) : '');
+    } catch (_e) { badge.textContent = '—'; }
+  };
+  btn.addEventListener('click', async () => {
+    btn.disabled = true; badge.textContent = 'syncing…';
+    const year = state.doc ? activeYear(state.doc) : null;
+    const known = state.doc ? yearClaims(state.doc, year).map((c) => c.ynab_id).filter(Boolean) : [];
+    try {
+      await callAgent({ url: FSA_FUNCTIONS + '/fsa-ynab-sync', planId: deps.syncId, body: { since: new Date().toISOString().slice(0, 10), known_refs: known } });
+    } catch (_e) { /* surfaced by the badge */ }
+    btn.disabled = false;
+    await refreshBadge();
+    if (deps.refresh) await deps.refresh();
+  });
+  refreshBadge();
+}
+
+
+/* ---- src/ui/app.js ---- */
+// src/ui/app.js — boot + orchestration for the FSA dashboard. Browser only; exercised by e2e.
+// Demo mode (?demo=1 or localhost) reads the bundled #demo-fixture and never touches the network or
+// registers the service worker. Live mode uses sync-id + passphrase against the encrypted cloud doc.
+
+
+
+
+
+
+
+
+
+
+
+
+
+const state = { doc: null, year: null, filter: 'all', sort: { key: 'date', dir: 'desc' }, _version: null };
+
+function isDemo() {
+  const p = new URLSearchParams(location.search);
+  if (p.get('demo') === '1') return true;
+  return ['localhost', '127.0.0.1', '::1'].includes(location.hostname);
+}
+function today() { return new Date().toISOString().slice(0, 10); }
+function loadDemoDoc() { const el = document.getElementById('demo-fixture'); try { return el ? JSON.parse(el.textContent) : null; } catch (_) { return null; } }
+
+function reveal() { try { document.body.classList.remove('preboot'); } catch (_) { /* ok */ } }
+
+function setSyncPill(kind) {
+  const pill = document.getElementById('syncpill');
+  if (!pill) return;
+  pill.hidden = false; pill.textContent = kind;
+  pill.style.color = kind === 'synced' ? 'var(--dim)' : kind === 'offline' ? 'var(--warn)' : 'var(--danger)';
+}
+
+async function boot() {
+  initTheme();
+  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+  wireSort();
+
+  if (isDemo()) {
+    const demoState = new URLSearchParams(location.search).get('state'); // '', 'populated', 'empty'
+    if (demoState === 'empty') {
+      state.doc = { v: 2, updated_at: '2026-09-16T00:00:00Z', active_year: '2026',
+        years: { '2026': { election: 1000, deadline: { incur_by: '2026-12-31', claims_run_out: null }, claims: [] } },
+        capture: { private_jwk: null, public_jwk: null }, inbox: { pending: [] } };
+      state.year = '2026'; paint(); reveal(); return;
+    }
+    state.doc = loadDemoDoc();
+    state.year = state.doc ? activeYear(state.doc) : null;
+    try { const y = localStorage.getItem('fsa:year'); if (y && state.doc && state.doc.years[y]) state.year = y; } catch (_) { /* ok */ }
+    const withInbox = demoState !== 'populated';
+    // Unseal the inbox BEFORE the first paint so the page renders in one frame (no layout shift).
+    if (state.doc && withInbox) await loadDemoInbox(state.doc);
+    paint();
+    if (state.doc && withInbox) renderInbox(state, makeDemoDeps());
+    reveal();
+    return;
+  }
+
+  if (!hasCreds()) { renderAuthPanel(document.querySelector('main'), () => location.reload()); paint(); return; }
+  const { syncId, passphrase } = loadCreds();
+  setSyncPill('offline');
+  try {
+    const client = makeClient({});
+    const row = await client.load(syncId);
+    if (row) {
+      state.doc = await decryptDoc(row.doc, passphrase); state._version = row.version;
+      if (state.doc) { setSyncPill('synced'); try { localStorage.setItem('press:fsa', JSON.stringify(state.doc)); } catch (_) {} }
+      else setSyncPill('conflict'); // wrong passphrase -> decrypt null
+    } else { setSyncPill('synced'); } // signed in, empty remote
+  } catch (e) {
+    try { const cached = JSON.parse(localStorage.getItem('press:fsa')); if (cached) state.doc = cached; } catch (_) { /* ok */ }
+    setSyncPill('offline');
+  }
+  state.year = state.doc ? activeYear(state.doc) : null;
+  paint();
+  reveal();
+  if (state.doc) {
+    const client = makeClient({});
+    const deps = makeLiveDeps(syncId, passphrase, client);
+    try { await loadLiveInbox(state.doc, syncId, client); renderInbox(state, deps); } catch (_) { /* offline */ }
+    initAgents(state, { syncId, refresh: deps.refresh });
+  }
+  if (location.protocol === 'https:' && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.register('fsa-sw.js', { scope: './' }).catch(() => {});
+  }
+}
+
+function paint() {
+  renderChips(state, setFilter);
+  render();
+}
+
+function render() {
+  renderYearSelect();
+  document.getElementById('asof').textContent = state.doc ? `as of ${today()}` : '';
+  renderGauge(state.doc, state.year, today());
+  renderReadout(state.doc, state.year);
+  renderNextUp(state.doc, state.year);
+  renderTable(state, state.doc ? yearClaims(state.doc, state.year) : []);
+}
+
+function setFilter(key) { state.filter = key; renderChips(state, setFilter); renderTable(state, state.doc ? yearClaims(state.doc, state.year) : []); }
+
+function refreshAll(deps) { render(); renderInbox(state, deps); }
+
+function makeDemoDeps() {
+  const deps = {
+    save: async (doc) => { try { localStorage.setItem('press:fsa', JSON.stringify(doc)); } catch (_) { /* ok */ } },
+    decide: async () => { /* demo: no queue to update */ },
+    refresh: () => refreshAll(deps),
+  };
+  return deps;
+}
+
+function makeLiveDeps(syncId, passphrase, client) {
+  const deps = {
+    save: async (doc) => {
+      const env = await encryptDoc(doc, passphrase);
+      try { state._version = await client.save(syncId, env, state._version); }
+      catch (e) {
+        if (e && e.name === 'ConflictError') { const row = await client.load(syncId); state._version = await client.save(syncId, env, row.version); }
+        else throw e;
+      }
+      try { localStorage.setItem('press:fsa', JSON.stringify(doc)); } catch (_) { /* ok */ }
+    },
+    decide: async (id, status) => { try { await client.decideQueue(syncId, id, status); } catch (_) { /* surfaced elsewhere */ } },
+    refresh: () => refreshAll(deps),
+  };
+  return deps;
+}
+
+function renderYearSelect() {
+  const sel = document.getElementById('year');
+  sel.innerHTML = '';
+  const years = state.doc ? Object.keys(state.doc.years).sort().reverse() : [];
+  for (const y of years) {
+    const o = document.createElement('option'); o.value = y; o.textContent = y; if (y === state.year) o.selected = true;
+    sel.appendChild(o);
+  }
+  sel.onchange = () => { state.year = sel.value; try { localStorage.setItem('fsa:year', sel.value); } catch (_) {} render(); };
+}
+
+function wireSort() {
+  document.querySelectorAll('#claims-table th[data-sort]').forEach((th) => {
+    const k = th.getAttribute('data-sort');
+    th.addEventListener('click', () => {
+      if (state.sort.key === k) state.sort.dir = state.sort.dir === 'asc' ? 'desc' : 'asc';
+      else state.sort = { key: k, dir: 'desc' };
+      renderTable(state, state.doc ? yearClaims(state.doc, state.year) : []);
+    });
+    th.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); th.click(); } });
+    th.setAttribute('tabindex', '0');
+  });
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
+
+
+</script>
+</body>
+</html>
