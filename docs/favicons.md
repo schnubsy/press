@@ -47,6 +47,7 @@ has no page-title meta). No external asset — the single-file rule holds.
 | `kayley.html` | Kayley · Upskilling Plan | `#100C1E` | `#8E7BE8 → #E7A6C7` | three ascending bars | inline |
 | `retirement.html` | Retirement Projection | `#0F1618` | `#7BC0AC → #E0BD8F` | rising line | inline |
 | `fsa.html` | FSA Claims | `#14161A` | `#00A3E0` (cyan) + `#E6E9ED` needle | gauge dial + needle | inline (flat, no gradient — Apparatus Gauge) |
+| `card-scout.html` | Card Scout | `#0E1220` | `#4FC38A → #E0BD8F` | price / gift tag | inline |
 
 ## Glyph paths (24x24 box)
 
@@ -59,6 +60,7 @@ has no page-title meta). No external asset — the single-file rule holds.
 | `halvsies.html` | `<circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="21"/>` | 2.6 |
 | `kayley.html` | `<line x1="5" y1="19" x2="5" y2="15"/><line x1="12" y1="19" x2="12" y2="11"/><line x1="19" y1="19" x2="19" y2="6"/>` | 3.0 |
 | `retirement.html` | `<polyline points="3 18 9.5 11.5 13.5 15.5 21 6"/>` | 2.8 |
+| `card-scout.html` | `<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>` | 2.8 |
 
 ## Verify before publish
 

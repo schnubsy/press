@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Card Scout</title>
+<meta name="page-title" content="Card Scout">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSI2NCIgeTI9IjY0IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjNEZDMzhBIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRTBCRDhGIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMwRTEyMjAiLz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg4IDgpIHNjYWxlKDIpIiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjZykiIHN0cm9rZS13aWR0aD0iMi44IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMC41OSAxMy40MWwtNy4xNyA3LjE3YTIgMiAwIDAgMS0yLjgzIDBMMiAxMlYyaDEwbDguNTkgOC41OWEyIDIgMCAwIDEgMCAyLjgyeiIvPjxsaW5lIHgxPSI3IiB5MT0iNyIgeDI9IjcuMDEiIHkyPSI3Ii8+PC9nPjwvc3ZnPgo=">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSI2NCIgeTI9IjY0IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjNEZDMzhBIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRTBCRDhGIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMwRTEyMjAiLz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg4IDgpIHNjYWxlKDIpIiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjZykiIHN0cm9rZS13aWR0aD0iMi44IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMC41OSAxMy40MWwtNy4xNyA3LjE3YTIgMiAwIDAgMS0yLjgzIDBMMiAxMlYyaDEwbDguNTkgOC41OWEyIDIgMCAwIDEgMCAyLjgyeiIvPjxsaW5lIHgxPSI3IiB5MT0iNyIgeDI9IjcuMDEiIHkyPSI3Ii8+PC9nPjwvc3ZnPgo=">
+<meta name="theme-color" content="#f6f7f9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Card Scout">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="description" content="Personal gift-card deal monitor — alerts only on the deals that beat your rules.">
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#ffffff; --ink:#161a22; --muted:#5b6470; --line:#e3e6ea;
+    --accentA:#149b6b; --accentB:#b07d2a; --hit:#0f7a4d; --near:#8a6d1f; --danger:#b3261e;
+    --chip:#eef1f4; --shadow:0 1px 2px rgba(16,20,30,.06),0 2px 8px rgba(16,20,30,.05);
+    --tap:44px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1216; --card:#171b21; --ink:#eef1f5; --muted:#9aa4b1; --line:#272d36;
+      --chip:#20262e; --shadow:0 1px 2px rgba(0,0,0,.4);
+      --accentA:#4fc38a; --accentB:#e0bd8f; --hit:#4fc38a; --near:#e0bd8f;
+    }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding-bottom:calc(env(safe-area-inset-bottom) + 8px);
+  }
+  header{
+    position:sticky;top:0;z-index:20;background:var(--bg);
+    padding:calc(env(safe-area-inset-top) + 10px) 16px 8px;border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand h1{font-size:20px;margin:0;letter-spacing:-.02em}
+  .brand .logo{width:26px;height:26px;flex:0 0 auto}
+  #sync{margin-left:auto;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--chip);color:var(--muted)}
+  #sync.ok{color:var(--hit)} #sync.err{color:var(--danger)} #sync.busy{color:var(--accentB)}
+  nav{display:flex;gap:6px;margin-top:10px}
+  nav button{
+    flex:1;min-height:var(--tap);border:1px solid var(--line);background:var(--card);color:var(--muted);
+    border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;
+  }
+  nav button[aria-selected="true"]{color:#fff;background:linear-gradient(135deg,var(--accentA),var(--accentB));border-color:transparent}
+  main{max-width:640px;margin:0 auto;padding:14px 16px}
+  section[hidden]{display:none}
+  h2.group{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:18px 2px 8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;margin-bottom:10px}
+  .row{display:flex;align-items:center;gap:10px}
+  .row .grow{flex:1;min-width:0}
+  .title{font-weight:600}
+  .sub{font-size:13px;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--chip);color:var(--muted);margin-right:5px}
+  .badge.hit{background:rgba(15,122,77,.14);color:var(--hit)}
+  .badge.near{background:rgba(138,109,31,.16);color:var(--near)}
+  .badge.warn{background:rgba(179,38,30,.12);color:var(--danger)}
+  .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;background:#9aa4b1}
+  .dot.ok{background:var(--hit)} .dot.err{background:var(--danger)} .dot.blocked{background:#c58a1e}
+  /* toggle — 52x44 hit area (iOS min), pill drawn 48x28 centred */
+  .sw{position:relative;width:52px;height:44px;flex:0 0 auto;border:none;background:transparent;cursor:pointer;padding:0}
+  .sw::before{content:"";position:absolute;top:50%;left:0;transform:translateY(-50%);width:48px;height:28px;border-radius:999px;background:#c7ccd3;transition:background .15s}
+  .sw[aria-pressed="true"]::before{background:linear-gradient(135deg,var(--accentA),var(--accentB))}
+  .sw::after{content:"";position:absolute;top:50%;left:3px;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s}
+  .sw[aria-pressed="true"]::after{transform:translate(20px,-50%)}
+  .stepper{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .stepper button{width:44px;height:44px;border:none;background:var(--card);color:var(--ink);font-size:20px;cursor:pointer}
+  .stepper output{min-width:52px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+  .btn{min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:600;cursor:pointer}
+  .btn.primary{background:linear-gradient(135deg,var(--accentA),var(--accentB));color:#fff;border-color:transparent}
+  .btn.small{min-height:40px;padding:0 14px;font-size:14px}
+  a.deal{color:var(--accentA);text-decoration:none;font-weight:600}
+  a.deal:focus-visible,button:focus-visible,.sw:focus-visible,input:focus-visible{outline:3px solid var(--accentB);outline-offset:2px}
+  .field{display:flex;align-items:center;gap:10px;margin:8px 0}
+  .field label{flex:1}
+  input[type=time],input[type=text],select{min-height:38px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);padding:0 10px;font-size:15px}
+  .empty{color:var(--muted);text-align:center;padding:26px 10px}
+  .addrow{display:flex;gap:8px;margin-top:6px}
+  .addrow input{flex:1}
+  footer{max-width:640px;margin:6px auto 0;padding:14px 16px 24px;color:var(--muted);font-size:13px;text-align:center}
+  footer a{color:var(--accentA)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4FC38A"/><stop offset="1" stop-color="#E0BD8F"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="#0E1220"/><g transform="translate(8 8) scale(2)" fill="none" stroke="url(#lg)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></g></svg>
+    <h1>Card Scout</h1>
+    <span id="sync" role="status" aria-live="polite">…</span>
+  </div>
+  <nav role="tablist" aria-label="Sections">
+    <button role="tab" id="tab-feed" aria-selected="true" aria-controls="panel-feed">Feed</button>
+    <button role="tab" id="tab-sources" aria-selected="false" aria-controls="panel-sources">Sources</button>
+    <button role="tab" id="tab-rules" aria-selected="false" aria-controls="panel-rules">Rules</button>
+    <button role="tab" id="tab-alerts" aria-selected="false" aria-controls="panel-alerts">Alerts</button>
+  </nav>
+</header>
+
+<main>
+  <section id="panel-feed" role="tabpanel" aria-labelledby="tab-feed"><div id="feed"></div></section>
+  <section id="panel-sources" role="tabpanel" aria-labelledby="tab-sources" hidden><div id="sources"></div></section>
+  <section id="panel-rules" role="tabpanel" aria-labelledby="tab-rules" hidden><div id="rules"></div></section>
+  <section id="panel-alerts" role="tabpanel" aria-labelledby="tab-alerts" hidden><div id="alerts"></div></section>
+</main>
+<footer>
+  Alerts only fire on deals that beat your rules — the cloud agent judges every 30&nbsp;min.
+  <br><a id="healthlink" href="agent-health.html">Agent health &rarr;</a>
+</footer>
+
+<script>
+"use strict";
+(function(){
+  var SUPA = "https://eepjhpyziczrxvirczio.supabase.co";
+  var KEY  = "sb_publishable__iv3bI7xDAsOdHUlXzbVZQ_2yyFS4uX"; // publishable; open RLS, non-sensitive
+  var PAGE = "card-scout";
+  var LS   = "press:card-scout";
+  var REST = SUPA + "/rest/v1/";
+  var H = { apikey:KEY, Authorization:"Bearer "+KEY, "content-type":"application/json" };
+
+  var state = { sources:[], rules:[], settings:{}, toggles:{}, deals:[] };
+  var el = function(id){ return document.getElementById(id); };
+  var esc = function(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); };
+  function sync(cls,txt){ var s=el("sync"); s.className=cls; s.textContent=txt; }
+
+  function api(path, opts){
+    opts = opts || {};
+    opts.headers = Object.assign({}, H, opts.headers||{});
+    return fetch(REST+path, opts);
+  }
+  function saveLS(){ try{ localStorage.setItem(LS, JSON.stringify(state)); }catch(e){} }
+  function loadLS(){ try{ var v=localStorage.getItem(LS); if(v){ state=JSON.parse(v); } }catch(e){} }
+
+  // ---------- loads ----------
+  function since30(){ var d=new Date(Date.now()-30*864e5); return d.toISOString(); }
+  function refresh(){
+    sync("busy","Syncing…");
+    var q = [
+      api("press_tasks?page=eq."+PAGE+"&category=eq.source&select=item_id,title,status,extras&order=position"),
+      api("press_tasks?page=eq."+PAGE+"&category=eq.rule&select=item_id,title,status,extras&order=title"),
+      api("press_tasks?page=eq."+PAGE+"&category=eq.settings&select=item_id,extras"),
+      api("press_state?page=eq."+PAGE+"&select=item_id,checked"),
+      api("press_deals?page=eq."+PAGE+"&created_at=gte."+since30()+"&verdict=in.(hit,near)&order=created_at.desc&select=item_id,brand,category,face_value,price,pct_off,expiry,url,source,verdict,status,extras,created_at")
+    ];
+    return Promise.all(q).then(function(rs){
+      return Promise.all(rs.map(function(r){ if(!r.ok) throw new Error("http "+r.status); return r.json(); }));
+    }).then(function(d){
+      state.sources=d[0]; state.rules=d[1];
+      state.settings=(d[2][0]&&d[2][0].extras)||{};
+      state.toggles={}; d[3].forEach(function(t){ state.toggles[t.item_id]=t.checked===true; });
+      state.deals=d[4];
+      saveLS(); renderAll(); sync("ok","Synced");
+    }).catch(function(e){
+      sync("err", navigator.onLine ? "Sync failed" : "Offline");
+    });
+  }
+
+  // ---------- writes ----------
+  function patchTask(item_id, body){
+    return api("press_tasks?page=eq."+PAGE+"&item_id=eq."+encodeURIComponent(item_id), {method:"PATCH", headers:{Prefer:"return=minimal"}, body:JSON.stringify(body)});
+  }
+  function patchDeal(item_id, body){
+    return api("press_deals?page=eq."+PAGE+"&item_id=eq."+encodeURIComponent(item_id), {method:"PATCH", headers:{Prefer:"return=minimal"}, body:JSON.stringify(body)});
+  }
+  function upsertState(item_id, checked){
+    return api("press_state?on_conflict=page,item_id", {method:"POST", headers:{Prefer:"resolution=merge-duplicates,return=minimal"}, body:JSON.stringify({page:PAGE,item_id:item_id,checked:checked,updated_at:new Date().toISOString()})});
+  }
+  function flash(ok){ sync(ok?"ok":"err", ok?"Saved":"Save failed"); }
+  function withSave(p){ sync("busy","Saving…"); return p.then(function(r){ if(!r.ok) throw 0; saveLS(); flash(true); }).catch(function(){ flash(false); }); }
+
+  // ---------- render ----------
+  function pct(d){ var p=(d.pct_off!=null)?d.pct_off:(d.extras&&d.extras.effective_pct); return p==null?null:Math.round(p); }
+  function fmtDate(s){ if(!s) return ""; var t=new Date(s); return isNaN(t)?"":t.toLocaleDateString(undefined,{month:"short",day:"numeric"}); }
+
+  function renderFeed(){
+    var host=el("feed"); var hits=state.deals.filter(function(d){return d.verdict==="hit";});
+    var nears=state.deals.filter(function(d){return d.verdict==="near";});
+    var html="";
+    html+=block("Hits", hits, true);
+    html+=block("Near misses", nears, false);
+    if(!hits.length && !nears.length) html='<div class="empty">No deals in the last 30 days yet.<br>The agent alerts you the moment one beats your rules.</div>';
+    host.innerHTML=html;
+  }
+  function block(label, list, isHit){
+    if(!list.length) return "";
+    var h='<h2 class="group">'+label+' ('+list.length+')</h2>';
+    list.forEach(function(d){
+      var p=pct(d); var bought=d.status==="bought", skip=d.status==="skip";
+      h+='<div class="card"><div class="row"><span class="badge '+(isHit?"hit":"near")+'">'+(p!=null?p+"% off":(isHit?"HIT":"NEAR"))+'</span>'
+        +'<div class="grow"><div class="title">'+esc(d.brand||"Gift card")+'</div>'
+        +'<div class="sub">'+priceLine(d)+(d.source?' · '+esc(String(d.source).replace(/^src-/,"")):"")+(d.expiry?' · exp '+esc(d.expiry):"")+'</div></div></div>'
+        +'<div class="row" style="margin-top:10px">'
+        +(d.url?'<a class="deal" href="'+esc(d.url)+'" target="_blank" rel="noopener">Open deal &rarr;</a>':'<span class="sub">no link</span>')
+        +'<span class="grow"></span>'
+        +'<button class="btn small'+(bought?" primary":"")+'" data-buy="'+esc(d.item_id)+'" aria-pressed="'+bought+'">Bought</button> '
+        +'<button class="btn small'+(skip?" primary":"")+'" data-skip="'+esc(d.item_id)+'" aria-pressed="'+skip+'">Skip</button>'
+        +'</div></div>';
+    });
+    return h;
+  }
+  function priceLine(d){
+    if(d.price!=null&&d.face_value!=null) return "$"+d.price+" for $"+d.face_value;
+    if(d.price!=null) return "$"+d.price;
+    return esc((d.category||"gift card"));
+  }
+
+  var SRC_GROUPS=[["feed","Deal feeds"],["direct","Direct retailers"],["marketplace","Marketplaces"]];
+  function renderSources(){
+    var host=el("sources"); var html="";
+    SRC_GROUPS.forEach(function(g){
+      var list=state.sources.filter(function(s){return (s.extras&&s.extras.group)===g[0];});
+      if(!list.length) return;
+      html+='<h2 class="group">'+g[1]+'</h2>';
+      list.forEach(function(s){
+        var x=s.extras||{}; var on=s.status==="on";
+        var health=x.blocked?"blocked":(x.health||"");
+        var dot=health==="ok"?"ok":health==="error"?"err":health==="blocked"?"blocked":"";
+        html+='<div class="card"><div class="row">'
+          +'<span class="dot '+dot+'" title="'+esc(health||"unknown")+'"></span>'
+          +'<div class="grow"><div class="title">'+esc(s.title)+'</div>'
+          +'<div class="sub">'+esc(x.lane||"")+' · '+esc(x.cadence||"")
+          +(x.last_checked?' · checked '+fmtDate(x.last_checked):"")+'</div>'
+          +'<div class="sub">'+(x.verified?"":'<span class="badge warn">unverified</span>')+(x.blocked?'<span class="badge warn">blocked</span>':"")+(x.note?esc(x.note):"")+'</div></div>'
+          +'<button class="sw" role="switch" aria-checked="'+on+'" aria-pressed="'+on+'" aria-label="Enable '+esc(s.title)+'" data-src="'+esc(s.item_id)+'"></button>'
+          +'</div></div>';
+      });
+    });
+    host.innerHTML=html||'<div class="empty">No sources.</div>';
+  }
+
+  var RULE_GROUPS=[["restaurant","Restaurants"],["retail","Retail"],["other","Other"],["retailer","Warehouse / retailer"]];
+  function renderRules(){
+    var host=el("rules"); var html="";
+    RULE_GROUPS.forEach(function(g){
+      var list=state.rules.filter(function(r){return (r.extras&&r.extras.group)===g[0];});
+      if(!list.length) return;
+      html+='<h2 class="group">'+g[1]+'</h2>';
+      list.forEach(function(r){
+        var x=r.extras||{}; var on=r.status==="on"; var mode=x.mode||"pct";
+        var ctrl = mode==="pct"
+          ? '<div class="stepper" role="group" aria-label="Minimum percent off for '+esc(r.title)+'"><button data-dec="'+esc(r.item_id)+'" aria-label="Decrease">&minus;</button><output>'+(Number(x.min_pct)||0)+'%</output><button data-inc="'+esc(r.item_id)+'" aria-label="Increase">+</button></div>'
+          : '<span class="badge">'+(mode==="stack"?"stack only":"bonus")+'</span>';
+        html+='<div class="card"><div class="row">'
+          +'<div class="grow"><div class="title">'+esc(r.title)+'</div>'
+          +(x.note?'<div class="sub">'+esc(x.note)+'</div>':"")+'</div>'
+          +ctrl
+          +'<button class="sw" role="switch" aria-checked="'+on+'" aria-pressed="'+on+'" aria-label="Enable '+esc(r.title)+'" data-rule="'+esc(r.item_id)+'"></button>'
+          +'</div></div>';
+      });
+    });
+    html+='<h2 class="group">Add a brand</h2><div class="card"><div class="addrow">'
+      +'<input id="newbrand" type="text" placeholder="Brand name" aria-label="New brand name">'
+      +'<button class="btn primary" id="addbrand">Add</button></div>'
+      +'<div class="sub" style="margin-top:6px">Adds a 20%-off rule you can tune.</div></div>';
+    host.innerHTML=html;
+  }
+
+  function renderAlerts(){
+    var host=el("alerts"); var s=state.settings||{}; var t=state.toggles||{};
+    function tog(id,label,desc){
+      return '<div class="card"><div class="row"><div class="grow"><div class="title">'+label+'</div><div class="sub">'+desc+'</div></div>'
+        +'<button class="sw" role="switch" aria-checked="'+(t[id]===true)+'" aria-pressed="'+(t[id]===true)+'" aria-label="'+label+'" data-toggle="'+id+'"></button></div></div>';
+    }
+    var html="";
+    html+='<h2 class="group">Channels</h2>';
+    html+=tog("alert-iphone","iPhone push","Instant ntfy alert on a hit.");
+    html+=tog("alert-gmail","Email","A copy to your inbox.");
+    html+='<h2 class="group">Timing</h2>';
+    html+=tog("digest-daily","Daily near-miss digest","One email of the day’s near misses.");
+    html+=tog("quiet-hours","Quiet hours","Hold hit alerts overnight; they arrive after quiet hours end.");
+    html+='<div class="card">'
+      +'<div class="field"><label for="qs">Quiet start</label><input type="time" id="qs" value="'+esc(s.quiet_start||"22:00")+'" data-set="quiet_start"></div>'
+      +'<div class="field"><label for="qe">Quiet end</label><input type="time" id="qe" value="'+esc(s.quiet_end||"07:00")+'" data-set="quiet_end"></div>'
+      +'<div class="field"><label for="dt">Digest time</label><input type="time" id="dt" value="'+esc(s.digest_time||"07:30")+'" data-set="digest_time"></div>'
+      +'<div class="field"><label for="md">Alert mode</label><select id="md" data-set="mode"><option value="instant"'+((s.mode||"instant")==="instant"?" selected":"")+'>Instant</option><option value="digest"'+(s.mode==="digest"?" selected":"")+'>Digest only</option></select></div>'
+      +'</div>';
+    host.innerHTML=html;
+  }
+
+  function renderAll(){ renderFeed(); renderSources(); renderRules(); renderAlerts(); }
+
+  // ---------- interactions ----------
+  function setSwitch(btn,on){ btn.setAttribute("aria-checked",on); btn.setAttribute("aria-pressed",on); }
+  document.addEventListener("click", function(ev){
+    var b=ev.target.closest("button, a"); if(!b) return;
+    // tabs
+    if(b.getAttribute("role")==="tab"){ selectTab(b.id); return; }
+    // source toggle
+    var sid=b.getAttribute("data-src");
+    if(sid){ var s=find(state.sources,sid); var on=s.status!=="on"; s.status=on?"on":"off"; setSwitch(b,on); withSave(patchTask(sid,{status:s.status,updated_at:new Date().toISOString()})); return; }
+    // rule toggle
+    var rid=b.getAttribute("data-rule");
+    if(rid){ var r=find(state.rules,rid); var on2=r.status!=="on"; r.status=on2?"on":"off"; setSwitch(b,on2); withSave(patchTask(rid,{status:r.status,updated_at:new Date().toISOString()})); return; }
+    // stepper
+    var inc=b.getAttribute("data-inc"), dec=b.getAttribute("data-dec");
+    if(inc||dec){ stepRule(inc||dec, inc?5:-5, b); return; }
+    // alert toggle
+    var tg=b.getAttribute("data-toggle");
+    if(tg){ var on3=state.toggles[tg]!==true; state.toggles[tg]=on3; setSwitch(b,on3); withSave(upsertState(tg,on3)); return; }
+    // bought / skip
+    var buy=b.getAttribute("data-buy"), skip=b.getAttribute("data-skip");
+    if(buy||skip){ markDeal(buy||skip, buy?"bought":"skip", b); return; }
+    // add brand
+    if(b.id==="addbrand"){ addBrand(); return; }
+  });
+  document.addEventListener("change", function(ev){
+    var f=ev.target.getAttribute && ev.target.getAttribute("data-set");
+    if(!f) return;
+    state.settings[f]=ev.target.value;
+    withSave(patchTask("settings",{extras:state.settings,updated_at:new Date().toISOString()}));
+  });
+
+  function find(list,id){ for(var i=0;i<list.length;i++) if(list[i].item_id===id) return list[i]; return null; }
+  function stepRule(id,delta,btn){
+    var r=find(state.rules,id); r.extras=r.extras||{}; var v=Math.max(0,Math.min(90,(Number(r.extras.min_pct)||0)+delta));
+    r.extras.min_pct=v; var out=btn.parentNode.querySelector("output"); if(out) out.textContent=v+"%";
+    withSave(patchTask(id,{extras:r.extras,updated_at:new Date().toISOString()}));
+  }
+  function markDeal(id,status,btn){
+    var d=find(state.deals,id); var was=d.status===status; d.status=was?"judged":status;
+    // reflect on both buttons in the card
+    var card=btn.closest(".card");
+    card.querySelectorAll("[data-buy],[data-skip]").forEach(function(x){ x.classList.remove("primary"); x.setAttribute("aria-pressed","false"); });
+    if(!was){ btn.classList.add("primary"); btn.setAttribute("aria-pressed","true"); }
+    withSave(patchDeal(id,{status:d.status,updated_at:new Date().toISOString()}));
+  }
+  function addBrand(){
+    var inp=el("newbrand"); var name=(inp.value||"").trim(); if(!name) return;
+    var slug="rule-"+name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+    if(find(state.rules,slug)){ inp.value=""; selectTab("tab-rules"); return; }
+    var row={page:PAGE,item_id:slug,title:name,status:"on",category:"rule",position:999,
+      extras:{group:"other",mode:"pct",min_pct:20,note:""},updated_at:new Date().toISOString()};
+    state.rules.push(row); inp.value=""; renderRules();
+    withSave(api("press_tasks?on_conflict=page,item_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(row)}));
+  }
+
+  function selectTab(tabId){
+    ["feed","sources","rules","alerts"].forEach(function(name){
+      var tab=el("tab-"+name), panel=el("panel-"+name), on=("tab-"+name)===tabId;
+      tab.setAttribute("aria-selected",on); panel.hidden=!on;
+    });
+  }
+  // keyboard: arrow between tabs
+  document.querySelector("nav").addEventListener("keydown",function(ev){
+    var order=["tab-feed","tab-sources","tab-rules","tab-alerts"]; var i=order.indexOf(document.activeElement.id);
+    if(i<0) return; var n=null;
+    if(ev.key==="ArrowRight") n=order[(i+1)%order.length];
+    else if(ev.key==="ArrowLeft") n=order[(i-1+order.length)%order.length];
+    if(n){ ev.preventDefault(); el(n).focus(); selectTab(n); }
+  });
+
+  // ---------- boot ----------
+  loadLS();
+  if(state.sources && state.sources.length){ renderAll(); sync("","Cached"); } else { renderAll(); }
+  refresh();
+  window.addEventListener("online", refresh);
+})();
+</script>
+</body>
+</html>
