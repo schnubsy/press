@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#14161A">
   <title>FSA Claims</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMTQxNjFBIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJBMkYzNiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIyIDQ5LjMyIEEyMCAyMCAwIDAgMSAxNC42OCAyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDBBM0UwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIzMiIgeTE9IjMyIiB4Mj0iNDAiIHkyPSIxOC4xNCIgc3Ryb2tlPSIjRTZFOUVEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
-  <meta name="build" content="2026-09-18T00:27:34.455Z 17ba8e8">
+  <meta name="build" content="2026-09-18T02:21:08.753Z a4a798f">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="manifest" href="fsa-assets/manifest.webmanifest">
@@ -158,6 +158,9 @@
 /* styles/base.css */
 /* base.css — movement discipline: flat planes, hairlines, no radius/shadow/gradient, 8px grid. */
 * { border-radius: 0; box-sizing: border-box; }
+/* The `hidden` attribute must win over component display rules (e.g. #readout is display:grid) —
+   the signed-out view and the inbox toggle rely on it to actually hide sections. */
+[hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
@@ -212,6 +215,29 @@ select {
 .inbox-form input { background: var(--surface); color: var(--ink); border: 1px solid var(--hairline); padding: 4px var(--s1); font-size: 13px; }
 .inbox-actions { display: flex; flex-wrap: wrap; gap: var(--s1); margin-top: var(--s2); }
 .inbox-error { color: var(--ink); font-size: 12px; margin: var(--s1) 0 0; border-left: 2px solid var(--danger); padding-left: var(--s1); }
+
+/* unlock panel (arc: first-run-ux) — explicit two-path unlock/create, full-width stacked fields */
+#auth-panel { max-width: 30rem; margin: var(--s4) 0; }
+#auth-panel > p { margin: 0 0 var(--s2); }
+#auth-panel .auth-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: var(--s2); }
+#auth-panel .auth-field label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+#auth-panel input {
+  width: 100%; background: var(--surface); color: var(--ink);
+  border: 1px solid var(--hairline); padding: var(--s1); font-size: 14px;
+}
+#auth-panel input::placeholder { color: var(--dim); opacity: .7; }
+#auth-panel button { width: 100%; padding: var(--s1) var(--s2); }
+#auth-panel button:disabled { color: var(--dim); cursor: not-allowed; border-color: var(--hairline); }
+#auth-panel button:disabled:hover { border-color: var(--hairline); }
+.auth-error { color: var(--danger); font-size: 13px; margin: 0 0 var(--s2); }
+.auth-sep { border-top: 1px solid var(--hairline); margin: var(--s4) 0 var(--s2); }
+.auth-secondary { background: transparent; }
+#auth-created { margin-top: var(--s2); }
+.auth-warn { color: var(--warn); font-size: 13px; border-left: 2px solid var(--warn); padding-left: var(--s1); margin: 0 0 var(--s2); }
+.auth-reveal { display: grid; grid-template-columns: 1fr auto; align-items: stretch; gap: var(--s1); }
+.auth-reveal code { min-width: 0; overflow-wrap: anywhere; background: var(--surface); border: 1px solid var(--hairline); padding: var(--s1); font-size: 13px; display: flex; align-items: center; }
+#auth-panel .auth-reveal .auth-copy { width: auto; padding: var(--s1) var(--s2); }
+#signout { line-height: 1; font-size: 12px; }
 
 /* agent control (slice 5) */
 #agents { display: inline-flex; align-items: center; gap: var(--s1); }
@@ -311,6 +337,7 @@ select {
     <span id="syncpill" class="mono pill-sync" hidden></span>
     <span id="agents"></span>
     <button id="theme-toggle" type="button" aria-label="Toggle light and dark theme">◐</button>
+    <button id="signout" type="button" hidden>Sign out</button>
   </header>
 
   <main>
@@ -554,21 +581,6 @@ select {
     },
     "status": "pending",
     "created_at": "2026-09-16T12:03:00Z"
-  },
-  {
-    "id": "q-demo-badkey",
-    "app": "fsa",
-    "sync_id": "demo",
-    "agent": "fsa-capture",
-    "source_ref": "demo-cap-2",
-    "payload_sealed": {
-      "v": 1,
-      "epk": "BAtrjgxBc+9PwR0jETgVBq6mcwsPR6It284QCMwDG5wpEMf3VAg/EKBjMI8Itu3oSzULg2U6ABpvFM7ayVf2G4k=",
-      "iv": "QObObNe2HQFRF2G9",
-      "ct": "5L+95Pw6Da3++dX9HPxsSuIf+2EFA5nTEDuE3HffVICjKx0vXzrES+K08SBULJ1E//Lu5unUTg/Vr2qzV0+dC0vkv1SywhDnb9qwTf10uuM="
-    },
-    "status": "pending",
-    "created_at": "2026-09-16T12:05:00Z"
   }
 ]</script>
   <script type="module">
@@ -987,13 +999,21 @@ async function unseal(box, privateJwk, info = FSA_SEAL_INFO) {
 
 /* ---- src/ui/auth.js ---- */
 // src/ui/auth.js — sync-id + passphrase auth (giving-tracker model). No Supabase Auth, no server
-// routes. First run generates a sync id + passphrase, shows BOTH ONCE (unrecoverable), and stores
-// them in localStorage. Sign-in accepts an existing pair. Sign-out clears creds + cached document.
+// routes. Two explicit paths: UNLOCK an existing document with a pair you already have, or CREATE a
+// brand-new document (a fresh pair is generated ON DEMAND, shown once, and only saved after you
+// confirm you've stored it). Sign-out clears ONLY fsa-scoped keys (this origin is shared with the
+// other press apps). All keys live in localStorage.
 
 
 const SK = 'fsa:sync_id';
 const PK = 'fsa:pass';
+const YK = 'fsa:year';
+const TK = 'fsa:theme';
 const CACHE = 'press:fsa';
+
+// The full set of fsa-scoped keys sign-out is allowed to touch. schnubsy.github.io is ONE origin
+// shared with giving/retirement/halvsies/kayley/eagle-path and the portal — NEVER localStorage.clear().
+const FSA_KEYS = [SK, PK, YK, TK, CACHE];
 
 function loadCreds() {
   try { return { syncId: localStorage.getItem(SK), passphrase: localStorage.getItem(PK) }; }
@@ -1003,9 +1023,13 @@ function saveCreds(syncId, passphrase) {
   try { localStorage.setItem(SK, syncId); localStorage.setItem(PK, passphrase); } catch (_) { /* ok */ }
 }
 function clearCreds() {
-  try { localStorage.removeItem(SK); localStorage.removeItem(PK); localStorage.removeItem(CACHE); } catch (_) { /* ok */ }
+  // Remove ONLY the fsa-scoped keys — the sibling press apps share this origin's localStorage.
+  try { for (const k of FSA_KEYS) localStorage.removeItem(k); } catch (_) { /* ok */ }
 }
 function hasCreds() { const c = loadCreds(); return Boolean(c.syncId && c.passphrase); }
+
+// A sync id is 32 lowercase hex chars (128-bit capability). Validate before attempting a load.
+function isValidSyncId(s) { return /^[0-9a-f]{32}$/i.test(String(s || '').trim()); }
 
 // A strong, copy-able passphrase: 4 groups of 5 lowercase-base32 chars (~100 bits).
 function generatePassphrase() {
@@ -1017,31 +1041,95 @@ function generatePassphrase() {
 }
 function newCreds() { return { syncId: newSyncId(), passphrase: generatePassphrase() }; }
 
-// Minimal first-run / sign-in panel, created dynamically (never shown in demo mode).
-// onReady({syncId, passphrase, mode}) is called after the user confirms.
+// Two-path unlock panel, created dynamically (never shown in demo mode).
+// onReady({syncId, passphrase, mode}) is called after creds are saved; mode is 'unlock' or 'create'.
 function renderAuthPanel(root, onReady) {
   const box = document.createElement('section');
   box.id = 'auth-panel';
-  box.setAttribute('aria-label', 'Sign in');
-  const created = newCreds();
+  box.setAttribute('aria-label', 'Unlock your document');
   box.innerHTML = `
-    <h2 class="section-h">Unlock FSA Claims</h2>
-    <p class="dim">First time here? A new sync id + passphrase are generated below — copy BOTH somewhere
-    safe. They are unrecoverable and are the only key to your encrypted document. Already have a pair?
-    Enter it instead.</p>
-    <label class="vh" for="auth-sync">Sync id</label>
-    <input id="auth-sync" class="mono" value="${created.syncId}" spellcheck="false" autocomplete="off">
-    <label class="vh" for="auth-pass">Passphrase</label>
-    <input id="auth-pass" class="mono" value="${created.passphrase}" spellcheck="false" autocomplete="off">
-    <button id="auth-go" type="button">Unlock</button>`;
+    <h2 class="section-h">Unlock your document</h2>
+    <p class="dim">Enter the sync id and passphrase for your encrypted document.</p>
+    <div class="auth-field">
+      <label for="auth-sync">Sync id</label>
+      <input id="auth-sync" class="mono" type="text" placeholder="32 hex chars"
+             spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off">
+    </div>
+    <div class="auth-field">
+      <label for="auth-pass">Passphrase</label>
+      <input id="auth-pass" class="mono" type="text" placeholder="xxxxx-xxxxx-xxxxx-xxxxx"
+             spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off">
+    </div>
+    <p id="auth-error" class="auth-error" role="alert" hidden></p>
+    <button id="auth-go" type="button" disabled>Unlock</button>
+
+    <div class="auth-sep"></div>
+    <p class="dim">No document yet? Start a fresh encrypted document.</p>
+    <button id="auth-create" type="button" class="auth-secondary">Create a new document</button>
+
+    <div id="auth-created" hidden>
+      <p class="auth-warn">Save BOTH of these now. They are unrecoverable and are the only key to your
+      data — no reset, no recovery.</p>
+      <div class="auth-field">
+        <label>New sync id</label>
+        <div class="auth-reveal"><code id="new-sync" class="mono"></code><button id="copy-sync" type="button" class="auth-copy">Copy</button></div>
+      </div>
+      <div class="auth-field">
+        <label>New passphrase</label>
+        <div class="auth-reveal"><code id="new-pass" class="mono"></code><button id="copy-pass" type="button" class="auth-copy">Copy</button></div>
+      </div>
+      <button id="auth-continue" type="button">I've saved both — continue</button>
+    </div>`;
   root.prepend(box);
-  box.querySelector('#auth-go').addEventListener('click', () => {
-    const syncId = box.querySelector('#auth-sync').value.trim();
-    const passphrase = box.querySelector('#auth-pass').value.trim();
+
+  const sync = box.querySelector('#auth-sync');
+  const pass = box.querySelector('#auth-pass');
+  const go = box.querySelector('#auth-go');
+  const errEl = box.querySelector('#auth-error');
+  const showError = (msg) => { errEl.textContent = msg; errEl.hidden = !msg; };
+
+  const refreshGo = () => { go.disabled = !(sync.value.trim() && pass.value.trim()); };
+  sync.addEventListener('input', () => { showError(''); refreshGo(); });
+  pass.addEventListener('input', () => { showError(''); refreshGo(); });
+
+  go.addEventListener('click', () => {
+    const syncId = sync.value.trim();
+    const passphrase = pass.value.trim();
     if (!syncId || !passphrase) return;
+    if (!isValidSyncId(syncId)) { showError('Sync id must be 32 hexadecimal characters.'); return; }
     saveCreds(syncId, passphrase);
     box.remove();
-    onReady({ syncId, passphrase });
+    onReady({ syncId, passphrase, mode: 'unlock' });
+  });
+
+  // --- create path: generate ON DEMAND, reveal once, save only after an explicit confirm ---
+  const createBtn = box.querySelector('#auth-create');
+  const created = box.querySelector('#auth-created');
+  let pair = null;
+  createBtn.addEventListener('click', () => {
+    pair = newCreds();
+    box.querySelector('#new-sync').textContent = pair.syncId;
+    box.querySelector('#new-pass').textContent = pair.passphrase;
+    created.hidden = false;
+    createBtn.disabled = true;
+    box.querySelector('#auth-continue').focus();
+  });
+
+  const copy = async (text, btn) => {
+    try { await (navigator.clipboard && navigator.clipboard.writeText(text)); btn.textContent = 'Copied'; }
+    catch (_) { btn.textContent = 'Copy failed'; }
+    setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+  };
+  box.querySelector('#copy-sync').addEventListener('click', (e) => copy(pair ? pair.syncId : '', e.currentTarget));
+  box.querySelector('#copy-pass').addEventListener('click', (e) => copy(pair ? pair.passphrase : '', e.currentTarget));
+
+  box.querySelector('#auth-continue').addEventListener('click', () => {
+    if (!pair) return;
+    // Blocking confirm — the last gate before these values become the only key to the data.
+    if (!confirm('These are unrecoverable and are the only key to your data. Have you saved both?')) return;
+    saveCreds(pair.syncId, pair.passphrase);
+    box.remove();
+    onReady({ syncId: pair.syncId, passphrase: pair.passphrase, mode: 'create' });
   });
 }
 
@@ -1094,7 +1182,7 @@ function gaugeModel(doc, year, today) {
   const pct = e > 0 ? Math.min(100, (sub / e) * 100) : 0;
   const dl = daysLeft(doc, year, today);
   const confirmed = runOutConfirmed(doc, year);
-  const tail = dl == null ? 'no deadline set' : confirmed ? `${dl} days left` : `${dl} days to incur`;
+  const tail = dl == null ? 'no deadline set' : confirmed ? `${dl} days left` : `${dl} days left to incur`;
   const sentence = `${money(unc)} unclaimed · ${tail}`;
   const color = dl == null ? 'dim' : dl <= 7 ? 'danger' : dl <= 30 ? 'warn' : 'dim';
   return { election: e, submitted: sub, unclaimed: unc, pct, daysLeft: dl, confirmed, sentence, color, ticks: gaugeTicks(e) };
@@ -1498,6 +1586,28 @@ function loadDemoDoc() { const el = document.getElementById('demo-fixture'); try
 
 function reveal() { try { document.body.classList.remove('preboot'); } catch (_) { /* ok */ } }
 
+// Dashboard sections + the year selector are meaningless with no document loaded — hide them while
+// signed out so the reader sees ONLY the unlock panel (not an empty gauge and false "nothing waiting").
+const DASH_SECTIONS = ['gauge', 'readout', 'nextup', 'inbox', 'claims'];
+function setSignedOutView(on) {
+  for (const id of DASH_SECTIONS) { const el = document.getElementById(id); if (el) el.hidden = on; }
+  const sel = document.getElementById('year'); if (sel) sel.hidden = on;
+  const yl = document.querySelector('label[for="year"]'); if (yl) yl.hidden = on;
+}
+
+// Sign-out lives in the header, only when a pair is loaded. clearCreds() is fsa-scoped only.
+function initSignOut() {
+  const btn = document.getElementById('signout');
+  if (!btn) return;
+  if (!hasCreds()) { btn.hidden = true; return; }
+  btn.hidden = false;
+  btn.addEventListener('click', () => {
+    if (!confirm("Sign out? You'll need your sync id and passphrase to get back in — they are unrecoverable")) return;
+    clearCreds();
+    location.reload();
+  });
+}
+
 function setSyncPill(kind) {
   const pill = document.getElementById('syncpill');
   if (!pill) return;
@@ -1508,6 +1618,7 @@ function setSyncPill(kind) {
 async function boot() {
   initTheme();
   document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+  initSignOut();
   wireSort();
 
   if (isDemo()) {
@@ -1530,7 +1641,7 @@ async function boot() {
     return;
   }
 
-  if (!hasCreds()) { renderAuthPanel(document.querySelector('main'), () => location.reload()); paint(); reveal(); return; }
+  if (!hasCreds()) { setSignedOutView(true); renderAuthPanel(document.querySelector('main'), () => location.reload()); reveal(); return; }
   const { syncId, passphrase } = loadCreds();
   setSyncPill('offline');
   try {
