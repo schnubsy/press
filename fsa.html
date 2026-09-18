@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#14161A">
   <title>FSA Claims</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMTQxNjFBIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJBMkYzNiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIyIDQ5LjMyIEEyMCAyMCAwIDAgMSAxNC42OCAyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDBBM0UwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIzMiIgeTE9IjMyIiB4Mj0iNDAiIHkyPSIxOC4xNCIgc3Ryb2tlPSIjRTZFOUVEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
-  <meta name="build" content="2026-09-17T22:42:46.128Z 60769e8">
+  <meta name="build" content="2026-09-18T00:27:34.455Z 17ba8e8">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="manifest" href="fsa-assets/manifest.webmanifest">
@@ -394,7 +394,8 @@ select {
             "sampleclinic20260815.pdf"
           ],
           "submitted_on": "2026-09-15",
-          "notes": []
+          "notes": [],
+          "claim_number": "FIDDEMO26260914W0010101"
         },
         {
           "id": "demo-0002",
@@ -416,7 +417,8 @@ select {
             "exampledental20260702.pdf"
           ],
           "submitted_on": "2026-09-15",
-          "notes": []
+          "notes": [],
+          "claim_number": "FIDDEMO26260914W0020101"
         },
         {
           "id": "demo-0003",
@@ -605,13 +607,16 @@ function yearData(doc, year) {
 function yearClaims(doc, year) { return yearData(doc, year).claims || []; }
 function election(doc, year) { return Number(yearData(doc, year).election) || 0; }
 
-function sumWhere(claims, pred) {
-  return round2(claims.filter(pred).reduce((a, c) => a + (Number(c.amount) || 0), 0));
+function sumWhere(claims, pred, val = (c) => Number(c.amount) || 0) {
+  return round2(claims.filter(pred).reduce((a, c) => a + (Number(val(c)) || 0), 0));
 }
+
+// The amount actually claimed on a submitted claim (may be < the gross charge); falls back to amount.
+function claimedAmount(c) { return c && c.claimed != null ? Number(c.claimed) : (Number(c && c.amount) || 0); }
 function round2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
 
 function submittedTotal(doc, year) {
-  return sumWhere(yearClaims(doc, year), (c) => ['submitted', 'paid'].includes(c.status));
+  return sumWhere(yearClaims(doc, year), (c) => ['submitted', 'paid'].includes(c.status), claimedAmount);
 }
 function unclaimed(doc, year) {
   return round2(Math.max(0, election(doc, year) - submittedTotal(doc, year)));
@@ -1363,10 +1368,11 @@ function renderTable(state, claims) {
     const name = document.createElement('span'); name.textContent = c.provider || c.payee || '—'; prov.appendChild(name);
     for (const need of needsList(c)) { const t = document.createElement('span'); t.className = 'tag'; t.textContent = need; prov.appendChild(t); }
     for (const n of (c.notes || [])) { const nl = document.createElement('span'); nl.className = 'note-line'; nl.textContent = n; prov.appendChild(nl); }
+    if (c.claim_number) { const cn = document.createElement('span'); cn.className = 'note-line mono'; cn.textContent = 'claim ' + c.claim_number; prov.appendChild(cn); }
     tr.appendChild(prov);
     tr.appendChild(td(c.person || '', 'col-person'));
     tr.appendChild(td(money(c.amount), 'col-amount num'));
-    tr.appendChild(td(['submitted', 'paid'].includes(c.status) ? money(c.amount) : '—', 'col-claimed num'));
+    tr.appendChild(td(['submitted', 'paid'].includes(c.status) ? money(claimedAmount(c)) : '—', 'col-claimed num'));
     const st = td('', 'col-status');
     const pill = document.createElement('span'); pill.className = 'status ' + c.status; pill.textContent = c.status; st.appendChild(pill);
     tr.appendChild(st);
@@ -1484,6 +1490,7 @@ const state = { doc: null, year: null, filter: 'all', sort: { key: 'date', dir: 
 function isDemo() {
   const p = new URLSearchParams(location.search);
   if (p.get('demo') === '1') return true;
+  if (p.get('demo') === '0') return false; // explicit override: exercise the live path on localhost
   return ['localhost', '127.0.0.1', '::1'].includes(location.hostname);
 }
 function today() { return new Date().toISOString().slice(0, 10); }
@@ -1523,7 +1530,7 @@ async function boot() {
     return;
   }
 
-  if (!hasCreds()) { renderAuthPanel(document.querySelector('main'), () => location.reload()); paint(); return; }
+  if (!hasCreds()) { renderAuthPanel(document.querySelector('main'), () => location.reload()); paint(); reveal(); return; }
   const { syncId, passphrase } = loadCreds();
   setSyncPill('offline');
   try {

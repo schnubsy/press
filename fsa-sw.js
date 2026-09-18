@@ -2,7 +2,7 @@
 // Deployed to the press repo ROOT so GitHub Pages honours its scope. It touches ONLY
 // fsa.html, /fsa-assets/*, and itself; for any other request it returns WITHOUT calling
 // respondWith, so every sibling press page is completely untouched. Never caches PostgREST.
-const CACHE = 'fsa-v1ogrnb6';
+const CACHE = 'fsa-v1x7bm1l';
 const PAGE = 'fsa.html';
 
 self.addEventListener('install', (e) => {
