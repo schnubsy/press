@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#14161A">
   <title>FSA Claims</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMTQxNjFBIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJBMkYzNiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIyIDQ5LjMyIEEyMCAyMCAwIDAgMSAxNC42OCAyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDBBM0UwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIzMiIgeTE9IjMyIiB4Mj0iNDAiIHkyPSIxOC4xNCIgc3Ryb2tlPSIjRTZFOUVEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
-  <meta name="build" content="2026-09-18T02:21:08.753Z a4a798f">
+  <meta name="build" content="2026-09-18T02:35:59.385Z dde184f">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="manifest" href="fsa-assets/manifest.webmanifest">
@@ -244,13 +244,14 @@ select {
 .agent-badge { font-size: 11px; color: var(--dim); }
 
 /* styles/gauge.css */
-/* gauge.css — the hero. A single flat bar; fill = claimed, unfilled = unclaimed. (Refined in slice 3.) */
+/* gauge.css — the hero. A single flat bar: fill = PAID, denied = its own segment, rest = available. */
 #gauge { margin-top: var(--s3); }
 #gauge-bar {
   position: relative; display: flex; height: 48px; width: 100%;
   border: 1px solid var(--hairline); background: var(--surface); overflow: hidden;
 }
 #gauge-fill { background: var(--accent); height: 100%; width: 0; }
+#gauge-denied { background: var(--danger); height: 100%; width: 0; }  /* denied — returns to the pool */
 #gauge-unfilled { position: relative; flex: 1 1 auto; height: 100%; display: flex; align-items: center; justify-content: flex-end; }
 #gauge-label { font-size: 12px; padding: 0 var(--s1); color: var(--dim); }
 #gauge-ticks { position: absolute; inset: 0; pointer-events: none; }
@@ -344,6 +345,7 @@ select {
     <section id="gauge" aria-label="Reimbursement gauge">
       <div id="gauge-bar" role="img" aria-label="Reimbursement progress">
         <div id="gauge-fill"></div>
+        <div id="gauge-denied"></div>
         <div id="gauge-unfilled"><span id="gauge-label" class="mono"></span></div>
         <div id="gauge-ticks" aria-hidden="true"></div>
       </div>
@@ -625,15 +627,30 @@ function sumWhere(claims, pred, val = (c) => Number(c.amount) || 0) {
 
 // The amount actually claimed on a submitted claim (may be < the gross charge); falls back to amount.
 function claimedAmount(c) { return c && c.claimed != null ? Number(c.claimed) : (Number(c && c.amount) || 0); }
+// The amount DENIED on a claim - independent of status. Fidelity shows "Paid" on a claim that still
+// concealed a partial denial, so `denied` is a first-class field, not derived from the status word.
+function deniedAmount(c) { return c && c.denied != null ? (Number(c.denied) || 0) : 0; }
 function round2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
 
+// Adjudicated = reached Fidelity's books (submitted, paid, or denied). All three count toward
+// "submitted this year"; a fully-denied claim was still submitted for its claimed amount.
+const ADJUDICATED = ['submitted', 'paid', 'denied'];
+
 function submittedTotal(doc, year) {
-  return sumWhere(yearClaims(doc, year), (c) => ['submitted', 'paid'].includes(c.status), claimedAmount);
+  return sumWhere(yearClaims(doc, year), (c) => ADJUDICATED.includes(c.status), claimedAmount);
 }
+function deniedTotal(doc, year) {
+  return sumWhere(yearClaims(doc, year), (c) => ADJUDICATED.includes(c.status), deniedAmount);
+}
+// Paid = what Fidelity actually reimbursed = submitted - denied (denied dollars return to the pool).
+function paidTotal(doc, year) { return round2(submittedTotal(doc, year) - deniedTotal(doc, year)); }
+// Available balance = election - PAID (NOT election - submitted): denied amounts are still claimable.
+function available(doc, year) { return round2(Math.max(0, election(doc, year) - paidTotal(doc, year))); }
+// Kept for callers/tests that predate the paid/denied split: election - submitted (ignores denial).
 function unclaimed(doc, year) {
   return round2(Math.max(0, election(doc, year) - submittedTotal(doc, year)));
 }
-function remainingToReimburse(doc, year) { return unclaimed(doc, year); }
+function remainingToReimburse(doc, year) { return available(doc, year); }
 function waitingOnDocuments(doc, year) {
   return sumWhere(yearClaims(doc, year), (c) => ['waiting', 'needs-receipt', 'gathered'].includes(c.status) && (Number(c.amount) || 0) > 0);
 }
@@ -1178,19 +1195,24 @@ function gaugeTicks(electionAmt) {
 function gaugeModel(doc, year, today) {
   const e = election(doc, year);
   const sub = submittedTotal(doc, year);
+  const den = deniedTotal(doc, year);
+  const paid = paidTotal(doc, year);
+  const avail = available(doc, year);
   const unc = unclaimed(doc, year);
-  const pct = e > 0 ? Math.min(100, (sub / e) * 100) : 0;
+  const pct = e > 0 ? Math.min(100, (paid / e) * 100) : 0;          // fill = PAID (denied returns to pool)
+  const pctDenied = e > 0 ? Math.min(Math.max(0, 100 - pct), (den / e) * 100) : 0; // its own segment
   const dl = daysLeft(doc, year, today);
   const confirmed = runOutConfirmed(doc, year);
   const tail = dl == null ? 'no deadline set' : confirmed ? `${dl} days left` : `${dl} days left to incur`;
-  const sentence = `${money(unc)} unclaimed · ${tail}`;
+  const sentence = `${money(avail)} available · ${tail}`;
   const color = dl == null ? 'dim' : dl <= 7 ? 'danger' : dl <= 30 ? 'warn' : 'dim';
-  return { election: e, submitted: sub, unclaimed: unc, pct, daysLeft: dl, confirmed, sentence, color, ticks: gaugeTicks(e) };
+  return { election: e, submitted: sub, unclaimed: unc, denied: den, paid, available: avail, pct, pctDenied, daysLeft: dl, confirmed, sentence, color, ticks: gaugeTicks(e) };
 }
 
 function renderGauge(doc, year, today) {
   const bar = document.getElementById('gauge-bar');
   const fill = document.getElementById('gauge-fill');
+  const deniedEl = document.getElementById('gauge-denied');
   const label = document.getElementById('gauge-label');
   const ticksEl = document.getElementById('gauge-ticks');
   const scaleEl = document.getElementById('gauge-scale');
@@ -1198,14 +1220,16 @@ function renderGauge(doc, year, today) {
   const sr = document.getElementById('gauge-sr');
   if (ticksEl) ticksEl.innerHTML = '';
   if (scaleEl) scaleEl.innerHTML = '';
-  if (!doc) { fill.style.width = '0%'; label.textContent = ''; bar.setAttribute('aria-label', 'No plan loaded'); sr.textContent = ''; note.hidden = true; return; }
+  if (!doc) { fill.style.width = '0%'; if (deniedEl) deniedEl.style.width = '0%'; label.textContent = ''; bar.setAttribute('aria-label', 'No plan loaded'); sr.textContent = ''; note.hidden = true; return; }
 
   const m = gaugeModel(doc, year, today);
   fill.style.width = m.pct.toFixed(2) + '%';
+  if (deniedEl) deniedEl.style.width = m.pctDenied.toFixed(2) + '%';
   label.textContent = m.sentence;
   label.style.color = `var(--${m.color})`;
   bar.setAttribute('aria-label', m.sentence);
-  sr.textContent = `Reimbursement gauge: ${money(m.submitted)} of ${money(m.election)} submitted (${m.pct.toFixed(0)}%). ${m.sentence}.`;
+  sr.textContent = `Reimbursement gauge: ${money(m.paid)} paid of ${money(m.election)} (${m.pct.toFixed(0)}%)`
+    + (m.denied > 0 ? `, ${money(m.denied)} denied` : '') + `. ${m.sentence}.`;
   note.hidden = m.confirmed || m.daysLeft == null;
   if (!note.hidden) note.textContent = 'run-out date unconfirmed';
 
