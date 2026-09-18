@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#14161A">
   <title>FSA Claims</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMTQxNjFBIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJBMkYzNiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIyIDQ5LjMyIEEyMCAyMCAwIDAgMSAxNC42OCAyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDBBM0UwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIzMiIgeTE9IjMyIiB4Mj0iNDAiIHkyPSIxOC4xNCIgc3Ryb2tlPSIjRTZFOUVEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
-  <meta name="build" content="2026-09-18T04:19:47.703Z 497b51d">
+  <meta name="build" content="2026-09-18T11:14:50.926Z 18929e0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="manifest" href="fsa-assets/manifest.webmanifest">
@@ -317,6 +317,7 @@ select {
 .status.waiting, .status.needs-receipt { border-color: var(--warn); color: var(--warn); }
 .status.denied { border-color: var(--danger); color: var(--danger); }
 .status.skipped { border-color: var(--dim); color: var(--dim); }
+.status.parked { border-color: var(--dim); color: var(--dim); margin-left: 4px; }
 /* Below 768px an 8-column table can't hold its shape — restack each row as a card (slice 5). */
 @media (max-width: 767px) {
   #claims-table thead { display: none; }  /* each cell self-labels via data-label; no header row needed */
@@ -913,27 +914,48 @@ function docFromLedger(ledger, opts = {}) {
 
 const DONE = ['submitted', 'paid', 'skipped', 'rejected'];
 
-// A claim still needs chasing if it carries a `need` (waiting on a person/document) or a live denial
-// (money to re-claim). Denials count even on a "paid"/"submitted" row — Fidelity hides partial denials.
+// A claim still needs chasing if it is the UNION of two sources: (a) it carries a live denial (money
+// to re-claim), or (b) it is waiting on a person/document — status 'waiting' OR an unmet `need`.
+// Denials count even on a "paid"/"submitted" row — Fidelity hides partial denials. A claim that is
+// PARKED (deliberately set aside) or already terminal (skipped/rejected) is never blocked; and a
+// claim with no denial and no outstanding need/waiting is not blocked.
 function isBlocked(c) {
-  return (deniedAmount(c) > 0) || (!!needText(c) && !['skipped', 'rejected'].includes(c.status));
+  if (!c || c.parked) return false;
+  if (deniedAmount(c) > 0) return true;                         // (a) money to re-claim — always blocks
+  if (['skipped', 'rejected'].includes(c.status)) return false; // deliberately set aside
+  return (c.status === 'waiting') || (!!needText(c));           // (b) waiting on a person/document
 }
 
-// Age in days that a blocker has been waiting. Prefer an explicit `blocked_since`; fall back to the
-// service date. null when neither is a real date.
+// Age in days that a blocker has been waiting — measured from the BLOCKING EVENT, not the date of
+// service: `blocked_since` is the denial date for a denial, or the date the document was requested for
+// a waiting claim. null when it is unknown — the UI then shows "waiting" with NO invented day count.
 function blockerAge(c, today) {
-  const since = c.blocked_since || c.date || null;
+  const since = c.blocked_since || null;
   const d = daysBetween(since, today);
   return d == null ? null : Math.max(0, d);
 }
 
-// Escalation tier for a blocked-on-a-person card, by age. Text, not just colour (slice 4/5):
-// 14d → nudge, 30d → go around them.
-function blockerTier(ageDays) {
-  if (ageDays == null) return { level: 'fresh', color: 'dim', note: '' };
-  if (ageDays >= 30) return { level: 'stale', color: 'danger', note: 'go around — call the office or pull the provider portal' };
-  if (ageDays >= 14) return { level: 'aging', color: 'warn', note: 'follow up — this has waited two weeks' };
-  return { level: 'fresh', color: 'dim', note: '' };
+// Escalation tier by age off `blocked_since` (14d → nudge, 30d → escalate). Text, not just colour
+// (slice 4/5). The COPY branches on the blocker kind: a person is chased (nudge, then go around the
+// office), a denial is RE-FILED (resubmit the named documentation, then the Fidelity Claim Appeal
+// Form) — the provider-chasing advice is wrong for a denial.
+function blockerTier(ageDays, isDenial = false) {
+  const level = ageDays == null ? 'fresh' : ageDays >= 30 ? 'stale' : ageDays >= 14 ? 'aging' : 'fresh';
+  const color = level === 'stale' ? 'danger' : level === 'aging' ? 'warn' : 'dim';
+  return { level, color, note: escalationNote(level, isDenial) };
+}
+
+// The APPEAL_FORM lives in Fidelity NetBenefits → Tools & Support (DocumentStore.ashx?id=611).
+const APPEAL_FORM = 'the Claim Appeal Form (Fidelity Tools & Support · DocumentStore.ashx?id=611)';
+function escalationNote(level, isDenial) {
+  if (isDenial) {
+    if (level === 'stale') return `resubmit with the named documentation, then file ${APPEAL_FORM}`;
+    if (level === 'aging') return 'resubmit with the named documentation';
+    return '';
+  }
+  if (level === 'stale') return 'go around — call the office or pull the provider portal';
+  if (level === 'aging') return 'follow up — this has waited two weeks';
+  return '';
 }
 
 // Blocked cards, keyed by WHO the chase is on (blocked_on), so one chase clears several rows.
@@ -961,24 +983,27 @@ function blockedCards(doc, year, today) {
     const need = isDenial ? (denials[0].label || 'documentation') : (needText(g.rows[0]) || 'documentation');
     cards.push({
       key: g.key, who: g.who, provider, amount, need, ageDays,
-      denied: isDenial, denials, tier: blockerTier(ageDays),
+      denied: isDenial, denials, tier: blockerTier(ageDays, isDenial),
       action: isDenial ? 'Refile with documentation' : 'Chase the document',
     });
   }
   return cards.sort((a, b) => (b.ageDays ?? -1) - (a.ageDays ?? -1));
 }
 
-// A claim is fully documented and ready to file: an eligible, not-yet-submitted claim with documents
-// on file and NO outstanding `need`.
+// A claim is fully documented and ready to file: an eligible, not-yet-submitted, NOT-PARKED claim with
+// every `need` satisfied and at least one document attached.
 function isReadyToFile(c) {
-  return !DONE.includes(c.status)
+  return !!c && !c.parked
+    && !DONE.includes(c.status)
     && (c.eligibility === 'eligible' || c.eligibility === 'unknown')
     && !needText(c) && deniedAmount(c) === 0
     && (c.documents || c.docs || []).length > 0
     && (Number(c.amount) || 0) > 0;
 }
 
-// Exactly one card: the largest claim that is fully documented right now. null when nothing is ready.
+// Exactly one card: the LARGEST claim that is fully documented right now (largest wins, not first or
+// smallest; parked claims are excluded). null when nothing is ready — the UI then says so plainly and
+// points at the top blocker rather than degrading to a small available claim.
 function nextClaim(doc, year) {
   const ready = yearClaims(doc, year).filter(isReadyToFile)
     .sort((a, b) => (Number(b.amount) || 0) - (Number(a.amount) || 0));
@@ -1780,6 +1805,9 @@ function renderBlocked(doc, year, today, deps) {
       // Escalation shows in the glyph + word, not colour alone (fixed palette can't pass AA in red here).
       const mark = c.tier.level === 'stale' ? '⚠ ' : c.tier.level === 'aging' ? '↑ ' : '';
       meta.appendChild(elB('span', 'blocked-age mono', `${mark}${pluralDays(c.ageDays)} waiting`));
+    } else {
+      // Blocking date unknown — show the state, never an invented day count (age from service date was the bug).
+      meta.appendChild(elB('span', 'blocked-age mono dim', 'waiting'));
     }
     if (c.denied) meta.appendChild(elB('span', 'blocked-flag mono', '⚠ denied'));
     card.appendChild(meta);
@@ -2133,6 +2161,9 @@ function renderTable(state, claims) {
     tr.appendChild(td(['submitted', 'paid'].includes(c.status) ? money(claimedAmount(c)) : '—', 'col-claimed num', 'Claimed'));
     const st = td('', 'col-status', 'Status');
     const pill = document.createElement('span'); pill.className = 'status ' + c.status; pill.textContent = c.status; st.appendChild(pill);
+    // A parked claim keeps its status but is deliberately set aside — flag it so it reads as intentional,
+    // not stuck. Parked claims are excluded from the next-claim pick and from Blocked (see core/chase.js).
+    if (c.parked) { const p = document.createElement('span'); p.className = 'status parked'; p.textContent = 'parked'; st.appendChild(p); }
     tr.appendChild(st);
     tr.appendChild(td((c.documents || c.docs || []).map((d) => String(d).split('/').pop()).join(', '), 'col-docs', 'Documents'));
     body.appendChild(tr);
