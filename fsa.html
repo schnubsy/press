@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#14161A">
   <title>FSA Claims</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMTQxNjFBIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJBMkYzNiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIyIDQ5LjMyIEEyMCAyMCAwIDAgMSAxNC42OCAyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDBBM0UwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIzMiIgeTE9IjMyIiB4Mj0iNDAiIHkyPSIxOC4xNCIgc3Ryb2tlPSIjRTZFOUVEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
-  <meta name="build" content="2026-09-18T02:35:59.385Z dde184f">
+  <meta name="build" content="2026-09-18T04:19:47.703Z 497b51d">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="manifest" href="fsa-assets/manifest.webmanifest">
@@ -244,38 +244,59 @@ select {
 .agent-badge { font-size: 11px; color: var(--dim); }
 
 /* styles/gauge.css */
-/* gauge.css — the hero. A single flat bar: fill = PAID, denied = its own segment, rest = available. */
+/* gauge.css — the hero. One flat bar, four segments: paid (fill) · pending (hatched) · denied
+   (outlined) · empty (available). Below it, a mono readout of all four figures. */
 #gauge { margin-top: var(--s3); }
 #gauge-bar {
   position: relative; display: flex; height: 48px; width: 100%;
   border: 1px solid var(--hairline); background: var(--surface); overflow: hidden;
 }
 #gauge-fill { background: var(--accent); height: 100%; width: 0; }
-#gauge-denied { background: var(--danger); height: 100%; width: 0; }  /* denied — returns to the pool */
+/* Animate the fill only when motion is welcome (slice 5). */
+@media (prefers-reduced-motion: no-preference) {
+  #gauge-fill, #gauge-pending, #gauge-denied { transition: width 600ms ease; }
+}
+/* pending — in flight, awaiting Fidelity's decision: a muted neutral fill (flat, no gradient). */
+#gauge-pending { height: 100%; width: 0; background: var(--neutral); }
+/* denied — returns to the pool: an OUTLINED box (not filled), tappable to jump to the cards. */
+#gauge-denied {
+  height: 100%; width: 0; padding: 0; background: transparent;
+  border: 1px solid var(--danger); box-sizing: border-box; cursor: pointer; min-width: 0;
+}
+#gauge-denied:hover { background: var(--surface); }
 #gauge-unfilled { position: relative; flex: 1 1 auto; height: 100%; display: flex; align-items: center; justify-content: flex-end; }
-#gauge-label { font-size: 12px; padding: 0 var(--s1); color: var(--dim); }
+#gauge-label { font-size: 13px; padding: 0 var(--s1); color: var(--ink); font-variant-numeric: tabular-nums; }
 #gauge-ticks { position: absolute; inset: 0; pointer-events: none; }
-#gauge-note { font-size: 11px; margin: 4px 0 0; }
+#gauge-note { font-size: 11px; margin: 4px 0 0; color: var(--ink); }
 
-#readout {
-  display: grid; grid-template-columns: repeat(3, 1fr); margin-top: var(--s3);
-  border: 1px solid var(--hairline);
-}
-#readout .cell { padding: var(--s2); border-left: 1px solid var(--hairline); display: flex; flex-direction: column; gap: 4px; }
-#readout .cell:first-child { border-left: 0; }
-#readout .label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim); font-weight: 600; }
-#readout .value { font-size: 28px; color: var(--ink); }
-@media (max-width: 640px) {
-  #readout { grid-template-columns: repeat(2, 1fr); }
-  #readout .cell:nth-child(3) { border-left: 0; }  /* first cell of row 2 */
-}
-
-/* gauge tick marks + scale labels (slice 3) */
+/* gauge tick marks + scale labels */
 #gauge-ticks .tick { position: absolute; bottom: 0; width: 1px; height: 25%; background: var(--hairline); }
 #gauge-ticks .tick.major { height: 55%; }
 #gauge-scale { position: relative; height: 16px; margin-top: 2px; }
 #gauge-scale .scale-label { position: absolute; top: 0; transform: translateX(-50%); font-size: 11px; color: var(--dim); white-space: nowrap; }
 #gauge-scale .scale-label.end { transform: translateX(-100%); }
+/* Narrow screens: the readout carries the numbers, so drop the crowded interior scale labels. */
+@media (max-width: 560px) {
+  #gauge-scale .scale-label:not(.end) { display: none; }
+}
+
+/* the four-figure mono readout — a segmented bar means nothing to a screen reader or in sunlight */
+#gauge-readout {
+  display: grid; grid-template-columns: repeat(4, 1fr); margin-top: var(--s2);
+  border: 1px solid var(--hairline);
+}
+#gauge-readout .g-fig { padding: var(--s2); border-left: 1px solid var(--hairline); display: flex; flex-direction: column; gap: 4px; }
+#gauge-readout .g-fig:first-child { border-left: 0; }
+#gauge-readout .g-fig-l { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); font-weight: 600; }
+/* bold + 22px makes these "large text" (WCAG 3:1), which the fixed palette needs for accent/danger. */
+#gauge-readout .g-fig-v { font-size: 22px; color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+#gauge-readout .g-fig-paid .g-fig-v { color: var(--accent); }
+#gauge-readout .g-fig-denied .g-fig-v { color: var(--danger); }   /* label stays dim — the ⚠ glyph + word carry it */
+@media (max-width: 640px) {
+  #gauge-readout { grid-template-columns: repeat(2, 1fr); }
+  #gauge-readout .g-fig:nth-child(3) { border-left: 0; }
+  #gauge-readout .g-fig:nth-child(3), #gauge-readout .g-fig:nth-child(4) { border-top: 1px solid var(--hairline); }
+}
 
 /* styles/table.css */
 /* table.css — chips + claims table. Flat, hairline-ruled, radius 0. (Refined in slice 3.) */
@@ -296,12 +317,115 @@ select {
 .status.waiting, .status.needs-receipt { border-color: var(--warn); color: var(--warn); }
 .status.denied { border-color: var(--danger); color: var(--danger); }
 .status.skipped { border-color: var(--dim); color: var(--dim); }
-#nextup-list { list-style: none; padding: 0; margin: 0; }
-#nextup-list li { display: flex; gap: var(--s2); align-items: baseline; padding: var(--s1) 0; border-bottom: 1px solid var(--hairline); }
-#nextup-list .amt { font-family: var(--font-mono); font-variant-numeric: tabular-nums; min-width: 6ch; text-align: right; }
-@media (max-width: 640px) {
-  #claims-table .col-person, #claims-table .h-person { display: none; }
+/* Below 768px an 8-column table can't hold its shape — restack each row as a card (slice 5). */
+@media (max-width: 767px) {
+  #claims-table thead { display: none; }  /* each cell self-labels via data-label; no header row needed */
+  #claims-table, #claims-table tbody, #claims-table tr, #claims-table td { display: block; width: auto; }
+  #claims-table tr { border: 1px solid var(--hairline); margin-bottom: var(--s2); padding: var(--s1) var(--s2); }
+  #claims-table td { border-bottom: 0; padding: 4px 0; display: flex; justify-content: space-between; gap: var(--s2); text-align: right; }
+  #claims-table td.col-provider { flex-direction: column; align-items: flex-start; text-align: left; }
+  #claims-table td.num { text-align: right; }
+  #claims-table td::before {
+    content: attr(data-label); color: var(--dim); font-size: 11px; text-transform: uppercase;
+    letter-spacing: .06em; font-weight: 600; font-family: var(--font-display); text-align: left;
+  }
+  #claims-table td.col-provider::before { margin-bottom: 2px; }
+  #claims-table td.col-date { border-bottom: 1px solid var(--hairline); padding-bottom: var(--s1); margin-bottom: 4px; }
+  #claims-table tr.small-summary { padding: 0; border: 0; }
+  #claims-table tr.small-summary td { display: block; }
+  #claims-table tr.small-summary td::before { content: none; }
+  .small-toggle { min-height: 44px; }
+  /* 44px tap targets on touch */
+  .chip, .blocked-action, .strip-confirm, #overflow-btn, #disclosure > summary,
+  .nextclaim-checklist > summary { min-height: 44px; display: inline-flex; align-items: center; }
 }
+
+/* styles/chase.css */
+/* chase.css — the reshape (arc/chase-list). Flat instrument geometry, hairlines, 8px grid, cyan
+   accent, danger for denied/alarm, warn for aging. No radius/shadow/gradient beyond functional hatch. */
+
+/* --- header: year control, agent alert, overflow menu --- */
+#year-static { font-size: 13px; letter-spacing: .04em; }
+.agent-alert { font-size: 12px; color: var(--danger); border: 1px solid var(--danger); background: var(--surface); padding: 2px 6px; }
+.overflow { margin-left: auto; position: relative; }
+#overflow-btn { line-height: 1; font-size: 18px; padding: 2px 8px; }
+#overflow-menu {
+  position: absolute; right: 0; top: calc(100% + 4px); z-index: 20;
+  background: var(--surface); border: 1px solid var(--hairline); min-width: 12rem;
+  display: flex; flex-direction: column;
+}
+#overflow-menu > * { border: 0; border-top: 1px solid var(--hairline); text-align: left; padding: var(--s1) var(--s2); background: var(--surface); }
+#overflow-menu > *:first-child { border-top: 0; }
+#overflow-menu #agents { display: flex; gap: var(--s1); align-items: center; flex-wrap: wrap; }
+#topbar #theme-toggle { margin-left: 0; }
+
+/* --- deadline strip: a thin full-width mono rule --- */
+#deadline { border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); padding: var(--s1) 0; margin-top: var(--s2); }
+/* 18px/700 = large text, so the amber/alarm escalation colours clear WCAG 3:1 on the fixed palette. */
+#deadline-primary { margin: 0; font-size: 18px; letter-spacing: .03em; font-weight: 700; }
+#deadline-secondary { margin: 4px 0 0; font-size: 12px; color: var(--dim); }
+.strip-confirm { font-size: 11px; padding: 1px 6px; margin-left: 6px; text-transform: uppercase; letter-spacing: .05em; vertical-align: middle; }
+
+/* --- blocked cards: the centrepiece, keyed by person --- */
+#blocked { margin-top: var(--s3); }
+#blocked-list { display: flex; flex-direction: column; gap: var(--s2); }
+.blocked-card { border: 1px solid var(--hairline); border-left: 3px solid var(--neutral-deep); padding: var(--s2); background: var(--surface); }
+.blocked-card.is-denial { border-left-color: var(--danger); }
+.blocked-top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); }
+.blocked-who { font-size: 17px; font-weight: 600; }
+.blocked-amt { font-size: 17px; font-variant-numeric: tabular-nums; }
+.blocked-meta { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s2); margin-top: 4px; align-items: baseline; }
+.blocked-prov { font-size: 12px; }
+/* age is the emphasis — carried by weight/size + a glyph, not colour (the fixed palette can't render
+   small red/amber text at AA on the card surface). */
+.blocked-age { font-size: 15px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.blocked-flag { font-size: 12px; letter-spacing: .03em; color: var(--ink); border: 1px solid var(--danger); padding: 0 6px; }
+.blocked-need { margin: var(--s1) 0 0; font-size: 14px; }
+.blocked-notice { margin: 2px 0 0; font-size: 11px; overflow-wrap: anywhere; }
+.blocked-escalate { margin: var(--s1) 0 0; font-size: 12px; color: var(--ink); font-weight: 600; }
+.blocked-actions { margin-top: var(--s2); display: flex; gap: var(--s1); flex-wrap: wrap; }
+.blocked-action {
+  display: inline-block; font-size: 13px; padding: var(--s1) var(--s2);
+  border: 1px solid var(--accent); color: var(--accent); text-decoration: none; background: var(--surface);
+}
+.blocked-action:hover { color: var(--ink); border-color: var(--ink); }
+.danger { color: var(--danger); } .warn { color: var(--warn); }
+
+/* --- next claim: exactly one card, the primary action --- */
+#nextclaim { margin-top: var(--s3); }
+#nextclaim-card { border: 1px solid var(--accent); padding: var(--s2); background: var(--surface); }
+#nextclaim-card.is-empty { border-color: var(--hairline); }
+.nextclaim-top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); }
+.nextclaim-prov { font-size: 17px; font-weight: 600; }
+.nextclaim-amt { font-size: 19px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.nextclaim-date { margin: 2px 0 0; font-size: 12px; }
+.nextclaim-none { margin: 0; font-size: 14px; }
+.nextclaim-checklist { margin-top: var(--s2); }
+.nextclaim-checklist > summary { cursor: pointer; font-size: 13px; border: 1px solid var(--accent); color: var(--accent); padding: var(--s1) var(--s2); display: inline-block; }
+.nextclaim-checklist[open] > summary { margin-bottom: var(--s1); }
+.checklist { list-style: none; padding: 0; margin: var(--s1) 0; display: flex; flex-direction: column; gap: 4px; }
+.checklist li { font-size: 13px; }
+.checklist li.done { color: var(--dim); }
+
+/* --- setup + open questions --- */
+#setup, #questions { margin-top: var(--s3); }
+#setup-list { display: flex; flex-direction: column; gap: var(--s2); }
+.setup-card { border: 1px solid var(--hairline); padding: var(--s2); background: var(--surface); }
+.setup-prov { font-weight: 600; margin-bottom: var(--s1); }
+#questions-list { list-style: none; padding: 0; margin: 0; }
+.question { display: flex; justify-content: space-between; gap: var(--s2); padding: var(--s1) 0; border-bottom: 1px solid var(--hairline); align-items: baseline; }
+.question-text { font-size: 14px; }
+.question-age { font-size: 12px; white-space: nowrap; }
+
+/* --- disclosure (all charges) --- */
+#claims { margin-top: var(--s3); }
+#disclosure > summary { cursor: pointer; font-size: 13px; padding: var(--s1) 0; border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); font-variant-numeric: tabular-nums; letter-spacing: .03em; list-style: none; }
+#disclosure > summary::-webkit-details-marker { display: none; }
+#disclosure > summary::before { content: '▸ '; color: var(--dim); }
+#disclosure[open] > summary::before { content: '▾ '; }
+.small-summary td { padding: var(--s1); }
+.small-toggle { font-size: 12px; color: var(--dim); border: 1px dashed var(--hairline); background: transparent; padding: 4px var(--s1); width: 100%; text-align: left; font-variant-numeric: tabular-nums; }
+.small-toggle:hover { border-color: var(--accent); color: var(--ink); }
 
 /* styles/print.css */
 /* print.css — light tokens forced; chrome hidden; table intact. (Expanded in slice 3.) */
@@ -332,62 +456,97 @@ select {
 <body class="preboot">
   <header id="topbar">
     <span class="wordmark">FSA</span>
+    <span id="year-static" class="mono dim" aria-label="Plan year"></span>
     <label class="vh" for="year">Plan year</label>
-    <select id="year" aria-label="Plan year"></select>
+    <select id="year" aria-label="Plan year" hidden></select>
     <span id="asof" class="mono dim" aria-live="polite"></span>
     <span id="syncpill" class="mono pill-sync" hidden></span>
-    <span id="agents"></span>
-    <button id="theme-toggle" type="button" aria-label="Toggle light and dark theme">◐</button>
-    <button id="signout" type="button" hidden>Sign out</button>
+    <button id="agent-alert" class="agent-alert" type="button" hidden></button>
+    <div id="overflow" class="overflow">
+      <button id="overflow-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Menu">⋯</button>
+      <div id="overflow-menu" role="menu" hidden>
+        <button id="theme-toggle" type="button" role="menuitem">Toggle theme</button>
+        <span id="agents" role="menuitem"></span>
+        <button id="signout" type="button" role="menuitem" hidden>Sign out</button>
+      </div>
+    </div>
   </header>
 
   <main>
+    <!-- 2 · DEADLINE STRIP — submission run-out is the primary clock; incur-by the secondary. -->
+    <section id="deadline" aria-label="Deadlines" hidden>
+      <p id="deadline-primary" class="mono"></p>
+      <p id="deadline-secondary" class="mono dim"></p>
+    </section>
+
+    <!-- 3 · GAUGE — four segments: paid (fill) · pending (hatched) · denied (outlined) · empty. -->
     <section id="gauge" aria-label="Reimbursement gauge">
-      <div id="gauge-bar" role="img" aria-label="Reimbursement progress">
+      <div id="gauge-bar">
         <div id="gauge-fill"></div>
-        <div id="gauge-denied"></div>
+        <div id="gauge-pending"></div>
+        <button id="gauge-denied" type="button" aria-label="Jump to denied claims" hidden></button>
         <div id="gauge-unfilled"><span id="gauge-label" class="mono"></span></div>
         <div id="gauge-ticks" aria-hidden="true"></div>
       </div>
       <div id="gauge-scale" aria-hidden="true"></div>
+      <div id="gauge-readout" aria-label="Reimbursement figures"></div>
       <p id="gauge-note" class="dim" hidden></p>
       <p id="gauge-sr" class="vh"></p>
     </section>
 
-    <section id="readout" aria-label="Summary">
-      <div class="cell"><span class="label">Submitted this year</span><span class="value mono" id="r-submitted">—</span></div>
-      <div class="cell"><span class="label">Waiting on documents</span><span class="value mono" id="r-waiting">—</span></div>
-      <div class="cell"><span class="label">Eligible, not yet picked</span><span class="value mono" id="r-eligible">—</span></div>
+    <!-- 4 · BLOCKED (n) — the centrepiece: stacked cards keyed by PERSON. -->
+    <section id="blocked" aria-label="Blocked" hidden>
+      <h2 class="section-h" id="blocked-h">Blocked</h2>
+      <div id="blocked-list"></div>
     </section>
 
-    <section id="nextup" aria-label="Next up">
-      <h2 class="section-h">Next up</h2>
-      <ul id="nextup-list"></ul>
+    <!-- 4b · JANUARY SETUP — replaces Blocked in January / the empty state. -->
+    <section id="setup" aria-label="Plan-year setup" hidden>
+      <h2 class="section-h" id="setup-h">Set up the year</h2>
+      <p id="setup-lead" class="dim"></p>
+      <div id="setup-list"></div>
     </section>
 
+    <!-- 5 · NEXT CLAIM — exactly one card. -->
+    <section id="nextclaim" aria-label="Next claim">
+      <h2 class="section-h">Next claim</h2>
+      <div id="nextclaim-card"></div>
+    </section>
+
+    <!-- OPEN QUESTIONS — each with an age. -->
+    <section id="questions" aria-label="Open questions" hidden>
+      <h2 class="section-h" id="questions-h">Open questions</h2>
+      <ul id="questions-list"></ul>
+    </section>
+
+    <!-- 6 · INBOX (n) — rendered only when n > 0. -->
     <section id="inbox" aria-label="Inbox" hidden>
       <h2 class="section-h" id="inbox-h">Inbox</h2>
       <div id="inbox-list"></div>
     </section>
 
-    <section id="claims" aria-label="Claims">
-      <div id="chips" role="tablist" aria-label="Filter claims"></div>
-      <table id="claims-table">
-        <caption class="vh">Claims for the selected plan year</caption>
-        <thead>
-          <tr>
-            <th scope="col" data-sort="date">Date</th>
-            <th scope="col" data-sort="provider">Provider</th>
-            <th scope="col" class="h-person" data-sort="person">Person</th>
-            <th scope="col" data-sort="amount">Amount</th>
-            <th scope="col" data-sort="claimed">Claimed</th>
-            <th scope="col" data-sort="status">Status</th>
-            <th scope="col">Documents</th>
-          </tr>
-        </thead>
-        <tbody id="claims-body"></tbody>
-      </table>
-      <p id="claims-empty" class="dim" hidden>No claims for this year.</p>
+    <!-- 7 · DISCLOSURE — all charges, collapsed by default, amount desc, <$75 folded. -->
+    <section id="claims" aria-label="All charges">
+      <details id="disclosure">
+        <summary id="disclosure-summary" class="mono">All charges</summary>
+        <div id="chips" role="tablist" aria-label="Filter claims"></div>
+        <table id="claims-table">
+          <caption class="vh">Claims for the selected plan year</caption>
+          <thead>
+            <tr>
+              <th scope="col" data-sort="date">Date</th>
+              <th scope="col" data-sort="provider">Provider</th>
+              <th scope="col" class="h-person" data-sort="person">Person</th>
+              <th scope="col" data-sort="amount">Amount</th>
+              <th scope="col" data-sort="claimed">Claimed</th>
+              <th scope="col" data-sort="status">Status</th>
+              <th scope="col">Documents</th>
+            </tr>
+          </thead>
+          <tbody id="claims-body"></tbody>
+        </table>
+        <p id="claims-empty" class="dim" hidden>No claims for this year.</p>
+      </details>
     </section>
   </main>
 
@@ -395,144 +554,139 @@ select {
   "v": 2,
   "updated_at": "2026-09-16T00:00:00.000Z",
   "active_year": "2026",
+  "questions": [
+    { "text": "Does the plan support UHC→FSA claim crossover?", "asked": "2026-08-01", "answered": false },
+    { "text": "Confirm the 2026 claims run-out date with the plan", "asked": "2026-09-01", "answered": false }
+  ],
   "years": {
-    "2026": {
-      "election": 1000,
-      "deadline": {
-        "incur_by": "2026-12-31",
-        "claims_run_out": null
-      },
+    "2025": {
+      "election": 3200,
+      "status": "closed",
+      "deadline": { "incur_by": "2025-12-31", "claims_run_out": "2026-03-31", "run_out_confirmed": true },
       "claims": [
         {
-          "id": "demo-0001",
-          "ynab_id": "d1",
-          "date": "2026-08-15",
-          "payee": "Sample Clinic",
-          "account": "Checking",
-          "amount": 200,
-          "provider": "Sample Clinic",
-          "type": "Medical Services",
-          "person": "A",
-          "eligibility": "eligible",
-          "eob_needed": false,
-          "status": "submitted",
-          "docs": [
-            "sampleclinic20260815.pdf"
-          ],
-          "documents": [
-            "sampleclinic20260815.pdf"
-          ],
-          "submitted_on": "2026-09-15",
-          "notes": [],
-          "claim_number": "FIDDEMO26260914W0010101"
-        },
-        {
-          "id": "demo-0002",
-          "ynab_id": "d2",
-          "date": "2026-07-02",
-          "payee": "Example Dental",
-          "account": "Checking",
-          "amount": 150,
-          "provider": "Example Dental",
-          "type": "Dental",
-          "person": "B",
-          "eligibility": "eligible",
-          "eob_needed": false,
-          "status": "submitted",
-          "docs": [
-            "exampledental20260702.pdf"
-          ],
-          "documents": [
-            "exampledental20260702.pdf"
-          ],
-          "submitted_on": "2026-09-15",
-          "notes": [],
-          "claim_number": "FIDDEMO26260914W0020101"
-        },
-        {
-          "id": "demo-0003",
-          "ynab_id": "d3",
-          "date": "2026-06-10",
-          "payee": "Sample Clinic",
-          "account": "Checking",
-          "amount": 180,
-          "provider": "Sample Clinic",
-          "type": "Medical Services",
-          "person": "A",
-          "eligibility": "eligible",
-          "eob_needed": true,
-          "status": "candidate",
-          "docs": [],
-          "documents": [],
-          "submitted_on": null,
-          "notes": []
-        },
-        {
-          "id": "demo-0004",
-          "ynab_id": "d4",
-          "date": "2026-05-01",
-          "payee": "Example Pharmacy",
-          "account": "Checking",
-          "amount": 90,
-          "provider": "Example Pharmacy",
-          "type": "Prescription Medication Copay/Cost",
-          "person": "A",
-          "eligibility": "eligible",
-          "eob_needed": false,
-          "status": "waiting",
-          "docs": [],
-          "documents": [],
-          "submitted_on": null,
-          "notes": [
-            "awaiting itemised receipt"
-          ]
-        },
-        {
-          "id": "demo-0005",
-          "ynab_id": "d5",
-          "date": "2026-04-12",
-          "payee": "Sample Clinic",
-          "account": "Checking",
-          "amount": 60,
-          "provider": "Sample Clinic",
-          "type": "Medical Services",
-          "person": "B",
-          "eligibility": "eligible",
-          "eob_needed": false,
-          "status": "needs-receipt",
-          "docs": [],
-          "documents": [],
-          "submitted_on": null,
-          "notes": []
-        },
-        {
-          "id": "demo-0006",
-          "ynab_id": "d6",
-          "date": "2026-03-03",
-          "payee": "Example Refund",
-          "account": "Checking",
-          "amount": -40,
-          "provider": "Example Refund",
-          "type": "Medical Services",
-          "person": "A",
-          "eligibility": "eligible",
-          "eob_needed": false,
-          "status": "skipped",
-          "docs": [],
-          "documents": [],
-          "submitted_on": null,
-          "notes": [
-            "refund"
-          ]
+          "id": "2025-0001", "ynab_id": "y25a", "date": "2025-06-02", "payee": "Riverside Counseling",
+          "account": "Checking", "amount": 3440, "claimed": 3440, "denied": 240, "provider": "Riverside Counseling",
+          "type": "Medical Services", "person": "T", "eligibility": "eligible", "status": "paid",
+          "documents": ["riverside2025.pdf"], "submitted_on": "2025-06-15", "notes": ["One large claim recovered the full election."]
         }
+      ]
+    },
+    "2026": {
+      "election": 3300,
+      "deadline": { "incur_by": "2026-12-31", "claims_run_out": "2027-03-31", "run_out_confirmed": false },
+      "claims": [
+        {
+          "id": "2026-0001", "ynab_id": "d01", "date": "2026-02-10", "payee": "Sample Clinic", "account": "Checking",
+          "amount": 300, "claimed": 300, "provider": "Sample Clinic", "type": "Medical Services", "person": "T",
+          "eligibility": "eligible", "status": "submitted", "documents": ["sampleclinic0210.pdf"],
+          "submitted_on": "2026-03-01", "notes": [], "claim_number": "FIDDEMO26260914W0010101"
+        },
+        {
+          "id": "2026-0002", "ynab_id": "d02", "date": "2026-03-08", "payee": "Example Dental", "account": "Checking",
+          "amount": 250, "claimed": 250, "provider": "Example Dental", "type": "Dental", "person": "T",
+          "eligibility": "eligible", "status": "submitted", "documents": ["exampledental0308.pdf"],
+          "submitted_on": "2026-03-20", "notes": [], "claim_number": "FIDDEMO26260914W0020101"
+        },
+        {
+          "id": "2026-0003", "ynab_id": "d03", "date": "2026-04-01", "payee": "Sample Pharmacy", "account": "Checking",
+          "amount": 90, "claimed": 90, "provider": "Sample Pharmacy", "type": "Prescription Medication Copay/Cost",
+          "person": "T", "eligibility": "eligible", "status": "paid", "documents": ["samplerx0401.pdf"],
+          "submitted_on": "2026-04-10", "notes": [], "claim_number": "FIDDEMO26260914W0030101"
+        },
+        {
+          "id": "2026-0004", "ynab_id": "d04", "date": "2026-05-20", "payee": "City Lab", "account": "Checking",
+          "amount": 470, "claimed": 470, "provider": "City Lab", "type": "Medical Services", "person": "T",
+          "eligibility": "eligible", "status": "submitted", "documents": ["citylab0520.pdf"],
+          "submitted_on": "2026-06-01", "notes": [], "claim_number": "FIDDEMO26260914W0040101"
+        },
+        {
+          "id": "2026-0005", "ynab_id": "d05", "date": "2026-07-27", "payee": "Northside Imaging", "account": "Checking",
+          "amount": 410, "claimed": 410, "denied": 410, "provider": "Northside Imaging", "type": "Medical Services",
+          "person": "T", "eligibility": "eligible", "status": "denied",
+          "denial_reason_code": "21", "denial_reason": "medical necessity form required",
+          "need": "signed Medical Necessity Form", "blocked_on": "Northside Imaging", "blocked_since": "2026-07-27",
+          "notice": "northside-imaging-notice.pdf", "documents": [], "notes": ["Fidelity marked this denied — reason 21."]
+        },
+        {
+          "id": "2026-0006", "ynab_id": "d06", "date": "2026-08-17", "payee": "Riverside Gyn", "account": "Checking",
+          "amount": 390, "claimed": 390, "denied": 330, "provider": "Riverside Gyn", "type": "Medical Services",
+          "person": "T", "eligibility": "eligible", "status": "paid",
+          "denial_reason_code": "09", "denial_reason": "insufficient documentation",
+          "need": "itemised documentation", "blocked_on": "Riverside Gyn", "blocked_since": "2026-08-17",
+          "notice": "riverside-gyn-notice.pdf", "documents": ["riversidegyn0817.pdf"],
+          "notes": ["Shown \"Paid\" but $330 of $390 was denied — reason 09."]
+        },
+        {
+          "id": "2026-0007", "ynab_id": "d07", "date": "2026-09-05", "payee": "Vision Center", "account": "Checking",
+          "amount": 200, "claimed": 200, "provider": "Vision Center", "type": "Vision", "person": "T",
+          "eligibility": "eligible", "status": "pending", "documents": ["visioncenter0905.pdf"],
+          "submitted_on": "2026-09-10", "notes": ["Submitted, awaiting adjudication."]
+        },
+        {
+          "id": "2026-0008", "ynab_id": "d08", "date": "2026-06-22", "payee": "Riverside Gyn", "account": "Checking",
+          "amount": 220, "provider": "Riverside Gyn", "type": "Medical Services", "person": "P",
+          "eligibility": "eligible", "status": "candidate",
+          "need": "Partner's receipt", "blocked_on": "Partner", "blocked_since": "2026-06-22",
+          "documents": [], "notes": []
+        },
+        {
+          "id": "2026-0009", "ynab_id": "d09", "date": "2026-01-30", "payee": "Bright Dental", "account": "Checking",
+          "amount": 338, "provider": "Bright Dental", "type": "Dental", "person": "T",
+          "eligibility": "eligible", "status": "candidate",
+          "need": "Dental receipt or statement — locate", "blocked_on": "You", "blocked_since": "2026-09-01",
+          "documents": [], "notes": []
+        },
+        {
+          "id": "2026-0010", "ynab_id": "d10", "date": "2026-08-30", "payee": "Summit Surgery", "account": "Checking",
+          "amount": 860, "provider": "Summit Surgery", "type": "Medical Services", "person": "T",
+          "eligibility": "eligible", "status": "gathered", "documents": ["summit-surgery.pdf", "summit-eob.pdf"],
+          "notes": ["Fully documented — ready to file."]
+        },
+        {
+          "id": "2026-0011", "ynab_id": "d11", "date": "2026-07-11", "payee": "Family Practice", "account": "Checking",
+          "amount": 180, "provider": "Family Practice", "type": "Medical Services", "person": "T",
+          "eligibility": "eligible", "status": "picked", "documents": ["familypractice0711.pdf"], "notes": []
+        },
+        {
+          "id": "2026-0012", "ynab_id": "d12", "date": "2026-05-05", "payee": "Family Practice", "account": "Checking",
+          "amount": 120, "provider": "Family Practice", "type": "Medical Services", "person": "P",
+          "eligibility": "eligible", "status": "picked", "documents": ["familypractice0505.pdf"], "notes": []
+        },
+        {
+          "id": "2026-0013", "ynab_id": "d13", "date": "2026-03-19", "payee": "City Lab", "account": "Checking",
+          "amount": 60, "provider": "City Lab", "type": "Medical Services", "person": "T",
+          "eligibility": "eligible", "status": "candidate", "documents": [], "notes": [] },
+        {
+          "id": "2026-0014", "ynab_id": "d14", "date": "2026-04-22", "payee": "Sample Pharmacy", "account": "Checking",
+          "amount": 40, "provider": "Sample Pharmacy", "type": "Prescription Medication Copay/Cost", "person": "T",
+          "eligibility": "eligible", "status": "candidate", "documents": [], "notes": [] },
+        {
+          "id": "2026-0015", "ynab_id": "d15", "date": "2026-02-14", "payee": "Sample Pharmacy", "account": "Checking",
+          "amount": 22, "provider": "Sample Pharmacy", "type": "Prescription Medication Copay/Cost", "person": "P",
+          "eligibility": "eligible", "status": "candidate", "documents": [], "notes": [] },
+        {
+          "id": "2026-0016", "ynab_id": "d16", "date": "2026-06-02", "payee": "Sample Clinic", "account": "Checking",
+          "amount": 12.5, "provider": "Sample Clinic", "type": "Medical Services", "person": "T",
+          "eligibility": "eligible", "status": "candidate", "documents": [], "notes": [] },
+        {
+          "id": "2026-0017", "ynab_id": "d17", "date": "2026-01-18", "payee": "Sample Pharmacy", "account": "Checking",
+          "amount": 8, "provider": "Sample Pharmacy", "type": "Prescription Medication Copay/Cost", "person": "T",
+          "eligibility": "eligible", "status": "candidate", "documents": [], "notes": [] },
+        {
+          "id": "2026-0018", "ynab_id": "d18", "date": "2026-03-30", "payee": "Sample Pharmacy", "account": "Checking",
+          "amount": 4.65, "provider": "Sample Pharmacy", "type": "Prescription Medication Copay/Cost", "person": "P",
+          "eligibility": "eligible", "status": "candidate", "documents": [], "notes": [] },
+        {
+          "id": "2026-0019", "ynab_id": "d19", "date": "2026-03-03", "payee": "Example Refund", "account": "Checking",
+          "amount": -40, "provider": "Example Refund", "type": "Medical Services", "person": "T",
+          "eligibility": "eligible", "status": "skipped", "documents": [], "notes": ["refund"] }
       ]
     }
   },
   "capture": {
     "private_jwk": {
-      "key_ops": [
-        "deriveBits"
-      ],
+      "key_ops": ["deriveBits"],
       "ext": true,
       "kty": "EC",
       "x": "HToaAvpgHMpONTi_afF2xRYLUnJ0XeMsE_K1V0Zqz_E",
@@ -549,9 +703,7 @@ select {
       "crv": "P-256"
     }
   },
-  "inbox": {
-    "pending": []
-  }
+  "inbox": { "pending": [] }
 }</script>
   <script type="application/json" id="demo-inbox">[
   {
@@ -603,6 +755,13 @@ function ymd(s) {
   return m ? `${m[1]}-${m[2]}-${m[3]}` : String(s);
 }
 function pluralDays(n) { return `${n} day${Math.abs(n) === 1 ? '' : 's'}`; }
+const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+// "2027-03-31" -> "31 MAR 2027" (the deadline-strip style). Empty in, empty out.
+function shortDate(s) {
+  const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return '';
+  return `${Number(m[3])} ${MONTHS[Number(m[2]) - 1]} ${m[1]}`;
+}
 
 
 
@@ -610,7 +769,7 @@ function pluralDays(n) { return `${n} day${Math.abs(n) === 1 ? '' : 's'}`; }
 // src/core/doc.js — the FSA document shape (v2) + pure selectors. No DOM. ESM; unit-tested.
 // claims[] preserves the ledger claim object field-for-field; additive fields only.
 // Every day/gauge computation uses (claims_run_out ?? incur_by).
-const STATUS_DOMAIN = ['submitted', 'waiting', 'candidate', 'skipped', 'denied', 'needs-receipt', 'picked', 'gathered', 'paid', 'rejected'];
+const STATUS_DOMAIN = ['submitted', 'waiting', 'candidate', 'skipped', 'denied', 'needs-receipt', 'picked', 'gathered', 'paid', 'pending', 'rejected'];
 
 function activeYear(doc) {
   return (doc && (doc.active_year || (doc.years && Object.keys(doc.years).sort().reverse()[0]))) || null;
@@ -630,11 +789,21 @@ function claimedAmount(c) { return c && c.claimed != null ? Number(c.claimed) : 
 // The amount DENIED on a claim - independent of status. Fidelity shows "Paid" on a claim that still
 // concealed a partial denial, so `denied` is a first-class field, not derived from the status word.
 function deniedAmount(c) { return c && c.denied != null ? (Number(c.denied) || 0) : 0; }
+// The Fidelity denial reason code (e.g. "21") and its plain-English gloss, carried on the claim.
+function denialReasonCode(c) { return c && c.denial_reason_code != null ? String(c.denial_reason_code) : ''; }
+function denialReason(c) { return c && c.denial_reason ? String(c.denial_reason) : ''; }
+// "21 — medical necessity form required": code + English, for the blocked/denial cards.
+function denialLabel(c) {
+  const code = denialReasonCode(c); const reason = denialReason(c);
+  if (code && reason) return `${code} — ${reason}`;
+  return reason || (code ? `reason ${code}` : '');
+}
 function round2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
 
-// Adjudicated = reached Fidelity's books (submitted, paid, or denied). All three count toward
-// "submitted this year"; a fully-denied claim was still submitted for its claimed amount.
-const ADJUDICATED = ['submitted', 'paid', 'denied'];
+// Adjudicated = reached Fidelity's books (submitted, paid, denied, or pending). All count toward
+// "submitted this year"; a fully-denied claim was still submitted for its claimed amount, and a
+// pending claim is in flight for its claimed amount.
+const ADJUDICATED = ['submitted', 'paid', 'denied', 'pending'];
 
 function submittedTotal(doc, year) {
   return sumWhere(yearClaims(doc, year), (c) => ADJUDICATED.includes(c.status), claimedAmount);
@@ -642,8 +811,14 @@ function submittedTotal(doc, year) {
 function deniedTotal(doc, year) {
   return sumWhere(yearClaims(doc, year), (c) => ADJUDICATED.includes(c.status), deniedAmount);
 }
-// Paid = what Fidelity actually reimbursed = submitted - denied (denied dollars return to the pool).
-function paidTotal(doc, year) { return round2(submittedTotal(doc, year) - deniedTotal(doc, year)); }
+// Pending = submitted and still awaiting Fidelity's decision (status 'pending'); in flight, not yet
+// paid. Zero in the reconciled 2026 data (everything is adjudicated) — the gauge's hatched segment.
+function pendingTotal(doc, year) {
+  return sumWhere(yearClaims(doc, year), (c) => c.status === 'pending', claimedAmount);
+}
+// Paid = what Fidelity actually reimbursed = submitted - denied - pending (denied dollars return to
+// the pool; pending dollars are still in flight). With no pending claims this is submitted - denied.
+function paidTotal(doc, year) { return round2(submittedTotal(doc, year) - deniedTotal(doc, year) - pendingTotal(doc, year)); }
 // Available balance = election - PAID (NOT election - submitted): denied amounts are still claimable.
 function available(doc, year) { return round2(Math.max(0, election(doc, year) - paidTotal(doc, year))); }
 // Kept for callers/tests that predate the paid/denied split: election - submitted (ignores denial).
@@ -658,19 +833,34 @@ function eligibleNotPicked(doc, year) {
   return sumWhere(yearClaims(doc, year), (c) => c.eligibility === 'eligible' && c.status === 'candidate' && (Number(c.amount) || 0) > 0);
 }
 
-function daysLeft(doc, year, today) {
-  const d = yearData(doc, year).deadline || {};
-  const target = d.claims_run_out || d.incur_by;
+// Whole days between two YYYY-MM-DD dates (b - a), UTC-anchored. null on bad/missing input.
+function daysBetween(today, target) {
   if (!target || !today) return null;
   const a = Date.parse(`${String(today).slice(0, 10)}T00:00:00Z`);
   const b = Date.parse(`${String(target).slice(0, 10)}T00:00:00Z`);
   if (Number.isNaN(a) || Number.isNaN(b)) return null;
   return Math.round((b - a) / 86400000);
 }
+function daysLeft(doc, year, today) {
+  const d = yearData(doc, year).deadline || {};
+  return daysBetween(today, d.claims_run_out || d.incur_by);
+}
+// Days to the incur-by date specifically (the certain, published clock).
+function daysToIncur(doc, year, today) { return daysBetween(today, (yearData(doc, year).deadline || {}).incur_by); }
+// Days to the submission run-out (the primary chase clock) — null until a date is set.
+function daysToRunOut(doc, year, today) { return daysBetween(today, (yearData(doc, year).deadline || {}).claims_run_out); }
+// The run-out date is Mark's recollection and is NOT published in the Fidelity portal, so it is
+// unconfirmed until an explicit `run_out_confirmed: true` flag is set (a date alone no longer confirms it).
 function runOutConfirmed(doc, year) {
-  return Boolean((yearData(doc, year).deadline || {}).claims_run_out);
+  const d = yearData(doc, year).deadline || {};
+  return d.run_out_confirmed === true;
 }
 
+// The single line of what a claim still needs, driven ONLY by the claim's `need` field (never
+// recomputed from eligibility/eob/status). Empty string when nothing is outstanding — render nothing.
+function needText(claim) { return (claim && claim.need) ? String(claim.need) : ''; }
+
+// Retained for callers that predate the `need` field. NOTE: the UI now renders `need` only.
 function needsList(claim) {
   const needs = [];
   if (claim.eligibility === 'needs-lmn') needs.push('needs LMN');
@@ -712,6 +902,166 @@ function docFromLedger(ledger, opts = {}) {
     inbox: { pending: [] },
   };
 }
+
+
+/* ---- src/core/chase.js ---- */
+// src/core/chase.js — the chase-list model. Pure selectors, no DOM. Unit-tested.
+// The job is a chase list, not a ledger: 2-4 large, well-documented claims a year beat enumerating
+// every charge. These selectors drive the reshaped page — deadline strip, blocked-by-person cards,
+// the single next claim, open questions, the January setup checklist, and the collapsed all-charges row.
+
+
+const DONE = ['submitted', 'paid', 'skipped', 'rejected'];
+
+// A claim still needs chasing if it carries a `need` (waiting on a person/document) or a live denial
+// (money to re-claim). Denials count even on a "paid"/"submitted" row — Fidelity hides partial denials.
+function isBlocked(c) {
+  return (deniedAmount(c) > 0) || (!!needText(c) && !['skipped', 'rejected'].includes(c.status));
+}
+
+// Age in days that a blocker has been waiting. Prefer an explicit `blocked_since`; fall back to the
+// service date. null when neither is a real date.
+function blockerAge(c, today) {
+  const since = c.blocked_since || c.date || null;
+  const d = daysBetween(since, today);
+  return d == null ? null : Math.max(0, d);
+}
+
+// Escalation tier for a blocked-on-a-person card, by age. Text, not just colour (slice 4/5):
+// 14d → nudge, 30d → go around them.
+function blockerTier(ageDays) {
+  if (ageDays == null) return { level: 'fresh', color: 'dim', note: '' };
+  if (ageDays >= 30) return { level: 'stale', color: 'danger', note: 'go around — call the office or pull the provider portal' };
+  if (ageDays >= 14) return { level: 'aging', color: 'warn', note: 'follow up — this has waited two weeks' };
+  return { level: 'fresh', color: 'dim', note: '' };
+}
+
+// Blocked cards, keyed by WHO the chase is on (blocked_on), so one chase clears several rows.
+// Denials without a person key by provider (the party who must supply the form/docs). Sorted oldest
+// first — age is the emphasis.
+function blockedCards(doc, year, today) {
+  const claims = yearClaims(doc, year).filter(isBlocked);
+  const by = new Map();
+  for (const c of claims) {
+    const key = c.blocked_on || c.provider || c.payee || '—';
+    if (!by.has(key)) by.set(key, { key, who: key, rows: [] });
+    by.get(key).rows.push(c);
+  }
+  const cards = [];
+  for (const g of by.values()) {
+    const denials = g.rows.filter((c) => deniedAmount(c) > 0).map((c) => ({
+      provider: c.provider || c.payee || '', amount: deniedAmount(c),
+      label: denialLabel(c), notice: c.notice || null, id: c.id,
+    }));
+    const isDenial = denials.length > 0;
+    const amount = r2c(g.rows.reduce((a, c) => a + (isDenial ? deniedAmount(c) : (Number(c.amount) || 0)), 0));
+    const ages = g.rows.map((c) => blockerAge(c, today)).filter((x) => x != null);
+    const ageDays = ages.length ? Math.max(...ages) : null;
+    const provider = g.rows[0].provider || g.rows[0].payee || '';
+    const need = isDenial ? (denials[0].label || 'documentation') : (needText(g.rows[0]) || 'documentation');
+    cards.push({
+      key: g.key, who: g.who, provider, amount, need, ageDays,
+      denied: isDenial, denials, tier: blockerTier(ageDays),
+      action: isDenial ? 'Refile with documentation' : 'Chase the document',
+    });
+  }
+  return cards.sort((a, b) => (b.ageDays ?? -1) - (a.ageDays ?? -1));
+}
+
+// A claim is fully documented and ready to file: an eligible, not-yet-submitted claim with documents
+// on file and NO outstanding `need`.
+function isReadyToFile(c) {
+  return !DONE.includes(c.status)
+    && (c.eligibility === 'eligible' || c.eligibility === 'unknown')
+    && !needText(c) && deniedAmount(c) === 0
+    && (c.documents || c.docs || []).length > 0
+    && (Number(c.amount) || 0) > 0;
+}
+
+// Exactly one card: the largest claim that is fully documented right now. null when nothing is ready.
+function nextClaim(doc, year) {
+  const ready = yearClaims(doc, year).filter(isReadyToFile)
+    .sort((a, b) => (Number(b.amount) || 0) - (Number(a.amount) || 0));
+  return ready[0] || null;
+}
+
+// Open questions with an age each. Sourced from doc.questions[] or years[year].questions[].
+function openQuestions(doc, year, today) {
+  const list = (doc && doc.questions) || (yearData(doc, year).questions) || [];
+  return list.filter((q) => q && q.text && !q.answered).map((q) => ({
+    text: q.text, ageDays: blockerAge({ blocked_since: q.asked }, today), asked: q.asked || null,
+  })).sort((a, b) => (b.ageDays ?? -1) - (a.ageDays ?? -1));
+}
+
+// Top providers of a year by total claimed/charged amount (for the January setup checklist).
+function topProviders(doc, year, n = 3) {
+  const totals = new Map();
+  for (const c of yearClaims(doc, year)) {
+    const k = c.provider || c.payee; if (!k) continue;
+    totals.set(k, (totals.get(k) || 0) + (Number(c.amount) || 0));
+  }
+  return [...totals.entries()].sort((a, b) => b[1] - a[1]).slice(0, n)
+    .map(([provider, total]) => ({ provider, total: r2c(total) }));
+}
+
+// January setup checklist, built from LAST year's top-3 providers — the strategy: line up big,
+// well-documented claims before the money is spent.
+function setupChecklist(doc, prevYear) {
+  return topProviders(doc, prevYear, 3).map((p) => ({
+    provider: p.provider,
+    steps: [
+      { key: 'statement', label: 'annual itemised statement requested', done: false },
+      { key: 'lmn', label: 'Medical Necessity Form signed', done: false },
+      { key: 'crossover', label: 'UHC→FSA crossover confirmed', done: false },
+    ],
+  }));
+}
+
+// The collapsed all-charges disclosure: total + count, with everything under `threshold` folded into
+// one summary row. `large` are shown individually (amount desc); `small` is the folded tail.
+function allChargesSummary(doc, year, threshold = 75) {
+  const claims = yearClaims(doc, year);
+  const total = r2c(claims.reduce((a, c) => a + (Number(c.amount) || 0), 0));
+  const large = claims.filter((c) => (Number(c.amount) || 0) >= threshold)
+    .slice().sort((a, b) => (Number(b.amount) || 0) - (Number(a.amount) || 0));
+  const smallRows = claims.filter((c) => (Number(c.amount) || 0) < threshold);
+  const small = { count: smallRows.length, total: r2c(smallRows.reduce((a, c) => a + (Number(c.amount) || 0), 0)) };
+  return { total, count: claims.length, threshold, large, small };
+}
+
+// The deadline strip: submission run-out is the primary clock, incur-by the secondary (certain) one.
+// Escalate by TEXT as well as colour: amber under 60 days, alarm under 21.
+function deadlineStrip(doc, year, today) {
+  const d = yearData(doc, year).deadline || {};
+  const confirmed = runOutConfirmed(doc, year);
+  const runOut = daysToRunOut(doc, year, today);
+  const incur = daysToIncur(doc, year, today);
+  const level = (n) => n == null ? 'none' : n <= 21 ? 'alarm' : n <= 60 ? 'warn' : 'ok';
+  return {
+    runOutDate: d.claims_run_out || null, incurDate: d.incur_by || null,
+    runOutDays: runOut, incurDays: incur, confirmed,
+    runOutLevel: level(runOut), incurLevel: level(incur),
+    color: { none: 'dim', ok: 'dim', warn: 'warn', alarm: 'danger' },
+  };
+}
+
+// Which lifecycle state the year is in — drives which sections dominate (slice 4).
+function yearState(doc, year, today) {
+  const claims = yearClaims(doc, year);
+  const yd = today ? new Date(`${String(today).slice(0, 10)}T00:00:00Z`) : null;
+  const isJanuary = yd ? yd.getUTCMonth() === 0 : false;
+  const e = election(doc, year);
+  const paid = paidTotal(doc, year);
+  const avail = available(doc, year);
+  const incur = daysToIncur(doc, year, today);
+  if (!claims.length && paid === 0) return 'setup';      // empty year
+  if (isJanuary && paid < 0.005) return 'setup';         // January, before anything is reimbursed
+  if (e > 0 && avail <= 0.005) return 'done';
+  if (incur != null && incur <= 45) return 'year-end';
+  return 'active';
+}
+
+function r2c(n) { return Math.round((Number(n) || 0) * 100) / 100; }
 
 
 /* ---- src/core/crypto.js ---- */
@@ -1174,6 +1524,45 @@ function toggleTheme() {
 }
 
 
+/* ---- src/ui/header.js ---- */
+// src/ui/header.js — the single-line header: the overflow menu (theme · agents drawer · sign out)
+// and the plan-year control, which is STATIC text until more than one year exists. Agent runs live in
+// the drawer; the header only speaks up (#agent-alert) when a run fails.
+function initOverflow() {
+  const btn = document.getElementById('overflow-btn');
+  const menu = document.getElementById('overflow-menu');
+  const alert = document.getElementById('agent-alert');
+  if (!btn || !menu) return;
+  const close = () => { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
+  const open = () => { menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); };
+  btn.addEventListener('click', (e) => { e.stopPropagation(); if (menu.hidden) open(); else close(); });
+  menu.addEventListener('click', (e) => e.stopPropagation());
+  document.addEventListener('click', () => close());
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  if (alert) alert.addEventListener('click', (e) => { e.stopPropagation(); open(); });
+}
+
+// Plan year: static text with one year; a selector once there are two or more. Returns the year list.
+function renderYearControl(doc, year, onChange) {
+  const sel = document.getElementById('year');
+  const stat = document.getElementById('year-static');
+  if (!sel || !stat) return [];
+  const years = doc ? Object.keys(doc.years).sort().reverse() : [];
+  if (years.length > 1) {
+    stat.hidden = true; sel.hidden = false;
+    sel.innerHTML = '';
+    for (const y of years) {
+      const o = document.createElement('option'); o.value = y; o.textContent = y; if (y === year) o.selected = true;
+      sel.appendChild(o);
+    }
+    sel.onchange = () => onChange(sel.value);
+  } else {
+    sel.hidden = true; stat.hidden = false; stat.textContent = years[0] || '';
+  }
+  return years;
+}
+
+
 /* ---- src/ui/gauge.js ---- */
 // src/ui/gauge.js — the hero gauge. Pure model (gaugeModel/gaugeTicks) + DOM render.
 
@@ -1196,42 +1585,81 @@ function gaugeModel(doc, year, today) {
   const e = election(doc, year);
   const sub = submittedTotal(doc, year);
   const den = deniedTotal(doc, year);
+  const pend = pendingTotal(doc, year);
   const paid = paidTotal(doc, year);
   const avail = available(doc, year);
   const unc = unclaimed(doc, year);
-  const pct = e > 0 ? Math.min(100, (paid / e) * 100) : 0;          // fill = PAID (denied returns to pool)
-  const pctDenied = e > 0 ? Math.min(Math.max(0, 100 - pct), (den / e) * 100) : 0; // its own segment
-  const dl = daysLeft(doc, year, today);
+  // Four segments partitioning [0, election]: paid (fill) · pending (hatched) · denied (outlined) ·
+  // empty (the flex remainder). still-yours (available = election − paid) = pending + denied + empty.
+  const clampPct = (v) => e > 0 ? Math.max(0, Math.min(100, (v / e) * 100)) : 0;
+  const pct = clampPct(paid);                    // fill = PAID (denied returns to the pool)
+  const pctPending = clampPct(pend);
+  const pctDenied = clampPct(den);
+  // The gauge's own clock mirrors the deadline strip: run-out when confirmed, else the certain incur-by.
   const confirmed = runOutConfirmed(doc, year);
+  const dl = confirmed ? daysToRunOut(doc, year, today) : daysToIncur(doc, year, today);
   const tail = dl == null ? 'no deadline set' : confirmed ? `${dl} days left` : `${dl} days left to incur`;
-  const sentence = `${money(avail)} available · ${tail}`;
+  // DONE state (slice 4): the election is fully recovered — a quiet, not celebratory, line.
+  const done = e > 0 && avail <= 0.005 && paid > 0;
+  const caption = done ? `${money(paid)} recovered · nothing owed` : `${money(avail)} still yours`;
+  const sentence = done ? caption : `${money(avail)} still yours · ${tail}`;
   const color = dl == null ? 'dim' : dl <= 7 ? 'danger' : dl <= 30 ? 'warn' : 'dim';
-  return { election: e, submitted: sub, unclaimed: unc, denied: den, paid, available: avail, pct, pctDenied, daysLeft: dl, confirmed, sentence, color, ticks: gaugeTicks(e) };
+  return {
+    election: e, submitted: sub, unclaimed: unc, denied: den, pending: pend, paid, available: avail,
+    pct, pctPending, pctDenied, daysLeft: dl, confirmed, caption, sentence, tail, color, ticks: gaugeTicks(e),
+  };
+}
+
+// One readout cell — label above, tabular-nums figure below, plus a glyph so denied is never
+// colour-only (slice 5). Returns the cell element.
+function readoutCell(kind, label, value, glyph) {
+  const cell = document.createElement('div'); cell.className = `g-fig g-fig-${kind}`;
+  const l = document.createElement('span'); l.className = 'g-fig-l'; l.textContent = glyph ? `${glyph} ${label}` : label;
+  const v = document.createElement('span'); v.className = 'g-fig-v mono'; v.textContent = value;
+  cell.append(l, v); return cell;
 }
 
 function renderGauge(doc, year, today) {
   const bar = document.getElementById('gauge-bar');
   const fill = document.getElementById('gauge-fill');
+  const pendingEl = document.getElementById('gauge-pending');
   const deniedEl = document.getElementById('gauge-denied');
   const label = document.getElementById('gauge-label');
   const ticksEl = document.getElementById('gauge-ticks');
   const scaleEl = document.getElementById('gauge-scale');
   const note = document.getElementById('gauge-note');
   const sr = document.getElementById('gauge-sr');
+  const readout = document.getElementById('gauge-readout');
   if (ticksEl) ticksEl.innerHTML = '';
   if (scaleEl) scaleEl.innerHTML = '';
-  if (!doc) { fill.style.width = '0%'; if (deniedEl) deniedEl.style.width = '0%'; label.textContent = ''; bar.setAttribute('aria-label', 'No plan loaded'); sr.textContent = ''; note.hidden = true; return; }
+  if (readout) readout.innerHTML = '';
+  if (!doc) {
+    fill.style.width = '0%'; if (pendingEl) pendingEl.style.width = '0%'; if (deniedEl) { deniedEl.style.width = '0%'; deniedEl.hidden = true; }
+    label.textContent = ''; sr.textContent = ''; note.hidden = true; return;
+  }
 
   const m = gaugeModel(doc, year, today);
   fill.style.width = m.pct.toFixed(2) + '%';
-  if (deniedEl) deniedEl.style.width = m.pctDenied.toFixed(2) + '%';
-  label.textContent = m.sentence;
-  label.style.color = `var(--${m.color})`;
-  bar.setAttribute('aria-label', m.sentence);
+  if (pendingEl) pendingEl.style.width = m.pctPending.toFixed(2) + '%';
+  if (deniedEl) { deniedEl.style.width = m.pctDenied.toFixed(2) + '%'; deniedEl.hidden = m.pctDenied <= 0; } // no empty focusable control
+  label.textContent = m.caption;
   sr.textContent = `Reimbursement gauge: ${money(m.paid)} paid of ${money(m.election)} (${m.pct.toFixed(0)}%)`
-    + (m.denied > 0 ? `, ${money(m.denied)} denied` : '') + `. ${m.sentence}.`;
+    + (m.pending > 0 ? `, ${money(m.pending)} pending` : '') + (m.denied > 0 ? `, ${money(m.denied)} denied` : '')
+    + `. ${m.caption}. ${m.tail}.`;
   note.hidden = m.confirmed || m.daysLeft == null;
   if (!note.hidden) note.textContent = 'run-out date unconfirmed';
+
+  // Visible mono readout of all four figures (slice 5) — a segmented bar means nothing in sunlight.
+  if (readout) {
+    readout.append(
+      readoutCell('paid', 'Paid', money(m.paid)),
+      readoutCell('pending', 'Pending', money(m.pending)),
+      readoutCell('denied', 'Denied', money(m.denied), '⚠'),
+      readoutCell('avail', 'Still yours', money(m.available)),
+    );
+    readout.setAttribute('aria-label',
+      `Paid ${money(m.paid)}, pending ${money(m.pending)}, denied ${money(m.denied)}, still yours ${money(m.available)}.`);
+  }
 
   for (const t of m.ticks) {
     const tick = document.createElement('div');
@@ -1252,37 +1680,234 @@ function renderGauge(doc, year, today) {
 }
 
 
-/* ---- src/ui/readout.js ---- */
-// src/ui/readout.js — the four-cell readout row, subordinate to the gauge.
+/* ---- src/ui/strip.js ---- */
+// src/ui/strip.js — the deadline strip (slice 3/4). A thin full-width mono rule. The submission
+// run-out is the PRIMARY clock; the incur-by date is the secondary (certain) line. Escalates by
+// TEXT as well as colour — amber under 60 days, alarm under 21. The run-out is Mark's recollection
+// (not published by Fidelity) so it renders UNCONFIRMED until he confirms it.
 
 
 
-function renderReadout(doc, year) {
-  const set = (id, v) => { document.getElementById(id).textContent = doc ? money(v) : '—'; };
-  set('r-submitted', submittedTotal(doc, year));
-  set('r-waiting', waitingOnDocuments(doc, year));
-  set('r-eligible', eligibleNotPicked(doc, year));
+function urgencyWord(level) { return level === 'alarm' ? 'DUE SOON' : level === 'warn' ? 'CLOSING' : ''; }
+
+function renderDeadlineStrip(doc, year, today, onConfirm) {
+  const section = document.getElementById('deadline');
+  const primary = document.getElementById('deadline-primary');
+  const secondary = document.getElementById('deadline-secondary');
+  if (!section) return;
+  if (!doc) { section.hidden = true; return; }
+  const s = deadlineStrip(doc, year, today);
+  section.hidden = !(s.runOutDate || s.incurDate);
+
+  // Primary: the submission deadline. Unconfirmed → "SUBMIT BY 31 MAR 2027 · UNCONFIRMED [confirm]".
+  primary.textContent = '';
+  const color = s.color[s.confirmed ? s.runOutLevel : 'ok'] || 'dim';
+  primary.style.color = `var(--${color})`;
+  if (s.runOutDate) {
+    const days = s.runOutDays;
+    const urg = s.confirmed ? urgencyWord(s.runOutLevel) : '';
+    const parts = [`SUBMIT BY ${shortDate(s.runOutDate)}`];
+    if (days != null && s.confirmed) parts.push(`${pluralDays(days)} left`);
+    if (urg) parts.push(urg);
+    if (!s.confirmed) parts.push('UNCONFIRMED');
+    primary.append(document.createTextNode(parts.join(' · ') + ' '));
+    if (!s.confirmed && typeof onConfirm === 'function') {
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'strip-confirm'; btn.textContent = 'confirm';
+      btn.addEventListener('click', onConfirm);
+      primary.appendChild(btn);
+    }
+  } else {
+    primary.textContent = 'SUBMISSION DEADLINE NOT SET';
+    if (typeof onConfirm === 'function') {
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'strip-confirm'; btn.textContent = 'set date';
+      btn.addEventListener('click', onConfirm);
+      primary.append(' ', btn);
+    }
+  }
+
+  // Secondary: the certain incur-by date.
+  if (s.incurDate) {
+    const days = s.incurDays;
+    const urg = urgencyWord(s.incurLevel);
+    secondary.textContent = `INCUR BY ${shortDate(s.incurDate)}`
+      + (days != null ? ` · ${pluralDays(days)} to spend` : '') + (urg ? ` · ${urg}` : '');
+    secondary.hidden = false; // colour stays dim (CSS); urgency is carried by the CLOSING/DUE SOON word
+  } else {
+    secondary.hidden = true;
+  }
 }
 
 
-/* ---- src/ui/nextup.js ---- */
-// src/ui/nextup.js — up to 5 biggest claimable charges, each with what it still needs.
+/* ---- src/ui/blocked.js ---- */
+// src/ui/blocked.js — the centrepiece. Stacked full-width cards keyed by PERSON, so one chase clears
+// several rows. Age in days is the emphasis; the card's TEXT escalates at 14 and 30 days (not colour
+// alone). Denials are flagged with the Fidelity reason in English and the notice-PDF path on the NAS.
 
 
 
-function renderNextUp(doc, year) {
-  const list = document.getElementById('nextup-list'); list.innerHTML = '';
-  const items = doc ? nextUp(doc, year, 5) : [];
-  if (!items.length) {
-    const li = document.createElement('li'); li.className = 'dim'; li.textContent = 'Nothing claimable is waiting on you.';
-    list.appendChild(li); return;
+const FIDELITY_URL = 'https://nb.fidelity.com/';
+// The app stores FILENAMES only; the notice PDFs live on the NAS. Show the path so Mark can find it.
+function noticePath(year, name) { return `Reciepts/${year}/FSA/correspondence/${name}`; }
+
+function elB(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+function renderBlocked(doc, year, today, deps) {
+  const section = document.getElementById('blocked');
+  const list = document.getElementById('blocked-list');
+  const head = document.getElementById('blocked-h');
+  if (!section || !list) return;
+  list.innerHTML = '';
+  const cards = doc ? blockedCards(doc, year, today) : [];
+  // In the January setup / empty state, Blocked yields to the setup checklist (handled by app.js).
+  section.hidden = cards.length === 0;
+  head.textContent = `Blocked (${cards.length})`;
+
+  for (const c of cards) {
+    const card = elB('div', 'blocked-card' + (c.denied ? ' is-denial' : ''));
+    card.dataset.key = c.key;
+
+    const top = elB('div', 'blocked-top');
+    const who = elB('span', 'blocked-who', c.who);
+    const amt = elB('span', 'blocked-amt mono', money(c.amount));
+    top.append(who, amt);
+    card.appendChild(top);
+
+    const meta = elB('div', 'blocked-meta');
+    if (c.provider && c.provider !== c.who) meta.appendChild(elB('span', 'blocked-prov dim', c.provider));
+    if (c.ageDays != null) {
+      // Escalation shows in the glyph + word, not colour alone (fixed palette can't pass AA in red here).
+      const mark = c.tier.level === 'stale' ? '⚠ ' : c.tier.level === 'aging' ? '↑ ' : '';
+      meta.appendChild(elB('span', 'blocked-age mono', `${mark}${pluralDays(c.ageDays)} waiting`));
+    }
+    if (c.denied) meta.appendChild(elB('span', 'blocked-flag mono', '⚠ denied'));
+    card.appendChild(meta);
+
+    // What's needed — one line. For a denial, the Fidelity code in English.
+    card.appendChild(elB('p', 'blocked-need', c.need));
+
+    // Notice PDF paths for denials.
+    for (const d of c.denials) {
+      if (!d.notice) continue;
+      const n = elB('p', 'blocked-notice mono dim');
+      n.textContent = `notice: ${noticePath(year, d.notice)}`;
+      card.appendChild(n);
+    }
+
+    // Escalation text (14d follow up, 30d go around) — TEXT, not just colour.
+    if (c.tier.note) card.appendChild(elB('p', 'blocked-escalate', (c.tier.level === 'stale' ? '→ ' : '↑ ') + c.tier.note));
+
+    const actions = elB('div', 'blocked-actions');
+    const action = elB('a', 'blocked-action', c.action);
+    action.href = FIDELITY_URL; action.target = '_blank'; action.rel = 'noopener noreferrer';
+    actions.appendChild(action);
+    card.appendChild(actions);
+
+    list.appendChild(card);
   }
-  for (const c of items) {
-    const li = document.createElement('li');
-    const amt = document.createElement('span'); amt.className = 'amt mono'; amt.textContent = money(c.amount);
-    const prov = document.createElement('span'); prov.className = 'prov'; prov.textContent = c.provider || c.payee || '—';
-    li.append(amt, prov);
-    for (const need of needsList(c)) { const t = document.createElement('span'); t.className = 'tag'; t.textContent = need; li.append(t); }
+}
+
+
+/* ---- src/ui/nextclaim.js ---- */
+// src/ui/nextclaim.js — exactly ONE card: the largest claim fully documented right now. "File this"
+// reveals a document checklist and the Fidelity link. When nothing is ready, say so plainly and
+// point at the top blocker (the chase list's whole point: file the big, ready ones first).
+
+
+
+
+function elN(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+function renderNextClaim(doc, year, today) {
+  const box = document.getElementById('nextclaim-card');
+  if (!box) return;
+  box.innerHTML = '';
+  const c = doc ? nextClaim(doc, year) : null;
+
+  if (!c) {
+    box.classList.add('is-empty');
+    box.appendChild(elN('p', 'nextclaim-none', 'Nothing is fully documented yet.'));
+    const cards = doc ? blockedCards(doc, year, today) : [];
+    if (cards.length) {
+      box.appendChild(elN('p', 'dim', `Start with the top blocker: ${cards[0].who} — ${cards[0].need}.`));
+    } else {
+      box.appendChild(elN('p', 'dim', 'No claims are waiting on you.'));
+    }
+    return;
+  }
+
+  box.classList.remove('is-empty');
+  const top = elN('div', 'nextclaim-top');
+  top.append(elN('span', 'nextclaim-prov', c.provider || c.payee || '—'), elN('span', 'nextclaim-amt mono', money(c.amount)));
+  box.appendChild(top);
+  box.appendChild(elN('p', 'dim mono nextclaim-date', `${ymd(c.date)}${c.person ? ' · ' + c.person : ''}`));
+
+  const details = document.createElement('details'); details.className = 'nextclaim-checklist';
+  const summary = document.createElement('summary'); summary.textContent = 'File this'; details.appendChild(summary);
+  const ul = elN('ul', 'checklist');
+  const docs = (c.documents || c.docs || []).map((d) => String(d).split('/').pop());
+  if (docs.length) {
+    for (const d of docs) { const li = elN('li', 'mono', `✓ ${d}`); ul.appendChild(li); }
+  } else {
+    ul.appendChild(elN('li', 'dim', 'No documents recorded on this claim.'));
+  }
+  details.appendChild(ul);
+  const link = elN('a', 'blocked-action', 'Open Fidelity NetBenefits');
+  link.href = FIDELITY_URL; link.target = '_blank'; link.rel = 'noopener noreferrer';
+  details.appendChild(link);
+  box.appendChild(details);
+}
+
+
+/* ---- src/ui/setup.js ---- */
+// src/ui/setup.js — slice 4 states: the January setup checklist (built from last year's top-3
+// providers — the strategy of lining up big, well-documented claims before the money is spent) and
+// the open-questions list, each question carrying an age.
+
+
+
+function elS(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+// Returns true when the setup section rendered any content (so app.js can gate Blocked against it).
+function renderSetup(doc, year, prevYear, show) {
+  const section = document.getElementById('setup');
+  const list = document.getElementById('setup-list');
+  const lead = document.getElementById('setup-lead');
+  if (!section || !list) return false;
+  list.innerHTML = '';
+  const items = (doc && prevYear) ? setupChecklist(doc, prevYear) : [];
+  section.hidden = !show || items.length === 0;
+  if (section.hidden) return false;
+  lead.textContent = `Line up ${prevYear}'s biggest providers now — a few large, well-documented claims beat chasing every charge.`;
+  for (const it of items) {
+    const card = elS('div', 'setup-card');
+    card.appendChild(elS('div', 'setup-prov', it.provider));
+    const ul = elS('ul', 'checklist');
+    for (const s of it.steps) {
+      const li = elS('li', s.done ? 'done' : '');
+      li.textContent = `${s.done ? '✓' : '☐'} ${s.label}`;
+      ul.appendChild(li);
+    }
+    card.appendChild(ul);
+    list.appendChild(card);
+  }
+  return true;
+}
+
+function renderQuestions(doc, year, today) {
+  const section = document.getElementById('questions');
+  const list = document.getElementById('questions-list');
+  const head = document.getElementById('questions-h');
+  if (!section || !list) return;
+  list.innerHTML = '';
+  const qs = doc ? openQuestions(doc, year, today) : [];
+  section.hidden = qs.length === 0;
+  head.textContent = `Open questions (${qs.length})`;
+  for (const q of qs) {
+    const li = elS('li', 'question');
+    li.appendChild(elS('span', 'question-text', q.text));
+    if (q.ageDays != null) li.appendChild(elS('span', 'question-age mono dim', `open ${pluralDays(q.ageDays)}`));
     list.appendChild(li);
   }
 }
@@ -1430,15 +2055,15 @@ function button(text, onClick) {
 
 
 /* ---- src/ui/table.js ---- */
-// src/ui/table.js — filter chips + sortable claims table. Pure FILTERS/sortClaims + DOM render.
+// src/ui/table.js — filter chips + sortable claims table. Pure FILTERS/sortClaims/noteLines + DOM render.
 
 
 
 const FILTERS = {
   all: () => true,
   submitted: (c) => ['submitted', 'paid'].includes(c.status),
-  waiting: (c) => ['waiting', 'needs-receipt', 'gathered'].includes(c.status),
-  candidates: (c) => ['candidate', 'picked'].includes(c.status),
+  waiting: (c) => ['picked', 'gathered', 'waiting', 'needs-receipt'].includes(c.status),
+  candidates: (c) => c.status === 'candidate',
   skipped: (c) => ['skipped', 'denied', 'rejected'].includes(c.status),
 };
 const CHIP_LABELS = { all: 'All', submitted: 'Submitted', waiting: 'Waiting', candidates: 'Candidates', skipped: 'Skipped' };
@@ -1453,7 +2078,18 @@ function sortClaims(claims, key, dir) {
   });
 }
 
-function td(text, cls) { const el = document.createElement('td'); if (cls) el.className = cls; el.textContent = text; return el; }
+// A claim's notes as DISPLAY LINES: one entry per newline-delimited line. `notes` may be a string
+// (split on \n) or an array (used as-is). Blank lines are dropped. This is the slice-2 fix: the old
+// code iterated the string by CHARACTER, emitting one <span> per letter (2,644 spans, 38,490px tall).
+function noteLines(c) {
+  const raw = c && c.notes;
+  if (raw == null) return [];
+  const arr = Array.isArray(raw) ? raw : String(raw).split('\n');
+  return arr.map((s) => String(s)).filter((s) => s.trim() !== '');
+}
+
+// A cell carries a data-label so the mobile card restack (< 768px) can show "Amount $860.00" etc.
+function td(text, cls, label) { const el = document.createElement('td'); if (cls) el.className = cls; if (label) el.dataset.label = label; el.textContent = text; return el; }
 
 function renderChips(state, onFilter) {
   const box = document.getElementById('chips'); box.innerHTML = '';
@@ -1470,26 +2106,47 @@ function renderChips(state, onFilter) {
 function renderTable(state, claims) {
   const body = document.getElementById('claims-body'); body.innerHTML = '';
   const pred = FILTERS[state.filter] || FILTERS.all;
-  const rows = sortClaims(claims.filter(pred), state.sort.key, state.sort.dir);
-  document.getElementById('claims-empty').hidden = rows.length > 0;
+  let rows = sortClaims(claims.filter(pred), state.sort.key, state.sort.dir);
+  // Fold everything under the threshold into ONE summary row — but only on the All view, and only
+  // until the reader expands it. The 44-row enumeration is a fallback; the chase list is the job.
+  const threshold = state.foldThreshold || 0;
+  let small = [];
+  if (state.filter === 'all' && threshold > 0 && !state.expandSmall) {
+    small = rows.filter((c) => (Number(c.amount) || 0) < threshold);
+    rows = rows.filter((c) => (Number(c.amount) || 0) >= threshold);
+  }
+  document.getElementById('claims-empty').hidden = (rows.length + small.length) > 0;
 
   for (const c of rows) {
     const tr = document.createElement('tr');
-    tr.appendChild(td(ymd(c.date), 'col-date'));
-    const prov = td('', 'col-provider');
+    tr.appendChild(td(ymd(c.date), 'col-date', 'Date'));
+    const prov = td('', 'col-provider'); prov.dataset.label = 'Provider';
     const name = document.createElement('span'); name.textContent = c.provider || c.payee || '—'; prov.appendChild(name);
-    for (const need of needsList(c)) { const t = document.createElement('span'); t.className = 'tag'; t.textContent = need; prov.appendChild(t); }
-    for (const n of (c.notes || [])) { const nl = document.createElement('span'); nl.className = 'note-line'; nl.textContent = n; prov.appendChild(nl); }
+    // The tag is driven ONLY by the claim's `need` field — nothing rendered when it is empty.
+    const need = needText(c);
+    if (need) { const t = document.createElement('span'); t.className = 'tag'; t.textContent = need; prov.appendChild(t); }
+    for (const n of noteLines(c)) { const nl = document.createElement('span'); nl.className = 'note-line'; nl.textContent = n; prov.appendChild(nl); }
     if (c.claim_number) { const cn = document.createElement('span'); cn.className = 'note-line mono'; cn.textContent = 'claim ' + c.claim_number; prov.appendChild(cn); }
     tr.appendChild(prov);
-    tr.appendChild(td(c.person || '', 'col-person'));
-    tr.appendChild(td(money(c.amount), 'col-amount num'));
-    tr.appendChild(td(['submitted', 'paid'].includes(c.status) ? money(claimedAmount(c)) : '—', 'col-claimed num'));
-    const st = td('', 'col-status');
+    tr.appendChild(td(c.person || '', 'col-person', 'Person'));
+    tr.appendChild(td(money(c.amount), 'col-amount num', 'Amount'));
+    tr.appendChild(td(['submitted', 'paid'].includes(c.status) ? money(claimedAmount(c)) : '—', 'col-claimed num', 'Claimed'));
+    const st = td('', 'col-status', 'Status');
     const pill = document.createElement('span'); pill.className = 'status ' + c.status; pill.textContent = c.status; st.appendChild(pill);
     tr.appendChild(st);
-    tr.appendChild(td((c.documents || c.docs || []).map((d) => String(d).split('/').pop()).join(', '), 'col-docs'));
+    tr.appendChild(td((c.documents || c.docs || []).map((d) => String(d).split('/').pop()).join(', '), 'col-docs', 'Documents'));
     body.appendChild(tr);
+  }
+
+  // The folded small-charges summary row — one line, expandable in place.
+  if (small.length) {
+    const sum = small.reduce((a, c) => a + (Number(c.amount) || 0), 0);
+    const tr = document.createElement('tr'); tr.className = 'small-summary';
+    const cell = document.createElement('td'); cell.colSpan = 7;
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'small-toggle';
+    btn.textContent = `${small.length} charges under ${money(threshold)} · ${money(sum)} — show`;
+    btn.addEventListener('click', () => { state.expandSmall = true; renderTable(state, claims); });
+    cell.appendChild(btn); tr.appendChild(cell); body.appendChild(tr);
   }
 
   document.querySelectorAll('#claims-table th[data-sort]').forEach((th) => {
@@ -1559,10 +2216,19 @@ function initAgents(state, deps) {
   const btn = document.createElement('button'); btn.type = 'button'; btn.id = 'sync-ynab'; btn.textContent = 'Sync YNAB';
   slot.append(btn, badge);
 
+  // Surface a header alert ONLY when a run failed; the routine badge lives in the drawer.
+  const setAlert = (outcome) => {
+    const alert = document.getElementById('agent-alert');
+    if (!alert) return;
+    const failed = outcome === 'error' || outcome === 'refused';
+    alert.hidden = !failed;
+    if (failed) alert.textContent = `⚠ sync ${badgeLabel(outcome).toLowerCase()}`;
+  };
   const refreshBadge = async () => {
     try {
       const r = await lastRun({ baseUrl: FSA_SUPABASE_URL, anonKey: FSA_PUBLISHABLE, app: 'fsa', agent: 'fsa-ynab-sync' });
       badge.textContent = r.label + (r.finished_at ? ' · ' + String(r.finished_at).slice(0, 10) : '');
+      setAlert(r.outcome);
     } catch (_e) { badge.textContent = '—'; }
   };
   btn.addEventListener('click', async () => {
@@ -1581,7 +2247,7 @@ function initAgents(state, deps) {
 
 
 /* ---- src/ui/app.js ---- */
-// src/ui/app.js — boot + orchestration for the FSA dashboard. Browser only; exercised by e2e.
+// src/ui/app.js — boot + orchestration for the FSA chase list. Browser only; exercised by e2e.
 // Demo mode (?demo=1 or localhost) reads the bundled #demo-fixture and never touches the network or
 // registers the service worker. Live mode uses sync-id + passphrase against the encrypted cloud doc.
 
@@ -1597,7 +2263,12 @@ function initAgents(state, deps) {
 
 
 
-const state = { doc: null, year: null, filter: 'all', sort: { key: 'date', dir: 'desc' }, _version: null };
+
+
+
+
+
+const state = { doc: null, year: null, filter: 'all', sort: { key: 'amount', dir: 'desc' }, foldThreshold: 75, expandSmall: false, deps: null, _version: null };
 
 function isDemo() {
   const p = new URLSearchParams(location.search);
@@ -1610,16 +2281,16 @@ function loadDemoDoc() { const el = document.getElementById('demo-fixture'); try
 
 function reveal() { try { document.body.classList.remove('preboot'); } catch (_) { /* ok */ } }
 
-// Dashboard sections + the year selector are meaningless with no document loaded — hide them while
-// signed out so the reader sees ONLY the unlock panel (not an empty gauge and false "nothing waiting").
-const DASH_SECTIONS = ['gauge', 'readout', 'nextup', 'inbox', 'claims'];
+// Every dashboard section is meaningless with no document loaded — hide them (and the year control)
+// while signed out so the reader sees ONLY the unlock panel.
+const DASH_SECTIONS = ['deadline', 'gauge', 'blocked', 'setup', 'nextclaim', 'questions', 'inbox', 'claims'];
 function setSignedOutView(on) {
   for (const id of DASH_SECTIONS) { const el = document.getElementById(id); if (el) el.hidden = on; }
   const sel = document.getElementById('year'); if (sel) sel.hidden = on;
-  const yl = document.querySelector('label[for="year"]'); if (yl) yl.hidden = on;
+  const stat = document.getElementById('year-static'); if (stat) stat.hidden = on;
 }
 
-// Sign-out lives in the header, only when a pair is loaded. clearCreds() is fsa-scoped only.
+// Sign-out lives in the overflow menu, only when a pair is loaded. clearCreds() is fsa-scoped only.
 function initSignOut() {
   const btn = document.getElementById('signout');
   if (!btn) return;
@@ -1639,10 +2310,34 @@ function setSyncPill(kind) {
   pill.style.color = kind === 'synced' ? 'var(--dim)' : kind === 'offline' ? 'var(--warn)' : 'var(--danger)';
 }
 
+function initGaugeJump() {
+  const denied = document.getElementById('gauge-denied');
+  if (!denied) return;
+  denied.addEventListener('click', () => {
+    const blocked = document.getElementById('blocked');
+    if (blocked && !blocked.hidden) blocked.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+
+// Confirm / set the submission run-out date (Mark's recollection; not published by Fidelity).
+function confirmRunOut() {
+  if (!state.doc || !state.year) return;
+  const cur = ((state.doc.years[state.year] || {}).deadline || {}).claims_run_out || '';
+  const val = prompt('Submission deadline (claims run-out) as YYYY-MM-DD:', cur || `${Number(state.year) + 1}-03-31`);
+  if (!val) return;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(val.trim())) { alert('Enter a date as YYYY-MM-DD.'); return; }
+  const yd = state.doc.years[state.year] || (state.doc.years[state.year] = {});
+  yd.deadline = { ...(yd.deadline || {}), claims_run_out: val.trim(), run_out_confirmed: true };
+  render();
+  if (state.deps && state.deps.save) state.deps.save(state.doc);
+}
+
 async function boot() {
   initTheme();
   document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+  initOverflow();
   initSignOut();
+  initGaugeJump();
   wireSort();
 
   if (isDemo()) {
@@ -1651,16 +2346,17 @@ async function boot() {
       state.doc = { v: 2, updated_at: '2026-09-16T00:00:00Z', active_year: '2026',
         years: { '2026': { election: 1000, deadline: { incur_by: '2026-12-31', claims_run_out: null }, claims: [] } },
         capture: { private_jwk: null, public_jwk: null }, inbox: { pending: [] } };
-      state.year = '2026'; paint(); reveal(); return;
+      state.year = '2026'; state.deps = makeDemoDeps(); paint(); reveal(); return;
     }
     state.doc = loadDemoDoc();
     state.year = state.doc ? activeYear(state.doc) : null;
     try { const y = localStorage.getItem('fsa:year'); if (y && state.doc && state.doc.years[y]) state.year = y; } catch (_) { /* ok */ }
+    state.deps = makeDemoDeps();
     const withInbox = demoState !== 'populated';
     // Unseal the inbox BEFORE the first paint so the page renders in one frame (no layout shift).
     if (state.doc && withInbox) await loadDemoInbox(state.doc);
     paint();
-    if (state.doc && withInbox) renderInbox(state, makeDemoDeps());
+    if (state.doc && withInbox) renderInbox(state, state.deps);
     reveal();
     return;
   }
@@ -1681,11 +2377,15 @@ async function boot() {
     setSyncPill('offline');
   }
   state.year = state.doc ? activeYear(state.doc) : null;
+  if (state.doc) {
+    const client = makeClient({});
+    state.deps = makeLiveDeps(syncId, passphrase, client);
+  }
   paint();
   reveal();
   if (state.doc) {
     const client = makeClient({});
-    const deps = makeLiveDeps(syncId, passphrase, client);
+    const deps = state.deps || makeLiveDeps(syncId, passphrase, client);
     try { await loadLiveInbox(state.doc, syncId, client); renderInbox(state, deps); } catch (_) { /* offline */ }
     initAgents(state, { syncId, refresh: deps.refresh });
   }
@@ -1700,15 +2400,46 @@ function paint() {
 }
 
 function render() {
-  renderYearSelect();
-  document.getElementById('asof').textContent = state.doc ? `as of ${today()}` : '';
-  renderGauge(state.doc, state.year, today());
-  renderReadout(state.doc, state.year);
-  renderNextUp(state.doc, state.year);
+  const t = today();
+  renderYearControl(state.doc, state.year, onYearChange);
+  document.getElementById('asof').textContent = state.doc ? `as of ${t}` : '';
+  renderGauge(state.doc, state.year, t);
+  renderDeadlineStrip(state.doc, state.year, t, confirmRunOut);
+
+  // January / empty state: the setup checklist takes the centre; Blocked yields to it.
+  const st = state.doc ? yearState(state.doc, state.year, t) : 'active';
+  const prevYear = state.doc ? prevYearOf(state.doc, state.year) : null;
+  const setupShown = renderSetup(state.doc, state.year, prevYear, st === 'setup');
+  renderBlocked(state.doc, state.year, t, state.deps);
+  if (setupShown) { const b = document.getElementById('blocked'); if (b) b.hidden = true; } // setup takes the centre in January
+
+  renderNextClaim(state.doc, state.year, t);
+  renderQuestions(state.doc, state.year, t);
+  renderDisclosure();
   renderTable(state, state.doc ? yearClaims(state.doc, state.year) : []);
 }
 
-function setFilter(key) { state.filter = key; renderChips(state, setFilter); renderTable(state, state.doc ? yearClaims(state.doc, state.year) : []); }
+function renderDisclosure() {
+  const sum = document.getElementById('disclosure-summary');
+  if (!sum) return;
+  if (!state.doc) { sum.textContent = 'All charges'; return; }
+  const s = allChargesSummary(state.doc, state.year, state.foldThreshold);
+  sum.textContent = `All charges · ${s.count} · ${money(s.total)}`;
+}
+
+function prevYearOf(doc, year) {
+  const years = Object.keys(doc.years).sort();
+  const i = years.indexOf(String(year));
+  return i > 0 ? years[i - 1] : null;
+}
+
+function onYearChange(y) {
+  state.year = y; state.expandSmall = false;
+  try { localStorage.setItem('fsa:year', y); } catch (_) {}
+  render();
+}
+
+function setFilter(key) { state.filter = key; state.expandSmall = false; renderChips(state, setFilter); renderTable(state, state.doc ? yearClaims(state.doc, state.year) : []); }
 
 function refreshAll(deps) { render(); renderInbox(state, deps); }
 
@@ -1736,17 +2467,6 @@ function makeLiveDeps(syncId, passphrase, client) {
     refresh: () => refreshAll(deps),
   };
   return deps;
-}
-
-function renderYearSelect() {
-  const sel = document.getElementById('year');
-  sel.innerHTML = '';
-  const years = state.doc ? Object.keys(state.doc.years).sort().reverse() : [];
-  for (const y of years) {
-    const o = document.createElement('option'); o.value = y; o.textContent = y; if (y === state.year) o.selected = true;
-    sel.appendChild(o);
-  }
-  sel.onchange = () => { state.year = sel.value; try { localStorage.setItem('fsa:year', sel.value); } catch (_) {} render(); };
 }
 
 function wireSort() {
