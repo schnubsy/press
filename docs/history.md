@@ -4,6 +4,18 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-09-19 — align-retirement follow-ups (keyring pruned; public standalone retired)
+
+Post-close housekeeping. **Keyring residue pruned:** the passkey-only `data_key`/`v` that
+`protectTool()` had sealed into the vault's `retirement.html` entry was removed via a **click-driven**
+`updateKeyring` re-seal — a bare console call hangs because WebAuthn `get()` needs user activation —
+leaving every app entry shape-identical: `fsa`/`giving`/`retirement` → `{ pass, sync_id }`,
+`card-scout` → `{ sync_id }` (verified live after a reload). **Public standalone retired:**
+`schnubsy.github.io/retirement-projection` was unpublished (Pages source → None, verified 404); the
+repo is intact + reversible, and `retirement/tools/release.js` now marks that deployment RETIRED so a
+future arc won't resurrect it — `press/retirement.html` is retirement's only live target. Press change
+this follow-up: `docs/lessons.md` + control files only.
+
 ## 2026-09-19 — arc/align-retirement CLOSED (revert passkey-only; republish retirement gated)
 
 Reverted the passkey-only/`data_key` wing experiment and republished retirement as a normal gated

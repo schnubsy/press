@@ -32,7 +32,10 @@ create shim is KEPT (a real, design-independent gap fix). **`retirement.html` re
 gated build — fsa's `PressGate` page lock over retirement's existing cloud sync, built + gated by
 `retirement/tools/release.js`. Prior arc/private-wing-spare-keys-collapse (drawer collapse + Card
 Scout) stays closed; passkey enrol + `press_deals` gate intact. Gauntlet: 31/31 unit, `inline:check`
-clean, 25/25 smoke. No open arc items.
+clean, 25/25 smoke. **Follow-ups (2026-09-19):** retirement's keyring residue pruned → all app entries
+are now shape-identical (`fsa`/`giving`/`retirement` → `{ pass, sync_id }`, `card-scout` → `{ sync_id }`);
+the public standalone `retirement-projection` Pages site was retired (unpublished, 404), so
+`press/retirement.html` is retirement's ONLY deployment. No open arc items.
 
 ## Project rules
 

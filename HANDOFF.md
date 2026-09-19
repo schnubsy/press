@@ -34,8 +34,10 @@ enrolled path gates on direct nav; wing loads, retirement listed as a cloud tool
 - **`inline:check` does NOT guard sibling repos' vendored gate copies** (only `vault.js` within press).
   Each app owns that check (retirement now does, via `tools/publish-checks.js`). fsa's vendored
   `press-gate.js` has drifted from `src/gate.js` — worth re-vendoring in an fsa arc.
-- Public standalone `schnubsy/retirement-projection` was intentionally left stale this arc ("push press
-  only"); its build lags press by the (inert-there) gate. Republish from `release.js` when convenient.
+- Public standalone `schnubsy/retirement-projection` is **RETIRED** (2026-09-19): unpublished, Pages
+  source → None, verified 404. Repo intact + reversible; `retirement/tools/release.js` marks the
+  deployment RETIRED. `press/retirement.html` is retirement's only live target — do not resurrect the
+  standalone.
 
 ## Exact next steps
 No open arc items. Publishing another tool page: build+gate it in its own repo, `cp` its `dist` here,
