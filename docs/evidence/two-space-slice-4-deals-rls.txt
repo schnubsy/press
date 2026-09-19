@@ -1,0 +1,36 @@
+SLICE 4 — press_deals gating proof (ADDITIVE phase; secret redacted throughout)
+Date: 2026-09-19T02:14:47Z
+sync_id (redacted): 1722…8e13  (128-bit, DB-generated, never committed; full value in operator scratchpad + handed to Mark)
+anon publishable key: sb_publishable__iv3bI7xDAs…FS4uX
+
+APPLIED (migration history): 20260918_press_deals_gate_additive
+  - added column sync_id text, DEFAULT = the DB-generated value, backfilled all 15 rows (0 nulls, 1 distinct)
+  - added header-gated policies press_deals_sel / _ins / _upd (x-plan-id = sync_id), mirroring press_fsa
+  - the open policies press_deals_anon_all / _auth_all are still present ON PURPOSE (see CLEANUP)
+
+POSITIVE — anon GET WITH the x-plan-id header returns the card-scout rows (gate admits the owner):
+  rows via header: 15
+  sample (item_id, brand): [{"item_id":"d-ff9f78e8","brand":"Uber"}, 
+ {"item_id":"d-972435fc-57baf7","brand":"DoorDash"}, 
+ {"item_id":"d-51237707","brand":"DoorDash"}]
+
+Amendment B (agent auto-stamp) — a service-role insert with NO sync_id supplied was auto-stamped
+  by the column DEFAULT (stamped_by_default = true). This IS the deployed agent's write path
+  (service_role, no explicit sync_id), so the next live cron tick lands a correctly-stamped row.
+  => safe to SET NOT NULL at cleanup.
+
+PRE-CLEANUP state (deliberate): anon GET with NO header still returns rows (15) because the
+  open policy press_deals_anon_all is still active. This keeps the LIVE production card-scout page
+  (which does not yet send x-plan-id) rendering until the arc close republishes it.
+
+CLEANUP (deferred to arc close — Amendment A step 6, sequenced AFTER card-scout.html republish):
+  migration 20260918_press_deals_gate_cleanup:
+    drop policy press_deals_anon_all;  drop policy press_deals_auth_all;
+    revoke delete on public.press_deals from anon, authenticated;
+    alter table public.press_deals alter column sync_id set not null;
+  THEN the negative probes are captured here (append):
+    - no header  => 0 rows
+    - wrong header (0000000000000000000000000000dead) => 0 rows
+    - correct header => own rows only
+    - anon DELETE => rejected
+  and get_advisors(security) is re-checked clean.
