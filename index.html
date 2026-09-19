@@ -289,12 +289,15 @@ body.tw-sorting .tw-card{transition:none}
 .tw-tool-status{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
 .tw-tool-status.on{color:var(--tw-violet)}
 .tw-tool-status.off{color:var(--tw-faint)}
-.tw-tool-body{margin-top:12px;display:flex;flex-direction:column;gap:8px}
-.tw-cinput{width:100%;background:rgba(16,12,30,.5);border:1px solid var(--tw-border-card);border-radius:10px;padding:10px 12px;color:var(--tw-ink,#efeaf6);font-size:13px;font-family:var(--tw-font-meta,monospace)}
+.tw-tool-slot:empty{display:none}
+.tw-tool-form{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.tw-tool-foot{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.tw-reconnect{-webkit-appearance:none;appearance:none;display:inline-flex;align-items:center;min-height:44px} /* real <button>; 44px tap target */
+.tw-cinput{width:100%;min-height:44px;background:rgba(16,12,30,.5);border:1px solid var(--tw-border-card);border-radius:10px;padding:10px 12px;color:var(--tw-ink,#efeaf6);font-size:13px;font-family:var(--tw-font-meta,monospace)}
 .tw-cinput:focus{outline:2px solid var(--tw-violet);outline-offset:1px}
 .tw-tool-actions{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap}
-.tw-verify{font-size:11px;padding:9px 16px}
-.tw-dl{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);padding:8px 12px;border-radius:var(--tw-radius-pill);cursor:pointer}
+.tw-verify{font-size:11px;min-height:44px;padding:9px 16px}
+.tw-dl{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);min-height:44px;display:inline-flex;align-items:center;padding:8px 12px;border-radius:var(--tw-radius-pill);cursor:pointer}
 .tw-dl:hover{border-color:var(--tw-violet);background:rgba(142,123,232,.12)}
 .tw-tool-msg{font-size:12px;min-height:1em;color:var(--tw-muted)}
 .tw-tool-msg.err{color:var(--tw-rose)}
@@ -533,6 +536,41 @@ body.tw-sorting .tw-card{transition:none}
     return r.ok;
   }
 
+  // --- Card Scout sync-id verification (press_deals, header-gated on x-plan-id) -----
+  // Card Scout has a sync id and NO passphrase, so it cannot be verified by decrypting
+  // like fsa/giving/retirement. Instead we PROBE press_deals with the entered sync id as
+  // the x-plan-id header (page=eq.card-scout, minimal select, limit 1).
+  //
+  // THE TRAP (this morning's silent failure): press_deals RLS is `x-plan-id = sync_id`, so
+  // a WRONG key does not error — it returns HTTP 200 with an EMPTY array. Reading that as
+  // success is exactly what let Card Scout's feed go quietly empty. Therefore ZERO rows on a
+  // 200 MUST be treated as a WRONG key, never as verified. Only >=1 row is "verified".
+  //   'verified'    — 200 with at least one row (the key opens Card Scout's deals)
+  //   'wrong'       — 200 with zero rows (RLS filtered everything: the key is wrong)
+  //   'unreachable' — network error, non-200, or an unparseable body
+  var DEALS_EP = SUPA_URL + '/rest/v1/press_deals';
+  function dealsVerdict(ok, rows) {
+    if (!ok) return 'unreachable';
+    if (Array.isArray(rows) && rows.length > 0) return 'verified';
+    return 'wrong'; // 200 + zero rows (or a non-array body) => the key does NOT open the deals
+  }
+  // fetch wrapper around dealsVerdict. `opts.fetch` is injectable for the unit tests; the
+  // browser uses the global fetch. NEVER logs the sync id.
+  async function verifyCardScout(syncId, opts) {
+    opts = opts || {};
+    var f = opts.fetch || (typeof fetch !== 'undefined' ? fetch : null);
+    if (!f || !syncId) return 'unreachable';
+    var url = DEALS_EP + '?page=eq.card-scout&select=item_id&limit=1';
+    var r;
+    try {
+      r = await f(url, { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'x-plan-id': syncId } });
+    } catch (e) { return 'unreachable'; }
+    if (!r || !r.ok) return dealsVerdict(false, null);
+    var rows;
+    try { rows = await r.json(); } catch (e) { return 'unreachable'; }
+    return dealsVerdict(true, rows);
+  }
+
   // --- WebAuthn (browser only; exercised via Playwright virtual authenticator) --
   function prfExt() { return { prf: { eval: { first: PRF_SALT } } }; }
   // Log the real shape of an unreadable PRF value ONCE so a third failure is self-
@@ -710,7 +748,9 @@ body.tw-sorting .tw-card{transition:none}
     saveSession: saveSession, loadSession: loadSession, lock: lock, everEnrolled: everEnrolled,
     // webauthn + rest
     enrol: enrol, unlock: unlock, addPasskey: addPasskey, revoke: revoke, fetchRow: fetchRow,
-    updateKeyring: updateKeyring
+    updateKeyring: updateKeyring,
+    // card-scout deals-probe verification (exposed for the connect flow + unit tests)
+    DEALS_EP: DEALS_EP, dealsVerdict: dealsVerdict, verifyCardScout: verifyCardScout
   };
 })(globalThis);
 </script>
@@ -1131,19 +1171,31 @@ async function loadDevices(root, man){
   });
 }
 /* ── Connect your tools ─────────────────────────────────────────────────────
-   Populate the sealed keyring with each personal app's existing {sync_id, pass}.
-   HIDE, DON'T RE-KEY: we VERIFY the creds by fetching+decrypting the app's real
-   row, then seal them into the keyring under the SAME passkey — nothing in the
-   app tables is rewritten. The sync id is a SECRET capability, so it is NOT baked
-   into this public page; it is pasted (Mark keeps it in 1Password).
-   The app envelope (AES-256-GCM + PBKDF2-SHA-256, base64 fields) is identical
-   across fsa/giving/retirement — one decrypt covers all three. */
+   Populate the sealed keyring with each personal app's sync key.
+   HIDE, DON'T RE-KEY: we VERIFY the creds against the app's REAL data, then seal
+   them into the keyring under the SAME passkey — nothing in the app tables is
+   rewritten. Sync ids / passphrases are SECRET capabilities, never baked into this
+   public page; they are pasted (Mark keeps them in 1Password).
+
+   Two verification shapes:
+     kind:'app'   — fsa/giving/retirement: {sync_id, pass}. Fetch the app row and
+                    DECRYPT it (AES-256-GCM + PBKDF2, identical envelope across all
+                    three) — a good decrypt proves the passphrase.
+     kind:'deals' — card-scout: sync_id ONLY, no passphrase. Probe press_deals with
+                    the entered value as the x-plan-id header; >=1 row proves the key.
+                    A 200 with ZERO rows is a WRONG key, never success (see vault.js).
+
+   COLLAPSE: a CONNECTED tool renders as a quiet line (name + Connected dot + a
+   Reconnect button). Its fields are NOT in the DOM until Reconnect is activated;
+   collapsing removes them again, clearing anything typed. A NOT-connected tool shows
+   its full form, expanded. */
 const TOOL_CFG = {
-  'fsa.html':        { label:'FSA Claims',          table:'press_fsa',        idcol:'sync_id', select:'doc,version',                 env:(r)=>r.doc },
-  'giving.html':     { label:'Giving Tracker',      table:'press_giving',     idcol:'id',      select:'ciphertext,iv,salt,kdf_iters', env:(r)=>r },
-  'retirement.html': { label:'Retirement Projection',table:'press_retirement', idcol:'id',      select:'ciphertext,iv,salt,kdf_iters', env:(r)=>r },
+  'fsa.html':        { label:'FSA Claims',          kind:'app', table:'press_fsa',        idcol:'sync_id', select:'doc,version',                 env:(r)=>r.doc },
+  'giving.html':     { label:'Giving Tracker',      kind:'app', table:'press_giving',     idcol:'id',      select:'ciphertext,iv,salt,kdf_iters', env:(r)=>r },
+  'retirement.html': { label:'Retirement Projection',kind:'app', table:'press_retirement', idcol:'id',      select:'ciphertext,iv,salt,kdf_iters', env:(r)=>r },
+  'card-scout.html': { label:'Card Scout',          kind:'deals' }, // sync-id-only; verified against press_deals
 };
-const CONNECT_TOOLS = ['fsa.html','giving.html','retirement.html']; // card-scout is sync-id-only; managed elsewhere
+const CONNECT_TOOLS = ['fsa.html','giving.html','retirement.html','card-scout.html'];
 function b64ToU8(s){ const b=atob(String(s)), u=new Uint8Array(b.length); for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i); return u; }
 async function appDecrypt(env, passphrase){
   if(!env || env.ciphertext==null || env.iv==null || env.salt==null) return null;
@@ -1162,63 +1214,125 @@ async function fetchAppRow(cfg, syncId){
   const rows=await r.json();
   return { ok:true, row:(Array.isArray(rows)&&rows[0])||null };
 }
-function toolStatus(f){ const k=vaultState().sess; const v=k&&k.keyring&&k.keyring.apps&&k.keyring.apps[f]; return (v&&v.sync_id&&v.pass)?'connected':'not connected'; }
+// CONNECTED = the keyring holds this tool's full capability. For an app that is a
+// {sync_id, pass}; card-scout is sync-id-only, so a sync_id alone is connected.
+function toolConnected(f){ const k=vaultState().sess; const v=k&&k.keyring&&k.keyring.apps&&k.keyring.apps[f]; if(!v||!v.sync_id) return false; return TOOL_CFG[f].kind==='deals' ? true : !!v.pass; }
 function wingDownload(name, text){
   try{ const blob=new Blob([text],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000); }catch(e){}
 }
+// The fields region for one tool — built fresh each time a row expands, so collapsing
+// (which empties the slot) removes any typed value from the DOM. A labelled region with
+// per-field aria labels; card-scout gets a sync-id field ONLY (no passphrase, no download).
+function toolFieldsHTML(f){
+  const cfg=TOOL_CFG[f], deals=cfg.kind==='deals';
+  const sync=`<input class="tw-cinput tw-sync" type="text" inputmode="latin" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${deals?'Card Scout sync id':'sync id (32 hex)'}" aria-label="${esc(cfg.label)} sync id">`;
+  const pass=deals?'':`<input class="tw-cinput tw-pass" type="password" autocomplete="off" placeholder="passphrase" aria-label="${esc(cfg.label)} passphrase">`;
+  const dl  =deals?'':`<span class="tw-dl" hidden role="button" tabindex="0">Download my data</span>`;
+  return `<div class="tw-tool-form" role="region" aria-label="Connect ${esc(cfg.label)}">`+
+      sync+pass+
+      `<div class="tw-tool-actions"><span class="tw-btn tw-verify" role="button" tabindex="0">Verify &amp; connect</span>${dl}</div>`+
+      `<div class="tw-tool-msg" aria-live="polite"></div>`+
+    `</div>`;
+}
 function renderConnect(){
   return `<div class="tw-connect"><h4>Connect your tools</h4>`+
-    `<p class="tw-cmeta">Each tool works once its sync key is sealed behind your passkey. Paste the passphrase (the sync id you keep in 1Password); it is verified against your real data before anything is stored — nothing is re-encrypted.</p>`+
+    `<p class="tw-cmeta">Each tool works once its sync key is sealed behind your passkey — verified against your real data before anything is stored, nothing re-encrypted. Connected tools sit quiet; hit Reconnect to re-enter a key.</p>`+
     CONNECT_TOOLS.map(f=>{
-      const st=toolStatus(f), on=st==='connected';
-      return `<div class="tw-tool" data-f="${f}">`+
-        `<div class="tw-tool-head"><span class="tw-tool-name">${esc(TOOL_CFG[f].label)}</span>`+
-        `<span class="tw-tool-status ${on?'on':'off'}">${on?'● connected':'○ not connected'}</span></div>`+
-        `<div class="tw-tool-body" hidden>`+
-          `<input class="tw-cinput tw-sync" type="text" inputmode="latin" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="sync id (32 hex)">`+
-          `<input class="tw-cinput tw-pass" type="password" autocomplete="off" placeholder="passphrase">`+
-          `<div class="tw-tool-actions"><span class="tw-btn tw-verify" role="button" tabindex="0">Verify &amp; connect</span>`+
-          `<span class="tw-dl" hidden role="button" tabindex="0">Download my data</span></div>`+
-          `<div class="tw-tool-msg" aria-live="polite"></div>`+
-        `</div>`+
-        `<div class="tw-tool-actions"><span class="tw-mini tw-conn-toggle">${on?'Reconnect':'Connect'}</span></div>`+
-      `</div>`;
+      const cfg=TOOL_CFG[f], on=toolConnected(f);
+      const head=`<div class="tw-tool-head"><span class="tw-tool-name">${esc(cfg.label)}</span>`+
+        `<span class="tw-tool-status ${on?'on':'off'}">${on?'● Connected':'○ not connected'}</span></div>`;
+      // CONNECTED → empty slot + a Reconnect button (fields absent from the DOM until it is pressed).
+      // NOT connected → the full form, expanded, and no foot button (nothing to reconnect yet).
+      const slot=on?'':toolFieldsHTML(f);
+      const foot=on?`<div class="tw-tool-foot"><button type="button" class="tw-mini tw-reconnect" aria-expanded="false">Reconnect</button></div>`:'';
+      return `<div class="tw-tool" data-f="${f}" data-kind="${cfg.kind}">${head}<div class="tw-tool-slot">${slot}</div>${foot}</div>`;
     }).join('')+
     `</div>`;
 }
 function wireConnect(root, man){
   root.querySelectorAll('.tw-tool').forEach(el=>{
     const f=el.getAttribute('data-f'), cfg=TOOL_CFG[f];
-    const body=el.querySelector('.tw-tool-body'), toggle=el.querySelector('.tw-conn-toggle');
-    const idIn=el.querySelector('.tw-sync'), passIn=el.querySelector('.tw-pass');
-    const verify=el.querySelector('.tw-verify'), dl=el.querySelector('.tw-dl'), msg=el.querySelector('.tw-tool-msg');
-    let lastDoc=null;
-    toggle.addEventListener('click', ()=>{ body.hidden=!body.hidden; });
-    const run=async ()=>{
-      const syncId=(idIn.value||'').trim(), pass=passIn.value||'';
-      msg.className='tw-tool-msg';
-      if(!/^[0-9a-f]{32}$/i.test(syncId)){ msg.classList.add('err'); msg.textContent='Enter the 32-character sync id.'; return; }
-      if(!pass){ msg.classList.add('err'); msg.textContent='Enter the passphrase.'; return; }
-      msg.textContent='Verifying against your data…';
-      let res; try{ res=await fetchAppRow(cfg, syncId); }catch(e){ res={ok:false}; }
-      if(!res.ok){ msg.classList.add('err'); msg.textContent='Could not reach the data service. Try again.'; return; }
-      if(!res.row){ msg.classList.add('err'); msg.textContent='No data found for that sync id — check the id.'; return; } // row not found (distinct from bad passphrase)
-      const doc=await appDecrypt(cfg.env(res.row), pass);
-      if(!doc){ msg.classList.add('err'); msg.textContent='That passphrase did not open the data. Check it and try again.'; return; } // decrypt failed
-      // VERIFIED — seal into the keyring (never store unverified; never overwrite a working entry with an unverified one)
-      const sess=PressVault.loadSession(); if(!sess){ msg.classList.add('err'); msg.textContent='Session expired — unlock again.'; return; }
-      const keyring=sess.keyring; keyring.apps=keyring.apps||{}; keyring.apps[f]=Object.assign({}, keyring.apps[f], { sync_id:syncId, pass:pass });
-      try{ await PressVault.updateKeyring(keyring); }
-      catch(e){ console.error('[private-wing] updateKeyring failed:', e); msg.classList.add('err'); msg.textContent=friendlyErr(e); return; }
-      lastDoc=doc;
-      msg.classList.remove('err'); msg.classList.add('ok'); msg.textContent='Connected ✓ — sealed behind your passkey. Download a backup now:';
-      dl.hidden=false;
-      const status=el.querySelector('.tw-tool-status'); status.className='tw-tool-status on'; status.textContent='● connected';
-      toggle.textContent='Reconnect';
-    };
-    verify.addEventListener('click', run);
-    passIn.addEventListener('keydown', e=>{ if(e.key==='Enter') run(); });
-    dl.addEventListener('click', ()=>{ if(lastDoc) wingDownload(f.replace(/\.html$/,'')+'-data-'+new Date().toISOString().slice(0,10)+'.json', JSON.stringify(lastDoc,null,2)); });
+    const slot=el.querySelector('.tw-tool-slot');
+    const statusEl=el.querySelector('.tw-tool-status');
+    let footBtn=el.querySelector('.tw-reconnect'); // present only when the row rendered connected
+
+    // Ensure a Reconnect/Cancel toggle exists (created lazily after a fresh connect so the
+    // just-connected row can collapse to the quiet line like any other connected row).
+    function ensureFoot(expanded){
+      let foot=el.querySelector('.tw-tool-foot');
+      if(!foot){ foot=document.createElement('div'); foot.className='tw-tool-foot'; el.appendChild(foot); }
+      if(!footBtn){
+        footBtn=document.createElement('button'); footBtn.type='button'; footBtn.className='tw-mini tw-reconnect';
+        foot.appendChild(footBtn);
+        footBtn.addEventListener('click', ()=>{ (footBtn.getAttribute('aria-expanded')==='true') ? collapse() : expand(); });
+      }
+      footBtn.setAttribute('aria-expanded', expanded?'true':'false');
+      footBtn.textContent=expanded?'Cancel':'Reconnect';
+    }
+    function expand(){
+      slot.innerHTML=toolFieldsHTML(f);
+      wireForm();
+      if(footBtn){ footBtn.setAttribute('aria-expanded','true'); footBtn.textContent='Cancel'; }
+      const first=slot.querySelector('.tw-sync'); if(first) first.focus();
+    }
+    function collapse(){
+      slot.innerHTML=''; // drops the fields AND anything typed into them
+      if(footBtn){ footBtn.setAttribute('aria-expanded','false'); footBtn.textContent='Reconnect'; }
+    }
+    function onConnected(){ statusEl.className='tw-tool-status on'; statusEl.textContent='● Connected'; ensureFoot(true); }
+
+    function wireForm(){
+      const form=slot.querySelector('.tw-tool-form'); if(!form) return;
+      const idIn=form.querySelector('.tw-sync'), passIn=form.querySelector('.tw-pass');
+      const verify=form.querySelector('.tw-verify'), dl=form.querySelector('.tw-dl'), msg=form.querySelector('.tw-tool-msg');
+      let lastDoc=null;
+      const run=async ()=>{
+        const syncId=(idIn.value||'').trim(); msg.className='tw-tool-msg';
+        if(cfg.kind==='deals'){
+          if(!syncId){ msg.classList.add('err'); msg.textContent="Enter Card Scout's sync id."; return; }
+          msg.textContent='Verifying against your deals…';
+          let verdict; try{ verdict=await PressVault.verifyCardScout(syncId); }catch(e){ verdict='unreachable'; }
+          if(verdict==='unreachable'){ msg.classList.add('err'); msg.textContent='Could not reach the data service. Try again.'; return; }
+          if(verdict!=='verified'){ msg.classList.add('err'); msg.textContent="That sync id doesn't open Card Scout's deals."; return; } // 200+0 rows = wrong, never success
+          const sess=PressVault.loadSession(); if(!sess){ msg.classList.add('err'); msg.textContent='Session expired — unlock again.'; return; }
+          const keyring=sess.keyring; keyring.apps=keyring.apps||{};
+          const entry=Object.assign({}, keyring.apps[f], { sync_id:syncId });
+          if('pass' in entry) delete entry.pass; // card-scout has NO passphrase — never write a pass key
+          keyring.apps[f]=entry;
+          try{ await PressVault.updateKeyring(keyring); }
+          catch(e){ console.error('[private-wing] updateKeyring failed:', e); msg.classList.add('err'); msg.textContent=friendlyErr(e); return; }
+          msg.classList.remove('err'); msg.classList.add('ok'); msg.textContent='Connected ✓ — sealed behind your passkey.';
+          onConnected(); return;
+        }
+        // kind:'app' — {sync_id, pass}, verified by decrypting the real row
+        const pass=passIn?(passIn.value||''):'';
+        if(!/^[0-9a-f]{32}$/i.test(syncId)){ msg.classList.add('err'); msg.textContent='Enter the 32-character sync id.'; return; }
+        if(!pass){ msg.classList.add('err'); msg.textContent='Enter the passphrase.'; return; }
+        msg.textContent='Verifying against your data…';
+        let res; try{ res=await fetchAppRow(cfg, syncId); }catch(e){ res={ok:false}; }
+        if(!res.ok){ msg.classList.add('err'); msg.textContent='Could not reach the data service. Try again.'; return; }
+        if(!res.row){ msg.classList.add('err'); msg.textContent='No data found for that sync id — check the id.'; return; } // row not found (distinct from bad passphrase)
+        const doc=await appDecrypt(cfg.env(res.row), pass);
+        if(!doc){ msg.classList.add('err'); msg.textContent='That passphrase did not open the data. Check it and try again.'; return; } // decrypt failed
+        // VERIFIED — seal into the keyring (never store unverified; never overwrite a working entry with an unverified one)
+        const sess=PressVault.loadSession(); if(!sess){ msg.classList.add('err'); msg.textContent='Session expired — unlock again.'; return; }
+        const keyring=sess.keyring; keyring.apps=keyring.apps||{}; keyring.apps[f]=Object.assign({}, keyring.apps[f], { sync_id:syncId, pass:pass });
+        try{ await PressVault.updateKeyring(keyring); }
+        catch(e){ console.error('[private-wing] updateKeyring failed:', e); msg.classList.add('err'); msg.textContent=friendlyErr(e); return; }
+        lastDoc=doc;
+        msg.classList.remove('err'); msg.classList.add('ok'); msg.textContent='Connected ✓ — sealed behind your passkey. Download a backup now:';
+        if(dl) dl.hidden=false;
+        onConnected();
+      };
+      verify.addEventListener('click', run);
+      verify.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); run(); } });
+      const submitOnEnter=(inp)=>{ if(inp) inp.addEventListener('keydown', e=>{ if(e.key==='Enter') run(); }); };
+      submitOnEnter(passIn); if(!passIn) submitOnEnter(idIn); // card-scout: Enter in the lone sync field submits
+      if(dl) dl.addEventListener('click', ()=>{ if(lastDoc) wingDownload(f.replace(/\.html$/,'')+'-data-'+new Date().toISOString().slice(0,10)+'.json', JSON.stringify(lastDoc,null,2)); });
+    }
+
+    if(footBtn){ footBtn.addEventListener('click', ()=>{ (footBtn.getAttribute('aria-expanded')==='true') ? collapse() : expand(); }); }
+    else { wireForm(); } // not-connected row: the form is already in the slot
   });
 }
 

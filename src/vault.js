@@ -217,6 +217,41 @@
     return r.ok;
   }
 
+  // --- Card Scout sync-id verification (press_deals, header-gated on x-plan-id) -----
+  // Card Scout has a sync id and NO passphrase, so it cannot be verified by decrypting
+  // like fsa/giving/retirement. Instead we PROBE press_deals with the entered sync id as
+  // the x-plan-id header (page=eq.card-scout, minimal select, limit 1).
+  //
+  // THE TRAP (this morning's silent failure): press_deals RLS is `x-plan-id = sync_id`, so
+  // a WRONG key does not error — it returns HTTP 200 with an EMPTY array. Reading that as
+  // success is exactly what let Card Scout's feed go quietly empty. Therefore ZERO rows on a
+  // 200 MUST be treated as a WRONG key, never as verified. Only >=1 row is "verified".
+  //   'verified'    — 200 with at least one row (the key opens Card Scout's deals)
+  //   'wrong'       — 200 with zero rows (RLS filtered everything: the key is wrong)
+  //   'unreachable' — network error, non-200, or an unparseable body
+  var DEALS_EP = SUPA_URL + '/rest/v1/press_deals';
+  function dealsVerdict(ok, rows) {
+    if (!ok) return 'unreachable';
+    if (Array.isArray(rows) && rows.length > 0) return 'verified';
+    return 'wrong'; // 200 + zero rows (or a non-array body) => the key does NOT open the deals
+  }
+  // fetch wrapper around dealsVerdict. `opts.fetch` is injectable for the unit tests; the
+  // browser uses the global fetch. NEVER logs the sync id.
+  async function verifyCardScout(syncId, opts) {
+    opts = opts || {};
+    var f = opts.fetch || (typeof fetch !== 'undefined' ? fetch : null);
+    if (!f || !syncId) return 'unreachable';
+    var url = DEALS_EP + '?page=eq.card-scout&select=item_id&limit=1';
+    var r;
+    try {
+      r = await f(url, { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'x-plan-id': syncId } });
+    } catch (e) { return 'unreachable'; }
+    if (!r || !r.ok) return dealsVerdict(false, null);
+    var rows;
+    try { rows = await r.json(); } catch (e) { return 'unreachable'; }
+    return dealsVerdict(true, rows);
+  }
+
   // --- WebAuthn (browser only; exercised via Playwright virtual authenticator) --
   function prfExt() { return { prf: { eval: { first: PRF_SALT } } }; }
   // Log the real shape of an unreadable PRF value ONCE so a third failure is self-
@@ -394,6 +429,8 @@
     saveSession: saveSession, loadSession: loadSession, lock: lock, everEnrolled: everEnrolled,
     // webauthn + rest
     enrol: enrol, unlock: unlock, addPasskey: addPasskey, revoke: revoke, fetchRow: fetchRow,
-    updateKeyring: updateKeyring
+    updateKeyring: updateKeyring,
+    // card-scout deals-probe verification (exposed for the connect flow + unit tests)
+    DEALS_EP: DEALS_EP, dealsVerdict: dealsVerdict, verifyCardScout: verifyCardScout
   };
 })(globalThis);
