@@ -28,7 +28,11 @@
   var SUPA_KEY = 'sb_publishable__iv3bI7xDAsOdHUlXzbVZQ_2yyFS4uX';
   var VAULT_EP = SUPA_URL + '/rest/v1/press_vault';
 
-  var RP_ID = 'schnubsy.github.io';
+  // rp.id is the origin's effective domain. In production that is 'schnubsy.github.io'
+  // (so 1Password binds the passkey to the live site); under a localhost test origin it
+  // is 'localhost'. Deriving it from location.hostname is equivalent to omitting rpId and
+  // keeps the WebAuthn calls valid on both origins. Node (no location) keeps the prod value.
+  var RP_ID = (typeof location !== 'undefined' && location.hostname) ? location.hostname : 'schnubsy.github.io';
   var INFO = 'press-vault-v1';
   // Fixed 32-byte PRF salt constant — the same input is evaluated for every passkey
   // so the PRF output is stable per credential. NOT a secret (it only selects which
@@ -188,6 +192,21 @@
     var ext = cred.getClientExtensionResults ? cred.getClientExtensionResults() : {};
     return ext && ext.prf && ext.prf.results && ext.prf.results.first ? ext.prf.results.first : null;
   }
+  // Some authenticators (and some browsers) return the PRF output only at ASSERTION
+  // time, exposing just { prf: { enabled: true } } at creation. Fall back to one get()
+  // so enrol works regardless of when the PRF value is delivered.
+  async function prfViaGet(rawId) {
+    try {
+      var a = await navigator.credentials.get({
+        publicKey: {
+          rpId: RP_ID, challenge: randomBytes(32),
+          allowCredentials: rawId ? [{ type: 'public-key', id: rawId }] : [],
+          userVerification: 'required', extensions: prfExt()
+        }
+      });
+      return prfResult(a);
+    } catch (e) { return null; }
+  }
 
   async function enrol(opts) {
     opts = opts || {};
@@ -203,6 +222,7 @@
       }
     });
     var prf = prfResult(cred);
+    if (!prf) prf = await prfViaGet(cred.rawId); // PRF may only be delivered at assertion time
     if (!prf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
     var vaultId = await vaultIdFor(cred.rawId);
     var salt = randomBytes(32);
