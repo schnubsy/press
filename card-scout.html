@@ -41,7 +41,10 @@
   .brand h1{font-size:20px;margin:0;letter-spacing:-.02em}
   .brand .logo{width:26px;height:26px;flex:0 0 auto}
   #sync{margin-left:auto;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--chip);color:var(--muted)}
-  #sync.ok{color:var(--hit)} #sync.err{color:var(--danger)} #sync.busy{color:var(--accentB)}
+  #sync.ok{color:var(--hit)} #sync.err{color:var(--danger)} #sync.busy{color:var(--accentB)} #sync.locked{color:var(--muted)}
+  /* back chip to the marquee's Private Wing */
+  .tw-back{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 10px 6px 4px;margin-bottom:2px}
+  .tw-back:hover{color:var(--ink)}
   nav{display:flex;gap:6px;margin-top:10px}
   nav button{
     flex:1;min-height:var(--tap);border:1px solid var(--line);background:var(--card);color:var(--muted);
@@ -51,6 +54,39 @@
   main{max-width:640px;margin:0 auto;padding:14px 16px}
   section[hidden]{display:none}
   h2.group{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:18px 2px 8px}
+  /* quick nav — a horizontally scrollable chip row, one per visible group */
+  .quicknav{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+    padding:4px 2px 8px;margin:0 -2px;scroll-margin-top:120px}
+  .quicknav::-webkit-scrollbar{display:none}
+  .quicknav:empty{display:none}
+  .qchip{flex:0 0 auto;font-size:13px;font-weight:600;text-decoration:none;color:var(--ink);
+    background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:8px 12px;white-space:nowrap;min-height:36px;display:inline-flex;align-items:center}
+  .qchip:hover{border-color:var(--accentB)}
+  /* consistent section heading — full-width rule above, count, and a Top link */
+  .grouphead{display:flex;align-items:baseline;gap:10px;border-top:2px solid var(--line);
+    padding-top:12px;margin:20px 0 10px;scroll-margin-top:120px}
+  .grouphead:first-child{border-top:none;padding-top:0;margin-top:6px}
+  .grouphead h2{font-size:19px;font-weight:700;letter-spacing:-.01em;margin:0;flex:1;min-width:0}
+  .grouphead .gcount{display:inline-block;font-size:13px;font-weight:600;color:var(--muted);background:var(--chip);border-radius:999px;padding:1px 9px;margin-left:6px;vertical-align:middle}
+  .grouphead .toplink{font-size:13px;font-weight:600;color:var(--accentA);text-decoration:none;flex:0 0 auto}
+  /* rules search */
+  .searchbar{display:flex;gap:8px;position:sticky;top:calc(env(safe-area-inset-top) + 96px);z-index:5;
+    background:var(--bg);padding:8px 0 6px}
+  .searchbar input{flex:1;min-height:44px}
+  .searchbar .btn{min-height:44px}
+  /* per-rule controls: the % and min-denomination steppers, stacked on narrow screens */
+  .ctrls{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
+  .ctrl{display:flex;align-items:center;gap:10px}
+  .ctrl-lab{font-size:13px;color:var(--muted);font-weight:600}
+  /* plain-English alerts summary */
+  .summary{background:linear-gradient(135deg,rgba(20,155,107,.10),rgba(176,125,42,.08));border:1px solid var(--line)}
+  .summary p{margin:0;font-size:15px;line-height:1.5}
+  /* locked feed panel */
+  .locked{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .locked .locktitle{font-size:18px;font-weight:700;color:var(--ink)}
+  .locked p{margin:0;max-width:34ch}
+  .field select{flex:0 0 auto}
+  .helper{font-size:13px;color:var(--muted);margin:2px 2px 0}
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;margin-bottom:10px}
   .row{display:flex;align-items:center;gap:10px}
   .row .grow{flex:1;min-width:0}
@@ -89,6 +125,7 @@
 </head>
 <body>
 <header>
+  <a class="tw-back" href="index.html?view=personal">&larr; Private Wing</a>
   <div class="brand">
     <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4FC38A"/><stop offset="1" stop-color="#E0BD8F"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="#0E1220"/><g transform="translate(8 8) scale(2)" fill="none" stroke="url(#lg)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></g></svg>
     <h1>Card Scout</h1>
@@ -123,7 +160,8 @@
   var REST = SUPA + "/rest/v1/";
   var H = { apikey:KEY, Authorization:"Bearer "+KEY, "content-type":"application/json" };
 
-  var state = { sources:[], rules:[], settings:{}, toggles:{}, deals:[] };
+  var state = { sources:[], rules:[], settings:{}, toggles:{}, deals:[], locked:false };
+  var ruleQuery = ""; // live Rules-tab search (not persisted)
   var el = function(id){ return document.getElementById(id); };
   var esc = function(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); };
   function sync(cls,txt){ var s=el("sync"); s.className=cls; s.textContent=txt; }
@@ -153,21 +191,29 @@
   function since30(){ var d=new Date(Date.now()-30*864e5); return d.toISOString(); }
   function refresh(){
     sync("busy","Syncing…");
+    // press_deals is header-gated on x-plan-id = the card-scout sync_id. With no sync_id the REST
+    // call returns 200 + ZERO rows — so the page would silently claim "no deals" while real hits
+    // sit unseen. Instead, do NOT query press_deals at all when locked; render a Locked panel.
+    var sid = planId();
     var q = [
       api("press_tasks?page=eq."+PAGE+"&category=eq.source&select=item_id,title,status,extras&order=position"),
       api("press_tasks?page=eq."+PAGE+"&category=eq.rule&select=item_id,title,status,extras&order=title"),
       api("press_tasks?page=eq."+PAGE+"&category=eq.settings&select=item_id,extras"),
-      api("press_state?page=eq."+PAGE+"&select=item_id,checked"),
-      api("press_deals?page=eq."+PAGE+"&created_at=gte."+since30()+"&verdict=in.(hit,near)&order=created_at.desc&select=item_id,brand,category,face_value,price,pct_off,expiry,url,source,verdict,status,extras,created_at")
+      api("press_state?page=eq."+PAGE+"&select=item_id,checked")
     ];
+    if(sid){
+      q.push(api("press_deals?page=eq."+PAGE+"&created_at=gte."+since30()+"&verdict=in.(hit,near)&order=created_at.desc&select=item_id,brand,category,face_value,price,pct_off,expiry,url,source,verdict,status,extras,created_at"));
+    }
     return Promise.all(q).then(function(rs){
       return Promise.all(rs.map(function(r){ if(!r.ok) throw new Error("http "+r.status); return r.json(); }));
     }).then(function(d){
       state.sources=d[0]; state.rules=d[1];
       state.settings=(d[2][0]&&d[2][0].extras)||{};
       state.toggles={}; d[3].forEach(function(t){ state.toggles[t.item_id]=t.checked===true; });
-      state.deals=d[4];
-      saveLS(); renderAll(); sync("ok","Synced");
+      state.locked = !sid;
+      state.deals = sid ? (d[4]||[]) : [];
+      saveLS(); renderAll();
+      if(sid) sync("ok","Synced"); else sync("locked","Locked");
     }).catch(function(e){
       sync("err", navigator.onLine ? "Sync failed" : "Offline");
     });
@@ -186,105 +232,239 @@
   function flash(ok){ sync(ok?"ok":"err", ok?"Saved":"Save failed"); }
   function withSave(p){ sync("busy","Saving…"); return p.then(function(r){ if(!r.ok) throw 0; saveLS(); flash(true); }).catch(function(){ flash(false); }); }
 
-  // ---------- render ----------
+  // ---------- render helpers ----------
   function pct(d){ var p=(d.pct_off!=null)?d.pct_off:(d.extras&&d.extras.effective_pct); return p==null?null:Math.round(p); }
   function fmtDate(s){ if(!s) return ""; var t=new Date(s); return isNaN(t)?"":t.toLocaleDateString(undefined,{month:"short",day:"numeric"}); }
+  function normBrand(s){ return String(s==null?"":s).toLowerCase().replace(/['’ʼ`]/g,"").replace(/[^a-z0-9]+/g," ").trim(); }
 
-  function renderFeed(){
-    var host=el("feed"); var hits=state.deals.filter(function(d){return d.verdict==="hit";});
-    var nears=state.deals.filter(function(d){return d.verdict==="near";});
-    var html="";
-    html+=block("Hits", hits, true);
-    html+=block("Near misses", nears, false);
-    if(!hits.length && !nears.length) html='<div class="empty">No deals in the last 30 days yet.<br>The agent alerts you the moment one beats your rules.</div>';
-    host.innerHTML=html;
+  // The one heading + quick-nav pair used on ALL four tabs. groups: [{slug,label,count}].
+  // ids are prefixed by tab so the same slug (e.g. "other") can live on two tabs at once.
+  function quickNav(tab, groups){
+    if(!groups.length) return '<div class="quicknav" id="qn-'+tab+'"></div>';
+    var chips=groups.map(function(g){
+      return '<a class="qchip" href="#grp-'+tab+'-'+g.slug+'">'+esc(g.label)+' ('+g.count+')</a>';
+    }).join("");
+    return '<div class="quicknav" id="qn-'+tab+'" role="navigation" aria-label="Jump to a section">'+chips+'</div>';
   }
-  function block(label, list, isHit){
-    if(!list.length) return "";
-    var h='<h2 class="group">'+label+' ('+list.length+')</h2>';
-    list.forEach(function(d){
-      var p=pct(d); var bought=d.status==="bought", skip=d.status==="skip";
-      h+='<div class="card"><div class="row"><span class="badge '+(isHit?"hit":"near")+'">'+(p!=null?p+"% off":(isHit?"HIT":"NEAR"))+'</span>'
-        +'<div class="grow"><div class="title">'+esc(d.brand||"Gift card")+'</div>'
-        +'<div class="sub">'+priceLine(d)+(d.source?' · '+esc(String(d.source).replace(/^src-/,"")):"")+(d.expiry?' · exp '+esc(d.expiry):"")+'</div></div></div>'
-        +'<div class="row" style="margin-top:10px">'
-        +(d.url?'<a class="deal" href="'+esc(d.url)+'" target="_blank" rel="noopener">Open deal &rarr;</a>':'<span class="sub">no link</span>')
-        +'<span class="grow"></span>'
-        +'<button class="btn small'+(bought?" primary":"")+'" data-buy="'+esc(d.item_id)+'" aria-pressed="'+bought+'">Bought</button> '
-        +'<button class="btn small'+(skip?" primary":"")+'" data-skip="'+esc(d.item_id)+'" aria-pressed="'+skip+'">Skip</button>'
-        +'</div></div>';
-    });
-    return h;
+  function groupHead(tab, slug, label, count){
+    return '<div class="grouphead" id="grp-'+tab+'-'+slug+'"><h2>'+esc(label)+'<span class="gcount">'+count+'</span></h2>'
+      +'<a class="toplink" href="#qn-'+tab+'">&uarr; Top</a></div>';
+  }
+
+  // ---------- Feed (grouped by card type) ----------
+  var FEED_GROUPS=[["restaurant","Restaurants"],["retail","Retail"],["other","Other"],["retailer","Warehouse / retailer"]];
+  var KNOWN_GROUP={restaurant:1,retail:1,other:1,retailer:1};
+  // Derive a deal's card-type group: its own category/extras.group when it names a known group,
+  // else the rule found by extras.rule_id, else a brand match against the rules, else "other".
+  function dealGroup(d){
+    if(d.category && KNOWN_GROUP[d.category]) return d.category;
+    var g=d.extras&&d.extras.group; if(g && KNOWN_GROUP[g]) return g;
+    var rid=d.extras&&d.extras.rule_id;
+    if(rid){ var r=find(state.rules,rid); if(r&&r.extras&&KNOWN_GROUP[r.extras.group]) return r.extras.group; }
+    if(d.brand){ var b=normBrand(d.brand);
+      for(var i=0;i<state.rules.length;i++){ var rr=state.rules[i];
+        if(normBrand(rr.title)===b && rr.extras && KNOWN_GROUP[rr.extras.group]) return rr.extras.group; } }
+    return "other";
   }
   function priceLine(d){
     if(d.price!=null&&d.face_value!=null) return "$"+d.price+" for $"+d.face_value;
     if(d.price!=null) return "$"+d.price;
     if(d.extras&&d.extras.unpriced) return "worth a look — price not parsed";
-    return esc((d.category||"gift card"));
+    return "gift card";
   }
-
-  var SRC_GROUPS=[["feed","Deal feeds"],["direct","Direct retailers"],["marketplace","Marketplaces"]];
-  function renderSources(){
-    var host=el("sources"); var html="";
-    SRC_GROUPS.forEach(function(g){
-      var list=state.sources.filter(function(s){return (s.extras&&s.extras.group)===g[0];});
-      if(!list.length) return;
-      html+='<h2 class="group">'+g[1]+'</h2>';
-      list.forEach(function(s){
-        var x=s.extras||{}; var on=s.status==="on";
-        var health=x.blocked?"blocked":(x.health||"");
-        var dot=health==="ok"?"ok":health==="error"?"err":health==="blocked"?"blocked":"";
-        html+='<div class="card"><div class="row">'
-          +'<span class="dot '+dot+'" title="'+esc(health||"unknown")+'"></span>'
-          +'<div class="grow"><div class="title">'+esc(s.title)+'</div>'
-          +'<div class="sub">'+esc(x.lane||"")+' · '+esc(x.cadence||"")
-          +(x.last_checked?' · checked '+fmtDate(x.last_checked):"")+'</div>'
-          +'<div class="sub">'+(x.verified?"":'<span class="badge warn">unverified</span>')+(x.blocked?'<span class="badge warn">blocked</span>':"")+(x.note?esc(x.note):"")+'</div></div>'
-          +'<button class="sw" role="switch" aria-checked="'+on+'" aria-pressed="'+on+'" aria-label="Enable '+esc(s.title)+'" data-src="'+esc(s.item_id)+'"></button>'
-          +'</div></div>';
-      });
-    });
-    host.innerHTML=html||'<div class="empty">No sources.</div>';
+  function dealCard(d){
+    var p=pct(d); var isHit=d.verdict==="hit"; var bought=d.status==="bought", skip=d.status==="skip";
+    return '<div class="card"><div class="row"><span class="badge '+(isHit?"hit":"near")+'">'+(p!=null?p+"% off":(isHit?"HIT":"NEAR"))+'</span>'
+      +'<div class="grow"><div class="title">'+esc(d.brand||"Gift card")+'</div>'
+      +'<div class="sub">'+priceLine(d)+(d.source?' · '+esc(String(d.source).replace(/^src-/,"")):"")+(d.expiry?' · exp '+esc(d.expiry):"")+'</div></div></div>'
+      +'<div class="row" style="margin-top:10px">'
+      +(d.url?'<a class="deal" href="'+esc(d.url)+'" target="_blank" rel="noopener">Open deal &rarr;</a>':'<span class="sub">no link</span>')
+      +'<span class="grow"></span>'
+      +'<button class="btn small'+(bought?" primary":"")+'" data-buy="'+esc(d.item_id)+'" aria-pressed="'+bought+'">Bought</button> '
+      +'<button class="btn small'+(skip?" primary":"")+'" data-skip="'+esc(d.item_id)+'" aria-pressed="'+skip+'">Skip</button>'
+      +'</div></div>';
   }
-
-  var RULE_GROUPS=[["restaurant","Restaurants"],["retail","Retail"],["other","Other"],["retailer","Warehouse / retailer"]];
-  function renderRules(){
-    var host=el("rules"); var html="";
-    RULE_GROUPS.forEach(function(g){
-      var list=state.rules.filter(function(r){return (r.extras&&r.extras.group)===g[0];});
-      if(!list.length) return;
-      html+='<h2 class="group">'+g[1]+'</h2>';
-      list.forEach(function(r){
-        var x=r.extras||{}; var on=r.status==="on"; var mode=x.mode||"pct";
-        var ctrl = mode==="pct"
-          ? '<div class="stepper" role="group" aria-label="Minimum percent off for '+esc(r.title)+'"><button data-dec="'+esc(r.item_id)+'" aria-label="Decrease">&minus;</button><output>'+(Number(x.min_pct)||0)+'%</output><button data-inc="'+esc(r.item_id)+'" aria-label="Increase">+</button></div>'
-          : '<span class="badge">'+(mode==="stack"?"stack only":"bonus")+'</span>';
-        html+='<div class="card"><div class="row">'
-          +'<div class="grow"><div class="title">'+esc(r.title)+'</div>'
-          +(x.note?'<div class="sub">'+esc(x.note)+'</div>':"")+'</div>'
-          +ctrl
-          +'<button class="sw" role="switch" aria-checked="'+on+'" aria-pressed="'+on+'" aria-label="Enable '+esc(r.title)+'" data-rule="'+esc(r.item_id)+'"></button>'
-          +'</div></div>';
-      });
+  function lockedPanel(){
+    return '<div class="card summary"><div class="empty locked">'
+      +'<div class="locktitle">Locked</div>'
+      +'<p>Open Card Scout from the marquee’s Private Wing to see your deals.</p>'
+      +'<a class="btn primary" href="index.html?view=personal">Open the Private Wing &rarr;</a>'
+      +'</div></div>';
+  }
+  function renderFeed(){
+    var host=el("feed");
+    if(state.locked){ host.innerHTML=lockedPanel(); return; }
+    var deals=state.deals||[];
+    // planId is set but the feed is genuinely empty (and config loaded) — the honest empty state.
+    if(!deals.length){
+      host.innerHTML='<div class="empty">No deals in the last 30 days yet.<br>The agent alerts you the moment one beats your rules.</div>';
+      return;
+    }
+    var buckets={}; FEED_GROUPS.forEach(function(g){buckets[g[0]]=[];});
+    deals.forEach(function(d){ var g=dealGroup(d); if(!buckets[g]) g="other"; buckets[g].push(d); });
+    var groups=[]; var html="";
+    FEED_GROUPS.forEach(function(g){
+      var list=buckets[g[0]]; if(!list.length) return;
+      // hits first within each group; Array.sort is stable so created_at order holds within a verdict.
+      list.sort(function(a,b){ return (b.verdict==="hit"?1:0)-(a.verdict==="hit"?1:0); });
+      groups.push({slug:g[0],label:g[1],count:list.length,list:list});
     });
-    html+='<h2 class="group">Add a brand</h2><div class="card"><div class="addrow">'
-      +'<input id="newbrand" type="text" placeholder="Brand name" aria-label="New brand name">'
-      +'<button class="btn primary" id="addbrand">Add</button></div>'
-      +'<div class="sub" style="margin-top:6px">Adds a 20%-off rule you can tune.</div></div>';
+    html=quickNav("feed",groups);
+    groups.forEach(function(g){
+      html+=groupHead("feed",g.slug,g.label,g.count);
+      g.list.forEach(function(d){ html+=dealCard(d); });
+    });
     host.innerHTML=html;
   }
 
+  // ---------- Sources ----------
+  var SRC_GROUPS=[["feed","Deal feeds"],["direct","Direct retailers"],["marketplace","Marketplaces"]];
+  function sourceCard(s){
+    var x=s.extras||{}; var on=s.status==="on";
+    var health=x.blocked?"blocked":(x.health||"");
+    var dot=health==="ok"?"ok":health==="error"?"err":health==="blocked"?"blocked":"";
+    return '<div class="card"><div class="row">'
+      +'<span class="dot '+dot+'" title="'+esc(health||"unknown")+'"></span>'
+      +'<div class="grow"><div class="title">'+esc(s.title)+'</div>'
+      +'<div class="sub">'+esc(x.lane||"")+' · '+esc(x.cadence||"")+(x.bookmark?" · bookmark":"")
+      +(x.last_checked?' · checked '+fmtDate(x.last_checked):"")+'</div>'
+      +'<div class="sub">'+(x.verified?"":'<span class="badge warn">unverified</span>')+(x.blocked?'<span class="badge warn">blocked</span>':"")+(x.note?esc(x.note):"")+'</div></div>'
+      +'<button class="sw" role="switch" aria-checked="'+on+'" aria-pressed="'+on+'" aria-label="Enable '+esc(s.title)+'" data-src="'+esc(s.item_id)+'"></button>'
+      +'</div></div>';
+  }
+  function renderSources(){
+    var host=el("sources"); var groups=[];
+    SRC_GROUPS.forEach(function(g){
+      var list=state.sources.filter(function(s){return (s.extras&&s.extras.group)===g[0];});
+      if(list.length) groups.push({slug:g[0],label:g[1],count:list.length,list:list});
+    });
+    if(!groups.length){ host.innerHTML='<div class="empty">No sources.</div>'; return; }
+    var html=quickNav("sources",groups);
+    groups.forEach(function(g){
+      html+=groupHead("sources",g.slug,g.label,g.count);
+      g.list.forEach(function(s){ html+=sourceCard(s); });
+    });
+    host.innerHTML=html;
+  }
+
+  // ---------- Rules ----------
+  var RULE_GROUPS=[["restaurant","Restaurants"],["retail","Retail"],["other","Other"],["retailer","Warehouse / retailer"]];
+  function denomVal(x){ var v=x&&x.min_denom; return (v==null||v==="")?25:Number(v); }
+  function denomLabel(x){ var n=denomVal(x); return (!isFinite(n)||n<=0)?"Any":"$"+n; }
+  function ruleCard(r){
+    var x=r.extras||{}; var on=r.status==="on"; var mode=x.mode||"pct";
+    var head='<div class="row"><div class="grow"><div class="title">'+esc(r.title)+'</div>'
+      +(x.note?'<div class="sub">'+esc(x.note)+'</div>':"")
+      +(mode!=="pct"?'<div class="sub"><span class="badge">'+(mode==="stack"?"stack only":"bonus")+'</span></div>':"")
+      +'</div>'
+      +'<button class="sw" role="switch" aria-checked="'+on+'" aria-pressed="'+on+'" aria-label="Enable '+esc(r.title)+'" data-rule="'+esc(r.item_id)+'"></button></div>';
+    var ctrls="";
+    if(mode==="pct"){
+      ctrls='<div class="ctrls">'
+        +'<div class="ctrl"><span class="ctrl-lab">Min % off</span>'
+          +'<div class="stepper" role="group" aria-label="Minimum percent off for '+esc(r.title)+'"><button data-dec="'+esc(r.item_id)+'" aria-label="Decrease minimum percent">&minus;</button><output>'+(Number(x.min_pct)||0)+'%</output><button data-inc="'+esc(r.item_id)+'" aria-label="Increase minimum percent">+</button></div>'
+        +'</div>'
+        +'<div class="ctrl"><span class="ctrl-lab">Min card value</span>'
+          +'<div class="stepper" role="group" aria-label="Minimum card value for '+esc(r.title)+'"><button data-ddec="'+esc(r.item_id)+'" aria-label="Decrease minimum card value">&minus;</button><output>'+denomLabel(x)+'</output><button data-dinc="'+esc(r.item_id)+'" aria-label="Increase minimum card value">+</button></div>'
+        +'</div>'
+      +'</div>';
+    }
+    return '<div class="card">'+head+ctrls+'</div>';
+  }
+  function renderRules(){
+    var host=el("rules");
+    host.innerHTML=''
+      +'<div class="searchbar"><input id="rulesearch" type="text" placeholder="Search brands…" aria-label="Search rules by brand name" value="'+esc(ruleQuery)+'">'
+        +'<button class="btn small" id="ruleclear">Clear</button></div>'
+      +'<div id="rules-nav"></div>'
+      +'<div id="rules-list"></div>'
+      +'<div class="grouphead"><h2>Add a brand</h2></div>'
+      +'<div class="card"><div class="addrow">'
+        +'<input id="newbrand" type="text" placeholder="Brand name" aria-label="New brand name">'
+        +'<button class="btn primary" id="addbrand">Add</button></div>'
+        +'<div class="sub" style="margin-top:6px">Adds a 20%-off, $25-minimum rule you can tune.</div></div>';
+    renderRulesList();
+  }
+  function renderRulesList(){
+    var list=el("rules-list"), nav=el("rules-nav"); if(!list) return;
+    var q=(ruleQuery||"").toLowerCase();
+    var groups=[];
+    RULE_GROUPS.forEach(function(g){
+      var items=state.rules.filter(function(r){
+        return (r.extras&&r.extras.group)===g[0] && (!q || String(r.title||"").toLowerCase().indexOf(q)>=0);
+      });
+      if(items.length) groups.push({slug:g[0],label:g[1],count:items.length,list:items});
+    });
+    if(nav) nav.innerHTML=quickNav("rules",groups);
+    var html="";
+    if(!groups.length){ html='<div class="empty">No rules match “'+esc(ruleQuery)+'”.</div>'; }
+    groups.forEach(function(g){
+      html+=groupHead("rules",g.slug,g.label,g.count);
+      g.list.forEach(function(r){ html+=ruleCard(r); });
+    });
+    list.innerHTML=html;
+  }
+
+  // ---------- Alerts ----------
+  var WEEKDAYS=[["mon","Monday"],["tue","Tuesday"],["wed","Wednesday"],["thu","Thursday"],["fri","Friday"],["sat","Saturday"],["sun","Sunday"]];
+  function fmtClock(hhmm){
+    var m=/^(\d{1,2}):(\d{2})$/.exec(hhmm||""); if(!m) return hhmm||"";
+    var h=+m[1], mm=+m[2];
+    if(h===12&&mm===0) return "noon";
+    if(h===0&&mm===0) return "midnight";
+    var ap=h<12?"am":"pm", h12=h%12; if(h12===0) h12=12;
+    return h12+(mm?(":"+(mm<10?"0":"")+mm):"")+ap;
+  }
+  function cadencePhrase(fc){
+    if(fc==="30m") return "every 30 minutes";
+    if(fc==="1x-day") return "once a day (7am)";
+    return "three times a day (7am, noon, 6pm)"; // 3x-day default
+  }
+  function weekdayName(code){ for(var i=0;i<WEEKDAYS.length;i++) if(WEEKDAYS[i][0]===code) return WEEKDAYS[i][1]; return "Wednesday"; }
+  function alertsSummary(){
+    var s=state.settings||{}, t=state.toggles||{};
+    var feeds=state.sources.filter(function(x){ return x.status==="on" && x.extras && x.extras.lane==="cloud"; }).length;
+    var shops=state.sources.filter(function(x){ return x.status==="on" && x.extras && x.extras.bookmark; }).length;
+    var chans=[]; if(t["alert-iphone"]) chans.push("your iPhone"); if(t["alert-gmail"]) chans.push("email");
+    var chStr=chans.length?chans.join(" and "):"no channels yet — turn one on below";
+    var parts=[];
+    parts.push("Right now: "+cadencePhrase(s.feed_cadence)+" Card Scout checks your "+feeds+" deal feed"+(feeds===1?"":"s")
+      +", and every "+weekdayName(s.weekly_day||"wed")+" it also checks your "+shops+" bookmarked shop"+(shops===1?"":"s")+".");
+    parts.push("Alerts go to "+chStr+".");
+    if(t["quiet-hours"]) parts.push("Hits reach you straight away, except between "+fmtClock(s.quiet_start||"22:00")+" and "+fmtClock(s.quiet_end||"07:00")+".");
+    else parts.push("Hits reach you straight away.");
+    if(t["digest-daily"]) parts.push("Near misses arrive in one summary at "+fmtClock(s.digest_time||"07:30")+".");
+    return '<div class="card summary"><p>'+esc(parts.join(" "))+'</p></div>';
+  }
   function renderAlerts(){
     var host=el("alerts"); var s=state.settings||{}; var t=state.toggles||{};
     function tog(id,label,desc){
       return '<div class="card"><div class="row"><div class="grow"><div class="title">'+label+'</div><div class="sub">'+desc+'</div></div>'
         +'<button class="sw" role="switch" aria-checked="'+(t[id]===true)+'" aria-pressed="'+(t[id]===true)+'" aria-label="'+label+'" data-toggle="'+id+'"></button></div></div>';
     }
-    var html="";
-    html+='<h2 class="group">Channels</h2>';
+    var groups=[{slug:"channels",label:"Channels",count:2},{slug:"howoften",label:"How often",count:2},{slug:"timing",label:"Timing",count:4}];
+    var html=alertsSummary();
+    html+=quickNav("alerts",groups);
+    html+=groupHead("alerts","channels","Channels",2);
     html+=tog("alert-iphone","iPhone push","Instant ntfy alert on a hit.");
     html+=tog("alert-gmail","Email","A copy to your inbox.");
-    html+='<h2 class="group">Timing</h2>';
+    html+=groupHead("alerts","howoften","How often",2);
+    var fc=s.feed_cadence||"3x-day";
+    html+='<div class="card">'
+      +'<div class="field"><label for="feedcadence">Feed frequency</label>'
+        +'<select id="feedcadence" data-set="feed_cadence">'
+        +'<option value="3x-day"'+(fc==="3x-day"?" selected":"")+'>Three times a day — recommended</option>'
+        +'<option value="30m"'+(fc==="30m"?" selected":"")+'>Every 30 minutes — highest AI cost</option>'
+        +'<option value="1x-day"'+(fc==="1x-day"?" selected":"")+'>Once a day, 7am — lowest cost</option>'
+        +'</select></div>'
+      +'<div class="helper">More often = more AI spend.</div>'
+      +'<div class="field" style="margin-top:12px"><label for="weeklyday">Weekly web check day</label>'
+        +'<select id="weeklyday" data-set="weekly_day">'
+        +WEEKDAYS.map(function(w){ return '<option value="'+w[0]+'"'+((s.weekly_day||"wed")===w[0]?" selected":"")+'>'+w[1]+'</option>'; }).join("")
+        +'</select></div>'
+      +'<div class="helper">Your bookmarked shops are checked on this day.</div>'
+      +'</div>';
+    html+=groupHead("alerts","timing","Timing",4);
     html+=tog("digest-daily","Daily near-miss digest","One email of the day’s near misses.");
     html+=tog("quiet-hours","Quiet hours","Hold hit alerts overnight; they arrive after quiet hours end.");
     html+='<div class="card">'
@@ -310,12 +490,17 @@
     // rule toggle
     var rid=b.getAttribute("data-rule");
     if(rid){ var r=find(state.rules,rid); var on2=r.status!=="on"; r.status=on2?"on":"off"; setSwitch(b,on2); withSave(patchTask(rid,{status:r.status,updated_at:new Date().toISOString()})); return; }
-    // stepper
+    // % stepper
     var inc=b.getAttribute("data-inc"), dec=b.getAttribute("data-dec");
     if(inc||dec){ stepRule(inc||dec, inc?5:-5, b); return; }
-    // alert toggle
+    // min-denomination stepper
+    var dinc=b.getAttribute("data-dinc"), ddec=b.getAttribute("data-ddec");
+    if(dinc||ddec){ stepDenom(dinc||ddec, dinc?5:-5, b); return; }
+    // rules search clear
+    if(b.id==="ruleclear"){ ruleQuery=""; var ri=el("rulesearch"); if(ri){ ri.value=""; ri.focus(); } renderRulesList(); return; }
+    // alert toggle — re-render the summary so it reflects the change live
     var tg=b.getAttribute("data-toggle");
-    if(tg){ var on3=state.toggles[tg]!==true; state.toggles[tg]=on3; setSwitch(b,on3); withSave(upsertState(tg,on3)); return; }
+    if(tg){ var on3=state.toggles[tg]!==true; state.toggles[tg]=on3; setSwitch(b,on3); withSave(upsertState(tg,on3)); renderAlerts(); return; }
     // bought / skip
     var buy=b.getAttribute("data-buy"), skip=b.getAttribute("data-skip");
     if(buy||skip){ markDeal(buy||skip, buy?"bought":"skip", b); return; }
@@ -327,12 +512,24 @@
     if(!f) return;
     state.settings[f]=ev.target.value;
     withSave(patchTask("settings",{extras:state.settings,updated_at:new Date().toISOString()}));
+    // every data-set control lives on the Alerts tab; re-render so the summary stays in sync.
+    renderAlerts();
+  });
+  document.addEventListener("input", function(ev){
+    if(ev.target && ev.target.id==="rulesearch"){ ruleQuery=ev.target.value||""; renderRulesList(); }
   });
 
   function find(list,id){ for(var i=0;i<list.length;i++) if(list[i].item_id===id) return list[i]; return null; }
   function stepRule(id,delta,btn){
     var r=find(state.rules,id); r.extras=r.extras||{}; var v=Math.max(0,Math.min(90,(Number(r.extras.min_pct)||0)+delta));
     r.extras.min_pct=v; var out=btn.parentNode.querySelector("output"); if(out) out.textContent=v+"%";
+    withSave(patchTask(id,{extras:r.extras,updated_at:new Date().toISOString()}));
+  }
+  // Minimum card value stepper: $5 steps, floor $0 ("Any"), ceiling $500. Writes extras.min_denom.
+  function stepDenom(id,delta,btn){
+    var r=find(state.rules,id); r.extras=r.extras||{};
+    var v=Math.max(0,Math.min(500,denomVal(r.extras)+delta));
+    r.extras.min_denom=v; var out=btn.parentNode.querySelector("output"); if(out) out.textContent=(v<=0?"Any":"$"+v);
     withSave(patchTask(id,{extras:r.extras,updated_at:new Date().toISOString()}));
   }
   function markDeal(id,status,btn){
@@ -348,7 +545,7 @@
     var slug="rule-"+name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
     if(find(state.rules,slug)){ inp.value=""; selectTab("tab-rules"); return; }
     var row={page:PAGE,item_id:slug,title:name,status:"on",category:"rule",position:999,
-      extras:{group:"other",mode:"pct",min_pct:20,note:""},updated_at:new Date().toISOString()};
+      extras:{group:"other",mode:"pct",min_pct:20,min_denom:25,note:""},updated_at:new Date().toISOString()};
     state.rules.push(row); inp.value=""; renderRules();
     withSave(api("press_tasks?on_conflict=page,item_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(row)}));
   }
@@ -370,7 +567,9 @@
 
   // ---------- boot ----------
   loadLS();
-  if(state.sources && state.sources.length){ renderAll(); sync("","Cached"); } else { renderAll(); }
+  state.locked = !planId(); // reflect lock state before the first (cached) paint — no deal flash
+  renderAll();
+  if(state.sources && state.sources.length){ sync(state.locked?"locked":"", state.locked?"Locked":"Cached"); }
   refresh();
   window.addEventListener("online", refresh);
 })();
