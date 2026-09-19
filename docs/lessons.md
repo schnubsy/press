@@ -11,6 +11,17 @@ Evidence slice files follow: `v<N>-slice-<seq>-<topic>.txt` (e.g. `v4-slice-9-pr
 
 ## Known lessons
 
+### Reverting code does not revert the data it already wrote (arc/align-retirement follow-up, 2026-09-19) [press]
+
+The passkey-only `protectTool()` sealed a per-tool `data_key` + version marker `v` into the vault
+keyring's `retirement.html` entry. STEP 1 removed the Protect source, but the sealed fields stayed
+live (`{ sync_id, pass, data_key, v }`) — nothing read them, so hygiene not a fault, but exactly the
+variance the align arc existed to remove. **RULE:** when abandoning a design, enumerate what it
+PERSISTED (keyring entries here, plus any localStorage/DB rows) and clean it up too — a green revert
+of the source is not a complete revert. The prune is surgical + re-sealed under the user's active
+credential via `PressVault.updateKeyring`, proven by a before/after of FIELD NAMES only (never the
+values). Runs on an unlocked tool page (the wing does not expose `PressVault`).
+
 ### Revert a wrong design but keep its incidental real fixes; verify a premise against the code (arc/align-retirement, 2026-09-19) [press]
 
 The passkey-only arc built a bespoke local-`data_key` design on the premise that retirement was
