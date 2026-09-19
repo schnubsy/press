@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#14161A">
   <title>FSA Claims</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMTQxNjFBIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJBMkYzNiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIyIDQ5LjMyIEEyMCAyMCAwIDAgMSAxNC42OCAyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDBBM0UwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIzMiIgeTE9IjMyIiB4Mj0iNDAiIHkyPSIxOC4xNCIgc3Ryb2tlPSIjRTZFOUVEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
-  <meta name="build" content="2026-09-19T16:17:46.638Z 4b35dca">
+  <meta name="build" content="2026-09-19T16:46:42.622Z 1921fd5">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="manifest" href="fsa-assets/manifest.webmanifest">
@@ -799,6 +799,11 @@ select {
   var ENROLLED_FLAG = 'press:vault:enrolled';
   var TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
 
+  // In-memory ONLY: the NON-EXTRACTABLE AES key derived at unlock/enrol, cached so a follow-on
+  // reseal (updateKeyring) can re-seal the row WITHOUT another passkey tap. Never persisted; a
+  // CryptoKey created with extractable:false cannot be read out even from here. Cleared on lock().
+  var _live = null; // { key: CryptoKey, vaultId: string }
+
   // --- byte helpers (Node + browser) -----------------------------------------
   function asBytes(x) {
     if (x instanceof Uint8Array) return x;
@@ -930,6 +935,7 @@ select {
     } catch (e) { return null; }
   }
   function lock() {
+    _live = null; // drop the cached key so a locked space cannot reseal
     var s = store(); if (!s) return;
     try { s.removeItem(SESSION_KEY); } catch (e) {}
     // Nudge other open tabs to drop the session too. A same-tab write to localStorage
@@ -1052,6 +1058,7 @@ select {
     var sealed = await sealKeyring(keyring, key); sealed.salt = b64(salt);
     var ok = await putRow(vaultId, sealed, opts.label || null);
     if (!ok) throw new Error('Could not save the new key to the vault.');
+    _live = { key: key, vaultId: vaultId };
     saveSession(keyring, vaultId);
     return { vaultId: vaultId, keyring: keyring };
   }
@@ -1074,8 +1081,39 @@ select {
     var key = await deriveKey(prf, ub64(record.salt));
     var keyring = await openKeyring(record, key);
     if (!keyring) throw new Error('Could not open the personal space with this passkey.');
+    _live = { key: key, vaultId: vaultId };
     saveSession(keyring, vaultId);
     return { vaultId: vaultId, keyring: keyring, record: record };
+  }
+
+  // Re-seal an UPDATED keyring into the SAME row, under the SAME credential — used by the wing's
+  // "Connect your tools" step to add a verified {sync_id, pass} without re-keying anything. Prefers
+  // the in-memory key cached at unlock (no extra tap); falls back to one assertion if it is absent.
+  // NEVER regenerates an empty keyring: the caller passes the full, updated keyring.
+  async function updateKeyring(newKeyring) {
+    if (!newKeyring || !newKeyring.apps) throw new Error('updateKeyring needs a full keyring.');
+    var sess = loadSession();
+    if (!sess || !sess.vaultId) throw new Error('Unlock the personal space before saving.');
+    var vaultId = sess.vaultId;
+    var record = await fetchRow(vaultId);
+    if (!record) throw new Error('No enrolled passkey found for the personal space on this device.');
+    var key;
+    if (_live && _live.vaultId === vaultId) {
+      key = _live.key;
+    } else {
+      var assertion = await navigator.credentials.get({
+        publicKey: { rpId: RP_ID, challenge: randomBytes(32), allowCredentials: [], userVerification: 'required', extensions: prfExt() }
+      });
+      var prf = prfResult(assertion);
+      if (!prf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
+      key = await deriveKey(prf, ub64(record.salt));
+      _live = { key: key, vaultId: vaultId };
+    }
+    var sealed = await sealKeyring(newKeyring, key); sealed.salt = record.salt; // reuse the row's salt
+    var ok = await putRow(vaultId, sealed, record.label || null);
+    if (!ok) throw new Error('Could not save to the vault.');
+    saveSession(newKeyring, vaultId);
+    return newKeyring;
   }
 
   // Enrol a SECOND credential and write the SAME keyring, sealed under the new key,
@@ -1108,7 +1146,8 @@ select {
     // session
     saveSession: saveSession, loadSession: loadSession, lock: lock, everEnrolled: everEnrolled,
     // webauthn + rest
-    enrol: enrol, unlock: unlock, addPasskey: addPasskey, revoke: revoke, fetchRow: fetchRow
+    enrol: enrol, unlock: unlock, addPasskey: addPasskey, revoke: revoke, fetchRow: fetchRow,
+    updateKeyring: updateKeyring
   };
 })(globalThis);
 // @@/VAULT_INLINE@@
@@ -1208,9 +1247,12 @@ select {
       btn.disabled = true; msg.className = 'pg-msg'; msg.textContent = 'Waiting for your passkey…';
       V.unlock().then(function () {
         var creds = credsFor(current.page);
-        if (!creds) { throw new Error('Could not open the personal space with this passkey.'); }
-        removeGate();
-        current.onUnlock(creds);
+        if (creds) { removeGate(); current.onUnlock(creds); return; }
+        // The passkey OPENED the vault, but this tool has no stored credentials yet — a DISTINCT
+        // state from a failed unlock (the space DID open). Point at the wing's Connect step; never
+        // conflate this with "could not open the personal space".
+        btn.disabled = false; msg.className = 'pg-msg err';
+        msg.textContent = 'No credentials stored for this tool yet — connect it in the Private Wing →';
       }).catch(function (e) {
         console.error('[press-gate] unlock failed:', e);
         btn.disabled = false; msg.className = 'pg-msg err'; msg.textContent = friendlyErr(e);
@@ -2823,8 +2865,13 @@ async function hydrate(syncId, passphrase) {
     if (row) {
       state._envelope = row.doc; // keep the raw envelope for the encrypted-backup export
       state.doc = await decryptDoc(row.doc, passphrase); state._version = row.version;
-      if (state.doc) { setSyncPill('synced'); try { localStorage.setItem('press:fsa', JSON.stringify(state.doc)); } catch (_) {} }
-      else setSyncPill('conflict'); // wrong passphrase -> decrypt null
+      if (state.doc) {
+        setSyncPill('synced'); try { localStorage.setItem('press:fsa', JSON.stringify(state.doc)); } catch (_) {}
+        // Replacement PROVEN: the keyring's creds just decrypted the live row. ONLY now is it safe to
+        // drop any legacy on-disk sync id / passphrase. Never on boot, never on any other path — the
+        // on-disk copy is a real backup of a key until the passkey path is proven to work.
+        migrateCredsOffDisk();
+      } else setSyncPill('conflict'); // wrong passphrase -> decrypt null
     } else { setSyncPill('synced'); } // signed in, empty remote
   } catch (e) {
     try { const cached = JSON.parse(localStorage.getItem('press:fsa')); if (cached) state.doc = cached; } catch (_) { /* ok */ }
