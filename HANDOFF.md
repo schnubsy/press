@@ -1,6 +1,35 @@
 # press — HANDOFF
 
-_Last updated: 2026-09-19 — arc/two-space-marquee_
+_Last updated: 2026-09-18 — hotfix/1password-passkey-crash (on arc/two-space-marquee)_
+
+## Standing rule — publish auto-close (do NOT re-litigate)
+
+An outward-facing publish at the end of a **green arc or hotfix** does NOT need a separate
+merge approval from Mark. When the gauntlet is green, complete the publish (merge to `main`,
+which is what GitHub Pages serves) as part of closing out — do not stop to ask. Set by Mark
+2026-09-18. (Auto-merge is still never enabled pre-emptively; this is about merging a
+finished, green change.)
+
+## Hotfix 2026-09-18 — 1Password passkey enrol crash — LIVE & verified
+
+Enrolment threw `expected bytes` (`vault.js` `asBytes`) AFTER `credentials.create` when the
+passkey came from the **1Password** extension: its `navigator.credentials` shim returns the
+WebAuthn PRF output as a **base64url STRING**, not an `ArrayBuffer`. The CDP virtual
+authenticator returns real `ArrayBuffer`s, which is why the Playwright smoke passed.
+
+- `src/vault.js`: `asBytes` decodes a base64url string → bytes (buffer branches first,
+  `TypeError` still the final fallback — arbitrary objects still rejected). `prfResult`
+  normalises to bytes at the boundary; missing/zero-length ⇒ absent (null); non-32-byte ⇒
+  refused with the human message. Private-wing panel logs the real error to `console.error`
+  and never surfaces a raw `TypeError`. `index.html` re-inlined byte-identical.
+- Tests closed the gap: unit (base64url string ≡ same key; wrong-length rejected; zero-length
+  absent; `asBytes` still rejects objects) + a new smoke enrol path that stubs
+  `getClientExtensionResults` to return the PRF result as a base64url string.
+- Shipped: PR #4 → `main` (merge `b359581`). Live-verified — served `index.html` blob
+  `8962b9d…` == GitHub main blob == local main blob; marker present; HTTP 200.
+- **Not yet done:** Mark must delete the orphaned 1Password passkey (no `press_vault` row —
+  enrol threw before the write) and RE-ENROL, then confirm Card Scout renders through the
+  vault. Only then does the deferred `press_deals` cleanup below run.
 
 ## Current state
 
