@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#14161A">
   <title>FSA Claims</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMTQxNjFBIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJBMkYzNiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIyIDQ5LjMyIEEyMCAyMCAwIDAgMSAxNC42OCAyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDBBM0UwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIzMiIgeTE9IjMyIiB4Mj0iNDAiIHkyPSIxOC4xNCIgc3Ryb2tlPSIjRTZFOUVEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
-  <meta name="build" content="2026-09-18T11:14:50.926Z 18929e0">
+  <meta name="build" content="2026-09-19T03:38:54.235Z 9fcf51f">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="manifest" href="fsa-assets/manifest.webmanifest">
@@ -1397,26 +1397,53 @@ async function unseal(box, privateJwk, info = FSA_SEAL_INFO) {
 // other press apps). All keys live in localStorage.
 
 
-const SK = 'fsa:sync_id';
-const PK = 'fsa:pass';
+const SK = 'fsa:sync_id';   // localStorage — a non-secret 128-bit capability (which document)
+const PK = 'fsa:pass';      // sessionStorage now — tab-scoped, cleared on tab close; NEVER localStorage
 const YK = 'fsa:year';
 const TK = 'fsa:theme';
 const CACHE = 'press:fsa';
 
-// The full set of fsa-scoped keys sign-out is allowed to touch. schnubsy.github.io is ONE origin
+// The localStorage fsa-scoped keys sign-out is allowed to touch. schnubsy.github.io is ONE origin
 // shared with giving/retirement/halvsies/kayley/eagle-path and the portal — NEVER localStorage.clear().
-const FSA_KEYS = [SK, PK, YK, TK, CACHE];
+// PK (the passphrase) is handled separately: it lives in sessionStorage, never localStorage.
+const FSA_KEYS = [SK, YK, TK, CACHE];
+
+function sess() { try { return globalThis.sessionStorage || null; } catch (_) { return null; } }
+
+// --- private-wing vault session (read-only; the marquee owns the crypto) -----------------------
+function pressVault(page) {
+  try {
+    const s = JSON.parse(localStorage.getItem('press:vault:v1') || 'null');
+    if (!s || !s.expiresAt || Date.now() > s.expiresAt) return null;
+    return (s.keyring && s.keyring.apps && s.keyring.apps[page]) || null;
+  } catch (_) { return null; }
+}
+// fsa's creds from the private-wing session, or null. Used IN MEMORY only — never persisted.
+function vaultCreds() {
+  const v = pressVault('fsa.html');
+  return (v && v.sync_id && v.pass) ? { syncId: v.sync_id, passphrase: v.pass } : null;
+}
+// Two-space migration: once the vault path is live, drop any LEGACY on-disk sync id + passphrase
+// so the passphrase stops resting on disk (fsa:pass used to be an indefinite localStorage entry).
+function migrateCredsOffDisk() {
+  try { localStorage.removeItem(SK); localStorage.removeItem(PK); } catch (_) { /* ok */ }
+}
 
 function loadCreds() {
-  try { return { syncId: localStorage.getItem(SK), passphrase: localStorage.getItem(PK) }; }
+  try { return { syncId: localStorage.getItem(SK), passphrase: (sess() ? sess().getItem(PK) : null) }; }
   catch (_) { return { syncId: null, passphrase: null }; }
 }
+// Persist the sync id (non-secret) to localStorage so a direct-visit fallback remembers WHICH
+// document. The passphrase goes to tab-scoped sessionStorage ONLY — it never rests on disk; the
+// durable store for it is the expiring private-wing vault.
 function saveCreds(syncId, passphrase) {
-  try { localStorage.setItem(SK, syncId); localStorage.setItem(PK, passphrase); } catch (_) { /* ok */ }
+  try { localStorage.setItem(SK, syncId); } catch (_) { /* ok */ }
+  try { if (sess()) sess().setItem(PK, passphrase); } catch (_) { /* ok */ }
 }
 function clearCreds() {
   // Remove ONLY the fsa-scoped keys — the sibling press apps share this origin's localStorage.
-  try { for (const k of FSA_KEYS) localStorage.removeItem(k); } catch (_) { /* ok */ }
+  try { for (const k of FSA_KEYS) localStorage.removeItem(k); localStorage.removeItem(PK); } catch (_) { /* ok */ }
+  try { if (sess()) sess().removeItem(PK); } catch (_) { /* ok */ }
 }
 function hasCreds() { const c = loadCreds(); return Boolean(c.syncId && c.passphrase); }
 
@@ -2392,8 +2419,14 @@ async function boot() {
     return;
   }
 
-  if (!hasCreds()) { setSignedOutView(true); renderAuthPanel(document.querySelector('main'), () => location.reload()); reveal(); return; }
-  const { syncId, passphrase } = loadCreds();
+  // Private wing first: if the marquee has an unlocked vault session, adopt fsa's creds IN MEMORY
+  // and skip the passphrase prompt. Then drop any legacy on-disk copy so it stops resting on disk.
+  const vc = vaultCreds();
+  if (vc) migrateCredsOffDisk();
+  // Fallback for a direct visit with no vault session (deep links must not break): the existing
+  // manual unlock panel, whose passphrase now lives in tab-scoped sessionStorage, never on disk.
+  if (!vc && !hasCreds()) { setSignedOutView(true); renderAuthPanel(document.querySelector('main'), () => location.reload()); reveal(); return; }
+  const { syncId, passphrase } = vc || loadCreds();
   setSyncPill('offline');
   try {
     const client = makeClient({});
