@@ -1,0 +1,14 @@
+{
+  "name": "press",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "press marquee — dev-only test harness. The site itself has NO build step; these deps are never shipped.",
+  "scripts": {
+    "test": "node --test",
+    "smoke": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0"
+  }
+}
