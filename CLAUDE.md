@@ -24,14 +24,15 @@ served via GitHub Pages. Key pages:
 
 ## Current stage
 
-Live; arc/private-wing-spare-keys-collapse **COMPLETE** (2026-09-19). The private wing's
-"Connect your tools" drawer now collapses CONNECTED apps to a quiet line + a real Reconnect
-button (fields absent from the DOM until expanded, cleared on collapse); NOT-connected apps
-keep the full form. **Card Scout** joined the drawer as sync-id-ONLY (no passphrase, no `pass`
-key), verified by probing `press_deals` (`x-plan-id`) — a 200 with ZERO rows is a WRONG key,
-never success (the silent-empty RLS trap that emptied its feed). Verdict logic lives in
-`src/vault.js` (unit-tested) and is re-inlined via `tools/inline-vault.mjs`. Prior
-arc/two-space-marquee stays closed; passkey enrol + `press_deals` gate intact. No open arc items.
+Live; **arc/align-retirement COMPLETE (2026-09-19, pushed `9ae3424`).** The passkey-only Slice 1
+(`kind:'local'` + "Protect your local tools" + per-tool `data_key`) is REVERTED — `index.html` is
+byte-identical to `f054714` (retirement is a normal cloud Connect tool again), `test/protect.spec.mjs`
+removed, `test/marquee.spec.mjs` reverted; only `src/gate.testkit.mjs`'s standard-ArrayBuffer-PRF-at-
+create shim is KEPT (a real, design-independent gap fix). **`retirement.html` republished** with the
+gated build — fsa's `PressGate` page lock over retirement's existing cloud sync, built + gated by
+`retirement/tools/release.js`. Prior arc/private-wing-spare-keys-collapse (drawer collapse + Card
+Scout) stays closed; passkey enrol + `press_deals` gate intact. Gauntlet: 31/31 unit, `inline:check`
+clean, 25/25 smoke. No open arc items.
 
 ## Project rules
 

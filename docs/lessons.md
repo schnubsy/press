@@ -11,6 +11,23 @@ Evidence slice files follow: `v<N>-slice-<seq>-<topic>.txt` (e.g. `v4-slice-9-pr
 
 ## Known lessons
 
+### Revert a wrong design but keep its incidental real fixes; verify a premise against the code (arc/align-retirement, 2026-09-19) [press]
+
+The passkey-only arc built a bespoke local-`data_key` design on the premise that retirement was
+architecturally different from the other cloud tools. It never was — its `vaultCreds()`/`loadSyncCfg()`
+already adopted `{sync_id,pass}` from the private-wing vault session exactly as giving does; retirement
+was simply never connected. align-retirement reverted `index.html` to `f054714` verbatim but KEPT
+`src/gate.testkit.mjs`'s standard-ArrayBuffer-PRF-at-create shim — a real create-time PRF gap (YubiKey /
+iCloud Keychain) that neither the 1Password shim nor the CDP virtual authenticator exercised, and which
+is independent of the abandoned design. **RULE:** when reverting a design, separate the wrong premise
+from any incidental fix that stands on its own merit, and keep the latter. **Also:** the work order's
+"extend press's `inline:check` to guard the vendored copy, as it does fsa's" was false twice over —
+`tools/inline-vault.mjs` only syncs `vault.js` into press's own `index.html` + `src/gate.js`; it never
+reached fsa (or any sibling) and there was no path list to extend, and fsa's vendored `press-gate.js`
+had already DRIFTED from `src/gate.js`. The real per-app enforcement is each app's own `tools/publish-
+checks` (gate-present + a byte-compare of its vendored gate vs this repo's `src/gate.js`). Grep the
+mechanism a work order cites before extending it.
+
 ### Client-side key material is the user's data too (arc/passkey-only, 2026-09-19)
 
 Never delete the only copy of a key before its replacement has been proven to decrypt. The

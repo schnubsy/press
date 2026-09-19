@@ -4,6 +4,24 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-09-19 — arc/align-retirement CLOSED (revert passkey-only; republish retirement gated)
+
+Reverted the passkey-only/`data_key` wing experiment and republished retirement as a normal gated
+cloud tool. `index.html` restored **byte-identical to `f054714`** (retirement back in `CONNECT_TOOLS`
+with the cloud `TOOL_CFG` shape; `LOCAL_TOOLS` + `protectStatus`/`protectTool`/`renderProtect`/
+`wireProtect` + the `.tw-protect`/`.tw-ptool` CSS removed), `test/protect.spec.mjs` deleted,
+`test/marquee.spec.mjs` reverted. **Kept only** `src/gate.testkit.mjs`'s standard-ArrayBuffer-PRF-at-
+create shim — a real create-time PRF path (YubiKey / iCloud Keychain) that neither the 1Password shim
+nor the virtual authenticator exercised, independent of the abandoned design. Merged `--no-ff`
+(`a1d4eba`). **`retirement.html` republished** from `retirement/tools/release.js` (`9ae3424`): the
+gated build carrying fsa's `PressGate` page lock over retirement's existing cloud sync — enforced on
+`PressVault.everEnrolled()` (press + the standalone share one github.io origin), a SCREEN LOCK not
+encryption. Publish is fail-closed on CHECK A (gate present) + a vendored-gate byte-compare vs
+`src/gate.js`. **Premise correction recorded:** press's `inline:check` (`tools/inline-vault.mjs`) only
+syncs `vault.js` within press — it never guarded fsa's (or any sibling's) vendored gate; fsa's copy had
+drifted. Gauntlet green (31/31 unit, `inline:check` clean, 25/25 smoke); pushed `1d9ce9e..9ae3424`;
+verified live (public path open, enrolled path gated on direct nav; fsa/giving/card-scout untouched).
+
 ## 2026-09-19 — arc/private-wing-spare-keys-collapse CLOSED (drawer collapse + Card Scout)
 
 The private wing's "Connect your tools" drawer was reworked. CONNECTED tools now render as a quiet
