@@ -245,6 +245,55 @@ test('a REAL PRF container of the wrong length is still REJECTED (kept green)', 
   assert.throws(() => V.prfResult(mkCred(toB64url(V.randomBytes(16)))), /can.?t hold the key/i); // string
 });
 
+// --- CARD SCOUT deals-probe verification -----------------------------------
+// Card Scout has a sync id and NO passphrase, so it is verified by probing press_deals
+// with the entered value as the x-plan-id header. press_deals RLS is `x-plan-id = sync_id`,
+// so a WRONG key returns HTTP 200 with ZERO rows — NOT an error. That silent-empty is the
+// trap that emptied Card Scout's feed, so it MUST read as a wrong key, never as success.
+
+test('dealsVerdict: a 200 with >=1 row is VERIFIED', () => {
+  assert.equal(V.dealsVerdict(true, [{ item_id: 'x' }]), 'verified');
+  assert.equal(V.dealsVerdict(true, [{ item_id: 'x' }, { item_id: 'y' }]), 'verified');
+});
+
+test('dealsVerdict: a 200 with ZERO rows is a WRONG key (the silent-failure trap), NOT success', () => {
+  assert.equal(V.dealsVerdict(true, []), 'wrong');
+});
+
+test('dealsVerdict: a non-200 / non-array body is UNREACHABLE or wrong, never verified', () => {
+  assert.equal(V.dealsVerdict(false, null), 'unreachable'); // network / non-200
+  assert.equal(V.dealsVerdict(false, [{ item_id: 'x' }]), 'unreachable'); // rows ignored when !ok
+  assert.equal(V.dealsVerdict(true, null), 'wrong');   // 200 but unparseable-to-array => not verified
+  assert.equal(V.dealsVerdict(true, {}), 'wrong');
+});
+
+test('verifyCardScout: a correct key (200 + a row) => verified; the probe sends x-plan-id and hits press_deals', async () => {
+  let seen = null;
+  const fakeFetch = async (url, init) => { seen = { url, headers: init.headers }; return { ok: true, json: async () => [{ item_id: 'deal-1' }] }; };
+  const verdict = await V.verifyCardScout('a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6', { fetch: fakeFetch });
+  assert.equal(verdict, 'verified');
+  assert.match(seen.url, /\/rest\/v1\/press_deals\?/);
+  assert.match(seen.url, /page=eq\.card-scout/);
+  assert.match(seen.url, /limit=1/);
+  assert.equal(seen.headers['x-plan-id'], 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6'); // entered value carried as the gate header
+});
+
+test('verifyCardScout: 200 with ZERO rows => WRONG (must NOT be read as success)', async () => {
+  const fakeFetch = async () => ({ ok: true, json: async () => [] });
+  assert.equal(await V.verifyCardScout('deadbeefdeadbeefdeadbeefdeadbeef', { fetch: fakeFetch }), 'wrong');
+});
+
+test('verifyCardScout: a non-200 response => unreachable (surfaced as a plain retry, never a status code)', async () => {
+  const fakeFetch = async () => ({ ok: false, status: 401, json: async () => ({ code: '42501' }) });
+  assert.equal(await V.verifyCardScout('deadbeefdeadbeefdeadbeefdeadbeef', { fetch: fakeFetch }), 'unreachable');
+});
+
+test('verifyCardScout: a thrown fetch or an empty sync id => unreachable, never a crash', async () => {
+  const boom = async () => { throw new Error('offline'); };
+  assert.equal(await V.verifyCardScout('deadbeefdeadbeefdeadbeefdeadbeef', { fetch: boom }), 'unreachable');
+  assert.equal(await V.verifyCardScout('', { fetch: async () => ({ ok: true, json: async () => [{}] }) }), 'unreachable');
+});
+
 test('REGRESSION: enrol falls through to prfViaGet when CREATE yields an unusable value, then succeeds from the assertion', async () => {
   const PRF32 = V.randomBytes(32);
   const rawId = V.randomBytes(20);
