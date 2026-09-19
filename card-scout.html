@@ -53,7 +53,6 @@
   nav button[aria-selected="true"]{color:#fff;background:linear-gradient(135deg,var(--accentA),var(--accentB));border-color:transparent}
   main{max-width:640px;margin:0 auto;padding:14px 16px}
   section[hidden]{display:none}
-  h2.group{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:18px 2px 8px}
   /* quick nav — a horizontally scrollable chip row, one per visible group */
   .quicknav{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
     padding:4px 2px 8px;margin:0 -2px;scroll-margin-top:120px}
@@ -146,7 +145,7 @@
   <section id="panel-alerts" role="tabpanel" aria-labelledby="tab-alerts" hidden><div id="alerts"></div></section>
 </main>
 <footer>
-  Alerts only fire on deals that beat your rules — the cloud agent judges every 30&nbsp;min.
+  <span id="footcadence">Alerts only fire on deals that beat your rules.</span>
   <br><a id="healthlink" href="agent-health.html">Agent health &rarr;</a>
 </footer>
 
@@ -476,7 +475,14 @@
     host.innerHTML=html;
   }
 
-  function renderAll(){ renderFeed(); renderSources(); renderRules(); renderAlerts(); }
+  // Footer copy is derived from the live feed cadence (reuses cadencePhrase) so it never lies about
+  // how often Card Scout checks — it tracks the Alerts "How often" control at render time.
+  function renderFooter(){
+    var f=el("footcadence"); if(!f) return;
+    var fc=(state.settings&&state.settings.feed_cadence)||"3x-day";
+    f.textContent="Alerts only fire on deals that beat your rules — checked "+cadencePhrase(fc)+".";
+  }
+  function renderAll(){ renderFeed(); renderSources(); renderRules(); renderAlerts(); renderFooter(); }
 
   // ---------- interactions ----------
   function setSwitch(btn,on){ btn.setAttribute("aria-checked",on); btn.setAttribute("aria-pressed",on); }
@@ -512,8 +518,9 @@
     if(!f) return;
     state.settings[f]=ev.target.value;
     withSave(patchTask("settings",{extras:state.settings,updated_at:new Date().toISOString()}));
-    // every data-set control lives on the Alerts tab; re-render so the summary stays in sync.
-    renderAlerts();
+    // every data-set control lives on the Alerts tab; re-render so the summary stays in sync, and
+    // refresh the footer so a Feed-frequency change is reflected in its "checked …" line immediately.
+    renderAlerts(); renderFooter();
   });
   document.addEventListener("input", function(ev){
     if(ev.target && ev.target.id==="rulesearch"){ ruleQuery=ev.target.value||""; renderRulesList(); }
