@@ -354,7 +354,22 @@ body.tw-sorting .tw-card{transition:none}
       for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
       return out;
     }
-    throw new TypeError('expected bytes');
+    // Two cheap recoveries for a shim that wraps the bytes in an OBJECT rather than a real
+    // ArrayBufferView (some builds of the 1Password shim do this). Both still reject
+    // anything that isn't clearly a byte container.
+    //   - an ArrayBufferView-LIKE object exposing a real .buffer
+    if (x && typeof x === 'object' && x.buffer instanceof ArrayBuffer) {
+      var off = x.byteOffset || 0;
+      return (x.byteLength != null) ? new Uint8Array(x.buffer, off, x.byteLength) : new Uint8Array(x.buffer, off);
+    }
+    //   - a plain object with CONTIGUOUS numeric keys ({0:..,1:..,..})
+    if (x && typeof x === 'object') {
+      var keys = Object.keys(x);
+      if (keys.length && keys.every(function (k, i) { return k === String(i); })) {
+        return Uint8Array.from(Object.values(x));
+      }
+    }
+    throw new TypeError('expected bytes'); // anything else is not bytes
   }
   function b64(bytes) {
     var b = asBytes(bytes), s = '';
@@ -491,19 +506,45 @@ body.tw-sorting .tw-card{transition:none}
 
   // --- WebAuthn (browser only; exercised via Playwright virtual authenticator) --
   function prfExt() { return { prf: { eval: { first: PRF_SALT } } }; }
-  // Normalise the PRF output to bytes at the boundary so every caller (enrol/unlock)
-  // gets a Uint8Array regardless of the shim: the CDP virtual authenticator returns an
-  // ArrayBuffer, 1Password returns a base64url STRING. A missing / zero-length result is
-  // treated as ABSENT (null), never as success; a non-32-byte result is refused here
-  // rather than deriving an AES key from something the wrong size.
+  // Log the real shape of an unreadable PRF value ONCE so a third failure is self-
+  // diagnosing. Never throws itself.
+  function logShape(first) {
+    try {
+      console.debug('[private-wing] prf shape', Object.prototype.toString.call(first),
+        (first && typeof first === 'object') ? Object.keys(first).slice(0, 8) : typeof first);
+    } catch (e) {}
+  }
+
+  // Normalise the PRF output to bytes at the boundary so every caller (enrol/unlock) gets
+  // a Uint8Array regardless of the shim: the CDP virtual authenticator returns an
+  // ArrayBuffer, 1Password returns a base64url STRING (and at CREATE time may return an
+  // unreadable object with no usable value at all).
+  //
+  // TOTAL by design: it must NEVER throw for an unreadable shape. An absent, zero-length,
+  // or unconvertible `first` is treated as ABSENT (null) so enrol falls through to the
+  // ASSERTION path (prfViaGet) — the path that handles "PRF delivered at assertion time",
+  // which is exactly what 1Password does. The ONLY throw is the explicit "can't hold the
+  // key" refusal for a REAL PRF container (ArrayBuffer / view / base64url string) that
+  // converted cleanly but is the wrong length — a genuine authenticator problem worth
+  // surfacing. A wrong-length value merely RECOVERED from a speculative object shim is
+  // treated as unreadable (null), not surfaced.
   function prfResult(cred) {
     var ext = cred.getClientExtensionResults ? cred.getClientExtensionResults() : {};
     var first = (ext && ext.prf && ext.prf.results) ? ext.prf.results.first : null;
     if (!first) return null;                 // absent: missing, null, or ''
-    var bytes = asBytes(first);              // ArrayBuffer | TypedArray | base64url string -> bytes
-    if (bytes.length === 0) return null;     // a zero-length result is absent, not success
-    if (bytes.length !== 32) {               // wrong size -> refuse, don't derive a bad key
-      throw new Error("This browser or authenticator can't hold the key for the personal space.");
+    var isRealPrf = (first instanceof ArrayBuffer) || ArrayBuffer.isView(first) || (typeof first === 'string');
+    var bytes;
+    try {
+      bytes = asBytes(first);                // buffer | view | base64url string | shim object -> bytes
+    } catch (e) {
+      logShape(first);                       // won't convert -> absent, and NEVER let the throw escape
+      return null;
+    }
+    if (bytes.length === 0) return null;      // a zero-length result is absent, not success
+    if (bytes.length !== 32) {
+      if (isRealPrf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
+      logShape(first);                        // wrong-length from an object shim -> unreadable, fall through
+      return null;
     }
     return bytes;
   }
@@ -537,7 +578,12 @@ body.tw-sorting .tw-card{transition:none}
       }
     });
     var prf = prfResult(cred);
-    if (!prf) prf = await prfViaGet(cred.rawId); // PRF may only be delivered at assertion time
+    if (!prf) {
+      // EXPECTED PATH for 1Password (not an edge case): at CREATE, getClientExtensionResults()
+      // returns { prf: { enabled: true } } with no usable results.first, so prfResult() is null.
+      // 1Password delivers the actual PRF at ASSERTION time — obtain it with one get().
+      prf = await prfViaGet(cred.rawId);
+    }
     if (!prf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
     var vaultId = await vaultIdFor(cred.rawId);
     var salt = randomBytes(32);
