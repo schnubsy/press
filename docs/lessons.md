@@ -58,3 +58,21 @@ The vault derives its AES-256-GCM key from the 32-byte WebAuthn PRF output via H
 PBKDF2 the apps use for their document crypto. HKDF is correct for high-entropy input (the PRF output);
 PBKDF2's work factor only matters for low-entropy passphrases. Using the wrong one is either insecure
 (PBKDF2-less on a passphrase) or pointless overhead (PBKDF2 on high-entropy bytes).
+
+### [robustness] (2026-09-19) A probe must return null, not throw — or it kills the caller's fallback
+
+This arc's passkey-enrol crash bit TWICE, same shape both times. `enrol()` is written to recover:
+`var prf = prfResult(cred); if (!prf) prf = await prfViaGet(cred.rawId);` — if the PRF is not readable
+at credential-creation time, fall through to the assertion path (which is exactly how 1Password
+delivers it). But `prfResult()` called the normaliser `asBytes()` **unguarded**, and `asBytes` THROWS
+on an unrecognised shape. So when 1Password returned the PRF as a base64url string (hotfix 1), then as
+an unreadable object (hotfix 2), the throw escaped `prfResult` and **the `if (!prf)` fallback never
+ran** — the very recovery path the code already had was skipped by an exception thrown one call deeper.
+
+Rule: a **probe/normalisation helper that a fallback depends on must be TOTAL** — return `null`/absent
+for anything it can't read, never throw. Reserve throwing for a genuinely exceptional, actionable
+condition (here: a value that converted cleanly but is the wrong length — a real authenticator fault),
+and even then only from a shape you *know* is a real container, not from a speculative recovery. A unit
+test must assert the probe **does not throw** for every junk input, and an integration test must prove
+the fallback path actually executes. The CDP virtual authenticator returned tidy `ArrayBuffer`s, so the
+smoke was green while production threw — test the messy shapes the real shim produces, not the clean one.

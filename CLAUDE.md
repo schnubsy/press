@@ -24,9 +24,13 @@ served via GitHub Pages. Key pages:
 
 ## Current stage
 
-Live. Two-space marquee shipped (arc/two-space-marquee, Sep 2026): a public space + a
-personal wing gated by a WebAuthn-PRF passkey (`press_vault`), with `spaces.json` driving
-the split and a fail-closed publish gate in each app's `tools/release.js`.
+Live; arc/two-space-marquee **COMPLETE** (Sep 2026). Public space + personal wing gated by a
+WebAuthn-PRF passkey (`press_vault`); `spaces.json` drives the split; each app's
+`tools/release.js` has a fail-closed publish gate. Passkey enrolment works (two hotfixes to
+the 1Password PRF path — `asBytes` decodes base64url; `prfResult` is total so enrol falls
+through to the assertion `get()`). `press_deals` cleanup applied: only header-gated policies
+remain (`x-plan-id` = `sync_id`), anon DELETE revoked, `sync_id` NOT NULL — 🔴 finding closed.
+No open arc items.
 
 ## Project rules
 

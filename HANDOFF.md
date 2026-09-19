@@ -1,94 +1,49 @@
 # press — HANDOFF
 
-_Last updated: 2026-09-18 — hotfix/1password-passkey-crash (on arc/two-space-marquee)_
+_Last updated: 2026-09-19 — arc/two-space-marquee CLOSED_
 
 ## Standing rule — publish auto-close (do NOT re-litigate)
 
-An outward-facing publish at the end of a **green arc or hotfix** does NOT need a separate
-merge approval from Mark. When the gauntlet is green, complete the publish (merge to `main`,
-which is what GitHub Pages serves) as part of closing out — do not stop to ask. Set by Mark
-2026-09-18. (Auto-merge is still never enabled pre-emptively; this is about merging a
-finished, green change.)
-
-## Hotfix 2026-09-18 — 1Password passkey enrol crash — LIVE & verified
-
-Enrolment threw `expected bytes` (`vault.js` `asBytes`) AFTER `credentials.create` when the
-passkey came from the **1Password** extension: its `navigator.credentials` shim returns the
-WebAuthn PRF output as a **base64url STRING**, not an `ArrayBuffer`. The CDP virtual
-authenticator returns real `ArrayBuffer`s, which is why the Playwright smoke passed.
-
-- `src/vault.js`: `asBytes` decodes a base64url string → bytes (buffer branches first,
-  `TypeError` still the final fallback — arbitrary objects still rejected). `prfResult`
-  normalises to bytes at the boundary; missing/zero-length ⇒ absent (null); non-32-byte ⇒
-  refused with the human message. Private-wing panel logs the real error to `console.error`
-  and never surfaces a raw `TypeError`. `index.html` re-inlined byte-identical.
-- Tests closed the gap: unit (base64url string ≡ same key; wrong-length rejected; zero-length
-  absent; `asBytes` still rejects objects) + a new smoke enrol path that stubs
-  `getClientExtensionResults` to return the PRF result as a base64url string.
-- Shipped: PR #4 → `main` (merge `b359581`). Live-verified — served `index.html` blob
-  `8962b9d…` == GitHub main blob == local main blob; marker present; HTTP 200.
-- **Not yet done:** Mark must delete the orphaned 1Password passkey (no `press_vault` row —
-  enrol threw before the write) and RE-ENROL, then confirm Card Scout renders through the
-  vault. Only then does the deferred `press_deals` cleanup below run.
+An outward-facing publish at the end of a **green arc or hotfix** does NOT need a separate merge
+approval from Mark. When the gauntlet is green, complete the publish (merge to `main`, which is what
+GitHub Pages serves) as part of closing out — do not stop to ask. Set by Mark 2026-09-18.
+(Auto-merge is still never enabled pre-emptively; this is only about merging a finished, green change.)
 
 ## Current state
 
-**Two-space marquee built and verified across all five repos** (press + fsa-claims,
-giving-tracker, retirement, card-scout). Slices 1–7 committed on their branches. The marquee
-now has a public space and a **personal wing** gated by a WebAuthn-PRF passkey.
+**arc/two-space-marquee is COMPLETE.** The marquee is live with a public space + a personal wing
+gated by a WebAuthn-PRF passkey (`press_vault`), `spaces.json` driving the split, and a fail-closed
+publish gate in each personal app's `tools/release.js`. Passkey enrolment works, and `press_deals`
+is fully locked down (header-gated only). No open arc items.
 
-- `press_vault` table live on `eepjhpyziczrxvirczio` (header-gated RLS on `x-vault-id`, with a
-  DELETE policy for device revoke). `db/20260918_press_vault.sql`.
-- `press_deals` hardened (additive phase live): `sync_id` column + default + header-gated
-  policies added **alongside** the open ones. The destructive cleanup (drop the open policies,
-  revoke anon DELETE, `SET NOT NULL`) runs at the arc close, right after card-scout republishes
-  with `x-plan-id`. `db/20260918_press_deals_gate.sql`.
-- `index.html` splits public/personal via `spaces.json`; pinned "Private Wing" card; zero
-  WebAuthn/vault calls on the landing path. `src/vault.js` (HKDF + AES-GCM + WebAuthn PRF),
-  inlined via `tools/inline-vault.mjs`.
-- Each personal app adopts its creds from the `press:vault:v1` session in memory and no longer
-  rests a passphrase on disk; each `tools/release.js` has a fail-closed personal-space gate
-  (card-scout's `release.js` was built this arc).
+## Shipped this arc (close)
 
-## Published (2026-09-19) — LIVE
+- **Passkey enrol — hotfix 1:** 1Password returns the PRF as a base64url STRING; `asBytes` now
+  decodes base64url. PR #4 → `main` (`b359581`), live-verified.
+- **Passkey enrol — hotfix 2 (regression):** `prfResult` is now TOTAL — an unusable/enabled-only PRF
+  at create returns null instead of throwing, so enrol falls through to the assertion `get()` (the
+  real 1Password path). `asBytes` also recovers `.buffer`/numeric-keyed shim objects. PR #6 → `main`
+  (`9f3f792`), live-verified. 24 unit + 5 smoke + `inline:check` green.
+- **`press_deals` cleanup (Amendment B, was deferred):** migration
+  `20260918_press_deals_gate_cleanup` (Supabase version `20260919043403`) — dropped open
+  `_anon_all`/`_auth_all`, revoked anon+authenticated DELETE, `sync_id SET NOT NULL` (DEFAULT kept).
+  Only `press_deals_sel/_ins/_upd` (`x-plan-id` = `sync_id`) remain. 🔴 open-policy finding CLOSED.
+  `db/20260918_press_deals_gate_cleanup.sql`; probes in `docs/evidence/two-space-slice-4-deals-rls.txt`.
 
-The two-space marquee is live. All five publishes done + hash-verified (local `git hash-object` ==
-GitHub blob SHA) and serving HTTP 200: fsa/giving/card-scout (merged PRs, republished via
-`tools/release.js`), retirement (local-only repo — merged `--no-ff`, built `--public`, copied in),
-and `index.html` + `spaces.json` flipped LAST. The live marquee shows the Private Wing card; the
-landing makes zero WebAuthn / `press_vault` calls and each app's no-vault fallback is test-proven.
+## Open / blockers
 
-## The ONE remaining action (deferred — Amendment B)
+None. Non-arc, pre-existing security-advisor lints remain on **unrelated** objects (not press_deals):
+`rls_enabled_no_policy` on `press_capture_seen`/`press_capture_state`, and `security_definer_view` on
+the four public `press_agent_*` dashboard views. Address under agent-health work if ever wanted.
 
-The **`press_deals` cleanup migration** is held until Mark confirms he has enrolled the private-wing
-passkey AND Card Scout shows deals through the vault. Until then the open policies stay in place so
-the live Card Scout page keeps rendering deals through enrolment; the 🔴 open-policy finding stays
-OPEN until it runs. Exact SQL + negative-probe checklist are in `ARC.md`. The arc is NOT closed
-until it runs.
+## Exact next steps
 
-## Mark's manual steps (cannot be automated)
+No arc in flight. Next work starts a fresh arc via `/council:kickoff`.
 
-1. On the iMac, in the browser where the personal apps already work: marquee → the **Private
-   Wing** card → **Set up the private wing**. Enrol the 1Password passkey. The setup form pre-fills
-   from the sync ids + passphrases already in that browser; **paste the card-scout `sync_id`**
-   (generated in SLICE 4, first4/last4 `1722…8e13` — the full value was handed to you out of band;
-   it is never committed).
-2. Enrol a **second passkey** from the iPhone or iPad (Private Wing → Devices → **Add this
-   device**) so one lost device is not one lost wing.
-3. Push nothing by hand — the arc close publishes.
+## Mark's manual steps
 
-## How to revoke a device
-
-- In the browser: **Private Wing → Devices → Remove**. This deletes that passkey's `press_vault`
-  row (the `press_vault` DELETE policy is gated on `x-vault-id` = the row id, so a caller can only
-  delete the row whose credential it can present). Removing the current device locks the wing here.
-- Out of band (belt-and-braces): delete the row directly —
-  `delete from public.press_vault where id = '<sha256-hex of the device credential id>';`
-  Other enrolled passkeys keep their own sealed copy and are unaffected.
-- Losing access entirely (no enrolled passkey left) means the personal wing cannot be opened; the
-  underlying app data is still reachable by each app's manual sync-id + passphrase fallback.
-
-## Blockers
-
-None. The destructive `press_deals` cleanup is deferred to the close by design (Amendment A/B),
-to avoid breaking the live card-scout page mid-arc.
+- Optional: enrol a **second passkey** (Private Wing → Devices → Add this device) so one lost device
+  isn't one lost wing.
+- Revoke a device: Private Wing → Devices → Remove (deletes that passkey's `press_vault` row; the
+  DELETE policy is gated on `x-vault-id` = the row id). Out of band:
+  `delete from public.press_vault where id = '<sha256-hex of the device credential id>';`.
