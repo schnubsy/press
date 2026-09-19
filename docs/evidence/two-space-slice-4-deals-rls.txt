@@ -34,3 +34,44 @@ CLEANUP (deferred to arc close — Amendment A step 6, sequenced AFTER card-scou
     - correct header => own rows only
     - anon DELETE => rejected
   and get_advisors(security) is re-checked clean.
+
+================================================================================
+CLEANUP APPLIED — 2026-09-19  (migration 20260918_press_deals_gate_cleanup,
+                               Supabase version 20260919043403, project eepjhpyziczrxvirczio)
+Precondition MET: private-wing passkey enrolment succeeded and Card Scout renders
+deals through the vault (Mark confirmed). Ran AFTER card-scout.html republished with x-plan-id.
+
+Statements applied (DDL):
+  drop policy if exists press_deals_anon_all on public.press_deals;
+  drop policy if exists press_deals_auth_all on public.press_deals;
+  revoke delete on table public.press_deals from anon, authenticated;
+  alter table public.press_deals alter column sync_id set not null;   -- DEFAULT kept
+
+Post-state (service-role introspection):
+  policies now: press_deals_ins, press_deals_sel, press_deals_upd  (open _anon_all/_auth_all GONE)
+  sync_id: is_nullable=NO, DEFAULT still present
+  anon/authenticated DELETE grant: revoked ([])
+  rows: 15 total, 0 null sync_id, 1 distinct sync_id, 0 stray probe rows
+
+NEGATIVE PROBES (live anon publishable key sb_publishable__iv3bI7…2yyFS4uX; plan id masked 1722…8e13):
+  1. no x-plan-id header        => HTTP 200, body [], Content-Range */0            (ZERO rows)     PASS
+  2. mismatched header (0000…dead)
+       GET                      => HTTP 200, body []                               (ZERO rows)     PASS
+       INSERT (no body sync_id) => HTTP 401, 42501 "new row violates row-level
+                                   security policy for table press_deals"          (REJECTED)      PASS
+  3. matching header 1722…8e13  => HTTP 200, 15 rows, Content-Range 0-14/15                         PASS
+       (own rows only: table holds exactly 1 distinct sync_id over 15 rows, so the
+        15 returned are all-and-only this capability's rows)
+  4. anon DELETE (header 1722…8e13, filter item_id=eq.__no_such_item__)
+                                => HTTP 401, 42501 "permission denied for table
+                                   press_deals" (DELETE grant revoked)             (REJECTED)      PASS
+  5. enumerate: select=* no header => HTTP 200, body [], Content-Range */0         (NOT LISTABLE)  PASS
+
+get_advisors(security) re-run: NO new lints from this cleanup. press_deals is clean (no finding).
+Remaining lints are pre-existing and unrelated to this arc:
+  - rls_enabled_no_policy (INFO): public.press_capture_seen, public.press_capture_state (agent-health capture tables)
+  - security_definer_view (ERROR): press_agent_runs_daily_public, press_agent_health_public,
+    press_agent_runs_daily_all_public, press_agent_runs_public (public read-only agent-health dashboard views)
+
+Live card-scout.html re-verified serving after cleanup (see history.md). The 🔴 open-policy finding is CLOSED.
+================================================================================
