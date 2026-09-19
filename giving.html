@@ -6490,9 +6490,49 @@ window.GT.exp = {
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
 
   // ---- storage helpers ----
-  function readCfg(){ try { return C.readConfig(LS.getItem(C.SYNC_KEY)); } catch(e){ return null; } }
-  function writeCfg(cfg){ try { LS.setItem(C.SYNC_KEY, C.packConfig(cfg)); } catch(e){} }
-  function clearCfg(){ try { LS.removeItem(C.SYNC_KEY); LS.removeItem(DOC_KEY); } catch(e){} }
+  // Two-space arc: the passphrase no longer rests on disk. giving_sync_v1 keeps only the non-secret
+  // config (id, label, loadedVersion); the passphrase lives in the private-wing vault session, or —
+  // for a direct visit with no vault — in tab-scoped sessionStorage (cleared on tab close).
+  var PASS_SS = 'giving:pass';
+  function ssGet(k){ try { return window.sessionStorage ? sessionStorage.getItem(k) : null; } catch(e){ return null; } }
+  function ssSet(k,v){ try { if(window.sessionStorage) sessionStorage.setItem(k, v); } catch(e){} }
+  function ssDel(k){ try { if(window.sessionStorage) sessionStorage.removeItem(k); } catch(e){} }
+  function readCfg(){
+    try {
+      var cfg = C.readConfig(LS.getItem(C.SYNC_KEY));
+      if(cfg && !cfg.passphrase){ cfg.passphrase = ssGet(PASS_SS) || null; }
+      return cfg;
+    } catch(e){ return null; }
+  }
+  function writeCfg(cfg){
+    try {
+      // persist WITHOUT the passphrase; hold the passphrase only in tab-scoped sessionStorage
+      LS.setItem(C.SYNC_KEY, C.packConfig({ id:cfg.id, passphrase:null, label:cfg.label, loadedVersion:cfg.loadedVersion }));
+      if(cfg.passphrase) ssSet(PASS_SS, cfg.passphrase); else ssDel(PASS_SS);
+    } catch(e){}
+  }
+  function clearCfg(){ try { LS.removeItem(C.SYNC_KEY); LS.removeItem(DOC_KEY); ssDel(PASS_SS); } catch(e){} }
+
+  // ---- private-wing vault session (read-only; the marquee owns the crypto) ----
+  function pressVault(page){
+    try {
+      var s = JSON.parse(LS.getItem('press:vault:v1')||'null');
+      if(!s || !s.expiresAt || Date.now() > s.expiresAt) return null;
+      return (s.keyring && s.keyring.apps && s.keyring.apps[page]) || null;
+    } catch(e){ return null; }
+  }
+  function vaultCreds(){
+    var v = pressVault('giving.html');
+    return (v && v.sync_id && v.pass) ? { id:v.sync_id, passphrase:v.pass, label:'this device', loadedVersion:null } : null;
+  }
+  // Once the vault path is live, strip any LEGACY passphrase persisted in giving_sync_v1.
+  function migrateCfgOffDisk(){
+    try {
+      var raw = C.readConfig(LS.getItem(C.SYNC_KEY));
+      if(raw){ LS.setItem(C.SYNC_KEY, C.packConfig({ id:raw.id, passphrase:null, label:raw.label, loadedVersion:raw.loadedVersion })); }
+      ssDel(PASS_SS);
+    } catch(e){}
+  }
   function readDocCache(){ try { var s=LS.getItem(DOC_KEY); return s?JSON.parse(s):null; } catch(e){ return null; } }
   function writeDocCache(doc){ try { LS.setItem(DOC_KEY, JSON.stringify(doc)); } catch(e){} }
 
@@ -7376,9 +7416,13 @@ window.GT.exp = {
 
   // ---- boot / auth ----
   function boot(){
-    state.cfg = readCfg();
+    // Private wing first: adopt {id, passphrase} from the marquee's vault session IN MEMORY and
+    // skip the passphrase prompt; then strip any legacy passphrase from giving_sync_v1.
+    var vc = vaultCreds();
+    state.cfg = vc || readCfg();
+    if(vc){ migrateCfgOffDisk(); }
     if(!C.isEnabled(state.cfg)){ selectTab('create'); showLock(); return; }
-    // Identity present in localStorage -> stay signed in, no passphrase re-entry.
+    // Identity present (vault session or on-device) -> stay signed in, no passphrase re-entry.
     state.doc = M.migrateDoc(readDocCache() || M.seededDoc());
     if(state.doc.settings && state.doc.settings.theme) applyTheme();
     showApp(); render();
