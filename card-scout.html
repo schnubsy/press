@@ -128,9 +128,22 @@
   var esc = function(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); };
   function sync(cls,txt){ var s=el("sync"); s.className=cls; s.textContent=txt; }
 
+  // Two-space arc: press_deals is header-gated (x-plan-id = the card-scout sync_id). The sync_id
+  // comes from the marquee's private-wing vault session (read-only); it is cached to localStorage so
+  // a direct visit in the same browser still sees deals. The sync_id is a capability, never a
+  // passphrase, and is NEVER committed to the repo.
+  function planId(){
+    try{
+      var s = JSON.parse(localStorage.getItem("press:vault:v1")||"null");
+      var v = s && s.expiresAt && Date.now() <= s.expiresAt && s.keyring && s.keyring.apps && s.keyring.apps["card-scout.html"];
+      if(v && v.sync_id){ try{ localStorage.setItem("card-scout:sync_id", v.sync_id); }catch(e){} return v.sync_id; }
+    }catch(e){}
+    try{ return localStorage.getItem("card-scout:sync_id") || null; }catch(e){ return null; }
+  }
   function api(path, opts){
     opts = opts || {};
     opts.headers = Object.assign({}, H, opts.headers||{});
+    if(path.indexOf("press_deals")===0){ var sid=planId(); if(sid) opts.headers["x-plan-id"]=sid; }
     return fetch(REST+path, opts);
   }
   function saveLS(){ try{ localStorage.setItem(LS, JSON.stringify(state)); }catch(e){} }
@@ -206,6 +219,7 @@
   function priceLine(d){
     if(d.price!=null&&d.face_value!=null) return "$"+d.price+" for $"+d.face_value;
     if(d.price!=null) return "$"+d.price;
+    if(d.extras&&d.extras.unpriced) return "worth a look — price not parsed";
     return esc((d.category||"gift card"));
   }
 
