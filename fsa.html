@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#14161A">
   <title>FSA Claims</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMTQxNjFBIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJBMkYzNiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIyIDQ5LjMyIEEyMCAyMCAwIDAgMSAxNC42OCAyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDBBM0UwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIzMiIgeTE9IjMyIiB4Mj0iNDAiIHkyPSIxOC4xNCIgc3Ryb2tlPSIjRTZFOUVEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
-  <meta name="build" content="2026-09-19T15:10:57.991Z b4c696d">
+  <meta name="build" content="2026-09-19T16:17:46.638Z 4b35dca">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="manifest" href="fsa-assets/manifest.webmanifest">
@@ -2797,8 +2797,10 @@ async function boot() {
 
   // Passkey or nothing. The sealed private-wing keyring is the ONLY source of creds — read into
   // memory for this page's life, never surfaced, never persisted. No passphrase field exists.
-  // Purge any legacy on-disk sync id / passphrase from before this arc.
-  migrateCredsOffDisk();
+  // NOTE (hotfix/disable-cred-purge): the legacy on-disk purge is DELIBERATELY not called here.
+  // The vault keyring is not yet populated, so on-disk creds are currently the only backup of the
+  // passphrases; deleting them before the keyring is proven would strand the ciphertext. The purge
+  // will return inside hydrate(), gated on a successful decrypt (see HANDOFF).
   setSignedOutView(true);   // nothing renders behind the gate until the passkey unlocks
   reveal();                 // leave preboot so the full-page gate is visible
   PressGate.guard({
