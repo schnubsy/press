@@ -1,0 +1,29 @@
+SLICE 3 — two-space marquee smoke + unit
+Date: 2026-09-19T02:06:57Z
+
+== node --test (vault unit, unchanged from slice 2 + PRF fallback) ==
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 108.883499
+
+== npx playwright test (CDP virtual authenticator, PRF, hermetic) ==
+  ✓  1 [chromium] › test/marquee.spec.mjs:104:1 › landing shows the two-space marquee and makes ZERO vault calls (not set up) (509ms)
+  ✓  2 [chromium] › test/marquee.spec.mjs:125:1 › enrol → 4 cards → lock → unlock → lock (full private-wing flow) (938ms)
+  ✓  3 [chromium] › test/marquee.spec.mjs:159:1 › landing screenshots — desktop + mobile (two-space) (710ms)
+  3 passed (2.9s)
+
+== inline sync check ==
+inline-vault: index.html is in sync with src/vault.js
+
+Assertions proven:
+ - landing renders the pinned Private Wing card; state from LOCAL session only
+ - landing + ?view=archive issue ZERO press_vault requests (counter asserted 0)
+ - public header counts only the 5 public cards; personal files absent from marquee
+ - enrol (WebAuthn PRF) -> 4 personal cards -> Lock now -> Unlock -> 4 cards
+ - landing then reads 'Unlocked · 4 tools' with no NEW vault request
+
+Screenshots (docs/evidence/): marquee-desktop.png, marquee-mobile.png (REPLACED),
+  two-space-personal-locked.png, two-space-personal-unlocked.png

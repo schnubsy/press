@@ -235,6 +235,50 @@ body.tw-sorting .tw-card{transition:none}
   padding:7px 14px;border-radius:var(--tw-radius-pill)}
 @media (prefers-reduced-motion:reduce){.tw-skel::after{animation:none}
   .tw-card,.tw-card:hover{transform:none !important}}
+
+/* ══ two-space marquee — the pinned personal card + the private wing ══════════
+   The personal/secure card is a PLACE (a sibling of .tw-arch), pinned to the top
+   of the stack, never draggable. The private-wing view lives at ?view=personal. */
+.tw-secure{position:relative;display:block;text-decoration:none;color:inherit;padding:20px 22px;margin:0 0 14px;
+  border-radius:var(--tw-radius-card);
+  background:radial-gradient(150px 96px at 88% 26%, rgba(231,166,199,.16), transparent 70%),var(--tw-glass-card);
+  border:1px solid rgba(231,166,199,.34);cursor:pointer;overflow:hidden;box-shadow:var(--tw-shadow-card);
+  transition:box-shadow var(--tw-transition-card),border-color var(--tw-transition-card),transform .32s var(--tw-spring)}
+.tw-secure:hover{border-color:rgba(231,166,199,.6);transform:translateY(-2px) scale(1.01);box-shadow:var(--tw-shadow-card-hover)}
+.tw-secure:focus-visible{outline:2px solid var(--tw-rose);outline-offset:3px}
+.tw-secure .k{font-size:var(--tw-eyebrow);letter-spacing:var(--tw-track-eyebrow);text-transform:uppercase;
+  color:var(--tw-rose);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.tw-secure h3{font-family:var(--tw-font-display);font-weight:400;font-size:var(--tw-arch-title)}
+.tw-secure .lockline{font-family:var(--tw-font-meta);font-size:11px;color:var(--tw-muted);margin-top:7px}
+.tw-secure .sicon{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:30px;height:30px;
+  display:flex;align-items:center;justify-content:center;color:var(--tw-rose);pointer-events:none;
+  filter:drop-shadow(0 0 6px rgba(231,166,199,.4))}
+.tw-secure .sicon svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+/* private-wing view */
+.tw-unlock{padding:32px 24px;border-radius:var(--tw-radius-card);background:var(--tw-glass-card);
+  border:1px solid var(--tw-border-card);text-align:center;box-shadow:var(--tw-shadow-card)}
+.tw-unlock .sicon svg{width:42px;height:42px;stroke:var(--tw-rose);fill:none;stroke-width:1.6;
+  stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 10px rgba(231,166,199,.4));margin-bottom:14px}
+.tw-unlock h3{font-family:var(--tw-font-display);font-weight:400;font-size:18px;margin-bottom:8px}
+.tw-unlock p{font-size:13px;color:var(--tw-muted);max-width:330px;margin:0 auto 20px}
+.tw-btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--tw-font-meta);font-size:12px;
+  letter-spacing:.08em;text-transform:uppercase;color:#fff;cursor:pointer;border:0;
+  background:linear-gradient(92deg,var(--tw-violet),var(--tw-rose));
+  padding:12px 22px;border-radius:var(--tw-radius-pill);box-shadow:0 8px 24px rgba(142,123,232,.35)}
+.tw-btn:hover{filter:brightness(1.08)}
+.tw-btn[disabled]{opacity:.6;cursor:progress}
+.tw-secmsg{font-size:12.5px;margin-top:14px;min-height:1em}
+.tw-secbar{display:flex;gap:10px;align-items:center;justify-content:flex-start;margin:2px 0 16px}
+.tw-mini{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);padding:7px 12px;border-radius:var(--tw-radius-pill);
+  cursor:pointer;background:rgba(16,12,30,.4)}
+.tw-mini:hover{border-color:var(--tw-violet);background:rgba(142,123,232,.12)}
+.tw-devices{margin-top:18px;border-top:1px solid var(--tw-hairline);padding-top:16px}
+.tw-devices h4{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tw-muted);margin-bottom:12px}
+.tw-device{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;font-size:13px}
+.tw-device .meta{font-family:var(--tw-font-meta);font-size:10.5px;color:var(--tw-faint)}
 </style>
 </head>
 <body class="tw-page">
@@ -242,6 +286,303 @@ body.tw-sorting .tw-card{transition:none}
   <div class="tw-in">
     <div id="tw-root"></div>
   </div>
+<!-- VAULT_INLINE: the block below is a VERBATIM inline of src/vault.js (single source of
+     truth, unit-tested in Node). Regenerate with: node tools/inline-vault.mjs -->
+<!-- @@VAULT_INLINE@@ -->
+<script>
+/* eslint-disable */
+/* =============================================================================
+ * press vault module — the personal-wing key store.
+ *
+ * ONE source of truth for both the Node unit tests and the browser: this file has
+ * no import/export and simply assigns `globalThis.PressVault`. SLICE 3 inlines it
+ * verbatim into index.html (sets window.PressVault); the Node tests load it with a
+ * side-effect `import` and read the same global. The site keeps NO build step.
+ *
+ * Crypto: the AES-256-GCM key is derived IN THE BROWSER from the 32-byte WebAuthn
+ * PRF output via HKDF-SHA-256 (RFC 5869). HKDF — not the apps' PBKDF2 — is the right
+ * KDF here: the input is high-entropy PRF output, not a low-entropy passphrase, so
+ * no work factor is needed. seal/open FAIL CLOSED: a wrong key, a tampered blob or a
+ * malformed record returns null, never a partial or a thrown plaintext.
+ *
+ * Session rationale: today each personal app persists its own passphrase in
+ * localStorage INDEFINITELY (e.g. `fsa:pass`). This module keeps the decrypted
+ * keyring in ONE place — `press:vault:v1` — that EXPIRES (8h TTL) and is revocable,
+ * which is strictly stronger than the status quo and is what lets "open any personal
+ * app in a new tab" work without re-prompting.
+ * ========================================================================== */
+(function (root) {
+  'use strict';
+
+  var subtle = (globalThis.crypto && globalThis.crypto.subtle) || null;
+
+  // --- config (all public / embeddable) --------------------------------------
+  var SUPA_URL = 'https://eepjhpyziczrxvirczio.supabase.co';
+  var SUPA_KEY = 'sb_publishable__iv3bI7xDAsOdHUlXzbVZQ_2yyFS4uX';
+  var VAULT_EP = SUPA_URL + '/rest/v1/press_vault';
+
+  // rp.id is the origin's effective domain. In production that is 'schnubsy.github.io'
+  // (so 1Password binds the passkey to the live site); under a localhost test origin it
+  // is 'localhost'. Deriving it from location.hostname is equivalent to omitting rpId and
+  // keeps the WebAuthn calls valid on both origins. Node (no location) keeps the prod value.
+  var RP_ID = (typeof location !== 'undefined' && location.hostname) ? location.hostname : 'schnubsy.github.io';
+  var INFO = 'press-vault-v1';
+  // Fixed 32-byte PRF salt constant — the same input is evaluated for every passkey
+  // so the PRF output is stable per credential. NOT a secret (it only selects which
+  // PRF value the authenticator returns); the confidentiality is the PRF output.
+  var PRF_SALT = new Uint8Array([
+    0x70, 0x72, 0x65, 0x73, 0x73, 0x2d, 0x76, 0x61, 0x75, 0x6c, 0x74, 0x2d, 0x70, 0x72, 0x66, 0x2d,
+    0x76, 0x31, 0x2d, 0x73, 0x61, 0x6c, 0x74, 0x2d, 0x32, 0x30, 0x32, 0x36, 0x30, 0x39, 0x31, 0x38
+  ]);
+
+  var SESSION_KEY = 'press:vault:v1';
+  var ENROLLED_FLAG = 'press:vault:enrolled';
+  var TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
+
+  // --- byte helpers (Node + browser) -----------------------------------------
+  function asBytes(x) {
+    if (x instanceof Uint8Array) return x;
+    if (x instanceof ArrayBuffer) return new Uint8Array(x);
+    if (ArrayBuffer.isView(x)) return new Uint8Array(x.buffer, x.byteOffset, x.byteLength);
+    throw new TypeError('expected bytes');
+  }
+  function b64(bytes) {
+    var b = asBytes(bytes), s = '';
+    for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+    return btoa(s);
+  }
+  function ub64(str) {
+    var s = atob(str), out = new Uint8Array(s.length);
+    for (var i = 0; i < s.length; i++) out[i] = s.charCodeAt(i);
+    return out;
+  }
+  function hex(bytes) {
+    var b = asBytes(bytes), s = '';
+    for (var i = 0; i < b.length; i++) s += b[i].toString(16).padStart(2, '0');
+    return s;
+  }
+  function randomBytes(n) {
+    var out = new Uint8Array(n);
+    globalThis.crypto.getRandomValues(out);
+    return out;
+  }
+
+  async function sha256hex(bytes) {
+    var d = await subtle.digest('SHA-256', asBytes(bytes));
+    return hex(new Uint8Array(d));
+  }
+
+  // --- key derivation: HKDF-SHA-256 over the PRF output ----------------------
+  async function deriveKey(prfOutput, salt) {
+    var ikm = asBytes(prfOutput);
+    var baseKey = await subtle.importKey('raw', ikm, 'HKDF', false, ['deriveKey']);
+    return subtle.deriveKey(
+      { name: 'HKDF', hash: 'SHA-256', salt: asBytes(salt), info: new TextEncoder().encode(INFO) },
+      baseKey,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  }
+
+  // --- seal / open (AES-256-GCM, fresh 12-byte IV, fail closed) ---------------
+  async function sealKeyring(keyring, key) {
+    var iv = randomBytes(12);
+    var pt = new TextEncoder().encode(JSON.stringify(keyring));
+    var ct = await subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, pt);
+    return { ciphertext: b64(ct), iv: b64(iv) };
+  }
+  async function openKeyring(record, key) {
+    try {
+      if (!record || typeof record.ciphertext !== 'string' || typeof record.iv !== 'string') return null;
+      var pt = await subtle.decrypt({ name: 'AES-GCM', iv: ub64(record.iv) }, key, ub64(record.ciphertext));
+      var obj = JSON.parse(new TextDecoder().decode(pt));
+      if (!obj || typeof obj !== 'object') return null;
+      return obj;
+    } catch (e) {
+      return null; // wrong key, tampered blob, malformed record — all fail closed
+    }
+  }
+
+  async function vaultIdFor(rawCredentialId) {
+    return sha256hex(rawCredentialId);
+  }
+
+  var emptyKeyring = function () {
+    return {
+      v: 1,
+      apps: {
+        'fsa.html': { sync_id: '', pass: '' },
+        'giving.html': { sync_id: '', pass: '' },
+        'retirement.html': { sync_id: '', pass: '' },
+        'card-scout.html': { sync_id: '' }
+      }
+    };
+  };
+
+  // --- session (localStorage, 8h TTL) ----------------------------------------
+  function store() { return (typeof globalThis.localStorage !== 'undefined') ? globalThis.localStorage : null; }
+
+  function saveSession(keyring, vaultId) {
+    var s = store(); if (!s) return null;
+    var now = Date.now();
+    var sess = { keyring: keyring, unlockedAt: now, expiresAt: now + TTL_MS, vaultId: vaultId };
+    try {
+      s.setItem(SESSION_KEY, JSON.stringify(sess));
+      s.setItem(ENROLLED_FLAG, '1');
+    } catch (e) {}
+    return sess;
+  }
+  function loadSession() {
+    var s = store(); if (!s) return null;
+    try {
+      var sess = JSON.parse(s.getItem(SESSION_KEY) || 'null');
+      if (!sess || !sess.expiresAt || Date.now() > sess.expiresAt) {
+        if (sess) s.removeItem(SESSION_KEY); // drop an expired session
+        return null;
+      }
+      return sess;
+    } catch (e) { return null; }
+  }
+  function lock() {
+    var s = store(); if (!s) return;
+    try { s.removeItem(SESSION_KEY); } catch (e) {}
+    // Nudge other open tabs to drop the session too. A same-tab write to localStorage
+    // does not fire `storage` in that tab, so we also dispatch it locally.
+    try {
+      if (typeof globalThis.dispatchEvent === 'function' && typeof StorageEvent === 'function') {
+        globalThis.dispatchEvent(new StorageEvent('storage', { key: SESSION_KEY, newValue: null }));
+      }
+    } catch (e) {}
+  }
+  function everEnrolled() { var s = store(); if (!s) return false; try { return s.getItem(ENROLLED_FLAG) === '1'; } catch (e) { return false; } }
+
+  // --- REST helpers (header-gated on x-vault-id) -----------------------------
+  function headers(vaultId, extra) {
+    var h = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'x-vault-id': vaultId };
+    if (extra) for (var k in extra) h[k] = extra[k];
+    return h;
+  }
+  async function fetchRow(vaultId) {
+    var r = await fetch(VAULT_EP + '?id=eq.' + encodeURIComponent(vaultId) + '&select=*', { headers: headers(vaultId) });
+    if (!r.ok) return null;
+    var rows = await r.json();
+    return (rows && rows[0]) || null;
+  }
+  async function putRow(vaultId, sealed, label) {
+    var body = { id: vaultId, ciphertext: sealed.ciphertext, iv: sealed.iv, salt: sealed.salt, kdf: 'hkdf-sha256', version: 1, label: label || null };
+    var r = await fetch(VAULT_EP, {
+      method: 'POST',
+      headers: headers(vaultId, { 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=representation' }),
+      body: JSON.stringify(body)
+    });
+    return r.ok;
+  }
+
+  // --- WebAuthn (browser only; exercised via Playwright virtual authenticator) --
+  function prfExt() { return { prf: { eval: { first: PRF_SALT } } }; }
+  function prfResult(cred) {
+    var ext = cred.getClientExtensionResults ? cred.getClientExtensionResults() : {};
+    return ext && ext.prf && ext.prf.results && ext.prf.results.first ? ext.prf.results.first : null;
+  }
+  // Some authenticators (and some browsers) return the PRF output only at ASSERTION
+  // time, exposing just { prf: { enabled: true } } at creation. Fall back to one get()
+  // so enrol works regardless of when the PRF value is delivered.
+  async function prfViaGet(rawId) {
+    try {
+      var a = await navigator.credentials.get({
+        publicKey: {
+          rpId: RP_ID, challenge: randomBytes(32),
+          allowCredentials: rawId ? [{ type: 'public-key', id: rawId }] : [],
+          userVerification: 'required', extensions: prfExt()
+        }
+      });
+      return prfResult(a);
+    } catch (e) { return null; }
+  }
+
+  async function enrol(opts) {
+    opts = opts || {};
+    var userId = randomBytes(16);
+    var cred = await navigator.credentials.create({
+      publicKey: {
+        rp: { id: RP_ID, name: 'press — the private wing' },
+        user: { id: userId, name: opts.label || 'private-wing', displayName: opts.label || 'Private Wing' },
+        challenge: randomBytes(32),
+        pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+        authenticatorSelection: { residentKey: 'required', userVerification: 'required' },
+        extensions: prfExt()
+      }
+    });
+    var prf = prfResult(cred);
+    if (!prf) prf = await prfViaGet(cred.rawId); // PRF may only be delivered at assertion time
+    if (!prf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
+    var vaultId = await vaultIdFor(cred.rawId);
+    var salt = randomBytes(32);
+    var key = await deriveKey(prf, salt);
+    var keyring = (opts.keyring && opts.keyring.apps) ? opts.keyring : emptyKeyring();
+    var sealed = await sealKeyring(keyring, key); sealed.salt = b64(salt);
+    var ok = await putRow(vaultId, sealed, opts.label || null);
+    if (!ok) throw new Error('Could not save the new key to the vault.');
+    saveSession(keyring, vaultId);
+    return { vaultId: vaultId, keyring: keyring };
+  }
+
+  async function unlock() {
+    var assertion = await navigator.credentials.get({
+      publicKey: {
+        rpId: RP_ID,
+        challenge: randomBytes(32),
+        allowCredentials: [],        // discoverable — 1Password offers any enrolled passkey
+        userVerification: 'required',
+        extensions: prfExt()
+      }
+    });
+    var prf = prfResult(assertion);
+    if (!prf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
+    var vaultId = await vaultIdFor(assertion.rawId);
+    var record = await fetchRow(vaultId);
+    if (!record) throw new Error('No enrolled passkey found for the personal space on this device.');
+    var key = await deriveKey(prf, ub64(record.salt));
+    var keyring = await openKeyring(record, key);
+    if (!keyring) throw new Error('Could not open the personal space with this passkey.');
+    saveSession(keyring, vaultId);
+    return { vaultId: vaultId, keyring: keyring, record: record };
+  }
+
+  // Enrol a SECOND credential and write the SAME keyring, sealed under the new key,
+  // as a NEW row. Never re-keys or touches existing rows. Requires an open keyring.
+  async function addPasskey(opts) {
+    opts = opts || {};
+    var sess = loadSession();
+    if (!sess || !sess.keyring) throw new Error('Unlock the personal space before adding a device.');
+    return enrol({ label: opts.label || 'added-device', keyring: sess.keyring });
+  }
+
+  async function revoke(vaultId) {
+    var r = await fetch(VAULT_EP + '?id=eq.' + encodeURIComponent(vaultId), { method: 'DELETE', headers: headers(vaultId, { 'Prefer': 'return=representation' }) });
+    if (!r.ok) return false;
+    var gone = await r.json();
+    return Array.isArray(gone) && gone.length > 0;
+  }
+
+  root.PressVault = {
+    // config / constants
+    SUPA_URL: SUPA_URL, SUPA_KEY: SUPA_KEY, VAULT_EP: VAULT_EP, RP_ID: RP_ID, INFO: INFO,
+    PRF_SALT: PRF_SALT, SESSION_KEY: SESSION_KEY, ENROLLED_FLAG: ENROLLED_FLAG, TTL_MS: TTL_MS,
+    // crypto
+    deriveKey: deriveKey, sealKeyring: sealKeyring, openKeyring: openKeyring, vaultIdFor: vaultIdFor,
+    emptyKeyring: emptyKeyring,
+    // byte helpers (exposed for tests / inlining)
+    b64: b64, ub64: ub64, hex: hex, sha256hex: sha256hex, randomBytes: randomBytes,
+    // session
+    saveSession: saveSession, loadSession: loadSession, lock: lock, everEnrolled: everEnrolled,
+    // webauthn + rest
+    enrol: enrol, unlock: unlock, addPasskey: addPasskey, revoke: revoke, fetchRow: fetchRow
+  };
+})(globalThis);
+</script>
+<!-- @@/VAULT_INLINE@@ -->
 <script>
 const OWNER='schnubsy', REPO='press';
 const API=`https://api.github.com/repos/${OWNER}/${REPO}/contents`;
@@ -265,7 +606,8 @@ const ICONS={
   'Guide':     '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
   'Money':     '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
   'Page':      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>',
-  'Archive':   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+  'Archive':   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+  'Secure':    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="10.5" r="1.5"/><path d="M12 12V15"/></svg>'
 };
 const iconFor=k=>ICONS[k]||ICONS['Page'];
 /* R3.4/R3.5 — Feather "sunrise" inside the "new" pill (early morning sun = fresh) */
@@ -288,9 +630,42 @@ async function loadManifest(dir){
   try{const r=await fetch(`${RAW}/${path}`);if(!r.ok)return null;return await r.json();}catch(e){return null;}
 }
 /* ── cache fallback: last good marquee list survives an outage ── */
-const CACHE_KEY='press:marquee:v2';
-function cacheSave(files, man){ try{ localStorage.setItem(CACHE_KEY, JSON.stringify({files, man})); }catch(e){} }
+const CACHE_KEY='press:marquee:v3';
+function cacheSave(files, man, spaces){ try{ localStorage.setItem(CACHE_KEY, JSON.stringify({files, man, spaces})); }catch(e){} }
 function cacheLoad(){ try{ return JSON.parse(localStorage.getItem(CACHE_KEY)||'null'); }catch(e){ return null; } }
+
+/* ══ two spaces — public + personal wing ════════════════════════════════════
+   spaces.json (repo-owned, NEVER written by a release script) decides which
+   pages belong to the personal wing. A page in neither list is PUBLIC (matches
+   today's behaviour). The split must NOT ride on press_portal (anon read/write).
+   The landing/public marquee resolve card state from the LOCAL vault session
+   only — ZERO WebAuthn and ZERO press_vault calls here. */
+let SPACES={personal:[]};
+function normSpaces(s){ return {personal: Array.isArray(s&&s.personal)? s.personal : []}; }
+function isPersonalFile(f){ return (SPACES.personal||[]).includes(f); }
+async function loadSpaces(){ try{ const r=await fetch(`${RAW}/spaces.json`); if(!r.ok) return null; return await r.json(); }catch(e){ return null; } }
+function vaultState(){
+  const sess = (window.PressVault && PressVault.loadSession) ? PressVault.loadSession() : null; // localStorage only
+  const enrolled = (window.PressVault && PressVault.everEnrolled) ? PressVault.everEnrolled() : false;
+  return {sess, enrolled};
+}
+function personalCount(){ return (SPACES.personal||[]).length; }
+function timeLeft(expiresAt){
+  const ms = expiresAt - Date.now(); if(ms<=0) return 'expiring';
+  const h = Math.floor(ms/3600000), m = Math.round((ms%3600000)/60000);
+  return h>0 ? `${h}h ${m}m left` : `${m}m left`;
+}
+function secureCardHTML(){
+  const st = vaultState(), n = personalCount();
+  let line;
+  if(st.sess)        line = `Unlocked · ${n} tools · ${timeLeft(st.sess.expiresAt)}`;
+  else if(st.enrolled) line = `Locked · ${n} tools · tap to unlock`;
+  else               line = `Set up the private wing`;
+  return `<a class="tw-secure" href="./?view=personal" draggable="false">`+
+    `<div class="k">⬤ Personal</div><h3>The Private Wing</h3>`+
+    `<div class="lockline">${esc(line)}</div>`+
+    `<span class="sicon">${ICONS['Secure']}</span></a>`;
+}
 
 /* ══ R3 — shared portal state (sort order + archived pages) ══════════════════
    Synced for everyone via Supabase press_portal (same press project + publishable
@@ -366,11 +741,16 @@ const skelHTML=`${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><
   `<div class="tw-skel"></div><div class="tw-skel"></div><div class="tw-skel"></div>`;
 
 function paintMarquee(root, files, man, physArchiveCount, stale){
-  const {ordered, newest, stateArchived} = applyState(files, man);
+  // personal-wing files are removed BEFORE applyState — they can never be sorted,
+  // dragged into the public archive, or counted among the public cards.
+  const pub = files.filter(f=>!isPersonalFile(f));
+  const {ordered, newest, stateArchived} = applyState(pub, man);
   const archiveCount = physArchiveCount + stateArchived.length;
+  const secure = secureCardHTML();
   if(!ordered.length){
     root.innerHTML = `${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>${COPY_FLAVOR}</span></div>`+
       `<h2 class="tw-title">${COPY_TITLE}</h2>`+
+      secure +
       `<div class="tw-empty"><h3>Nothing on the marquee yet</h3>`+
       `<p>Published pages appear here automatically.</p></div>`+
       (archiveCount?archiveCardHTML(archiveCount):'');
@@ -385,7 +765,7 @@ function paintMarquee(root, files, man, physArchiveCount, stale){
     staleNote +
     `<h2 class="tw-title">${COPY_TITLE}</h2>`+
     `<div class="tw-dek">${COPY_DEK}</div>`+
-    cards + archiveCardHTML(archiveCount) +
+    secure + cards + archiveCardHTML(archiveCount) +
     `<div class="tw-hint">hold a card to lift it · drop on the archive to tuck it away</div>`+
     `<div class="tw-auto">↻ auto-listed from the repository root</div>`;
   wireDrag(root);
@@ -500,14 +880,16 @@ async function renderMarquee(root){
   root.innerHTML = skelHTML;
   pLocalLoad();
   try{
-    const results = await Promise.all([listPages(''), loadManifest(''), pCloudLoad().catch(()=>{})]);
+    const results = await Promise.all([listPages(''), loadManifest(''), loadSpaces(), pCloudLoad().catch(()=>{})]);
     const files = results[0], man = results[1];
+    SPACES = normSpaces(results[2]);
     let physCount = 0; try{ physCount=(await listPages('archive')).length; }catch(e){}
-    cacheSave(files, man);
+    cacheSave(files, man, SPACES);
     paintMarquee(root, files, man, physCount, false);
   }catch(e){
     const cached = cacheLoad();
     if(cached && Array.isArray(cached.files) && cached.files.length){
+      SPACES = normSpaces(cached.spaces);
       paintMarquee(root, cached.files, cached.man, 0, true);
     } else {
       root.innerHTML = `${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>${COPY_FLAVOR}</span></div>`+
@@ -526,9 +908,11 @@ async function renderArchive(root){
   pLocalLoad();
   try{
     const results = await Promise.all([listPages('archive').catch(()=>[]), loadManifest('archive'),
-                                       listPages(''), loadManifest(''), pCloudLoad().catch(()=>{})]);
+                                       listPages(''), loadManifest(''), loadSpaces(), pCloudLoad().catch(()=>{})]);
     const physFiles=results[0], physMan=results[1], rootFiles=results[2], rootMan=results[3];
-    const stateArchived = rootFiles.filter(f=>PSTATE.archived.includes(f));
+    SPACES = normSpaces(results[4]);
+    // personal-wing pages never appear in the archive either — fail-safe filter
+    const stateArchived = rootFiles.filter(f=>PSTATE.archived.includes(f) && !isPersonalFile(f));
     const back = `<a class="tw-back" href="index.html">← the marquee</a>`;
     const total = physFiles.length + stateArchived.length;
     if(!total){
@@ -582,10 +966,91 @@ async function renderArchive(root){
       `<span class="tw-retry" onclick="location.reload()">Retry</span></div>`;
   }
 }
+/* ══ the private wing — ?view=personal ══════════════════════════════════════
+   WebAuthn / press_vault are touched ONLY inside a button click here — never on
+   load — so an idle tab never prompts and never calls the vault. */
+function deviceLabel(){ try{ return (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || 'this device'; }catch(e){ return 'this device'; } }
+function friendlyErr(e){
+  const name=(e&&e.name)||'', msg=(e&&e.message)||'';
+  if(name==='NotAllowedError') return 'Cancelled — or the prompt timed out. Try again.';
+  if(/can.?t hold the key/i.test(msg)) return "This browser or authenticator can't hold the key for the personal space.";
+  if(/No enrolled passkey/i.test(msg)) return 'No passkey for the personal space on this device yet.';
+  return msg || 'Something went wrong. Try again.';
+}
+async function loadDevices(root, man){
+  const list=document.getElementById('devList'); if(!list) return;
+  list.innerHTML='<div class="meta">loading…</div>';
+  const st=vaultState(); if(!st.sess){ list.innerHTML=''; return; }
+  let row=null; try{ row=await PressVault.fetchRow(st.sess.vaultId); }catch(e){}
+  const label=(row&&row.label)||'This device';
+  const created=(row&&row.created_at)?new Date(row.created_at).toLocaleDateString():'—';
+  list.innerHTML =
+    `<div class="tw-device"><span>${esc(label)} <span class="meta">· this device · added ${esc(created)}</span></span>`+
+    `<span class="tw-mini" id="revBtn">Remove</span></div>`+
+    `<div class="meta" style="margin-top:8px">Each enrolled passkey holds its own sealed copy — other devices keep their access.</div>`;
+  document.getElementById('revBtn').addEventListener('click', async ()=>{
+    if(!confirm('Remove this device from the private wing? You will need another enrolled passkey to get back in from here.')) return;
+    try{ await PressVault.revoke(st.sess.vaultId); PressVault.lock(); paintPersonal(root, man); }
+    catch(e){ list.insertAdjacentHTML('beforeend', `<div class="tw-secmsg" style="color:var(--tw-rose)">${esc(friendlyErr(e))}</div>`); }
+  });
+}
+function paintPersonal(root, man){
+  const back=`<a class="tw-back" href="index.html">← the marquee</a>`;
+  const top=`<div class="tw-top"><span>The <b>Private Wing</b></span><span>personal tools</span></div>`;
+  const st=vaultState();
+  if(st.sess){
+    const cards=(SPACES.personal||[]).map(f=>cardHTML(f, man, false)).join('');
+    root.innerHTML = back+top+`<h2 class="tw-title">Behind the passkey.</h2>`+
+      `<div class="tw-dek">Unlocked · ${timeLeft(st.sess.expiresAt)}. Open any tool — no more prompts until you lock or it expires.</div>`+
+      `<div class="tw-secbar"><span class="tw-mini" id="lockBtn">⏻ Lock now</span>`+
+      `<span class="tw-mini" id="devBtn">⚙ Devices</span></div>`+
+      cards +
+      `<div class="tw-devices" id="devWrap" hidden><h4>Enrolled passkeys</h4><div id="devList"></div>`+
+      `<div style="margin-top:14px"><span class="tw-mini" id="addBtn">＋ Add this device</span></div>`+
+      `<div class="tw-secmsg" id="devMsg"></div></div>`;
+    document.getElementById('lockBtn').addEventListener('click', ()=>{ PressVault.lock(); paintPersonal(root, man); });
+    const devWrap=document.getElementById('devWrap');
+    document.getElementById('devBtn').addEventListener('click', ()=>{ devWrap.hidden=!devWrap.hidden; if(!devWrap.hidden) loadDevices(root, man); });
+    document.getElementById('addBtn').addEventListener('click', async ()=>{
+      const m=document.getElementById('devMsg'); m.style.color=''; m.textContent='Creating a passkey for this device…';
+      try{ await PressVault.addPasskey({label: deviceLabel()}); m.style.color='var(--tw-violet)'; m.textContent='Device added.'; loadDevices(root, man); }
+      catch(e){ m.style.color='var(--tw-rose)'; m.textContent=friendlyErr(e); }
+    });
+  } else {
+    const enrolled=st.enrolled;
+    root.innerHTML = back+top+`<h2 class="tw-title">Behind the passkey.</h2>`+
+      `<div class="tw-unlock"><span class="sicon">${ICONS['Secure']}</span>`+
+      `<h3>${enrolled?'Unlock the private wing':'Set up the private wing'}</h3>`+
+      `<p>${enrolled
+          ?'Use your passkey to open your personal tools. Nothing here loads until you unlock.'
+          :'Create a passkey for this space. Your sync keys are gathered from this browser and sealed behind it — one lock for every personal tool.'}</p>`+
+      `<button class="tw-btn" id="unlockBtn">${enrolled?'Use your passkey':'Set up the private wing'}</button>`+
+      `<div class="tw-secmsg" id="secmsg"></div></div>`;
+    const btn=document.getElementById('unlockBtn'), msg=document.getElementById('secmsg');
+    btn.addEventListener('click', async ()=>{
+      btn.disabled=true; msg.style.color=''; msg.textContent = enrolled?'Waiting for your passkey…':'Creating your passkey…';
+      try{
+        if(enrolled) await PressVault.unlock(); else await PressVault.enrol({label: deviceLabel()});
+        paintPersonal(root, man);
+      }catch(e){ btn.disabled=false; msg.style.color='var(--tw-rose)'; msg.textContent=friendlyErr(e); }
+    });
+  }
+}
+async function renderPersonal(root){
+  root.innerHTML = `<a class="tw-back" href="index.html">← the marquee</a>`+
+    `<div class="tw-top"><span>The <b>Private Wing</b></span><span>personal tools</span></div>`+
+    `<h2 class="tw-title">Behind the passkey.</h2><div class="tw-skel"></div>`;
+  let man=null;
+  try{ const res=await Promise.all([loadManifest(''), loadSpaces()]); man=res[0]; SPACES=normSpaces(res[1]); }
+  catch(e){ SPACES=normSpaces(null); }
+  paintPersonal(root, man);
+}
+
 const params = new URLSearchParams(location.search);
-const isArchive = params.get('view')==='archive' || location.hash==='#archive';
+const isArchive  = params.get('view')==='archive'  || location.hash==='#archive';
+const isPersonal = params.get('view')==='personal' || location.hash==='#personal';
 const root = document.getElementById('tw-root');
-(isArchive ? renderArchive : renderMarquee)(root);
+(isPersonal ? renderPersonal : isArchive ? renderArchive : renderMarquee)(root);
 </script>
 </body>
 </html>

@@ -1,0 +1,46 @@
+SLICE 4 — press_deals PRE-IMAGE (captured BEFORE any change)
+Project: eepjhpyziczrxvirczio   Table: public.press_deals
+Captured: 2026-09-19T ~02:00Z
+
+ROW SNAPSHOT
+  count: 15   (ARC recorded 14; the live card-scout agent added d-f32f027e at 2026-09-19T01:52Z)
+  PK: (page, item_id).  All rows page='card-scout'.
+  item_ids:
+    d-cd93564b-be5aaa, d-972435fc-57baf7, d-51237707, d-94471609, d-7fa6fb8a,
+    d-77246960-d6c775, d-916f714e, d-1abd4d37, d-1cdfde77-0e8aae, d-96eb155a-2ad113,
+    d-f328416a, d-ff9f78e8, d-00064363, d-2586d7e7-603000, d-f32f027e
+  oldest created_at 2026-09-18T16:52:25Z · newest 2026-09-19T01:52:07Z
+  (full row_to_json snapshot retained in the migration tool result / session transcript)
+
+POLICIES (the 🔴 finding — anon can read AND write every row)
+  press_deals_anon_all : cmd=ALL roles={anon}          qual=true  with_check=true
+  press_deals_auth_all : cmd=ALL roles={authenticated} qual=true  with_check=true
+
+GRANTS (table-level)
+  anon:          SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER
+  authenticated: SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER
+  service_role:  ALL
+
+COLUMNS (no sync_id yet)
+  page text NOT NULL, item_id text NOT NULL, title/brand/category/... nullable,
+  lane text NOT NULL default 'cloud', status text NOT NULL default 'raw',
+  extras jsonb NOT NULL default '{}', created_at/updated_at timestamptz NOT NULL default now()
+
+ROLLBACK (if any step fails — restores the exact pre-image; nothing before step 6 is destructive)
+  drop policy if exists press_deals_sel  on public.press_deals;
+  drop policy if exists press_deals_ins  on public.press_deals;
+  drop policy if exists press_deals_upd  on public.press_deals;
+  create policy press_deals_anon_all on public.press_deals for all to anon
+    using (true) with check (true);
+  create policy press_deals_auth_all on public.press_deals for all to authenticated
+    using (true) with check (true);
+  grant select, insert, update, delete on table public.press_deals to anon, authenticated;
+  -- (sync_id column is additive with a DEFAULT and harms nothing if left in place;
+  --  drop it only if a full revert is wanted: alter table public.press_deals drop column sync_id;)
+
+NOTE ON THE SECRET
+  The generated 128-bit sync_id (first4/last4 3eb5…7076) is the card-scout capability key.
+  It is NEVER committed to schnubsy/press. The committed migration db/20260918_press_deals_gate.sql
+  carries the placeholder __CARD_SCOUT_SYNC_ID__; the real value was substituted only at
+  apply time (via the Supabase MCP, landing in the project's own migration history) and is
+  handed to Mark to paste into enrolment.

@@ -1,0 +1,27 @@
+SLICE 2 — vault module unit tests (node --test)
+Date: 2026-09-19T01:56:20Z
+Node: v24.14.1
+
+✔ vaultIdFor is 64-hex and deterministic (6.53895ms)
+✔ different raw credential ids give different vault ids (0.754452ms)
+✔ round-trip: seal then open with the same key returns the keyring (3.495929ms)
+✔ the SAME PRF output + salt derives the identical key (the property the design rests on) (1.449102ms)
+✔ two different PRF outputs derive different keys (wrong PRF => null) (1.253168ms)
+✔ a different salt derives a different key (wrong salt => null) (0.967108ms)
+✔ a flipped ciphertext byte fails closed (GCM auth) => null (0.984861ms)
+✔ a truncated record (missing iv) => null (0.693131ms)
+✔ a malformed record (garbage ciphertext) => null (0.685059ms)
+✔ openKeyring(null) and openKeyring({}) => null (never throws) (0.554847ms)
+✔ session: save then load returns keyring + vaultId within TTL (0.348142ms)
+✔ session: an expired session loads as null and is removed (0.153518ms)
+✔ lock() clears the session (0.144062ms)
+✔ everEnrolled flag is set after a save and survives lock() (0.129394ms)
+✔ GUARD ON THE GUARD: the sealed record leaks ZERO keyring values; the plaintext has all (2.649734ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 128.660701

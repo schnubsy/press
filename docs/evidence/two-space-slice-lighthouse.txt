@@ -1,0 +1,12 @@
+STANDARD SLICE — Lighthouse (built index.html)
+Date: 2026-09-19   Served locally from the committed index.html (no build step).
+
+LANDING  (index.html):               perf=88  a11y=96  best-practices=96
+PERSONAL (index.html?view=personal): perf=93  a11y=96  best-practices=96  (render-blocking resources: 0)
+
+Budgets (testing.md): perf >= 85, a11y >= 90 — both views PASS.
+The landing does not regress: the two-space split adds only a small spaces.json fetch and resolves
+card state from the LOCAL vault session (zero WebAuthn, zero press_vault, zero render-blocking work).
+The personal view's manifest/spaces fetches are async (not render-blocking); WebAuthn fires only on
+the unlock button click, never on load.
+Raw reports: two-space-lighthouse-landing.json, two-space-lighthouse-personal.json.

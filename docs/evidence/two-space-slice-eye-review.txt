@@ -1,0 +1,21 @@
+STANDARD SLICE — Eye lite design review (SLICE 3 screenshots)
+Date: 2026-09-19   Reviewed: marquee-desktop.png, marquee-mobile.png,
+                              two-space-personal-locked.png, two-space-personal-unlocked.png
+
+Verdict: 🟢 no 🔴 P0 findings — no fix slice needed.
+
+Landing (desktop + mobile):
+- The Private Wing card is pinned FIRST, visually distinct from the public cards: rose accent
+  (⬤ PERSONAL kicker + rose shield-with-keyhole icon) against the violet public set — reads as a
+  place, not a page, exactly as intended. Header count reads only the public cards ("5 showing").
+- Consistent with the existing Twilight Cut / Neon masthead system (Unbounded display face, glass
+  cards, aurora field). Mobile restacks cleanly, no horizontal overflow, icons aligned right-center.
+
+Private wing (locked + unlocked):
+- Locked: a single centred unlock panel, shield glyph, plain-language copy ("Nothing here loads
+  until you unlock"), one gradient CTA. Calm, unambiguous. Unlocked: back link, "Unlocked · Nh left"
+  status, Lock now + Devices controls, the four personal cards.
+
+🟡 (non-P0, NOT actioned): personal cards render a generic "PAGE" kicker because the arc forbids
+adding KICKERS entries (spaces.json alone decides the space). Real pages.json titles already sit on
+these pages in production, so the live wing reads better than the stubbed test fixture shown here.

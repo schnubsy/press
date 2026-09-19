@@ -1,0 +1,50 @@
+SLICE 1 — press_vault header-gated RLS proof (live anon publishable key; key redacted below)
+Endpoint: https://eepjhpyziczrxvirczio.supabase.co/rest/v1/press_vault
+anon key: sb_publishable__iv3bI7xDAs…FS4uX   TESTID=a1b1c1d1e1f101112131415161718192a2b2c2d2e2f30313233343536373839a0   WRONGID=<all-f>
+Date: 2026-09-19T01:51:28Z
+
+=== A. SELECT with NO x-vault-id header  (expect [] — table not listable to anon) ===
+[]
+
+=== B. SELECT with a MISMATCHED x-vault-id  (expect []) ===
+[]
+
+=== C. INSERT with MISMATCHED header (id != x-vault-id)  (expect 403 RLS violation, no row) ===
+HTTP 401
+{"code":"42501","details":null,"hint":null,"message":"new row violates row-level security policy for table \"press_vault\""}
+
+=== D. INSERT with MATCHING header (id == x-vault-id)  (expect 201, row returned, version 1) ===
+[{"id":"a1b1c1d1e1f101112131415161718192a2b2c2d2e2f30313233343536373839a0","ciphertext":"ct1","iv":"iv1","salt":"sa1","kdf":"hkdf-sha256","version":1,"label":"probe-device","created_at":"2026-09-19T01:51:33.132803+00:00","updated_at":"2026-09-19T01:51:33.132803+00:00"}]
+HTTP 201
+
+=== D2. INSERT a SECOND row under WRONGID's own matching header  (expect 201 — owns its own row) ===
+HTTP 201
+
+=== E. SELECT with TESTID header  (expect ONLY the TESTID row, not WRONGID's) ===
+[{"id":"a1b1c1d1e1f101112131415161718192a2b2c2d2e2f30313233343536373839a0","version":1,"label":"probe-device"}]
+
+=== F. UPDATE with MATCHING header  (expect version 2, updated_at bumped by trigger) ===
+[{"id":"a1b1c1d1e1f101112131415161718192a2b2c2d2e2f30313233343536373839a0","ciphertext":"ct1","iv":"iv1","salt":"sa1","kdf":"hkdf-sha256","version":2,"label":"probe-device","created_at":"2026-09-19T01:51:33.132803+00:00","updated_at":"2026-09-19T01:51:33.407285+00:00"}]
+HTTP 200
+
+=== G. DELETE with MISMATCHED header  (expect [] — deletes nothing it cannot present) ===
+[]
+
+=== H. DELETE with MATCHING header  (expect the TESTID row returned = deleted from the browser) ===
+[{"id":"a1b1c1d1e1f101112131415161718192a2b2c2d2e2f30313233343536373839a0","ciphertext":"ct1","iv":"iv1","salt":"sa1","kdf":"hkdf-sha256","version":2,"label":"probe-device","created_at":"2026-09-19T01:51:33.132803+00:00","updated_at":"2026-09-19T01:51:33.407285+00:00"}]
+
+=== I. Re-SELECT with TESTID header after delete  (expect [] — row is gone) ===
+[]
+
+(WRONGID probe row is cleaned up via service role after this script.)
+
+=== get_advisors(security) after 20260918_press_vault (+ search_path fix) ===
+NEW lints introduced by press_vault: NONE.
+- The transient function_search_path_mutable on press_vault_touch_updated_at was fixed by
+  `set search_path = ''` (migration 20260918_press_vault_fix_search_path) and no longer appears.
+Pre-existing lints, unrelated to this arc (unchanged before/after):
+  - rls_enabled_no_policy: press_capture_seen, press_capture_state
+  - security_definer_view: press_agent_runs_daily_public, press_agent_health_public,
+    press_agent_runs_daily_all_public, press_agent_runs_public
+Migration history: 20260918_press_vault, 20260918_press_vault_fix_search_path (both applied).
+press_vault left empty (0 rows) after probe cleanup.
