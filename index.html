@@ -344,6 +344,16 @@ body.tw-sorting .tw-card{transition:none}
     if (x instanceof Uint8Array) return x;
     if (x instanceof ArrayBuffer) return new Uint8Array(x);
     if (ArrayBuffer.isView(x)) return new Uint8Array(x.buffer, x.byteOffset, x.byteLength);
+    // 1Password's navigator.credentials shim hands the PRF output back as a base64url
+    // STRING, not an ArrayBuffer. Decode it (base64url -> bytes) so callers still get
+    // bytes. This is the ONLY string we accept — arbitrary objects still throw below.
+    if (typeof x === 'string') {
+      var s = x.replace(/-/g, '+').replace(/_/g, '/');
+      while (s.length % 4) s += '=';
+      var bin = atob(s), out = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+      return out;
+    }
     throw new TypeError('expected bytes');
   }
   function b64(bytes) {
@@ -481,9 +491,21 @@ body.tw-sorting .tw-card{transition:none}
 
   // --- WebAuthn (browser only; exercised via Playwright virtual authenticator) --
   function prfExt() { return { prf: { eval: { first: PRF_SALT } } }; }
+  // Normalise the PRF output to bytes at the boundary so every caller (enrol/unlock)
+  // gets a Uint8Array regardless of the shim: the CDP virtual authenticator returns an
+  // ArrayBuffer, 1Password returns a base64url STRING. A missing / zero-length result is
+  // treated as ABSENT (null), never as success; a non-32-byte result is refused here
+  // rather than deriving an AES key from something the wrong size.
   function prfResult(cred) {
     var ext = cred.getClientExtensionResults ? cred.getClientExtensionResults() : {};
-    return ext && ext.prf && ext.prf.results && ext.prf.results.first ? ext.prf.results.first : null;
+    var first = (ext && ext.prf && ext.prf.results) ? ext.prf.results.first : null;
+    if (!first) return null;                 // absent: missing, null, or ''
+    var bytes = asBytes(first);              // ArrayBuffer | TypedArray | base64url string -> bytes
+    if (bytes.length === 0) return null;     // a zero-length result is absent, not success
+    if (bytes.length !== 32) {               // wrong size -> refuse, don't derive a bad key
+      throw new Error("This browser or authenticator can't hold the key for the personal space.");
+    }
+    return bytes;
   }
   // Some authenticators (and some browsers) return the PRF output only at ASSERTION
   // time, exposing just { prf: { enabled: true } } at creation. Fall back to one get()
@@ -574,7 +596,9 @@ body.tw-sorting .tw-card{transition:none}
     deriveKey: deriveKey, sealKeyring: sealKeyring, openKeyring: openKeyring, vaultIdFor: vaultIdFor,
     emptyKeyring: emptyKeyring,
     // byte helpers (exposed for tests / inlining)
-    b64: b64, ub64: ub64, hex: hex, sha256hex: sha256hex, randomBytes: randomBytes,
+    asBytes: asBytes, b64: b64, ub64: ub64, hex: hex, sha256hex: sha256hex, randomBytes: randomBytes,
+    // webauthn PRF normalisation (exposed for tests)
+    prfResult: prfResult,
     // session
     saveSession: saveSession, loadSession: loadSession, lock: lock, everEnrolled: everEnrolled,
     // webauthn + rest
@@ -975,6 +999,10 @@ function friendlyErr(e){
   if(name==='NotAllowedError') return 'Cancelled — or the prompt timed out. Try again.';
   if(/can.?t hold the key/i.test(msg)) return "This browser or authenticator can't hold the key for the personal space.";
   if(/No enrolled passkey/i.test(msg)) return 'No passkey for the personal space on this device yet.';
+  // Never surface a raw programming error (e.g. TypeError 'expected bytes' from a shim
+  // that returns the PRF output in an unexpected shape). Show a plain-language line; the
+  // real error is logged to console.error at the call site for diagnosis.
+  if(name==='TypeError' || name==='RangeError') return "Couldn't read the passkey response on this device. Please try again.";
   return msg || 'Something went wrong. Try again.';
 }
 async function loadDevices(root, man){
@@ -991,7 +1019,7 @@ async function loadDevices(root, man){
   document.getElementById('revBtn').addEventListener('click', async ()=>{
     if(!confirm('Remove this device from the private wing? You will need another enrolled passkey to get back in from here.')) return;
     try{ await PressVault.revoke(st.sess.vaultId); PressVault.lock(); paintPersonal(root, man); }
-    catch(e){ list.insertAdjacentHTML('beforeend', `<div class="tw-secmsg" style="color:var(--tw-rose)">${esc(friendlyErr(e))}</div>`); }
+    catch(e){ console.error('[private-wing] revoke failed:', e); list.insertAdjacentHTML('beforeend', `<div class="tw-secmsg" style="color:var(--tw-rose)">${esc(friendlyErr(e))}</div>`); }
   });
 }
 function paintPersonal(root, man){
@@ -1014,7 +1042,7 @@ function paintPersonal(root, man){
     document.getElementById('addBtn').addEventListener('click', async ()=>{
       const m=document.getElementById('devMsg'); m.style.color=''; m.textContent='Creating a passkey for this device…';
       try{ await PressVault.addPasskey({label: deviceLabel()}); m.style.color='var(--tw-violet)'; m.textContent='Device added.'; loadDevices(root, man); }
-      catch(e){ m.style.color='var(--tw-rose)'; m.textContent=friendlyErr(e); }
+      catch(e){ console.error('[private-wing] addPasskey failed:', e); m.style.color='var(--tw-rose)'; m.textContent=friendlyErr(e); }
     });
   } else {
     const enrolled=st.enrolled;
@@ -1032,7 +1060,7 @@ function paintPersonal(root, man){
       try{
         if(enrolled) await PressVault.unlock(); else await PressVault.enrol({label: deviceLabel()});
         paintPersonal(root, man);
-      }catch(e){ btn.disabled=false; msg.style.color='var(--tw-rose)'; msg.textContent=friendlyErr(e); }
+      }catch(e){ console.error('[private-wing] '+(enrolled?'unlock':'enrol')+' failed:', e); btn.disabled=false; msg.style.color='var(--tw-rose)'; msg.textContent=friendlyErr(e); }
     });
   }
 }

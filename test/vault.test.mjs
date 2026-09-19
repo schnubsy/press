@@ -154,3 +154,53 @@ test('GUARD ON THE GUARD: the sealed record leaks ZERO keyring values; the plain
   // and it still opens correctly
   assert.deepEqual(await V.openKeyring(rec, key), kr);
 });
+
+// --- SHIM NORMALISATION (the 1Password crash) ------------------------------
+// 1Password's navigator.credentials shim returns the PRF output as a base64url STRING,
+// not an ArrayBuffer. asBytes/prfResult must normalise it to the SAME bytes the CDP
+// virtual authenticator delivers, so the derived key is identical. These are the cases
+// the Playwright smoke could not catch (the virtual authenticator only ever returns
+// real ArrayBuffers).
+const toB64url = (bytes) => V.b64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+test('a base64url STRING PRF output derives the SAME key as the equivalent Uint8Array', async () => {
+  const bytes = V.randomBytes(32);
+  const asString = toB64url(bytes);
+  const kr = V.emptyKeyring();
+  const keyFromBytes = await V.deriveKey(bytes, SALT1);
+  const rec = await V.sealKeyring(kr, keyFromBytes);
+  const keyFromString = await V.deriveKey(asString, SALT1); // string path
+  assert.deepEqual(await V.openKeyring(rec, keyFromString), kr); // string opens what bytes sealed => same key
+});
+
+test('prfResult normalises a base64url STRING to the SAME bytes as an ArrayBuffer', () => {
+  const bytes = V.randomBytes(32);
+  const mk = (first) => ({ getClientExtensionResults: () => ({ prf: { results: { first } } }) });
+  assert.deepEqual(V.prfResult(mk(bytes)), bytes);                       // TypedArray in -> bytes
+  assert.deepEqual(V.prfResult(mk(bytes.buffer)), bytes);               // ArrayBuffer in -> bytes
+  assert.deepEqual(V.prfResult(mk(toB64url(bytes))), bytes);           // base64url string in -> SAME bytes
+});
+
+test('prfResult: a zero-length or missing PRF result is treated as ABSENT (null), not success', () => {
+  const mk = (first) => ({ getClientExtensionResults: () => ({ prf: { results: { first } } }) });
+  assert.equal(V.prfResult(mk(new Uint8Array(0))), null); // zero-length buffer => absent
+  assert.equal(V.prfResult(mk('')), null);                // empty string => absent
+  assert.equal(V.prfResult(mk(null)), null);              // explicit null => absent
+  assert.equal(V.prfResult({ getClientExtensionResults: () => ({}) }), null); // no prf ext at all
+});
+
+test('prfResult: a wrong-length PRF output is REJECTED with the human message', () => {
+  const mk = (first) => ({ getClientExtensionResults: () => ({ prf: { results: { first } } }) });
+  assert.throws(() => V.prfResult(mk(V.randomBytes(16))), /can.?t hold the key/i); // too short
+  assert.throws(() => V.prfResult(mk(V.randomBytes(48))), /can.?t hold the key/i); // too long
+  assert.throws(() => V.prfResult(mk(toB64url(V.randomBytes(16)))), /can.?t hold the key/i); // wrong-length string too
+});
+
+test('asBytes: base64url string decodes to the exact bytes; arbitrary objects still throw', () => {
+  const bytes = V.randomBytes(32);
+  assert.deepEqual(V.asBytes(toB64url(bytes)), bytes);
+  assert.deepEqual(V.asBytes(bytes), bytes);            // TypedArray passthrough
+  assert.deepEqual(V.asBytes(bytes.buffer), bytes);     // ArrayBuffer -> bytes
+  assert.throws(() => V.asBytes({}), TypeError);        // NOT loosened to accept arbitrary objects
+  assert.throws(() => V.asBytes(42), TypeError);
+});
