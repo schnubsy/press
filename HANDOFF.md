@@ -21,18 +21,21 @@ now has a public space and a **personal wing** gated by a WebAuthn-PRF passkey.
   rests a passphrase on disk; each `tools/release.js` has a fail-closed personal-space gate
   (card-scout's `release.js` was built this arc).
 
-## Next actions (the arc close — automatic when gauntlet + sentry are green)
+## Published (2026-09-19) — LIVE
 
-1. Publish the **apps first**: merge each app PR, run its `release.js` into press, verify live
-   200 + `git hash-object` == GitHub blob SHA.
-2. Before pushing press, assert + record: all 4 app pages 200 + hash-verify; each app still loads
-   with NO vault session (manual fallback works); `index.html` makes zero WebAuthn / `press_vault`
-   calls on the landing path. If any fails → stop before the press push, leave the app publishes
-   live, report.
-3. Publish **press last** (`index.html` + `spaces.json`).
-4. Apply the `press_deals` **cleanup** migration (drop `press_deals_anon_all` / `_auth_all`,
-   revoke anon DELETE, `SET NOT NULL sync_id`) after card-scout is live with `x-plan-id`; re-run
-   the negative anon probes + `get_advisors(security)`.
+The two-space marquee is live. All five publishes done + hash-verified (local `git hash-object` ==
+GitHub blob SHA) and serving HTTP 200: fsa/giving/card-scout (merged PRs, republished via
+`tools/release.js`), retirement (local-only repo — merged `--no-ff`, built `--public`, copied in),
+and `index.html` + `spaces.json` flipped LAST. The live marquee shows the Private Wing card; the
+landing makes zero WebAuthn / `press_vault` calls and each app's no-vault fallback is test-proven.
+
+## The ONE remaining action (deferred — Amendment B)
+
+The **`press_deals` cleanup migration** is held until Mark confirms he has enrolled the private-wing
+passkey AND Card Scout shows deals through the vault. Until then the open policies stay in place so
+the live Card Scout page keeps rendering deals through enrolment; the 🔴 open-policy finding stays
+OPEN until it runs. Exact SQL + negative-probe checklist are in `ARC.md`. The arc is NOT closed
+until it runs.
 
 ## Mark's manual steps (cannot be automated)
 
