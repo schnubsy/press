@@ -204,3 +204,76 @@ test('asBytes: base64url string decodes to the exact bytes; arbitrary objects st
   assert.throws(() => V.asBytes({}), TypeError);        // NOT loosened to accept arbitrary objects
   assert.throws(() => V.asBytes(42), TypeError);
 });
+
+// --- REGRESSION: prfResult must be TOTAL (the second 1Password crash) --------
+// The last hotfix left prfResult calling asBytes(first) UNGUARDED. 1Password at CREATE
+// time returned a `first` that was truthy but neither a buffer nor a base64url string, so
+// asBytes threw and the throw ESCAPED prfResult -> enrol's prfViaGet fallback never ran.
+const mkCred = (first) => ({ getClientExtensionResults: () => ({ prf: { results: { first } } }) });
+
+test('REGRESSION: prfResult returns null (never throws) for every unreadable shape', () => {
+  const cases = {
+    'empty object {}': {},
+    'numeric-keyed object': { 0: 1, 1: 2, 2: 3 },      // recovers to 3 bytes -> wrong length from a shim -> null
+    'non-base64 string': 'not base64 @@@ !!!',          // asBytes throws inside -> caught -> null
+    'explicit null': null,
+    'zero-length buffer': new Uint8Array(0),
+  };
+  for (const [name, first] of Object.entries(cases)) {
+    let out, threw = false;
+    try { out = V.prfResult(mkCred(first)); } catch (e) { threw = true; }
+    assert.equal(threw, false, `prfResult must not throw for ${name}`);
+    assert.equal(out, null, `prfResult must return null for ${name}`);
+  }
+});
+
+test('asBytes recovers a shim that wraps bytes in an object (.buffer view-like AND numeric-keyed)', () => {
+  const bytes = V.randomBytes(32);
+  // ArrayBufferView-like object exposing a real .buffer
+  const viewLike = { buffer: bytes.buffer, byteOffset: 0, byteLength: 32 };
+  assert.deepEqual(V.asBytes(viewLike), bytes);
+  // plain object with contiguous numeric keys
+  const numKeyed = {}; bytes.forEach((b, i) => { numKeyed[i] = b; });
+  assert.deepEqual(V.asBytes(numKeyed), bytes);
+  // and a 32-byte value recovered from either shim flows through prfResult as bytes
+  assert.deepEqual(V.prfResult(mkCred(viewLike)), bytes);
+  assert.deepEqual(V.prfResult(mkCred(numKeyed)), bytes);
+});
+
+test('a REAL PRF container of the wrong length is still REJECTED (kept green)', () => {
+  assert.throws(() => V.prfResult(mkCred(V.randomBytes(16))), /can.?t hold the key/i);   // view
+  assert.throws(() => V.prfResult(mkCred(toB64url(V.randomBytes(16)))), /can.?t hold the key/i); // string
+});
+
+test('REGRESSION: enrol falls through to prfViaGet when CREATE yields an unusable value, then succeeds from the assertion', async () => {
+  const PRF32 = V.randomBytes(32);
+  const rawId = V.randomBytes(20);
+  // globalThis.navigator is a getter-only prop in Node — stub it via defineProperty and restore.
+  const savedNavDesc = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  const savedFetch = globalThis.fetch;
+  let getCalls = 0;
+  globalThis.fetch = async () => ({ ok: true, json: async () => [{}] }); // putRow -> ok
+  Object.defineProperty(globalThis, 'navigator', {
+    configurable: true, writable: true,
+    value: {
+      credentials: {
+        // CREATE: 1Password shape — enabled but no usable results.first
+        create: async () => ({ rawId, getClientExtensionResults: () => ({ prf: { enabled: true, results: { first: {} } } }) }),
+        // ASSERTION: the real 32-byte PRF arrives here (as an ArrayBuffer)
+        get: async () => { getCalls++; return { rawId, getClientExtensionResults: () => ({ prf: { results: { first: PRF32.buffer.slice(0) } } }) }; },
+      },
+    },
+  });
+  try {
+    const out = await V.enrol({ label: 'unit-regression' });
+    assert.ok(out && out.vaultId, 'enrol resolved with a vaultId (did not throw)');
+    assert.equal(getCalls, 1, 'the assertion path (prfViaGet) was used exactly once');
+    // the enrolled keyring must be openable by a key derived from the SAME 32-byte PRF
+    const row = V.loadSession();
+    assert.ok(row && row.keyring, 'a session keyring was saved');
+    assert.equal(await V.vaultIdFor(rawId), out.vaultId, 'vaultId is derived from the credential id');
+  } finally {
+    if (savedNavDesc) Object.defineProperty(globalThis, 'navigator', savedNavDesc); else delete globalThis.navigator;
+    globalThis.fetch = savedFetch;
+  }
+});

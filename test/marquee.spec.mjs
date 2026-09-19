@@ -201,6 +201,36 @@ test('enrol works when the PRF result arrives as a base64url STRING (1Password s
   expect(consoleErrors.join('\n')).not.toMatch(/expected bytes|TypeError/i);
 });
 
+// REGRESSION for the SECOND 1Password crash: at CREATE time the shim returns
+// { prf: { enabled: true, results: { first: {} } } } — enabled, but no usable value. The PRF
+// only arrives at ASSERTION time. prfResult must treat the unusable CREATE value as absent
+// (never throw) so enrol falls through to prfViaGet() and completes from the get().
+test('enrol falls through to the assertion when the PRF is unusable at CREATE (1Password enabled-only)', async ({ page, context }) => {
+  const state = await harness(page, context);
+  // Nerf ONLY the create() extension results; leave get()'s real PRF intact.
+  await page.addInitScript(() => {
+    const origCreate = navigator.credentials.create.bind(navigator.credentials);
+    navigator.credentials.create = async (opts) => {
+      const cred = await origCreate(opts);
+      cred.getClientExtensionResults = () => ({ prf: { enabled: true, results: { first: {} } } });
+      return cred;
+    };
+  });
+
+  const consoleErrors = [];
+  page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
+
+  await page.goto(base + '/?view=personal');
+  await expect(page.locator('#unlockBtn')).toHaveText('Set up the private wing');
+  await page.locator('#unlockBtn').click();
+
+  // enrol must complete via the assertion path -> four cards, exactly one vault row, no crash
+  await expect(page.locator('.tw-card')).toHaveCount(PERSONAL_FILES.length);
+  await expect(page.locator('#lockBtn')).toBeVisible();
+  expect(state.vault.size).toBe(1);
+  expect(consoleErrors.join('\n')).not.toMatch(/expected bytes|TypeError/i);
+});
+
 test('landing screenshots — desktop + mobile (two-space)', async ({ page, context }) => {
   await harness(page, context);
   await page.setViewportSize({ width: 900, height: 1200 });
