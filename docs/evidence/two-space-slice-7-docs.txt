@@ -1,0 +1,17 @@
+SLICE 7 — docs, drift, close
+Date: 2026-09-19
+
+- docs/spec.md: rewritten — documents the two spaces, spaces.json (repo-owned, release scripts
+  only READ it), the vault model (press_vault, HKDF-over-PRF, keyring, session contract), and the
+  publish flow with the fail-closed personal-space gate. CORRECTED the stale pages.json section:
+  it is an OBJECT keyed by filename with {title} only; kicker + icon are derived in index.html
+  from KICKERS / ICONS (the old ARRAY-of-{filename,title,kicker,icon} shape was wrong).
+- CLAUDE.md: Current stage updated to the two-space marquee; the "do not modify" rule extended to
+  name spaces.json as repo-owned and OFF-LIMITS to release scripts; Where-things-live gains
+  spaces.json / src/vault.js / db/.
+- docs/lessons.md: recorded "obscurity is not access control" (the press_deals sibling of size-as-
+  sensitivity), the spaces.json / press_portal separation, and HKDF-vs-PBKDF2.
+- HANDOFF.md: current state, the arc-close next actions, Mark's manual steps, and how to revoke a
+  device (Devices → Remove, or delete the press_vault row by x-vault-id).
+- ARC.md: amendment block recording the card-scout release.js build, the SLICE 4 additive-then-
+  cleanup deferral, and the sessionStorage passphrase decision.

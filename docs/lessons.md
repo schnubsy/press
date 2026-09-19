@@ -33,3 +33,28 @@ without updating `pages.json`, it will not appear on the portal. Always update
 Pages must be self-contained. External CDN dependencies that break due to CORS or
 CSP will silently degrade the published page. Prefer inlining or use well-known
 CDNs (cdnjs.cloudflare.com, cdn.jsdelivr.net/npm).
+
+### [supabase] Obscurity is not access control — the sibling of size-as-sensitivity
+
+A value's *size* standing in for "is this sensitive?" has a sibling: a table's *obscurity*
+standing in for access control. `press_deals` shipped with `press_deals_anon_all` /
+`press_deals_auth_all` (`qual=true, with_check=true`) — anon could read AND write every row —
+on the tacit assumption that nobody would find the table. The two-space arc closed it by moving
+`press_deals` onto the same header-gated RLS as `press_fsa` (`x-plan-id = sync_id`), additive-then-
+cleanup so the live page never broke. Rule: every table anon can reach needs an explicit gate; "no
+one knows the name" is not one.
+
+### [press] spaces.json is repo-owned; the split never rides on press_portal
+
+The public/personal split lives in a repo-owned `spaces.json` (`{v, personal[]}`), NEVER written by
+a release script (they only read it, as the fail-closed publish gate). It must not depend on
+`press_portal` — that table is anon read/write, so an anonymous write must never be able to move a
+card between spaces. A page in neither list is treated as public (fail-open for visibility, fail-
+closed for publishing).
+
+### [crypto] HKDF for PRF output, PBKDF2 for passphrases
+
+The vault derives its AES-256-GCM key from the 32-byte WebAuthn PRF output via HKDF-SHA-256 — NOT the
+PBKDF2 the apps use for their document crypto. HKDF is correct for high-entropy input (the PRF output);
+PBKDF2's work factor only matters for low-entropy passphrases. Using the wrong one is either insecure
+(PBKDF2-less on a passphrase) or pointless overhead (PBKDF2 on high-entropy bytes).
