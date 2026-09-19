@@ -59,7 +59,7 @@ PBKDF2 the apps use for their document crypto. HKDF is correct for high-entropy 
 PBKDF2's work factor only matters for low-entropy passphrases. Using the wrong one is either insecure
 (PBKDF2-less on a passphrase) or pointless overhead (PBKDF2 on high-entropy bytes).
 
-### [robustness] A probe must return null, not throw — or it kills the caller's fallback
+### [robustness] (2026-09-19) A probe must return null, not throw — or it kills the caller's fallback
 
 This arc's passkey-enrol crash bit TWICE, same shape both times. `enrol()` is written to recover:
 `var prf = prfResult(cred); if (!prf) prf = await prfViaGet(cred.rawId);` — if the PRF is not readable
