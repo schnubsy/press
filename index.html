@@ -280,10 +280,10 @@ body.tw-sorting .tw-card{transition:none}
 .tw-device{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;font-size:13px}
 .tw-device .meta{font-family:var(--tw-font-meta);font-size:10.5px;color:var(--tw-faint)}
 /* connect your tools */
-.tw-connect{margin-top:20px;border-top:1px solid var(--tw-hairline);padding-top:16px}
-.tw-connect h4{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tw-muted);margin-bottom:8px}
+.tw-connect,.tw-protect{margin-top:20px;border-top:1px solid var(--tw-hairline);padding-top:16px}
+.tw-connect h4,.tw-protect h4{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tw-muted);margin-bottom:8px}
 .tw-cmeta{font-size:12px;color:var(--tw-muted);margin:0 0 14px;line-height:1.5}
-.tw-tool{border:1px solid var(--tw-border-card);border-radius:var(--tw-radius-card);padding:12px 14px;margin-bottom:10px;background:var(--tw-glass-card)}
+.tw-tool,.tw-ptool{border:1px solid var(--tw-border-card);border-radius:var(--tw-radius-card);padding:12px 14px;margin-bottom:10px;background:var(--tw-glass-card)}
 .tw-tool-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .tw-tool-name{font-size:14px}
 .tw-tool-status{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
@@ -1192,10 +1192,11 @@ async function loadDevices(root, man){
 const TOOL_CFG = {
   'fsa.html':        { label:'FSA Claims',          kind:'app', table:'press_fsa',        idcol:'sync_id', select:'doc,version',                 env:(r)=>r.doc },
   'giving.html':     { label:'Giving Tracker',      kind:'app', table:'press_giving',     idcol:'id',      select:'ciphertext,iv,salt,kdf_iters', env:(r)=>r },
-  'retirement.html': { label:'Retirement Projection',kind:'app', table:'press_retirement', idcol:'id',      select:'ciphertext,iv,salt,kdf_iters', env:(r)=>r },
+  'retirement.html': { label:'Retirement Projection',kind:'local' }, // local-only: no cloud sync; seals a per-tool data_key (see "Protect your local tools")
   'card-scout.html': { label:'Card Scout',          kind:'deals' }, // sync-id-only; verified against press_deals
 };
-const CONNECT_TOOLS = ['fsa.html','giving.html','retirement.html','card-scout.html'];
+const CONNECT_TOOLS = ['fsa.html','giving.html','card-scout.html']; // retirement is kind:'local' → the Protect section, not a cloud Connect tool
+const LOCAL_TOOLS = Object.keys(TOOL_CFG).filter(f=>TOOL_CFG[f].kind==='local'); // rendered by renderProtect(), never by renderConnect()
 function b64ToU8(s){ const b=atob(String(s)), u=new Uint8Array(b.length); for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i); return u; }
 async function appDecrypt(env, passphrase){
   if(!env || env.ciphertext==null || env.iv==null || env.salt==null) return null;
@@ -1336,6 +1337,61 @@ function wireConnect(root, man){
   });
 }
 
+/* ── Protect your local tools (kind:'local') ─────────────────────────────────
+   Local-only tools have NO cloud copy (no sync_id/passphrase). They seal a per-tool
+   data_key inside the SAME passkey-sealed keyring. ADDITIVE: the app/deals render +
+   connect paths above (renderConnect/wireConnect/toolFieldsHTML/toolConnected) are NOT
+   modified. FROZEN entry shape: apps[f] = { v:1, data_key:<32B base64url> }. */
+function protectStatus(f){ const k=vaultState().sess; const v=k&&k.keyring&&k.keyring.apps&&k.keyring.apps[f]; return (v&&v.data_key)?'protected':'unprotected'; }
+// STRUCTURAL refuse-to-replace: if a data_key already exists it is returned UNCHANGED and never
+// overwritten. The guard lives HERE (the write path), not in the UI — overwriting a live data_key
+// would make the encrypted store permanently unreadable. Rotation is intentionally NOT offered
+// this arc (it would require decrypt + re-encrypt of the whole store — see retirement docs/lessons).
+// `v` is a self-describing entry-version marker frozen up front (Slices 2/3/4 need only data_key).
+async function protectTool(f){
+  const sess=PressVault.loadSession(); if(!sess) throw new Error('Session expired — unlock again.');
+  const keyring=sess.keyring; keyring.apps=keyring.apps||{};
+  const existing=keyring.apps[f]||{};
+  if(existing.data_key) return { already:true, data_key:existing.data_key }; // never replace a live key
+  const data_key=PressVault.b64(PressVault.randomBytes(32)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); // 32 bytes, base64url
+  keyring.apps[f]={ v:1, data_key }; // canonical FROZEN shape
+  await PressVault.updateKeyring(keyring);
+  return { already:false, data_key };
+}
+function renderProtect(){
+  if(!LOCAL_TOOLS.length) return '';
+  return `<div class="tw-protect"><h4>Protect your local tools</h4>`+
+    `<p class="tw-cmeta"><b>Stored only on this device.</b> These tools keep their data in this browser and are <b>not backed up anywhere</b> — there is no cloud copy. Protecting a tool seals its on-device data behind your passkey. If you lose every enrolled passkey, this data cannot be recovered.</p>`+
+    LOCAL_TOOLS.map(f=>{
+      const on=protectStatus(f)==='protected';
+      return `<div class="tw-ptool" data-f="${f}">`+
+        `<div class="tw-tool-head"><span class="tw-tool-name">${esc(TOOL_CFG[f].label)}</span>`+
+        `<span class="tw-tool-status ${on?'on':'off'}">${on?'● protected':'○ not protected'}</span></div>`+
+        `<div class="tw-tool-actions"><span class="tw-btn tw-protect-btn" role="button" tabindex="0"${on?' hidden':''}>Protect this tool</span>`+
+        `<span class="tw-tool-msg" aria-live="polite"></span></div>`+
+      `</div>`;
+    }).join('')+
+    `</div>`;
+}
+function wireProtect(root, man){
+  root.querySelectorAll('.tw-ptool').forEach(el=>{
+    const f=el.getAttribute('data-f');
+    const btn=el.querySelector('.tw-protect-btn'), msg=el.querySelector('.tw-tool-msg'), status=el.querySelector('.tw-tool-status');
+    if(!btn) return;
+    const run=async ()=>{
+      msg.className='tw-tool-msg';
+      try{
+        const r=await protectTool(f);
+        status.className='tw-tool-status on'; status.textContent='● protected';
+        btn.hidden=true;
+        msg.classList.add('ok'); msg.textContent=r.already?'Already protected.':'Protected ✓ — sealed behind your passkey.';
+      }catch(e){ console.error('[private-wing] protect failed:', e); msg.classList.add('err'); msg.textContent=friendlyErr(e); }
+    };
+    btn.addEventListener('click', run);
+    btn.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') run(); });
+  });
+}
+
 function paintPersonal(root, man){
   const back=`<a class="tw-back" href="index.html">← the marquee</a>`;
   const top=`<div class="tw-top"><span>The <b>Private Wing</b></span><span>personal tools</span></div>`;
@@ -1348,6 +1404,7 @@ function paintPersonal(root, man){
       `<span class="tw-mini" id="devBtn">⚙ Devices</span></div>`+
       cards +
       renderConnect() +
+      renderProtect() +
       `<div class="tw-devices" id="devWrap" hidden><h4>Enrolled passkeys</h4><div id="devList"></div>`+
       `<div style="margin-top:14px"><span class="tw-mini" id="addBtn">＋ Add this device</span></div>`+
       `<div class="tw-secmsg" id="devMsg"></div></div>`;
@@ -1361,6 +1418,7 @@ function paintPersonal(root, man){
       catch(e){ console.error('[private-wing] addPasskey failed:', e); m.style.color='var(--tw-rose)'; m.textContent=friendlyErr(e); }
     });
     wireConnect(root, man);
+    wireProtect(root, man);
   } else {
     // DEFECT 2 fix: "Use your passkey" is ALWAYS the primary action (a discoverable get() works on
     // any device with the synced passkey), regardless of this device's local enrolled flag. "Set up
