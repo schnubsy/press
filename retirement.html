@@ -2,9 +2,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>Retirement Dashboard</title>
-<!-- Marquee favicon — house standard: 64px rounded stage, gradient Feather glyph, inline data URI. -->
-<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSI2NCIgeTI9IjY0IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjN0JDMEFDIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRTBCRDhGIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMwRjE2MTgiLz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg4IDgpIHNjYWxlKDIpIiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjZykiIHN0cm9rZS13aWR0aD0iMi44IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjMgMTggOS41IDExLjUgMTMuNSAxNS41IDIxIDYiLz48L2c+PC9zdmc+">
-<meta name="theme-color" content="#0f1618">
 <style>
 :root{
   --bg:#0f1618; --bg2:#0c1214; --sf:#151f22; --sf2:#1b282b; --sf3:#213033;
@@ -4694,6 +4691,24 @@ function readConfig(str) {
 }
 function isEnabled(cfg) { return !!(cfg && cfg.id && cfg.passphrase); }
 
+// ---- two-space arc: never persist the passphrase to disk -------------------
+// Pack the config for localStorage WITHOUT the passphrase (kept in sessionStorage / the vault).
+function packConfigPublic(cfg) { return packConfig({ id: cfg && cfg.id, passphrase: null,
+  label: cfg && cfg.label, loadedVersion: cfg && cfg.loadedVersion, localPlanId: cfg && cfg.localPlanId }); }
+
+// Read the private-wing vault session (a PARSED press:vault:v1 object) for this app's page and
+// return {id, passphrase, label, loadedVersion, localPlanId} to use IN MEMORY, or null. Read-only:
+// the marquee owns the crypto; this only reads the already-decrypted keyring. Expired/empty => null.
+function vaultCreds(session, page) {
+  try {
+    if (!session || !session.expiresAt || Date.now() > session.expiresAt) return null;
+    var apps = session.keyring && session.keyring.apps;
+    var v = apps && apps[page];
+    if (!v || !v.sync_id || !v.pass) return null;
+    return { id: v.sync_id, passphrase: v.pass, label: 'this device', loadedVersion: null, localPlanId: null };
+  } catch (e) { return null; }
+}
+
 // ---- REST helpers ----------------------------------------------------------
 function headers(id, extra) {
   var h = {
@@ -4771,6 +4786,7 @@ module.exports = {
   SB_URL: SB_URL, SB_KEY: SB_KEY, TABLE: TABLE, REST: REST,
   SYNC_KEY: SYNC_KEY, SYNC_VER: SYNC_VER,
   packConfig: packConfig, readConfig: readConfig, isEnabled: isEnabled,
+  packConfigPublic: packConfigPublic, vaultCreds: vaultCreds,
   headers: headers, load: load, save: save,
 };
 
@@ -10871,8 +10887,33 @@ function importPlanFromFile(e){
 let syncCfg = null;             // { id, passphrase, label, loadedVersion, localPlanId } | null
 let syncNewId = null;           // a freshly-generated id held while the setup form is open
 let syncConflictServer = null;  // the server meta captured when a save conflicts
-function loadSyncCfg(){ try{ syncCfg = SYNC.readConfig(localStorage.getItem(SYNC.SYNC_KEY)); }catch(e){ syncCfg=null; } return syncCfg; }
-function saveSyncCfg(){ try{ if(SYNC.isEnabled(syncCfg)) localStorage.setItem(SYNC.SYNC_KEY, SYNC.packConfig(syncCfg)); else localStorage.removeItem(SYNC.SYNC_KEY); }catch(e){} }
+// Two-space arc: the passphrase never rests on disk. retirement_sync_v1 keeps only the non-secret
+// config; the passphrase lives in the private-wing vault session, or — for a direct visit with no
+// vault — in tab-scoped sessionStorage (cleared on tab close).
+function pressVaultSession(){ try{ return JSON.parse(localStorage.getItem('press:vault:v1')||'null'); }catch(e){ return null; } }
+function ssGetPass(){ try{ return (window.sessionStorage && sessionStorage.getItem('retirement:pass'))||null; }catch(e){ return null; } }
+function migrateSyncOffDisk(){ try{ var raw=SYNC.readConfig(localStorage.getItem(SYNC.SYNC_KEY)); if(raw) localStorage.setItem(SYNC.SYNC_KEY, SYNC.packConfigPublic(raw)); if(window.sessionStorage) sessionStorage.removeItem('retirement:pass'); }catch(e){} }
+function loadSyncCfg(){
+  try{
+    // Private wing first: adopt {id, passphrase} from the vault session IN MEMORY.
+    var vc = SYNC.vaultCreds(pressVaultSession(), 'retirement.html');
+    if(vc){ var raw=SYNC.readConfig(localStorage.getItem(SYNC.SYNC_KEY)); if(raw && raw.localPlanId) vc.localPlanId=raw.localPlanId; migrateSyncOffDisk(); syncCfg=vc; return syncCfg; }
+    syncCfg = SYNC.readConfig(localStorage.getItem(SYNC.SYNC_KEY));
+    if(syncCfg && !syncCfg.passphrase){ syncCfg.passphrase = ssGetPass(); }   // fallback: tab-scoped passphrase
+  }catch(e){ syncCfg=null; }
+  return syncCfg;
+}
+function saveSyncCfg(){
+  try{
+    if(SYNC.isEnabled(syncCfg)){
+      localStorage.setItem(SYNC.SYNC_KEY, SYNC.packConfigPublic(syncCfg));   // never persist the passphrase to disk
+      try{ if(window.sessionStorage){ if(syncCfg.passphrase) sessionStorage.setItem('retirement:pass', syncCfg.passphrase); else sessionStorage.removeItem('retirement:pass'); } }catch(e){}
+    } else {
+      localStorage.removeItem(SYNC.SYNC_KEY);
+      try{ if(window.sessionStorage) sessionStorage.removeItem('retirement:pass'); }catch(e){}
+    }
+  }catch(e){}
+}
 function syncEnabled(){ return SYNC.isEnabled(syncCfg); }
 function updateSyncBtn(){ const on=syncEnabled(); const lbl=on?'☁ Synced':'☁ Sync'; ['syncBtn','mSync'].forEach(id=>{ const b=document.getElementById(id); if(b){ b.textContent=lbl; b.classList.toggle('on',on); } }); }
 function openSync(){ loadSyncCfg(); if(!syncEnabled()) syncNewId=SYNCRYPTO.newSyncId(); renderSync(); const el=document.getElementById('syncOv'); if(el) el.hidden=false; }
@@ -10993,7 +11034,7 @@ async function syncConnect(){
 }
 function syncTurnOff(){
   if(window.confirm && !window.confirm('Turn off sync on this device? Your synced copy in the cloud is left untouched — this only stops this browser from syncing and forgets the passphrase here.')) return;
-  syncCfg=null; try{ localStorage.removeItem(SYNC.SYNC_KEY); }catch(e){} updateSyncBtn(); renderSync(); syncStatus('Sync is off on this device.', '');
+  syncCfg=null; try{ localStorage.removeItem(SYNC.SYNC_KEY); if(window.sessionStorage) sessionStorage.removeItem('retirement:pass'); }catch(e){} updateSyncBtn(); renderSync(); syncStatus('Sync is off on this device.', '');
 }
 function wireSync(){
   const close=document.getElementById('syncClose'); if(close) close.addEventListener('click',closeSync);
