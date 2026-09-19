@@ -20,7 +20,7 @@ variance the align arc existed to remove. **RULE:** when abandoning a design, en
 PERSISTED (keyring entries here, plus any localStorage/DB rows) and clean it up too — a green revert
 of the source is not a complete revert. The prune is surgical + re-sealed under the user's active
 credential via `PressVault.updateKeyring`, proven by a before/after of FIELD NAMES only (never the
-values). Runs on an unlocked tool page (the wing does not expose `PressVault`).
+values). Runs on an unlocked tool page (the wing does not expose `PressVault`). **Constraint:** re-sealing calls `updateKeyring` → `navigator.credentials.get({userVerification:'required'})` unless the in-memory `_live` key was warmed by a passkey unlock this page-load (a restored 8h session does NOT warm it — see gate.js:369). WebAuthn `get()` needs transient user activation, so a bare console paste hangs (`Promise {<pending>}`); the re-seal must be triggered from a CLICK. Note too that the wing's Reconnect MERGES (`Object.assign({}, apps[f], {sync_id,pass})`, index.html:1319), so it re-verifies + preserves extra fields — it does NOT prune residue, and there is no built-in "disconnect" that clears an entry.
 
 ### Revert a wrong design but keep its incidental real fixes; verify a premise against the code (arc/align-retirement, 2026-09-19) [press]
 
