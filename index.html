@@ -279,6 +279,29 @@ body.tw-sorting .tw-card{transition:none}
   color:var(--tw-muted);margin-bottom:12px}
 .tw-device{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;font-size:13px}
 .tw-device .meta{font-family:var(--tw-font-meta);font-size:10.5px;color:var(--tw-faint)}
+/* connect your tools */
+.tw-connect{margin-top:20px;border-top:1px solid var(--tw-hairline);padding-top:16px}
+.tw-connect h4{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tw-muted);margin-bottom:8px}
+.tw-cmeta{font-size:12px;color:var(--tw-muted);margin:0 0 14px;line-height:1.5}
+.tw-tool{border:1px solid var(--tw-border-card);border-radius:var(--tw-radius-card);padding:12px 14px;margin-bottom:10px;background:var(--tw-glass-card)}
+.tw-tool-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tw-tool-name{font-size:14px}
+.tw-tool-status{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.tw-tool-status.on{color:var(--tw-violet)}
+.tw-tool-status.off{color:var(--tw-faint)}
+.tw-tool-body{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.tw-cinput{width:100%;background:rgba(16,12,30,.5);border:1px solid var(--tw-border-card);border-radius:10px;padding:10px 12px;color:var(--tw-ink,#efeaf6);font-size:13px;font-family:var(--tw-font-meta,monospace)}
+.tw-cinput:focus{outline:2px solid var(--tw-violet);outline-offset:1px}
+.tw-tool-actions{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap}
+.tw-verify{font-size:11px;padding:9px 16px}
+.tw-dl{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);padding:8px 12px;border-radius:var(--tw-radius-pill);cursor:pointer}
+.tw-dl:hover{border-color:var(--tw-violet);background:rgba(142,123,232,.12)}
+.tw-tool-msg{font-size:12px;min-height:1em;color:var(--tw-muted)}
+.tw-tool-msg.err{color:var(--tw-rose)}
+.tw-tool-msg.ok{color:var(--tw-violet)}
+.tw-setup-alt{margin-top:16px}
+.tw-setup-link{font-family:var(--tw-font-meta);font-size:11px;color:var(--tw-muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.tw-setup-link:hover{color:var(--tw-ink,#efeaf6)}
 </style>
 </head>
 <body class="tw-page">
@@ -338,6 +361,11 @@ body.tw-sorting .tw-card{transition:none}
   var SESSION_KEY = 'press:vault:v1';
   var ENROLLED_FLAG = 'press:vault:enrolled';
   var TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
+
+  // In-memory ONLY: the NON-EXTRACTABLE AES key derived at unlock/enrol, cached so a follow-on
+  // reseal (updateKeyring) can re-seal the row WITHOUT another passkey tap. Never persisted; a
+  // CryptoKey created with extractable:false cannot be read out even from here. Cleared on lock().
+  var _live = null; // { key: CryptoKey, vaultId: string }
 
   // --- byte helpers (Node + browser) -----------------------------------------
   function asBytes(x) {
@@ -470,6 +498,7 @@ body.tw-sorting .tw-card{transition:none}
     } catch (e) { return null; }
   }
   function lock() {
+    _live = null; // drop the cached key so a locked space cannot reseal
     var s = store(); if (!s) return;
     try { s.removeItem(SESSION_KEY); } catch (e) {}
     // Nudge other open tabs to drop the session too. A same-tab write to localStorage
@@ -592,6 +621,7 @@ body.tw-sorting .tw-card{transition:none}
     var sealed = await sealKeyring(keyring, key); sealed.salt = b64(salt);
     var ok = await putRow(vaultId, sealed, opts.label || null);
     if (!ok) throw new Error('Could not save the new key to the vault.');
+    _live = { key: key, vaultId: vaultId };
     saveSession(keyring, vaultId);
     return { vaultId: vaultId, keyring: keyring };
   }
@@ -614,8 +644,39 @@ body.tw-sorting .tw-card{transition:none}
     var key = await deriveKey(prf, ub64(record.salt));
     var keyring = await openKeyring(record, key);
     if (!keyring) throw new Error('Could not open the personal space with this passkey.');
+    _live = { key: key, vaultId: vaultId };
     saveSession(keyring, vaultId);
     return { vaultId: vaultId, keyring: keyring, record: record };
+  }
+
+  // Re-seal an UPDATED keyring into the SAME row, under the SAME credential — used by the wing's
+  // "Connect your tools" step to add a verified {sync_id, pass} without re-keying anything. Prefers
+  // the in-memory key cached at unlock (no extra tap); falls back to one assertion if it is absent.
+  // NEVER regenerates an empty keyring: the caller passes the full, updated keyring.
+  async function updateKeyring(newKeyring) {
+    if (!newKeyring || !newKeyring.apps) throw new Error('updateKeyring needs a full keyring.');
+    var sess = loadSession();
+    if (!sess || !sess.vaultId) throw new Error('Unlock the personal space before saving.');
+    var vaultId = sess.vaultId;
+    var record = await fetchRow(vaultId);
+    if (!record) throw new Error('No enrolled passkey found for the personal space on this device.');
+    var key;
+    if (_live && _live.vaultId === vaultId) {
+      key = _live.key;
+    } else {
+      var assertion = await navigator.credentials.get({
+        publicKey: { rpId: RP_ID, challenge: randomBytes(32), allowCredentials: [], userVerification: 'required', extensions: prfExt() }
+      });
+      var prf = prfResult(assertion);
+      if (!prf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
+      key = await deriveKey(prf, ub64(record.salt));
+      _live = { key: key, vaultId: vaultId };
+    }
+    var sealed = await sealKeyring(newKeyring, key); sealed.salt = record.salt; // reuse the row's salt
+    var ok = await putRow(vaultId, sealed, record.label || null);
+    if (!ok) throw new Error('Could not save to the vault.');
+    saveSession(newKeyring, vaultId);
+    return newKeyring;
   }
 
   // Enrol a SECOND credential and write the SAME keyring, sealed under the new key,
@@ -648,7 +709,8 @@ body.tw-sorting .tw-card{transition:none}
     // session
     saveSession: saveSession, loadSession: loadSession, lock: lock, everEnrolled: everEnrolled,
     // webauthn + rest
-    enrol: enrol, unlock: unlock, addPasskey: addPasskey, revoke: revoke, fetchRow: fetchRow
+    enrol: enrol, unlock: unlock, addPasskey: addPasskey, revoke: revoke, fetchRow: fetchRow,
+    updateKeyring: updateKeyring
   };
 })(globalThis);
 </script>
@@ -1068,6 +1130,98 @@ async function loadDevices(root, man){
     catch(e){ console.error('[private-wing] revoke failed:', e); list.insertAdjacentHTML('beforeend', `<div class="tw-secmsg" style="color:var(--tw-rose)">${esc(friendlyErr(e))}</div>`); }
   });
 }
+/* ── Connect your tools ─────────────────────────────────────────────────────
+   Populate the sealed keyring with each personal app's existing {sync_id, pass}.
+   HIDE, DON'T RE-KEY: we VERIFY the creds by fetching+decrypting the app's real
+   row, then seal them into the keyring under the SAME passkey — nothing in the
+   app tables is rewritten. The sync id is a SECRET capability, so it is NOT baked
+   into this public page; it is pasted (Mark keeps it in 1Password).
+   The app envelope (AES-256-GCM + PBKDF2-SHA-256, base64 fields) is identical
+   across fsa/giving/retirement — one decrypt covers all three. */
+const TOOL_CFG = {
+  'fsa.html':        { label:'FSA Claims',          table:'press_fsa',        idcol:'sync_id', select:'doc,version',                 env:(r)=>r.doc },
+  'giving.html':     { label:'Giving Tracker',      table:'press_giving',     idcol:'id',      select:'ciphertext,iv,salt,kdf_iters', env:(r)=>r },
+  'retirement.html': { label:'Retirement Projection',table:'press_retirement', idcol:'id',      select:'ciphertext,iv,salt,kdf_iters', env:(r)=>r },
+};
+const CONNECT_TOOLS = ['fsa.html','giving.html','retirement.html']; // card-scout is sync-id-only; managed elsewhere
+function b64ToU8(s){ const b=atob(String(s)), u=new Uint8Array(b.length); for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i); return u; }
+async function appDecrypt(env, passphrase){
+  if(!env || env.ciphertext==null || env.iv==null || env.salt==null) return null;
+  try{
+    const iters=env.kdf_iters||310000;
+    const base=await crypto.subtle.importKey('raw', new TextEncoder().encode(String(passphrase)), {name:'PBKDF2'}, false, ['deriveKey']);
+    const key=await crypto.subtle.deriveKey({name:'PBKDF2', salt:b64ToU8(env.salt), iterations:iters, hash:'SHA-256'}, base, {name:'AES-GCM', length:256}, false, ['decrypt']);
+    const pt=await crypto.subtle.decrypt({name:'AES-GCM', iv:b64ToU8(env.iv)}, key, b64ToU8(env.ciphertext));
+    return JSON.parse(new TextDecoder().decode(pt));
+  }catch(e){ return null; } // wrong passphrase / tamper -> fail closed
+}
+async function fetchAppRow(cfg, syncId){
+  const url=PressVault.SUPA_URL+'/rest/v1/'+cfg.table+'?'+cfg.idcol+'=eq.'+encodeURIComponent(syncId)+'&select='+encodeURIComponent(cfg.select);
+  const r=await fetch(url, { headers:{ apikey:PressVault.SUPA_KEY, Authorization:'Bearer '+PressVault.SUPA_KEY, 'x-plan-id':syncId } });
+  if(!r.ok) return { ok:false };
+  const rows=await r.json();
+  return { ok:true, row:(Array.isArray(rows)&&rows[0])||null };
+}
+function toolStatus(f){ const k=vaultState().sess; const v=k&&k.keyring&&k.keyring.apps&&k.keyring.apps[f]; return (v&&v.sync_id&&v.pass)?'connected':'not connected'; }
+function wingDownload(name, text){
+  try{ const blob=new Blob([text],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000); }catch(e){}
+}
+function renderConnect(){
+  return `<div class="tw-connect"><h4>Connect your tools</h4>`+
+    `<p class="tw-cmeta">Each tool works once its sync key is sealed behind your passkey. Paste the passphrase (the sync id you keep in 1Password); it is verified against your real data before anything is stored — nothing is re-encrypted.</p>`+
+    CONNECT_TOOLS.map(f=>{
+      const st=toolStatus(f), on=st==='connected';
+      return `<div class="tw-tool" data-f="${f}">`+
+        `<div class="tw-tool-head"><span class="tw-tool-name">${esc(TOOL_CFG[f].label)}</span>`+
+        `<span class="tw-tool-status ${on?'on':'off'}">${on?'● connected':'○ not connected'}</span></div>`+
+        `<div class="tw-tool-body" hidden>`+
+          `<input class="tw-cinput tw-sync" type="text" inputmode="latin" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="sync id (32 hex)">`+
+          `<input class="tw-cinput tw-pass" type="password" autocomplete="off" placeholder="passphrase">`+
+          `<div class="tw-tool-actions"><span class="tw-btn tw-verify" role="button" tabindex="0">Verify &amp; connect</span>`+
+          `<span class="tw-dl" hidden role="button" tabindex="0">Download my data</span></div>`+
+          `<div class="tw-tool-msg" aria-live="polite"></div>`+
+        `</div>`+
+        `<div class="tw-tool-actions"><span class="tw-mini tw-conn-toggle">${on?'Reconnect':'Connect'}</span></div>`+
+      `</div>`;
+    }).join('')+
+    `</div>`;
+}
+function wireConnect(root, man){
+  root.querySelectorAll('.tw-tool').forEach(el=>{
+    const f=el.getAttribute('data-f'), cfg=TOOL_CFG[f];
+    const body=el.querySelector('.tw-tool-body'), toggle=el.querySelector('.tw-conn-toggle');
+    const idIn=el.querySelector('.tw-sync'), passIn=el.querySelector('.tw-pass');
+    const verify=el.querySelector('.tw-verify'), dl=el.querySelector('.tw-dl'), msg=el.querySelector('.tw-tool-msg');
+    let lastDoc=null;
+    toggle.addEventListener('click', ()=>{ body.hidden=!body.hidden; });
+    const run=async ()=>{
+      const syncId=(idIn.value||'').trim(), pass=passIn.value||'';
+      msg.className='tw-tool-msg';
+      if(!/^[0-9a-f]{32}$/i.test(syncId)){ msg.classList.add('err'); msg.textContent='Enter the 32-character sync id.'; return; }
+      if(!pass){ msg.classList.add('err'); msg.textContent='Enter the passphrase.'; return; }
+      msg.textContent='Verifying against your data…';
+      let res; try{ res=await fetchAppRow(cfg, syncId); }catch(e){ res={ok:false}; }
+      if(!res.ok){ msg.classList.add('err'); msg.textContent='Could not reach the data service. Try again.'; return; }
+      if(!res.row){ msg.classList.add('err'); msg.textContent='No data found for that sync id — check the id.'; return; } // row not found (distinct from bad passphrase)
+      const doc=await appDecrypt(cfg.env(res.row), pass);
+      if(!doc){ msg.classList.add('err'); msg.textContent='That passphrase did not open the data. Check it and try again.'; return; } // decrypt failed
+      // VERIFIED — seal into the keyring (never store unverified; never overwrite a working entry with an unverified one)
+      const sess=PressVault.loadSession(); if(!sess){ msg.classList.add('err'); msg.textContent='Session expired — unlock again.'; return; }
+      const keyring=sess.keyring; keyring.apps=keyring.apps||{}; keyring.apps[f]=Object.assign({}, keyring.apps[f], { sync_id:syncId, pass:pass });
+      try{ await PressVault.updateKeyring(keyring); }
+      catch(e){ console.error('[private-wing] updateKeyring failed:', e); msg.classList.add('err'); msg.textContent=friendlyErr(e); return; }
+      lastDoc=doc;
+      msg.classList.remove('err'); msg.classList.add('ok'); msg.textContent='Connected ✓ — sealed behind your passkey. Download a backup now:';
+      dl.hidden=false;
+      const status=el.querySelector('.tw-tool-status'); status.className='tw-tool-status on'; status.textContent='● connected';
+      toggle.textContent='Reconnect';
+    };
+    verify.addEventListener('click', run);
+    passIn.addEventListener('keydown', e=>{ if(e.key==='Enter') run(); });
+    dl.addEventListener('click', ()=>{ if(lastDoc) wingDownload(f.replace(/\.html$/,'')+'-data-'+new Date().toISOString().slice(0,10)+'.json', JSON.stringify(lastDoc,null,2)); });
+  });
+}
+
 function paintPersonal(root, man){
   const back=`<a class="tw-back" href="index.html">← the marquee</a>`;
   const top=`<div class="tw-top"><span>The <b>Private Wing</b></span><span>personal tools</span></div>`;
@@ -1079,6 +1233,7 @@ function paintPersonal(root, man){
       `<div class="tw-secbar"><span class="tw-mini" id="lockBtn">⏻ Lock now</span>`+
       `<span class="tw-mini" id="devBtn">⚙ Devices</span></div>`+
       cards +
+      renderConnect() +
       `<div class="tw-devices" id="devWrap" hidden><h4>Enrolled passkeys</h4><div id="devList"></div>`+
       `<div style="margin-top:14px"><span class="tw-mini" id="addBtn">＋ Add this device</span></div>`+
       `<div class="tw-secmsg" id="devMsg"></div></div>`;
@@ -1087,26 +1242,42 @@ function paintPersonal(root, man){
     document.getElementById('devBtn').addEventListener('click', ()=>{ devWrap.hidden=!devWrap.hidden; if(!devWrap.hidden) loadDevices(root, man); });
     document.getElementById('addBtn').addEventListener('click', async ()=>{
       const m=document.getElementById('devMsg'); m.style.color=''; m.textContent='Creating a passkey for this device…';
+      // Add-device carries the CURRENT (populated) keyring and re-seals it under the new credential — never an empty one.
       try{ await PressVault.addPasskey({label: deviceLabel()}); m.style.color='var(--tw-violet)'; m.textContent='Device added.'; loadDevices(root, man); }
       catch(e){ console.error('[private-wing] addPasskey failed:', e); m.style.color='var(--tw-rose)'; m.textContent=friendlyErr(e); }
     });
+    wireConnect(root, man);
   } else {
-    const enrolled=st.enrolled;
+    // DEFECT 2 fix: "Use your passkey" is ALWAYS the primary action (a discoverable get() works on
+    // any device with the synced passkey), regardless of this device's local enrolled flag. "Set up
+    // a new passkey" is a de-emphasised secondary that REFUSES to create an empty row when one is
+    // already reachable (it adopts the existing row instead).
     root.innerHTML = back+top+`<h2 class="tw-title">Behind the passkey.</h2>`+
       `<div class="tw-unlock"><span class="sicon">${ICONS['Secure']}</span>`+
-      `<h3>${enrolled?'Unlock the private wing':'Set up the private wing'}</h3>`+
-      `<p>${enrolled
-          ?'Use your passkey to open your personal tools. Nothing here loads until you unlock.'
-          :'Create a passkey for this space. Your sync keys are gathered from this browser and sealed behind it — one lock for every personal tool.'}</p>`+
-      `<button class="tw-btn" id="unlockBtn">${enrolled?'Use your passkey':'Set up the private wing'}</button>`+
-      `<div class="tw-secmsg" id="secmsg"></div></div>`;
+      `<h3>Unlock the private wing</h3>`+
+      `<p>Use your passkey to open your personal tools. Nothing here loads until you unlock.</p>`+
+      `<button class="tw-btn" id="unlockBtn">Use your passkey</button>`+
+      `<div class="tw-secmsg" id="secmsg"></div>`+
+      `<div class="tw-setup-alt"><span class="tw-setup-link" id="setupLink" role="button" tabindex="0">First time on any device? Set up a new passkey</span></div>`+
+      `</div>`;
     const btn=document.getElementById('unlockBtn'), msg=document.getElementById('secmsg');
     btn.addEventListener('click', async ()=>{
-      btn.disabled=true; msg.style.color=''; msg.textContent = enrolled?'Waiting for your passkey…':'Creating your passkey…';
+      btn.disabled=true; msg.style.color=''; msg.textContent='Waiting for your passkey…';
+      try{ await PressVault.unlock(); paintPersonal(root, man); }
+      catch(e){ console.error('[private-wing] unlock failed:', e); btn.disabled=false; msg.style.color='var(--tw-rose)';
+        msg.textContent=friendlyErr(e)+(/No enrolled passkey/i.test((e&&e.message)||'')?' If this is a brand-new space, use “Set up a new passkey”.':''); }
+    });
+    document.getElementById('setupLink').addEventListener('click', async ()=>{
+      if(!confirm('Set up a NEW passkey for the private wing?\n\nOnly if you have never set one up on ANY device. If you already have a passkey (even on another device), tap “Use your passkey” instead — this keeps your existing tools.')) return;
+      msg.style.color=''; msg.textContent='Checking for an existing passkey…';
       try{
-        if(enrolled) await PressVault.unlock(); else await PressVault.enrol({label: deviceLabel()});
+        // Adopt a reachable row rather than create an empty one.
+        try{ await PressVault.unlock(); paintPersonal(root, man); return; }
+        catch(e){ if(!/No enrolled passkey|NotAllowed/i.test(((e&&e.name)||'')+' '+((e&&e.message)||''))) throw e; }
+        msg.textContent='Creating your passkey…';
+        await PressVault.enrol({label: deviceLabel()});
         paintPersonal(root, man);
-      }catch(e){ console.error('[private-wing] '+(enrolled?'unlock':'enrol')+' failed:', e); btn.disabled=false; msg.style.color='var(--tw-rose)'; msg.textContent=friendlyErr(e); }
+      }catch(e){ console.error('[private-wing] setup failed:', e); msg.style.color='var(--tw-rose)'; msg.textContent=friendlyErr(e); }
     });
   }
 }
