@@ -1,4 +1,29 @@
 /* =============================================================================
+ * press gate.js — the portable direct-entry passkey gate for the personal apps.
+ *
+ * A single self-contained block a personal app inlines into its build. It gives
+ * the app TWO globals:
+ *   - window.PressVault  — the proven vault module, embedded here VERBATIM from
+ *                          src/vault.js between the @@VAULT_INLINE@@ markers. That
+ *                          region is machine-injected and guarded byte-for-byte by
+ *                          `tools/inline-vault.mjs --check` against src/vault.js and
+ *                          the inlined copy in index.html. NEVER hand-edit it here —
+ *                          edit src/vault.js and re-run the tool.
+ *   - window.PressGate   — a full-page passkey gate an app mounts on boot.
+ *
+ * Design: this is a DELIBERATE duplicate of the wing's inline gate, not an
+ * oversight. The crypto CORE is shared and guarded identical; the UI chrome is
+ * intentionally its own thing (an app is not the marquee). The gate is UNLOCK
+ * ONLY — never a passphrase field, never an enrol button. Enrolment lives in the
+ * wing; an un-enrolled device sees a friendly line and a link back to the marquee.
+ *
+ * The apps read their {sync_id, pass} from the sealed keyring in memory only and
+ * never surface them. This file re-keys nothing.
+ * ========================================================================== */
+
+// @@VAULT_INLINE@@
+// (injected verbatim from src/vault.js by tools/inline-vault.mjs — do not edit between the markers)
+/* =============================================================================
  * press vault module — the personal-wing key store.
  *
  * ONE source of truth for both the Node unit tests and the browser: this file has
@@ -395,5 +420,156 @@
     // webauthn + rest
     enrol: enrol, unlock: unlock, addPasskey: addPasskey, revoke: revoke, fetchRow: fetchRow,
     updateKeyring: updateKeyring
+  };
+})(globalThis);
+// @@/VAULT_INLINE@@
+
+(function (root) {
+  'use strict';
+
+  var V = root.PressVault;
+  if (!V) { console.error('[press-gate] PressVault missing — gate.js must be inlined WITH the vault region'); return; }
+
+  // Where "← the marquee" and a not-enrolled device point. The apps live beside
+  // index.html on the same origin (…/press/<app>.html), so a relative link to the
+  // wing is correct on both the live site and a localhost test origin.
+  var MARQUEE = 'index.html?view=personal';
+
+  // --- friendly errors — the SAME plain-language mapping the wing uses ---------
+  function friendlyErr(e) {
+    var name = (e && e.name) || '', msg = (e && e.message) || '';
+    if (name === 'NotAllowedError') return 'Cancelled — or the prompt timed out. Try again.';
+    if (/can.?t hold the key/i.test(msg)) return "This browser or authenticator can't hold the key for the personal space.";
+    if (/No enrolled passkey/i.test(msg)) return 'No passkey for the personal space on this device yet.';
+    if (name === 'TypeError' || name === 'RangeError') return "Couldn't read the passkey response on this device. Please try again.";
+    return msg || 'Something went wrong. Try again.';
+  }
+  function notEnrolled(e) { return /No enrolled passkey/i.test((e && e.message) || ''); }
+
+  // --- self-contained styles (injected once; scoped under #press-gate) ---------
+  // Hardcoded palette (the wing's rose/violet) so the gate looks right over ANY
+  // app's own theme. Full-screen fixed overlay with its own dark backdrop.
+  var STYLE_ID = 'press-gate-style';
+  var CSS =
+    '#press-gate{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;' +
+    'padding:24px;background:radial-gradient(120% 90% at 50% 0%,#181227 0%,#0e0b18 70%);' +
+    "font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#efeaf6}" +
+    '#press-gate *{box-sizing:border-box}' +
+    '#press-gate .pg-card{width:100%;max-width:380px;text-align:center;padding:34px 26px;border-radius:20px;' +
+    'background:rgba(24,18,39,.72);border:1px solid rgba(231,166,199,.28);box-shadow:0 24px 60px rgba(0,0,0,.5)}' +
+    '#press-gate .pg-icon{width:46px;height:46px;margin:0 auto 14px;color:#e7a6c7;' +
+    'filter:drop-shadow(0 0 10px rgba(231,166,199,.4))}' +
+    '#press-gate .pg-icon svg{width:46px;height:46px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}' +
+    '#press-gate h1{font-size:19px;font-weight:600;margin:0 0 8px;letter-spacing:.2px}' +
+    '#press-gate p{font-size:13px;line-height:1.5;color:#b7aec8;margin:0 auto 22px;max-width:300px}' +
+    '#press-gate .pg-btn{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.08em;' +
+    'text-transform:uppercase;color:#fff;cursor:pointer;border:0;border-radius:999px;padding:13px 24px;' +
+    'background:linear-gradient(92deg,#8e7be8,#e7a6c7);box-shadow:0 8px 24px rgba(142,123,232,.35)}' +
+    '#press-gate .pg-btn:hover{filter:brightness(1.08)}' +
+    '#press-gate .pg-btn[disabled]{opacity:.6;cursor:progress}' +
+    '#press-gate .pg-msg{font-size:12.5px;margin-top:14px;min-height:1em;color:#efeaf6}' +
+    '#press-gate .pg-msg.err{color:#f2a0be}' +
+    '#press-gate .pg-back{display:inline-block;margin-top:18px;font-size:12px;color:#b7aec8;text-decoration:none;' +
+    'border-bottom:1px solid rgba(183,174,200,.35)}' +
+    '#press-gate .pg-back:hover{color:#efeaf6}';
+
+  // A lock icon (matches the wing's "Secure" glyph family).
+  var ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2.5"></rect>' +
+    '<path d="M8 10V7a4 4 0 0 1 8 0v3"></path><circle cx="12" cy="15.5" r="1.4"></circle></svg>';
+
+  function injectStyle() {
+    if (typeof document === 'undefined' || document.getElementById(STYLE_ID)) return;
+    var s = document.createElement('style'); s.id = STYLE_ID; s.textContent = CSS;
+    (document.head || document.documentElement).appendChild(s);
+  }
+
+  // --- the gate singleton ------------------------------------------------------
+  var current = null; // { page, onUnlock, onLock, el, wired }
+
+  function credsFor(page) {
+    var sess = V.loadSession();
+    var v = sess && sess.keyring && sess.keyring.apps && sess.keyring.apps[page];
+    return (v && v.sync_id && v.pass) ? { syncId: v.sync_id, passphrase: v.pass } : null;
+  }
+
+  function removeGate() {
+    var el = document.getElementById('press-gate');
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }
+
+  function render() {
+    injectStyle();
+    removeGate();
+    var host = document.createElement('div');
+    host.id = 'press-gate';
+    host.setAttribute('role', 'dialog');
+    host.setAttribute('aria-label', 'Unlock the personal space');
+    host.innerHTML =
+      '<div class="pg-card">' +
+        '<div class="pg-icon">' + ICON + '</div>' +
+        '<h1>Behind the passkey.</h1>' +
+        '<p>Use your passkey to open this personal tool. Nothing here loads until you unlock.</p>' +
+        '<button class="pg-btn" id="pg-unlock" type="button">Use your passkey</button>' +
+        '<div class="pg-msg" id="pg-msg" aria-live="polite"></div>' +
+        '<a class="pg-back" href="' + MARQUEE + '">← the marquee</a>' +
+      '</div>';
+    document.body.appendChild(host);
+    var btn = host.querySelector('#pg-unlock'), msg = host.querySelector('#pg-msg');
+    btn.addEventListener('click', function () {
+      btn.disabled = true; msg.className = 'pg-msg'; msg.textContent = 'Waiting for your passkey…';
+      V.unlock().then(function () {
+        var creds = credsFor(current.page);
+        if (creds) { removeGate(); current.onUnlock(creds); return; }
+        // The passkey OPENED the vault, but this tool has no stored credentials yet — a DISTINCT
+        // state from a failed unlock (the space DID open). Point at the wing's Connect step; never
+        // conflate this with "could not open the personal space".
+        btn.disabled = false; msg.className = 'pg-msg err';
+        msg.textContent = 'No credentials stored for this tool yet — connect it in the Private Wing →';
+      }).catch(function (e) {
+        console.error('[press-gate] unlock failed:', e);
+        btn.disabled = false; msg.className = 'pg-msg err'; msg.textContent = friendlyErr(e);
+        if (notEnrolled(e)) msg.textContent += ' Set it up in the marquee →';
+      });
+    });
+    return host;
+  }
+
+  // Watch for the vault session going away (Lock now — from the wing, another tab,
+  // or this app). A same-tab lock() dispatches a synthetic storage event, so this
+  // one handler covers all three. When the session for THIS page vanishes, fall
+  // back to the gate and let the app blank its sensitive UI.
+  function wireLockWatch() {
+    if (current.wired || typeof root.addEventListener !== 'function') return;
+    current.wired = true;
+    root.addEventListener('storage', function (ev) {
+      if (ev && ev.key && ev.key !== V.SESSION_KEY) return; // ignore unrelated keys
+      if (!current) return;
+      if (credsFor(current.page)) return;                   // still unlocked — nothing to do
+      if (document.getElementById('press-gate')) return;    // gate already up
+      try { if (current.onLock) current.onLock(); } catch (e) {}
+      render();
+    });
+  }
+
+  // guard({page, onUnlock, onLock}) — the one call an app makes on boot.
+  //   live session with creds for `page` -> onUnlock(creds) immediately, no gate.
+  //   otherwise                         -> mount the gate; on unlock -> onUnlock(creds).
+  // onLock (optional) is called when a live session is later lost, before the gate
+  // re-appears, so the app can clear what's on screen.
+  function guard(opts) {
+    opts = opts || {};
+    current = { page: opts.page, onUnlock: opts.onUnlock || function () {}, onLock: opts.onLock || null, wired: false };
+    wireLockWatch();
+    var creds = credsFor(current.page);
+    if (creds) { current.onUnlock(creds); return { gated: false }; }
+    render();
+    return { gated: true };
+  }
+
+  root.PressGate = {
+    guard: guard,
+    // exposed for tests / callers
+    credsFor: credsFor, friendlyErr: friendlyErr, MARQUEE: MARQUEE,
+    render: render, removeGate: removeGate
   };
 })(globalThis);

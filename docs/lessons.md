@@ -11,6 +11,27 @@ Evidence slice files follow: `v<N>-slice-<seq>-<topic>.txt` (e.g. `v4-slice-9-pr
 
 ## Known lessons
 
+### Client-side key material is the user's data too (arc/passkey-only, 2026-09-19)
+
+Never delete the only copy of a key before its replacement has been proven to decrypt. The
+passkey-only arc guarded the SERVER-SIDE ciphertext (byte-identical before/after) but not the
+CLIENT-SIDE key material: it made `migrateCredsOffDisk()` unconditional on boot, so opening the app
+deleted the on-disk `sync_id`/passphrase before the vault keyring held them — and the wing's enrol
+had only ever sealed an EMPTY keyring, so there was nothing to fall back to. A key is as much the
+user's data as the ciphertext is. The purge now lives INSIDE the decrypt success path (proven
+replacement) and never runs on boot.
+
+Corollaries surfaced the same day:
+- A misdiagnosis multiplier: the gate reused ONE error string ("Could not open the personal space")
+  for two different states — a failed decrypt (bad key) and a decrypted-but-EMPTY keyring (no creds
+  for this tool). Conflating them sent two diagnoses toward crypto/header "drift" that did not exist.
+  Distinct states get distinct messages; add a test for each.
+- The vault keyring is populated by an explicit, VERIFIED "Connect your tools" step in the wing
+  (fetch+decrypt the app's real row before sealing), not silently at enrol. Enrol/add-device carry
+  the populated keyring and re-seal; they never regenerate an empty one.
+- A sync_id is a SECRET capability (it gates the row via `x-plan-id`), so it is never baked into the
+  public marquee source — it is pasted by the user, kept in their password manager.
+
 ### Lane A / B hash-verify rule
 
 All publish operations through the press instrument must verify the content hash of

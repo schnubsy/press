@@ -126,9 +126,12 @@ test('enrol → 4 cards → lock → unlock → lock (full private-wing flow)', 
   const state = await harness(page, context);
   await page.goto(base + '/?view=personal');
 
-  // locked + not enrolled → "Set up the private wing"
-  await expect(page.locator('#unlockBtn')).toHaveText('Set up the private wing');
-  await page.locator('#unlockBtn').click();
+  // DEFECT 2: "Use your passkey" is ALWAYS the primary action, even before this device has enrolled.
+  await expect(page.locator('#unlockBtn')).toHaveText('Use your passkey');
+  // First-time enrol lives behind the secondary "Set up" link, guarded by a confirm. The link first
+  // tries a discoverable unlock (no row yet → rejects), then enrols.
+  page.on('dialog', (d) => d.accept());
+  await page.locator('#setupLink').click();
 
   // enrol resolves → unlocked → the four personal cards render
   await expect(page.locator('.tw-card')).toHaveCount(PERSONAL_FILES.length);
@@ -185,14 +188,15 @@ test('enrol works when the PRF result arrives as a base64url STRING (1Password s
     };
   });
 
+  page.on('dialog', (d) => d.accept());
   await page.goto(base + '/?view=personal');
-  await expect(page.locator('#unlockBtn')).toHaveText('Set up the private wing');
+  await expect(page.locator('#unlockBtn')).toHaveText('Use your passkey');
 
   // guard: fail the test if enrol throws a raw TypeError to the console (the old crash)
   const consoleErrors = [];
   page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
 
-  await page.locator('#unlockBtn').click();
+  await page.locator('#setupLink').click(); // first-time enrol (setup tries unlock, then enrols)
 
   // enrol resolves through the STRING path -> the four personal cards render, one row written
   await expect(page.locator('.tw-card')).toHaveCount(PERSONAL_FILES.length);
@@ -219,10 +223,11 @@ test('enrol falls through to the assertion when the PRF is unusable at CREATE (1
 
   const consoleErrors = [];
   page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
+  page.on('dialog', (d) => d.accept());
 
   await page.goto(base + '/?view=personal');
-  await expect(page.locator('#unlockBtn')).toHaveText('Set up the private wing');
-  await page.locator('#unlockBtn').click();
+  await expect(page.locator('#unlockBtn')).toHaveText('Use your passkey');
+  await page.locator('#setupLink').click(); // first-time enrol via the secondary setup link
 
   // enrol must complete via the assertion path -> four cards, exactly one vault row, no crash
   await expect(page.locator('.tw-card')).toHaveCount(PERSONAL_FILES.length);
