@@ -24,13 +24,14 @@ served via GitHub Pages. Key pages:
 
 ## Current stage
 
-Live; arc/two-space-marquee **COMPLETE** (Sep 2026). Public space + personal wing gated by a
-WebAuthn-PRF passkey (`press_vault`); `spaces.json` drives the split; each app's
-`tools/release.js` has a fail-closed publish gate. Passkey enrolment works (two hotfixes to
-the 1Password PRF path — `asBytes` decodes base64url; `prfResult` is total so enrol falls
-through to the assertion `get()`). `press_deals` cleanup applied: only header-gated policies
-remain (`x-plan-id` = `sync_id`), anon DELETE revoked, `sync_id` NOT NULL — 🔴 finding closed.
-No open arc items.
+Live; arc/private-wing-spare-keys-collapse **COMPLETE** (2026-09-19). The private wing's
+"Connect your tools" drawer now collapses CONNECTED apps to a quiet line + a real Reconnect
+button (fields absent from the DOM until expanded, cleared on collapse); NOT-connected apps
+keep the full form. **Card Scout** joined the drawer as sync-id-ONLY (no passphrase, no `pass`
+key), verified by probing `press_deals` (`x-plan-id`) — a 200 with ZERO rows is a WRONG key,
+never success (the silent-empty RLS trap that emptied its feed). Verdict logic lives in
+`src/vault.js` (unit-tested) and is re-inlined via `tools/inline-vault.mjs`. Prior
+arc/two-space-marquee stays closed; passkey enrol + `press_deals` gate intact. No open arc items.
 
 ## Project rules
 

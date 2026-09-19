@@ -4,6 +4,28 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-09-19 — arc/private-wing-spare-keys-collapse CLOSED (drawer collapse + Card Scout)
+
+The private wing's "Connect your tools" drawer was reworked. CONNECTED tools now render as a quiet
+line — app name + a Connected dot + a real `Reconnect` button (`aria-expanded`) — with their
+sync-id/passphrase fields ABSENT from the DOM until Reconnect is pressed (it expands the row in place
+and focuses the first field); collapsing removes the fields again, clearing anything typed.
+NOT-connected tools keep the full form, expanded. **Card Scout** — the one personal app with no
+spare-keys row, so losing its sync key this morning forced a full passkey unlock — joined the drawer as
+**sync-id-only**: no passphrase input, and no `pass` key in its keyring entry. Its verification probes
+`press_deals` with the entered value as the `x-plan-id` header (`page=eq.card-scout`, minimal select,
+limit 1); a 200 with ≥1 row = verified, a 200 with ZERO rows = WRONG key (RLS returns empty rather than
+erroring — the exact silent-failure that emptied the feed), surfaced as "That sync id doesn't open Card
+Scout's deals", never a raw status code. The verdict logic (`dealsVerdict` / `verifyCardScout`) lives
+in `src/vault.js` (single source of truth, re-inlined into index.html + gate.js via
+`tools/inline-vault.mjs`) so it is unit-tested, including the 200-with-zero-rows = FAILURE case.
+Nothing on page load touches WebAuthn or `press_vault`. Gate: 31 unit + 25 smoke (connect flow on
+desktop + iPhone 15, incl. collapse/reconnect, sync-only Card Scout, wrong-key rejection) +
+`inline:check` — all green. PR #9 → `main` (merge `f054714`, index.html blob `efcbdb42`),
+live-verified 200 with the new markers present.
+
+---
+
 ## 2026-09-19 — arc/two-space-marquee CLOSED (+ two passkey hotfixes + press_deals cleanup)
 
 The two-space marquee arc is complete. The private wing (public space + a personal wing gated by a
