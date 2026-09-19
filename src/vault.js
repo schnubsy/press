@@ -51,6 +51,16 @@
     if (x instanceof Uint8Array) return x;
     if (x instanceof ArrayBuffer) return new Uint8Array(x);
     if (ArrayBuffer.isView(x)) return new Uint8Array(x.buffer, x.byteOffset, x.byteLength);
+    // 1Password's navigator.credentials shim hands the PRF output back as a base64url
+    // STRING, not an ArrayBuffer. Decode it (base64url -> bytes) so callers still get
+    // bytes. This is the ONLY string we accept — arbitrary objects still throw below.
+    if (typeof x === 'string') {
+      var s = x.replace(/-/g, '+').replace(/_/g, '/');
+      while (s.length % 4) s += '=';
+      var bin = atob(s), out = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+      return out;
+    }
     throw new TypeError('expected bytes');
   }
   function b64(bytes) {
@@ -188,9 +198,21 @@
 
   // --- WebAuthn (browser only; exercised via Playwright virtual authenticator) --
   function prfExt() { return { prf: { eval: { first: PRF_SALT } } }; }
+  // Normalise the PRF output to bytes at the boundary so every caller (enrol/unlock)
+  // gets a Uint8Array regardless of the shim: the CDP virtual authenticator returns an
+  // ArrayBuffer, 1Password returns a base64url STRING. A missing / zero-length result is
+  // treated as ABSENT (null), never as success; a non-32-byte result is refused here
+  // rather than deriving an AES key from something the wrong size.
   function prfResult(cred) {
     var ext = cred.getClientExtensionResults ? cred.getClientExtensionResults() : {};
-    return ext && ext.prf && ext.prf.results && ext.prf.results.first ? ext.prf.results.first : null;
+    var first = (ext && ext.prf && ext.prf.results) ? ext.prf.results.first : null;
+    if (!first) return null;                 // absent: missing, null, or ''
+    var bytes = asBytes(first);              // ArrayBuffer | TypedArray | base64url string -> bytes
+    if (bytes.length === 0) return null;     // a zero-length result is absent, not success
+    if (bytes.length !== 32) {               // wrong size -> refuse, don't derive a bad key
+      throw new Error("This browser or authenticator can't hold the key for the personal space.");
+    }
+    return bytes;
   }
   // Some authenticators (and some browsers) return the PRF output only at ASSERTION
   // time, exposing just { prf: { enabled: true } } at creation. Fall back to one get()
@@ -281,7 +303,9 @@
     deriveKey: deriveKey, sealKeyring: sealKeyring, openKeyring: openKeyring, vaultIdFor: vaultIdFor,
     emptyKeyring: emptyKeyring,
     // byte helpers (exposed for tests / inlining)
-    b64: b64, ub64: ub64, hex: hex, sha256hex: sha256hex, randomBytes: randomBytes,
+    asBytes: asBytes, b64: b64, ub64: ub64, hex: hex, sha256hex: sha256hex, randomBytes: randomBytes,
+    // webauthn PRF normalisation (exposed for tests)
+    prfResult: prfResult,
     // session
     saveSession: saveSession, loadSession: loadSession, lock: lock, everEnrolled: everEnrolled,
     // webauthn + rest

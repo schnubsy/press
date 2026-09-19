@@ -156,6 +156,51 @@ test('enrol → 4 cards → lock → unlock → lock (full private-wing flow)', 
   expect(state.vaultRequests).toBe(before);
 });
 
+// REGRESSION for the 1Password crash: that shim returns the PRF output as a base64url
+// STRING, not an ArrayBuffer, which used to throw in asBytes('expected bytes') AFTER the
+// passkey was created. Here we wrap navigator.credentials.create so the returned
+// credential's getClientExtensionResults() hands back prf.results.first AS A STRING,
+// exactly like 1Password. Enrol must still succeed end to end (4 cards, one vault row).
+test('enrol works when the PRF result arrives as a base64url STRING (1Password shim)', async ({ page, context }) => {
+  const state = await harness(page, context);
+  // Re-shape the PRF extension result of the credential returned by create(): buffer -> base64url string.
+  await page.addInitScript(() => {
+    const toB64url = (buf) => {
+      const b = new Uint8Array(buf); let s = '';
+      for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+      return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    };
+    const origCreate = navigator.credentials.create.bind(navigator.credentials);
+    navigator.credentials.create = async (opts) => {
+      const cred = await origCreate(opts);
+      const origGCER = cred.getClientExtensionResults.bind(cred);
+      cred.getClientExtensionResults = () => {
+        const ext = origGCER();
+        if (ext && ext.prf && ext.prf.results && ext.prf.results.first) {
+          return { ...ext, prf: { ...ext.prf, results: { ...ext.prf.results, first: toB64url(ext.prf.results.first) } } };
+        }
+        return ext;
+      };
+      return cred;
+    };
+  });
+
+  await page.goto(base + '/?view=personal');
+  await expect(page.locator('#unlockBtn')).toHaveText('Set up the private wing');
+
+  // guard: fail the test if enrol throws a raw TypeError to the console (the old crash)
+  const consoleErrors = [];
+  page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
+
+  await page.locator('#unlockBtn').click();
+
+  // enrol resolves through the STRING path -> the four personal cards render, one row written
+  await expect(page.locator('.tw-card')).toHaveCount(PERSONAL_FILES.length);
+  await expect(page.locator('#lockBtn')).toBeVisible();
+  expect(state.vault.size).toBe(1);
+  expect(consoleErrors.join('\n')).not.toMatch(/expected bytes|TypeError/i);
+});
+
 test('landing screenshots — desktop + mobile (two-space)', async ({ page, context }) => {
   await harness(page, context);
   await page.setViewportSize({ width: 900, height: 1200 });
