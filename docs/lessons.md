@@ -97,3 +97,17 @@ and even then only from a shape you *know* is a real container, not from a specu
 test must assert the probe **does not throw** for every junk input, and an integration test must prove
 the fallback path actually executes. The CDP virtual authenticator returned tidy `ArrayBuffer`s, so the
 smoke was green while production threw — test the messy shapes the real shim produces, not the clean one.
+
+### [press][supabase] (2026-09-19) A header-gated RLS 200 with ZERO rows means WRONG KEY, not success
+
+`press_deals` is gated on `x-plan-id = sync_id`. A wrong key does **not** error — PostgREST returns
+HTTP 200 with an empty array (RLS filtered every row). Reading that empty-200 as "connected / OK" is
+exactly what let Card Scout's feed go silently empty when it lost its sync key: the app kept a stored,
+wrong key and showed nothing rather than failing loudly.
+
+Rule: any verify-before-store probe against a **header-gated** table must treat **≥1 row as the ONLY
+success**; a 200 with zero rows is a FAILURE (wrong key), surfaced in plain language ("that sync id
+doesn't open …"), never a raw status code, and the key is sealed only after it verifies. Keep the
+verdict as a pure function (`PressVault.dealsVerdict(ok, rows)`) so the 200-with-zero-rows = FAILURE
+case is unit-tested without a network. Card Scout also proved the keyring shape can be app-specific: a
+sync-id-only app carries `{ sync_id }` with **no** `pass` key — never write an empty passphrase.
