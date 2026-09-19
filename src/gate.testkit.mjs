@@ -71,6 +71,36 @@ export async function installEnabledOnlyShim(page) {
   });
 }
 
+// --- STANDARD PRF shape delivered AT CREATE (YubiKey / iCloud Keychain / spec-compliant) --
+// The CDP virtual authenticator returns PRF only at ASSERTION — at CREATE it yields an
+// unusable value, so enrol falls through to prfViaGet(). 1Password's two shapes are covered
+// above. A spec-compliant authenticator that evaluates `prf.eval` at CREATION hands back
+// results.first as a REAL ArrayBuffer straight out of create(), which prfResult() consumes
+// DIRECTLY — a path NEITHER 1Password shim nor the virtual authenticator exercises (recorded
+// in retirement docs; the create-time direct path shipped unproven). This shim delivers a
+// FIXED 32-byte ArrayBuffer at BOTH create() and get(), stable across the run, so a row sealed
+// under the create-time value reopens under the assertion-time value (enrol → lock → unlock
+// round-trips). Prove "no fallback" by asserting navigator.credentials.get() is called ZERO
+// times during a direct PressVault.enrol().
+export async function installStandardPrfAtCreateShim(page, opts = {}) {
+  // 64 hex chars = 32 bytes; caller may override to pin a specific PRF value.
+  const prfHex = opts.prfHex || '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+  await page.addInitScript((hex) => {
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+    const attach = (cred) => {
+      if (!cred) return cred;
+      // a fresh ArrayBuffer per read (never a shared/detached buffer), value stable per run
+      cred.getClientExtensionResults = () => ({ prf: { results: { first: bytes.slice().buffer } } });
+      return cred;
+    };
+    const oc = navigator.credentials.create.bind(navigator.credentials);
+    navigator.credentials.create = async (o) => attach(await oc(o));
+    const og = navigator.credentials.get.bind(navigator.credentials);
+    navigator.credentials.get = async (o) => attach(await og(o));
+  }, prfHex);
+}
+
 // --- in-memory press_vault mock (RLS-gated on x-vault-id), from marquee.spec.mjs ---
 export async function mockPressVault(context) {
   const state = { requests: 0, rows: new Map() };

@@ -8,6 +8,7 @@ import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { installStandardPrfAtCreateShim } from '../src/gate.testkit.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const INDEX = readFileSync(join(ROOT, 'index.html'), 'utf8');
@@ -234,6 +235,47 @@ test('enrol falls through to the assertion when the PRF is unusable at CREATE (1
   await expect(page.locator('#lockBtn')).toBeVisible();
   expect(state.vault.size).toBe(1);
   expect(consoleErrors.join('\n')).not.toMatch(/expected bytes|TypeError/i);
+});
+
+// D4 (arc/passkey-only): the STANDARD PRF shape — a real ArrayBuffer delivered AT CREATE and
+// consumed directly by prfResult(), with NO prfViaGet() fallback. The virtual authenticator
+// falls back (create yields unusable); 1Password's two shapes are covered above; this create-
+// time direct path was untested. A YubiKey / iCloud Keychain passkey exercises it. Uses the
+// SHARED kit shim (installStandardPrfAtCreateShim) so every app's copied suite inherits it.
+test('enrol consumes a STANDARD ArrayBuffer PRF delivered AT CREATE — used directly, NO prfViaGet fallback', async ({ page, context }) => {
+  const state = await harness(page, context);
+  await installStandardPrfAtCreateShim(page); // real ArrayBuffer PRF at create AND get (stable)
+  // Count assertions so we can PROVE enrol never fell back to get(). Registered after the shim
+  // so it wraps the shim's get(); reset just before the direct enrol below.
+  await page.addInitScript(() => {
+    window.__getCalls = 0;
+    const og = navigator.credentials.get.bind(navigator.credentials);
+    navigator.credentials.get = async (o) => { window.__getCalls++; return og(o); };
+  });
+
+  await page.goto(base + '/?view=personal');
+  await page.waitForFunction(() => !!window.PressVault);
+
+  // Enrol DIRECTLY (bypassing the #setupLink UI, which does a pre-unlock get() of its own) so
+  // the get() count reflects ONLY the PRF path. Zero gets ⇒ prfResult() used the create value.
+  const res = await page.evaluate(async () => {
+    window.__getCalls = 0;
+    const r = await window.PressVault.enrol({ label: 'std-create', keyring: { v: 1, apps: {} } });
+    return { vaultId: r.vaultId, getCalls: window.__getCalls };
+  });
+  expect(res.vaultId).toBeTruthy();
+  expect(res.getCalls).toBe(0);          // create-time PRF consumed directly — no assertion fallback
+  expect(state.vault.size).toBe(1);       // exactly one row sealed
+
+  // The create-sealed row must reopen under the assertion-time PRF (proves create==assertion
+  // value; unlock() throws if the key can't open the keyring).
+  await page.evaluate(() => window.PressVault.lock());
+  const un = await page.evaluate(async () => {
+    const r = await window.PressVault.unlock();
+    return { vaultId: r.vaultId, hasKeyring: !!(r.keyring && r.keyring.apps) };
+  });
+  expect(un.vaultId).toBe(res.vaultId);
+  expect(un.hasKeyring).toBe(true);
 });
 
 test('landing screenshots — desktop + mobile (two-space)', async ({ page, context }) => {
