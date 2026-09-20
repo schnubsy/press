@@ -3,3 +3,4 @@ Claude outputs/
 node_modules/
 test-results/
 playwright-report/
+.claude/
