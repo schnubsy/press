@@ -23,6 +23,7 @@ const PASS = 'zzzzz-yyyyy-xxxxx-wwwww';               // fsa passphrase (throwaw
 const DOC = { v: 2, hello: 'fsa', years: { '2026': { claims: [] } } };
 const CARD_SYNC = 'c1a2r3d4e5f6a7b8c9d0e1f2a3b4c5d6';  // throwaway card-scout sync id the deals mock accepts
 const CARD_WRONG = '00000000000000000000000000000000';
+const CARD_SCOUT_GATE_SENTINEL = 'not-a-secret:card-scout-has-no-passphrase:sentinel-only-to-satisfy-credsFor'; // MUST match index.html
 
 let server, base;
 test.beforeAll(async () => {
@@ -193,7 +194,7 @@ for (const vp of VIEWPORTS) {
       expect(kr).toEqual({ sync_id: '' });                          // unchanged — never store an unverified key
     });
 
-    test('Card Scout: a CORRECT sync id connects; keyring holds sync_id and NO pass key; row collapses', async ({ page, context }) => {
+    test('Card Scout: a CORRECT sync id connects; keyring holds sync_id + inert gate sentinel pass; row collapses', async ({ page, context }) => {
       const state = await harness(page, context);
       await enrolEmptyAndOpen(page, state);
       const t = tool(page, 'card-scout.html');
@@ -202,7 +203,7 @@ for (const vp of VIEWPORTS) {
       await expect(t.locator('.tw-tool-msg')).toContainText('Connected');
       await expect(t.locator('.tw-tool-status')).toContainText('Connected');
       const kr = await page.evaluate(() => window.PressVault.loadSession().keyring.apps['card-scout.html']);
-      expect(kr).toEqual({ sync_id: CARD_SYNC });                   // sync_id ONLY — no `pass` key written
+      expect(kr).toEqual({ sync_id: CARD_SYNC, pass: CARD_SCOUT_GATE_SENTINEL }); // sync_id + inert gate sentinel (satisfies the shared gate's credsFor)
       // and its connected state collapses like the others: Cancel closes it back to the quiet line
       const rc = t.locator('.tw-reconnect');
       await expect(rc).toBeVisible();

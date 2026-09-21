@@ -1196,6 +1196,17 @@ const TOOL_CFG = {
   'card-scout.html': { label:'Card Scout',          kind:'deals' }, // sync-id-only; verified against press_deals
 };
 const CONNECT_TOOLS = ['fsa.html','giving.html','retirement.html','card-scout.html'];
+
+/* CARD_SCOUT_GATE_SENTINEL — an INERT, PUBLIC shape-filler. NOT a secret, NOT a passphrase.
+   Card Scout has no passphrase of its own: its data is gated by the sync_id capability
+   (sent as the x-plan-id header), never by an encryption key. But the SHARED passkey gate's
+   credsFor() (press/src/gate.js) only releases a tool when its keyring entry has BOTH a
+   `sync_id` AND a `pass`. Rather than fork the byte-identical shared gate, the wing seals
+   this fixed sentinel as card-scout's `pass` so credsFor() is satisfied after a passkey
+   unlock. Changing or deleting it does NOT affect Card Scout's data access (that depends
+   solely on the sync_id). Treat it as documentation, not a credential. */
+const CARD_SCOUT_GATE_SENTINEL = 'not-a-secret:card-scout-has-no-passphrase:sentinel-only-to-satisfy-credsFor';
+
 function b64ToU8(s){ const b=atob(String(s)), u=new Uint8Array(b.length); for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i); return u; }
 async function appDecrypt(env, passphrase){
   if(!env || env.ciphertext==null || env.iv==null || env.salt==null) return null;
@@ -1296,8 +1307,8 @@ function wireConnect(root, man){
           if(verdict!=='verified'){ msg.classList.add('err'); msg.textContent="That sync id doesn't open Card Scout's deals."; return; } // 200+0 rows = wrong, never success
           const sess=PressVault.loadSession(); if(!sess){ msg.classList.add('err'); msg.textContent='Session expired — unlock again.'; return; }
           const keyring=sess.keyring; keyring.apps=keyring.apps||{};
-          const entry=Object.assign({}, keyring.apps[f], { sync_id:syncId });
-          if('pass' in entry) delete entry.pass; // card-scout has NO passphrase — never write a pass key
+          const entry=Object.assign({}, keyring.apps[f], { sync_id:syncId, pass:CARD_SCOUT_GATE_SENTINEL });
+          // card-scout's pass is the inert CARD_SCOUT_GATE_SENTINEL sealed above (no secret; data access is keyed on sync_id)
           keyring.apps[f]=entry;
           try{ await PressVault.updateKeyring(keyring); }
           catch(e){ console.error('[private-wing] updateKeyring failed:', e); msg.classList.add('err'); msg.textContent=friendlyErr(e); return; }
