@@ -48,6 +48,7 @@ has no page-title meta). No external asset — the single-file rule holds.
 | `retirement.html` | Retirement Projection | `#0F1618` | `#7BC0AC → #E0BD8F` | rising line | inline |
 | `fsa.html` | FSA Claims | `#14161A` | `#00A3E0` (cyan) + `#E6E9ED` needle | gauge dial + needle | inline (flat, no gradient — Apparatus Gauge) |
 | `card-scout.html` | Card Scout | `#0E1220` | `#4FC38A → #E0BD8F` | price / gift tag | inline |
+| `perth.html` | Perth · The Runway | `#22312F` | `#6B7F6A → #D8C6A3` + `#E08B4E` | pin on a horizon | inline |
 
 ## Glyph paths (24x24 box)
 
@@ -61,6 +62,7 @@ has no page-title meta). No external asset — the single-file rule holds.
 | `kayley.html` | `<line x1="5" y1="19" x2="5" y2="15"/><line x1="12" y1="19" x2="12" y2="11"/><line x1="19" y1="19" x2="19" y2="6"/>` | 3.0 |
 | `retirement.html` | `<polyline points="3 18 9.5 11.5 13.5 15.5 21 6"/>` | 2.8 |
 | `card-scout.html` | `<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>` | 2.8 |
+| `perth.html` | `<path d="M10 45H54"/><path d="M41 45V30"/><circle cx="41" cy="25" r="7.5"/>` | 5 |
 
 ## Verify before publish
 
