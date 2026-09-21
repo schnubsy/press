@@ -151,3 +151,25 @@ doesn't open …"), never a raw status code, and the key is sealed only after it
 verdict as a pure function (`PressVault.dealsVerdict(ok, rows)`) so the 200-with-zero-rows = FAILURE
 case is unit-tested without a network. Card Scout also proved the keyring shape can be app-specific: a
 sync-id-only app carries `{ sync_id }` with **no** `pass` key — never write an empty passphrase.
+
+### [supabase][security] Revoking a role never removes Postgres's default PUBLIC EXECUTE grant (arc/family-wing, 2026-09-21)
+
+`20260921_press_access.sql` ended with `revoke all on function public.press_access_before_user_created(jsonb)
+from anon, authenticated;` and considered the hook locked down. It was not. Postgres grants **EXECUTE to
+PUBLIC by default** on every function, and both `anon` and `authenticated` inherit PUBLIC — so revoking
+the two roles individually left the function callable. The post-apply advisor caught it:
+`anon_security_definer_function_executable (WARN) ×4`. The hook is `SECURITY DEFINER`, takes arbitrary
+`jsonb`, and returns `{}` for an address on the family list but a 403 object for one that is not — reachable
+anonymously at `/rest/v1/rpc/press_access_before_user_created`, that is an **enumeration oracle**: anyone
+holding the publishable key could test whether a given email is on the family list, one address at a time.
+Cowork's fix migration `press_access_revoke_public_execute` (`db/20260921180000_…`) revokes from
+`public, anon, authenticated` on every security-definer helper (`press_access_*` and `remit_private.
+remit_has_access()`), then grants EXECUTE back **explicitly** — to `supabase_auth_admin` for the GoTrue
+hook, to `authenticated` for the ones the RLS policies and the gate call.
+
+**RULE:** revoking EXECUTE from `anon, authenticated` never removes the default PUBLIC grant. Always
+`revoke execute … from public` first, then grant it back explicitly to exactly the roles that need it
+(`supabase_auth_admin` for a Before-User-Created hook; `authenticated` for policy/gate helpers). Applies
+to **every** security-definer helper in the press project — audit the older `press_*` helpers for the
+same hole. Corollary: read the post-apply advisor after every DDL slice; this class of leak is silent
+(a 200, not an error) and only the advisor or an explicit `\df+` of the ACLs shows it.
