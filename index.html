@@ -255,6 +255,24 @@ body.tw-sorting .tw-card{transition:none}
   filter:drop-shadow(0 0 6px rgba(231,166,199,.4))}
 .tw-secure .sicon svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
+/* the Family Wing door — a sibling of the Private Wing card, its own (teal) accent so the two
+   pinned wing-cards read as siblings, not a chain. Same structure, no auth on load. */
+.tw-family{position:relative;display:block;text-decoration:none;color:inherit;padding:20px 22px;margin:0 0 14px;
+  border-radius:var(--tw-radius-card);
+  background:radial-gradient(150px 96px at 88% 26%, rgba(126,199,192,.15), transparent 70%),var(--tw-glass-card);
+  border:1px solid rgba(126,199,192,.34);cursor:pointer;overflow:hidden;box-shadow:var(--tw-shadow-card);
+  transition:box-shadow var(--tw-transition-card),border-color var(--tw-transition-card),transform .32s var(--tw-spring)}
+.tw-family:hover{border-color:rgba(126,199,192,.6);transform:translateY(-2px) scale(1.01);box-shadow:var(--tw-shadow-card-hover)}
+.tw-family:focus-visible{outline:2px solid #7ec7c0;outline-offset:3px}
+.tw-family .k{font-size:var(--tw-eyebrow);letter-spacing:var(--tw-track-eyebrow);text-transform:uppercase;
+  color:#7ec7c0;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.tw-family h3{font-family:var(--tw-font-display);font-weight:400;font-size:var(--tw-arch-title)}
+.tw-family .lockline{font-family:var(--tw-font-meta);font-size:11px;color:var(--tw-muted);margin-top:7px}
+.tw-family .sicon{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:30px;height:30px;
+  display:flex;align-items:center;justify-content:center;color:#7ec7c0;pointer-events:none;
+  filter:drop-shadow(0 0 6px rgba(126,199,192,.4))}
+.tw-family .sicon svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
 /* private-wing view */
 .tw-unlock{padding:32px 24px;border-radius:var(--tw-radius-card);background:var(--tw-glass-card);
   border:1px solid var(--tw-border-card);text-align:center;box-shadow:var(--tw-shadow-card)}
@@ -779,7 +797,8 @@ const ICONS={
   'Money':     '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
   'Page':      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>',
   'Archive':   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
-  'Secure':    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="10.5" r="1.5"/><path d="M12 12V15"/></svg>'
+  'Secure':    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="10.5" r="1.5"/><path d="M12 12V15"/></svg>',
+  'Family':    '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg>'
 };
 const iconFor=k=>ICONS[k]||ICONS['Page'];
 /* R3.4/R3.5 — Feather "sunrise" inside the "new" pill (early morning sun = fresh) */
@@ -812,9 +831,13 @@ function cacheLoad(){ try{ return JSON.parse(localStorage.getItem(CACHE_KEY)||'n
    today's behaviour). The split must NOT ride on press_portal (anon read/write).
    The landing/public marquee resolve card state from the LOCAL vault session
    only — ZERO WebAuthn and ZERO press_vault calls here. */
-let SPACES={personal:[]};
-function normSpaces(s){ return {personal: Array.isArray(s&&s.personal)? s.personal : []}; }
+let SPACES={personal:[],family:[]};
+// v2 adds a `family` key (the Family Wing). A v1 file has no `family` key — tolerate it: a missing
+// or malformed list is simply an empty wing, so nothing breaks before the first v2 publish.
+function normSpaces(s){ return {personal: Array.isArray(s&&s.personal)? s.personal : [],
+                                family:   Array.isArray(s&&s.family)?   s.family   : []}; }
 function isPersonalFile(f){ return (SPACES.personal||[]).includes(f); }
+function isFamilyFile(f){ return (SPACES.family||[]).includes(f); }
 async function loadSpaces(){ try{ const r=await fetch(`${RAW}/spaces.json`); if(!r.ok) return null; return await r.json(); }catch(e){ return null; } }
 function vaultState(){
   const sess = (window.PressVault && PressVault.loadSession) ? PressVault.loadSession() : null; // localStorage only
@@ -822,6 +845,7 @@ function vaultState(){
   return {sess, enrolled};
 }
 function personalCount(){ return (SPACES.personal||[]).length; }
+function familyCount(){ return (SPACES.family||[]).length; }
 function timeLeft(expiresAt){
   const ms = expiresAt - Date.now(); if(ms<=0) return 'expiring';
   const h = Math.floor(ms/3600000), m = Math.round((ms%3600000)/60000);
@@ -837,6 +861,17 @@ function secureCardHTML(){
     `<div class="k">⬤ Personal</div><h3>The Private Wing</h3>`+
     `<div class="lockline">${esc(line)}</div>`+
     `<span class="sicon">${ICONS['Secure']}</span></a>`;
+}
+// The Family Wing door — a sibling of the Private Wing card, rendered from spaces.json ALONE.
+// A COUNT and no page names (the public lobby does not enumerate a private space). Makes ZERO
+// auth / vault calls: it only reads SPACES.family.length. The gate lives on the page, not here.
+function familyCardHTML(){
+  const n = familyCount();
+  const line = `${n} ${n===1?'tool':'tools'} · sign in with a code`;
+  return `<a class="tw-family" href="./?view=family" draggable="false">`+
+    `<div class="k">⬤ Family</div><h3>The Family Wing</h3>`+
+    `<div class="lockline">${esc(line)}</div>`+
+    `<span class="sicon">${ICONS['Family']||ICONS['Secure']}</span></a>`;
 }
 
 /* ══ R3 — shared portal state (sort order + archived pages) ══════════════════
@@ -913,16 +948,19 @@ const skelHTML=`${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><
   `<div class="tw-skel"></div><div class="tw-skel"></div><div class="tw-skel"></div>`;
 
 function paintMarquee(root, files, man, physArchiveCount, stale){
-  // personal-wing files are removed BEFORE applyState — they can never be sorted,
-  // dragged into the public archive, or counted among the public cards.
-  const pub = files.filter(f=>!isPersonalFile(f));
+  // personal-wing AND family-wing files are removed BEFORE applyState — they can never be
+  // sorted, dragged into the public archive, or counted among the public cards.
+  const pub = files.filter(f=>!isPersonalFile(f) && !isFamilyFile(f));
   const {ordered, newest, stateArchived} = applyState(pub, man);
   const archiveCount = physArchiveCount + stateArchived.length;
   const secure = secureCardHTML();
+  // the family door only appears once a page is in spaces.json.family — a v1/empty file shows
+  // no door and the lobby is byte-for-byte the pre-Family-Wing paint.
+  const family = familyCount() ? familyCardHTML() : '';
   if(!ordered.length){
     root.innerHTML = `${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>${COPY_FLAVOR}</span></div>`+
       `<h2 class="tw-title">${COPY_TITLE}</h2>`+
-      secure +
+      secure + family +
       `<div class="tw-empty"><h3>Nothing on the marquee yet</h3>`+
       `<p>Published pages appear here automatically.</p></div>`+
       (archiveCount?archiveCardHTML(archiveCount):'');
@@ -937,7 +975,7 @@ function paintMarquee(root, files, man, physArchiveCount, stale){
     staleNote +
     `<h2 class="tw-title">${COPY_TITLE}</h2>`+
     `<div class="tw-dek">${COPY_DEK}</div>`+
-    secure + cards + archiveCardHTML(archiveCount) +
+    secure + family + cards + archiveCardHTML(archiveCount) +
     `<div class="tw-hint">hold a card to lift it · drop on the archive to tuck it away</div>`+
     `<div class="tw-auto">↻ auto-listed from the repository root</div>`;
   wireDrag(root);
@@ -1416,11 +1454,32 @@ async function renderPersonal(root){
   paintPersonal(root, man);
 }
 
+/* ══ the family wing — ?view=family ══════════════════════════════════════════
+   A DIRECTORY, not a doorway: it lists the family pages from spaces.json and links
+   straight to each. The sign-in gate lives ON the page (family-gate.js), so this view
+   makes ZERO Supabase-auth calls — an idle family-wing tab prompts for nothing, exactly
+   like the private wing never touches WebAuthn until you tap unlock. */
+async function renderFamily(root){
+  const back=`<a class="tw-back" href="index.html">← the marquee</a>`;
+  const top=`<div class="tw-top"><span>The <b>Family Wing</b></span><span>for the four of us</span></div>`;
+  root.innerHTML = back+top+`<h2 class="tw-title">Signed in with a code.</h2><div class="tw-skel"></div>`;
+  let man=null;
+  try{ const res=await Promise.all([loadManifest(''), loadSpaces()]); man=res[0]; SPACES=normSpaces(res[1]); }
+  catch(e){ SPACES=normSpaces(null); }
+  const fam=(SPACES.family||[]);
+  const cards=fam.map(f=>cardHTML(f, man, false)).join('');
+  const body = cards
+    ? `<div class="tw-dek">Open a tool — it asks for a 6-digit code sent to your email, then remembers you on this device. Everyone here shares the same data; there are no roles.</div>`+cards
+    : `<div class="tw-empty"><h3>No family tools yet</h3><p>Pages added to the family wing appear here.</p></div>`;
+  root.innerHTML = back+top+`<h2 class="tw-title">Signed in with a code.</h2>`+body;
+}
+
 const params = new URLSearchParams(location.search);
 const isArchive  = params.get('view')==='archive'  || location.hash==='#archive';
 const isPersonal = params.get('view')==='personal' || location.hash==='#personal';
+const isFamily   = params.get('view')==='family'   || location.hash==='#family';
 const root = document.getElementById('tw-root');
-(isPersonal ? renderPersonal : isArchive ? renderArchive : renderMarquee)(root);
+(isPersonal ? renderPersonal : isFamily ? renderFamily : isArchive ? renderArchive : renderMarquee)(root);
 </script>
 </body>
 </html>
