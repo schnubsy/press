@@ -4,6 +4,25 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-09-21 — arc/perth-runway (The Runway published)
+
+Published `perth.html` — "The Runway", a public family board for Brandon's move to Perth (arriving
+14 Jan 2027). A page, not an app: one self-contained file on the `press_tasks` state lane, `page='perth'`.
+Opened by the Council (Ear gut-check → Eye lite → Forge), orchestrated in Cowork, slices run in Claude
+Code. **S1 — seed:** 99 tasks + one `__meta__` row (10 categories, 2 people, `depart=2027-01-14`) POSTed
+to PostgREST (upsert on `page,item_id`, batches of 25) after deleting existing `page='perth'` rows;
+round-trip verified 100 rows with a field-for-field sample match on title/status/category/week/extras.
+**S2/S3:** `pages.json` gained `"perth.html": {"title":"Perth · The Runway"}` (spaces.json untouched —
+public for now, per Mark's decision; task titles carry no personal identifiers); `docs/favicons.md`
+registered the "pin on a horizon" glyph (`#22312F` ground, `#6B7F6A → #D8C6A3` + `#E08B4E`). **S4 —
+publish (Lane A):** input blob `379e3d1923ec57100016eae6a0e0f8feea54d47c` hash-verified, committed
+`99a7c87`, pushed to `main`. **S5 — verified live:** raw blob SHA matched, both axes render (Runway 24
+week columns incl. the "Departure week" 11–17 Jan; Categories 10 lanes), 99 cards load from Supabase,
+people strip renders, sync pill reaches "synced", Marquee portal lists the NEW card, no mobile h-scroll.
+Decisions (do not re-litigate): Brandon is an Australian citizen — no visa branch, the passport +
+citizenship-by-descent chain is the critical path; open RLS on medical/school content mitigated by the
+public/no-identifier discipline + JSON export, revisited at family-wing migration.
+
 ## 2026-09-19 — align-retirement follow-ups (keyring pruned; public standalone retired)
 
 Post-close housekeeping. **Keyring residue pruned:** the passkey-only `data_key`/`v` that

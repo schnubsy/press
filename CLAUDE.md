@@ -24,18 +24,15 @@ served via GitHub Pages. Key pages:
 
 ## Current stage
 
-Live; **arc/align-retirement COMPLETE (2026-09-19, pushed `9ae3424`).** The passkey-only Slice 1
-(`kind:'local'` + "Protect your local tools" + per-tool `data_key`) is REVERTED — `index.html` is
-byte-identical to `f054714` (retirement is a normal cloud Connect tool again), `test/protect.spec.mjs`
-removed, `test/marquee.spec.mjs` reverted; only `src/gate.testkit.mjs`'s standard-ArrayBuffer-PRF-at-
-create shim is KEPT (a real, design-independent gap fix). **`retirement.html` republished** with the
-gated build — fsa's `PressGate` page lock over retirement's existing cloud sync, built + gated by
-`retirement/tools/release.js`. Prior arc/private-wing-spare-keys-collapse (drawer collapse + Card
-Scout) stays closed; passkey enrol + `press_deals` gate intact. Gauntlet: 31/31 unit, `inline:check`
-clean, 25/25 smoke. **Follow-ups (2026-09-19):** retirement's keyring residue pruned → all app entries
-are now shape-identical (`fsa`/`giving`/`retirement` → `{ pass, sync_id }`, `card-scout` → `{ sync_id }`);
-the public standalone `retirement-projection` Pages site was retired (unpublished, 404), so
-`press/retirement.html` is retirement's ONLY deployment. No open arc items.
+Live; **arc/perth-runway COMPLETE (2026-09-21, pushed `99a7c87` to `main`).** `perth.html` — "The
+Runway", a public family board tracking Brandon's move to Perth (arriving 14 Jan 2027). Self-contained
+page, `press_tasks` state lane, `page='perth'`: 99 tasks + one `__meta__` (10 categories, 2 people,
+`depart=2027-01-14`) seeded to Supabase and round-trip verified. Switchable Runway (24 week columns,
+"Departure week" = 11–17 Jan) / Categories (10 lanes) axes; drag KEPT, comments CUT to a notes log;
+added `lodged` status, link field, JSON export. `pages.json` + `docs/favicons.md` updated; **not** in
+`spaces.json` (public for now — migrates to the family wing later; no personal identifiers in titles).
+Live-verified: raw blob SHA matches, both axes render, sync pill "synced", portal lists the NEW card,
+no mobile h-scroll. Prior arc/align-retirement stays closed. No open arc items.
 
 ## Project rules
 

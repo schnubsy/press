@@ -11,6 +11,18 @@ Evidence slice files follow: `v<N>-slice-<seq>-<topic>.txt` (e.g. `v4-slice-9-pr
 
 ## Known lessons
 
+### A JSONB round-trip check must compare keys order-insensitively (arc/perth-runway, 2026-09-21) [supabase]
+
+Verifying a PostgREST seed by re-GETting the rows and comparing `extras` field-for-field, the perth seed
+"failed" on `t029.extras` — every value (`due`/`flag`/`note`/`link`/`assignees`/`log`) matched; only the
+**key order** differed (`{due,flag,note,…}` in vs `{due,log,flag,…}` out). Postgres `jsonb` stores keys
+in its own order and does NOT preserve insertion order, so a naive `JSON.stringify(a)===JSON.stringify(b)`
+reports a false mismatch on data that survived intact. **RULE:** compare JSONB round-trips with a
+canonical, order-insensitive deep-equal (recursively sort object keys before serializing); reserve
+order-sensitive compares for arrays, where order IS the data. Corollary: a UTF-8 "check a row with an en
+dash" spot-check only bites if the payload actually contains non-ASCII — the perth seed was pure ASCII,
+so that probe was a no-op; scan for the char class you mean to test before asserting it survived.
+
 ### Reverting code does not revert the data it already wrote (arc/align-retirement follow-up, 2026-09-19) [press]
 
 The passkey-only `protectTool()` sealed a per-tool `data_key` + version marker `v` into the vault
