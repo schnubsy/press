@@ -87,6 +87,8 @@
   .field select{flex:0 0 auto}
   .helper{font-size:13px;color:var(--muted);margin:2px 2px 0}
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;margin-bottom:10px}
+  .card.coming{opacity:.6;background:var(--chip)} /* Slice 9: a "Coming soon" source is visibly inert */
+  .sw[disabled]{cursor:not-allowed;opacity:.5}
   .row{display:flex;align-items:center;gap:10px}
   .row .grow{flex:1;min-width:0}
   .title{font-weight:600}
@@ -119,6 +121,27 @@
   .addrow input{flex:1}
   footer{max-width:640px;margin:6px auto 0;padding:14px 16px 24px;color:var(--muted);font-size:13px;text-align:center}
   footer a{color:var(--accentA)}
+  /* feed controls (Slice 2): sort, date + filter chips, brand type-ahead, NEW markers */
+  .feedbar{display:flex;flex-direction:column;gap:8px;margin:2px 0 6px}
+  .feedbar .field{margin:0}
+  .chiprow{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px;margin:0 -2px}
+  .chiprow::-webkit-scrollbar{display:none}
+  .fchip{flex:0 0 auto;font-size:13px;font-weight:600;color:var(--ink);background:var(--chip);border:1px solid var(--line);
+    border-radius:999px;padding:8px 12px;white-space:nowrap;min-height:36px;cursor:pointer}
+  .fchip[aria-pressed="true"]{color:#fff;background:linear-gradient(135deg,var(--accentA),var(--accentB));border-color:transparent}
+  .newbanner{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;font-weight:600;
+    background:linear-gradient(135deg,rgba(20,155,107,.12),rgba(176,125,42,.10))}
+  .newbanner .grow{flex:1;min-width:0}
+  .tabbadge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;
+    border-radius:999px;background:var(--danger);color:#fff;font-size:11px;font-weight:700;vertical-align:middle}
+  .tabbadge[hidden]{display:none} /* class display would otherwise override the [hidden] UA rule */
+  nav button[aria-selected="true"] .tabbadge{background:#fff;color:var(--accentA)}
+  .newtag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;padding:2px 6px;border-radius:999px;background:var(--danger);color:#fff;margin-right:6px}
+  /* per-rule category segmented control (Slice 4) */
+  .seg{display:inline-flex;flex-wrap:wrap;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
+  .segbtn{border:none;border-right:1px solid var(--line);background:var(--card);color:var(--muted);font-size:13px;font-weight:600;padding:8px 10px;min-height:40px;cursor:pointer}
+  .segbtn:last-child{border-right:none}
+  .segbtn.on{color:#fff;background:linear-gradient(135deg,var(--accentA),var(--accentB))}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -131,7 +154,7 @@
     <span id="sync" role="status" aria-live="polite">…</span>
   </div>
   <nav role="tablist" aria-label="Sections">
-    <button role="tab" id="tab-feed" aria-selected="true" aria-controls="panel-feed">Feed</button>
+    <button role="tab" id="tab-feed" aria-selected="true" aria-controls="panel-feed">Feed<span id="feed-badge" class="tabbadge" hidden aria-label="new deals"></span></button>
     <button role="tab" id="tab-sources" aria-selected="false" aria-controls="panel-sources">Sources</button>
     <button role="tab" id="tab-rules" aria-selected="false" aria-controls="panel-rules">Rules</button>
     <button role="tab" id="tab-alerts" aria-selected="false" aria-controls="panel-alerts">Alerts</button>
@@ -778,8 +801,17 @@
   var REST = SUPA + "/rest/v1/";
   var H = { apikey:KEY, Authorization:"Bearer "+KEY, "content-type":"application/json" };
 
-  var state = { sources:[], rules:[], settings:{}, toggles:{}, deals:[], locked:false };
+  var state = { sources:[], rules:[], settings:{}, toggles:{}, deals:[], locked:false, feedSeenAt:null, watch:[] };
   var ruleQuery = ""; // live Rules-tab search (not persisted)
+  // Feed view controls (Slice 2) — per-viewer, not persisted server-side.
+  var SEEN_ID = "feed-seen-at";          // press_state row whose updated_at is the "last looked" stamp
+  var feedSort = "new";                   // new | old | discount | brand
+  var feedDate = "30d";                   // today | 7d | 30d | all  (data window is 30d, so all==30d)
+  var feedVerdict = "";                   // "" | hit | near   (New/Hits/Nears chips)
+  var feedNewOnly = false;                // "New" chip: only rows unseen since feedSeenAt
+  var feedGroupFilter = {};               // active group chips (restaurant/retail/other/retailer)
+  var feedBrand = "";                     // brand type-ahead substring
+  var feedEveryday = false;               // "Everyday price" chip: reveal silent warehouse rows (Slice 7)
   var el = function(id){ return document.getElementById(id); };
   var esc = function(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); };
   function sync(cls,txt){ var s=el("sync"); s.className=cls; s.textContent=txt; }
@@ -822,19 +854,27 @@
       api("press_tasks?page=eq."+PAGE+"&category=eq.source&select=item_id,title,status,extras&order=position"),
       api("press_tasks?page=eq."+PAGE+"&category=eq.rule&select=item_id,title,status,extras&order=title"),
       api("press_tasks?page=eq."+PAGE+"&category=eq.settings&select=item_id,extras"),
-      api("press_state?page=eq."+PAGE+"&select=item_id,checked")
+      api("press_state?page=eq."+PAGE+"&select=item_id,checked,updated_at"),
+      api("press_tasks?page=eq."+PAGE+"&category=eq.watch&select=item_id,title,status,extras&order=title")
     ];
     if(sid){
-      q.push(api("press_deals?page=eq."+PAGE+"&created_at=gte."+since30()+"&verdict=in.(hit,near)&order=created_at.desc&select=item_id,brand,category,face_value,price,pct_off,expiry,url,source,verdict,status,extras,created_at"));
+      // hit/near, PLUS silent everyday-price warehouse rows (Slice 7) so the feed can reveal them
+      // behind the "Everyday price" filter chip. Everyday rows are hidden by default (see feedFiltered).
+      q.push(api("press_deals?page=eq."+PAGE+"&created_at=gte."+since30()+"&or=(verdict.in.(hit,near),extras->>everyday_price.eq.true)&order=created_at.desc&select=item_id,brand,category,face_value,price,pct_off,expiry,url,source,verdict,status,extras,created_at"));
     }
     return Promise.all(q).then(function(rs){
       return Promise.all(rs.map(function(r){ if(!r.ok) throw new Error("http "+r.status); return r.json(); }));
     }).then(function(d){
       state.sources=d[0]; state.rules=d[1];
       state.settings=(d[2][0]&&d[2][0].extras)||{};
-      state.toggles={}; d[3].forEach(function(t){ state.toggles[t.item_id]=t.checked===true; });
+      state.toggles={}; state.feedSeenAt=null;
+      d[3].forEach(function(t){
+        if(t.item_id===SEEN_ID){ state.feedSeenAt=t.updated_at||null; return; } // the "last looked" stamp, not a toggle
+        state.toggles[t.item_id]=t.checked===true;
+      });
+      state.watch = d[4]||[];
       state.locked = !sid;
-      state.deals = sid ? (d[4]||[]) : [];
+      state.deals = sid ? (d[5]||[]) : [];
       saveLS(); renderAll();
       if(sid) sync("ok","Synced"); else sync("locked","Locked");
     }).catch(function(e){
@@ -895,11 +935,64 @@
     if(d.extras&&d.extras.unpriced) return "worth a look — price not parsed";
     return "gift card";
   }
+  // ---------- NEW marker + relative time (Slice 2) ----------
+  function dealTime(d){ var t=new Date(d&&d.created_at||0).getTime(); return isNaN(t)?0:t; }
+  // A deal is NEW until Mark has LOOKED (opened the Feed tab / "Mark all seen") — never because time
+  // passed. NEW = created_at strictly newer than the feed-seen-at stamp (null stamp ⇒ everything new).
+  function isUnseen(d){
+    if(!d||!d.created_at) return false;
+    if(!state.feedSeenAt) return true;
+    return dealTime(d) > new Date(state.feedSeenAt).getTime();
+  }
+  function isEveryday(d){ return d && d.verdict==="no" && d.extras && d.extras.everyday_price; }
+  // Unseen = new hit/near rows to care about; the silent everyday-price rows never count as "new".
+  function unseenDeals(){ return (state.deals||[]).filter(function(d){ return isUnseen(d) && !isEveryday(d); }); }
+  function relTime(iso){
+    if(!iso) return "";
+    var t=new Date(iso).getTime(); if(isNaN(t)) return "";
+    var s=Math.max(0,(Date.now()-t)/1000);
+    if(s<3600) return Math.max(1,Math.round(s/60))+"m ago";
+    if(s<86400) return Math.round(s/3600)+"h ago";
+    var days=Math.round(s/86400);
+    if(days<7) return new Date(iso).toLocaleDateString(undefined,{weekday:"short"}); // "Fri"
+    return fmtDate(iso);
+  }
+  // Slice 7: a 'near' must say WHY — a true near miss vs a below-minimum / unpriced / suspicious row,
+  // so "near miss" means one thing only. Everyday-price rows say "Everyday price".
+  function ruleMinDenomLabel(d){
+    var id=(d.extras&&(d.extras.brand_rule_id||d.extras.rule_id))||null;
+    var r=id?find(state.rules,id):null; return r?denomLabel(r.extras):null;
+  }
+  function nearReason(d){
+    var e=d.extras||{};
+    if(d.verdict==="near"){
+      if(e.below_min_denom){ var dl=ruleMinDenomLabel(d); return "Below your "+((dl&&dl!=="Any")?dl:"$25")+" minimum"; }
+      if(e.unpriced) return "Needs a look — no price";
+      if(e.suspicious) return "Unusually high — double-check";
+      return "Near miss";
+    }
+    if(isEveryday(d)) return "Everyday price";
+    return "";
+  }
   function dealCard(d){
     var p=pct(d); var isHit=d.verdict==="hit"; var bought=d.status==="bought", skip=d.status==="skip";
-    return '<div class="card"><div class="row"><span class="badge '+(isHit?"hit":"near")+'">'+(p!=null?p+"% off":(isHit?"HIT":"NEAR"))+'</span>'
-      +'<div class="grow"><div class="title">'+esc(d.brand||"Gift card")+'</div>'
-      +'<div class="sub">'+priceLine(d)+(d.source?' · '+esc(String(d.source).replace(/^src-/,"")):"")+(d.expiry?' · exp '+esc(d.expiry):"")+'</div></div></div>'
+    var isNew=isUnseen(d); var rt=relTime(d.created_at); var everyday=isEveryday(d);
+    // Slice 1: the SHOP is a secondary label ("· at Sam's Club"), never the bucket.
+    var retailer=d.extras&&d.extras.retailer;
+    var covers=d.extras&&d.extras.container_for; // Slice 5: "covers Total Wine"
+    var reason=nearReason(d); // Slice 7
+    var sub=priceLine(d)
+      +(retailer?' · at '+esc(retailer):"")
+      +(covers&&covers.length?' · covers '+esc(covers.slice(0,3).join(", ")):"")
+      +(reason?' · '+esc(reason):"")
+      +(d.source?' · '+esc(String(d.source).replace(/^src-/,"")):"")
+      +(rt?' · '+esc(rt):"")
+      +(d.expiry?' · exp '+esc(d.expiry):"");
+    var badgeClass=isHit?"hit":(d.verdict==="near"?"near":"");
+    var badgeText=everyday?"everyday":(p!=null?p+"% off":(isHit?"HIT":d.verdict==="near"?"NEAR":"—"));
+    return '<div class="card"><div class="row"><span class="badge '+badgeClass+'">'+esc(badgeText)+'</span>'
+      +'<div class="grow"><div class="title">'+(isNew?'<span class="newtag">NEW</span>':"")+esc(d.brand||"Gift card")+'</div>'
+      +'<div class="sub">'+sub+'</div></div></div>'
       +'<div class="row" style="margin-top:10px">'
       +(d.url?'<a class="deal" href="'+esc(d.url)+'" target="_blank" rel="noopener">Open deal &rarr;</a>':'<span class="sub">no link</span>')
       +'<span class="grow"></span>'
@@ -914,55 +1007,169 @@
       +'<a class="btn primary" href="index.html?view=personal">Open the Private Wing &rarr;</a>'
       +'</div></div>';
   }
+  // ---------- feed filtering / sorting (Slice 2) ----------
+  function dateFloorMs(){
+    var now=Date.now();
+    if(feedDate==="today"){ var d=new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+    if(feedDate==="7d")  return now-7*864e5;
+    if(feedDate==="30d") return now-30*864e5;
+    return 0; // all (the data window is already 30d)
+  }
+  function feedFiltered(){
+    var floor=dateFloorMs(), q=(feedBrand||"").toLowerCase();
+    var groupsOn=Object.keys(feedGroupFilter).filter(function(k){return feedGroupFilter[k];});
+    return (state.deals||[]).filter(function(d){
+      // Slice 7: everyday-price rows are hidden unless the "Everyday price" chip is on (then only they).
+      if(feedEveryday){ if(!isEveryday(d)) return false; }
+      else if(isEveryday(d)) return false;
+      if(floor && dealTime(d)<floor) return false;
+      if(!feedEveryday){
+        if(feedNewOnly && !isUnseen(d)) return false;
+        if(feedVerdict && d.verdict!==feedVerdict) return false;
+      }
+      if(groupsOn.length && groupsOn.indexOf(dealGroup(d))<0) return false;
+      if(q && String(d.brand||"").toLowerCase().indexOf(q)<0) return false;
+      return true;
+    });
+  }
+  function sortFeed(list){
+    var a=list.slice();
+    if(feedSort==="brand")         a.sort(function(x,y){ return String(x.brand||"").localeCompare(String(y.brand||"")); });
+    else if(feedSort==="discount") a.sort(function(x,y){ return (pct(y)||0)-(pct(x)||0); });
+    else if(feedSort==="old")      a.sort(function(x,y){ return dealTime(x)-dealTime(y); });
+    else                           a.sort(function(x,y){ return dealTime(y)-dealTime(x); }); // newest first (default)
+    return a;
+  }
+  function feedControls(){
+    var unseen=unseenDeals().length;
+    var banner=unseen>0
+      ? '<div class="newbanner"><span class="grow">'+unseen+' new since you last looked</span><button class="btn small" id="feedseen">Mark all seen</button></div>'
+      : '';
+    function chip(attr,val,label,on){ return '<button class="fchip" '+attr+'="'+esc(val)+'" aria-pressed="'+(on?"true":"false")+'">'+esc(label)+'</button>'; }
+    var dateChips=[["today","Today"],["7d","Last 7 days"],["30d","Last 30 days"],["all","All"]]
+      .map(function(c){ return chip("data-dchip",c[0],c[1],feedDate===c[0]); }).join("");
+    var filterChips=chip("data-vchip","new","New",feedNewOnly)
+      +chip("data-vchip","hit","Hits",feedVerdict==="hit")
+      +chip("data-vchip","near","Nears",feedVerdict==="near")
+      +chip("data-echip","everyday","Everyday price",feedEveryday)
+      +[["restaurant","Restaurants"],["retail","Retail"],["other","Other"],["retailer","Warehouse"]]
+        .map(function(g){ return chip("data-gchip",g[0],g[1],!!feedGroupFilter[g[0]]); }).join("");
+    return '<div class="feedbar">'+banner
+      +'<div class="field"><label for="feedsort">Sort</label>'
+        +'<select id="feedsort">'
+        +'<option value="new"'+(feedSort==="new"?" selected":"")+'>Newest first</option>'
+        +'<option value="old"'+(feedSort==="old"?" selected":"")+'>Oldest first</option>'
+        +'<option value="discount"'+(feedSort==="discount"?" selected":"")+'>Best discount</option>'
+        +'<option value="brand"'+(feedSort==="brand"?" selected":"")+'>Brand A–Z</option>'
+        +'</select></div>'
+      +'<div class="chiprow" role="group" aria-label="Date range">'+dateChips+'</div>'
+      +'<div class="chiprow" role="group" aria-label="Quick filters">'+filterChips+'</div>'
+      +'<div class="searchbar" style="position:static;padding:0"><input id="feedbrand" type="text" placeholder="Filter by brand…" aria-label="Filter feed by brand" value="'+esc(feedBrand)+'"></div>'
+      +'</div>';
+  }
   function renderFeed(){
     var host=el("feed");
     if(state.locked){ host.innerHTML=lockedPanel(); return; }
-    var deals=state.deals||[];
     // planId is set but the feed is genuinely empty (and config loaded) — the honest empty state.
-    if(!deals.length){
+    if(!(state.deals&&state.deals.length)){
       host.innerHTML='<div class="empty">No deals in the last 30 days yet.<br>The agent alerts you the moment one beats your rules.</div>';
       return;
     }
+    host.innerHTML=feedControls()+'<div id="feed-list"></div>';
+    renderFeedList();
+  }
+  function renderFeedList(){
+    var listEl=el("feed-list"); if(!listEl) return;
+    var deals=sortFeed(feedFiltered());
+    if(!deals.length){ listEl.innerHTML='<div class="empty">No deals match these filters.</div>'; return; }
     var buckets={}; FEED_GROUPS.forEach(function(g){buckets[g[0]]=[];});
     deals.forEach(function(d){ var g=dealGroup(d); if(!buckets[g]) g="other"; buckets[g].push(d); });
-    var groups=[]; var html="";
-    FEED_GROUPS.forEach(function(g){
-      var list=buckets[g[0]]; if(!list.length) return;
-      // hits first within each group; Array.sort is stable so created_at order holds within a verdict.
-      list.sort(function(a,b){ return (b.verdict==="hit"?1:0)-(a.verdict==="hit"?1:0); });
-      groups.push({slug:g[0],label:g[1],count:list.length,list:list});
-    });
-    html=quickNav("feed",groups);
+    var groups=[];
+    FEED_GROUPS.forEach(function(g){ var l=buckets[g[0]]; if(l.length) groups.push({slug:g[0],label:g[1],count:l.length,list:l}); });
+    var html=quickNav("feed",groups);
     groups.forEach(function(g){
       html+=groupHead("feed",g.slug,g.label,g.count);
       g.list.forEach(function(d){ html+=dealCard(d); });
     });
-    host.innerHTML=html;
+    listEl.innerHTML=html;
+  }
+  // The tab badge counts UNSEEN deals; it clears only when Mark looks (markFeedSeen), never on a timer.
+  function renderFeedBadge(){
+    var b=el("feed-badge"); if(!b) return;
+    var n=state.locked?0:unseenDeals().length;
+    if(n>0){ b.textContent=String(n); b.hidden=false; b.setAttribute("aria-label",n+" new deals"); }
+    else { b.textContent=""; b.hidden=true; b.setAttribute("aria-label",""); }
+  }
+  function stampSeen(iso){
+    return api("press_state?on_conflict=page,item_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},
+      body:JSON.stringify({page:PAGE,item_id:SEEN_ID,checked:true,updated_at:iso})});
+  }
+  // Mark looked: advance the seen stamp (a row must stop being NEW only because he LOOKED). Local
+  // stamp clears the badge immediately; the DB write is best-effort (a refresh reloads the stamp).
+  function markFeedSeen(){
+    if(state.locked || !unseenDeals().length) return;
+    var iso=new Date().toISOString();
+    state.feedSeenAt=iso;
+    renderFeed(); renderFeedBadge();
+    stampSeen(iso).catch(function(){});
   }
 
-  // ---------- Sources ----------
+  // ---------- Sources (Slice 9: never show coverage that doesn't exist) ----------
   var SRC_GROUPS=[["feed","Deal feeds"],["direct","Direct retailers"],["marketplace","Marketplaces"]];
+  // A cloud source with no group still belongs under "Deal feeds"; everything else defaults to Direct.
+  function groupOf(s){ var g=s.extras&&s.extras.group; if(g) return g; return (s.extras&&s.extras.lane==="cloud")?"feed":"direct"; }
+  // How long a source may go unchecked before it's overdue, per cadence.
+  var CADENCE_WINDOW={ "30m":1.5*3600e3, "3x-day":13*3600e3, "1x-day":30*3600e3, "weekly":8*864e5 };
+  function withinCadence(iso,cadence){
+    var t=new Date(iso||0).getTime(); if(isNaN(t)||!iso) return false;
+    return (Date.now()-t) <= (CADENCE_WINDOW[cadence]||24*3600e3);
+  }
+  // EXACTLY three states — no "unknown", no green for a source nothing checks.
+  //   coming: not wired yet (coming_soon / !lane_ready) → toggle forced OFF.
+  //   stale : wired but blocked / errored / overdue / NEVER checked → not green.
+  //   live  : wired, healthy, and checked within its cadence.
+  function sourceState(s){
+    var x=s.extras||{};
+    if(x.coming_soon===true || x.lane_ready===false) return "coming";
+    if(x.blocked===true || x.health==="error") return "stale";
+    if(!x.last_checked) return "stale"; // never checked → never green
+    return withinCadence(x.last_checked,x.cadence) ? "live" : "stale";
+  }
   function sourceCard(s){
-    var x=s.extras||{}; var on=s.status==="on";
-    var health=x.blocked?"blocked":(x.health||"");
-    var dot=health==="ok"?"ok":health==="error"?"err":health==="blocked"?"blocked":"";
-    return '<div class="card"><div class="row">'
-      +'<span class="dot '+dot+'" title="'+esc(health||"unknown")+'"></span>'
-      +'<div class="grow"><div class="title">'+esc(s.title)+'</div>'
-      +'<div class="sub">'+esc(x.lane||"")+' · '+esc(x.cadence||"")+(x.bookmark?" · bookmark":"")
-      +(x.last_checked?' · checked '+fmtDate(x.last_checked):"")+'</div>'
-      +'<div class="sub">'+(x.verified?"":'<span class="badge warn">unverified</span>')+(x.blocked?'<span class="badge warn">blocked</span>':"")+(x.note?esc(x.note):"")+'</div></div>'
-      +'<button class="sw" role="switch" aria-checked="'+on+'" aria-pressed="'+on+'" aria-label="Enable '+esc(s.title)+'" data-src="'+esc(s.item_id)+'"></button>'
+    var x=s.extras||{}; var on=s.status==="on"; var st=sourceState(s);
+    var dot=st==="live"?"ok":(st==="stale"?"err":"");
+    var label=st==="live"?"Live":(st==="stale"?"Stale":"Coming soon");
+    var lbcls=st==="live"?" hit":(st==="stale"?" warn":"");
+    var checked=x.last_checked?relTime(x.last_checked):"never";
+    var laneStr=[x.lane||"",x.cadence||""].filter(Boolean).join(" · ")+(x.bookmark?" · bookmark":"");
+    var reason=st==="coming" ? (x.dormant_reason||"not wired up yet — can't be turned on")
+      : (x.blocked ? "needs the browser lane — "+(x.browser_only_reason||x.last_error||"blocked to a server fetch")
+      : (x.health==="error"&&x.last_error ? esc(x.last_error) : ""));
+    var disabled=st==="coming";
+    return '<div class="card'+(st==="coming"?" coming":"")+'"><div class="row">'
+      +'<span class="dot '+dot+'" title="'+esc(label)+'"></span>'
+      +'<div class="grow"><div class="title">'+esc(s.title)+' <span class="badge'+lbcls+'">'+label+'</span></div>'
+      +'<div class="sub">'+esc(laneStr)+' · checked '+esc(checked)+'</div>'
+      +(reason?'<div class="sub">'+esc(reason)+'</div>':"")+'</div>'
+      +'<button class="sw" role="switch" aria-checked="'+on+'" aria-pressed="'+on+'" '
+        +(disabled?'disabled aria-disabled="true" title="Coming soon — nothing checks this yet" ':'')
+        +'aria-label="Enable '+esc(s.title)+'" data-src="'+esc(s.item_id)+'"></button>'
       +'</div></div>';
   }
   function renderSources(){
     var host=el("sources"); var groups=[];
     SRC_GROUPS.forEach(function(g){
-      var list=state.sources.filter(function(s){return (s.extras&&s.extras.group)===g[0];});
+      var list=state.sources.filter(function(s){return groupOf(s)===g[0];});
       if(list.length) groups.push({slug:g[0],label:g[1],count:list.length,list:list});
     });
     if(!groups.length){ host.innerHTML='<div class="empty">No sources.</div>'; return; }
-    var html=quickNav("sources",groups);
+    // a small honest tally so Mark can see coverage at a glance.
+    var all=state.sources, live=all.filter(function(s){return sourceState(s)==="live";}).length,
+        coming=all.filter(function(s){return sourceState(s)==="coming";}).length,
+        stale=all.filter(function(s){return sourceState(s)==="stale";}).length;
+    var tally='<div class="card summary"><p><strong>'+live+'</strong> live · <strong>'+stale+'</strong> stale · <strong>'+coming+'</strong> coming soon. '
+      +'A source only shows <em>Live</em> when something actually checked it within its schedule.</p></div>';
+    var html=tally+quickNav("sources",groups);
     groups.forEach(function(g){
       html+=groupHead("sources",g.slug,g.label,g.count);
       g.list.forEach(function(s){ html+=sourceCard(s); });
@@ -972,13 +1179,51 @@
 
   // ---------- Rules ----------
   var RULE_GROUPS=[["restaurant","Restaurants"],["retail","Retail"],["other","Other"],["retailer","Warehouse / retailer"]];
+  function groupLabel(g){ for(var i=0;i<RULE_GROUPS.length;i++) if(RULE_GROUPS[i][0]===g) return RULE_GROUPS[i][1]; return "Other"; }
+  // Auto-categorize a typed brand (Slice 4): a keyword + known-brand table maps a name to
+  // restaurant | retail | other. Defaults to 'other' ONLY when nothing matches (and the UI says so).
+  var RESTAURANT_KW=["grill","grille","pizza","taco","coffee","cafe","bbq","barbecue","kitchen","diner",
+    "burger","bistro","deli","donut","doughnut","bakery","steak","steakhouse","wings","sushi","noodle",
+    "ramen","cantina","tavern","eatery","roadhouse","creamery","pretzel","smoothie","juice","chicken",
+    "seafood","pub","brewhouse","waffle","pancake","bagel","cream","pizzeria","taqueria","grillhouse"];
+  var RETAIL_KW=["hardware","apparel","clothing","beauty","cosmetics","home","market","depot","outfitters",
+    "supply","furniture","mattress","electronics","hobby","craft","toys","shoes","jewelry","jewellery",
+    "pharmacy","grocery","outlet","goods","boutique","threads","sporting","fashion","cellar"];
+  var KNOWN_BRAND={
+    "la madeleine":"restaurant","cheesecake factory":"restaurant","panera":"restaurant","chipotle":"restaurant",
+    "starbucks":"restaurant","dunkin":"restaurant","sonic":"restaurant","subway":"restaurant","ihop":"restaurant",
+    "olive garden":"restaurant","texas roadhouse":"restaurant","red robin":"restaurant","cold stone":"restaurant",
+    "sephora":"retail","ulta":"retail","nordstrom":"retail","lululemon":"retail","gap":"retail","wayfair":"retail",
+    "total wine":"retail","home depot":"retail","lowes":"retail","ace hardware":"retail","woodcraft":"retail"
+  };
+  function categorizeBrand(name){
+    var n=normBrand(name); if(!n) return "other";
+    if(KNOWN_BRAND[n]) return KNOWN_BRAND[n];
+    var toks=n.split(" ");
+    for(var i=0;i<toks.length;i++){ if(RESTAURANT_KW.indexOf(toks[i])>=0) return "restaurant"; }
+    for(var j=0;j<toks.length;j++){ if(RETAIL_KW.indexOf(toks[j])>=0) return "retail"; }
+    return "other";
+  }
+  // The 4-way category control shown on every rule row so any brand can be recategorized (Slice 4).
+  function groupSeg(r){
+    var cur=(r.extras&&r.extras.group)||"other";
+    return '<div class="seg" role="group" aria-label="Category for '+esc(r.title)+'">'
+      +RULE_GROUPS.map(function(o){
+        var on=cur===o[0];
+        return '<button class="segbtn'+(on?" on":"")+'" data-grp="'+esc(r.item_id)+'" data-grpval="'+o[0]+'" aria-pressed="'+on+'">'+esc(o[0]==="retailer"?"Warehouse":o[1])+'</button>';
+      }).join("")+'</div>';
+  }
   function denomVal(x){ var v=x&&x.min_denom; return (v==null||v==="")?25:Number(v); }
   function denomLabel(x){ var n=denomVal(x); return (!isFinite(n)||n<=0)?"Any":"$"+n; }
   function ruleCard(r){
     var x=r.extras||{}; var on=r.status==="on"; var mode=x.mode||"pct";
+    // Slice 10: HEB is a bonus booster — a free HEB card adds to the discount on the card you buy,
+    // judged against THAT brand's rule. Show that instead of hunting HEB itself.
+    var modeBadge=mode==="stack"?"stack only":mode==="bonus-booster"?"bonus booster":mode==="bonus"?"bonus":"";
     var head='<div class="row"><div class="grow"><div class="title">'+esc(r.title)+'</div>'
       +(x.note?'<div class="sub">'+esc(x.note)+'</div>':"")
-      +(mode!=="pct"?'<div class="sub"><span class="badge">'+(mode==="stack"?"stack only":"bonus")+'</span></div>':"")
+      +(modeBadge?'<div class="sub"><span class="badge">'+modeBadge+'</span>'
+        +(mode==="bonus-booster"?' A free HEB card adds to the discount on the brand you buy — judged against that brand.':"")+'</div>':"")
       +'</div>'
       +'<button class="sw" role="switch" aria-checked="'+on+'" aria-pressed="'+on+'" aria-label="Enable '+esc(r.title)+'" data-rule="'+esc(r.item_id)+'"></button></div>';
     var ctrls="";
@@ -992,7 +1237,7 @@
         +'</div>'
       +'</div>';
     }
-    return '<div class="card">'+head+ctrls+'</div>';
+    return '<div class="card">'+head+ctrls+groupSeg(r)+'</div>';
   }
   function renderRules(){
     var host=el("rules");
@@ -1005,8 +1250,46 @@
       +'<div class="card"><div class="addrow">'
         +'<input id="newbrand" type="text" placeholder="Brand name" aria-label="New brand name">'
         +'<button class="btn primary" id="addbrand">Add</button></div>'
-        +'<div class="sub" style="margin-top:6px">Adds a 20%-off, $25-minimum rule you can tune.</div></div>';
+        +'<div class="sub" style="margin-top:6px">Adds a 20%-off, $25-minimum rule. The category is guessed from the name — change it on the row.</div>'
+        +'<div id="addnote" class="helper" role="status" aria-live="polite"></div></div>'
+      // Slice 3: blocked stores — deals from these are never shown or alerted, even if they beat a rule.
+      +'<div class="grouphead"><h2>Blocked stores</h2></div>'
+      +'<div class="card">'
+        +'<div class="sub">Deals from these stores are never shown or alerted — even at a big discount. '
+        +'(Dollar General is nowhere near you.)</div>'
+        +'<div id="blocklist" class="chiprow" style="flex-wrap:wrap;margin-top:8px"></div>'
+        +'<div class="addrow" style="margin-top:8px"><input id="newblock" type="text" placeholder="Store name (e.g. Dollar General)" aria-label="Block a store">'
+        +'<button class="btn primary" id="addblock">Block</button></div></div>'
+      // Slice 6: sale watch — one Slickdeals search per term, alert when the term is on sale.
+      +'<div class="grouphead"><h2>Sale watch</h2></div>'
+      +'<div class="card">'
+        +'<div class="sub">Get alerted when a term is on sale — not just gift cards. One search per term, up to 10.</div>'
+        +'<div id="watchlist" class="chiprow" style="flex-wrap:wrap;margin-top:8px"></div>'
+        +'<div class="addrow" style="margin-top:8px"><input id="newwatch" type="text" placeholder="e.g. Nintendo Switch 2" aria-label="Add a sale-watch term">'
+        +'<button class="btn primary" id="addwatch">Watch</button></div></div>';
     renderRulesList();
+    renderBlockList();
+    renderWatchList();
+  }
+  // The sale-watch terms (press_tasks category='watch') as removable chips + an add row (cap 10).
+  function watchTerms(){ return state.watch||[]; }
+  function renderWatchList(){
+    var host=el("watchlist"); if(!host) return;
+    var items=watchTerms();
+    if(!items.length){ host.innerHTML='<span class="sub">No sale watches.</span>'; return; }
+    host.innerHTML=items.map(function(w){
+      return '<button class="fchip" data-unwatch="'+esc(w.item_id)+'" aria-label="Remove watch '+esc(w.title)+'">'+esc(w.title)+' ✕</button>';
+    }).join("");
+  }
+  // The retailer blocklist (settings.extras.retailer_blocklist) as removable chips + an add row.
+  function blocklist(){ var b=state.settings&&state.settings.retailer_blocklist; return Array.isArray(b)?b:[]; }
+  function renderBlockList(){
+    var host=el("blocklist"); if(!host) return;
+    var items=blocklist();
+    if(!items.length){ host.innerHTML='<span class="sub">No blocked stores.</span>'; return; }
+    host.innerHTML=items.map(function(e){
+      return '<button class="fchip" data-unblock="'+esc(e)+'" aria-label="Unblock '+esc(e)+'">'+esc(e)+' ✕</button>';
+    }).join("");
   }
   function renderRulesList(){
     var list=el("rules-list"), nav=el("rules-nav"); if(!list) return;
@@ -1106,17 +1389,24 @@
     var fc=(state.settings&&state.settings.feed_cadence)||"3x-day";
     f.textContent="Alerts only fire on deals that beat your rules — checked "+cadencePhrase(fc)+".";
   }
-  function renderAll(){ renderFeed(); renderSources(); renderRules(); renderAlerts(); renderFooter(); }
+  function renderAll(){ renderFeed(); renderFeedBadge(); renderSources(); renderRules(); renderAlerts(); renderFooter(); }
 
   // ---------- interactions ----------
   function setSwitch(btn,on){ btn.setAttribute("aria-checked",on); btn.setAttribute("aria-pressed",on); }
   document.addEventListener("click", function(ev){
     var b=ev.target.closest("button, a"); if(!b) return;
-    // tabs
-    if(b.getAttribute("role")==="tab"){ selectTab(b.id); return; }
-    // source toggle
+    // tabs — opening the Feed tab is Mark "looking", so it clears the NEW badge (Slice 2).
+    if(b.getAttribute("role")==="tab"){ selectTab(b.id); if(b.id==="tab-feed") markFeedSeen(); return; }
+    // feed date chips / verdict+group filter chips / "Mark all seen"
+    var dchip=b.getAttribute("data-dchip"); if(dchip){ feedDate=dchip; renderFeed(); renderFeedBadge(); return; }
+    var vchip=b.getAttribute("data-vchip");
+    if(vchip){ if(vchip==="new"){ feedNewOnly=!feedNewOnly; } else { feedVerdict=(feedVerdict===vchip?"":vchip); } renderFeed(); renderFeedBadge(); return; }
+    var gchip=b.getAttribute("data-gchip"); if(gchip){ feedGroupFilter[gchip]=!feedGroupFilter[gchip]; renderFeed(); renderFeedBadge(); return; }
+    var echip=b.getAttribute("data-echip"); if(echip){ feedEveryday=!feedEveryday; renderFeed(); renderFeedBadge(); return; }
+    if(b.id==="feedseen"){ markFeedSeen(); return; }
+    // source toggle — a "Coming soon" source is forced off and cannot be enabled (Slice 9).
     var sid=b.getAttribute("data-src");
-    if(sid){ var s=find(state.sources,sid); var on=s.status!=="on"; s.status=on?"on":"off"; setSwitch(b,on); withSave(patchTask(sid,{status:s.status,updated_at:new Date().toISOString()})); return; }
+    if(sid){ var s=find(state.sources,sid); if(!s||sourceState(s)==="coming") return; var on=s.status!=="on"; s.status=on?"on":"off"; setSwitch(b,on); withSave(patchTask(sid,{status:s.status,updated_at:new Date().toISOString()})); return; }
     // rule toggle
     var rid=b.getAttribute("data-rule");
     if(rid){ var r=find(state.rules,rid); var on2=r.status!=="on"; r.status=on2?"on":"off"; setSwitch(b,on2); withSave(patchTask(rid,{status:r.status,updated_at:new Date().toISOString()})); return; }
@@ -1136,8 +1426,18 @@
     if(buy||skip){ markDeal(buy||skip, buy?"bought":"skip", b); return; }
     // add brand
     if(b.id==="addbrand"){ addBrand(); return; }
+    // blocked stores (Slice 3)
+    if(b.id==="addblock"){ addBlock(); return; }
+    var ub=b.getAttribute("data-unblock"); if(ub){ removeBlock(ub); return; }
+    // recategorize a rule (Slice 4)
+    var grp=b.getAttribute("data-grp"); if(grp){ setRuleGroup(grp,b.getAttribute("data-grpval")); return; }
+    // sale watch (Slice 6)
+    if(b.id==="addwatch"){ addWatch(); return; }
+    var uw=b.getAttribute("data-unwatch"); if(uw){ removeWatch(uw); return; }
   });
   document.addEventListener("change", function(ev){
+    // feed sort has no data-set (it must not write settings) — handle it first.
+    if(ev.target && ev.target.id==="feedsort"){ feedSort=ev.target.value||"new"; renderFeed(); renderFeedBadge(); return; }
     var f=ev.target.getAttribute && ev.target.getAttribute("data-set");
     if(!f) return;
     state.settings[f]=ev.target.value;
@@ -1148,6 +1448,8 @@
   });
   document.addEventListener("input", function(ev){
     if(ev.target && ev.target.id==="rulesearch"){ ruleQuery=ev.target.value||""; renderRulesList(); }
+    // feed brand type-ahead: re-render only the list so the input keeps focus (badge is unaffected).
+    else if(ev.target && ev.target.id==="feedbrand"){ feedBrand=ev.target.value||""; renderFeedList(); }
   });
 
   function find(list,id){ for(var i=0;i<list.length;i++) if(list[i].item_id===id) return list[i]; return null; }
@@ -1174,11 +1476,51 @@
   function addBrand(){
     var inp=el("newbrand"); var name=(inp.value||"").trim(); if(!name) return;
     var slug="rule-"+name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
-    if(find(state.rules,slug)){ inp.value=""; selectTab("tab-rules"); return; }
+    if(find(state.rules,slug)){ inp.value=""; selectTab("tab-rules"); noteAdd("“"+name+"” is already in your rules."); return; }
+    var grp=categorizeBrand(name); // Slice 4: guessed, not silently "other"
     var row={page:PAGE,item_id:slug,title:name,status:"on",category:"rule",position:999,
-      extras:{group:"other",mode:"pct",min_pct:20,min_denom:25,note:""},updated_at:new Date().toISOString()};
+      extras:{group:grp,mode:"pct",min_pct:20,min_denom:25,note:""},updated_at:new Date().toISOString()};
     state.rules.push(row); inp.value=""; renderRules();
+    noteAdd(grp==="other"
+      ? "Added “"+name+"” — Category: Other. Not sure what it is; change it on the row."
+      : "Added “"+name+"” under "+groupLabel(grp)+".");
     withSave(api("press_tasks?on_conflict=page,item_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(row)}));
+  }
+  function noteAdd(msg){ var n=el("addnote"); if(n) n.textContent=msg; }
+  // Recategorize any rule from its segmented control (Slice 4) — persists to press_tasks.
+  function setRuleGroup(id,val){
+    var r=find(state.rules,id); if(!r||!val) return; r.extras=r.extras||{};
+    if(r.extras.group===val){ return; }
+    r.extras.group=val; renderRulesList(); // the rule moves into its new group section
+    withSave(patchTask(id,{extras:r.extras,updated_at:new Date().toISOString()}));
+  }
+  // ---------- blocked stores (Slice 3) ----------
+  function saveSettings(){ return withSave(patchTask("settings",{extras:state.settings,updated_at:new Date().toISOString()})); }
+  function addBlock(){
+    var inp=el("newblock"); var name=normBrand(inp&&inp.value); if(!name) return; // normalized to match the judge
+    var list=blocklist().slice();
+    if(list.indexOf(name)<0) list.push(name);
+    state.settings.retailer_blocklist=list;
+    if(inp) inp.value=""; renderBlockList(); saveSettings();
+  }
+  function removeBlock(entry){
+    state.settings.retailer_blocklist=blocklist().filter(function(e){ return e!==entry; });
+    renderBlockList(); saveSettings();
+  }
+  // ---------- sale watch (Slice 6) ----------
+  function addWatch(){
+    var inp=el("newwatch"); var term=(inp&&inp.value||"").trim(); if(!term) return;
+    if(watchTerms().length>=10) return; // cap so a tick can't fan out unboundedly
+    var slug="watch-"+term.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+    if(find(state.watch,slug)){ if(inp) inp.value=""; return; }
+    var row={page:PAGE,item_id:slug,title:term,status:"on",category:"watch",position:999,extras:{min_pct:0,note:""},updated_at:new Date().toISOString()};
+    state.watch.push(row); if(inp) inp.value=""; renderWatchList();
+    withSave(api("press_tasks?on_conflict=page,item_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(row)}));
+  }
+  function removeWatch(id){
+    state.watch=watchTerms().filter(function(w){ return w.item_id!==id; });
+    renderWatchList();
+    withSave(api("press_tasks?page=eq."+PAGE+"&item_id=eq."+encodeURIComponent(id),{method:"DELETE",headers:{Prefer:"return=minimal"}}));
   }
 
   function selectTab(tabId){
