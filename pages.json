@@ -31,5 +31,8 @@
   },
   "access.html": {
     "title": "Access · Family Wing admin"
+  },
+  "remit.html": {
+    "title": "remit · Family transfers"
   }
 }
