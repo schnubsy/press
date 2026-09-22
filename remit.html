@@ -398,11 +398,22 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       { method: 'POST', headers: anonHeaders(), body: JSON.stringify({ email: email, create_user: false }) });
     return { ok: !!(r && r.ok), status: r && r.status };
   }
+  // Verify an OTP. Returns { session, status, code } — session is null on any failure, and status +
+  // the GoTrue error_code let the caller phrase the right message (a wrong/expired CODE is NOT an
+  // address-not-on-the-list problem; see verifyErr). Never throws.
   async function verifyCode(email, token) {
-    var r = await authFetch()(AUTH + '/verify',
-      { method: 'POST', headers: anonHeaders(), body: JSON.stringify({ email: email, token: token, type: 'email' }) });
-    if (!r || !r.ok) return null;
-    return sessionFromToken(await r.json());
+    var r;
+    try {
+      r = await authFetch()(AUTH + '/verify',
+        { method: 'POST', headers: anonHeaders(), body: JSON.stringify({ email: email, token: token, type: 'email' }) });
+    } catch (e) { return { session: null, status: 0, code: 'network' }; }
+    if (r && r.ok) {
+      var okBody = {}; try { okBody = await r.json(); } catch (e) {}
+      return { session: sessionFromToken(okBody), status: r.status, code: '' };
+    }
+    var code = '';
+    try { var eb = await r.json(); code = String(eb.error_code || eb.code || eb.error || '').toLowerCase(); } catch (e) {}
+    return { session: null, status: (r && r.status) || 0, code: code };
   }
   async function refresh(refreshToken) {
     var r = await authFetch()(AUTH + '/token?grant_type=refresh_token',
@@ -498,11 +509,22 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     var el = document.getElementById('family-gate');
     if (el && el.parentNode) el.parentNode.removeChild(el);
   }
+  // SEND-CODE path only. An OTP-send rejection can mean the address is not allowed to sign in, so
+  // the family-list wording lives HERE (the UI stays deliberately non-committal to avoid an
+  // enumeration oracle — this is the phrasing for where a send error is surfaced explicitly).
   function friendlyAuthErr(status) {
     if (status === 429) return 'Too many attempts just now — wait a minute and try again.';
     if (status === 403 || status === 422) return 'That address is not on the family list.';
     return 'That didn’t work. Check the code and try again.';
   }
+  // VERIFY path. A 403/otp_expired or a 400/422 invalid token means the CODE was wrong or stale — the
+  // address was already accepted at the send step, so this NEVER mentions the family list.
+  function verifyErr(status, code) {
+    if (status === 429) return 'Too many attempts just now — wait a minute and try again.';
+    return 'That code didn’t work — check it or request a new one.';
+  }
+  // Supabase OTP length is configurable (6–10 digits); tolerate the whole range, digits only.
+  function isValidCode(code) { return /^\d{6,10}$/.test(String(code == null ? '' : code).trim()); }
 
   // Render the sign-in and resolve `done` only on a granted sign-in. `existing` is a valid but
   // UN-granted session, if any (a signed-in address that lacks a grant for THIS page).
@@ -538,15 +560,15 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       '<div class="fg-card">' +
         '<div class="fg-icon">' + ICON + '</div>' +
         '<h1>The Family Wing.</h1>' +
-        '<p>Enter your email and we’ll send a 6-digit code. You’ll stay signed in on this device.</p>' +
+        '<p>Enter your email and we’ll send you a sign-in code. You’ll stay signed in on this device.</p>' +
         '<form id="fg-email-form">' +
           '<label for="fg-email">Your email</label>' +
           '<input id="fg-email" type="email" inputmode="email" autocomplete="email" autofocus placeholder="you@example.com" />' +
           '<button class="fg-btn" id="fg-send" type="submit">Send me a code</button>' +
         '</form>' +
         '<form id="fg-code-form" hidden>' +
-          '<label for="fg-code">6-digit code</label>' +
-          '<input id="fg-code" class="fg-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••" />' +
+          '<label for="fg-code">Sign-in code</label>' +
+          '<input id="fg-code" class="fg-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="••••••" />' +
           '<button class="fg-btn" id="fg-verify" type="submit">Verify &amp; sign in</button>' +
         '</form>' +
         '<div class="fg-msg" id="fg-msg" aria-live="polite"></div>' +
@@ -583,15 +605,17 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     codeForm.addEventListener('submit', async function (e) {
       e.preventDefault();
       var code = String(codeInput.value || '').trim();
-      if (!/^\d{6}$/.test(code)) { msg.className = 'fg-msg err'; msg.textContent = 'The code is 6 digits.'; return; }
+      if (!isValidCode(code)) { msg.className = 'fg-msg err'; msg.textContent = 'Enter the 6–10 digit code from your email.'; return; }
       verifyBtn.disabled = true; msg.className = 'fg-msg'; msg.textContent = 'Signing you in…';
-      var session;
-      try { session = await verifyCode(currentEmail, code); }
-      catch (err) { session = null; }
-      if (!session) {
-        verifyBtn.disabled = false; msg.className = 'fg-msg err'; msg.textContent = friendlyAuthErr(422);
+      var res;
+      try { res = await verifyCode(currentEmail, code); }
+      catch (err) { res = { session: null, status: 0, code: 'network' }; }
+      if (!res || !res.session) {
+        verifyBtn.disabled = false; msg.className = 'fg-msg err';
+        msg.textContent = verifyErr(res ? res.status : 0, res ? res.code : '');
         return;
       }
+      var session = res.session;
       var granted = false;
       try { granted = await hasGrant(session, page); } catch (err) { granted = false; }
       if (!granted) {
@@ -663,7 +687,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     gatedDecision: gatedDecision, isGated: isGated, ensureFresh: ensureFresh,
     loadSession: loadSession, saveSession: saveSession, clearSession: clearSession,
     sendCode: sendCode, verifyCode: verifyCode, refresh: refresh, hasGrant: hasGrant,
-    friendlyAuthErr: friendlyAuthErr, escapeHtml: escapeHtml
+    friendlyAuthErr: friendlyAuthErr, verifyErr: verifyErr, isValidCode: isValidCode, escapeHtml: escapeHtml
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 </script>
