@@ -122,6 +122,19 @@ test('landing shows the two-space marquee and makes ZERO vault calls (not set up
   expect(state.vaultRequests).toBe(0);
 });
 
+// Phase 1 (family-wing gate): a direct entry to the family view must hit the entrance gate, not
+// the tools. Deep-linking ?view=family with no family session mounts the family-gate sign-in
+// overlay; #family (hash) routes through the same renderFamily() path.
+test('deep link to ?view=family hits the entrance gate, not the tools (no session)', async ({ page, context }) => {
+  const state = await harness(page, context);
+  await page.goto(base + '/?view=family');
+  const gate = page.locator('#family-gate');
+  await expect(gate).toBeVisible();                 // the family-gate sign-in overlay is up
+  await expect(gate).toContainText('The Family Wing');
+  // no vault call — the door is a Supabase-auth gate and an absent session touches no network
+  expect(state.vaultRequests).toBe(0);
+});
+
 test('enrol → 4 cards → lock → unlock → lock (full private-wing flow)', async ({ page, context }, testInfo) => {
   const state = await harness(page, context);
   await page.goto(base + '/?view=personal');

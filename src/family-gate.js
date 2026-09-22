@@ -7,6 +7,11 @@
  *   FamilyGate.require(page)  -> resolves {email,name} when a GRANTED session exists;
  *                                otherwise renders the full-page sign-in and resolves
  *                                after a granted sign-in completes.
+ *   FamilyGate.requireSession() -> resolves {email,name} for a live family session; otherwise
+ *                                renders the entrance sign-in (email OTP, NO page grant) and
+ *                                resolves after sign-in. The Family-Wing DOOR uses this; a tenant
+ *                                PAGE uses require(page). One session (press:family:v1) is shared,
+ *                                so signing in at the door opens every tool with no further prompt.
  *   FamilyGate.session()      -> { email, name } | null   (sync, from local storage)
  *   FamilyGate.authHeaders()  -> { apikey, Authorization } for the tenant's own REST calls
  *   FamilyGate.signOut()      -> clears the local session (and best-effort GoTrue logout)
@@ -287,7 +292,8 @@
 
   // Render the sign-in and resolve `done` only on a granted sign-in. `existing` is a valid but
   // UN-granted session, if any (a signed-in address that lacks a grant for THIS page).
-  function renderSignIn(page, done, existing) {
+  function renderSignIn(page, done, existing, opts) {
+    opts = opts || {};
     if (typeof document === 'undefined') { return; } // nothing to render in Node
     injectStyle();
     removeGate();
@@ -375,6 +381,13 @@
         return;
       }
       var session = res.session;
+      if (opts.sessionOnly) {              // entrance (Family-Wing door) — a valid family session is
+        saveSession(session);              // enough; each tenant PAGE still gates its own data by grant.
+        touch(session);
+        removeGate();
+        done({ email: session.email, name: session.name });
+        return;
+      }
       var granted = false;
       try { granted = await hasGrant(session, page); } catch (err) { granted = false; }
       if (!granted) {
@@ -425,6 +438,21 @@
     })();
   }
 
+  // requireSession(opts) -> Promise<{email,name}>. The Family-Wing DOOR gate: resolves for any live
+  // family session, otherwise mounts the entrance sign-in (email OTP, NO page grant) and resolves once
+  // signed in. Makes ZERO network calls until the user acts (ensureFresh with no stored session is a
+  // pure localStorage read). Per-page authorisation stays with require(page) on each tenant.
+  function requireSession(opts) {
+    cfg(opts);
+    return (async function () {
+      var s = await ensureFresh();
+      if (s) { touch(s); scheduleRefresh(s, function () {}); return { email: s.email, name: s.name }; }
+      return await new Promise(function (resolve) {
+        renderSignIn(null, function (id) { var ns = loadSession(); if (ns) scheduleRefresh(ns, function () {}); resolve(id); }, null, { sessionOnly: true });
+      });
+    })();
+  }
+
   function session() { var s = loadSession(); return s ? { email: s.email, name: s.name } : null; }
   function authHeaders() { var s = loadSession(); return bearerHeaders(s); }
   function accessToken() { var s = loadSession(); return s ? s.access_token : null; }
@@ -437,7 +465,7 @@
 
   root.FamilyGate = {
     // public
-    require: require_, session: session, signOut: signOut,
+    require: require_, requireSession: requireSession, session: session, signOut: signOut,
     authHeaders: authHeaders, accessToken: accessToken,
     // config / seams
     cfg: cfg, SUPA_URL: SUPA_URL, SUPA_KEY: SUPA_KEY, REST: REST, AUTH: AUTH, SESSION_KEY: SESSION_KEY,

@@ -2,7 +2,8 @@
 //   • the door renders from spaces.json ALONE (v2 family key), shows a COUNT and no page names
 //   • the lobby makes ZERO Supabase-auth and ZERO vault calls on load (recorded as a trace)
 //   • remit.html is filtered out of the public cards
-//   • ?view=family is a directory that links straight to the page, still with zero auth calls
+//   • ?view=family is a GATED door — with no session it shows the sign-in and leaks no tool,
+//     still with zero auth calls until the user acts
 // GitHub + Supabase are intercepted so nothing touches production.
 
 import { test, expect } from '@playwright/test';
@@ -96,14 +97,17 @@ test('the family door renders from spaces.json alone — count only, zero auth/v
     state.requests.map(u => '  ' + u).join('\n') + '\n');
 });
 
-test('opening the family wing lists the page as a direct link, still zero auth calls', async ({ page, context }) => {
+test('opening the family wing gates on a live session — the sign-in shows, no tool leaks, zero auth calls until the user acts', async ({ page, context }) => {
   const state = await harness(page, context);
   await page.goto(base + '/?view=family');
-  await expect(page.locator('h2.tw-title')).toContainText('Signed in with a code');
-  // the directory links straight to remit.html (bookmarkable; the gate lives on the page)
-  const card = page.locator('.tw-card[href="remit.html"]');
-  await expect(card).toHaveCount(1);
-  expect(state.authCalls, 'family wing directory made a Supabase auth call').toBe(0);
+  // the entrance gate (family-gate sign-in overlay) is up
+  const gate = page.locator('#family-gate');
+  await expect(gate).toBeVisible();
+  await expect(gate).toContainText('The Family Wing');
+  // the tool is NOT rendered behind the gate — no directory leak before sign-in
+  await expect(page.locator('.tw-card[href="remit.html"]')).toHaveCount(0);
+  // and NOTHING was called: no session means the gate is a pure localStorage read
+  expect(state.authCalls, 'family wing entrance made a Supabase auth call before the user acted').toBe(0);
   expect(state.vaultCalls).toBe(0);
 });
 
