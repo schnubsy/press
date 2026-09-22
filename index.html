@@ -1380,7 +1380,7 @@ function secureCardHTML(){
   // Phase 4 swap: the card carries the tagline; the wing name moves to the wing-view title. The
   // lockline still names the wing (the only wing identifier left on the card once the h3 changes).
   return `<a class="tw-secure" href="./?view=personal" draggable="false">`+
-    `<div class="k">⬤ Personal</div><h3>Behind the passkey.</h3>`+
+    `<div class="k">⬤ behind the passkey</div><h3>The Private Wing</h3>`+
     `<div class="lockline">${esc(line)}</div>`+
     `<span class="sicon">${ICONS['Secure']}</span></a>`;
 }
@@ -1391,7 +1391,7 @@ function familyCardHTML(){
   const n = familyCount();
   const line = `${n} ${n===1?'tool':'tools'} · sign in with a code`;
   return `<a class="tw-family" href="./?view=family" draggable="false">`+
-    `<div class="k">⬤ The Family Wing</div><h3>A safer space for the fam</h3>`+
+    `<div class="k">⬤ a safe space</div><h3>The Family Wing</h3>`+
     `<div class="lockline">${esc(line)}</div>`+
     `<span class="sicon">${ICONS['Family']||ICONS['Secure']}</span></a>`;
 }
@@ -1939,7 +1939,7 @@ function wireConnect(root, man){
 
 function paintPersonal(root, man){
   const back=`<a class="tw-back" href="index.html">← the marquee</a>`;
-  const top=`<div class="tw-top"><span>Behind the <b>passkey.</b></span><span>personal tools</span></div>`;
+  const top=`<div class="tw-top"><span>behind the <b>passkey</b></span><span>personal tools</span></div>`;
   const st=vaultState();
   if(st.sess){
     const cards=(SPACES.personal||[]).map(f=>cardHTML(f, man, false)).join('');
@@ -1998,7 +1998,7 @@ function paintPersonal(root, man){
 }
 async function renderPersonal(root){
   root.innerHTML = `<a class="tw-back" href="index.html">← the marquee</a>`+
-    `<div class="tw-top"><span>Behind the <b>passkey.</b></span><span>personal tools</span></div>`+
+    `<div class="tw-top"><span>behind the <b>passkey</b></span><span>personal tools</span></div>`+
     `<h2 class="tw-title">The Private Wing</h2><div class="tw-skel"></div>`;
   let man=null;
   try{ const res=await Promise.all([loadManifest(''), loadSpaces()]); man=res[0]; SPACES=normSpaces(res[1]); }
@@ -2015,8 +2015,8 @@ async function renderPersonal(root){
    on-page gate catches a deep link that skips the door). */
 async function renderFamily(root){
   const back=`<a class="tw-back" href="index.html">← the marquee</a>`;
-  const top=`<div class="tw-top"><span>The <b>Family Wing</b></span><span>for the four of us</span></div>`;
-  root.innerHTML = back+top+`<h2 class="tw-title">A safer space for the fam</h2><div class="tw-skel"></div>`;
+  const top=`<div class="tw-top"><span>a safe <b>space</b></span><span>for the four of us</span></div>`;
+  root.innerHTML = back+top+`<h2 class="tw-title">The Family Wing</h2><div class="tw-skel"></div>`;
   let man=null;
   try{ const res=await Promise.all([loadManifest(''), loadSpaces()]); man=res[0]; SPACES=normSpaces(res[1]); }
   catch(e){ SPACES=normSpaces(null); }
@@ -2034,7 +2034,7 @@ async function renderFamily(root){
   const body = cards
     ? dek+secbar+cards
     : `<div class="tw-dek">Signed in as ${esc(who.email)}.</div>`+secbar+`<div class="tw-empty"><h3>No family tools yet</h3><p>Pages added to the family wing appear here.</p></div>`;
-  root.innerHTML = back+top+`<h2 class="tw-title">A safer space for the fam</h2>`+body;
+  root.innerHTML = back+top+`<h2 class="tw-title">The Family Wing</h2>`+body;
   const lo=document.getElementById('famLogout');
   if(lo) lo.addEventListener('click', async ()=>{ try{ await window.FamilyGate.signOut(); }catch(e){} renderFamily(root); });
 }
