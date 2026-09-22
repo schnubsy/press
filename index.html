@@ -289,6 +289,11 @@ body.tw-sorting .tw-card{transition:none}
 .tw-wings .sicon svg{width:34px;height:34px}
 @media(max-width:380px){.tw-wings{gap:10px}.tw-wings .tw-secure,.tw-wings .tw-family{padding:15px}
   .tw-wings .tw-secure h3,.tw-wings .tw-family h3{font-size:18px}}
+/* Phones: drop the square aspect-ratio so a card grows to fit its content (a long kicker like
+   "BEHIND THE PASSKEY" wrapping to 3 lines must not overflow a fixed square and clip the lockline).
+   Width still = the grid track, so left/right edges stay flush with the cards below (grid stretches
+   both cards to equal height). Squares are preserved on tablet/desktop. */
+@media(max-width:480px){.tw-wings .tw-secure,.tw-wings .tw-family{aspect-ratio:auto}}
 /* private-wing view */
 .tw-unlock{padding:32px 24px;border-radius:var(--tw-radius-card);background:var(--tw-glass-card);
   border:1px solid var(--tw-border-card);text-align:center;box-shadow:var(--tw-shadow-card)}
