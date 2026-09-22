@@ -84,6 +84,58 @@
     return { access_token: o.access_token, refresh_token: o.refresh_token,
              expires_at: o.expires_at, email: String(o.email || '').toLowerCase(), name: o.name || null };
   }
+  // Decode a base64url JSON segment (a JWT payload) in both browser (atob) and Node (Buffer). Returns
+  // null on anything malformed — never throws.
+  function b64urlToJson(seg) {
+    if (typeof seg !== 'string' || !seg) return null;
+    try {
+      var b64 = seg.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      var txt;
+      if (typeof atob === 'function') {
+        var bin = atob(b64);
+        // handle UTF-8 payloads correctly
+        try { txt = decodeURIComponent(bin.split('').map(function (c) { return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); }).join('')); }
+        catch (e) { txt = bin; }
+      } else if (typeof Buffer !== 'undefined') {
+        txt = Buffer.from(b64, 'base64').toString('utf8');
+      } else { return null; }
+      return JSON.parse(txt);
+    } catch (e) { return null; }
+  }
+  // Parse a URL fragment ('#a=1&b=2' or 'a=1&b=2') into a plain object. Empty/garbage -> {}.
+  function parseHashParams(hash) {
+    var out = {};
+    var s = String(hash == null ? '' : hash).replace(/^#/, '');
+    if (!s) return out;
+    s.split('&').forEach(function (pair) {
+      if (!pair) return;
+      var i = pair.indexOf('=');
+      var k = i === -1 ? pair : pair.slice(0, i);
+      var v = i === -1 ? '' : pair.slice(i + 1);
+      try { out[decodeURIComponent(k)] = decodeURIComponent(v); } catch (e) { out[k] = v; }
+    });
+    return out;
+  }
+  // Build a normalised session from a GoTrue magic-link URL fragment. The fragment carries
+  // access_token (a JWT), refresh_token, expires_at/expires_in — the email/name come from the JWT
+  // payload. Returns null unless BOTH tokens are present and the payload decodes (a malformed hash
+  // falls through to the sign-in screen — spec §8, arc slice 2). Never throws.
+  function sessionFromHash(hash, now) {
+    var p = parseHashParams(hash);
+    if (!p.access_token || !p.refresh_token) return null;
+    var payload = b64urlToJson(String(p.access_token).split('.')[1]);
+    if (!payload || !payload.email) return null;   // not a usable Supabase access token
+    now = (typeof now === 'number') ? now : Date.now();
+    var expMs = p.expires_at ? (Number(p.expires_at) * 1000)
+              : (p.expires_in ? (now + Number(p.expires_in) * 1000)
+              : (payload.exp ? (payload.exp * 1000) : (now + 3600 * 1000)));
+    var meta = payload.user_metadata || {};
+    return normSession({
+      access_token: p.access_token, refresh_token: p.refresh_token, expires_at: expMs,
+      email: payload.email, name: meta.name || meta.full_name || null,
+    });
+  }
   function isExpired(session, now, skewMs) {
     if (!session) return true;
     now = (typeof now === 'number') ? now : Date.now();
@@ -186,8 +238,30 @@
     return sessionFromToken(await r.json());
   }
 
+  // Magic-link landing (arc slice 2). A SECOND entry point, not a replacement: if the page loaded
+  // with a GoTrue token fragment (the link flow, which otherwise dead-ends), adopt it as the session
+  // in the gate's normal format, strip the fragment from the URL, and return it. No fragment / a
+  // malformed one -> null, and the normal code path runs unchanged. Browser-only; never throws.
+  function consumeHashLanding() {
+    try {
+      if (typeof location === 'undefined' || !location.hash) return null;
+      var s = sessionFromHash(location.hash);
+      if (!s) return null;
+      saveSession(s);
+      // strip the token fragment so it never lingers in the address bar / history
+      try {
+        if (typeof history !== 'undefined' && history.replaceState) {
+          history.replaceState(null, '', location.pathname + location.search);
+        } else { location.hash = ''; }
+      } catch (e) {}
+      return s;
+    } catch (e) { return null; }
+  }
+
   // Resolve a usable session from storage, refreshing if needed. Returns a live session or null.
   async function ensureFresh() {
+    consumeHashLanding();   // a fresh magic-link landing is adopted before we read storage
+
     var s = loadSession();
     if (!s) return null;
     if (!isExpired(s)) return s;
@@ -471,6 +545,8 @@
     cfg: cfg, SUPA_URL: SUPA_URL, SUPA_KEY: SUPA_KEY, REST: REST, AUTH: AUTH, SESSION_KEY: SESSION_KEY,
     // exposed for unit tests
     sessionFromToken: sessionFromToken, normSession: normSession, isExpired: isExpired,
+    parseHashParams: parseHashParams, b64urlToJson: b64urlToJson, sessionFromHash: sessionFromHash,
+    consumeHashLanding: consumeHashLanding,
     gatedDecision: gatedDecision, isGated: isGated, ensureFresh: ensureFresh,
     loadSession: loadSession, saveSession: saveSession, clearSession: clearSession,
     sendCode: sendCode, verifyCode: verifyCode, refresh: refresh, hasGrant: hasGrant,
