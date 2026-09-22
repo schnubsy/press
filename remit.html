@@ -31,6 +31,8 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 .linkbtn{background:0;border:0;color:var(--brass);font:inherit;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px}
 
 .hd{padding-bottom:12px;border-bottom:3px double var(--brass-dim)}
+.tw-back{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 10px 6px 4px;margin-bottom:4px}
+.tw-back:hover{color:var(--ink)}
 .hd .r{display:flex;justify-content:space-between;align-items:baseline}
 .hd .who{font:600 22px/1 var(--sans);letter-spacing:-.01em}
 .hd .mo{font:400 10px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--brass)}
@@ -233,7 +235,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 </head>
 <body>
 <main class="app" id="remit-root">
-  <div class="hd"><div class="r"><span class="who">remit</span></div>
+  <div class="hd"><a class="tw-back" href="index.html?view=family">&larr; Family Wing</a><div class="r"><span class="who">remit</span></div>
     <div class="sub">loading…</div></div>
 </main>
 <!-- src/vendor/family-gate.js -->
@@ -1319,7 +1321,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     var strip = '<nav class="months" aria-label="Month">' +
       months.map((m) => '<a href="#" data-ym="' + m.year + '-' + m.month + '" aria-current="' + (m.current ? 'true' : 'false') + '">' + esc(m.current ? m.label : m.short) + '</a>').join('') + '</nav>';
 
-    var head = '<div class="hd"><div class="r"><span class="who">' + esc(person ? person.name : '') + '</span>' +
+    var head = '<div class="hd"><a class="tw-back" href="index.html?view=family">&larr; Family Wing</a><div class="r"><span class="who">' + esc(person ? person.name : '') + '</span>' +
       '<span class="mo">' + esc(money.monthLabel(ctrl.year, ctrl.month)) + '</span></div>' +
       (person && person.sub ? '<div class="sub">' + esc(person.sub) + '</div>' : '') + '</div>';
 
