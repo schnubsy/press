@@ -312,6 +312,10 @@ body.tw-sorting .tw-card{transition:none}
 /* connect your tools */
 .tw-connect{margin-top:20px;border-top:1px solid var(--tw-hairline);padding-top:16px}
 .tw-connect h4{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tw-muted);margin-bottom:8px}
+/* Phase 5 (slice 3): collapsible section header — h4 left, a quiet toggle right */
+.tw-connect-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tw-connect-head h4{margin-bottom:0}
+.tw-connect-body:empty{display:none}
 .tw-cmeta{font-size:12px;color:var(--tw-muted);margin:0 0 14px;line-height:1.5}
 .tw-tool{border:1px solid var(--tw-border-card);border-radius:var(--tw-radius-card);padding:12px 14px;margin-bottom:10px;background:var(--tw-glass-card)}
 .tw-tool-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -1801,9 +1805,10 @@ function toolFieldsHTML(f){
       `<div class="tw-tool-msg" aria-live="polite"></div>`+
     `</div>`;
 }
-function renderConnect(){
-  return `<div class="tw-connect"><h4>Connect your tools</h4>`+
-    `<p class="tw-cmeta">Each tool works once its sync key is sealed behind your passkey — verified against your real data before anything is stored, nothing re-encrypted. Connected tools sit quiet; hit Reconnect to re-enter a key.</p>`+
+// The inner tool list (meta + one row per tool). Extracted so the section can rebuild it on expand,
+// exactly like a per-tool Reconnect drawer rebuilds its slot.
+function connectToolsHTML(){
+  return `<p class="tw-cmeta">Each tool works once its sync key is sealed behind your passkey — verified against your real data before anything is stored, nothing re-encrypted. Connected tools sit quiet; hit Reconnect to re-enter a key.</p>`+
     CONNECT_TOOLS.map(f=>{
       const cfg=TOOL_CFG[f], on=toolConnected(f);
       const head=`<div class="tw-tool-head"><span class="tw-tool-name">${esc(cfg.label)}</span>`+
@@ -1813,11 +1818,26 @@ function renderConnect(){
       const slot=on?'':toolFieldsHTML(f);
       const foot=on?`<div class="tw-tool-foot"><button type="button" class="tw-mini tw-reconnect" aria-expanded="false">Reconnect</button></div>`:'';
       return `<div class="tw-tool" data-f="${f}" data-kind="${cfg.kind}">${head}<div class="tw-tool-slot">${slot}</div>${foot}</div>`;
-    }).join('')+
+    }).join('');
+}
+// Phase 5 (slice 3): the whole section is collapsible — COLLAPSED once every tool is connected (a quiet
+// "Manage" toggle), EXPANDED while any tool still needs connecting (so a fresh wing shows the forms with
+// no click). Reuses the mature Reconnect drawer pattern: a real <button aria-expanded> whose body is
+// rebuilt via innerHTML — NOT the weaker hidden-flag devices drawer.
+function renderConnect(){
+  const allOn = CONNECT_TOOLS.every(toolConnected);
+  return `<div class="tw-connect">`+
+    `<div class="tw-connect-head"><h4>Connect your tools</h4>`+
+    `<button type="button" class="tw-mini tw-connect-toggle" aria-expanded="${allOn?'false':'true'}" aria-controls="tw-connect-body">${allOn?'Manage':'Hide'}</button></div>`+
+    `<div class="tw-connect-body" id="tw-connect-body">${allOn?'':connectToolsHTML()}</div>`+
     `</div>`;
 }
 function wireConnect(root, man){
-  root.querySelectorAll('.tw-tool').forEach(el=>{
+  const section = root.querySelector('.tw-connect');
+  const body = section ? section.querySelector('.tw-connect-body') : null;
+  const scope = body || root;
+  function wireTools(){
+   scope.querySelectorAll('.tw-tool').forEach(el=>{
     const f=el.getAttribute('data-f'), cfg=TOOL_CFG[f];
     const slot=el.querySelector('.tw-tool-slot');
     const statusEl=el.querySelector('.tw-tool-status');
@@ -1900,7 +1920,18 @@ function wireConnect(root, man){
 
     if(footBtn){ footBtn.addEventListener('click', ()=>{ (footBtn.getAttribute('aria-expanded')==='true') ? collapse() : expand(); }); }
     else { wireForm(); } // not-connected row: the form is already in the slot
-  });
+   });
+  }
+  // Section-level collapse/expand: rebuild the body via innerHTML, then re-wire — the same drawer
+  // pattern the per-tool Reconnect uses (aria-expanded on a real <button>), not a hidden flag.
+  const toggle = section ? section.querySelector('.tw-connect-toggle') : null;
+  if(toggle && body){
+    toggle.addEventListener('click', ()=>{
+      if(toggle.getAttribute('aria-expanded')==='true'){ body.innerHTML=''; toggle.setAttribute('aria-expanded','false'); toggle.textContent='Manage'; }
+      else { body.innerHTML=connectToolsHTML(); toggle.setAttribute('aria-expanded','true'); toggle.textContent='Hide'; wireTools(); }
+    });
+  }
+  wireTools();
 }
 
 function paintPersonal(root, man){

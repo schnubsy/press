@@ -1,0 +1,16 @@
+SLICE 3 (Part A — press) — 'Connect your tools' collapsible — gauntlet 2026-09-22T17:42:39Z
+gate.js sha1: 6080e25d3653d44d5e2a4cd3ee4256e1e41dc41b (UNCHANGED 6080e25d…)
+--- inline:check ---
+> node tools/inline-vault.mjs --check
+inline-vault: index.html is in sync with src/vault.js
+inline-vault: src/gate.js is in sync with src/vault.js
+--- node ---
+ℹ tests 43
+ℹ pass 43
+ℹ fail 0
+ℹ skipped 0
+--- playwright (now 35: +1 all-connected collapse test) ---
+  35 passed (18.5s)
+behaviour: section COLLAPSED when CONNECT_TOOLS.every(toolConnected); EXPANDED when any unconnected.
+pattern: real <button.tw-connect-toggle aria-expanded>, body rebuilt via innerHTML + re-wired (Reconnect-drawer pattern).
+pinned classes intact: .tw-connect .tw-tool .tw-sync .tw-pass .tw-verify .tw-reconnect (label 'Reconnect') .tw-tool-status .tw-tool-msg .tw-dl

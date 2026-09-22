@@ -122,6 +122,31 @@ test('DEFECT 2: a second device (reachable row, no local flag) adopts via Setup 
   expect([...state.vault.values()].length).toBe(1);
 });
 
+// Phase 5 (slice 3): the "Connect your tools" section collapses once EVERY tool is connected — a quiet
+// "Manage" toggle — and a click expands it (rebuilding the rows like a Reconnect drawer). Viewport-independent.
+test('every tool connected: the section renders COLLAPSED; Manage expands, collapse clears the rows', async ({ page, context }) => {
+  const state = await harness(page, context);
+  await page.goto(base + '/?view=personal');
+  await enrolInPage(page, { apps: {
+    'fsa.html': { sync_id: SYNC, pass: PASS },
+    'giving.html': { sync_id: SYNC, pass: PASS },
+    'retirement.html': { sync_id: SYNC, pass: PASS },
+    'card-scout.html': { sync_id: CARD_SYNC, pass: CARD_SCOUT_GATE_SENTINEL },
+  } });
+  await page.reload();
+  const sect = page.locator('.tw-connect');
+  await expect(sect).toBeVisible();
+  const toggle = sect.locator('.tw-connect-toggle');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');    // collapsed by default when all connected
+  await expect(sect.locator('.tw-tool')).toHaveCount(0);             // no tool rows in the DOM while collapsed
+  await toggle.click();                                             // expand
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(sect.locator('.tw-tool')).toHaveCount(4);            // all four rows rebuilt
+  await expect(sect.locator('.tw-reconnect')).toHaveCount(4);        // each connected row offers Reconnect
+  await toggle.click();                                             // collapse again
+  await expect(sect.locator('.tw-tool')).toHaveCount(0);            // rows removed from the DOM
+});
+
 // ── Connect / collapse / Card Scout — run at desktop AND iPhone 15 width ────
 const VIEWPORTS = [
   { name: 'desktop', viewport: { width: 1280, height: 800 } },
