@@ -277,7 +277,10 @@ body.tw-sorting .tw-card{transition:none}
    Each is half the width of a normal card and roughly two rows tall. On phone width they read as
    true squares; on wide viewports a max-height keeps them from ballooning. */
 .tw-wings{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-.tw-wings .tw-secure,.tw-wings .tw-family{margin:0;aspect-ratio:1/1;min-height:150px;max-height:230px;
+/* Each square FILLS its 1fr track (no max-height cap — a cap made aspect-ratio shrink the width and
+   left-align it, insetting the right square from the card edge). Width = track → left/right edges align
+   with the full-width cards below; height follows from aspect-ratio. */
+.tw-wings .tw-secure,.tw-wings .tw-family{margin:0;aspect-ratio:1/1;min-height:150px;
   display:flex;flex-direction:column;padding:20px}
 .tw-wings .tw-secure h3,.tw-wings .tw-family h3{font-size:clamp(19px,4.6vw,25px);line-height:1.18;margin-top:8px}
 .tw-wings .k{padding-right:44px}   /* reserve the top-right icon gutter so a long kicker never runs under it */
