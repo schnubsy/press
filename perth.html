@@ -845,12 +845,16 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
 </script>
 <script>
 "use strict";
-/* ── press · Supabase (publishable key; press_tasks uses open RLS) ──────────── */
+/* ── press · Supabase — press_tasks speaks as the signed-in family user ───────
+   Headers carry the GoTrue JWT via FamilyGate.authHeaders(), NOT the bare anon
+   key, because remit_has_access() reads auth.jwt()->>'email'. boot() only runs
+   after FamilyGate.require('perth.html') resolves, so a live session is always
+   present here. Mirrors remit.html's SupabaseStore._h() -> gate.authHeaders(). */
 var SB='https://eepjhpyziczrxvirczio.supabase.co';
 var KEY='sb_publishable__iv3bI7xDAsOdHUlXzbVZQ_2yyFS4uX';
 var REST=SB+'/rest/v1/press_tasks';
 var PAGE='perth', LS='press:'+PAGE;
-var H={'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'};
+function H(){return window.FamilyGate.authHeaders();}
 
 /* ── state ─────────────────────────────────────────────────────────────────── */
 var rows=[], meta={categories:[],people:[],depart:'2027-01-14'};
@@ -921,7 +925,7 @@ function load(){
   pill('loading');
   var cached=readMirror();
   if(cached&&cached.length){rows=cached;hydrate();render();pill('cached');}
-  return fetch(REST+'?page=eq.'+PAGE+'&select=*',{headers:H})
+  return fetch(REST+'?page=eq.'+PAGE+'&select=*',{headers:H()})
     .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
     .then(function(d){rows=d||[];hydrate();mirror();render();pill('synced','ok');})
     .catch(function(e){pill(cached?'offline · local copy':'offline','err');
@@ -931,14 +935,14 @@ function load(){
 function patch(id,body){
   body.updated_at=new Date().toISOString(); mirror(); pill('saving');
   return fetch(REST+'?page=eq.'+PAGE+'&item_id=eq.'+encodeURIComponent(id),
-    {method:'PATCH',headers:Object.assign({'Prefer':'return=minimal'},H),body:JSON.stringify(body)})
+    {method:'PATCH',headers:Object.assign({'Prefer':'return=minimal'},H()),body:JSON.stringify(body)})
     .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);pill('saved','ok');})
     .catch(function(){pill('not saved · offline','err');});
 }
 function upsert(row){
   mirror(); pill('saving');
   return fetch(REST+'?on_conflict=page,item_id',
-    {method:'POST',headers:Object.assign({'Prefer':'resolution=merge-duplicates,return=minimal'},H),
+    {method:'POST',headers:Object.assign({'Prefer':'resolution=merge-duplicates,return=minimal'},H()),
      body:JSON.stringify(row)})
     .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);pill('saved','ok');})
     .catch(function(){pill('not saved · offline','err');});
@@ -946,7 +950,7 @@ function upsert(row){
 function remove(id){
   mirror(); pill('saving');
   return fetch(REST+'?page=eq.'+PAGE+'&item_id=eq.'+encodeURIComponent(id),
-    {method:'DELETE',headers:H})
+    {method:'DELETE',headers:H()})
     .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);pill('deleted','ok');})
     .catch(function(){pill('not saved · offline','err');});
 }
