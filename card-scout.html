@@ -837,6 +837,15 @@
     // ALL header-gated on it now (RLS: sync_id IS NULL OR sync_id = x-plan-id), so every one must
     // carry it — not just deals. Without it those tables return 200 + ZERO rows (the silent trap).
     if(/^press_(deals|tasks|state)\b/.test(path)){ var sid=planId(); if(sid) opts.headers["x-plan-id"]=sid; }
+    // Stamp the sync_id COLUMN on every write to press_tasks/press_state — the header alone is NOT
+    // enough. RLS accepts `sync_id IS NULL` (the public lane), so an insert/upsert that omits the
+    // column lands in the world-readable/writable lane even with the header present. Setting the
+    // column from the same capability keeps every card-scout row in its private lane, and self-heals
+    // any public-lane row on the next write. See docs/lessons.md.
+    if(/^press_(tasks|state)\b/.test(path) && (opts.method==="POST"||opts.method==="PATCH") && opts.body){
+      var wsid=planId();
+      if(wsid){ try{ var b=JSON.parse(opts.body); if(b&&typeof b==="object"&&!Array.isArray(b)){ b.sync_id=wsid; opts.body=JSON.stringify(b); } }catch(e){} }
+    }
     return fetch(REST+path, opts);
   }
   function saveLS(){ try{ localStorage.setItem(LS, JSON.stringify(state)); }catch(e){} }
