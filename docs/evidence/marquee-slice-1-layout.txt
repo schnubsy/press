@@ -1,0 +1,13 @@
+SLICE 1 — layout + icons — gauntlet 2026-09-22T17:32:23Z
+gate.js sha1: 6080e25d3653d44d5e2a4cd3ee4256e1e41dc41b (baseline 6080e25d…)
+--- inline:check ---
+> node tools/inline-vault.mjs --check
+inline-vault: index.html is in sync with src/vault.js
+inline-vault: src/gate.js is in sync with src/vault.js
+--- node (npm test) ---
+ℹ tests 43
+ℹ pass 43
+ℹ fail 0
+ℹ skipped 0
+--- playwright (npm run smoke) ---
+  34 passed (18.2s)

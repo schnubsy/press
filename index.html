@@ -273,6 +273,18 @@ body.tw-sorting .tw-card{transition:none}
   filter:drop-shadow(0 0 6px rgba(126,199,192,.4))}
 .tw-family .sicon svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
+/* Phase 3 (slice 1): the two pinned wings as big side-by-side squares — FAMILY left, PRIVATE right.
+   Each is half the width of a normal card and roughly two rows tall. On phone width they read as
+   true squares; on wide viewports a max-height keeps them from ballooning. */
+.tw-wings{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.tw-wings .tw-secure,.tw-wings .tw-family{margin:0;aspect-ratio:1/1;min-height:150px;max-height:230px;
+  display:flex;flex-direction:column;padding:20px}
+.tw-wings .tw-secure h3,.tw-wings .tw-family h3{font-size:clamp(19px,4.6vw,25px);line-height:1.18;margin-top:8px}
+.tw-wings .lockline{margin-top:auto}
+.tw-wings .sicon{top:18px;bottom:auto;transform:none;width:38px;height:38px}
+.tw-wings .sicon svg{width:34px;height:34px}
+@media(max-width:380px){.tw-wings{gap:10px}.tw-wings .tw-secure,.tw-wings .tw-family{padding:15px}
+  .tw-wings .tw-secure h3,.tw-wings .tw-family h3{font-size:18px}}
 /* private-wing view */
 .tw-unlock{padding:32px 24px;border-radius:var(--tw-radius-card);background:var(--tw-glass-card);
   border:1px solid var(--tw-border-card);text-align:center;box-shadow:var(--tw-shadow-card)}
@@ -1260,7 +1272,9 @@ const OWNER='schnubsy', REPO='press';
 const API=`https://api.github.com/repos/${OWNER}/${REPO}/contents`;
 const RAW=`https://raw.githubusercontent.com/${OWNER}/${REPO}/main`;
 const KICKERS=[[/agent-health|health|monitor|status/,'Monitor'],[/halvsies|split|money|budget|spend/,'Money'],[/council/,'Reference'],[/checklist|prep|kayley|eagle/,'Checklist'],
-  [/log|notes|journal/,'Notes'],[/guide|how-?to|readme/,'Guide']];
+  [/log|notes|journal/,'Notes'],[/guide|how-?to|readme/,'Guide'],
+  // Phase 3 — the wing pages get real page-type icons (matched before the generic 'Page' fallback).
+  [/fsa/,'FSA'],[/giving/,'Giving'],[/retirement/,'Retirement'],[/card-scout/,'Cards'],[/perth/,'Perth']];
 const kicker=f=>{for(const[re,k]of KICKERS)if(re.test(f))return k;return 'Page';};
 const titleize=f=>f.replace(/\.html$/,'').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -1280,7 +1294,16 @@ const ICONS={
   'Page':      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>',
   'Archive':   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
   'Secure':    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="10.5" r="1.5"/><path d="M12 12V15"/></svg>',
-  'Family':    '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg>'
+  // Family door — reads as PEOPLE (Feather "users"), not the old envelope.
+  'Family':    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  // Private-wing pages (Phase 3): each gets a real Feather-grade glyph via the KICKERS map below.
+  'FSA':        '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
+  'Giving':     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+  'Retirement': '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+  'Cards':      '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',
+  // Perth — a small Australia silhouette (hand-approximated; Feather has no Australia). A landmass
+  // with the Cape York peninsula spike up top and Tasmania as the dot below. Flagged for design review.
+  'Perth':      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.2 10.3c-.4-2.1 1-3.2 3-2.7l1.7 1 1.4-1.8 1.7 1.3L14.2 4l1.8 2.1 2.4.3c1.1 2 .7 4.1-1 6.6l-1.5 2.7c-.8 1.5-2.1 2.1-3.9 1.8l-4.6-.2c-2.5-.2-3.8-1.7-3.4-4Z"/><circle cx="14.6" cy="20" r="1.05"/></svg>'
 };
 const iconFor=k=>ICONS[k]||ICONS['Page'];
 /* R3.4/R3.5 — Feather "sunrise" inside the "new" pill (early morning sun = fresh) */
@@ -1439,10 +1462,13 @@ function paintMarquee(root, files, man, physArchiveCount, stale){
   // the family door only appears once a page is in spaces.json.family — a v1/empty file shows
   // no door and the lobby is byte-for-byte the pre-Family-Wing paint.
   const family = familyCount() ? familyCardHTML() : '';
+  // Phase 3: the two wings sit as side-by-side squares — FAMILY left, PRIVATE right. With no family
+  // door yet (v1/empty spaces), fall back to the private card alone, full-width (pre-Family paint).
+  const wings = family ? `<div class="tw-wings">${family}${secure}</div>` : secure;
   if(!ordered.length){
     root.innerHTML = `${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>${COPY_FLAVOR}</span></div>`+
       `<h2 class="tw-title">${COPY_TITLE}</h2>`+
-      secure + family +
+      wings +
       `<div class="tw-empty"><h3>Nothing on the marquee yet</h3>`+
       `<p>Published pages appear here automatically.</p></div>`+
       (archiveCount?archiveCardHTML(archiveCount):'');
@@ -1457,7 +1483,7 @@ function paintMarquee(root, files, man, physArchiveCount, stale){
     staleNote +
     `<h2 class="tw-title">${COPY_TITLE}</h2>`+
     `<div class="tw-dek">${COPY_DEK}</div>`+
-    secure + family + cards + archiveCardHTML(archiveCount) +
+    wings + cards + archiveCardHTML(archiveCount) +
     `<div class="tw-hint">hold a card to lift it · drop on the archive to tuck it away</div>`+
     `<div class="tw-auto">↻ auto-listed from the repository root</div>`;
   wireDrag(root);
