@@ -24,15 +24,17 @@ served via GitHub Pages. Key pages:
 
 ## Current stage
 
-Live; **arc/family-wing-gate Phase 1 COMPLETE (2026-09-22).** The Family Wing DOOR
-(`index.html?view=family`) is now GATED on a live family session via new `FamilyGate.requireSession()`
-(session-only entrance sign-in — email OTP, NO page grant), mirroring the Private Wing; one sign-in at
-the door opens every family tool with no further prompt, and a Log out control clears the session.
-`perth.html` joined the wing (`spaces.json` family[] + `FamilyGate.require('perth.html')`; its
-`press_tasks` read/write is UNCHANGED — RLS hardening is Phase 2). Shared gate re-vendored byte-identical
-into index/remit/perth (sha1 `b5ff2b65…`); `src/gate.js` untouched (`6080e25d…`). Pushed
-`dbfc97a`→`84a4965`→`cba9682` to `main`, each live-200 + git-hash-verified; gauntlet green (34 Playwright
-+ 43 node, 0 skipped) incl. the new deep-link gate test. Phases 2–4 NOT started.
+Live; **arc/marquee Phases 3–5 (UI batch) COMPLETE (2026-09-22).** Landing: the two wings render as big
+side-by-side squares (FAMILY left, PRIVATE right) via a new `.tw-wings` grid; Feather-grade page icons via
+the KICKERS+ICONS registry (fsa=cross, giving=heart, retirement=trending-up, card-scout=card, family=people,
+perth=a small Australia — soft at 26px, device-check decision in `BACKLOG.md`). Copy: a card↔wing-view title
+swap (private card "Behind the passkey." / wing title "The Private Wing"; family card "A safer space for the
+fam" / kicker "The Family Wing") + an absolute clock "Unlocked · N tools · until 7:41 pm". Nav: a persistent
+"← Private/Family Wing" back chip in every tool's app chrome; "Connect your tools" collapses once every tool
+is connected. Eye LITE review: 3 P0s, all actioned. `src/gate.js` untouched (`6080e25d…`; vendored gates
+carry their own copy by design). Gauntlet green (43 node + 35 Playwright, 0 skipped); Lighthouse 89 perf /
+96 a11y on the landing. Family/RLS Phases 1–2 stay closed. Closed via one PR→merge per touched repo with
+per-page live verification.
 
 ## Project rules
 

@@ -1,56 +1,59 @@
 # press — HANDOFF
 
-_Last updated: 2026-09-22 — arc/family-wing-gate Phase 1 CLOSED_
+_Last updated: 2026-09-22 — arc/marquee Phases 3–5 (UI batch) CLOSED_
 
 ## Standing rule — publish auto-close (do NOT re-litigate)
 
-An outward-facing publish at the end of a **green arc or hotfix** does NOT need a separate merge
-approval from Mark. When the gauntlet is green, complete the publish (merge/push to `main`, which is what
-GitHub Pages serves) as part of closing out — do not stop to ask. Set by Mark 2026-09-18.
-(Auto-merge is still never enabled pre-emptively; this is only about merging a finished, green change.)
+An outward-facing publish at the end of a **green arc or hotfix** does NOT need a separate merge approval
+from Mark. When the gauntlet is green, complete the publish (merge/push to `main`, which is what GitHub
+Pages serves) as part of closing out. (Auto-merge is still never enabled pre-emptively.) Set by Mark 2026-09-18.
 
 ## Current state
 
-**arc/family-wing-gate Phase 1 is COMPLETE and pushed to `main` (`cba9682`).** The Family Wing DOOR
-(`index.html?view=family`) is GATED on a live family session; `perth.html` is now a gated family tool
-alongside `remit.html`. Live at `https://schnubsy.github.io/press/?view=family`. Prior arc/perth-runway
-stays closed. Base at arc open was `b1a91a9`; published in three live-verified pushes.
+**arc/marquee Phases 3–5 (the UI batch) is COMPLETE.** The marquee got a visual/UX pass across five slices:
+wings-as-squares + Feather page icons, a card↔wing-view copy swap + absolute clock, collapsible Connect +
+persistent back-to-wing links, Eye P0 fixes, and a Lighthouse pass (89 perf / 96 a11y on the landing).
+`src/gate.js` untouched (`6080e25d…`); the vendored gates keep their own inline copy by design. Gauntlet
+green: **43 node + 35 Playwright, 0 skipped** (the +1 Playwright is the new all-connected collapse test).
+Closed via ONE PR→merge per touched repo (press, fsa-claims, giving-tracker, retirement); the family
+back-links (remit, perth) were edited directly in press. See the close-out manifest / arc report for the
+per-page live-200 + `git hash-object` proofs.
 
 ## Shipped this arc
-- **Entrance gate (`dbfc97a`, src+index):** new `FamilyGate.requireSession()` in `src/family-gate.js`
-  (session-only sign-in — email OTP, no page grant; `renderSignIn` gained `opts.sessionOnly`). `renderFamily()`
-  now awaits it and paints nothing behind the gate; added a **Log out** control; removed the untrue
-  "open a tool — it asks for a code" landing copy. Deep-link smoke tests in `marquee.spec.mjs` +
-  `family-lobby.spec.mjs` (old open-directory test rewritten to the gated contract).
-- **Re-vendor (`84a4965`, remit):** `remit.html` inlined gate re-vendored byte-identical to src; its own
-  `require('remit.html')` unchanged — it already trusts the door session (no second prompt).
-- **perth joins (`cba9682`, spaces+perth):** `perth.html` added to `spaces.json` family[] and gated with
-  `FamilyGate.require('perth.html')` before boot; `press_tasks` read/write UNCHANGED. `press_access` already
-  had the `perth.html` app row + an active grant for Mark (Cowork-seeded, verified live).
-- **Proofs:** each page pushed then confirmed live-200 + `git hash-object` match (index `89de962b`, gate
-  `528e1c13`, remit `97e7fd2f`, perth `f62c96e4`, spaces `bc7d67134`). Vendored gate sha1 `b5ff2b65…`
-  identical across index/remit/perth. `src/gate.js` untouched (`6080e25d…`, before & after). Gauntlet:
-  34 Playwright + 43 node, **0 skipped**. Live door shows the gate with **zero auth/REST calls, no tool leak**.
+- **Slice 1 — layout+icons:** `.tw-wings` grid → two big side-by-side squares, FAMILY left / PRIVATE right
+  (private-card full-width fallback when no family space). Feather glyphs via KICKERS+ICONS (fsa/giving/
+  retirement/card-scout/family=people/perth=Australia). NOT in `pages.json` (untested there).
+- **Slice 2 — copy:** private card "Behind the passkey." ↔ wing title "The Private Wing" (all 3 tw-title
+  states); family card "A safer space for the fam" + "The Family Wing" kicker; absolute clock via `clockUntil()`.
+  Removed a stale "Signed in with a code." still present in the family wing view at the arc base.
+- **Slice 3 — nav+connect:** "← Private/Family Wing" chip in each tool's app chrome (fsa/giving/retirement
+  from source; remit/perth direct in press); "Connect your tools" collapses once every tool is connected.
+- **Slice 4 — Eye:** 3 P0s actioned (title dedup, mobile kicker gutter, Australia legibility). Rest → BACKLOG.md.
+- **Slice 5 — perf:** Lighthouse landing 89/96/96 (budget perf≥85, a11y≥90). `docs/evidence/marquee-lighthouse.json`.
 
 ## Open / blockers
-- **perth RLS is still OPEN (🔴 → Phase 2).** perth's data (`press_tasks`, `page='perth'`) is still anon
-  read/write — the gate is courtesy only for perth until its tables move behind `press_access_has('perth.html')`.
-  The gate does NOT protect the data yet; RLS is the real lock (framework §2). This is Phase 2's job.
-- Copy (Phase 4) and the admin-grid polish (later) are untouched by design — only the one untrue landing
-  line was removed this phase.
-- Standing (prior arc): each sibling app owns its vendored-gate byte-check; press's `inline:check` guards
-  only its own `vault.js`, not `family-gate.js` — the family-gate byte-identity was proven by hand this arc.
+- **remit's SOURCE repo carries a stale (pre-`requireSession`) family-gate.** The remit family back-link was
+  applied DIRECTLY to `press/remit.html` (gate preserved, requireSession=4); remit's source branch
+  `claude/marquee-wing-backlink` holds the same edit but was NOT merged/published (rebuilding would regress
+  Phase 1). FOLLOW-UP arc: re-vendor the current family-gate into remit's source, then it can rebuild cleanly.
+- **perth's Australia glyph** is soft at 26px (Eye P0 #2, partially fixed). Device-check decision (accept vs
+  Feather map-pin) logged in `BACKLOG.md`.
+- Non-P0 Eye findings (kicker taxonomy, mobile crowding, FSA glyph semantics, card-scout asymmetry, collapsed
+  void) parked in `BACKLOG.md`.
 
 ## Exact next steps
-**Phase 2 — put perth's data behind RLS.** MAIN CHECKOUT: `~/Documents/VSCode/press`. INBOX FILES: this
-HANDOFF + `docs/access-framework.md` §4 + `docs/lessons.md`. Move `press_tasks` (`page='perth'`) reads/writes
-onto `FamilyGate.authHeaders()` and gate the rows on `press_access_has('perth.html')`, additive-then-cleanup
-so the live page never breaks; keep the `perth.html` grant intact; re-run the gauntlet + a perth round-trip.
+Next arc (no inbox pending): work `BACKLOG.md` — decide the perth glyph, then the P1 polish (kicker taxonomy,
+mobile card breathing room). Separately: re-vendor the family-gate into remit's source (removes the "edit
+remit directly in press" hazard). MAIN CHECKOUT: `~/Documents/VSCode/press`. INBOX FILES: this HANDOFF + `BACKLOG.md`.
 
-## Mark's manual steps
-1. **Verify the live OTP sign-in (device check — Claude cannot do this).**
-   `open 'https://schnubsy.github.io/press/?view=family'` → sign in with your email code once, then
-   confirm BOTH `remit` and `perth` open with **no second prompt**, and that **Log out** returns you to
-   the gate. Expected: one code, two tools open, log-out re-shows the sign-in. If perth shows "signed in,
-   but no access to this page", the `press_access_grants` row for `markgubb@gmail.com → perth.html` is
-   missing/inactive — re-add it in `access.html` before relying on the gate.
+## Mark's manual steps (device check — Claude cannot do these; the final gate)
+1. **Verify the marquee landing live** (after Pages propagates):
+   `git -C ~/Documents/VSCode/press pull && grep -c 'tw-wings' index.html` (expect ≥1) `&&`
+   `open 'https://schnubsy.github.io/press/'` — expect the two wings as side-by-side SQUARES (family left,
+   private right), the people + shield glyphs, and the four page-icon rows in the wings.
+2. **Verify the copy + back-links behind the gates:** sign in to each wing and confirm the private wing view
+   titles read "The Private Wing" (big) over "Behind the passkey." (eyebrow), the family view reads "A safer
+   space for the fam", the session line shows "Unlocked · N tools · until H:MM", each tool shows a "← Private/
+   Family Wing" chip in its chrome, and "Connect your tools" is collapsed to "Manage" when everything is connected.
+3. **perth's Australia glyph:** open `?view=family` → perth and judge the icon at row size — accept it or reply
+   "swap perth to a map-pin" (BACKLOG.md).

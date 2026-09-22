@@ -209,3 +209,33 @@ hook, to `authenticated` for the ones the RLS policies and the gate call.
 to **every** security-definer helper in the press project — audit the older `press_*` helpers for the
 same hole. Corollary: read the post-apply advisor after every DDL slice; this class of leak is silent
 (a 200, not an error) and only the advisor or an explicit `\df+` of the ACLs shows it.
+
+---
+
+## 2026-09-22 — arc/marquee UI batch
+
+**RULE [press]:** page-type icons live in `index.html`'s KICKERS + ICONS registry, NOT in `pages.json`.
+`pages.json` is fetched at runtime and stubbed by both smoke fixtures (marquee + connect), so an `icon`
+field there would be untested and silently fall back to the generic glyph. New page type → add a KICKERS
+regex + a matching Feather-grade ICONS path (24 viewBox, stroke 2, round joins).
+
+**RULE [press]:** a hand-drawn country silhouette (e.g. Australia for perth) does NOT survive row size
+(~26px) as a stroked glyph — it reads as a blob or, with a top notch, as "ears". If a place needs an icon
+at nav size, prefer a generic Feather glyph (map-pin) and reserve the silhouette for hero sizes, or accept
+that it reads as "a landmass". Logged as a device-check decision, not a silent choice.
+
+**RULE [press]:** remit's SOURCE repo (`remit/src`) still vendors the PRE-`requireSession` family-gate;
+Phase 1 re-vendored the current gate into `press/remit.html` directly, not into remit's source. Therefore
+`remit/tools/release.js` (build → publish) REGRESSES the Phase-1 entrance gate. Until remit's source gate is
+re-vendored, any remit change (e.g. the family back-link) must be applied DIRECTLY to `press/remit.html`,
+preserving `requireSession` (grep-verify the count before/after). FOLLOW-UP: re-vendor family-gate.js into
+remit's source so it can rebuild cleanly.
+
+**RULE [press]:** to publish a source-app page into a press WORKTREE (not the main checkout), set
+`PRESS_DIR=<worktree>` — honored by fsa-claims, giving-tracker, and retirement's release. EXCEPTIONS: remit
+hardcodes `../press` (copy the built page in by hand); retirement stages the built page into a dest dir
+(`argv[2]`) and never auto-copies to press (copy `<dest>/index.html` → `press/retirement.html` yourself).
+
+**RULE [test]:** the wing-view titles/eyebrows are NOT test-pinned, but the marquee CARD h3s ARE
+(`marquee.spec.mjs:109` = private card, `family-lobby.spec.mjs:72` = family door). A copy change that
+touches a card hero must update those assertions in the same slice.

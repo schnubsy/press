@@ -4,6 +4,30 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-09-22 — arc/marquee Phases 3–5 (UI batch)
+
+The marquee's visual/UX pass, run as one five-slice arc. **Slice 1 (layout+icons):** the two wing cards
+(`.tw-secure`, `.tw-family`) now render as big side-by-side squares — FAMILY left, PRIVATE right — via a new
+`.tw-wings` grid (falls back to the private card full-width when there is no family space, so the pre-Family
+paint and the marquee/family-lobby smoke stay byte-stable). Real Feather-grade glyphs added to the
+KICKERS+ICONS registry (NOT `pages.json` — it is fetched+stubbed and would go untested): fsa=medical cross,
+giving=heart, retirement=trending-up, card-scout=credit-card, the Family door=people (was an envelope), and
+perth=a hand-drawn Australia (Feather has none). **Slice 2 (copy):** a true swap between the landing card and
+the wing view — private card hero "Behind the passkey." while the wing-view title is "The Private Wing" (all
+three tw-title states); family card hero "A safer space for the fam" with a "The Family Wing" kicker. The
+session line became an absolute wall clock ("Unlocked · N tools · until 7:41 pm", new `clockUntil()`). The
+family wing view still carried "Signed in with a code." at the arc base (contra the Phase-1 note) — removed.
+**Slice 3 (nav+connect):** a persistent "← Private/Family Wing" back chip added to each tool's app chrome
+(fsa/giving/retirement from their own source repos; remit+perth edited directly in press — remit's source
+still carries a pre-`requireSession` family-gate, so rebuilding it would regress Phase 1); and the "Connect
+your tools" section is now collapsible (collapses once `CONNECT_TOOLS.every(toolConnected)`, reusing the
+Reconnect drawer pattern). **Slice 4 (Eye):** a LITE design review returned 3 P0s — wing-view title
+duplication, mobile kicker/icon collision, and perth's Australia illegible at 26px — all actioned; the rest
+went to `BACKLOG.md`. **Slice 5 (perf):** Lighthouse on the landing = 89 performance / 96 accessibility /
+96 best-practices, all above budget. `src/gate.js` untouched throughout (`6080e25d…`). Gauntlet green (43
+node + 35 Playwright, 0 skipped). Closed via one PR→merge per touched repo (press, fsa-claims,
+giving-tracker, retirement) with per-page live verification on press.
+
 ## 2026-09-22 — arc/family-wing-gate Phase 1 (gate the family wing)
 
 Turned the Family Wing from an open directory into a GATED door. `renderFamily()` (`index.html?view=family`)
