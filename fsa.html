@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#14161A">
   <title>FSA Claims</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMTQxNjFBIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJBMkYzNiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIyIDQ5LjMyIEEyMCAyMCAwIDAgMSAxNC42OCAyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDBBM0UwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIzMiIgeTE9IjMyIiB4Mj0iNDAiIHkyPSIxOC4xNCIgc3Ryb2tlPSIjRTZFOUVEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
-  <meta name="build" content="2026-09-21T14:10:27.988Z 03f2b18">
+  <meta name="build" content="2026-09-22T17:52:31.430Z 97046d7">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="manifest" href="fsa-assets/manifest.webmanifest">
@@ -191,10 +191,13 @@ select {
 }
 
 #topbar {
-  display: flex; align-items: center; gap: var(--s2);
+  display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap;
   max-width: 960px; margin: 0 auto; padding: var(--s2);
   border-bottom: 1px solid var(--hairline);
 }
+/* back chip to the marquee's Private Wing (mirrors card-scout) — always in the app chrome, not just the gate */
+.tw-back { display:inline-flex; align-items:center; gap:4px; font-size:13px; font-weight:600; color:var(--dim); text-decoration:none; padding:6px 10px 6px 4px; }
+.tw-back:hover { color:var(--ink); }
 .wordmark { font-family: var(--font-display); font-weight: 600; font-size: 20px; letter-spacing: .04em; }
 #asof { font-size: 12px; }
 #theme-toggle { margin-left: auto; line-height: 1; }
@@ -437,6 +440,7 @@ select {
 </head>
 <body class="preboot">
   <header id="topbar">
+    <a class="tw-back" href="index.html?view=personal">&larr; Private Wing</a>
     <span class="wordmark">FSA</span>
     <span id="year-static" class="mono dim" aria-label="Plan year"></span>
     <label class="vh" for="year">Plan year</label>
