@@ -273,6 +273,19 @@ body.tw-sorting .tw-card{transition:none}
   filter:drop-shadow(0 0 6px rgba(126,199,192,.4))}
 .tw-family .sicon svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
+/* Phase 3 (slice 1): the two pinned wings as big side-by-side squares — FAMILY left, PRIVATE right.
+   Each is half the width of a normal card and roughly two rows tall. On phone width they read as
+   true squares; on wide viewports a max-height keeps them from ballooning. */
+.tw-wings{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.tw-wings .tw-secure,.tw-wings .tw-family{margin:0;aspect-ratio:1/1;min-height:150px;max-height:230px;
+  display:flex;flex-direction:column;padding:20px}
+.tw-wings .tw-secure h3,.tw-wings .tw-family h3{font-size:clamp(19px,4.6vw,25px);line-height:1.18;margin-top:8px}
+.tw-wings .k{padding-right:44px}   /* reserve the top-right icon gutter so a long kicker never runs under it */
+.tw-wings .lockline{margin-top:auto}
+.tw-wings .sicon{top:18px;bottom:auto;transform:none;width:38px;height:38px}
+.tw-wings .sicon svg{width:34px;height:34px}
+@media(max-width:380px){.tw-wings{gap:10px}.tw-wings .tw-secure,.tw-wings .tw-family{padding:15px}
+  .tw-wings .tw-secure h3,.tw-wings .tw-family h3{font-size:18px}}
 /* private-wing view */
 .tw-unlock{padding:32px 24px;border-radius:var(--tw-radius-card);background:var(--tw-glass-card);
   border:1px solid var(--tw-border-card);text-align:center;box-shadow:var(--tw-shadow-card)}
@@ -300,6 +313,10 @@ body.tw-sorting .tw-card{transition:none}
 /* connect your tools */
 .tw-connect{margin-top:20px;border-top:1px solid var(--tw-hairline);padding-top:16px}
 .tw-connect h4{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tw-muted);margin-bottom:8px}
+/* Phase 5 (slice 3): collapsible section header — h4 left, a quiet toggle right */
+.tw-connect-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tw-connect-head h4{margin-bottom:0}
+.tw-connect-body:empty{display:none}
 .tw-cmeta{font-size:12px;color:var(--tw-muted);margin:0 0 14px;line-height:1.5}
 .tw-tool{border:1px solid var(--tw-border-card);border-radius:var(--tw-radius-card);padding:12px 14px;margin-bottom:10px;background:var(--tw-glass-card)}
 .tw-tool-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -1260,7 +1277,9 @@ const OWNER='schnubsy', REPO='press';
 const API=`https://api.github.com/repos/${OWNER}/${REPO}/contents`;
 const RAW=`https://raw.githubusercontent.com/${OWNER}/${REPO}/main`;
 const KICKERS=[[/agent-health|health|monitor|status/,'Monitor'],[/halvsies|split|money|budget|spend/,'Money'],[/council/,'Reference'],[/checklist|prep|kayley|eagle/,'Checklist'],
-  [/log|notes|journal/,'Notes'],[/guide|how-?to|readme/,'Guide']];
+  [/log|notes|journal/,'Notes'],[/guide|how-?to|readme/,'Guide'],
+  // Phase 3 — the wing pages get real page-type icons (matched before the generic 'Page' fallback).
+  [/fsa/,'FSA'],[/giving/,'Giving'],[/retirement/,'Retirement'],[/card-scout/,'Cards'],[/perth/,'Perth']];
 const kicker=f=>{for(const[re,k]of KICKERS)if(re.test(f))return k;return 'Page';};
 const titleize=f=>f.replace(/\.html$/,'').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -1280,7 +1299,18 @@ const ICONS={
   'Page':      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>',
   'Archive':   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
   'Secure':    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="10.5" r="1.5"/><path d="M12 12V15"/></svg>',
-  'Family':    '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg>'
+  // Family door — reads as PEOPLE (Feather "users"), not the old envelope.
+  'Family':    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  // Private-wing pages (Phase 3): each gets a real Feather-grade glyph via the KICKERS map below.
+  'FSA':        '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
+  'Giving':     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+  'Retirement': '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+  'Cards':      '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',
+  // Perth — a small Australia silhouette (hand-approximated; Feather has no Australia). Smooth wide
+  // landmass with a single Cape York spike + an enlarged, clearly-separated Tasmania dot. This is the
+  // softest glyph in the set; at ~26px it reads as a landmass more than unmistakably Australia. Eye P0
+  // (2026-09-22): device-check decision — accept, or swap perth to a Feather map-pin at row size. See BACKLOG.md.
+  'Perth':      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.2 10.3c-.4-2.1 1-3.2 3-2.7l1.7 1 1.4-1.8 1.7 1.3L14.2 4l1.8 2.1 2.4.3c1.1 2 .7 4.1-1 6.6l-1.5 2.7c-.8 1.5-2.1 2.1-3.9 1.8l-4.6-.2c-2.5-.2-3.8-1.7-3.4-4Z"/><circle cx="13" cy="20" r="1.4"/></svg>'
 };
 const iconFor=k=>ICONS[k]||ICONS['Page'];
 /* R3.4/R3.5 — Feather "sunrise" inside the "new" pill (early morning sun = fresh) */
@@ -1333,14 +1363,24 @@ function timeLeft(expiresAt){
   const h = Math.floor(ms/3600000), m = Math.round((ms%3600000)/60000);
   return h>0 ? `${h}h ${m}m left` : `${m}m left`;
 }
+// Phase 4 (slice 2): the countdown reads as an absolute wall clock — "until 7:41 pm" — instead of a
+// remaining duration. Clearer than "8h 0m left" for a session that always ends at a fixed time.
+function clockUntil(expiresAt){
+  const ms = expiresAt - Date.now(); if(ms<=0) return 'expiring';
+  const d = new Date(expiresAt); let h = d.getHours(); const m = d.getMinutes();
+  const ap = h>=12 ? 'pm' : 'am'; h = h%12 || 12;
+  return `until ${h}:${String(m).padStart(2,'0')} ${ap}`;
+}
 function secureCardHTML(){
   const st = vaultState(), n = personalCount();
   let line;
-  if(st.sess)        line = `Unlocked · ${n} tools · ${timeLeft(st.sess.expiresAt)}`;
+  if(st.sess)        line = `Unlocked · ${n} tools · ${clockUntil(st.sess.expiresAt)}`;
   else if(st.enrolled) line = `Locked · ${n} tools · tap to unlock`;
   else               line = `Set up the private wing`;
+  // Phase 4 swap: the card carries the tagline; the wing name moves to the wing-view title. The
+  // lockline still names the wing (the only wing identifier left on the card once the h3 changes).
   return `<a class="tw-secure" href="./?view=personal" draggable="false">`+
-    `<div class="k">⬤ Personal</div><h3>The Private Wing</h3>`+
+    `<div class="k">⬤ Personal</div><h3>Behind the passkey.</h3>`+
     `<div class="lockline">${esc(line)}</div>`+
     `<span class="sicon">${ICONS['Secure']}</span></a>`;
 }
@@ -1351,7 +1391,7 @@ function familyCardHTML(){
   const n = familyCount();
   const line = `${n} ${n===1?'tool':'tools'} · sign in with a code`;
   return `<a class="tw-family" href="./?view=family" draggable="false">`+
-    `<div class="k">⬤ Family</div><h3>The Family Wing</h3>`+
+    `<div class="k">⬤ The Family Wing</div><h3>A safer space for the fam</h3>`+
     `<div class="lockline">${esc(line)}</div>`+
     `<span class="sicon">${ICONS['Family']||ICONS['Secure']}</span></a>`;
 }
@@ -1439,10 +1479,13 @@ function paintMarquee(root, files, man, physArchiveCount, stale){
   // the family door only appears once a page is in spaces.json.family — a v1/empty file shows
   // no door and the lobby is byte-for-byte the pre-Family-Wing paint.
   const family = familyCount() ? familyCardHTML() : '';
+  // Phase 3: the two wings sit as side-by-side squares — FAMILY left, PRIVATE right. With no family
+  // door yet (v1/empty spaces), fall back to the private card alone, full-width (pre-Family paint).
+  const wings = family ? `<div class="tw-wings">${family}${secure}</div>` : secure;
   if(!ordered.length){
     root.innerHTML = `${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><span>${COPY_FLAVOR}</span></div>`+
       `<h2 class="tw-title">${COPY_TITLE}</h2>`+
-      secure + family +
+      wings +
       `<div class="tw-empty"><h3>Nothing on the marquee yet</h3>`+
       `<p>Published pages appear here automatically.</p></div>`+
       (archiveCount?archiveCardHTML(archiveCount):'');
@@ -1457,7 +1500,7 @@ function paintMarquee(root, files, man, physArchiveCount, stale){
     staleNote +
     `<h2 class="tw-title">${COPY_TITLE}</h2>`+
     `<div class="tw-dek">${COPY_DEK}</div>`+
-    secure + family + cards + archiveCardHTML(archiveCount) +
+    wings + cards + archiveCardHTML(archiveCount) +
     `<div class="tw-hint">hold a card to lift it · drop on the archive to tuck it away</div>`+
     `<div class="tw-auto">↻ auto-listed from the repository root</div>`;
   wireDrag(root);
@@ -1765,9 +1808,10 @@ function toolFieldsHTML(f){
       `<div class="tw-tool-msg" aria-live="polite"></div>`+
     `</div>`;
 }
-function renderConnect(){
-  return `<div class="tw-connect"><h4>Connect your tools</h4>`+
-    `<p class="tw-cmeta">Each tool works once its sync key is sealed behind your passkey — verified against your real data before anything is stored, nothing re-encrypted. Connected tools sit quiet; hit Reconnect to re-enter a key.</p>`+
+// The inner tool list (meta + one row per tool). Extracted so the section can rebuild it on expand,
+// exactly like a per-tool Reconnect drawer rebuilds its slot.
+function connectToolsHTML(){
+  return `<p class="tw-cmeta">Each tool works once its sync key is sealed behind your passkey — verified against your real data before anything is stored, nothing re-encrypted. Connected tools sit quiet; hit Reconnect to re-enter a key.</p>`+
     CONNECT_TOOLS.map(f=>{
       const cfg=TOOL_CFG[f], on=toolConnected(f);
       const head=`<div class="tw-tool-head"><span class="tw-tool-name">${esc(cfg.label)}</span>`+
@@ -1777,11 +1821,26 @@ function renderConnect(){
       const slot=on?'':toolFieldsHTML(f);
       const foot=on?`<div class="tw-tool-foot"><button type="button" class="tw-mini tw-reconnect" aria-expanded="false">Reconnect</button></div>`:'';
       return `<div class="tw-tool" data-f="${f}" data-kind="${cfg.kind}">${head}<div class="tw-tool-slot">${slot}</div>${foot}</div>`;
-    }).join('')+
+    }).join('');
+}
+// Phase 5 (slice 3): the whole section is collapsible — COLLAPSED once every tool is connected (a quiet
+// "Manage" toggle), EXPANDED while any tool still needs connecting (so a fresh wing shows the forms with
+// no click). Reuses the mature Reconnect drawer pattern: a real <button aria-expanded> whose body is
+// rebuilt via innerHTML — NOT the weaker hidden-flag devices drawer.
+function renderConnect(){
+  const allOn = CONNECT_TOOLS.every(toolConnected);
+  return `<div class="tw-connect">`+
+    `<div class="tw-connect-head"><h4>Connect your tools</h4>`+
+    `<button type="button" class="tw-mini tw-connect-toggle" aria-expanded="${allOn?'false':'true'}" aria-controls="tw-connect-body">${allOn?'Manage':'Hide'}</button></div>`+
+    `<div class="tw-connect-body" id="tw-connect-body">${allOn?'':connectToolsHTML()}</div>`+
     `</div>`;
 }
 function wireConnect(root, man){
-  root.querySelectorAll('.tw-tool').forEach(el=>{
+  const section = root.querySelector('.tw-connect');
+  const body = section ? section.querySelector('.tw-connect-body') : null;
+  const scope = body || root;
+  function wireTools(){
+   scope.querySelectorAll('.tw-tool').forEach(el=>{
     const f=el.getAttribute('data-f'), cfg=TOOL_CFG[f];
     const slot=el.querySelector('.tw-tool-slot');
     const statusEl=el.querySelector('.tw-tool-status');
@@ -1864,17 +1923,28 @@ function wireConnect(root, man){
 
     if(footBtn){ footBtn.addEventListener('click', ()=>{ (footBtn.getAttribute('aria-expanded')==='true') ? collapse() : expand(); }); }
     else { wireForm(); } // not-connected row: the form is already in the slot
-  });
+   });
+  }
+  // Section-level collapse/expand: rebuild the body via innerHTML, then re-wire — the same drawer
+  // pattern the per-tool Reconnect uses (aria-expanded on a real <button>), not a hidden flag.
+  const toggle = section ? section.querySelector('.tw-connect-toggle') : null;
+  if(toggle && body){
+    toggle.addEventListener('click', ()=>{
+      if(toggle.getAttribute('aria-expanded')==='true'){ body.innerHTML=''; toggle.setAttribute('aria-expanded','false'); toggle.textContent='Manage'; }
+      else { body.innerHTML=connectToolsHTML(); toggle.setAttribute('aria-expanded','true'); toggle.textContent='Hide'; wireTools(); }
+    });
+  }
+  wireTools();
 }
 
 function paintPersonal(root, man){
   const back=`<a class="tw-back" href="index.html">← the marquee</a>`;
-  const top=`<div class="tw-top"><span>The <b>Private Wing</b></span><span>personal tools</span></div>`;
+  const top=`<div class="tw-top"><span>Behind the <b>passkey.</b></span><span>personal tools</span></div>`;
   const st=vaultState();
   if(st.sess){
     const cards=(SPACES.personal||[]).map(f=>cardHTML(f, man, false)).join('');
-    root.innerHTML = back+top+`<h2 class="tw-title">Behind the passkey.</h2>`+
-      `<div class="tw-dek">Unlocked · ${timeLeft(st.sess.expiresAt)}. Open any tool — no more prompts until you lock or it expires.</div>`+
+    root.innerHTML = back+top+`<h2 class="tw-title">The Private Wing</h2>`+
+      `<div class="tw-dek">Unlocked · ${clockUntil(st.sess.expiresAt)}. Open any tool — no more prompts until you lock or it expires.</div>`+
       `<div class="tw-secbar"><span class="tw-mini" id="lockBtn">⏻ Lock now</span>`+
       `<span class="tw-mini" id="devBtn">⚙ Devices</span></div>`+
       cards +
@@ -1897,7 +1967,7 @@ function paintPersonal(root, man){
     // any device with the synced passkey), regardless of this device's local enrolled flag. "Set up
     // a new passkey" is a de-emphasised secondary that REFUSES to create an empty row when one is
     // already reachable (it adopts the existing row instead).
-    root.innerHTML = back+top+`<h2 class="tw-title">Behind the passkey.</h2>`+
+    root.innerHTML = back+top+`<h2 class="tw-title">The Private Wing</h2>`+
       `<div class="tw-unlock"><span class="sicon">${ICONS['Secure']}</span>`+
       `<h3>Unlock the private wing</h3>`+
       `<p>Use your passkey to open your personal tools. Nothing here loads until you unlock.</p>`+
@@ -1928,8 +1998,8 @@ function paintPersonal(root, man){
 }
 async function renderPersonal(root){
   root.innerHTML = `<a class="tw-back" href="index.html">← the marquee</a>`+
-    `<div class="tw-top"><span>The <b>Private Wing</b></span><span>personal tools</span></div>`+
-    `<h2 class="tw-title">Behind the passkey.</h2><div class="tw-skel"></div>`;
+    `<div class="tw-top"><span>Behind the <b>passkey.</b></span><span>personal tools</span></div>`+
+    `<h2 class="tw-title">The Private Wing</h2><div class="tw-skel"></div>`;
   let man=null;
   try{ const res=await Promise.all([loadManifest(''), loadSpaces()]); man=res[0]; SPACES=normSpaces(res[1]); }
   catch(e){ SPACES=normSpaces(null); }
@@ -1946,7 +2016,7 @@ async function renderPersonal(root){
 async function renderFamily(root){
   const back=`<a class="tw-back" href="index.html">← the marquee</a>`;
   const top=`<div class="tw-top"><span>The <b>Family Wing</b></span><span>for the four of us</span></div>`;
-  root.innerHTML = back+top+`<h2 class="tw-title">Signed in with a code.</h2><div class="tw-skel"></div>`;
+  root.innerHTML = back+top+`<h2 class="tw-title">A safer space for the fam</h2><div class="tw-skel"></div>`;
   let man=null;
   try{ const res=await Promise.all([loadManifest(''), loadSpaces()]); man=res[0]; SPACES=normSpaces(res[1]); }
   catch(e){ SPACES=normSpaces(null); }
@@ -1964,7 +2034,7 @@ async function renderFamily(root){
   const body = cards
     ? dek+secbar+cards
     : `<div class="tw-dek">Signed in as ${esc(who.email)}.</div>`+secbar+`<div class="tw-empty"><h3>No family tools yet</h3><p>Pages added to the family wing appear here.</p></div>`;
-  root.innerHTML = back+top+`<h2 class="tw-title">Signed in with a code.</h2>`+body;
+  root.innerHTML = back+top+`<h2 class="tw-title">A safer space for the fam</h2>`+body;
   const lo=document.getElementById('famLogout');
   if(lo) lo.addEventListener('click', async ()=>{ try{ await window.FamilyGate.signOut(); }catch(e){} renderFamily(root); });
 }

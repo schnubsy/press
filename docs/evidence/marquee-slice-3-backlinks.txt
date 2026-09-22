@@ -1,0 +1,19 @@
+SLICE 3 (Part B — source apps + family pages) — back-to-wing links — 2026-09-22T18:04:52Z
+gate.js canonical sha1: 6080e25d3653d44d5e2a4cd3ee4256e1e41dc41b (UNCHANGED 6080e25d…)
+private-wing pages (link -> index.html?view=personal), vendored gate == canonical (6080e25d):
+  fsa.html (fsa-claims src, gauntlet GREEN perf97/a11y100), giving.html (giving-tracker src, 228 unit+32 e2e),
+  retirement.html (retirement src, 1088 unit + publish-checks byte-identical), card-scout.html (already had it — the model)
+family-wing pages (link -> index.html?view=family):
+  remit.html — edited DIRECTLY in press (static shell + dynamic head template + css); remit SOURCE repo has a STALE
+    family-gate (pre-requireSession) so rebuilding from source would REGRESS Phase 1 — NOT published from source.
+  perth.html — edited directly in press (no source repo).
+requireSession intact: remit=4, perth=4 (Phase-1 gate preserved).
+--- press gauntlet ---
+> node tools/inline-vault.mjs --check
+inline-vault: index.html is in sync with src/vault.js
+inline-vault: src/gate.js is in sync with src/vault.js
+ℹ tests 43
+ℹ pass 43
+ℹ fail 0
+ℹ skipped 0
+  35 passed (18.5s)

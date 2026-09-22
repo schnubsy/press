@@ -1,0 +1,18 @@
+SLICE 4 — Eye LITE design review + P0 fixes — 2026-09-22T18:17:01Z
+gate.js sha1: 6080e25d3653d44d5e2a4cd3ee4256e1e41dc41b (UNCHANGED)
+Eye verdict: 3 P0 findings. Actioned all three:
+  P0#1 title duplication (wing view eyebrow == H2): FIXED. Private wing view eyebrow -> 'Behind the passkey.'
+        (H2 stays 'The Private Wing'); family wing view H2 -> 'A safer space for the fam' (top bar stays 'The Family Wing').
+  P0#2 perth Australia unrecognizable at 26px: PARTIALLY FIXED. Smoother landmass + enlarged Tasmania dot;
+        a stroked country silhouette is at the 26px limit -> device-check decision (accept vs map-pin) logged in BACKLOG.md.
+  P0#3 family kicker collides with corner glyph on mobile: FIXED. Reserved a 44px icon gutter on .tw-wings .k.
+Non-P0 findings (P1/P2/P3) -> BACKLOG.md.
+--- gauntlet ---
+> node tools/inline-vault.mjs --check
+inline-vault: index.html is in sync with src/vault.js
+inline-vault: src/gate.js is in sync with src/vault.js
+ℹ tests 43
+ℹ pass 43
+ℹ fail 0
+ℹ skipped 0
+  35 passed (18.3s)

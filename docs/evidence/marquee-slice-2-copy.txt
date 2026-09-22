@@ -1,0 +1,18 @@
+SLICE 2 — copy swap + absolute clock — gauntlet 2026-09-22T17:37:03Z
+gate.js sha1: 6080e25d3653d44d5e2a4cd3ee4256e1e41dc41b (baseline 6080e25d…, UNCHANGED — vendored gates still carry old copy by design)
+--- inline:check ---
+> node tools/inline-vault.mjs --check
+inline-vault: index.html is in sync with src/vault.js
+inline-vault: src/gate.js is in sync with src/vault.js
+--- node ---
+ℹ tests 43
+ℹ pass 43
+ℹ fail 0
+ℹ skipped 0
+--- playwright ---
+  34 passed (17.9s)
+--- copy changes ---
+private card h3: 'Behind the passkey.'  | private wing-view title x3: 'The Private Wing'
+family card h3: 'A safer space for the fam' | family card kicker: 'The Family Wing' | family wing-view title x2: 'The Family Wing' (was 'Signed in with a code.' — still present at 583dfa8 contra note; removed here)
+clock: 'Unlocked · N tools · until H:MM am/pm' (card lockline + wing dek)
+tests updated: marquee.spec.mjs:109 -> 'Behind the passkey.'; family-lobby.spec.mjs:72 -> 'A safer space for the fam' + kicker check
