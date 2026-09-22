@@ -70,6 +70,9 @@ button{font-family:inherit;cursor:pointer}
 
 /* ---------- PAGE HEADER (WO6-B2: currency toggle + reset live here) ---------- */
 .pagehead{display:flex;align-items:center;gap:14px;margin:2px 2px 14px}
+/* Persistent back-to-Private-Wing link in the app chrome (marquee UI batch) */
+.tw-back{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--mut);text-decoration:none;padding:6px 10px 6px 4px}
+.tw-back:hover{color:var(--ink)}
 .ph-title{font-size:15px;font-weight:650;letter-spacing:-.01em}
 .ph-title .faint{font-weight:400}
 .ph-ctrls{margin-left:auto;display:flex;align-items:center;gap:10px}
@@ -763,6 +766,7 @@ html.tw-locked body>*:not(#press-gate):not(script){display:none!important}
 
 <div class="wrap">
   <header class="pagehead">
+    <a class="tw-back" href="index.html?view=personal">&larr; Private Wing</a>
     <div class="ph-title">Retirement plan <span class="faint" id="planName"></span></div>
     <!-- WO14 Phase 4.1 / WO17 Phase 4 — header order, left→right: title · Sterling
          (first control) · Today's/Actual $ · Scenarios · Save (icon) · edit · delete ·

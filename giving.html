@@ -73,6 +73,8 @@
     padding:14px 18px; background:var(--surface); border-bottom:1px solid var(--line); }
   .top .brand h1 { font-size:1.15rem; }
   .top .spacer { flex:1; }
+  .tw-back{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 10px 6px 4px}
+  .tw-back:hover{color:var(--ink)}
   .idpill { font-family:var(--mono); font-size:0.72rem; color:var(--muted); background:var(--surface-2);
     padding:4px 9px; border-radius:999px; border:1px solid var(--line); }
   .iconbtn { background:var(--surface-2); border:1px solid var(--line); color:var(--ink); border-radius:9px;
@@ -604,6 +606,7 @@
 <!-- ================================= APP ================================= -->
 <div id="app" hidden>
   <div class="top">
+    <a class="tw-back" href="index.html?view=personal">&larr; Private Wing</a>
     <div class="brand"><span class="mark"></span><h1>Giving Tracker</h1></div>
     <span class="spacer"></span>
     <span id="idPill" class="idpill"></span>
