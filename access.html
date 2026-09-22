@@ -9,9 +9,11 @@
   RLS `is_admin` — only Mark's own Supabase session can change anything; a non-admin session reads
   and writes nothing (the gate is courtesy, RLS is the lock, §2).
 
-  It loads its own repo's ONE copy of family-gate.js by relative path (no vendoring, no inline
-  drift — this is a press page beside src/, not a vendored tenant). The passkey visibility layer
-  is provided at the wing-directory level today; a per-page passkey overlay can be added later.
+  It loads its own repo's ONE copy of family-gate.js (admin OTP sign-in) and src/gate.js (the
+  wing passkey vault) by relative path (no vendoring, no inline drift — this is a press page beside
+  src/, not a vendored tenant). Two belts now cover it: a per-page passkey overlay gates a direct
+  GET on an enrolled browser (session-presence, since access.html has no keyring credential of its
+  own — see the belt note by enter()), and its WRITES stay protected by is_admin RLS regardless.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -78,6 +80,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
 </style></head><body>
 <main class="app" id="app"><div class="center"><p>Loading…</p></div></main>
 
+<script src="src/gate.js"></script>
 <script src="src/family-gate.js"></script>
 <script>
 /* eslint-disable */
@@ -288,7 +291,41 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
     });
   }
 
-  boot();
+  // ── private-wing passkey belt (defense-in-depth over the admin OTP + is_admin RLS) ──
+  // access.html has no data store, so it holds no keyring credential and cannot use
+  // PressGate.guard() — credsFor('access.html') never resolves, so a successful unlock would
+  // still stick on "No credentials stored for this tool yet". Instead gate on the presence of an
+  // unlocked wing SESSION: on an ENROLLED browser with no live session, require the passkey before
+  // the admin sign-in is shown at all. A never-enrolled / public browser is unchanged (the OTP +
+  // is_admin RLS stay the real lock). src/gate.js is loaded, never modified.
+  function wingLocked(){
+    try{
+      if(!(window.PressVault && PressVault.everEnrolled && PressVault.everEnrolled())) return false; // no passkey set up → no belt
+      return !(PressVault.loadSession && PressVault.loadSession());                                   // enrolled but no live session → locked
+    }catch(_){ return false; }
+  }
+  function renderWingGate(note){
+    h('<div class="center"><div class="fg-icon"><svg viewBox="0 0 24 24" aria-hidden="true">'+
+      '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>'+
+      '<h1>Private wing</h1><p>Unlock with your passkey to open the access admin.</p>'+
+      '<button class="btn" id="pk" type="button">Unlock with your passkey</button>'+
+      '<div class="msg '+((note&&note.cls)||'')+'" id="m">'+((note&&note.text)||'')+'</div>'+
+      '<a class="back" href="index.html?view=personal" style="margin-top:16px">← the private wing</a></div>');
+    document.getElementById('pk').addEventListener('click', async function(){
+      var b=this, m=document.getElementById('m'); b.disabled=true; m.className='msg'; m.textContent='Waiting for your passkey…';
+      try{ await PressVault.unlock(); enter(); }
+      catch(e){ b.disabled=false; m.className='msg err'; m.textContent=(e&&e.message)||'Could not unlock — try again.'; }
+    });
+  }
+  // If the wing session is later lost (Lock now / another tab / 8h expiry), fall back to the gate.
+  try{ if(window.addEventListener) window.addEventListener('storage', function(ev){
+    if(ev && ev.key && window.PressVault && ev.key !== PressVault.SESSION_KEY) return;
+    if(wingLocked()) renderWingGate();
+  }); }catch(_){}
+
+  function enter(){ if(wingLocked()){ renderWingGate(); return; } boot(); }
+
+  enter();
 })();
 </script>
 </body></html>
