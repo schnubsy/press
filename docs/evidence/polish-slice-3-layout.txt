@@ -1,0 +1,8 @@
+SLICE 3 (marquee-polish) — layout edge alignment — 2026-09-22T21:56:41Z
+Cause: aspect-ratio:1/1 + max-height:230px shrank each square's width below its 1fr grid track and
+  left-aligned it, insetting the RIGHT (private) square 17px from the card edge on desktop.
+Fix: removed max-height so width = grid track; square edges now flush with the full-width cards.
+Measured (boundingBox) — dL(family-card left) / dR(private-card right):
+  desktop dL=0.00 dR=0.00 (247x247)   wide-1440 dL=0.00 dR=0.00   mobile dL=0.00 dR=0.00 (162x162)
+Acceptance: family-lobby.spec.mjs adds 2 tests (desktop+mobile) asserting edges match within 1px + family LEFT/private RIGHT.
+gate.js: 6080e25d3653d44d5e2a4cd3ee4256e1e41dc41b | gauntlet: 43 node + 37 Playwright (35+2), 0 skipped

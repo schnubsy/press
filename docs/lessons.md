@@ -239,3 +239,28 @@ hardcodes `../press` (copy the built page in by hand); retirement stages the bui
 **RULE [test]:** the wing-view titles/eyebrows are NOT test-pinned, but the marquee CARD h3s ARE
 (`marquee.spec.mjs:109` = private card, `family-lobby.spec.mjs:72` = family door). A copy change that
 touches a card hero must update those assertions in the same slice.
+
+---
+
+## 2026-09-22 — arc/marquee-polish
+
+**RULE [css]:** `aspect-ratio:1/1` + a `max-height` on a grid `1fr` item makes the item derive its WIDTH
+from the capped height and left-align in its track — so it stops filling the column and insets from
+siblings. If a square must stay flush with full-width siblings, let width = the track (drop max-height) and
+let aspect-ratio set the height; don't cap the height.
+
+**RULE [css]:** a fixed-aspect-ratio card with `overflow:hidden` will CLIP its own content when the content
+(e.g. a kicker that wraps to an extra line) is taller than the ratio allows — and it reads as a bug, not a
+crop. On narrow breakpoints drop the aspect-ratio (`aspect-ratio:auto`) so the card grows to content; grid
+`align-items:stretch` keeps paired cards equal height. Verify the LONGEST-copy card at the smallest width.
+
+**RULE [press]:** a marquee app's SOURCE repo can silently drift from its published `press/<page>.html` when
+the page was hand-patched in press (e.g. remit's family-gate was re-vendored into press directly, leaving
+remit source on the old gate). Before trusting `tools/release.js` again, rebuild from source and DIFF against
+the live page; the diff names exactly what to reconcile. remit's build is deterministic (no stamp), so
+byte-identical is the achievable bar. Watch for hand-edit style drift too (CSS shorthand vs longhand, stray
+comments, edits made in a dynamic template but not the static shell — or vice-versa).
+
+**RULE [icons]:** don't hand-draw a country/complex silhouette for a row-size (26px) stroke glyph — it won't
+read. Use a simple, purpose-true Feather glyph (perth's runway → a paper-plane). Judge glyphs at their ACTUAL
+render size, never zoomed.

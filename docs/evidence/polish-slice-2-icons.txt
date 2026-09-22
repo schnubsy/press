@@ -1,0 +1,6 @@
+SLICE 2 (marquee-polish) — icons — 2026-09-22T21:52:49Z
+perth: Australia -> PLANE (Feather 'send' paper-plane), legible at 26px. Australia device-check note + BACKLOG entry removed.
+remit: new KICKERS rule [/remit/,'Remit'] placed FIRST (first-match wins; cannot fall through to Money/Page).
+       ICONS['Remit'] = banknote (rounded rect + circle), distinct from halvsies' $ Money glyph.
+routing verified: remit.html->Remit, halvsies.html->Money, retirement.html->Retirement, perth.html->Perth, agent-health->Monitor.
+gate.js: 6080e25d3653d44d5e2a4cd3ee4256e1e41dc41b | gauntlet: 43 node + 35 Playwright, 0 skipped

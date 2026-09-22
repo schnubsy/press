@@ -4,6 +4,30 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-09-22 — arc/marquee-polish (corrective UI batch + remit source repair)
+
+A five-slice corrective pass on the marquee UI batch plus a cross-repo drift fix. **S1 copy:** inverted the
+wing labels so the BIG text is the NAME and the small line the tagline, in all four places (family card+view,
+private card+view): family "a safe space"/"The Family Wing", private "behind the passkey"/"The Private Wing".
+Retired "A safer space for the fam" from live source + tests (append-only records keep it as history), and
+lowercased the private eyebrow. Updated the card-h3 test pins (marquee.spec:109 → "The Private Wing";
+family-lobby:72 → "The Family Wing" + kicker "a safe space"). **S2 icons:** perth's Australia (illegible at
+26px) → a Feather paper-plane; remit → a banknote glyph via a new `[/remit/,'Remit']` KICKERS rule placed
+FIRST (first-match wins, can't fall to Money/Page), distinct from halvsies' $. **S3 layout:** the two wing
+squares were inset — aspect-ratio:1/1 + max-height:230 shrank each square's width below its 1fr track and
+left-aligned it, so the private square's right edge sat 17px inside the card edge. Removed max-height → squares
+fill their tracks; family LEFT and private RIGHT edges now flush (measured dL=dR=0.00). Added 2 edge-alignment
+acceptance tests (desktop+mobile, ≤1px). **S4 remit source drift:** remit main still vendored the
+pre-`requireSession` family-gate, so a rebuild would regress the Phase-1 gate. Merged the parked back-link
+branch, re-vendored the canonical family-gate (`b5ff2b65`), added the back-link to the dynamic head
+(`src/ui/month.js`) and aligned the .tw-back CSS — `node build.js` is now BYTE-IDENTICAL to the live
+`press/remit.html` (`c866f3f4`). remit NOT republished (nothing shipped). Also landed 3 uncommitted council
+inbox files (remit ARC.md+HANDOFF.md, giving-tracker ARC.md) rather than discarding them. **S5 verify:** Eye
+LITE (changed elements, P0-only) found one P0 — a mobile private card whose 3-line kicker overflowed the
+fixed square and clipped the lockline; fixed by dropping the square aspect-ratio ≤480px so phone cards grow
+to content. Lighthouse landing 89/96/96. `src/gate.js` untouched throughout (`6080e25d`). Gauntlet green
+(43 node + 37 Playwright, 0 skipped). Closed via one PR per repo (press, remit) with per-page live verify.
+
 ## 2026-09-22 — arc/marquee Phases 3–5 (UI batch)
 
 The marquee's visual/UX pass, run as one five-slice arc. **Slice 1 (layout+icons):** the two wing cards

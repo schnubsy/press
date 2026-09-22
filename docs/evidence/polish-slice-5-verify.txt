@@ -1,0 +1,11 @@
+SLICE 5 (marquee-polish) — verify + Eye + Lighthouse — 2026-09-22T22:12:01Z
+Fresh evidence (desktop+mobile): landing (polish-s5-landing-*), family wing view (polish-s5-family-*,
+  injected session, no network), private wing view (polish-s5-private-*, enrolled). Icons at 26px: polish-s2-icons.png.
+Eye LITE (changed elements only, P0 only, judged at render size): 1 P0 —
+  P0: mobile private card kicker 'BEHIND THE PASSKEY' wrapped to 3 lines, overflowed the fixed square,
+      clipped the lockline to 'Set up the'. FIXED: @media(max-width:480px) drops the square aspect-ratio so
+      phone wing cards grow to content (no clip); width unchanged -> edges still flush (edge test still green).
+  Eye confirmed clean: copy inversion (all 4 places), perth plane reads as a plane at 26px, remit banknote
+      reads as currency + distinct from halvsies $, desktop flush alignment.
+Lighthouse (landing, headless): performance 89 (>=85), accessibility 96 (>=90), best-practices 96. JSON: polish-lighthouse.json.
+gate.js: 6080e25d3653d44d5e2a4cd3ee4256e1e41dc41b | gauntlet: 43 node + 37 Playwright, 0 skipped

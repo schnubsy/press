@@ -69,8 +69,8 @@ test('the family door renders from spaces.json alone — count only, zero auth/v
 
   const door = page.locator('.tw-family');
   await expect(door).toBeVisible();
-  await expect(door.locator('h3')).toHaveText('A safer space for the fam'); // Phase 4 swap: card hero is the tagline
-  await expect(door.locator('.k')).toContainText('The Family Wing');        // the wing name now labels the kicker line
+  await expect(door.locator('h3')).toHaveText('The Family Wing');   // marquee-polish: big text = the wing NAME
+  await expect(door.locator('.k')).toContainText('a safe space');   // the short tagline now labels the kicker line
   // a COUNT, and NO page names (the public lobby does not enumerate a private space)
   await expect(door.locator('.lockline')).toContainText('1 tool');
   await expect(door).not.toContainText('remit');
@@ -97,6 +97,26 @@ test('the family door renders from spaces.json alone — count only, zero auth/v
     `All requests during lobby load + open family wing:\n` +
     state.requests.map(u => '  ' + u).join('\n') + '\n');
 });
+
+// marquee-polish slice 3: the two wing squares must be flush with the full-width cards below —
+// family (left) left-edge == card left-edge, private (right) right-edge == card right-edge, within 1px.
+for (const vp of [{ n: 'desktop', w: 1024, h: 900 }, { n: 'mobile', w: 390, h: 844 }]) {
+  test(`wing squares are edge-aligned with the cards below (${vp.n})`, async ({ page, context }) => {
+    await harness(page, context);
+    await page.setViewportSize({ width: vp.w, height: vp.h });
+    await page.goto(base + '/');
+    await page.locator('.tw-wings').waitFor();
+    const fam = await page.locator('.tw-family').boundingBox();
+    const sec = await page.locator('.tw-secure').boundingBox();
+    const card = await page.locator('.tw-card').first().boundingBox();
+    // family LEFT, private RIGHT
+    expect(fam.x, 'family is the left square').toBeLessThan(sec.x);
+    // left edge of the family square == left edge of a normal card (≤1px)
+    expect(Math.abs(fam.x - card.x), 'family left edge vs card left edge').toBeLessThanOrEqual(1);
+    // right edge of the private square == right edge of a normal card (≤1px)
+    expect(Math.abs((sec.x + sec.width) - (card.x + card.width)), 'private right edge vs card right edge').toBeLessThanOrEqual(1);
+  });
+}
 
 test('opening the family wing gates on a live session — the sign-in shows, no tool leaks, zero auth calls until the user acts', async ({ page, context }) => {
   const state = await harness(page, context);

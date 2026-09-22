@@ -106,7 +106,7 @@ test('landing shows the two-space marquee and makes ZERO vault calls (not set up
   await page.goto(base + '/');
   const secure = page.locator('.tw-secure');
   await expect(secure).toBeVisible();
-  await expect(secure.locator('h3')).toHaveText('Behind the passkey.'); // Phase 4 swap: card carries the tagline, wing name moved to the wing-view title
+  await expect(secure.locator('h3')).toHaveText('The Private Wing'); // marquee-polish: big text = the wing NAME (tagline moved to the kicker)
   await expect(secure.locator('.lockline')).toContainText('Set up the private wing');
   // public cards present; personal files NOT among them
   const fns = await page.locator('.tw-card .fn').allTextContents();

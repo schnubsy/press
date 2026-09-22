@@ -25,11 +25,5 @@ below is polish/verify, not shipping-blockers.
   tokens marquee.spec.mjs pins); the in-wing dek is a sentence ("Unlocked · until 7:41 pm. Open any
   tool …"). Left as-is; flagged only so nobody re-adds the count to the dek by accident.
 
-## Device-check decisions (raised by slice 4, need Mark)
-
-- **perth's Australia glyph (Eye P0 #2, partially addressed).** Hand-drawn Australia (Feather has none).
-  Improved to a smooth landmass + enlarged Tasmania dot, but at row size (~26px) it reads as *a* landmass
-  more than unmistakably Australia — a stroked country silhouette is at the edge of what survives 26px.
-  **Decision for Mark:** accept the current glyph, OR have it swapped to a Feather `map-pin` at row size
-  (resolves legibility, drops the literal Australia — which contradicts the original "small Australia" ask,
-  so it's Mark's call).
+_(2026-09-22, arc/marquee-polish: the perth Australia-glyph device-check decision is RESOLVED — Mark
+chose a plane; perth now uses a Feather paper-plane glyph. Entry removed.)_

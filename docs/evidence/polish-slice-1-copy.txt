@@ -1,0 +1,10 @@
+SLICE 1 (marquee-polish) — copy inversion — 2026-09-22T21:49:49Z
+Rule: BIG text = wing NAME; SMALL line = short tagline. Applied in all four places:
+  family card: kicker 'a safe space' / h3 'The Family Wing'
+  family wing view: eyebrow 'a safe space' / h2 'The Family Wing'
+  private card: kicker 'behind the passkey' / h3 'The Private Wing'
+  private wing view: eyebrow 'behind the passkey' / h2 'The Private Wing' (h2 already correct; eyebrow lowercased)
+'A safer space for the fam' RETIRED from live source + tests (residual only in append-only docs/history + docs/evidence receipts + CLAUDE/HANDOFF which slice-5 handoff overwrites).
+test pins updated: marquee.spec:109 -> 'The Private Wing'; family-lobby:72 -> 'The Family Wing' + kicker 'a safe space'.
+lockline untouched (keeps 'Unlocked' + '${PERSONAL_FILES.length} tools', no hard-coded number).
+gate.js: 6080e25d3653d44d5e2a4cd3ee4256e1e41dc41b  | gauntlet: 43 node + 35 Playwright, 0 skipped
