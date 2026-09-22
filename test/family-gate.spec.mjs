@@ -53,8 +53,10 @@ async function harness(page, context, opts = {}) {
   await context.route('**/auth/v1/verify**', route => {
     state.authCalls++;
     const b = JSON.parse(route.request().postData() || '{}');
-    if (b.token === '123456') { route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(TOKEN(b.email, 'Tester')) }); }
-    else { route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: 'invalid', error_description: 'Token has expired or is invalid' }) }); }
+    // GoTrue OTP length is configurable (6–10) — accept a 6- and an 8-digit "correct" code here
+    if (b.token === '123456' || b.token === '12345678') { route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(TOKEN(b.email, 'Tester')) }); }
+    // a wrong/expired code is a 403 otp_expired (the real GoTrue shape), NOT an address problem
+    else { route.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ code: 403, error_code: 'otp_expired', msg: 'Token has expired or is invalid' }) }); }
   });
   await context.route('**/rest/v1/rpc/press_access_has**', route => {
     const auth = route.request().headers()['authorization'] || '';
@@ -90,16 +92,30 @@ test('a gated page shows the sign-in and hides the app until a granted code is e
   expect(state.touched, 'last_seen_at not stamped on sign-in').toBeGreaterThan(0);
 });
 
-test('a wrong code is refused, the gate stays up', async ({ page, context }) => {
-  await harness(page, context);
+test('a wrong/expired code blames the code, NOT the family list, and the gate stays up', async ({ page, context }) => {
+  await harness(page, context);   // this email IS on the list; a 403 otp_expired must not say otherwise
   await page.goto(base + '/gate');
   await page.fill('#fg-email', 'mark@example.com');
   await page.click('#fg-send');
   await page.fill('#fg-code', '000000');
   await page.click('#fg-verify');
   await expect(page.locator('#fg-msg.err')).toBeVisible();
+  await expect(page.locator('#fg-msg.err')).toContainText(/code.*work/i);       // "That code didn't work…"
+  await expect(page.locator('#fg-msg.err')).not.toContainText(/family list/i);  // the bug being fixed
   await expect(page.locator('#family-gate')).toBeVisible();
   expect(await page.evaluate(() => window.__result)).toBeNull();
+});
+
+test('an 8-digit code is accepted — the field does not assume 6', async ({ page, context }) => {
+  const state = await harness(page, context);
+  await page.goto(base + '/gate');
+  await page.fill('#fg-email', 'mark@example.com');
+  await page.click('#fg-send');
+  await page.fill('#fg-code', '12345678');
+  await page.click('#fg-verify');
+  await expect(page.locator('#family-gate')).toHaveCount(0);
+  await expect(page.locator('#app')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.__result && window.__result.email)).toBe('mark@example.com');
 });
 
 test('a signed-in but UNgranted address is told it lacks access (not let in)', async ({ page, context }) => {

@@ -82,6 +82,47 @@ test('isGated — spaces.json unreadable fails closed', async () => {
   assert.equal(await G.isGated('remit.html'), true);
 });
 
+test('verifyCode — structured result carries the status and GoTrue error code', async () => {
+  G.cfg({ store: memStore(), fetch: fakeFetch([
+    { test: (u, o) => /\/verify/.test(u) && /"token":"123456"/.test(o.body || ''),
+      reply: () => json({ access_token: 'a', refresh_token: 'r', expires_in: 3600, user: { email: 'm@x.com' } }) },
+    { test: u => /\/verify/.test(u), reply: () => json({ error_code: 'otp_expired', msg: 'Token has expired or is invalid' }, 403) },
+  ]) });
+  const good = await G.verifyCode('m@x.com', '123456');
+  assert.equal(good.session.email, 'm@x.com');
+  assert.equal(good.code, '');
+  const bad = await G.verifyCode('m@x.com', '999999');
+  assert.equal(bad.session, null);
+  assert.equal(bad.status, 403);
+  assert.equal(bad.code, 'otp_expired', 'the wrong-code error code is surfaced, not swallowed');
+});
+
+test('verifyErr — a bad/expired code blames the CODE, never the family list', () => {
+  assert.match(G.verifyErr(403, 'otp_expired'), /code/i);
+  assert.doesNotMatch(G.verifyErr(403, 'otp_expired'), /family list/i);
+  assert.doesNotMatch(G.verifyErr(400, 'invalid'), /family list/i);
+  assert.doesNotMatch(G.verifyErr(422, ''), /family list/i);
+  assert.match(G.verifyErr(429), /wait a minute/i);
+});
+
+test('friendlyAuthErr — the family-list wording stays on the send-code path', () => {
+  assert.match(G.friendlyAuthErr(403), /family list/i);
+  assert.match(G.friendlyAuthErr(422), /family list/i);
+  assert.match(G.friendlyAuthErr(429), /wait a minute/i);
+});
+
+test('isValidCode — accepts any 6–10 digit code, not just 6', () => {
+  assert.equal(G.isValidCode('123456'), true);
+  assert.equal(G.isValidCode('12345678'), true);
+  assert.equal(G.isValidCode('1234567890'), true);
+  assert.equal(G.isValidCode(' 123456 '), true, 'trims surrounding whitespace');
+  assert.equal(G.isValidCode('12345'), false, 'too short');
+  assert.equal(G.isValidCode('12345678901'), false, 'too long (11)');
+  assert.equal(G.isValidCode('12ab56'), false, 'non-numeric');
+  assert.equal(G.isValidCode(''), false);
+  assert.equal(G.isValidCode(null), false);
+});
+
 test('ensureFresh — valid stays, expired refreshes, failed refresh clears', async () => {
   // valid session: returned untouched, no refresh call
   let refreshHit = 0;
