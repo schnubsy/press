@@ -24,17 +24,19 @@ served via GitHub Pages. Key pages:
 
 ## Current stage
 
-Live; **arc/marquee Phases 3–5 (UI batch) COMPLETE (2026-09-22).** Landing: the two wings render as big
-side-by-side squares (FAMILY left, PRIVATE right) via a new `.tw-wings` grid; Feather-grade page icons via
-the KICKERS+ICONS registry (fsa=cross, giving=heart, retirement=trending-up, card-scout=card, family=people,
-perth=a small Australia — soft at 26px, device-check decision in `BACKLOG.md`). Copy: a card↔wing-view title
-swap (private card "Behind the passkey." / wing title "The Private Wing"; family card "A safer space for the
-fam" / kicker "The Family Wing") + an absolute clock "Unlocked · N tools · until 7:41 pm". Nav: a persistent
-"← Private/Family Wing" back chip in every tool's app chrome; "Connect your tools" collapses once every tool
-is connected. Eye LITE review: 3 P0s, all actioned. `src/gate.js` untouched (`6080e25d…`; vendored gates
-carry their own copy by design). Gauntlet green (43 node + 35 Playwright, 0 skipped); Lighthouse 89 perf /
-96 a11y on the landing. Family/RLS Phases 1–2 stay closed. Closed via one PR→merge per touched repo with
-per-page live verification.
+Live; **arc/marquee-polish COMPLETE (2026-09-22).** Corrective UI batch + a cross-repo source-drift repair.
+COPY inverted so the BIG text is the wing NAME and the small line the tagline (family "a safe space"/"The
+Family Wing"; private "behind the passkey"/"The Private Wing") in both cards and both wing views; the retired
+"A safer space for the fam" is gone from live source + tests. ICONS: perth = a plane (Feather paper-plane;
+Australia removed), remit = a banknote via a new first-match KICKERS rule (distinct from halvsies' $). LAYOUT:
+the two wing squares now fill their grid tracks — family's left edge and private's right edge are flush with
+the cards below (a family-lobby edge test asserts ≤1px; aspect-ratio dropped ≤480px so a long kicker can't
+clip the lockline). Eye LITE: 1 P0 (mobile clip) fixed. Lighthouse 89/96/96. `src/gate.js` untouched
+(`6080e25d…`). REMIT SOURCE repaired: re-vendored the canonical family-gate (`b5ff2b65`, requireSession) +
+added the dynamic-head back-link so `node build.js` is BYTE-IDENTICAL to the live `press/remit.html`
+(`c866f3f4`) — rebuildable without regressing the Phase-1 gate; NOT republished. Prior marquee UI batch +
+Family/RLS phases stay closed. Gauntlet green (43 node + 37 Playwright, 0 skipped). Closed via one PR per
+repo (press, remit) + per-page live verification (index.html).
 
 ## Project rules
 
