@@ -11,6 +11,42 @@ Evidence slice files follow: `v<N>-slice-<seq>-<topic>.txt` (e.g. `v4-slice-9-pr
 
 ## Known lessons
 
+### A gate on a per-page grant that does not exist locks everyone out (arc/family-wing-gate, 2026-09-22) [press][security]
+
+Phase 1 gated `perth.html` "exactly like remit" — `FamilyGate.require('perth.html')`, which checks
+`press_access_has('perth.html')`. But perth was a PUBLIC, open page: `press_access_grants` held ONE row
+(`markgubb → remit.html`) and no perth grant. Shipping the gate as-is would have blocked EVERY signed-in
+family member (Mark included) at "signed in, but no access to this page" — a page that was openable by
+anyone is suddenly openable by no one. The two-tier model is the fix: the **entrance** (`requireSession`)
+gates on a live SESSION (any family member), and each **tenant page** gates on a per-page GRANT — so a new
+family page needs its `press_access_apps` row + a grant seeded (framework §8 step 4) BEFORE the gate ships,
+or it is gated-but-locked. **RULE:** before gating a page on `require(page)`, verify a grant exists for the
+intended users (query `press_access_grants`); a gate without a matching grant is a regression, not a lock.
+Corollary: read the access DB (grants/apps/people) at the START of an access arc — the count of real users
+changes what "lock everyone out" means (here: one admin user, so the blast radius was Mark himself).
+
+### Re-vendor EVERY inlined copy of a shared module; the test harness dictates inline vs script-src (arc/family-wing-gate, 2026-09-22) [press][test]
+
+Adding `requireSession()` to `src/family-gate.js` changed its bytes, so every INLINED consumer drifted.
+`remit.html`/`perth.html`/`index.html` inline the gate (byte-proven `sha1 b5ff2b65…` == src); `access.html`
+uses `<script src="src/family-gate.js">` and tracks src automatically — the two vendoring styles need
+different proofs (a byte-compare vs a live 200 of the referenced file). **The press test harnesses serve
+ONLY `index.html` and 404 everything else**, so `index.html` MUST inline the gate (a `<script src>` would
+404 under test and leave `window.FamilyGate` undefined) — the harness, not taste, forces the choice.
+**RULE:** when a shared vendored module changes, re-vendor and sha1-prove every inlined copy in the SAME
+commit set, and pick inline over script-src for any file a hermetic spec loads whole.
+
+### A test encodes a CONTRACT; when the contract inverts, rewrite the test — don't route around it (arc/family-wing-gate, 2026-09-22) [press][test]
+
+`family-lobby.spec.mjs` asserted the family wing was "a directory that links straight to the page, zero
+auth calls" — the pre-gate contract. Phase 1 INVERTED that contract (the door is now gated), so the assertion
+"the remit card is visible on `?view=family`" was no longer a truth to preserve but a spec of the old
+behaviour. It was rewritten to the new contract (gate overlay up, no tool card leaks, still zero auth until
+the user acts), and the deep-link smoke test added to `marquee.spec.mjs` too. **RULE:** a failing test after
+a deliberate behaviour change is a signal to update the CONTRACT the test encodes, not to weaken the
+assertion; keep the pinned selectors/tokens other tests depend on (`.tw-secure`, `.tw-family`, the counts)
+untouched while you do.
+
 ### A JSONB round-trip check must compare keys order-insensitively (arc/perth-runway, 2026-09-21) [supabase]
 
 Verifying a PostgREST seed by re-GETting the rows and comparing `extras` field-for-field, the perth seed

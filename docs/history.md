@@ -4,6 +4,28 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-09-22 — arc/family-wing-gate Phase 1 (gate the family wing)
+
+Turned the Family Wing from an open directory into a GATED door. `renderFamily()` (`index.html?view=family`)
+now requires a live family session, mirroring the Private Wing's `paintPersonal()` shape: nothing behind
+the door paints until sign-in. Added `FamilyGate.requireSession()` to `src/family-gate.js` — a session-only
+entrance sign-in (email OTP, NO page grant; `renderSignIn` gained an `opts.sessionOnly` branch) — so ONE
+sign-in at the door opens every family tool with no further prompt (each tenant page still gates its own
+data by grant via `require(page)`, unchanged). Added a **Log out** control (clears `press:family:v1`,
+returns to the gate) and removed the now-untrue "open a tool — it asks for a code" landing copy. Deep links
+to `?view=family`/`#family` hit the gate — smoke tests added to `marquee.spec.mjs` + `family-lobby.spec.mjs`
+(the latter's old open-directory test rewritten to the gated contract). **perth.html** joined the wing:
+added to `spaces.json` family[] and gated with `FamilyGate.require('perth.html')` before boot; its
+`press_tasks` read/write is UNCHANGED (RLS hardening deferred to Phase 2). `press_access` already carried
+the `perth.html` app row + an active grant for Mark (seeded by Cowork, verified live). Shared gate
+re-vendored byte-identical into index/remit/perth (sha1 `b5ff2b65…`, 26415 B); `access.html` tracks
+`src/family-gate.js` by `<script src>`. `src/gate.js` untouched (`6080e25d…`). Published one page at a time —
+`dbfc97a` (src+index), `84a4965` (remit), `cba9682` (spaces+perth) — each pushed to `main` and confirmed
+live-200 + git-hash-verified; live family wing shows the gate with zero auth/REST calls and no tool leak.
+Gauntlet green: 34 Playwright + 43 node, 0 skipped. Phases 2–4 (RLS, copy, admin) not started.
+
+---
+
 ## 2026-09-21 — arc/perth-runway (The Runway published)
 
 Published `perth.html` — "The Runway", a public family board for Brandon's move to Perth (arriving

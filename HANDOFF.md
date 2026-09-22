@@ -1,6 +1,6 @@
 # press — HANDOFF
 
-_Last updated: 2026-09-21 — arc/perth-runway CLOSED_
+_Last updated: 2026-09-22 — arc/family-wing-gate Phase 1 CLOSED_
 
 ## Standing rule — publish auto-close (do NOT re-litigate)
 
@@ -11,37 +11,46 @@ GitHub Pages serves) as part of closing out — do not stop to ask. Set by Mark 
 
 ## Current state
 
-**arc/perth-runway is COMPLETE and pushed (`99a7c87` on `main`).** `perth.html` — "The Runway", a public
-family board for Brandon's move to Perth (arriving 14 Jan 2027), backed by `press_tasks` (`page='perth'`).
-Live at `https://schnubsy.github.io/press/perth.html`; listed on the Marquee portal. Prior
-arc/align-retirement stays closed.
-
-_HEAD lineage reconciled: the previous HANDOFF recorded `9ae3424` as HEAD, but HEAD at this arc's open
-was `0dd30ca` (giving.html passkey gate; `9ae3424` was superseded by later publishes). This arc built on
-`0dd30ca` → publish `99a7c87` → this close._
+**arc/family-wing-gate Phase 1 is COMPLETE and pushed to `main` (`cba9682`).** The Family Wing DOOR
+(`index.html?view=family`) is GATED on a live family session; `perth.html` is now a gated family tool
+alongside `remit.html`. Live at `https://schnubsy.github.io/press/?view=family`. Prior arc/perth-runway
+stays closed. Base at arc open was `b1a91a9`; published in three live-verified pushes.
 
 ## Shipped this arc
-- **Seed (`page='perth'`):** 99 tasks + one `__meta__` (10 categories, 2 people, `depart=2027-01-14`)
-  upserted to PostgREST (`on_conflict=page,item_id`, batches of 25) after deleting existing perth rows;
-  round-trip verified 100 rows with a field-for-field sample match (order-insensitive on `extras`).
-- **Publish (`99a7c87`, Lane A):** `perth.html` (input blob `379e3d19…`, hash-verified), plus
-  `pages.json` (`"perth.html": {"title":"Perth · The Runway"}`), `docs/favicons.md` (pin-on-a-horizon
-  glyph), `ARC.md`, and the four `docs/evidence/perth-*` files. Pushed to `main`.
-- **Verified live:** raw blob SHA matched; both axes render (Runway 24 week columns incl. "Departure
-  week" 11–17 Jan; Categories 10 lanes); 99 cards load from Supabase; people strip renders; sync pill
-  "synced"; portal shows the NEW card; no mobile h-scroll.
+- **Entrance gate (`dbfc97a`, src+index):** new `FamilyGate.requireSession()` in `src/family-gate.js`
+  (session-only sign-in — email OTP, no page grant; `renderSignIn` gained `opts.sessionOnly`). `renderFamily()`
+  now awaits it and paints nothing behind the gate; added a **Log out** control; removed the untrue
+  "open a tool — it asks for a code" landing copy. Deep-link smoke tests in `marquee.spec.mjs` +
+  `family-lobby.spec.mjs` (old open-directory test rewritten to the gated contract).
+- **Re-vendor (`84a4965`, remit):** `remit.html` inlined gate re-vendored byte-identical to src; its own
+  `require('remit.html')` unchanged — it already trusts the door session (no second prompt).
+- **perth joins (`cba9682`, spaces+perth):** `perth.html` added to `spaces.json` family[] and gated with
+  `FamilyGate.require('perth.html')` before boot; `press_tasks` read/write UNCHANGED. `press_access` already
+  had the `perth.html` app row + an active grant for Mark (Cowork-seeded, verified live).
+- **Proofs:** each page pushed then confirmed live-200 + `git hash-object` match (index `89de962b`, gate
+  `528e1c13`, remit `97e7fd2f`, perth `f62c96e4`, spaces `bc7d67134`). Vendored gate sha1 `b5ff2b65…`
+  identical across index/remit/perth. `src/gate.js` untouched (`6080e25d…`, before & after). Gauntlet:
+  34 Playwright + 43 node, **0 skipped**. Live door shows the gate with **zero auth/REST calls, no tool leak**.
 
 ## Open / blockers
-- **Open RLS on medical/school content (🔴, Ear).** Mitigated by keeping the page public with NO personal
-  identifiers in task titles + the JSON export button — NOT by a gate. Revisit at family-wing migration,
-  when `perth.html` moves into `spaces.json` (personal split).
-- Standing (from prior arc): `inline:check` guards only press's own `vault.js`; each sibling app owns its
-  vendored-gate byte-check. fsa's vendored `press-gate.js` has drifted from `src/gate.js` — an fsa arc.
+- **perth RLS is still OPEN (🔴 → Phase 2).** perth's data (`press_tasks`, `page='perth'`) is still anon
+  read/write — the gate is courtesy only for perth until its tables move behind `press_access_has('perth.html')`.
+  The gate does NOT protect the data yet; RLS is the real lock (framework §2). This is Phase 2's job.
+- Copy (Phase 4) and the admin-grid polish (later) are untouched by design — only the one untrue landing
+  line was removed this phase.
+- Standing (prior arc): each sibling app owns its vendored-gate byte-check; press's `inline:check` guards
+  only its own `vault.js`, not `family-gate.js` — the family-gate byte-identity was proven by hand this arc.
 
 ## Exact next steps
-No open arc items. Publishing another tool page: build+gate it in its own repo, `cp` its `dist` here,
-update `pages.json` if new, keep `spaces.json` correct, then merge/push to `main` (per the standing rule).
-When perth migrates to the family wing, add `perth.html` to `spaces.json` and re-verify the personal split.
+**Phase 2 — put perth's data behind RLS.** MAIN CHECKOUT: `~/Documents/VSCode/press`. INBOX FILES: this
+HANDOFF + `docs/access-framework.md` §4 + `docs/lessons.md`. Move `press_tasks` (`page='perth'`) reads/writes
+onto `FamilyGate.authHeaders()` and gate the rows on `press_access_has('perth.html')`, additive-then-cleanup
+so the live page never breaks; keep the `perth.html` grant intact; re-run the gauntlet + a perth round-trip.
 
 ## Mark's manual steps
-None on press.
+1. **Verify the live OTP sign-in (device check — Claude cannot do this).**
+   `open 'https://schnubsy.github.io/press/?view=family'` → sign in with your email code once, then
+   confirm BOTH `remit` and `perth` open with **no second prompt**, and that **Log out** returns you to
+   the gate. Expected: one code, two tools open, log-out re-shows the sign-in. If perth shows "signed in,
+   but no access to this page", the `press_access_grants` row for `markgubb@gmail.com → perth.html` is
+   missing/inactive — re-add it in `access.html` before relying on the gate.

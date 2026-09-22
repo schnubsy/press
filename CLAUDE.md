@@ -24,15 +24,15 @@ served via GitHub Pages. Key pages:
 
 ## Current stage
 
-Live; **arc/perth-runway COMPLETE (2026-09-21, pushed `99a7c87` to `main`).** `perth.html` — "The
-Runway", a public family board tracking Brandon's move to Perth (arriving 14 Jan 2027). Self-contained
-page, `press_tasks` state lane, `page='perth'`: 99 tasks + one `__meta__` (10 categories, 2 people,
-`depart=2027-01-14`) seeded to Supabase and round-trip verified. Switchable Runway (24 week columns,
-"Departure week" = 11–17 Jan) / Categories (10 lanes) axes; drag KEPT, comments CUT to a notes log;
-added `lodged` status, link field, JSON export. `pages.json` + `docs/favicons.md` updated; **not** in
-`spaces.json` (public for now — migrates to the family wing later; no personal identifiers in titles).
-Live-verified: raw blob SHA matches, both axes render, sync pill "synced", portal lists the NEW card,
-no mobile h-scroll. Prior arc/align-retirement stays closed. No open arc items.
+Live; **arc/family-wing-gate Phase 1 COMPLETE (2026-09-22).** The Family Wing DOOR
+(`index.html?view=family`) is now GATED on a live family session via new `FamilyGate.requireSession()`
+(session-only entrance sign-in — email OTP, NO page grant), mirroring the Private Wing; one sign-in at
+the door opens every family tool with no further prompt, and a Log out control clears the session.
+`perth.html` joined the wing (`spaces.json` family[] + `FamilyGate.require('perth.html')`; its
+`press_tasks` read/write is UNCHANGED — RLS hardening is Phase 2). Shared gate re-vendored byte-identical
+into index/remit/perth (sha1 `b5ff2b65…`); `src/gate.js` untouched (`6080e25d…`). Pushed
+`dbfc97a`→`84a4965`→`cba9682` to `main`, each live-200 + git-hash-verified; gauntlet green (34 Playwright
++ 43 node, 0 skipped) incl. the new deep-link gate test. Phases 2–4 NOT started.
 
 ## Project rules
 
