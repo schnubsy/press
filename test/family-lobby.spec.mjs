@@ -69,7 +69,8 @@ test('the family door renders from spaces.json alone — count only, zero auth/v
 
   const door = page.locator('.tw-family');
   await expect(door).toBeVisible();
-  await expect(door.locator('h3')).toHaveText('The Family Wing');
+  await expect(door.locator('h3')).toHaveText('A safer space for the fam'); // Phase 4 swap: card hero is the tagline
+  await expect(door.locator('.k')).toContainText('The Family Wing');        // the wing name now labels the kicker line
   // a COUNT, and NO page names (the public lobby does not enumerate a private space)
   await expect(door.locator('.lockline')).toContainText('1 tool');
   await expect(door).not.toContainText('remit');

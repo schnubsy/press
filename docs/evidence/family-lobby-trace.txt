@@ -5,7 +5,7 @@ Supabase auth calls: 0
 vault calls: 0
 
 All requests during lobby load + open family wing:
-  http://localhost:53464/
+  http://localhost:53957/
   https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap
   https://api.github.com/repos/schnubsy/press/contents?ref=main
   https://raw.githubusercontent.com/schnubsy/press/main/pages.json

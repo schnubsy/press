@@ -1356,14 +1356,24 @@ function timeLeft(expiresAt){
   const h = Math.floor(ms/3600000), m = Math.round((ms%3600000)/60000);
   return h>0 ? `${h}h ${m}m left` : `${m}m left`;
 }
+// Phase 4 (slice 2): the countdown reads as an absolute wall clock — "until 7:41 pm" — instead of a
+// remaining duration. Clearer than "8h 0m left" for a session that always ends at a fixed time.
+function clockUntil(expiresAt){
+  const ms = expiresAt - Date.now(); if(ms<=0) return 'expiring';
+  const d = new Date(expiresAt); let h = d.getHours(); const m = d.getMinutes();
+  const ap = h>=12 ? 'pm' : 'am'; h = h%12 || 12;
+  return `until ${h}:${String(m).padStart(2,'0')} ${ap}`;
+}
 function secureCardHTML(){
   const st = vaultState(), n = personalCount();
   let line;
-  if(st.sess)        line = `Unlocked · ${n} tools · ${timeLeft(st.sess.expiresAt)}`;
+  if(st.sess)        line = `Unlocked · ${n} tools · ${clockUntil(st.sess.expiresAt)}`;
   else if(st.enrolled) line = `Locked · ${n} tools · tap to unlock`;
   else               line = `Set up the private wing`;
+  // Phase 4 swap: the card carries the tagline; the wing name moves to the wing-view title. The
+  // lockline still names the wing (the only wing identifier left on the card once the h3 changes).
   return `<a class="tw-secure" href="./?view=personal" draggable="false">`+
-    `<div class="k">⬤ Personal</div><h3>The Private Wing</h3>`+
+    `<div class="k">⬤ Personal</div><h3>Behind the passkey.</h3>`+
     `<div class="lockline">${esc(line)}</div>`+
     `<span class="sicon">${ICONS['Secure']}</span></a>`;
 }
@@ -1374,7 +1384,7 @@ function familyCardHTML(){
   const n = familyCount();
   const line = `${n} ${n===1?'tool':'tools'} · sign in with a code`;
   return `<a class="tw-family" href="./?view=family" draggable="false">`+
-    `<div class="k">⬤ Family</div><h3>The Family Wing</h3>`+
+    `<div class="k">⬤ The Family Wing</div><h3>A safer space for the fam</h3>`+
     `<div class="lockline">${esc(line)}</div>`+
     `<span class="sicon">${ICONS['Family']||ICONS['Secure']}</span></a>`;
 }
@@ -1899,8 +1909,8 @@ function paintPersonal(root, man){
   const st=vaultState();
   if(st.sess){
     const cards=(SPACES.personal||[]).map(f=>cardHTML(f, man, false)).join('');
-    root.innerHTML = back+top+`<h2 class="tw-title">Behind the passkey.</h2>`+
-      `<div class="tw-dek">Unlocked · ${timeLeft(st.sess.expiresAt)}. Open any tool — no more prompts until you lock or it expires.</div>`+
+    root.innerHTML = back+top+`<h2 class="tw-title">The Private Wing</h2>`+
+      `<div class="tw-dek">Unlocked · ${clockUntil(st.sess.expiresAt)}. Open any tool — no more prompts until you lock or it expires.</div>`+
       `<div class="tw-secbar"><span class="tw-mini" id="lockBtn">⏻ Lock now</span>`+
       `<span class="tw-mini" id="devBtn">⚙ Devices</span></div>`+
       cards +
@@ -1923,7 +1933,7 @@ function paintPersonal(root, man){
     // any device with the synced passkey), regardless of this device's local enrolled flag. "Set up
     // a new passkey" is a de-emphasised secondary that REFUSES to create an empty row when one is
     // already reachable (it adopts the existing row instead).
-    root.innerHTML = back+top+`<h2 class="tw-title">Behind the passkey.</h2>`+
+    root.innerHTML = back+top+`<h2 class="tw-title">The Private Wing</h2>`+
       `<div class="tw-unlock"><span class="sicon">${ICONS['Secure']}</span>`+
       `<h3>Unlock the private wing</h3>`+
       `<p>Use your passkey to open your personal tools. Nothing here loads until you unlock.</p>`+
@@ -1955,7 +1965,7 @@ function paintPersonal(root, man){
 async function renderPersonal(root){
   root.innerHTML = `<a class="tw-back" href="index.html">← the marquee</a>`+
     `<div class="tw-top"><span>The <b>Private Wing</b></span><span>personal tools</span></div>`+
-    `<h2 class="tw-title">Behind the passkey.</h2><div class="tw-skel"></div>`;
+    `<h2 class="tw-title">The Private Wing</h2><div class="tw-skel"></div>`;
   let man=null;
   try{ const res=await Promise.all([loadManifest(''), loadSpaces()]); man=res[0]; SPACES=normSpaces(res[1]); }
   catch(e){ SPACES=normSpaces(null); }
@@ -1972,7 +1982,7 @@ async function renderPersonal(root){
 async function renderFamily(root){
   const back=`<a class="tw-back" href="index.html">← the marquee</a>`;
   const top=`<div class="tw-top"><span>The <b>Family Wing</b></span><span>for the four of us</span></div>`;
-  root.innerHTML = back+top+`<h2 class="tw-title">Signed in with a code.</h2><div class="tw-skel"></div>`;
+  root.innerHTML = back+top+`<h2 class="tw-title">The Family Wing</h2><div class="tw-skel"></div>`;
   let man=null;
   try{ const res=await Promise.all([loadManifest(''), loadSpaces()]); man=res[0]; SPACES=normSpaces(res[1]); }
   catch(e){ SPACES=normSpaces(null); }
@@ -1990,7 +2000,7 @@ async function renderFamily(root){
   const body = cards
     ? dek+secbar+cards
     : `<div class="tw-dek">Signed in as ${esc(who.email)}.</div>`+secbar+`<div class="tw-empty"><h3>No family tools yet</h3><p>Pages added to the family wing appear here.</p></div>`;
-  root.innerHTML = back+top+`<h2 class="tw-title">Signed in with a code.</h2>`+body;
+  root.innerHTML = back+top+`<h2 class="tw-title">The Family Wing</h2>`+body;
   const lo=document.getElementById('famLogout');
   if(lo) lo.addEventListener('click', async ()=>{ try{ await window.FamilyGate.signOut(); }catch(e){} renderFamily(root); });
 }
