@@ -5,14 +5,14 @@ Supabase auth calls: 0
 vault calls: 0
 
 All requests during lobby load + open family wing:
-  http://localhost:55546/
+  http://localhost:55947/
   https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap
   https://api.github.com/repos/schnubsy/press/contents?ref=main
   https://raw.githubusercontent.com/schnubsy/press/main/pages.json
   https://raw.githubusercontent.com/schnubsy/press/main/spaces.json
-  https://eepjhpyziczrxvirczio.supabase.co/rest/v1/press_portal?page=eq.marquee&select=state
   https://fonts.gstatic.com/s/unbounded/v12/Yq6W-LOTXCb04q32xlpwu8Zf.woff2
   https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2
+  https://eepjhpyziczrxvirczio.supabase.co/rest/v1/press_portal?page=eq.marquee&select=state
   https://api.github.com/repos/schnubsy/press/contents/archive?ref=main
   https://fonts.gstatic.com/s/spacemono/v17/i7dPIFZifjKcF5UAWdDRYEF8RQ.woff2
   https://fonts.gstatic.com/s/spacemono/v17/i7dMIFZifjKcF5UAWdDRaPpZUFWaHg.woff2
