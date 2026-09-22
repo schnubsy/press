@@ -1,0 +1,13 @@
+SLICE 5 — performance (Lighthouse) — 2026-09-22T18:18:57Z
+Target: the marquee landing (index.html) served locally via python http.server; lighthouse 13.5.0 headless.
+Budget (arc contract / testing.md): performance >= 85, accessibility >= 90.
+
+  performance:    89   (budget 85)  PASS
+  accessibility:  96   (budget 90)  PASS
+  best-practices: 96                PASS
+
+Full report: docs/evidence/marquee-lighthouse.json
+Note: the landing makes live GitHub-contents + Supabase fetches at load; the ~89 perf reflects that
+real network dependency (a11y/BP are DOM-static). Wing views (?view=personal/family) are behind
+WebAuthn/OTP gates that Lighthouse cannot pass, so the public landing is the measured surface.
+No code changed in this slice — measurement only. src/gate.js sha1: 6080e25d3653d44d5e2a4cd3ee4256e1e41dc41b
