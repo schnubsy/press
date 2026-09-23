@@ -20,11 +20,12 @@
   --ink:#eae4d6; --muted:#8f9bab; --faint:#7e8da3;  /* raised to clear WCAG AA (4.5:1) incl. on the tinted riding panel */
   --paid:#7fae86; --rejected:#c2686e; --asked:#c9a26d;
   --sans:Outfit,system-ui,-apple-system,'Segoe UI',sans-serif;
-  --weave:repeating-linear-gradient(48deg,rgba(201,162,109,.05) 0 1px,transparent 1px 9px);
+  /* slice 6: the guilloché lines are gone — a faint, desaturated paper grain that never competes */
+  --weave:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--stage);color:var(--ink);font:400 14.5px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
-body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-events:none;z-index:0;opacity:.85}
+html,body{margin:0;background:var(--stage);color:var(--ink);font:400 17px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-events:none;z-index:0;opacity:.03}
 .app{position:relative;z-index:1;max-width:430px;margin:0 auto;min-height:100vh;padding:20px 18px 190px}
 @media(min-width:900px){.app{max-width:880px;padding:32px 40px 190px}}
 .num{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1,'lnum' 1}
@@ -41,26 +42,32 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 .seg{display:flex;gap:20px;margin:16px 0 0;border-bottom:1px solid var(--brass-faint)}
 .seg button{background:0;border:0;padding:0 0 10px;cursor:pointer;font:500 13px/1 var(--sans);color:var(--muted)}
 .seg button[aria-pressed=true]{color:var(--ink);box-shadow:inset 0 -2px 0 var(--brass)}
-.months{display:flex;gap:17px;overflow-x:auto;margin:14px -18px 0;padding:0 18px 9px;scrollbar-width:none}
-.months::-webkit-scrollbar{display:none}
-.months a{font:400 10.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--faint);
-  text-decoration:none;white-space:nowrap;padding-bottom:6px;border-bottom:1px solid transparent}
-.months a[aria-current=true]{color:var(--ink);border-bottom-color:var(--brass)}
+/* slice 6: a year selector (scrolling strip) ABOVE all 12 months (2 rows of 6 on a phone) */
+.years{display:flex;gap:8px;overflow-x:auto;margin:16px -18px 0;padding:0 18px 4px;scrollbar-width:none}
+.years::-webkit-scrollbar{display:none}
+.years button{background:0;border:1px solid var(--brass-faint);border-radius:6px;padding:7px 13px;cursor:pointer;
+  font:600 14px/1 var(--sans);letter-spacing:.02em;color:var(--muted);white-space:nowrap;min-height:38px}
+.years button[aria-pressed=true]{color:var(--ink);border-color:var(--brass);background:rgba(201,162,109,.14)}
+.mgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin:12px 0 0}
+.mgrid button{background:rgba(13,20,32,.4);border:1px solid var(--brass-faint);border-radius:6px;padding:11px 4px;cursor:pointer;
+  font:500 13px/1 var(--sans);letter-spacing:.03em;color:var(--muted);min-height:44px}
+.mgrid button[aria-current=true]{color:#1a1205;background:var(--brass);border-color:var(--brass);font-weight:600}
+@media(min-width:900px){.mgrid{grid-template-columns:repeat(12,1fr)}}
 
 .zone{margin-top:26px}
 .zone-hd{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--brass-dim);padding-bottom:8px}
-.zone-hd h2{margin:0;font:500 11px/1 var(--sans);letter-spacing:.26em;text-transform:uppercase;color:var(--ink)}
-.zone-hd .tt{font:600 14px/1 var(--sans);color:var(--ink)}
-.zone-hd .tt em{font-style:normal;font-weight:400;color:var(--faint);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-right:8px}
+.zone-hd h2{margin:0;font:600 13px/1 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--ink)}
+.zone-hd .tt{font:600 16px/1 var(--sans);color:var(--ink)}
+.zone-hd .tt em{font-style:normal;font-weight:400;color:var(--faint);font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-right:8px}
 
 .riding{margin-top:34px;background:var(--panel);border:1px solid var(--brass-faint);
   border-left:3px solid var(--brass);border-radius:0 10px 10px 0;padding:4px 16px 16px}
 .riding .zone-hd{border-bottom-color:var(--brass-faint);padding-top:14px}
 .riding .zone-hd h2{color:var(--brass)}
-.riding .why{font:400 11.5px/1.55 var(--sans);color:var(--muted);margin:10px 0 2px}
+.riding .why{font:400 14px/1.55 var(--sans);color:var(--muted);margin:10px 0 2px}
 
-.bk{font:400 10px/1 var(--sans);letter-spacing:.26em;text-transform:uppercase;color:var(--faint);margin:20px 0 4px}
-.bk .num{float:right;letter-spacing:.06em;text-transform:none;font-size:11.5px;color:var(--muted)}
+.bk{font:600 12px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin:22px 0 6px}
+.bk .num{float:right;letter-spacing:.02em;text-transform:none;font-size:13px;color:var(--ink)}
 .row{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px dotted var(--brass-faint);min-height:44px;cursor:pointer}
 .row:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
 .chip{flex:0 0 auto;font:500 8.5px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;
@@ -69,10 +76,94 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 .chip.yes{color:var(--ink);border-color:rgba(234,228,214,.4)}
 .chip.asked{color:var(--asked);border-color:var(--brass);background:rgba(201,162,109,.1)}
 .chip.no{color:#d98d92;border-color:var(--rejected);background:rgba(194,104,110,.10)}  /* AA-legible on its own tint */
+.tick{flex:0 0 auto;width:22px;height:22px;border-radius:5px;border:1px solid var(--brass-faint);display:inline-flex;
+  align-items:center;justify-content:center;font:600 12px/1 var(--sans);color:var(--paid);cursor:pointer;background:rgba(13,20,32,.4)}
+.tick.on{border-color:rgba(127,174,134,.5);background:rgba(127,174,134,.14)}
+.row.paid .nm b{color:var(--muted)}
 .nm{flex:1;min-width:0}
-.nm b{font-weight:400;font-size:14px;display:block;line-height:1.35}
-.nm em{display:block;font-style:normal;font-size:11.5px;line-height:1.4;color:var(--faint);margin-top:2px}
-.am{font:500 14.5px/1 var(--sans);white-space:nowrap}
+
+/* slice 7: the list IS the editor — every row is inline-editable, looks like text until focused */
+.erow{cursor:default}
+.subbk{font:500 12px/1 var(--sans);letter-spacing:.06em;color:var(--faint);margin:12px 0 2px;padding-left:33px}
+.subbk .num{float:right;color:var(--muted)}
+.erow .nm{display:flex;flex-direction:column;gap:1px}
+.erow input{font-family:inherit;background:transparent;border:0;color:var(--ink);padding:2px 0;min-height:26px;width:100%}
+.erow input:focus{outline:0}
+.erow .what{font:500 18px/1.3 var(--sans)}
+.erow .note{font:400 15px/1.35 var(--sans);color:var(--muted)}
+.erow .amt{flex:0 0 auto;width:104px;text-align:right;font:600 18px/1 var(--sans);font-variant-numeric:tabular-nums}
+.erow .nm .what:focus,.erow .nm .note:focus,.erow .amt:focus{box-shadow:inset 0 -1.5px 0 var(--brass)}
+.erow input::placeholder{color:var(--muted);opacity:1}
+.erow.addrow .what{color:var(--ink)}
+.erow.addrow{border-bottom-style:dashed;opacity:.9}
+.erow.addrow:focus-within{opacity:1}
+/* opaque bg + light text so WebKit honours the colour (a transparent select renders black text) */
+.curpill{flex:0 0 auto;font:600 12px/1 var(--sans);letter-spacing:.02em;color:var(--ink);background:var(--raised);
+  border:1px solid var(--brass-faint);border-radius:5px;padding:6px 8px;min-height:34px;cursor:pointer;max-width:80px;
+  -webkit-appearance:none;appearance:none;text-align:center}
+.curpill.off-home{color:var(--brass);border-color:var(--brass-dim)}
+.curpill option{color:var(--ink);background:var(--raised)}
+.curpill:focus{outline:2px solid var(--brass);outline-offset:1px}
+/* slice 11 (Eye P0): on a phone the seven-control row squeezed "What" to ~67px and inputs hard-clip.
+   A two-line grid hands the full width back to What, keeps the amount scannable top-right, and drops
+   the currency pill + delete to a quiet second line. The grip is KEPT (touch drag + long-press start
+   from it — hiding it would remove touch reordering). */
+@media (max-width:460px){
+  .erow{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;
+    grid-template-areas:"grip tick what amt" "grip tick meta del";column-gap:9px;row-gap:1px;align-items:center}
+  .erow .grip{grid-area:grip;align-self:center}
+  .erow .tick{grid-area:tick}
+  .erow .nm{grid-area:what;min-width:0}
+  .erow .amt{grid-area:amt;width:82px;justify-self:end}
+  .erow .curpill{grid-area:meta;justify-self:start;max-width:66px;margin-top:2px}
+  .erow .del{grid-area:del;justify-self:end}
+}
+.del{flex:0 0 auto;width:34px;min-height:34px;border:0;background:transparent;color:var(--faint);font:400 20px/1 var(--sans);
+  cursor:pointer;border-radius:5px}
+.del:hover{color:var(--rejected)}
+.del:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+
+/* slice 8: drag grip, whole-card drag clone, drop target, multi-select + selection bar */
+.grip{flex:0 0 auto;width:24px;min-height:34px;border:0;background:transparent;color:var(--faint);cursor:grab;
+  font:400 15px/1 var(--sans);border-radius:5px;touch-action:none;padding:0}
+.grip:hover{color:var(--muted)}
+.grip:active{cursor:grabbing}
+.grip:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+.erow .grip{align-self:center}
+.dragclone{position:fixed;z-index:80;pointer-events:none;display:flex;align-items:center;gap:11px;
+  background:var(--raised);border:1px solid var(--brass);border-radius:9px;box-shadow:0 18px 44px rgba(0,0,0,.55);
+  padding:8px 12px;opacity:.96}
+.dragclone .del,.dragclone .grip{opacity:.4}
+.row.dropzone{box-shadow:inset 0 2px 0 var(--brass)}
+.row.sel{background:rgba(201,162,109,.12);border-radius:6px;box-shadow:inset 0 0 0 1px var(--brass-dim)}
+.selbar{position:fixed;left:0;right:0;bottom:0;z-index:12;background:var(--raised);border-top:3px double var(--brass-dim);backdrop-filter:blur(12px)}
+.selbar .in{max-width:430px;margin:0 auto;padding:14px 18px calc(14px + env(safe-area-inset-bottom));display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+@media(min-width:900px){.selbar .in{max-width:880px;padding-left:40px;padding-right:40px}}
+.selbar .cnt{font:600 14px/1 var(--sans);color:var(--ink);margin-right:auto}
+.linkbtn.danger{color:#d98d92}
+
+/* slice 9: custom sections + the recurring-defaults editor */
+.bk.custom{display:flex;align-items:center;gap:10px}
+.bk.custom .secname{flex:1;background:transparent;border:0;color:var(--muted);font:600 12px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;padding:3px 0;min-height:26px}
+.bk.custom .secname:focus{outline:0;box-shadow:inset 0 -1.5px 0 var(--brass)}
+.bk.custom .num{float:none;margin-left:auto}
+.delsec{flex:0 0 auto;width:30px;min-height:30px;border:0;background:transparent;color:var(--faint);font:400 18px/1 var(--sans);cursor:pointer;border-radius:5px}
+.delsec:hover{color:var(--rejected)}
+.edefaults{margin:0 4px;font-size:11px !important;letter-spacing:.02em;text-transform:none}
+.addsec{margin-top:16px}
+.brow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px dotted var(--brass-faint)}
+.brow input{font-family:inherit;background:transparent;border:0;color:var(--ink);min-height:30px;padding:2px 0;width:100%}
+.brow .nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.brow .what{font:500 16px/1.3 var(--sans)}
+.brow .note{font:400 13px/1.35 var(--sans);color:var(--muted)}
+.brow .amt{flex:0 0 auto;width:100px;text-align:right;font:600 16px/1 var(--sans);font-variant-numeric:tabular-nums}
+.brow input:focus{outline:0;box-shadow:inset 0 -1.5px 0 var(--brass)}
+.brow input::placeholder{color:#9aa6b6;opacity:1}
+.alsorow{display:flex;align-items:center;gap:9px;margin-top:16px;font:400 14px/1.4 var(--sans);color:var(--muted)}
+.alsorow input{width:20px;height:20px;min-height:20px;accent-color:var(--brass)}
+.nm b{font-weight:500;font-size:18px;display:block;line-height:1.3}
+.nm em{display:block;font-style:normal;font-size:15px;line-height:1.4;color:var(--muted);margin-top:3px}
+.am{font:600 18px/1 var(--sans);white-space:nowrap;font-variant-numeric:tabular-nums}
 .row.off .nm b,.row.off .am{color:var(--muted)}
 .row.rej .nm b,.row.rej .am{color:var(--muted);text-decoration:line-through}
 .row.dragging{opacity:.5}
@@ -81,17 +172,27 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   font:600 9.5px/15px var(--sans);text-align:center;margin-left:7px;vertical-align:1px;padding:0 3px}
 .cur{font:500 9px/1 var(--sans);letter-spacing:.1em;color:var(--brass);border:1px solid var(--brass-dim);
   border-radius:2px;padding:3px 4px;margin-left:7px;vertical-align:1px}
-.note{font:400 11.5px/1.6 var(--sans);color:var(--faint)}
+.note{font:400 14px/1.6 var(--sans);color:var(--muted)}
 
 .foot{position:fixed;left:0;right:0;bottom:0;z-index:5;background:linear-gradient(180deg,rgba(13,20,32,.8),var(--stage) 34%);
   border-top:3px double var(--brass-dim);backdrop-filter:blur(12px)}
 .foot .in{max-width:430px;margin:0 auto;padding:15px 18px calc(18px + env(safe-area-inset-bottom));position:relative}
 @media(min-width:900px){.foot .in{max-width:880px;padding:15px 40px 18px}}
+/* slice 10: settled-in-<country> sections + the transfers-required panel title */
+.settled{margin-top:30px}
+.settled .zone-hd h2{color:var(--muted)}
+.srow{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px dotted var(--brass-faint);min-height:44px}
+.srow[data-xfer]{cursor:pointer}
+.srow .nm{flex:1;min-width:0}
+.srow .nm b{font-weight:500;font-size:16px;display:block;line-height:1.3}
+.srow .nm em{display:block;font-style:normal;font-size:13px;color:var(--faint);margin-top:2px}
+.srow .am{font:600 16px/1 var(--sans);white-space:nowrap;font-variant-numeric:tabular-nums}
+.foot-t{font:600 10px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--brass);margin-bottom:9px}
 .tl{display:flex;justify-content:space-between;align-items:baseline}
 .tl+.tl{margin-top:4px}
-.tl span{font:400 10px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+.tl span{font:500 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
 .tl b{font:600 27px/1 var(--sans);letter-spacing:-.01em}
-.est{font:400 11.5px/1.6 var(--sans);color:var(--faint)}
+.est{font:400 13px/1.6 var(--sans);color:var(--muted)}
 .btn{display:block;width:100%;margin-top:13px;padding:14px;border-radius:4px;border:1px solid var(--brass);
   background:var(--brass);color:#1a1205;font:600 13.5px/1 var(--sans);letter-spacing:.04em;cursor:pointer}
 .btn.ghost{background:transparent;color:var(--brass)}
@@ -182,7 +283,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 .rsheet{position:fixed;inset:0;z-index:30;background:var(--stage);overflow-y:auto;opacity:0;transition:opacity .2s;
   padding:0 0 calc(40px + env(safe-area-inset-bottom))}
 .rsheet.open{opacity:1}
-.rsheet:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-events:none;opacity:.85}
+.rsheet:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-events:none;opacity:.03}
 .rhead{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:12px;max-width:430px;margin:0 auto;
   padding:16px 18px 12px;background:linear-gradient(180deg,var(--stage) 78%,transparent);border-bottom:3px double var(--brass-dim)}
 @media(min-width:900px){.rhead,.rtabs,.rbody{max-width:880px}.rhead{padding-left:40px;padding-right:40px}}
@@ -327,6 +428,58 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     return { access_token: o.access_token, refresh_token: o.refresh_token,
              expires_at: o.expires_at, email: String(o.email || '').toLowerCase(), name: o.name || null };
   }
+  // Decode a base64url JSON segment (a JWT payload) in both browser (atob) and Node (Buffer). Returns
+  // null on anything malformed — never throws.
+  function b64urlToJson(seg) {
+    if (typeof seg !== 'string' || !seg) return null;
+    try {
+      var b64 = seg.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      var txt;
+      if (typeof atob === 'function') {
+        var bin = atob(b64);
+        // handle UTF-8 payloads correctly
+        try { txt = decodeURIComponent(bin.split('').map(function (c) { return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); }).join('')); }
+        catch (e) { txt = bin; }
+      } else if (typeof Buffer !== 'undefined') {
+        txt = Buffer.from(b64, 'base64').toString('utf8');
+      } else { return null; }
+      return JSON.parse(txt);
+    } catch (e) { return null; }
+  }
+  // Parse a URL fragment ('#a=1&b=2' or 'a=1&b=2') into a plain object. Empty/garbage -> {}.
+  function parseHashParams(hash) {
+    var out = {};
+    var s = String(hash == null ? '' : hash).replace(/^#/, '');
+    if (!s) return out;
+    s.split('&').forEach(function (pair) {
+      if (!pair) return;
+      var i = pair.indexOf('=');
+      var k = i === -1 ? pair : pair.slice(0, i);
+      var v = i === -1 ? '' : pair.slice(i + 1);
+      try { out[decodeURIComponent(k)] = decodeURIComponent(v); } catch (e) { out[k] = v; }
+    });
+    return out;
+  }
+  // Build a normalised session from a GoTrue magic-link URL fragment. The fragment carries
+  // access_token (a JWT), refresh_token, expires_at/expires_in — the email/name come from the JWT
+  // payload. Returns null unless BOTH tokens are present and the payload decodes (a malformed hash
+  // falls through to the sign-in screen — spec §8, arc slice 2). Never throws.
+  function sessionFromHash(hash, now) {
+    var p = parseHashParams(hash);
+    if (!p.access_token || !p.refresh_token) return null;
+    var payload = b64urlToJson(String(p.access_token).split('.')[1]);
+    if (!payload || !payload.email) return null;   // not a usable Supabase access token
+    now = (typeof now === 'number') ? now : Date.now();
+    var expMs = p.expires_at ? (Number(p.expires_at) * 1000)
+              : (p.expires_in ? (now + Number(p.expires_in) * 1000)
+              : (payload.exp ? (payload.exp * 1000) : (now + 3600 * 1000)));
+    var meta = payload.user_metadata || {};
+    return normSession({
+      access_token: p.access_token, refresh_token: p.refresh_token, expires_at: expMs,
+      email: payload.email, name: meta.name || meta.full_name || null,
+    });
+  }
   function isExpired(session, now, skewMs) {
     if (!session) return true;
     now = (typeof now === 'number') ? now : Date.now();
@@ -429,8 +582,30 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     return sessionFromToken(await r.json());
   }
 
+  // Magic-link landing (arc slice 2). A SECOND entry point, not a replacement: if the page loaded
+  // with a GoTrue token fragment (the link flow, which otherwise dead-ends), adopt it as the session
+  // in the gate's normal format, strip the fragment from the URL, and return it. No fragment / a
+  // malformed one -> null, and the normal code path runs unchanged. Browser-only; never throws.
+  function consumeHashLanding() {
+    try {
+      if (typeof location === 'undefined' || !location.hash) return null;
+      var s = sessionFromHash(location.hash);
+      if (!s) return null;
+      saveSession(s);
+      // strip the token fragment so it never lingers in the address bar / history
+      try {
+        if (typeof history !== 'undefined' && history.replaceState) {
+          history.replaceState(null, '', location.pathname + location.search);
+        } else { location.hash = ''; }
+      } catch (e) {}
+      return s;
+    } catch (e) { return null; }
+  }
+
   // Resolve a usable session from storage, refreshing if needed. Returns a live session or null.
   async function ensureFresh() {
+    consumeHashLanding();   // a fresh magic-link landing is adopted before we read storage
+
     var s = loadSession();
     if (!s) return null;
     if (!isExpired(s)) return s;
@@ -714,6 +889,8 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     cfg: cfg, SUPA_URL: SUPA_URL, SUPA_KEY: SUPA_KEY, REST: REST, AUTH: AUTH, SESSION_KEY: SESSION_KEY,
     // exposed for unit tests
     sessionFromToken: sessionFromToken, normSession: normSession, isExpired: isExpired,
+    parseHashParams: parseHashParams, b64urlToJson: b64urlToJson, sessionFromHash: sessionFromHash,
+    consumeHashLanding: consumeHashLanding,
     gatedDecision: gatedDecision, isGated: isGated, ensureFresh: ensureFresh,
     loadSession: loadSession, saveSession: saveSession, clearSession: clearSession,
     sendCode: sendCode, verifyCode: verifyCode, refresh: refresh, hasGrant: hasGrant,
@@ -725,11 +902,20 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 <script>
 /* eslint-disable */
 /* =============================================================================
- * remit money.js — the one rule made executable: NEVER sum two currencies.
+ * remit money.js — THE MODEL made executable (Mark's rules, ratified 2026-09-22).
  *
- * Pure, no DOM, node-importable (assigns globalThis.Remit.money; the unit tests import this file
- * for its side effect and read the global, exactly like the app bundle does at runtime). All
- * arithmetic goes through integer cents so £803.96 + £72.61 − £100.00 never drifts.
+ * remit is a nicely formatted scratch pad. Per kid page, per month, per currency:
+ *   Total     = every live line in that currency (every section, both settle types).
+ *   Settled   = transfers recorded (matched person_id + month + currency)
+ *               + lines with settle='paid_here' (already paid, not in a transfer).
+ *   Remaining = Total − Settled.   Negative is fine → "Overpaid".
+ *
+ * No approval. Status is only 'requested' (unpaid) or 'paid'; paid ticks are VISUAL ONLY and never
+ * change the maths (so a tick + a transfer can't double-count). Transfers never lock a line; any
+ * existing transfer_id is ignored. Negative amounts are normal (offsets). NEVER sum two currencies.
+ *
+ * Pure, no DOM, node-importable (assigns globalThis.Remit.money). All arithmetic goes through integer
+ * cents so £803.96 + £72.61 − £100.00 never drifts.
  * ========================================================================== */
 (function (root) {
   'use strict';
@@ -756,14 +942,15 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     return s;
   }
 
-  var COUNTED_STATUS = { approved: true, paid: true };
   function alive(it) { return !it.deleted_at; }
-  // A line enters a transfer total only when it is settle=transfer AND approved/paid (spec §5.4).
-  function isCounted(it) { return alive(it) && it.settle === 'transfer' && !!COUNTED_STATUS[it.status]; }
-  // settle=paid_here never enters a transfer total; it is shown and counted on its own line (§5.3).
-  function isSettledHere(it) { return alive(it) && it.settle === 'paid_here' && !!COUNTED_STATUS[it.status]; }
+  // Every live line counts. The only distinction the maths cares about is WHERE it settles:
+  //   settle='transfer'  → it belongs to the bundled FX transfer for its currency.
+  //   settle='paid_here' → already paid on this side; shown on its own line, never in the transfer.
+  function isTransferLine(it) { return alive(it) && it.settle === 'transfer'; }
+  function isPaidHere(it) { return alive(it) && it.settle === 'paid_here'; }
+  function isPaidTick(it) { return it.status === 'paid'; }   // visual only — never used in a total
 
-  // sumByCurrency(items, pred?) -> { GBP: 1415.39, USD: 12 } — grouped, NEVER cross-summed.
+  // sumByCurrency(items, pred?) -> { GBP: 1444.20, USD: 12 } — grouped, NEVER cross-summed.
   function sumByCurrency(items, pred) {
     var acc = {};
     (items || []).forEach(function (it) {
@@ -774,16 +961,47 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     Object.keys(acc).forEach(function (k) { out[k] = fromCents(acc[k]); });
     return out;
   }
-  function transferTotals(items) { return sumByCurrency(items, isCounted); }
-  function settledHereTotals(items) { return sumByCurrency(items, isSettledHere); }
-  // still-to-send: counted and NOT yet locked to a transfer. transferable = the items a new transfer
-  // would cover; transferred = counted items already locked to a transfer (shown, not re-sent).
-  function isTransferable(it) { return isCounted(it) && !it.transfer_id; }
-  function isTransferred(it) { return isCounted(it) && !!it.transfer_id; }
-  function outstandingTotals(items) { return sumByCurrency(items, isTransferable); }
-  function transferredTotals(items) { return sumByCurrency(items, isTransferred); }
 
-  // the single currency (or null) of a per-currency map with exactly one non-zero-key entry
+  // per-currency map maths, in cents so nothing drifts. add/sub keep every currency key present.
+  function addMaps() {
+    var acc = {};
+    for (var i = 0; i < arguments.length; i++) {
+      var m = arguments[i] || {};
+      Object.keys(m).forEach(function (k) { acc[k] = (acc[k] || 0) + cents(m[k]); });
+    }
+    var out = {}; Object.keys(acc).forEach(function (k) { out[k] = fromCents(acc[k]); });
+    return out;
+  }
+  function subMaps(a, b) {
+    a = a || {}; b = b || {};
+    var acc = {};
+    Object.keys(a).forEach(function (k) { acc[k] = (acc[k] || 0) + cents(a[k]); });
+    Object.keys(b).forEach(function (k) { acc[k] = (acc[k] || 0) - cents(b[k]); });
+    var out = {}; Object.keys(acc).forEach(function (k) { out[k] = fromCents(acc[k]); });
+    return out;
+  }
+
+  // ── THE MODEL totals ─────────────────────────────────────────────────────────
+  // Total: every live line, per currency (both settle types, every section).
+  function totalTotals(items) { return sumByCurrency((items || []).filter(alive)); }
+  // The transfer-destined lines and the paid-here lines, split out for display.
+  function transferLineTotals(items) { return sumByCurrency(items, isTransferLine); }
+  function paidHereTotals(items) { return sumByCurrency(items, isPaidHere); }
+  // Transfers recorded for this page+month, per currency (amount_delivered is the money that landed).
+  function transfersDelivered(transfers) {
+    var acc = {};
+    (transfers || []).forEach(function (t) {
+      var amt = (t.amount_delivered != null) ? t.amount_delivered : 0;
+      acc[t.currency] = (acc[t.currency] || 0) + cents(amt);
+    });
+    var out = {}; Object.keys(acc).forEach(function (k) { out[k] = fromCents(acc[k]); });
+    return out;
+  }
+  // Settled = paid_here lines + transfers recorded. Remaining = Total − Settled.
+  function settledTotals(items, transfers) { return addMaps(paidHereTotals(items), transfersDelivered(transfers)); }
+  function remainingTotals(items, transfers) { return subMaps(totalTotals(items), settledTotals(items, transfers)); }
+
+  // the single currency (or null) of a per-currency map with exactly one entry
   function soleCurrency(map) { var ks = Object.keys(map); return ks.length === 1 ? ks[0] : null; }
   // render a per-currency map as "£1,126.57" (one) or "£x · $y" (several) — never one summed number
   function fmtByCurrency(map, opts) {
@@ -791,82 +1009,80 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     if (!ks.length) return '';
     return ks.map(function (k) { return fmt(map[k], k, opts); }).join(' · ');
   }
-
-  function unread(item, messages, viewer) {
-    return (messages || []).some(function (m) {
-      return m.item_id === item.id && m.author_email !== viewer && (m.read_by || []).indexOf(viewer) === -1;
-    });
-  }
-  function threadFor(itemId, messages) {
-    return (messages || []).filter(function (m) { return m.item_id === itemId; })
-      .sort(function (a, b) { return String(a.created_at).localeCompare(String(b.created_at)); });
+  // a map with every currency (present in either total or settled) so a currency that is fully
+  // settled still shows a Remaining row of 0 rather than vanishing.
+  function currenciesOf() {
+    var seen = {};
+    for (var i = 0; i < arguments.length; i++) Object.keys(arguments[i] || {}).forEach(function (k) { seen[k] = true; });
+    return Object.keys(seen);
   }
 
   var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   function monthLabel(year, month) { return MONTHS[month - 1] + ' ' + year; }
-  function monthShort(year, month) { return MONTHS[month - 1].slice(0, 3) + (month === 1 ? " '" + String(year).slice(2) : ''); }
+  function monthShort(year, month) { return MONTHS[month - 1].slice(0, 3); }
+  function monthName(month) { return MONTHS[month - 1]; }
 
   // ── the month view-model — pure, so a node test can assert the worked example ──
-  // Two zones (kid = recurring+extras, mine), a settled-here group, per-currency subtotals, and the
-  // footer transfer total. Rows carry display flags (counted / unread / status class).
+  // Sections (THE MODEL / slice 7): Recurring · Extras · Riding along (bucket 'mine') · then any
+  // custom sections (bucket 'custom', grouped by section_id, ordered by remit_sections.sort_order).
+  // Every total is per currency; nothing is ever cross-summed. `ctx.transfers` are the transfers
+  // recorded for this page+month; `ctx.sections` are the live remit_sections rows.
   function monthModel(period, allItems, ctx) {
     ctx = ctx || {};
-    var messages = ctx.messages || [], viewer = ctx.viewer;
+    var transfers = ctx.transfers || [];
+    var sectionRows = (ctx.sections || []).filter(function (s) { return !s.deleted_at; })
+      .sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); });
+
     var items = (allItems || []).filter(function (it) { return it.period_id === period.id && alive(it); });
     items.sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); });
 
-    function decorate(it) {
-      return {
-        item: it,
-        counted: isCounted(it),
-        settledHere: isSettledHere(it),
-        unread: unread(it, messages, viewer),
-        cls: it.status === 'rejected' ? 'rej' : (it.settle === 'transfer' && it.status === 'requested' ? 'off' : ''),
-      };
-    }
+    function group(pred) { return items.filter(pred); }
+    var recurring = group(function (it) { return it.bucket === 'recurring'; });
+    var extras    = group(function (it) { return it.bucket === 'extras'; });
+    var mine      = group(function (it) { return it.bucket === 'mine'; });
 
-    var recurring = items.filter(function (it) { return it.bucket === 'recurring' && it.settle === 'transfer'; }).map(decorate);
-    var extras    = items.filter(function (it) { return it.bucket === 'extras'    && it.settle === 'transfer'; }).map(decorate);
-    var settled   = items.filter(function (it) { return it.settle === 'paid_here'; }).map(decorate);
-    var mine      = items.filter(function (it) { return it.bucket === 'mine'      && it.settle === 'transfer'; }).map(decorate);
+    // custom sections: one entry per live remit_sections row, with its items (bucket 'custom')
+    var customById = {};
+    items.forEach(function (it) { if (it.bucket === 'custom' && it.section_id) (customById[it.section_id] = customById[it.section_id] || []).push(it); });
+    var custom = sectionRows.map(function (s) {
+      var rows = customById[s.id] || [];
+      return { section: s, rows: rows, subtotal: sumByCurrency(rows) };
+    });
 
-    function countedItems(rows) { return rows.filter(function (r) { return r.counted; }).map(function (r) { return r.item; }); }
-
-    var recurSub = sumByCurrency(countedItems(recurring));
-    var extraSub = sumByCurrency(countedItems(extras));
-    var mineSub  = sumByCurrency(countedItems(mine));
-    var settledSub = sumByCurrency(settled.filter(function (r) { return r.settledHere; }).map(function (r) { return r.item; }));
-    var kidSub = sumByCurrency(countedItems(recurring).concat(countedItems(extras)));
-
-    var counts = { requested: 0, rejected: 0 };
-    items.forEach(function (it) { if (it.settle === 'transfer') { if (it.status === 'requested') counts.requested++; else if (it.status === 'rejected') counts.rejected++; } });
+    var total     = totalTotals(items);
+    var paidHere  = paidHereTotals(items);
+    var settled   = settledTotals(items, transfers);
+    var remaining = remainingTotals(items, transfers);
+    var transferLines = transferLineTotals(items);
 
     return {
       period: period,
-      recurring: { rows: recurring, subtotal: recurSub },
-      extras: { rows: extras, subtotal: extraSub },
-      settled: { rows: settled, subtotal: settledSub },
-      mine: { rows: mine, subtotal: mineSub },
-      kidSubtotal: kidSub,
-      transfer: transferTotals(items),
-      outstanding: outstandingTotals(items),
-      transferred: transferredTotals(items),
-      settledHere: settledHereTotals(items),
-      transferable: items.filter(isTransferable),
-      counts: counts,
-      anyApproved: items.some(isCounted),
-      anyOutstanding: items.some(isTransferable),
+      recurring: { rows: recurring, subtotal: sumByCurrency(recurring) },
+      extras:    { rows: extras,    subtotal: sumByCurrency(extras) },
+      mine:      { rows: mine,      subtotal: sumByCurrency(mine) },
+      custom: custom,
+      sections: sectionRows,
+      total: total,
+      transferLines: transferLines,
+      paidHere: paidHere,
+      transfers: transfers,
+      transfersDelivered: transfersDelivered(transfers),
+      settled: settled,
+      remaining: remaining,
+      currencies: currenciesOf(total, settled),
+      anyLines: items.length > 0,
+      itemCount: items.length,
     };
   }
 
   Remit.money = {
     SYMBOLS: SYMBOLS, symbol: symbol, cents: cents, fromCents: fromCents, fmt: fmt,
-    isCounted: isCounted, isSettledHere: isSettledHere, isTransferable: isTransferable, isTransferred: isTransferred,
-    sumByCurrency: sumByCurrency, transferTotals: transferTotals, settledHereTotals: settledHereTotals,
-    outstandingTotals: outstandingTotals, transferredTotals: transferredTotals,
-    soleCurrency: soleCurrency, fmtByCurrency: fmtByCurrency,
-    unread: unread, threadFor: threadFor,
-    monthLabel: monthLabel, monthShort: monthShort, monthModel: monthModel,
+    alive: alive, isTransferLine: isTransferLine, isPaidHere: isPaidHere, isPaidTick: isPaidTick,
+    sumByCurrency: sumByCurrency, addMaps: addMaps, subMaps: subMaps,
+    totalTotals: totalTotals, transferLineTotals: transferLineTotals, paidHereTotals: paidHereTotals,
+    transfersDelivered: transfersDelivered, settledTotals: settledTotals, remainingTotals: remainingTotals,
+    soleCurrency: soleCurrency, fmtByCurrency: fmtByCurrency, currenciesOf: currenciesOf,
+    monthLabel: monthLabel, monthShort: monthShort, monthName: monthName, monthModel: monthModel,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 </script>
@@ -917,6 +1133,40 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     return parts.join('  ·  ');
   }
 
+  // ── refresh planning (pure, node-testable) ─────────────────────────────────
+  // The most recent working day on/at-or-before `now` (Frankfurter has no weekend rows; a Sat/Sun
+  // request comes back stamped with the previous Friday). UTC, 'YYYY-MM-DD'.
+  function latestWorkingDay(now) {
+    var d = (now instanceof Date) ? new Date(now.getTime()) : new Date();
+    // step back off Sat(6)/Sun(0) to Friday
+    var dow = d.getUTCDay();
+    if (dow === 6) d.setUTCDate(d.getUTCDate() - 1);
+    else if (dow === 0) d.setUTCDate(d.getUTCDate() - 2);
+    return d.toISOString().slice(0, 10);
+  }
+  // month-end working day for a (year, month) — the last calendar day, walked back off a weekend.
+  function monthEndWorkingDay(year, month) {
+    var d = new Date(Date.UTC(year, month, 0));   // day 0 of next month = last day of `month`
+    var dow = d.getUTCDay();
+    if (dow === 6) d.setUTCDate(d.getUTCDate() - 1);
+    else if (dow === 0) d.setUTCDate(d.getUTCDate() - 2);
+    return d.toISOString().slice(0, 10);
+  }
+  // Given the cached rows and the set of days we care about, return the days that have NO row for
+  // ANY requested currency yet — the days worth a network fetch. Never returns a day already cached.
+  function planRateFetches(rates, days, curs) {
+    curs = curs || ['GBP', 'AUD'];
+    var have = {};
+    (rates || []).forEach(function (r) { if (r && r.base === 'USD') have[r.day + '|' + r.quote] = true; });
+    var out = [];
+    (days || []).forEach(function (day) {
+      if (!day) return;
+      var missing = curs.some(function (c) { return !have[day + '|' + c]; });
+      if (missing && out.indexOf(day) === -1) out.push(day);
+    });
+    return out;
+  }
+
   // Live fetch (Frankfurter, no key/quota). Returns a normalised rows array to cache in remit_rates.
   // day '' = latest; else 'YYYY-MM-DD'. Never throws — the app never blocks on a rate.
   async function fetchRates(day, symbols, fetchImpl) {
@@ -953,7 +1203,9 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     };
   }
 
-  Remit.fx = { rateDayLabel: rateDayLabel, rateFor: rateFor, estimateLine: estimateLine, fetchRates: fetchRates, transferMetrics: transferMetrics };
+  Remit.fx = { rateDayLabel: rateDayLabel, rateFor: rateFor, estimateLine: estimateLine, fetchRates: fetchRates,
+    transferMetrics: transferMetrics, latestWorkingDay: latestWorkingDay, monthEndWorkingDay: monthEndWorkingDay,
+    planRateFetches: planRateFetches };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 </script>
 <!-- src/store.js -->
@@ -1004,7 +1256,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     this.state = {
       people: d.people || [], periods: d.periods || [], budgets: d.budgets || [],
       items: d.items || [], messages: d.messages || [], transfers: d.transfers || [], rates: d.rates || [],
-      commitments: d.commitments || [],
+      commitments: d.commitments || [], sections: d.sections || [],
     };
     this._viewer = d.viewer || (this.state.people[0] && this.state.people[0].email) || 'unknown';
   }
@@ -1022,6 +1274,11 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       .sort((a, b) => (b.year * 12 + b.month) - (a.year * 12 + a.month))[0] : { year: new Date().getUTCFullYear(), month: new Date().getUTCMonth() + 1 });
     return monthStrip(f);
   };
+  FixtureStore.prototype.getYears = function (personId) {
+    var ys = {}; this.state.periods.filter((p) => p.person_id === personId).forEach((p) => { ys[p.year] = 1; });
+    ys[new Date().getUTCFullYear()] = 1;
+    return Object.keys(ys).map(Number).sort((a, b) => a - b);
+  };
   FixtureStore.prototype.getPeriod = function (personId, year, month) {
     return this.state.periods.find((p) => p.person_id === personId && p.year === year && p.month === month) || null;
   };
@@ -1033,7 +1290,26 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   FixtureStore.prototype.getMonthData = async function (personId, year, month) {
     var period = this.getPeriod(personId, year, month);
     var items = period ? this.state.items.filter((it) => it.period_id === period.id && !it.deleted_at) : [];
-    return { period: period, items: clone(items), messages: clone(this.state.messages) };
+    var sections = period ? this.state.sections.filter((s) => s.period_id === period.id && !s.deleted_at) : [];
+    var transfers = this.state.transfers.filter((t) => t.person_id === personId && t.period_year === year && t.period_month === month);
+    return { period: period, items: clone(items), sections: clone(sections), transfers: clone(transfers), messages: clone(this.state.messages) };
+  };
+  FixtureStore.prototype.getSections = function (periodId) { return this.state.sections.filter((s) => s.period_id === periodId && !s.deleted_at).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)); };
+  FixtureStore.prototype.addSection = async function (periodId, name) {
+    var peers = this.state.sections.filter((s) => s.period_id === periodId && !s.deleted_at);
+    var maxOrder = peers.reduce((m, s) => Math.max(m, s.sort_order || 0), 0);
+    var s = { id: uid('sec'), period_id: periodId, name: String(name || 'Section').trim() || 'Section', sort_order: maxOrder + 10, created_at: nowISO(), deleted_at: null };
+    this.state.sections.push(s); this._emit(); return clone(s);
+  };
+  FixtureStore.prototype.updateSection = async function (id, patch) {
+    var s = this.state.sections.find((x) => x.id === id); if (!s) return null;
+    Object.assign(s, patch); this._emit(); return clone(s);
+  };
+  FixtureStore.prototype.deleteSection = async function (id) {
+    var s = this.state.sections.find((x) => x.id === id); if (!s) return null;
+    // move its lines to Extras first (THE MODEL / slice 9), then soft-delete the section
+    this.state.items.forEach((it) => { if (it.section_id === id && !it.deleted_at) { it.bucket = 'extras'; it.section_id = null; it.updated_at = nowISO(); } });
+    s.deleted_at = nowISO(); this._emit(); return clone(s);
   };
   FixtureStore.prototype.getBudgets = function (personId, year) {
     return this.state.budgets.filter((b) => b.person_id === personId && b.year === year && b.active !== false);
@@ -1051,7 +1327,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   };
   FixtureStore.prototype.updateItem = async function (id, patch) {
     var it = this._item(id); if (!it) return null;
-    if (it.status === 'paid' && it.transfer_id && !('transfer_id' in patch)) throw new Error('This item is locked to a transfer. Detach it first.');
+    // THE MODEL: transfers never lock a line — a paid item stays fully editable.
     Object.assign(it, patch, { updated_at: nowISO() }); this._emit(); return clone(it);
   };
   FixtureStore.prototype.setStatus = function (id, status) { return this.updateItem(id, { status: status }); };
@@ -1076,6 +1352,22 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   FixtureStore.prototype.addBudget = async function (fields) {
     var b = Object.assign({ id: uid('bud'), bucket: 'recurring', currency: 'GBP', active: true }, fields);
     this.state.budgets.push(b); this._emit(); return clone(b);
+  };
+  FixtureStore.prototype.deleteBudget = async function (id) { return this.setBudget(id, { active: false }); };
+  // apply the recurring defaults to an already-open month: update a line materialised from a default
+  // (matched on budget_id) to the default's amount/label/currency, or add it if missing. Idempotent.
+  FixtureStore.prototype.applyDefaultsToMonth = async function (personId, year, month) {
+    var period = this.getPeriod(personId, year, month);
+    if (!period) { period = { id: uid('period'), person_id: personId, year: year, month: month, materialised_at: nowISO(), closed_at: null }; this.state.periods.push(period); }
+    var budgets = this.getBudgets(personId, year);
+    var order = 0;
+    budgets.forEach((b) => {
+      order += 10;
+      var it = this.state.items.find((x) => x.period_id === period.id && x.budget_id === b.id && !x.deleted_at);
+      if (it) { it.amount = b.amount; it.description = b.label; it.currency = b.currency; it.note = b.note || null; it.updated_at = nowISO(); }
+      else { this.state.items.push({ id: uid('item'), period_id: period.id, bucket: b.bucket || 'recurring', description: b.label, note: b.note || null, amount: b.amount, currency: b.currency, settle: 'transfer', status: 'requested', sort_order: order, budget_id: b.id, transfer_id: null, created_by: this._viewer, created_at: nowISO(), updated_at: nowISO(), deleted_at: null }); }
+    });
+    this._emit(); return { period: period };
   };
   FixtureStore.prototype.softDelete = async function (id) { return this.updateItem(id, { deleted_at: nowISO() }); };
   FixtureStore.prototype.undoDelete = async function (id) { return this.updateItem(id, { deleted_at: null }); };
@@ -1104,7 +1396,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       var exists = this.state.items.some((it) => it.period_id === period.id && it.budget_id === b.id && !it.deleted_at);
       if (exists) return;
       order += 10; added++;
-      this.state.items.push({ id: uid('item'), period_id: period.id, bucket: b.bucket || 'recurring', description: b.label, note: null,
+      this.state.items.push({ id: uid('item'), period_id: period.id, bucket: b.bucket || 'recurring', description: b.label, note: b.note || null,
         amount: b.amount, currency: b.currency, settle: 'transfer', status: 'requested', sort_order: order, budget_id: b.id, transfer_id: null,
         created_by: this._viewer, created_at: nowISO(), updated_at: nowISO(), deleted_at: null });
     });
@@ -1112,14 +1404,23 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     if (added) this._emit();
     return { period: period, added: added };
   };
-  FixtureStore.prototype.createTransfer = async function (fields, itemIds) {
-    var t = Object.assign({ id: uid('xfer'), sent_on: nowISO().slice(0, 10) }, fields);
-    this.state.transfers.push(t);
-    (itemIds || []).forEach((id) => { var it = this._item(id); if (it) { it.status = 'paid'; it.transfer_id = t.id; it.updated_at = nowISO(); } });
-    this._emit(); return clone(t);
+  // THE MODEL: a transfer belongs to a kid's page (person_id) and never locks any line.
+  FixtureStore.prototype.createTransfer = async function (fields) {
+    var t = Object.assign({ id: uid('xfer'), sent_on: (fields && fields.sent_on) || nowISO().slice(0, 10) }, fields);
+    this.state.transfers.push(t); this._emit(); return clone(t);
   };
-  FixtureStore.prototype.getTransfers = function (year, month, currency) {
-    return this.state.transfers.filter((t) => (year == null || t.period_year === year) && (month == null || t.period_month === month) && (currency == null || t.currency === currency));
+  FixtureStore.prototype.updateTransfer = async function (id, patch) {
+    var t = this.state.transfers.find((x) => x.id === id); if (!t) return null;
+    Object.assign(t, patch); this._emit(); return clone(t);
+  };
+  FixtureStore.prototype.deleteTransfer = async function (id) {
+    this.state.transfers = this.state.transfers.filter((x) => x.id !== id); this._emit(); return true;
+  };
+  FixtureStore.prototype.getTransfers = function (personId, year, month, currency) {
+    return this.state.transfers.filter((t) =>
+      (personId == null || t.person_id === personId) &&
+      (year == null || t.period_year === year) && (month == null || t.period_month === month) &&
+      (currency == null || t.currency === currency));
   };
   FixtureStore.prototype.getCommitments = function () { return clone(this.state.commitments); };
   // The whole dataset the reports (spec §4.4) read — every month, item, transfer and commitment at once.
@@ -1135,6 +1436,9 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   function SupabaseStore(gate) {
     Emitter.call(this);
     this.gate = gate; this.REST = gate.REST; this._people = []; this._rates = [];
+    // injectable fetch seam (browser uses the real global; unit tests pass a stub)
+    this._fetch = (typeof fetch !== 'undefined') ? fetch.bind(globalThis) : null;
+    this._rateFetchInFlight = {};   // day -> true, so a refresh never double-fetches the same day
   }
   SupabaseStore.prototype = Object.create(Emitter.prototype);
   SupabaseStore.prototype.mode = 'live';
@@ -1157,7 +1461,37 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   SupabaseStore.prototype.load = async function () {
     this._people = await this._get('/remit_people?select=*&order=is_kid.desc,name.asc');
     try { this._rates = await this._get('/remit_rates?select=*'); } catch (e) { this._rates = []; }
+    // Wire the FX refresh (spec §7 / arc slice 1): if the cache has no row for the latest working day,
+    // fetch and upsert it. Fire-and-forget — the app renders from the cache immediately and never waits
+    // on a rate (§7 "the app never blocks on a rate"); a successful fetch emits and the estimate updates.
+    this._refreshRates([Remit.fx.latestWorkingDay()]);
     return this;
+  };
+  // Cache-through rate refresh. `days` are 'YYYY-MM-DD' working days to guarantee. Never blocks the
+  // caller, never throws: it plans only the missing days, fetches each, and inserts rows not already
+  // cached (dedup by day+quote, so no unique constraint is required), then emits once.
+  SupabaseStore.prototype._refreshRates = async function (days) {
+    var fx = Remit.fx;
+    try {
+      var want = (days || []).filter(function (d) { return d && !this._rateFetchInFlight[d]; }, this);
+      var todo = fx.planRateFetches(this._rates, want, ['GBP', 'AUD']);
+      if (!todo.length) return;
+      todo.forEach(function (d) { this._rateFetchInFlight[d] = true; }, this);
+      var added = 0;
+      for (var i = 0; i < todo.length; i++) {
+        var rows = await fx.fetchRates(todo[i], ['GBP', 'AUD'], this._fetch);   // never throws → null on failure
+        if (!rows || !rows.length) continue;
+        for (var j = 0; j < rows.length; j++) {
+          var r = rows[j];
+          // store the DATE THE API RETURNED (r.day), not the day requested — weekends shift back
+          var dup = this._rates.some(function (x) { return x.base === 'USD' && x.day === r.day && x.quote === r.quote; });
+          if (dup) continue;
+          try { await this._post('/remit_rates', r, 'return=minimal'); } catch (e) { /* cache-only; ignore */ }
+          this._rates.push(r); added++;
+        }
+      }
+      if (added) this._emit();
+    } catch (e) { /* the app never blocks or fails on a rate */ }
   };
   SupabaseStore.prototype.viewer = function () { var s = this.gate.session(); return (s && s.email) || 'unknown'; };
   SupabaseStore.prototype.getPeople = function () { return this._people.filter((p) => p.active !== false); };
@@ -1168,15 +1502,35 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     var f = focus || { year: new Date().getUTCFullYear(), month: new Date().getUTCMonth() + 1 };
     return monthStrip(f);
   };
+  SupabaseStore.prototype.getYears = async function (personId) {
+    var rows = []; try { rows = await this._get('/remit_periods?select=year&person_id=eq.' + personId); } catch (e) { rows = []; }
+    var ys = {}; rows.forEach((r) => { ys[r.year] = 1; }); ys[new Date().getUTCFullYear()] = 1;
+    return Object.keys(ys).map(Number).sort((a, b) => a - b);
+  };
   SupabaseStore.prototype.getMonthData = async function (personId, year, month) {
+    // first view of a month with no cached rate for its month-end → backfill it (non-blocking, §7)
+    this._refreshRates([Remit.fx.monthEndWorkingDay(year, month)]);
     var periods = await this._get('/remit_periods?select=*&person_id=eq.' + personId + '&year=eq.' + year + '&month=eq.' + month);
     var period = periods[0] || null;
     if (!period) return { period: null, items: [], messages: [] };
     var items = await this._get('/remit_items?select=*&period_id=eq.' + period.id + '&deleted_at=is.null&order=sort_order.asc');
+    var sections = await this._get('/remit_sections?select=*&period_id=eq.' + period.id + '&deleted_at=is.null&order=sort_order.asc');
+    var transfers = await this._get('/remit_transfers?select=*&person_id=eq.' + personId + '&period_year=eq.' + year + '&period_month=eq.' + month);
     var ids = items.map((it) => it.id);
     var messages = ids.length ? await this._get('/remit_messages?select=*&item_id=in.(' + ids.join(',') + ')') : [];
     this._messages = messages;
-    return { period: period, items: items, messages: messages };
+    return { period: period, items: items, sections: sections, transfers: transfers, messages: messages };
+  };
+  SupabaseStore.prototype.getSections = async function (periodId) { return this._get('/remit_sections?select=*&period_id=eq.' + periodId + '&deleted_at=is.null&order=sort_order.asc'); };
+  SupabaseStore.prototype.addSection = async function (periodId, name) {
+    var rows = await this._post('/remit_sections', { period_id: periodId, name: String(name || 'Section').trim() || 'Section' });
+    this._emit(); return rows && rows[0];
+  };
+  SupabaseStore.prototype.updateSection = async function (id, patch) { var r = await this._patch('/remit_sections?id=eq.' + id, patch); this._emit(); return r && r[0]; };
+  SupabaseStore.prototype.deleteSection = async function (id) {
+    // move its lines to Extras first (THE MODEL / slice 9), then soft-delete the section
+    await this._patch('/remit_items?section_id=eq.' + id + '&deleted_at=is.null', { bucket: 'extras', section_id: null });
+    var r = await this._patch('/remit_sections?id=eq.' + id, { deleted_at: nowISO() }); this._emit(); return r && r[0];
   };
   SupabaseStore.prototype.ensurePeriod = async function (personId, year, month) {
     var rows = await this._get('/remit_periods?select=*&person_id=eq.' + personId + '&year=eq.' + year + '&month=eq.' + month);
@@ -1204,6 +1558,21 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   };
   SupabaseStore.prototype.setBudget = async function (id, patch) { var r = await this._patch('/remit_budgets?id=eq.' + id, patch); this._emit(); return r && r[0]; };
   SupabaseStore.prototype.addBudget = async function (fields) { var r = await this._post('/remit_budgets', fields); this._emit(); return r && r[0]; };
+  SupabaseStore.prototype.deleteBudget = async function (id) { return this.setBudget(id, { active: false }); };
+  SupabaseStore.prototype.applyDefaultsToMonth = async function (personId, year, month) {
+    var period = (await this._get('/remit_periods?select=*&person_id=eq.' + personId + '&year=eq.' + year + '&month=eq.' + month))[0];
+    if (!period) period = (await this._post('/remit_periods', { person_id: personId, year: year, month: month, materialised_at: nowISO() }))[0];
+    var budgets = await this.getBudgets(personId, year);
+    var existing = await this._get('/remit_items?select=id,budget_id&period_id=eq.' + period.id + '&deleted_at=is.null');
+    var byBudget = {}; existing.forEach((e) => { if (e.budget_id) byBudget[e.budget_id] = e.id; });
+    var order = 0;
+    for (var i = 0; i < budgets.length; i++) {
+      var b = budgets[i]; order += 10;
+      if (byBudget[b.id]) await this._patch('/remit_items?id=eq.' + byBudget[b.id], { amount: b.amount, description: b.label, currency: b.currency, note: b.note || null });
+      else await this._post('/remit_items', { period_id: period.id, bucket: b.bucket, description: b.label, note: b.note || null, amount: b.amount, currency: b.currency, settle: 'transfer', status: 'requested', sort_order: order, budget_id: b.id, created_by: this.viewer() });
+    }
+    this._emit(); return { period: period };
+  };
   SupabaseStore.prototype.softDelete = function (id) { return this.updateItem(id, { deleted_at: nowISO() }); };
   SupabaseStore.prototype.undoDelete = function (id) { return this.updateItem(id, { deleted_at: null }); };
   SupabaseStore.prototype.addMessage = async function (itemId, body, author) {
@@ -1229,17 +1598,19 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     var have = {}; existing.forEach((e) => { if (e.budget_id) have[e.budget_id] = true; });
     var added = 0, order = 0;
     for (var i = 0; i < budgets.length; i++) { var b = budgets[i]; if (have[b.id]) continue; order += 10; added++;
-      await this._post('/remit_items', { period_id: period.id, bucket: b.bucket, description: b.label, amount: b.amount, currency: b.currency, settle: 'transfer', status: 'requested', sort_order: order, budget_id: b.id, created_by: this.viewer() }); }
+      await this._post('/remit_items', { period_id: period.id, bucket: b.bucket, description: b.label, note: b.note || null, amount: b.amount, currency: b.currency, settle: 'transfer', status: 'requested', sort_order: order, budget_id: b.id, created_by: this.viewer() }); }
     if (added) this._emit();
     return { period: period, added: added };
   };
-  SupabaseStore.prototype.createTransfer = async function (fields, itemIds) {
+  // THE MODEL: a transfer carries person_id and never locks a line.
+  SupabaseStore.prototype.createTransfer = async function (fields) {
     var t = (await this._post('/remit_transfers', fields))[0];
-    for (var i = 0; i < (itemIds || []).length; i++) await this.updateItem(itemIds[i], { status: 'paid', transfer_id: t.id });
     this._emit(); return t;
   };
-  SupabaseStore.prototype.getTransfers = async function (year, month, currency) {
-    var q = '/remit_transfers?select=*'; if (year != null) q += '&period_year=eq.' + year; if (month != null) q += '&period_month=eq.' + month; if (currency) q += '&currency=eq.' + currency;
+  SupabaseStore.prototype.updateTransfer = async function (id, patch) { var r = await this._patch('/remit_transfers?id=eq.' + id, patch); this._emit(); return r && r[0]; };
+  SupabaseStore.prototype.deleteTransfer = async function (id) { var r = await fetch(this.REST + '/remit_transfers?id=eq.' + id, { method: 'DELETE', headers: this._h() }); this._emit(); return r.ok; };
+  SupabaseStore.prototype.getTransfers = async function (personId, year, month, currency) {
+    var q = '/remit_transfers?select=*'; if (personId != null) q += '&person_id=eq.' + personId; if (year != null) q += '&period_year=eq.' + year; if (month != null) q += '&period_month=eq.' + month; if (currency) q += '&currency=eq.' + currency;
     return this._get(q);
   };
   SupabaseStore.prototype.getCommitments = async function () { return this._get('/remit_commitments?select=*'); };
@@ -1268,10 +1639,11 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 <script>
 /* eslint-disable */
 /* =============================================================================
- * remit ui/month.js — the home screen (spec §4.1 + §4.7). Two zones, three levels of hierarchy:
- * the kid's Recurring + Extras under one heading with a running subtotal, then "Riding along —
- * Mark's own" as a separate tinted panel. Per-currency totals only, USD always a labelled estimate.
- * Renders from Remit.money.monthModel; row taps open the item sheet (wired from slice 5).
+ * remit ui/month.js — the home screen, THE MODEL (scratch pad). THE LIST IS THE EDITOR (slice 7):
+ * every line is edited in place, every section ends with an empty row you type into to add, Enter
+ * saves and opens the next empty row, Esc cancels, autosave on blur. Delete is a row control → soft
+ * delete + Undo toast. A non-home-currency line groups under an "In <CUR>" subheading with its own
+ * subtotal so it traces to its own transfer. Per-currency totals only; a paid tick is visual only.
  * ========================================================================== */
 (function (root) {
   'use strict';
@@ -1280,224 +1652,10 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
   var WHERE = { USD: 'the US', GBP: 'the UK', AUD: 'Australia', EUR: 'Europe' };
+  var MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var CURR = ['GBP', 'USD', 'AUD', 'EUR'];
 
-  function chipFor(it) {
-    if (it.status === 'paid') return { cls: 'paid', label: 'Paid' };
-    if (it.status === 'approved') return { cls: 'yes', label: 'Approved' };
-    if (it.status === 'rejected') return { cls: 'no', label: 'Refused' };
-    return { cls: 'asked', label: 'Asked' };
-  }
-
-  function rowHTML(row, person) {
-    var it = row.item, chip = chipFor(it);
-    var homeCur = person && person.home_currency;
-    var curBadge = (it.currency && it.currency !== homeCur) ? '<span class="cur">' + esc(it.currency) + '</span>' : '';
-    var flag = row.unread ? '<span class="flag" aria-label="unread message">!</span>' : '';
-    var note = it.note ? '<em>' + esc(it.note) + '</em>' : '';
-    return '<div class="row ' + row.cls + '" role="button" tabindex="0" data-item="' + esc(it.id) + '">' +
-      '<span class="chip ' + chip.cls + '">' + chip.label + '</span>' +
-      '<span class="nm"><b>' + esc(it.description) + curBadge + flag + '</b>' + note + '</span>' +
-      '<span class="am num">' + money.fmt(it.amount, it.currency) + '</span></div>';
-  }
-
-  function groupHTML(label, subtotalMap, rows, person) {
-    if (!rows.length) return '';
-    var sub = money.fmtByCurrency(subtotalMap);
-    return '<div class="bk">' + esc(label) + '<span class="num">' + esc(sub) + '</span></div>' +
-      rows.map((r) => rowHTML(r, person)).join('');
-  }
-
-  function render(ctrl) {
-    var store = ctrl.store, root = ctrl.root;
-    var person = store.getPerson(ctrl.personId);
-    var months = store.getMonths(ctrl.personId, { year: ctrl.year, month: ctrl.month });
-    var model = ctrl.model;
-
-    var people = store.getPeople().filter((p) => p.is_kid);
-    var seg = '<div class="seg" role="group" aria-label="Person">' +
-      people.map((p) => '<button type="button" data-person="' + esc(p.id) + '" aria-pressed="' + (p.id === ctrl.personId) + '">' + esc(p.name) + '</button>').join('') +
-      '<button type="button" data-person="__both" aria-pressed="' + (ctrl.personId === '__both') + '">Both</button></div>';
-
-    var strip = '<nav class="months" aria-label="Month">' +
-      months.map((m) => '<a href="#" data-ym="' + m.year + '-' + m.month + '" aria-current="' + (m.current ? 'true' : 'false') + '">' + esc(m.current ? m.label : m.short) + '</a>').join('') + '</nav>';
-
-    var head = '<div class="hd"><a class="tw-back" href="index.html?view=family">&larr; Family Wing</a><div class="r"><span class="who">' + esc(person ? person.name : '') + '</span>' +
-      '<span class="mo">' + esc(money.monthLabel(ctrl.year, ctrl.month)) + '</span></div>' +
-      (person && person.sub ? '<div class="sub">' + esc(person.sub) + '</div>' : '') + '</div>';
-
-    if (!model.period) {
-      root.innerHTML = head + seg + strip + emptyHTML(ctrl);
-      wire(ctrl);
-      return;
-    }
-
-    // settled-here groups, one per currency, labelled by where
-    var settledRows = model.settled.rows;
-    var settledHTML = '';
-    if (settledRows.length) {
-      var byCur = {};
-      settledRows.forEach((r) => { (byCur[r.item.currency] = byCur[r.item.currency] || []).push(r); });
-      settledHTML = Object.keys(byCur).map((cur) => {
-        var sub = {}; sub[cur] = money.sumByCurrency(byCur[cur].filter((r) => r.settledHere).map((r) => r.item))[cur] || 0;
-        return groupHTML('Settled in ' + (WHERE[cur] || cur), sub, byCur[cur], person);
-      }).join('');
-    }
-
-    var kid = '<section class="zone"><div class="zone-hd"><h2>' + esc((person ? person.name : '') + '’s month') + '</h2>' +
-      '<span class="tt"><em>subtotal</em> <span class="num">' + esc(money.fmtByCurrency(model.kidSubtotal) || money.fmt(0, person ? person.home_currency : 'GBP')) + '</span></span></div>' +
-      groupHTML('Recurring', model.recurring.subtotal, model.recurring.rows, person) +
-      groupHTML('Extras', model.extras.subtotal, model.extras.rows, person) +
-      settledHTML +
-      '</section>';
-
-    var riding = model.mine.rows.length ? (
-      '<section class="riding"><div class="zone-hd"><h2>Riding along — Mark’s own</h2>' +
-      '<span class="tt"><em>subtotal</em> <span class="num">' + esc(money.fmtByCurrency(model.mine.subtotal)) + '</span></span></div>' +
-      '<p class="why">Nothing to do with ' + esc(person ? person.name : 'the kid') + '. Bundled into the same transfer to pay one fee instead of two.</p>' +
-      model.mine.rows.map((r) => rowHTML(r, person)).join('') + '</section>') : '';
-
-    var addBar = '<p class="note" style="margin-top:26px"><button type="button" class="linkbtn" id="addItem">＋ Add an item</button> · <button type="button" class="linkbtn" id="planBtn">Yearly plan</button> · <button type="button" class="linkbtn" id="reportsBtn">Reports</button> · drag a line to reorder or move it between sections; on touch, use the sheet.</p>';
-
-    root.innerHTML = head + seg + strip + kid + riding + addBar + footerHTML(ctrl);
-    wire(ctrl);
-  }
-
-  function emptyHTML(ctrl) {
-    var budgets = ctrl.store.getBudgets ? (ctrl.store.getBudgets(ctrl.personId, ctrl.year) || []) : [];
-    var n = Array.isArray(budgets) ? budgets.length : 0;
-    return '<section class="zone"><div class="tw-empty" style="text-align:center;padding:40px 0;color:var(--muted)">' +
-      '<h3 style="font-weight:500;color:var(--ink)">Nothing here yet</h3>' +
-      (n ? '<p>' + n + ' recurring item' + (n === 1 ? '' : 's') + ' ready — approve them or change them.</p><button class="btn" id="materialise" style="max-width:280px;margin:14px auto 0">Bring in the recurring plan</button>'
-         : '<p>Add the first item for this month.</p><button class="btn ghost" id="addItem" style="max-width:280px;margin:14px auto 0">＋ Add an item</button>') +
-      '</div></section>';
-  }
-
-  function footerHTML(ctrl) {
-    var model = ctrl.model, rates = ctrl.store.getRates ? ctrl.store.getRates() : [];
-    var outCurs = Object.keys(model.outstanding);
-    // currencies fully sent this month (something transferred, nothing left outstanding) get a SENT line
-    var sentCurs = Object.keys(model.transferred).filter((c) => !model.outstanding[c]);
-    var tl = outCurs.length
-      ? outCurs.map((c) => '<div class="tl"><span>To transfer · ' + esc(c) + '</span><b class="num">' + money.fmt(model.outstanding[c], c) + '</b></div>').join('')
-      : (sentCurs.length
-        ? sentCurs.map((c) => '<div class="tl"><span>Sent · ' + esc(c) + '</span><b class="num">' + money.fmt(model.transferred[c], c) + '</b></div>').join('')
-        : '<div class="tl"><span>To transfer</span><b class="num">—</b></div>');
-    var stamp = (!outCurs.length && sentCurs.length) ? '<div class="stamp"><b>SENT</b><i>' + esc(money.monthLabel(ctrl.year, ctrl.month).toUpperCase()) + '</i></div>' : '';
-    var est = outCurs.length ? fx.estimateLine(model.outstanding, rates) : null;
-    var counts = [];
-    if (model.counts.requested) counts.push(model.counts.requested + ' asked');
-    if (model.counts.rejected) counts.push(model.counts.rejected + ' refused');
-    Object.keys(model.settledHere).forEach((c) => counts.push(money.fmt(model.settledHere[c], c) + ' settled here'));
-    var btn = model.anyOutstanding ? '<button class="btn" id="recordTransfer">Record the ' + esc(money.monthLabel(ctrl.year, ctrl.month).split(' ')[0]) + ' transfer</button>' : '';
-    return '<div class="foot"><div class="in">' + stamp + tl +
-      (est ? '<div class="est" style="margin-top:9px">' + esc(est) + '</div>' : '') +
-      (counts.length ? '<div class="est">' + esc(counts.join(' · ')) + '</div>' : '') +
-      btn + '</div></div>';
-  }
-
-  function wire(ctrl) {
-    var root = ctrl.root;
-    root.querySelectorAll('[data-person]').forEach((b) => b.addEventListener('click', () => ctrl.setPerson(b.getAttribute('data-person'))));
-    root.querySelectorAll('[data-ym]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); var p = a.getAttribute('data-ym').split('-'); ctrl.setMonth(+p[0], +p[1]); }));
-    var mat = root.querySelector('#materialise'); if (mat) mat.addEventListener('click', () => ctrl.materialise());
-    var add = root.querySelector('#addItem'); if (add) add.addEventListener('click', () => ctrl.addItem());
-    var plan = root.querySelector('#planBtn'); if (plan) plan.addEventListener('click', () => ctrl.openBudgets());
-    var rep = root.querySelector('#reportsBtn'); if (rep) rep.addEventListener('click', () => ctrl.openReports());
-    var rec = root.querySelector('#recordTransfer'); if (rec) rec.addEventListener('click', () => ctrl.recordTransfer());
-    // row → open the item sheet (Remit.ui.sheet, from slice 5). Enter/Space too, for a11y.
-    root.querySelectorAll('[data-item]').forEach((rowEl) => {
-      var open = () => ctrl.openItem(rowEl.getAttribute('data-item'));
-      rowEl.addEventListener('click', open);
-      rowEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
-    });
-    if (Remit.ui.wireDrag) Remit.ui.wireDrag(ctrl); // slice 6
-  }
-
-  // ── the month controller ──────────────────────────────────────────────────
-  function mountMonth(root, store, opts) {
-    opts = opts || {};
-    var ctrl = {
-      root: root, store: store, personId: null, year: null, month: null, model: null,
-    };
-    // default person: first kid with data, else first kid
-    var kids = store.getPeople().filter((p) => p.is_kid);
-    ctrl.personId = opts.personId || (kids[0] && kids[0].id) || (store.getPeople()[0] && store.getPeople()[0].id);
-    // default month: the person's latest period, else the current month
-    var strip = store.getMonths(ctrl.personId);
-    var cur = strip.find((m) => m.current) || strip[strip.length - 1];
-    ctrl.year = opts.year || cur.year; ctrl.month = opts.month || cur.month;
-
-    ctrl.refresh = async function () {
-      // lazy materialisation (spec §4.1/§5.5): first view of a real kid's month with a yearly plan
-      // brings the recurring budget in, unapproved. Idempotent — materialise never duplicates.
-      if (ctrl.personId !== '__both') {
-        var probe = await store.getMonthData(ctrl.personId, ctrl.year, ctrl.month);
-        if ((!probe.period || probe.items.length === 0)) {
-          var budgets = await Promise.resolve(store.getBudgets(ctrl.personId, ctrl.year));
-          if (budgets && budgets.length) await store.materialise(ctrl.personId, ctrl.year, ctrl.month);
-        }
-      }
-      var data = await store.getMonthData(ctrl.personId === '__both' ? (kids[0] && kids[0].id) : ctrl.personId, ctrl.year, ctrl.month);
-      if (ctrl.personId === '__both') {
-        // combined: merge every kid's items for this month (per-currency totals still never cross-sum)
-        var merged = data.items.slice(), msgs = data.messages.slice(), period = data.period;
-        for (var i = 1; i < kids.length; i++) { var d2 = await store.getMonthData(kids[i].id, ctrl.year, ctrl.month); merged = merged.concat(d2.items); msgs = msgs.concat(d2.messages); period = period || d2.period; }
-        ctrl.model = money.monthModel(period || { id: '__both' }, merged, { messages: msgs, viewer: store.viewer() });
-      } else {
-        ctrl.model = money.monthModel(data.period || { id: '__none' }, data.items, { messages: data.messages, viewer: store.viewer() });
-      }
-      render(ctrl);
-    };
-    ctrl.setPerson = function (id) { ctrl.personId = id; var s = store.getMonths(id === '__both' ? (kids[0] && kids[0].id) : id); var c = s.find((m) => m.current) || s[s.length - 1]; ctrl.refresh(); };
-    ctrl.setMonth = function (y, m) { ctrl.year = y; ctrl.month = m; ctrl.refresh(); };
-    ctrl.materialise = async function () { await store.materialise(ctrl.personId, ctrl.year, ctrl.month); ctrl.refresh(); };
-    ctrl.ensurePeriod = function () { return (ctrl.model && ctrl.model.period && ctrl.model.period.id && ctrl.model.period.id !== '__none' && ctrl.model.period.id !== '__both') ? Promise.resolve(ctrl.model.period) : store.ensurePeriod(ctrl.personId, ctrl.year, ctrl.month); };
-    ctrl.openItem = function (id) { if (Remit.ui.openSheet) Remit.ui.openSheet(ctrl, id); };
-    ctrl.addItem = function () { if (Remit.ui.openSheet) Remit.ui.openSheet(ctrl, null); };
-    ctrl.recordTransfer = function () { if (Remit.ui.openTransfer) Remit.ui.openTransfer(ctrl); };
-    ctrl.openBudgets = function () { if (Remit.ui.openBudgets) Remit.ui.openBudgets(ctrl); };
-    ctrl.openReports = function () { if (Remit.ui.openReports) Remit.ui.openReports(ctrl); };
-    ctrl.itemById = function (id) { var m = ctrl.model; return [].concat(m.recurring.rows, m.extras.rows, m.settled.rows, m.mine.rows).map((r) => r.item).find((it) => it.id === id) || null; };
-    ctrl.moveItem = async function (draggedId, targetId) {
-      var d = ctrl.itemById(draggedId), t = ctrl.itemById(targetId);
-      if (!d || !t || d.id === t.id) return;
-      if (d.status === 'paid' && d.transfer_id) return;   // locked to a transfer — no move
-      await store.setSort(d.id, (t.sort_order || 0) - 0.5, t.bucket);  // drop just before the target, into its section
-    };
-    ctrl.reorderItem = function (id, dir) { return store.reorder(id, dir); };
-
-    store.subscribe(() => ctrl.refresh());
-    ctrl.refresh();
-    return ctrl;
-  }
-
-  Remit.ui = Remit.ui || {};
-  Remit.ui.mountMonth = mountMonth;
-  Remit.ui.esc = esc;
-  Remit.ui.rowHTML = rowHTML;
-  Remit.ui.chipFor = chipFor;
-})(typeof globalThis !== 'undefined' ? globalThis : this);
-</script>
-<!-- src/ui/sheet.js -->
-<script>
-/* eslint-disable */
-/* =============================================================================
- * remit ui/sheet.js — the item sheet (spec §4.2). A bottom sheet, not a page. Description ·
- * amount · currency · bucket · settle · note · status · message thread. Reject opens the message
- * field pre-focused with the status already set — one action, not two. Delete is soft, with undo.
- * A paid item locked to a transfer is read-only until detached (spec §5.8).
- * ========================================================================== */
-(function (root) {
-  'use strict';
-  var Remit = root.Remit = root.Remit || {};
-  var money = Remit.money;
-  var esc = function (s) { return Remit.ui.esc(s); };
-
-  var BUCKETS = [['recurring', 'Recurring'], ['extras', 'Extras'], ['mine', 'Riding along']];
-  var CURR = ['GBP', 'USD', 'AUD'];
-  var STATUS = [['requested', 'Asked'], ['approved', 'Approved'], ['rejected', 'Refused'], ['paid', 'Paid']];
-  var SETTLE = [['transfer', 'In the transfer'], ['paid_here', 'Settled here']];
-
+  // toast / undo (moved here from the retired sheet.js so it survives — shared by month/transfer/etc.)
   function toast(msg, opts) {
     opts = opts || {};
     var t = document.createElement('div');
@@ -1511,170 +1669,418 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     return kill;
   }
 
-  function findItem(ctrl, id) {
-    var m = ctrl.model, all = [].concat(m.recurring.rows, m.extras.rows, m.settled.rows, m.mine.rows);
-    var r = all.find((x) => x.item.id === id);
-    return r ? r.item : null;
+  // a tappable pill (a button, not a <select> — WebKit renders a styled select's value black on dark,
+  // failing contrast). Tapping cycles the currency for that line.
+  function curPill(cur, homeCur) {
+    return '<button type="button" class="curpill' + (cur !== homeCur ? ' off-home' : '') + '" data-curbtn data-cur="' + esc(cur) + '" aria-label="Currency ' + esc(cur) + ' — tap to change">' + esc(cur) + '</button>';
+  }
+  function nextCur(cur) { var i = CURR.indexOf(cur); return CURR[(i + 1) % CURR.length]; }
+
+  // an editable line row. `it` null → the empty "type to add" row for a section context.
+  function erow(it, homeCur, addCtx, selected) {
+    var isAdd = !it;
+    var id = isAdd ? '' : it.id;
+    var grip = isAdd ? '<span class="grip" aria-hidden="true"></span>'
+      : '<button type="button" class="grip" data-grip="' + esc(id) + '" aria-label="Reorder or select ' + esc(it.description || 'line') + '">⠿</button>';
+    var desc = isAdd ? '' : (it.description || '');
+    var note = isAdd ? '' : (it.note || '');
+    var amt = isAdd ? '' : (it.amount != null ? Number(it.amount).toFixed(2) : '');
+    var cur = isAdd ? (addCtx.currency || homeCur) : it.currency;
+    var paid = !isAdd && it.status === 'paid';
+    var ctxAttr = isAdd ? (' data-add data-bucket="' + esc(addCtx.bucket) + '"' + (addCtx.section_id ? ' data-section="' + esc(addCtx.section_id) + '"' : '') + ' data-cur="' + esc(cur) + '"') : (' data-item="' + esc(id) + '"');
+    var tick = isAdd ? '<span class="tick" aria-hidden="true"></span>'
+      : '<button type="button" class="tick' + (paid ? ' on' : '') + '" data-tick="' + esc(id) + '" role="switch" aria-checked="' + paid + '" aria-label="Paid"' + (paid ? '' : '') + '>' + (paid ? '✓' : '') + '</button>';
+    return '<div class="row erow' + (paid ? ' paid' : '') + (isAdd ? ' addrow' : '') + (selected ? ' sel' : '') + '"' + ctxAttr + '>' +
+      grip + tick +
+      '<span class="nm">' +
+        '<input class="what" data-f="description" value="' + esc(desc) + '" placeholder="' + (isAdd ? 'Add an item…' : 'What is it?') + '" aria-label="What" autocomplete="off">' +
+        '<input class="note" data-f="note" value="' + esc(note) + '" placeholder="note" aria-label="Note" autocomplete="off">' +
+      '</span>' +
+      curPill(cur, homeCur) +
+      '<input class="amt num" data-f="amount" inputmode="decimal" value="' + esc(amt === '' ? '' : amt) + '" placeholder="0.00" aria-label="Amount" autocomplete="off">' +
+      (isAdd ? '<span class="del" aria-hidden="true"></span>' : '<button type="button" class="del" data-del="' + esc(id) + '" aria-label="Delete ' + esc(desc) + '">×</button>') +
+      '</div>';
   }
 
-  function pillRow(label, name, options, current, dangerValue) {
-    var pills = options.map((o) => {
-      var val = o[0], text = o[1];
-      var on = val === current;
-      var danger = (dangerValue && val === dangerValue) ? ' danger' : '';
-      return '<button type="button" data-set="' + name + '" data-val="' + val + '" class="' + (on ? 'on' + danger : '') + '" aria-pressed="' + on + '">' + esc(text) + '</button>';
+  // one section: its lines split home-currency-first, then an "In <CUR>" subgroup per other currency,
+  // each with a subtotal; then the empty add row (home currency).
+  function sectionBlock(label, items, person, addCtx, sel, opts) {
+    opts = opts || {};
+    var homeCur = person && person.home_currency || 'GBP';
+    sel = sel || new Set();
+    var sub = money.sumByCurrency(items);
+    var byCur = {}; items.forEach((it) => { (byCur[it.currency] = byCur[it.currency] || []).push(it); });
+    var order = Object.keys(byCur).sort((a, b) => (a === homeCur ? -1 : b === homeCur ? 1 : a.localeCompare(b)));
+    var body = order.map((cur) => {
+      var rows = byCur[cur].map((it) => erow(it, homeCur, null, sel.has(it.id))).join('');
+      if (cur === homeCur) return rows;
+      var s = {}; s[cur] = money.sumByCurrency(byCur[cur])[cur];
+      return '<div class="subbk">In ' + esc(cur) + '<span class="num">' + esc(money.fmtByCurrency(s)) + '</span></div>' + rows;
     }).join('');
-    return '<div class="f"><label>' + esc(label) + '</label><div class="v pills" data-group="' + name + '">' + pills + '</div></div>';
+    var subNum = '<span class="num">' + esc(money.fmtByCurrency(sub)) + '</span>';
+    var head;
+    if (opts.customSection) {
+      var s = opts.customSection;
+      head = '<div class="bk custom"><input class="secname" data-secname="' + esc(s.id) + '" value="' + esc(s.name) + '" aria-label="Section name">' +
+        subNum + '<button type="button" class="delsec" data-delsec="' + esc(s.id) + '" aria-label="Delete section ' + esc(s.name) + '">×</button></div>';
+    } else if (opts.defaults) {
+      head = '<div class="bk">' + esc(label) + ' <button type="button" class="linkbtn edefaults" id="editDefaults">Edit defaults</button>' + subNum + '</div>';
+    } else {
+      head = '<div class="bk">' + esc(label) + subNum + '</div>';
+    }
+    return head + body + erow(null, homeCur, addCtx, false);
   }
 
-  function close(host) { host.scrim.classList.remove('open'); host.sheet.classList.remove('open'); setTimeout(() => host.wrap.remove(), 240); document.removeEventListener('keydown', host.onKey); }
+  function render(ctrl) {
+    var store = ctrl.store, root = ctrl.root;
+    var person = store.getPerson(ctrl.personId);
+    var model = ctrl.model;
+    var homeCur = person && person.home_currency || 'GBP';
 
-  function openSheet(ctrl, itemId) {
-    var store = ctrl.store, viewer = store.viewer();
-    var isNew = !itemId;
-    var person = store.getPerson(ctrl.personId === '__both' ? null : ctrl.personId) || store.getPeople()[0];
-    var existing = isNew ? null : findItem(ctrl, itemId);
-    if (!isNew && !existing) return;
+    var people = store.getPeople().filter((p) => p.is_kid);
+    var seg = '<div class="seg" role="group" aria-label="Person">' +
+      people.map((p) => '<button type="button" data-person="' + esc(p.id) + '" aria-pressed="' + (p.id === ctrl.personId) + '">' + esc(p.name) + '</button>').join('') +
+      '</div>';
 
-    var draft = existing ? {
-      description: existing.description, amount: existing.amount, currency: existing.currency,
-      bucket: existing.bucket, settle: existing.settle, status: existing.status, note: existing.note || '',
-    } : {
-      description: '', amount: '', currency: (person && person.home_currency) || 'GBP',
-      bucket: 'extras', settle: 'transfer', status: 'requested', note: '',
-    };
-    var locked = !!(existing && existing.status === 'paid' && existing.transfer_id);
-    var thread = existing ? money.threadFor(existing.id, store.getMessages ? store.getMessages() : []) : [];
+    var years = (ctrl.years && ctrl.years.length) ? ctrl.years : [ctrl.year];
+    var yearStrip = '<nav class="years" aria-label="Year">' +
+      years.map((y) => '<button type="button" data-year="' + y + '" aria-pressed="' + (y === ctrl.year) + '">' + y + '</button>').join('') + '</nav>';
+    var strip = yearStrip + '<nav class="mgrid" aria-label="Month">' +
+      MONTHS_SHORT.map((mn, i) => '<button type="button" data-ym="' + ctrl.year + '-' + (i + 1) + '" aria-current="' + ((i + 1) === ctrl.month ? 'true' : 'false') + '">' + mn + '</button>').join('') + '</nav>';
 
-    var wrap = document.createElement('div');
-    var scrim = document.createElement('div'); scrim.className = 'scrim';
-    var sheet = document.createElement('div'); sheet.className = 'sheet'; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true');
-    sheet.setAttribute('aria-label', existing ? existing.description : 'New item');
-    wrap.appendChild(scrim); wrap.appendChild(sheet);
-    document.body.appendChild(wrap);
-    var host = { wrap: wrap, scrim: scrim, sheet: sheet, onKey: function (e) { if (e.key === 'Escape') close(host); } };
-    document.addEventListener('keydown', host.onKey);
-    scrim.addEventListener('click', () => close(host));
+    var title = (person ? person.name + '’s ' : '') + money.monthName(ctrl.month);
+    var head = '<div class="hd"><a class="tw-back" href="index.html?view=family">&larr; Family Wing</a><div class="r"><span class="who">' + esc(person ? person.name : '') + '</span>' +
+      '<span class="mo">' + esc(money.monthLabel(ctrl.year, ctrl.month)) + '</span></div>' +
+      (person && person.sub ? '<div class="sub">' + esc(person.sub) + '</div>' : '') + '</div>';
 
-    if (locked) {
-      sheet.innerHTML = '<div class="grab"></div>' +
-        '<div class="f"><label>What</label><span class="v">' + esc(existing.description) + '</span></div>' +
-        '<div class="f"><label>Amount</label><span class="v num">' + money.fmt(existing.amount, existing.currency) + '</span></div>' +
-        '<p class="lockmsg">This item is paid and locked to its transfer. Detach it to edit or move it.</p>' +
-        '<div class="acts"><button class="btn ghost" data-act="cancel">Close</button><button class="btn" data-act="detach">Detach from transfer</button></div>';
-      sheet.querySelector('[data-act="cancel"]').addEventListener('click', () => close(host));
-      sheet.querySelector('[data-act="detach"]').addEventListener('click', async () => { await store.updateItem(existing.id, { transfer_id: null, status: 'approved' }); close(host); toast('Detached — you can edit it now.'); });
-      requestAnimationFrame(() => { scrim.classList.add('open'); sheet.classList.add('open'); });
+    if (!model || !model.period) {
+      // no period yet: still offer the recurring + extras add rows so the first line can be typed
+      var emptyKid = '<section class="zone"><div class="zone-hd"><h2>' + esc(title) + '</h2></div>' +
+        sectionBlock('Recurring', [], person, { bucket: 'recurring' }) +
+        sectionBlock('Extras', [], person, { bucket: 'extras' }) + '</section>';
+      root.innerHTML = head + seg + strip + emptyKid + footerHTML(ctrl);
+      wire(ctrl);
       return;
     }
 
-    render();
-    requestAnimationFrame(() => { scrim.classList.add('open'); sheet.classList.add('open'); });
-    // opening an item marks its thread read → clears the unread mark on the row (spec §4.2)
-    if (existing) store.markThreadRead(existing.id, viewer);
+    var sel = ctrl.selection || new Set();
+    var markAll = model.anyLines ? '<button type="button" class="linkbtn" id="markAllPaid">Mark all paid</button>' : '';
+    var kid = '<section class="zone"><div class="zone-hd"><h2>' + esc(title) + '</h2>' +
+      '<span class="tt">' + (markAll ? markAll + ' · ' : '') + '<em>total</em> <span class="num">' + esc(money.fmtByCurrency(model.total) || money.fmt(0, homeCur)) + '</span></span></div>' +
+      sectionBlock('Recurring', model.recurring.rows, person, { bucket: 'recurring' }, sel, { defaults: true }) +
+      sectionBlock('Extras', model.extras.rows, person, { bucket: 'extras' }, sel) +
+      model.custom.map((c) => sectionBlock(c.section.name, c.rows, person, { bucket: 'custom', section_id: c.section.id }, sel, { customSection: c.section })).join('') +
+      '<p class="addsec"><button type="button" class="linkbtn" id="addSection">＋ Add section</button></p>' +
+      '</section>';
 
-    function render() {
-      var threadHTML = thread.length ? ('<div class="thread">' + thread.map((mmsg) => {
-        var who = (store.getPeople().find((p) => p.email === mmsg.author_email) || {}).name || mmsg.author_email;
-        return '<div class="msg"><div class="mh">' + esc(who) + '</div><p>' + esc(mmsg.body) + '</p></div>';
-      }).join('') + '</div>') : '';
-      var addMsg = existing ? '<div class="addmsg"><input id="fg-newmsg" placeholder="Add a message…" aria-label="Add a message"><button type="button" class="btn ghost" id="fg-sendmsg" style="margin:0;flex:0 0 auto">Send</button></div>' : '';
+    var riding =
+      '<section class="riding"><div class="zone-hd"><h2>Riding along — Mark’s own</h2>' +
+      '<span class="tt"><em>subtotal</em> <span class="num">' + esc(money.fmtByCurrency(model.mine.subtotal) || money.fmt(0, homeCur)) + '</span></span></div>' +
+      '<p class="why">Nothing to do with ' + esc(person ? person.name : 'the kid') + '. Bundled into the same transfer to pay one fee instead of two.</p>' +
+      sectionBlock('Riding along', model.mine.rows, person, { bucket: 'mine' }, sel) + '</section>';
 
-      sheet.innerHTML = '<div class="grab"></div>' +
-        '<div class="f"><label>What</label><div class="v"><input id="fld-desc" value="' + esc(draft.description) + '" placeholder="What is it?" aria-label="Description"></div></div>' +
-        '<div class="f"><label>Amount</label><div class="v"><input id="fld-amount" inputmode="decimal" value="' + esc(draft.amount === '' ? '' : draft.amount) + '" placeholder="0.00" aria-label="Amount"></div></div>' +
-        pillRow('Currency', 'currency', CURR.map((c) => [c, c]), draft.currency) +
-        pillRow('Section', 'bucket', BUCKETS, draft.bucket) +
-        (existing ? '<div class="f"><label>Order</label><div class="v pills"><button type="button" id="mv-up">↑ Move up</button><button type="button" id="mv-down">↓ Move down</button></div></div>' : '') +
-        pillRow('Settle', 'settle', SETTLE, draft.settle) +
-        pillRow('Status', 'status', STATUS, draft.status, 'rejected') +
-        '<div class="f"><label>Note</label><div class="v"><textarea id="fld-note" placeholder="Why — the bit that matters" aria-label="Note">' + esc(draft.note) + '</textarea></div></div>' +
-        '<div id="msgbox-slot"></div>' +
-        threadHTML + addMsg +
-        '<div class="acts">' +
-          '<button class="btn ghost" data-act="cancel">Cancel</button>' +
-          (existing ? '<button class="btn ghost danger" data-act="delete" style="flex:0 0 auto">Delete</button>' : '') +
-          '<button class="btn" data-act="save" id="saveBtn">' + saveLabel() + '</button>' +
-        '</div>';
-      wire();
-      updateMsgbox();
+    var addBar = '<p class="note" style="margin-top:26px"><button type="button" class="linkbtn" id="planBtn">Recurring defaults</button> · <button type="button" class="linkbtn" id="reportsBtn">Reports</button></p>';
+
+    root.innerHTML = head + seg + strip + kid + riding + settledHTML(ctrl) + addBar + selbarHTML(ctrl) + footerHTML(ctrl);
+    wire(ctrl);
+  }
+
+  // "Settled in <country>" — one section per currency, listing each transfer (date or "date unknown")
+  // and each paid_here line, subtotalled to Settled(currency).
+  function settledHTML(ctrl) {
+    var model = ctrl.model; if (!model || !model.period) return '';
+    var paidHereItems = ctrl.allRows().filter(function (it) { return it.settle === 'paid_here'; });
+    var transfers = model.transfers || [];
+    var curs = money.currenciesOf(model.transfersDelivered, model.paidHere);
+    if (!curs.length) return '';
+    return curs.map(function (c) {
+      var tx = transfers.filter(function (t) { return t.currency === c; });
+      var ph = paidHereItems.filter(function (it) { return it.currency === c; });
+      if (!tx.length && !ph.length) return '';
+      var sub = {}; sub[c] = (model.settled[c] || 0);
+      var rows = tx.map(function (t) {
+        var when = t.sent_on ? fx.rateDayLabel(t.sent_on) : 'date unknown';
+        var prov = t.provider ? (' · ' + esc(t.provider)) : '';
+        return '<div class="srow" data-xfer="' + esc(t.id) + '"><span class="nm"><b>Transfer</b><em>' + esc(when) + prov + '</em></span>' +
+          '<span class="am num">' + money.fmt(t.amount_delivered || 0, c) + '</span>' +
+          '<button type="button" class="del" data-delxfer="' + esc(t.id) + '" aria-label="Delete transfer">×</button></div>';
+      }).join('');
+      var phRows = ph.map(function (it) {
+        return '<div class="srow"><span class="nm"><b>' + esc(it.description) + '</b><em>settled here</em></span>' +
+          '<span class="am num">' + money.fmt(it.amount, c) + '</span><span class="del"></span></div>';
+      }).join('');
+      return '<section class="settled"><div class="zone-hd"><h2>Settled in ' + esc(WHERE[c] || c) + '</h2>' +
+        '<span class="tt"><span class="num">' + esc(money.fmtByCurrency(sub)) + '</span></span></div>' + rows + phRows + '</section>';
+    }).join('');
+  }
+
+  // the multi-select action bar (shown only while a selection is live), over the transfer foot
+  function selbarHTML(ctrl) {
+    var n = ctrl.selection ? ctrl.selection.size : 0;
+    if (!n) return '';
+    return '<div class="selbar" role="toolbar" aria-label="Selected lines"><div class="in">' +
+      '<span class="cnt">' + n + ' selected</span>' +
+      '<button type="button" class="linkbtn" data-sel="paid">Mark paid</button>' +
+      '<button type="button" class="linkbtn" data-sel="unpaid">Mark unpaid</button>' +
+      '<button type="button" class="linkbtn danger" data-sel="delete">Delete</button>' +
+      '<button type="button" class="linkbtn" data-sel="clear">Clear</button>' +
+      '</div></div>';
+  }
+
+  // The "Transfers required" summary panel: one row per currency still outstanding — Remaining large,
+  // its USD equivalent small beside it with rate + rate date. Overpaid shows on its own. Always shows
+  // the record button.
+  function footerHTML(ctrl) {
+    var model = ctrl.model, rates = ctrl.store.getRates ? ctrl.store.getRates() : [];
+    if (!model) return '';
+    var curs = (model.currencies || []).filter(function (c) { return money.cents(model.remaining[c] || 0) !== 0; });
+    var rows = curs.length ? curs.map(function (c) {
+      var rem = model.remaining[c] || 0;
+      var neg = money.cents(rem) < 0;
+      var label = neg ? ('Overpaid · ' + c) : ('To transfer · ' + c);
+      var m1 = {}; m1[c] = rem;
+      var usd = (!neg && c !== 'USD') ? fx.estimateLine(m1, rates) : null;
+      return '<div class="tl"><span>' + esc(label) + '</span><b class="num">' + money.fmt(Math.abs(rem), c) + '</b></div>' +
+        (usd ? '<div class="est">' + esc(usd) + '</div>' : '');
+    }).join('') : '<div class="tl"><span>Settled</span><b class="num">Nothing to transfer</b></div>';
+    var title = curs.length ? '<div class="foot-t">Transfers required</div>' : '';
+    var btn = '<button class="btn" id="recordTransfer">Record a ' + esc(money.monthName(ctrl.month)) + ' transfer</button>';
+    return '<div class="foot"><div class="in">' + title + rows + btn + '</div></div>';
+  }
+
+  // ── wiring ──────────────────────────────────────────────────────────────────
+  function wire(ctrl) {
+    var root = ctrl.root, store = ctrl.store;
+    root.querySelectorAll('[data-person]').forEach((b) => b.addEventListener('click', () => ctrl.setPerson(b.getAttribute('data-person'))));
+    root.querySelectorAll('[data-year]').forEach((b) => b.addEventListener('click', () => ctrl.setYear(+b.getAttribute('data-year'))));
+    root.querySelectorAll('[data-ym]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); var p = a.getAttribute('data-ym').split('-'); ctrl.setMonth(+p[0], +p[1]); }));
+    var plan = root.querySelector('#planBtn'); if (plan) plan.addEventListener('click', () => ctrl.openBudgets());
+    var edef = root.querySelector('#editDefaults'); if (edef) edef.addEventListener('click', () => ctrl.openBudgets());
+    var addsec = root.querySelector('#addSection'); if (addsec) addsec.addEventListener('click', () => ctrl.addSection());
+    var rep = root.querySelector('#reportsBtn'); if (rep) rep.addEventListener('click', () => ctrl.openReports());
+    // custom-section rename + delete
+    root.querySelectorAll('[data-secname]').forEach((inp) => {
+      inp.setAttribute('data-orig', inp.value);
+      var save = () => { var v = (inp.value || '').trim(); if (v && v !== inp.getAttribute('data-orig')) ctrl.renameSection(inp.getAttribute('data-secname'), v); };
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } else if (e.key === 'Escape') { inp.value = inp.getAttribute('data-orig') || ''; inp.blur(); } });
+      inp.addEventListener('blur', save);
+    });
+    root.querySelectorAll('[data-delsec]').forEach((b) => b.addEventListener('click', () => ctrl.deleteSection(b.getAttribute('data-delsec'))));
+    // settled-section transfers: tap the row to edit, × to delete (with undo)
+    root.querySelectorAll('.srow[data-xfer]').forEach((rowEl) => {
+      var xid = rowEl.getAttribute('data-xfer');
+      rowEl.addEventListener('click', (e) => { if (e.target.closest('[data-delxfer]')) return; ctrl.editTransfer(xid); });
+    });
+    root.querySelectorAll('[data-delxfer]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); ctrl.deleteTransfer(b.getAttribute('data-delxfer')); }));
+    var rec = root.querySelector('#recordTransfer'); if (rec) rec.addEventListener('click', () => ctrl.recordTransfer());
+    var mall = root.querySelector('#markAllPaid'); if (mall) mall.addEventListener('click', () => ctrl.markAllPaid());
+    root.querySelectorAll('.selbar [data-sel]').forEach((b) => b.addEventListener('click', () => {
+      var a = b.getAttribute('data-sel');
+      if (a === 'paid') ctrl.markSelected('paid');
+      else if (a === 'unpaid') ctrl.markSelected('requested');
+      else if (a === 'delete') ctrl.deleteSelected();
+      else ctrl.clearSelect();
+    }));
+
+    root.querySelectorAll('.erow').forEach((rowEl) => wireRow(ctrl, rowEl));
+    if (Remit.ui.wireDrag) Remit.ui.wireDrag(ctrl);
+    // if we asked to focus a section's add-row after a save, do it now
+    if (ctrl._focusAdd) {
+      var sel = '.addrow[data-bucket="' + ctrl._focusAdd.bucket + '"]' + (ctrl._focusAdd.section_id ? '[data-section="' + ctrl._focusAdd.section_id + '"]' : ':not([data-section])');
+      var target = root.querySelector(sel);
+      if (target) { var w = target.querySelector('.what'); if (w && w.focus) w.focus(); }
+      ctrl._focusAdd = null;
     }
-
-    function saveLabel() { return (draft.status === 'rejected') ? 'Refuse & send' : (isNew ? 'Add item' : 'Save'); }
-
-    function updateMsgbox() {
-      var slot = sheet.querySelector('#msgbox-slot');
-      if (draft.status === 'rejected') {
-        if (!slot.querySelector('textarea')) {
-          slot.innerHTML = '<div class="msgbox"><h4>Say why</h4><textarea id="reject-msg" rows="2" placeholder="Tell them why — lands as a mark on the line, no email."></textarea></div>';
-          var ta = slot.querySelector('#reject-msg'); if (ta && ta.focus) ta.focus();
-        }
-      } else { slot.innerHTML = ''; }
-      var sb = sheet.querySelector('#saveBtn'); if (sb) sb.textContent = saveLabel();
-    }
-
-    function readInputs() {
-      draft.description = (sheet.querySelector('#fld-desc').value || '').trim();
-      var a = (sheet.querySelector('#fld-amount').value || '').trim();
-      draft.amount = a === '' ? '' : Number(a);
-      draft.note = (sheet.querySelector('#fld-note').value || '').trim();
-    }
-
-    function wire() {
-      sheet.querySelectorAll('[data-set]').forEach((b) => b.addEventListener('click', () => {
-        var name = b.getAttribute('data-set'), val = b.getAttribute('data-val');
-        draft[name] = val;
-        // reflect selection within the group
-        b.parentNode.querySelectorAll('button').forEach((x) => { x.classList.remove('on', 'danger'); x.setAttribute('aria-pressed', 'false'); });
-        b.classList.add('on'); if (name === 'status' && val === 'rejected') b.classList.add('danger'); b.setAttribute('aria-pressed', 'true');
-        if (name === 'status') updateMsgbox();
-      }));
-      sheet.querySelector('[data-act="cancel"]').addEventListener('click', () => close(host));
-      var up = sheet.querySelector('#mv-up'), down = sheet.querySelector('#mv-down');
-      if (up) up.addEventListener('click', async () => { await store.reorder(existing.id, -1); toast('Moved up.'); });
-      if (down) down.addEventListener('click', async () => { await store.reorder(existing.id, +1); toast('Moved down.'); });
-      var del = sheet.querySelector('[data-act="delete"]');
-      if (del) del.addEventListener('click', async () => {
-        close(host);
-        await store.softDelete(existing.id);
-        toast('Deleted “' + existing.description + '”.', { actionLabel: 'Undo', onAction: () => store.undoDelete(existing.id) });
-      });
-      var send = sheet.querySelector('#fg-sendmsg');
-      if (send) send.addEventListener('click', async () => {
-        var inp = sheet.querySelector('#fg-newmsg'); var body = (inp.value || '').trim(); if (!body) return;
-        await store.addMessage(existing.id, body, viewer); close(host); toast('Message added.');
-      });
-      sheet.querySelector('[data-act="save"]').addEventListener('click', save);
-    }
-
-    async function save() {
-      readInputs();
-      if (!draft.description) { sheet.querySelector('#fld-desc').focus(); return; }
-      if (draft.amount === '' || isNaN(draft.amount)) { sheet.querySelector('#fld-amount').focus(); return; }
-      var rejectMsg = (draft.status === 'rejected') ? ((sheet.querySelector('#reject-msg') || {}).value || '').trim() : '';
-
-      if (isNew) {
-        var period = await ctrl.ensurePeriod();
-        await store.addItem(period.id, { description: draft.description, amount: draft.amount, currency: draft.currency, bucket: draft.bucket, settle: draft.settle, status: draft.status, note: draft.note || null });
-        close(host); toast('Added.');
-        return;
-      }
-      // existing: apply field changes; a reject with a message goes through the one-action path
-      var patch = { description: draft.description, amount: draft.amount, currency: draft.currency, bucket: draft.bucket, settle: draft.settle, note: draft.note || null };
-      if (draft.status === 'rejected' && existing.status !== 'rejected') {
-        await store.updateItem(existing.id, patch);
-        await store.rejectWithMessage(existing.id, rejectMsg, viewer);
-      } else {
-        patch.status = draft.status;
-        await store.updateItem(existing.id, patch);
-        if (rejectMsg) await store.addMessage(existing.id, rejectMsg, viewer);
-      }
-      close(host); toast('Saved.');
+    if (ctrl._focusSection) {
+      var names = root.querySelectorAll('[data-secname]');
+      var last = names[names.length - 1];
+      if (last && last.focus) { last.focus(); if (last.select) last.select(); }
+      ctrl._focusSection = false;
     }
   }
 
+  function num(v) { v = String(v == null ? '' : v).trim(); if (v === '') return null; var n = Number(v); return isNaN(n) ? null : n; }
+
+  function wireRow(ctrl, rowEl) {
+    var store = ctrl.store;
+    var isAdd = rowEl.hasAttribute('data-add');
+    var id = rowEl.getAttribute('data-item');
+    var state = { committed: false, busy: false };
+
+    var homeCur = (store.getPerson(ctrl.personId) || {}).home_currency || 'GBP';
+    var fields = rowEl.querySelectorAll('input[data-f]');
+    fields.forEach((inp) => {
+      inp.setAttribute('data-orig', inp.value);
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); commit(true); }
+        else if (e.key === 'Escape') { e.preventDefault(); inp.value = inp.getAttribute('data-orig') || ''; inp.blur(); }
+      });
+      // commit only when focus leaves the ROW entirely (moving between a row's own fields must not
+      // fire a premature save — otherwise an add-row would create the item on the first field's blur)
+      inp.addEventListener('blur', () => { setTimeout(() => { if (!rowEl.contains(document.activeElement)) commit(false); }, 0); });
+    });
+
+    // tapping a row control must NOT blur the active input (WebKit doesn't focus buttons on tap, so a
+    // blur-commit would otherwise fire mid-edit). preventDefault on pointerdown keeps focus put.
+    rowEl.querySelectorAll('[data-curbtn],[data-tick],[data-del]').forEach((btn) => {
+      btn.addEventListener('pointerdown', (e) => e.preventDefault());
+      btn.addEventListener('mousedown', (e) => e.preventDefault());
+    });
+
+    // currency pill: tap to cycle. On an existing row it saves immediately; on the add-row it just
+    // changes what the new line will be created as (read back at commit time).
+    var curBtn = rowEl.querySelector('[data-curbtn]');
+    if (curBtn) curBtn.addEventListener('click', async () => {
+      var next = nextCur(curBtn.getAttribute('data-cur'));
+      if (isAdd) {
+        curBtn.setAttribute('data-cur', next); curBtn.textContent = next;
+        curBtn.classList.toggle('off-home', next !== homeCur);
+        curBtn.setAttribute('aria-label', 'Currency ' + next + ' — tap to change');
+      } else { await store.updateItem(id, { currency: next }); }
+    });
+
+    var tickBtn = rowEl.querySelector('[data-tick]');
+    if (tickBtn) tickBtn.addEventListener('click', async () => {
+      var it = ctrl.itemById(id); if (!it) return;
+      await store.updateItem(id, { status: it.status === 'paid' ? 'requested' : 'paid' });
+    });
+    var delBtn = rowEl.querySelector('[data-del]');
+    if (delBtn) delBtn.addEventListener('click', async () => {
+      var it = ctrl.itemById(id);
+      await store.softDelete(id);
+      Remit.ui.toast('Deleted “' + ((it && it.description) || 'item') + '”.', { actionLabel: 'Undo', onAction: () => store.undoDelete(id) });
+    });
+
+    function read() {
+      var o = {};
+      fields.forEach((inp) => { o[inp.getAttribute('data-f')] = inp.value; });
+      return o;
+    }
+
+    async function commit(advance) {
+      if (state.busy || state.committed) return;
+      var vals = read();
+      if (isAdd) {
+        var desc = (vals.description || '').trim();
+        var amount = num(vals.amount);
+        if (!desc && amount == null) return;                 // empty add row → nothing to do
+        state.busy = true; state.committed = true;
+        var period = await ctrl.ensurePeriod();
+        var pill = rowEl.querySelector('[data-curbtn]');
+        var fieldsOut = {
+          description: desc || '(untitled)', amount: amount == null ? 0 : amount,
+          currency: (pill && pill.getAttribute('data-cur')) || homeCur,
+          bucket: rowEl.getAttribute('data-bucket') || 'extras', settle: 'transfer', status: 'requested',
+          note: (vals.note || '').trim() || null,
+        };
+        var secId = rowEl.getAttribute('data-section'); if (secId) fieldsOut.section_id = secId;
+        if (advance) ctrl._focusAdd = { bucket: fieldsOut.bucket, section_id: secId || null };
+        await store.addItem(period.id, fieldsOut);
+        return;
+      }
+      // existing row: patch only the changed fields
+      var it = ctrl.itemById(id); if (!it) return;
+      var patch = {};
+      if ((vals.description || '').trim() !== (it.description || '')) patch.description = (vals.description || '').trim() || '(untitled)';
+      if ((vals.note || '').trim() !== (it.note || '')) patch.note = (vals.note || '').trim() || null;
+      var a = num(vals.amount); if (a != null && a !== Number(it.amount)) patch.amount = a;
+      // currency is handled live by the pill button, not here
+      if (advance) ctrl._focusAdd = { bucket: it.bucket, section_id: it.bucket === 'custom' ? (it.section_id || null) : null };
+      if (Object.keys(patch).length) { state.busy = true; await store.updateItem(id, patch); }
+      else if (advance) render(ctrl);   // nothing changed but Enter should still advance
+    }
+  }
+
+  // ── the month controller ──────────────────────────────────────────────────
+  function mountMonth(root, store, opts) {
+    opts = opts || {};
+    var ctrl = { root: root, store: store, personId: null, year: null, month: null, model: null, years: [] };
+    var kids = store.getPeople().filter((p) => p.is_kid);
+    ctrl.personId = opts.personId || (kids[0] && kids[0].id) || (store.getPeople()[0] && store.getPeople()[0].id);
+    var today = new Date();
+    ctrl.year = opts.year || today.getUTCFullYear();
+    ctrl.month = opts.month || (today.getUTCMonth() + 1);
+
+    ctrl.refresh = async function () {
+      ctrl.years = await Promise.resolve(store.getYears ? store.getYears(ctrl.personId) : [ctrl.year]);
+      if (ctrl.years.indexOf(ctrl.year) === -1) ctrl.years = ctrl.years.concat(ctrl.year).sort((a, b) => a - b);
+      var probe = await store.getMonthData(ctrl.personId, ctrl.year, ctrl.month);
+      if ((!probe.period || probe.items.length === 0)) {
+        var budgets = await Promise.resolve(store.getBudgets(ctrl.personId, ctrl.year));
+        if (budgets && budgets.length) await store.materialise(ctrl.personId, ctrl.year, ctrl.month);
+      }
+      var data = await store.getMonthData(ctrl.personId, ctrl.year, ctrl.month);
+      ctrl._data = data;
+      ctrl.model = money.monthModel(data.period || { id: '__none' }, data.items, { transfers: data.transfers, sections: data.sections });
+      render(ctrl);
+    };
+    ctrl.setPerson = function (id) { ctrl.personId = id; ctrl.refresh(); };
+    ctrl.setYear = function (y) { ctrl.year = y; ctrl.refresh(); };
+    ctrl.setMonth = function (y, m) { ctrl.year = y; ctrl.month = m; ctrl.refresh(); };
+    ctrl.materialise = async function () { await store.materialise(ctrl.personId, ctrl.year, ctrl.month); ctrl.refresh(); };
+    ctrl.ensurePeriod = function () { return (ctrl.model && ctrl.model.period && ctrl.model.period.id && ctrl.model.period.id !== '__none') ? Promise.resolve(ctrl.model.period) : store.ensurePeriod(ctrl.personId, ctrl.year, ctrl.month); };
+    ctrl.recordTransfer = function () { if (Remit.ui.openTransfer) Remit.ui.openTransfer(ctrl); };
+    ctrl.editTransfer = function (id) { var t = (ctrl.model.transfers || []).find(function (x) { return x.id === id; }); if (t && Remit.ui.openTransfer) Remit.ui.openTransfer(ctrl, t.currency, t); };
+    ctrl.deleteTransfer = async function (id) {
+      var t = (ctrl.model.transfers || []).find(function (x) { return x.id === id; });
+      var snap = t ? JSON.parse(JSON.stringify(t)) : null;
+      await store.deleteTransfer(id);
+      Remit.ui.toast('Transfer deleted.', { actionLabel: 'Undo', onAction: function () { if (snap) { delete snap.id; store.createTransfer(snap); } } });
+    };
+    ctrl.openBudgets = function () { if (Remit.ui.openBudgets) Remit.ui.openBudgets(ctrl); };
+    ctrl.addSection = async function () { var period = await ctrl.ensurePeriod(); ctrl._focusSection = true; await store.addSection(period.id, 'New section'); };
+    ctrl.renameSection = function (id, name) { return store.updateSection(id, { name: name }); };
+    ctrl.deleteSection = async function (id) { await store.deleteSection(id); Remit.ui.toast('Section deleted — its lines moved to Extras.'); };
+    ctrl.openReports = function () { if (Remit.ui.openReports) Remit.ui.openReports(ctrl); };
+    ctrl.allRows = function () {
+      var m = ctrl.model; if (!m) return [];
+      return [].concat(m.recurring.rows, m.extras.rows, m.mine.rows, [].concat.apply([], m.custom.map((c) => c.rows)));
+    };
+    ctrl.itemById = function (id) { return ctrl.allRows().find((it) => it.id === id) || null; };
+    // ── multi-select (shift-click desktop / long-press phone) ──
+    ctrl.selection = new Set();
+    ctrl.toggleSelect = function (id) { if (ctrl.selection.has(id)) ctrl.selection.delete(id); else ctrl.selection.add(id); render(ctrl); };
+    ctrl.enterSelect = function (id) { ctrl.selection.add(id); render(ctrl); };
+    ctrl.clearSelect = function () { ctrl.selection.clear(); render(ctrl); };
+    ctrl.markSelected = async function (status) {
+      var ids = Array.from(ctrl.selection); ctrl.selection.clear();
+      for (var i = 0; i < ids.length; i++) await store.updateItem(ids[i], { status: status });
+      ctrl.refresh();
+    };
+    ctrl.deleteSelected = async function () {
+      var ids = Array.from(ctrl.selection); ctrl.selection.clear();
+      for (var i = 0; i < ids.length; i++) await store.softDelete(ids[i]);
+      Remit.ui.toast(ids.length + ' deleted.', { actionLabel: 'Undo', onAction: function () { ids.forEach(function (id) { store.undoDelete(id); }); } });
+    };
+    ctrl.markAllPaid = async function () {
+      var ids = ctrl.allRows().map(function (r) { return r.id; });
+      for (var i = 0; i < ids.length; i++) await store.updateItem(ids[i], { status: 'paid' });
+      ctrl.refresh();
+    };
+    ctrl.moveItem = async function (draggedId, targetId) {
+      var d = ctrl.itemById(draggedId), t = ctrl.itemById(targetId);
+      if (!d || !t || d.id === t.id) return;
+      var patch = { sort_order: (t.sort_order || 0) - 0.5, bucket: t.bucket };
+      patch.section_id = (t.bucket === 'custom') ? (t.section_id || null) : null;
+      await store.updateItem(d.id, patch);
+    };
+    // drop a line onto a section's empty add-row → move it into that section (appended)
+    ctrl.moveToSection = async function (draggedId, bucket, sectionId) {
+      var d = ctrl.itemById(draggedId); if (!d || !bucket) return;
+      var peers = ctrl.allRows().filter((r) => r.bucket === bucket && (bucket !== 'custom' || r.section_id === (sectionId || null)));
+      var maxOrder = peers.reduce((m, r) => Math.max(m, r.sort_order || 0), 0);
+      var patch = { bucket: bucket, sort_order: maxOrder + 10, section_id: bucket === 'custom' ? (sectionId || null) : null };
+      await store.updateItem(draggedId, patch);
+    };
+
+    store.subscribe(() => ctrl.refresh());
+    ctrl.refresh();
+    return ctrl;
+  }
+
   Remit.ui = Remit.ui || {};
-  Remit.ui.openSheet = openSheet;
+  Remit.ui.mountMonth = mountMonth;
+  Remit.ui.esc = esc;
   Remit.ui.toast = toast;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 </script>
@@ -1682,39 +2088,95 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 <script>
 /* eslint-disable */
 /* =============================================================================
- * remit ui/drag.js — reorder within a bucket and move between buckets (spec §4.6 / S6).
- * Desktop uses native HTML5 drag-and-drop on the rows. Touch has no reliable HTML5 DnD, so the
- * accessible equivalent lives in the item sheet: the Section pills move an item between buckets and
- * the ↑/↓ order controls reorder it within one ("Move to…"). One update per drop — sort_order is a
- * float, so a drop lands between neighbours without renumbering the list.
+ * remit ui/drag.js — reorder within a section and move between ANY sections (Recurring, Extras,
+ * Riding along, custom). Pointer-based so it works with a mouse AND touch: dragging the grip lifts a
+ * clone of the WHOLE line card (like the marquee cards) that follows the pointer; dropping on another
+ * line drops just before it, adopting that line's section. The same grip carries multi-select:
+ * shift-click (desktop) toggles a line; a long-press (phone) enters selection. touch-action:none on
+ * the grip stops the page scrolling under a touch drag. Move/up are bound on the document so a drag
+ * keeps tracking once the pointer leaves the grip.
  * ========================================================================== */
 (function (root) {
   'use strict';
   var Remit = root.Remit = root.Remit || {};
 
+  var MOVE_THRESHOLD = 6;   // px before a press becomes a drag
+  var LONG_PRESS_MS = 500;  // hold to enter selection on touch
+
   function wireDrag(ctrl) {
-    var rows = ctrl.root.querySelectorAll('.row[data-item]');
-    var draggingId = null;
-    rows.forEach(function (row) {
-      var it = ctrl.itemById(row.getAttribute('data-item'));
-      if (it && it.status === 'paid' && it.transfer_id) return;   // locked rows are not draggable
-      row.setAttribute('draggable', 'true');
-      row.addEventListener('dragstart', function (e) {
-        draggingId = row.getAttribute('data-item');
-        row.classList.add('dragging');
-        try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', draggingId); } catch (x) {}
-      });
-      row.addEventListener('dragend', function () { row.classList.remove('dragging'); ctrl.root.querySelectorAll('.dragover').forEach((r) => r.classList.remove('dragover')); });
-      row.addEventListener('dragover', function (e) { e.preventDefault(); try { e.dataTransfer.dropEffect = 'move'; } catch (x) {} row.classList.add('dragover'); });
-      row.addEventListener('dragleave', function () { row.classList.remove('dragover'); });
-      row.addEventListener('drop', function (e) {
-        e.preventDefault(); row.classList.remove('dragover');
-        var src = draggingId || (e.dataTransfer && e.dataTransfer.getData('text/plain'));
-        var dst = row.getAttribute('data-item');
-        draggingId = null;
-        if (src && dst && src !== dst) ctrl.moveItem(src, dst);
-      });
+    ctrl.root.querySelectorAll('.grip[data-grip]').forEach(function (grip) {
+      grip.style.touchAction = 'none';
+      grip.addEventListener('pointerdown', function (e) { onDown(ctrl, grip, e); });
     });
+  }
+
+  function onDown(ctrl, grip, e) {
+    if (e.button != null && e.button !== 0) return;   // primary only
+    var id = grip.getAttribute('data-grip');
+    var row = grip.closest('.row');
+    if (!row) return;
+    e.preventDefault();
+
+    if (e.shiftKey) { ctrl.toggleSelect(id); return; }   // desktop multi-select
+
+    var startX = e.clientX, startY = e.clientY;
+    var dragging = false, longFired = false, clone = null;
+    var longTimer = setTimeout(function () { if (!dragging) { longFired = true; ctrl.enterSelect(id); } }, LONG_PRESS_MS);
+
+    try { grip.setPointerCapture(e.pointerId); } catch (x) {}
+    document.addEventListener('pointermove', onMove, true);
+    document.addEventListener('pointerup', onUp, true);
+    document.addEventListener('pointercancel', onUp, true);
+
+    function beginDrag() {
+      dragging = true; clearTimeout(longTimer);
+      clone = row.cloneNode(true);
+      clone.classList.add('dragclone');
+      clone.style.width = row.offsetWidth + 'px';
+      document.body.appendChild(clone);
+      row.classList.add('dragging');
+      position(startX, startY);
+    }
+    function position(x, y) { if (clone) { clone.style.left = (x - 18) + 'px'; clone.style.top = (y - 18) + 'px'; } }
+    function targetAt(x, y) {
+      if (clone) clone.style.display = 'none';
+      var el = document.elementFromPoint(x, y);
+      if (clone) clone.style.display = '';
+      // a line to drop before, OR a section's empty add-row (to drop INTO that section)
+      return el && el.closest ? el.closest('.row[data-item], .addrow') : null;
+    }
+    function highlight(t) {
+      ctrl.root.querySelectorAll('.dropzone').forEach(function (r) { r.classList.remove('dropzone'); });
+      if (t && t !== row) t.classList.add('dropzone');
+    }
+    function onMove(ev) {
+      if (!dragging) {
+        if (Math.abs(ev.clientX - startX) + Math.abs(ev.clientY - startY) > MOVE_THRESHOLD) beginDrag();
+        else return;
+      }
+      position(ev.clientX, ev.clientY);
+      highlight(targetAt(ev.clientX, ev.clientY));
+    }
+    function onUp(ev) {
+      clearTimeout(longTimer);
+      document.removeEventListener('pointermove', onMove, true);
+      document.removeEventListener('pointerup', onUp, true);
+      document.removeEventListener('pointercancel', onUp, true);
+      try { grip.releasePointerCapture(e.pointerId); } catch (x) {}
+      if (dragging) {
+        var t = targetAt(ev.clientX, ev.clientY);
+        if (t && t !== row) {
+          var tid = t.getAttribute('data-item');
+          if (tid) ctrl.moveItem(id, tid);
+          else if (t.classList.contains('addrow')) ctrl.moveToSection(id, t.getAttribute('data-bucket'), t.getAttribute('data-section'));
+        }
+      } else if (!longFired && ctrl.selection && ctrl.selection.size) {
+        ctrl.toggleSelect(id);   // in selection mode, a plain tap on the grip toggles the line
+      }
+      ctrl.root.querySelectorAll('.dropzone').forEach(function (r) { r.classList.remove('dropzone'); });
+      if (clone) { clone.remove(); clone = null; }
+      if (row) row.classList.remove('dragging');
+    }
   }
 
   Remit.ui = Remit.ui || {};
@@ -1725,50 +2187,99 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 <script>
 /* eslint-disable */
 /* =============================================================================
- * remit ui/budgets.js — the yearly recurring plan (spec §5.5 / S5). The source that materialises
- * into each new month. Editing the plan changes FUTURE materialisations only — a month already
- * brought in keeps exactly what it had, because its items are their own rows (budget_id links them
- * but nothing re-reads the plan). Editing a month never touches the plan; this is the other half.
+ * remit ui/budgets.js — the recurring DEFAULTS editor (THE MODEL / slice 9). An overlay of the same
+ * inline rows as the month, over the person's yearly recurring plan (remit_budgets — the source that
+ * materialises into each new month). Add / edit / remove a default (what · amount · currency). A
+ * "also update this month" toggle pushes the edited defaults into the open month too. Editing a
+ * recurring line INSIDE a month never changes the defaults, and this never changes a month unless the
+ * toggle is on.
+ *
+ * NOTE: the order named `remit_commitments` for defaults, but that table is the tuition/residence
+ * LEDGER (kind/due_on/paid_on/reference — shown in Reports → Commitments) and is not what
+ * materialise() reads. Defaults belong on `remit_budgets`; a `note` column for defaults would need a
+ * Cowork migration, so notes are deferred here.
  * ========================================================================== */
 (function (root) {
   'use strict';
   var Remit = root.Remit = root.Remit || {};
   var money = Remit.money;
   var esc = function (s) { return Remit.ui.esc(s); };
+  var CURR = ['GBP', 'USD', 'AUD', 'EUR'];
 
   function close(host) { host.scrim.classList.remove('open'); host.sheet.classList.remove('open'); setTimeout(() => host.wrap.remove(), 240); document.removeEventListener('keydown', host.onKey); }
+  function num(v) { v = String(v == null ? '' : v).trim(); if (v === '') return null; var n = Number(v); return isNaN(n) ? null : n; }
 
   async function openBudgets(ctrl) {
-    var store = ctrl.store, person = store.getPerson(ctrl.personId === '__both' ? null : ctrl.personId) || store.getPeople()[0];
-    var budgets = (await Promise.resolve(store.getBudgets(person.id, ctrl.year))) || [];
+    var store = ctrl.store, person = store.getPerson(ctrl.personId) || store.getPeople()[0];
+    var homeCur = (person && person.home_currency) || 'GBP';
+    var budgets = ((await Promise.resolve(store.getBudgets(person.id, ctrl.year))) || []).filter((b) => b.active !== false);
 
     var wrap = document.createElement('div');
     var scrim = document.createElement('div'); scrim.className = 'scrim';
-    var sheet = document.createElement('div'); sheet.className = 'sheet'; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true'); sheet.setAttribute('aria-label', 'Yearly plan');
+    var sheet = document.createElement('div'); sheet.className = 'sheet'; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true'); sheet.setAttribute('aria-label', 'Recurring defaults');
     wrap.appendChild(scrim); wrap.appendChild(sheet); document.body.appendChild(wrap);
     var host = { wrap: wrap, scrim: scrim, sheet: sheet, onKey: function (e) { if (e.key === 'Escape') close(host); } };
     document.addEventListener('keydown', host.onKey); scrim.addEventListener('click', () => close(host));
 
-    var rows = budgets.map((b) => '<div class="f"><label>' + esc(b.label) + '</label><div class="v">' +
-      '<input data-bud="' + esc(b.id) + '" inputmode="decimal" value="' + esc(b.amount) + '" aria-label="' + esc(b.label) + ' amount"></div></div>').join('');
+    function pill(cur) { return '<button type="button" class="curpill' + (cur !== homeCur ? ' off-home' : '') + '" data-cur="' + esc(cur) + '" aria-label="Currency ' + esc(cur) + '">' + esc(cur) + '</button>'; }
+    function row(b) {
+      var isAdd = !b;
+      return '<div class="brow"' + (isAdd ? ' data-add' : ' data-bud="' + esc(b.id) + '"') + '>' +
+        '<span class="nm">' +
+          '<input class="what" data-f="label" value="' + (isAdd ? '' : esc(b.label)) + '" placeholder="' + (isAdd ? 'Add a default…' : 'What') + '" aria-label="What">' +
+          '<input class="note" data-f="note" value="' + (isAdd ? '' : esc(b.note || '')) + '" placeholder="note (optional)" aria-label="Note">' +
+        '</span>' +
+        pill(isAdd ? homeCur : b.currency) +
+        '<input class="amt num" data-f="amount" inputmode="decimal" value="' + (isAdd ? '' : Number(b.amount).toFixed(2)) + '" placeholder="0.00" aria-label="Amount">' +
+        (isAdd ? '<span class="del"></span>' : '<button type="button" class="del" data-delbud="' + esc(b.id) + '" aria-label="Remove ' + esc(b.label) + '">×</button>') +
+        '</div>';
+    }
 
     sheet.innerHTML = '<div class="grab"></div>' +
-      '<div class="f" style="border-bottom-width:2px"><label style="color:var(--brass)">Plan</label><div class="v">' +
+      '<div class="f" style="border-bottom-width:2px"><label style="color:var(--brass)">Defaults</label><div class="v">' +
       esc(person.name) + ' · ' + ctrl.year + ' recurring plan</div></div>' +
-      (rows || '<p class="note">No recurring plan lines yet for this year.</p>') +
-      '<p class="note" style="margin-top:12px">Changing an amount here changes <b>future</b> months only. Months already brought in keep what they had — editing a month never touches the plan, and this never touches a month.</p>' +
-      '<div class="acts"><button class="btn ghost" data-act="cancel">Cancel</button><button class="btn" data-act="save">Save the plan</button></div>';
+      '<div id="brows">' + budgets.map(row).join('') + row(null) + '</div>' +
+      '<label class="alsorow"><input type="checkbox" id="alsoMonth"> also update ' + esc(money.monthName(ctrl.month)) + ' now</label>' +
+      '<p class="note" style="margin-top:8px">Changing a default changes <b>future</b> months. Editing a line inside a month never touches these.</p>' +
+      '<div class="acts"><button class="btn ghost" data-act="cancel">Cancel</button><button class="btn" data-act="save">Save defaults</button></div>';
+
+    // currency pill cycles per row
+    sheet.querySelectorAll('.brow [data-cur]').forEach((btn) => btn.addEventListener('click', () => {
+      var c = btn.getAttribute('data-cur'); var next = CURR[(CURR.indexOf(c) + 1) % CURR.length];
+      btn.setAttribute('data-cur', next); btn.textContent = next; btn.classList.toggle('off-home', next !== homeCur);
+    }));
+    // remove a default (marks inactive) immediately
+    sheet.querySelectorAll('[data-delbud]').forEach((btn) => btn.addEventListener('click', async () => {
+      await store.deleteBudget(btn.getAttribute('data-delbud'));
+      btn.closest('.brow').remove();
+    }));
 
     sheet.querySelector('[data-act="cancel"]').addEventListener('click', () => close(host));
     sheet.querySelector('[data-act="save"]').addEventListener('click', async () => {
-      var inputs = sheet.querySelectorAll('[data-bud]');
-      for (var i = 0; i < inputs.length; i++) {
-        var v = (inputs[i].value || '').trim(); if (v === '' || isNaN(Number(v))) continue;
-        var id = inputs[i].getAttribute('data-bud');
-        var b = budgets.find((x) => x.id === id);
-        if (b && Number(v) !== Number(b.amount)) await store.setBudget(id, { amount: Number(v) });
+      var rows = sheet.querySelectorAll('.brow');
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i];
+        var label = (r.querySelector('[data-f="label"]').value || '').trim();
+        var note = (r.querySelector('[data-f="note"]').value || '').trim();
+        var amount = num(r.querySelector('[data-f="amount"]').value);
+        var cur = r.querySelector('[data-cur]').getAttribute('data-cur');
+        if (r.hasAttribute('data-add')) {
+          if (!label && amount == null) continue;
+          await store.addBudget({ person_id: person.id, year: ctrl.year, label: label || '(untitled)', note: note || null, amount: amount == null ? 0 : amount, currency: cur, bucket: 'recurring', active: true });
+        } else {
+          var id = r.getAttribute('data-bud');
+          var b = budgets.find((x) => x.id === id); if (!b) continue;
+          var patch = {};
+          if (label && label !== b.label) patch.label = label;
+          if (note !== (b.note || '')) patch.note = note || null;
+          if (amount != null && amount !== Number(b.amount)) patch.amount = amount;
+          if (cur !== b.currency) patch.currency = cur;
+          if (Object.keys(patch).length) await store.setBudget(id, patch);
+        }
       }
-      close(host); Remit.ui.toast('Plan saved — it applies to future months.');
+      if (sheet.querySelector('#alsoMonth').checked) await store.applyDefaultsToMonth(person.id, ctrl.year, ctrl.month);
+      close(host); Remit.ui.toast('Defaults saved.');
+      ctrl.refresh();
     });
 
     requestAnimationFrame(() => { scrim.classList.add('open'); sheet.classList.add('open'); });
@@ -1782,12 +2293,12 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 <script>
 /* eslint-disable */
 /* =============================================================================
- * remit ui/transfer.js — record a transfer (spec §4.3 / S7). Lists the approved, still-to-send
- * settle=transfer items for the month in one currency, with the total. You type only what actually
- * happened (date, provider, amount sent in USD, amount delivered, fee, reference). The effective
- * rate and the all-in cost versus the ECB mid are DERIVED and displayed, never typed. Saving marks
- * every covered item paid and locks it to this transfer; a second transfer this month is fine — it
- * takes whatever is still approved.
+ * remit ui/transfer.js — record a transfer (THE MODEL). A transfer belongs to the kid's page
+ * (person_id) and NEVER locks a line. Fields: currency (default the one with most remaining),
+ * amount (default that remaining), date (today), provider, USD cost (optional), note. No limits —
+ * overpay, underpay, many per month, negative all allowed. Recording it simply adds to Settled, so
+ * Remaining = Total − Settled drops. The effective rate + cost vs the ECB mid are DERIVED for
+ * display when a USD cost is given. Edit/delete + the per-currency Settled sections land in slice 10.
  * ========================================================================== */
 (function (root) {
   'use strict';
@@ -1798,25 +2309,22 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   function close(host) { host.scrim.classList.remove('open'); host.sheet.classList.remove('open'); setTimeout(() => host.wrap.remove(), 240); document.removeEventListener('keydown', host.onKey); }
   function todayISO() { return new Date().toISOString().slice(0, 10); }
 
-  function openTransfer(ctrl, currency) {
+  // the currency carrying the most positive remaining (default selection)
+  function defaultCurrency(remaining) {
+    var best = null, bestVal = -Infinity;
+    Object.keys(remaining || {}).forEach(function (c) { var v = money.cents(remaining[c]); if (v > bestVal) { bestVal = v; best = c; } });
+    return best;
+  }
+
+  function openTransfer(ctrl, currency, existing) {
     var store = ctrl.store, model = ctrl.model;
-    var curs = Object.keys(model.outstanding);
-    var cur = currency || curs[0] || 'GBP';
-    var items = model.transferable.filter((it) => it.currency === cur);
-    if (!items.length) { Remit.ui.toast('Nothing approved to transfer in ' + cur + ' yet.'); return; }
-    var totalMap = {}; totalMap[cur] = money.sumByCurrency(items)[cur] || 0;
-    var total = totalMap[cur];
+    var remaining = model.remaining || {};
+    var cur = currency || defaultCurrency(remaining) || model.currencies[0] || (store.getPerson(ctrl.personId) || {}).home_currency || 'GBP';
+    var remain = remaining[cur] || 0;
+    var editing = !!existing;
     var rateRow = fx.rateFor(store.getRates ? store.getRates() : [], cur);
     var mid = rateRow ? rateRow.rate : null;
-    var monthName = money.monthLabel(ctrl.year, ctrl.month).split(' ')[0];
-
-    var byBucket = { recurring: [], extras: [], mine: [] };
-    items.forEach((it) => { (byBucket[it.bucket] || byBucket.extras).push(it); });
-    function summaryRow(label, arr) {
-      if (!arr.length) return '';
-      var sub = money.sumByCurrency(arr)[cur] || 0;
-      return '<div class="row"><span class="chip yes">Approved</span><span class="nm"><b>' + esc(label) + '</b><em>' + arr.length + ' item' + (arr.length === 1 ? '' : 's') + '</em></span><span class="am num">' + money.fmt(sub, cur) + '</span></div>';
-    }
+    var monthName = money.monthName(ctrl.month);
 
     var wrap = document.createElement('div');
     var scrim = document.createElement('div'); scrim.className = 'scrim';
@@ -1825,49 +2333,55 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     var host = { wrap: wrap, scrim: scrim, sheet: sheet, onKey: function (e) { if (e.key === 'Escape') close(host); } };
     document.addEventListener('keydown', host.onKey); scrim.addEventListener('click', () => close(host));
 
+    var curOptions = (model.currencies.length ? model.currencies : [cur]);
+    if (editing && curOptions.indexOf(existing.currency) === -1) curOptions = curOptions.concat(existing.currency);
+    var initAmt = editing ? Number(existing.amount_delivered).toFixed(2) : (money.cents(remain) > 0 ? Number(remain).toFixed(2) : '');
     sheet.innerHTML = '<div class="grab"></div>' +
-      '<div class="f2" style="border-bottom-width:2px"><label>Transfer</label><div class="v">' + esc(monthName) + ' · <b>' + esc(cur) + '</b> · ' + items.length + ' item' + (items.length === 1 ? '' : 's') + '</div></div>' +
-      '<div class="covered">' + summaryRow('Recurring', byBucket.recurring) + summaryRow('Extras', byBucket.extras) + summaryRow('Riding along', byBucket.mine) + '</div>' +
-      '<div class="f2"><label>Total to send</label><div class="v"><b class="num" style="font-size:18px">' + money.fmt(total, cur) + '</b></div></div>' +
-      '<div class="f2"><label>Sent on</label><div class="v"><input id="t-date" type="date" value="' + todayISO() + '"></div></div>' +
-      '<div class="f2"><label>Provider</label><div class="v"><input id="t-prov" type="text" value="Wise"></div></div>' +
-      '<div class="f2"><label>Sent (USD)</label><div class="v"><input id="t-sent" inputmode="decimal" placeholder="0.00"></div></div>' +
-      '<div class="f2"><label>Delivered (' + esc(cur) + ')</label><div class="v"><input id="t-deliv" inputmode="decimal" value="' + total.toFixed(2) + '"></div></div>' +
-      '<div class="f2"><label>Fee</label><div class="v"><input id="t-fee" inputmode="decimal" placeholder="0.00"></div></div>' +
-      '<div class="f2"><label>Fee currency</label><div class="v"><select id="t-feecur"><option>USD</option><option>' + esc(cur) + '</option></select></div></div>' +
-      '<div class="f2"><label>Reference</label><div class="v"><input id="t-ref" type="text" placeholder="optional"></div></div>' +
-      '<div class="derived" id="t-derived"><h4>Worked out for you</h4><div class="dl"><span>Enter the amounts above</span><b>—</b></div></div>' +
-      '<p class="note" style="margin-top:16px">Saving marks all ' + items.length + ' covered item' + (items.length === 1 ? '' : 's') + ' paid and locks them to this transfer. A second transfer this month is fine — it takes whatever is still approved.</p>' +
-      '<div class="acts"><button class="btn ghost" data-act="cancel">Cancel</button><button class="btn" data-act="save">Save the transfer</button></div>';
+      '<div class="f2" style="border-bottom-width:2px"><label>' + (editing ? 'Edit transfer' : 'Transfer') + '</label><div class="v">' + esc(monthName) + ' · ' + esc((store.getPerson(ctrl.personId) || {}).name || '') + '</div></div>' +
+      '<div class="f2"><label>Currency</label><div class="v"><select id="t-cur">' + curOptions.map((c) => '<option value="' + esc(c) + '"' + (c === cur ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select></div></div>' +
+      '<div class="f2"><label>Remaining</label><div class="v"><b class="num" style="font-size:18px" id="t-remain">' + money.fmt(remain, cur) + '</b></div></div>' +
+      '<div class="f2"><label>Amount</label><div class="v"><input id="t-amt" inputmode="decimal" value="' + esc(initAmt) + '" placeholder="0.00"></div></div>' +
+      '<div class="f2"><label>Sent on</label><div class="v"><input id="t-date" type="date" value="' + esc(editing && existing.sent_on ? existing.sent_on : todayISO()) + '"></div></div>' +
+      '<div class="f2"><label>Provider</label><div class="v"><input id="t-prov" type="text" value="' + esc(editing ? (existing.provider || '') : 'Wise') + '"></div></div>' +
+      '<div class="f2"><label>USD cost</label><div class="v"><input id="t-sent" inputmode="decimal" value="' + esc(editing && existing.amount_sent_usd != null ? existing.amount_sent_usd : '') + '" placeholder="optional"></div></div>' +
+      '<div class="f2"><label>Note</label><div class="v"><input id="t-note" type="text" value="' + esc(editing ? (existing.note || '') : '') + '" placeholder="optional"></div></div>' +
+      '<div class="derived" id="t-derived"><h4>Worked out for you</h4><div class="dl"><span>Enter the amount (and USD cost) above</span><b>—</b></div></div>' +
+      '<p class="note" style="margin-top:16px">No limits — overpay, underpay, or record several. Nothing is locked; this just adds to what’s settled.</p>' +
+      '<div class="acts"><button class="btn ghost" data-act="cancel">Cancel</button><button class="btn" data-act="save">' + (editing ? 'Save changes' : 'Save the transfer') + '</button></div>';
 
     var $ = (id) => sheet.querySelector(id);
+    function selCur() { return $('#t-cur').value; }
     function redraw() {
-      var sent = Number(($('#t-sent').value || '').trim()), deliv = Number(($('#t-deliv').value || '').trim());
+      var c = selCur();
+      var rr = fx.rateFor(store.getRates ? store.getRates() : [], c); mid = rr ? rr.rate : null;
+      $('#t-remain').textContent = money.fmt(remaining[c] || 0, c);
+      var amt = Number(($('#t-amt').value || '').trim()), sent = Number(($('#t-sent').value || '').trim());
       var d = $('#t-derived');
-      var m = (sent && deliv) ? fx.transferMetrics({ amount_sent_usd: sent, amount_delivered: deliv }, mid) : null;
-      if (!m) { d.innerHTML = '<h4>Worked out for you</h4><div class="dl"><span>Enter Sent and Delivered above</span><b>—</b></div>'; return; }
-      var diff = m.diffVsEstimate;
+      var m = (sent && amt) ? fx.transferMetrics({ amount_sent_usd: sent, amount_delivered: amt }, mid) : null;
+      if (!m) { d.innerHTML = '<h4>Worked out for you</h4><div class="dl"><span>Enter the amount and USD cost</span><b>—</b></div>'; return; }
       d.innerHTML = '<h4>Worked out for you</h4>' +
         '<div class="dl"><span>Effective rate</span><b class="num">' + m.effectiveRate + '</b></div>' +
-        (mid ? '<div class="dl"><span>ECB mid, ' + esc(fx.rateDayLabel(rateRow.day)) + '</span><b class="num">' + mid + '</b></div>' : '') +
-        (m.costPct != null ? '<div class="dl"><span>All-in cost vs mid</span><b class="num">' + m.costPct.toFixed(2) + '%</b></div>' : '') +
-        (diff != null ? '<div class="dl"><span>Difference vs estimate</span><b class="num' + (diff >= 0 ? ' good' : '') + '">' + (diff >= 0 ? '+' : '−') + '$' + Math.abs(diff).toFixed(2) + '</b></div>' : '');
+        (mid ? '<div class="dl"><span>ECB mid, ' + esc(fx.rateDayLabel(rr.day)) + '</span><b class="num">' + mid + '</b></div>' : '') +
+        (m.costPct != null ? '<div class="dl"><span>All-in cost vs mid</span><b class="num">' + m.costPct.toFixed(2) + '%</b></div>' : '');
     }
-    ['#t-sent', '#t-deliv'].forEach((id) => $(id).addEventListener('input', redraw));
+    $('#t-cur').addEventListener('change', function () { var c = selCur(); var r = remaining[c] || 0; $('#t-amt').value = money.cents(r) > 0 ? Number(r).toFixed(2) : ''; redraw(); });
+    ['#t-amt', '#t-sent'].forEach((id) => $(id).addEventListener('input', redraw));
 
     $('[data-act="cancel"]').addEventListener('click', () => close(host));
     $('[data-act="save"]').addEventListener('click', async () => {
-      var sent = Number(($('#t-sent').value || '').trim()), deliv = Number(($('#t-deliv').value || '').trim());
-      if (!deliv) { $('#t-deliv').focus(); return; }
-      var fee = Number(($('#t-fee').value || '').trim()) || 0;
+      var c = selCur();
+      var amt = Number(($('#t-amt').value || '').trim());
+      if (!amt) { $('#t-amt').focus(); return; }
+      var sent = Number(($('#t-sent').value || '').trim());
       var fields = {
-        period_year: ctrl.year, period_month: ctrl.month, currency: cur, sent_on: $('#t-date').value || todayISO(),
-        amount_sent_usd: sent || null, amount_delivered: deliv, fee: fee, fee_currency: $('#t-feecur').value,
-        provider: ($('#t-prov').value || '').trim() || null, reference: ($('#t-ref').value || '').trim() || null,
+        person_id: ctrl.personId, period_year: ctrl.year, period_month: ctrl.month, currency: c,
+        sent_on: $('#t-date').value || todayISO(), amount_delivered: amt, amount_sent_usd: sent || null,
+        provider: ($('#t-prov').value || '').trim() || null, note: ($('#t-note').value || '').trim() || null,
       };
-      await store.createTransfer(fields, items.map((it) => it.id));
+      if (editing) await store.updateTransfer(existing.id, fields);
+      else await store.createTransfer(fields);
       close(host);
-      Remit.ui.toast(money.fmt(deliv, cur) + ' transfer recorded — ' + items.length + ' items locked.');
+      Remit.ui.toast(money.fmt(amt, c) + (editing ? ' transfer updated.' : ' transfer recorded.'));
     });
 
     requestAnimationFrame(() => { scrim.classList.add('open'); sheet.classList.add('open'); });
@@ -1945,13 +2459,13 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     var months = ordered.map(function (pr) {
       var its = byPeriod[pr.id] || [];
       var flaggedItems = its.filter(isFlagged);
-      var recur = money.sumByCurrency(its, function (it) { return money.isCounted(it) && it.bucket === 'recurring'; });
-      var extra = money.sumByCurrency(its, function (it) { return money.isCounted(it) && it.bucket === 'extras'; });
+      var recur = money.sumByCurrency(its, function (it) { return money.isTransferLine(it) && it.bucket === 'recurring'; });
+      var extra = money.sumByCurrency(its, function (it) { return money.isTransferLine(it) && it.bucket === 'extras'; });
       return {
         periodId: pr.id, year: pr.year, month: pr.month, label: money.monthLabel(pr.year, pr.month),
         personId: pr.person_id, personName: (personById[pr.person_id] || {}).name || '—',
-        transfer: money.transferTotals(its),
-        settledHere: money.settledHereTotals(its),
+        transfer: money.transferLineTotals(its),
+        settledHere: money.paidHereTotals(its),
         recurring: recur, extras: extra,
         count: its.length,
         flagged: flaggedItems.length > 0,
@@ -1967,15 +2481,15 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     var emptyKids = kids.filter(function (k) { return !seen[k.id]; });
 
     // grand totals, per currency (never crossed)
-    var grand = money.transferTotals(items);
-    var grandSettled = money.settledHereTotals(items);
+    var grand = money.transferLineTotals(items);
+    var grandSettled = money.paidHereTotals(items);
 
     // 3 — category drift: extras that actually happened (counted or settled-here), by half-year
     var driftMap = {};   // "2025 H1" -> cat -> {cur: cents}
     var halfOrder = {};  // half -> sort key (year*10 + half), newest first
     items.forEach(function (it) {
       if (it.bucket !== 'extras') return;
-      if (!(money.isCounted(it) || money.isSettledHere(it))) return;
+      if (!(money.isTransferLine(it) || money.isPaidHere(it))) return;
       var pr = periodById[it.period_id]; if (!pr) return;
       var half = pr.month <= 6 ? 1 : 2;
       var key = pr.year + ' H' + half;
@@ -2059,7 +2573,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
           '<div class="rmrow"><span class="rml">' + esc(m.label) + (m.flagged ? ' ' + flagPill() : '') + '</span>' +
           '<b class="num">' + esc(curLine(m.transfer)) + '</b></div>' + settled + notes + '</div>';
       }).join('');
-      return '<section class="rgroup"><h3>' + esc(grp.person.name) + '<span class="rgt num">' + esc(curLine(money.transferTotals(flatItems(grp)))) + ' total</span></h3>' + rows + '</section>';
+      return '<section class="rgroup"><h3>' + esc(grp.person.name) + '<span class="rgt num">' + esc(curLine(money.transferLineTotals(flatItems(grp)))) + ' total</span></h3>' + rows + '</section>';
     }).join('');
     var empties = model.emptyKids.map(function (k) {
       return '<section class="rgroup empty-group"><h3>' + esc(k.name) + '</h3><p class="rempty">No history imported — the source note held no ' + esc(k.name) + ' months, and inventing them would poison the reports.</p></section>';
