@@ -123,6 +123,48 @@ test('isValidCode — accepts any 6–10 digit code, not just 6', () => {
   assert.equal(G.isValidCode(null), false);
 });
 
+// ── magic-link landing (arc/scratchpad-rework slice 2) ───────────────────────
+function b64url(obj) { return Buffer.from(JSON.stringify(obj)).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+function jwt(payload) { return 'h.' + b64url(payload) + '.s'; }
+
+test('parseHashParams — reads a fragment, tolerates the leading # and junk', () => {
+  assert.deepEqual(G.parseHashParams('#a=1&b=two'), { a: '1', b: 'two' });
+  assert.deepEqual(G.parseHashParams('a=1'), { a: '1' });
+  assert.deepEqual(G.parseHashParams(''), {});
+  assert.deepEqual(G.parseHashParams('#'), {});
+});
+
+test('b64urlToJson — decodes a JWT payload segment, null on garbage', () => {
+  assert.deepEqual(G.b64urlToJson(b64url({ email: 'm@x.com' })), { email: 'm@x.com' });
+  assert.equal(G.b64urlToJson('not-base64-json!!'), null);
+  assert.equal(G.b64urlToJson(''), null);
+});
+
+test('sessionFromHash — a GoTrue token fragment becomes a normal session', () => {
+  const at = jwt({ email: 'Kayley@X.com', exp: 2000000000, user_metadata: { name: 'Kayley' } });
+  const hash = '#access_token=' + at + '&refresh_token=r123&expires_at=2000000000&token_type=bearer&type=magiclink';
+  const s = G.sessionFromHash(hash);
+  assert.equal(s.email, 'kayley@x.com', 'email is lowercased from the JWT payload');
+  assert.equal(s.name, 'Kayley');
+  assert.equal(s.refresh_token, 'r123');
+  assert.equal(s.expires_at, 2000000000 * 1000, 'expires_at seconds -> ms');
+});
+
+test('sessionFromHash — expires_in falls back to now + seconds', () => {
+  const now = 1_000_000_000_000;
+  const at = jwt({ email: 'm@x.com' });
+  const s = G.sessionFromHash('#access_token=' + at + '&refresh_token=r&expires_in=3600', now);
+  assert.equal(s.expires_at, now + 3600 * 1000);
+});
+
+test('sessionFromHash — malformed fragments return null (falls through to sign-in)', () => {
+  assert.equal(G.sessionFromHash('#type=recovery'), null, 'no tokens');
+  assert.equal(G.sessionFromHash('#access_token=' + jwt({ email: 'm@x.com' })), null, 'no refresh_token');
+  assert.equal(G.sessionFromHash('#access_token=notajwt&refresh_token=r'), null, 'undecodable token');
+  assert.equal(G.sessionFromHash('#access_token=' + jwt({ sub: 'x' }) + '&refresh_token=r'), null, 'payload has no email');
+  assert.equal(G.sessionFromHash(''), null);
+});
+
 test('ensureFresh — valid stays, expired refreshes, failed refresh clears', async () => {
   // valid session: returned untouched, no refresh call
   let refreshHit = 0;
