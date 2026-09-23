@@ -5,14 +5,13 @@ Global rules: council arc instrument
 ## Purpose
 
 press is the marquee **publishing target** for the council. It hosts single-file pages
-served via GitHub Pages. Key pages:
+served via GitHub Pages. `index.html` is the portal (KICKERS / ICONS driven by `pages.json`);
+`pages.json` maps `filename → title`, `spaces.json` the tier split, `tenants.json` the tenant registry.
 
-- `index.html` — portal (KICKERS / ICONS driven by `pages.json`)
-- `council-guide.html` — council reference guide
-- `agent-health.html` — live agent-health dashboard (reads Supabase all-apps views)
-- `giving.html`, `halvsies.html`, `retirement.html`, `eagle-path.html`, `kayley.html`
-
-`pages.json` maps `filename → title` for the portal index.
+Served pages by tier (contract: `docs/spec.md` → Tenants):
+- **Public:** `kayley.html`, `council-guide.html`, `eagle-path.html`, `halvsies.html`, `agent-health.html`
+- **Private wing** (WebAuthn passkey + vault): `fsa.html`, `giving.html`, `retirement.html`, `card-scout.html`, `access.html` (family admin)
+- **Family wing** (email OTP + JWT + per-page grants): `remit.html`, `perth.html`
 
 ## Stack & how to run
 

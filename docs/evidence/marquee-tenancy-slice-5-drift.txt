@@ -1,0 +1,31 @@
+marquee-tenancy — SLICE 5 evidence: drift clean-up
+===================================================
+Date: 2026-09-22
+
+FILES
+  press/CLAUDE.md                              Purpose lists every served page grouped by tier (70 lines, <=150)
+  claude-environment/MANUAL.md §1.1            ⚠ note replaced by a three-tier table; manual.html regenerated
+  dossiers/dossier-core.md                     header + intro "King's Council" -> "The Council"; dated rename line added (ON DISK, no git)
+  council/CAPABILITIES.md + skills/hand/references/press.md   press trigger strings made identical
+  council/skills/hand/references/audit.md      group-4 P6 sweep extended to the dossiers dir
+
+DONE-CRITERIA
+  [PASS] grep "King's Council|kings-council" dossier-core.md -> only the dated rename line (L20).
+         Whole-dir grep also returns annex-ear.md:25 + annex-hand.md:71,75 — DATED OBSERVATIONS,
+         byte-preserved by design (P5 / audit group-4 rule: sweep flags live header/rules text only).
+  [PASS] MANUAL.md has no "⚠ §1.1" text (grep -c = 0).
+  [PASS] press CLAUDE.md lists remit, perth, access, fsa, card-scout (by tier). 70 lines.
+  [PASS] the two press trigger strings are IDENTICAL:
+           press.md      : "press this" / "publish <file>" / "put this on the marquee"
+           CAPABILITIES  : "press this" / "publish <file>" / "put this on the marquee"
+           (diff of the extracted fragments: no difference)
+  [PASS] .venv/bin/python build.py --check -> "OK: manual.html is current" (exit 0)
+
+MANUAL §1.1 tier table (replaces the ⚠ note):
+  | Tier         | Unlock                                            |
+  | Public       | open — no auth                                    |
+  | Private wing | WebAuthn passkey (1Password PRF) + press_vault    |
+  | Family wing  | email OTP → JWT + per-page press_access_grants     |
+  access.html is the family admin page and lives in the private wing by design.
+
+NOTE: dossiers/ is on disk only (no git) — dossier-core.md edit is applied but not committed anywhere.

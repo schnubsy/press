@@ -117,3 +117,47 @@ Each published page is a **single self-contained HTML file**:
 
 Sibling asset directories (e.g. `giving-assets/`, `fsa-assets/`, `council-assets/`) are
 referenced by their paired page and committed together.
+
+## Tenants
+
+The marquee is a **platform with tenants**, not an instrument. A tenant is a page whose
+source lives in another repo (`~/Documents/VSCode/<repo>`) and ships here via that repo's
+release script; a **press-native** page (`repo: null`) is authored directly in press. The
+registry is **`tenants.json`** (repo-owned like `spaces.json`), keyed by page filename with
+`repo · tier · gate · vendored · release · build · output · deterministic · note`. This
+section is the **canonical** tenancy contract; the council reference and the MANUAL point here.
+
+**Two RULEs (the invariant this arc protects):**
+- **`press/src` is the ONLY source for shared modules — apps pull, never push.** A published
+  page in press is NEVER hand-edited; a hotfix lands in the source repo and ships via that
+  app's release. `src/gate.js` (private wing) and `src/family-gate.js` (family wing) are the
+  canonical gates; every vendored copy is byte-identical to its canonical.
+- **A marquee change rides INSIDE the tenant app's arc, never as a parallel press arc** — one
+  writer on press at a time (fixed order: council `arc.md` → Tenant-change arcs).
+
+**What a tenant OWES the marquee:** a `pages.json` entry (`{title}` only); a `tenants.json`
+entry; its tier in `spaces.json` (repo-owned; release scripts READ, never write); a `KICKERS`
++ `ICONS` rule in `index.html` for a new page type (never an icon field in `pages.json`); for
+a **family** page, a `press_access_apps` row + ≥1 active `press_access_grants` row seeded
+BEFORE the gate ships (a gated page with no grant locks everyone out).
+
+**What the marquee OWES a tenant:** the canonical gate modules in `press/src`; the shell; and
+the shared DB shapes (`press_<shape>`, every row keyed by a `page` column = filename stem):
+- `press_state` — simple checkboxes. Cols `page`, `item_id`, `checked` bool, `updated_at`;
+  PK `(page,item_id)`. Lane 1. Reference `kayley.html`.
+- `press_tasks` — rich task rows. Cols `page`, `item_id`, `title`, `status`, `category`,
+  `week`, `position`, `extras` jsonb, `created_at`, `updated_at`; PK `(page,item_id)`. Lane 2.
+  Reference `eagle-path.html`.
+- RLS posture: **header-gated / allow-listed, NOT open** — policies gate on a request header
+  (`x-vault-id`, `x-plan-id`, `x-app`) so a URL holder cannot read another page's private
+  rows. (`press_portal` sort/archive state stays anon r/w by design.) Identifiers: MANUAL §12.2.
+
+**Release-script contract** (each tenant's `tools/release.js`):
+- READS `spaces.json` and **fails closed** if its page is in the wrong list (absent/unparseable
+  `spaces.json` is also a failure); honours `PRESS_DIR` (default `../press`).
+- **Byte-compares its vendored gate against `press/src/<gate>` BEFORE building** and fails
+  closed — a SKIP (press repo absent) is NOT a pass.
+- Writes its `pages.json` entry in the SAME commit as the page.
+- **Never writes `spaces.json` or `tenants.json`**; never pushes on its own (the arc close does).
+
+**Hotfix rule:** source repo first, then release — never patch `press/<page>.html` by hand.

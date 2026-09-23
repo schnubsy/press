@@ -1,0 +1,111 @@
+marquee-tenancy — SLICE 3 evidence: tenants-check.mjs + release conformance
+===========================================================================
+Date: 2026-09-22   Branch: arc/marquee-tenancy (rebased onto press origin/main a989a4d)
+
+NOTE ON CONCURRENCY: during this arc, remit's arc/scratchpad-rework closed & shipped to press
+main (a989a4d) — magic-link family-gate (now canonical 9eba177d) + new remit.html (2c4ac65e).
+This branch was rebased onto that main. remit's vendored gate == current canonical (NO drift);
+the transient 'ahead' seen against the stale base was resolved by the rebase.
+
+=== npm run tenants:check -- --rebuild  (live estate) ===
+tenants-check — press root: /Users/mark/Documents/VSCode/press/.claude/worktrees/arc-marquee-tenancy-4395d3
+  source repos: /Users/mark/Documents/VSCode   (--rebuild ON)
+
+  [PASS] T1 registry          card-scout.html      tier personal
+  [PASS] T2 source            card-scout.html      card-scout present
+  [PASS] T3 gate              card-scout.html      src/vendor/press-gate.js == press/src/gate.js (73889011)
+  [PASS] T4 release           card-scout.html      PRESS_DIR + spaces.json read + gate compare; no registry writes
+  [SKIP] T5 rebuild           card-scout.html      not a buildable tenant
+  [PASS] T1 registry          kayley.html          tier public
+  [SKIP] T2 source            kayley.html          press-native (repo: null)
+  [SKIP] T3 gate              kayley.html          no vendored gate
+  [SKIP] T4 release           kayley.html          no release script
+  [SKIP] T5 rebuild           kayley.html          not a buildable tenant
+  [PASS] T1 registry          council-guide.html   tier public
+  [PASS] T2 source            council-guide.html   council present
+  [SKIP] T3 gate              council-guide.html   no vendored gate
+  [SKIP] T4 release           council-guide.html   no release script
+  [SKIP] T5 rebuild           council-guide.html   not a buildable tenant
+  [PASS] T1 registry          eagle-path.html      tier public
+  [SKIP] T2 source            eagle-path.html      press-native (repo: null)
+  [SKIP] T3 gate              eagle-path.html      no vendored gate
+  [SKIP] T4 release           eagle-path.html      no release script
+  [SKIP] T5 rebuild           eagle-path.html      not a buildable tenant
+  [PASS] T1 registry          halvsies.html        tier public
+  [SKIP] T2 source            halvsies.html        press-native (repo: null)
+  [SKIP] T3 gate              halvsies.html        no vendored gate
+  [SKIP] T4 release           halvsies.html        no release script
+  [SKIP] T5 rebuild           halvsies.html        not a buildable tenant
+  [PASS] T1 registry          retirement.html      tier personal
+  [PASS] T2 source            retirement.html      retirement present
+  [PASS] T3 gate              retirement.html      src/vendor/press-gate.js == press/src/gate.js (73889011)
+  [PASS] T4 release           retirement.html      PRESS_DIR + spaces.json read + gate compare; no registry writes
+  [PASS] T5 rebuild           retirement.html      rebuild == press/retirement.html (792aa1ef)
+  [PASS] T1 registry          giving.html          tier personal
+  [PASS] T2 source            giving.html          giving-tracker present
+  [PASS] T3 gate              giving.html          src/vendor/press-gate.js == press/src/gate.js (73889011)
+  [PASS] T4 release           giving.html          PRESS_DIR + spaces.json read + gate compare; no registry writes
+  [INFO] T5 rebuild           giving.html          non-deterministic — rebuild d95c6f22 vs live ebf504dd
+  [PASS] T1 registry          agent-health.html    tier public
+  [SKIP] T2 source            agent-health.html    press-native (repo: null)
+  [SKIP] T3 gate              agent-health.html    no vendored gate
+  [SKIP] T4 release           agent-health.html    no release script
+  [SKIP] T5 rebuild           agent-health.html    not a buildable tenant
+  [PASS] T1 registry          fsa.html             tier personal
+  [PASS] T2 source            fsa.html             fsa-claims present
+  [PASS] T3 gate              fsa.html             src/vendor/press-gate.js == press/src/gate.js (73889011)
+  [PASS] T4 release           fsa.html             PRESS_DIR + spaces.json read + gate compare; no registry writes
+  [INFO] T5 rebuild           fsa.html             non-deterministic — rebuild f115aa36 vs live 5557cfa8
+  [PASS] T1 registry          perth.html           tier family
+  [SKIP] T2 source            perth.html           press-native (repo: null)
+  [SKIP] T3 gate              perth.html           no vendored gate
+  [SKIP] T4 release           perth.html           no release script
+  [SKIP] T5 rebuild           perth.html           not a buildable tenant
+  [PASS] T1 registry          access.html          tier personal
+  [SKIP] T2 source            access.html          press-native (repo: null)
+  [SKIP] T3 gate              access.html          no vendored gate
+  [SKIP] T4 release           access.html          no release script
+  [SKIP] T5 rebuild           access.html          not a buildable tenant
+  [PASS] T1 registry          remit.html           tier family
+  [PASS] T2 source            remit.html           remit present
+  [PASS] T3 gate              remit.html           src/vendor/family-gate.js == press/src/family-gate.js (9eba177d)
+  [PASS] T4 release           remit.html           PRESS_DIR + spaces.json read + gate compare; no registry writes
+  [PASS] T5 rebuild           remit.html           rebuild == press/remit.html (2c4ac65e)
+
+  [EMIT] T6 family-grants     (run via the Supabase MCP; expect >=1 active row per page)
+        select a.page, count(g.*) filter (where p.active) as active_grants
+        from press_access_apps a
+        left join press_access_grants g on g.page = a.page
+        left join press_access_people p on p.email = g.email
+        where a.page in ('remit', 'perth')
+        group by a.page;
+
+tenants-check: 30 pass, 0 fail, 28 skip, 1 emitted, 2 info
+
+EXIT=0
+
+=== RELEASE CONFORMANCE ===
+remit/tools/release.js       : PRESS = process.env.PRESS_DIR || join(ROOT,'..','press')  (+usage note)
+remit/tools/publish-checks.js: canonical dir honours PRESS_DIR (behaviour-identical when unset)
+retirement/tools/release.js  : + copyToPress() auto-copies dist/index.html -> ${PRESS_DIR||~/…/press}/retirement.html, sha256-verified; keeps argv[2] staging.
+
+remit --dry with PRESS_DIR=<fakepress> (canonical gate == remit vendored):
+  publish-checks matches canonical -> spaces gate ok (remit in family) -> git blob 2c4ac65e.
+  NON-dry: wrote fakepress/remit.html = 2c4ac65e == dist/remit.html.  MATCH — PRESS_DIR targeting confirmed.
+
+retirement release PRESS_DIR=<fakepress> staged into <tmp>:
+  personal-space gate ok · vendored gate == canonical · gate present in staged · copied to fakepress/retirement.html.
+  hash(staged dest/index.html) = hash(fakepress/retirement.html) = hash(dist/index.html) = 792aa1ef.  MATCH (== live press/retirement.html).
+
+=== GAUNTLET (rebased tree) ===
+node --test : 63 pass, 0 fail, 0 skipped (48 base on advanced main + 15 new tenants-check tests)
+playwright  : 40 passed, 0 skipped
+tenants-check --rebuild : 30 pass, 0 fail, 28 skip, 1 emitted, 2 info — EXIT 0
+
+=== T3 vendored-gate parity (all MATCH on current canonical) ===
+press/src/gate.js = 73889011 ; press/src/family-gate.js = 9eba177d
+giving/fsa/retirement/card-scout src/vendor/press-gate.js == 73889011 ; remit src/vendor/family-gate.js == 9eba177d
+
+=== NOT MINE (left untouched) ===
+remit working tree also carries uncommitted CLAUDE.md/HANDOFF.md/docs/history.md/docs/lessons.md from
+arc/scratchpad-rework's handoff — NOT part of this arc; only tools/release.js + tools/publish-checks.js staged.
