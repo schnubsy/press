@@ -182,7 +182,8 @@ test('T6 family-grants EMITTED — SQL printed for family pages', () => {
   const r = e.run();
   assert.match(r.out, /T6 family-grants/);
   assert.match(r.out, /press_access_grants/);
-  assert.match(r.out, /'remit'/);
+  assert.match(r.out, /'remit\.html'/);
+  assert.match(r.out, /filter \(where g\.active\)/);
   e.cleanup();
 });
 

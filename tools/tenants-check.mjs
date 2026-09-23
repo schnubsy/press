@@ -46,7 +46,6 @@ function resolveRepo(entry) {
   if (entry.repoPath) { let p = entry.repoPath; if (p.startsWith('~')) p = join(homedir(), p.replace(/^~[/]?/, '')); return resolve(p); }
   return join(VSCODE_ROOT, entry.repo);
 }
-const stem = (page) => page.replace(/\.html$/, '');
 
 // ---- load registries -------------------------------------------------------
 let tenants, pages, spaces;
@@ -155,13 +154,14 @@ for (const page of Object.keys(tenants)) {
 
 // ---- T6 family grants (EMITTED — the script cannot reach the DB) ------------
 if (family.length) {
-  const list = family.map(stem).map((s) => `'${s}'`).join(', ');
-  console.log('\n  [' + col('cyn', 'EMIT') + '] T6 family-grants     (run via the Supabase MCP; expect >=1 active row per page)');
+  // Access tables (press_access_apps/grants) key on the FULL page filename (e.g. 'remit.html'),
+  // NOT the press_state stem — and the active flag lives on the GRANT (press_access_grants.active).
+  const list = family.map((s) => `'${s}'`).join(', ');
+  console.log('\n  [' + col('cyn', 'EMIT') + '] T6 family-grants     (run via the Supabase MCP; expect >=1 active grant per page)');
   console.log(col('dim', [
-    '        select a.page, count(g.*) filter (where p.active) as active_grants',
+    '        select a.page, count(g.*) filter (where g.active) as active_grants',
     '        from press_access_apps a',
     '        left join press_access_grants g on g.page = a.page',
-    '        left join press_access_people p on p.email = g.email',
     `        where a.page in (${list})`,
     '        group by a.page;',
   ].join('\n')));

@@ -1,0 +1,49 @@
+marquee-tenancy — SLICE 4 evidence: audit DETECT group 7 + council 4.6.0
+=========================================================================
+Date: 2026-09-22
+
+FILES
+  council/skills/hand/references/audit.md      + "### 7. Marquee tenants" (DETECT now 7 groups); 84 lines (<=130)
+  council/.claude-plugin/plugin.json           4.5.0 -> 4.6.0
+  council/CAPABILITIES.md · PERSONAS.md        Version: aligned to plugin v4.6.0
+  council/docs/council-guide.html              nav badge + footer -> v4.6.0 (audit card has no group enumeration; untouched)
+  claude-environment/CHANGELOG.md              newest-first 4.6.0 entry
+  claude-environment/MANUAL.md §7.1            v4.6.0 stamp (x2); manual.html regenerated
+  press/tools/tenants-check.mjs                T6 SQL corrected to the live access schema (see below)
+
+DONE-CRITERIA
+  [PASS] five stamps read 4.6.0 (plugin.json / CAPABILITIES / PERSONAS / guide badge / guide footer); 0 stale v4.5.0 in guide
+  [PASS] ./scripts/build-bundle.sh exit 0 — "OK — all descriptions pass"; wrote dist/council.plugin (1,797,620 B); bundled plugin.json version 4.6.0
+  [PASS] audit report shows group 7 with per-tenant results (below)
+  [PASS] CHANGELOG has the 2026-09-22 v4.6.0 entry
+  [PASS] .venv/bin/python build.py --check exits 0 ("OK: manual.html is current")
+
+=== /council:audit — DETECT group 7 "Marquee tenants" (run directly) ===
+NOTE: the FULL autonomous /council:audit skill was NOT invoked mid-arc — in Code its PROPAGATE pass RUNS
+git commit/push + bundle rebuild + guide republish, which would collide with this arc's own controlled
+close. Group 7 (the new check) was executed directly; the full audit + Mark's reload/canary remain his
+manual step post-merge.
+
+  $ cd ~/Documents/VSCode/press && node tools/tenants-check.mjs --rebuild
+    -> 30 pass, 0 fail, 28 skip, 1 emitted, 2 info — EXIT 0   (🟢 no tenant FAIL)
+       T3 gates: giving/fsa/retirement/card-scout press-gate == 73889011 ; remit family-gate == 9eba177d (all byte-identical)
+       T5 deterministic: remit 2c4ac65e == live ; retirement 792aa1ef == live (both PASS)
+
+  T6 family-grants — EMITTED SQL run read-only via the Supabase MCP (project eepjhpyziczrxvirczio):
+    select a.page, count(g.*) filter (where g.active) as active_grants
+    from press_access_apps a left join press_access_grants g on g.page = a.page
+    where a.page in ('remit.html','perth.html') group by a.page;
+    RESULT: [{"page":"perth.html","active_grants":1},{"page":"remit.html","active_grants":1}]
+    -> 🟢 both family pages gated=true AND have >=1 active grant. NOT "gated-but-locked".
+
+  SCHEMA CORRECTION (found during this run): the order's spec T6 query used the press_state STEM
+  ('remit') and filtered on press_access_people.active. The LIVE access schema keys on the FULL
+  filename (press_access_apps/grants.page = 'remit.html') and the active flag is on the GRANT
+  (press_access_grants.active). tenants-check T6 was corrected to emit the schema-accurate query
+  (full filenames + g.active); verified live above. Columns confirmed:
+    press_access_apps(page,label,gated,added_at) · press_access_grants(email,page,active,granted_at,revoked_at)
+    · press_access_people(email,name,is_admin,active,added_at,last_seen_at)
+
+=== bundle ===
+  dist/council.plugin = 1,797,620 B
+  unzip -l head: CAPABILITIES.md, agents/{ear,hand,eye}.md, docs/, docs/evidence/… ; bundled plugin.json "version":"4.6.0"
