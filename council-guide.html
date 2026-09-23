@@ -329,7 +329,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v4.2.0</span>
+    <span class="nav-badge">v4.6.0</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -1374,19 +1374,20 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       <div class="sect-head">
         <span class="eyebrow">Ceremony</span>
         <h2>The two rites</h2>
-        <p class="lede">Two ceremonies bracket every project's life: <b class="ink">Kickoff</b> opens it, and <b class="ink">Handoff</b> closes each arc of work. Between them, the Council's memory system keeps every surface oriented.</p>
+        <p class="lede">Two ceremonies bracket every project's life — the <b class="ink">kick off / close out</b> lifecycle pair: <b class="ink">Kick off</b> opens a session, and <b class="ink">Close out</b> (Handoff) closes each arc of work. Between them, the Council's memory system keeps every surface oriented.</p>
       </div>
-      <h3 style="font-size:22px;margin-bottom:4px">Kickoff — idea to handoff-ready repo</h3>
-      <p class="muted" style="margin-bottom:6px">Trigger with "new project," "kickoff," "I have an idea for an app/tool." Runs anywhere; scaffolds only in Claude Code.</p>
+      <h3 style="font-size:22px;margin-bottom:4px">Kick off — context-aware session open</h3>
+      <p class="muted" style="margin-bottom:6px">Trigger with "kick off," "pick up," "resume the project" (existing project) or "new project," "kickoff," "I have an idea for an app/tool" (new build). Runs anywhere; scaffolds only in Claude Code.</p>
       <ol class="steps">
-        <li><b>Worth-building check</b> — one honest pass: names tools that already solve it, offers an Ear gut-check if the verdict is murky.</li>
-        <li><b>One batched interview</b> — purpose, users, platform, stack, data sensitivity, name, git remote, v0.1 success. Every question up front; zero drip-feeding after.</li>
-        <li><b>Scaffold</b> (Claude Code only) — repo under <code>~/Documents/VSCode/&lt;name&gt;</code>, git initialized, control files seeded with the real answers.</li>
-        <li><b>First arc-close</b> — runs <code>/council:handoff</code>, emits a paste-ready Cowork project-instructions block, registers the project in MANUAL.md.</li>
+        <li><b>Which half?</b> — an <b>existing project</b> (root path stated + <code>CLAUDE.md</code>/<code>HANDOFF.md</code>/<code>ARC.md</code> present) is <b>oriented, never re-scaffolded</b>; only a genuinely new idea scaffolds.</li>
+        <li><b>Orient</b> (existing) — read the three control files, read <code>ARC.md</code>'s tail close-out block as the arc inbox (decisions, open questions, next-arc intent), verify repo state, confirm back, then front-load the open decisions before any work order. No tail entry? Orient from <code>HANDOFF.md</code>.</li>
+        <li><b>Worth-building check</b> (new) — one honest pass: names tools that already solve it, offers an Ear gut-check if the verdict is murky.</li>
+        <li><b>One batched interview</b> (new) — purpose, users, platform, stack, data sensitivity, name, git remote, v0.1 success. Every question up front; zero drip-feeding after.</li>
+        <li><b>Scaffold</b> (new, Claude Code only) — repo under <code>~/Documents/VSCode/&lt;name&gt;</code>, git initialized, control files seeded with the real answers; then first arc-close runs <code>/council:handoff</code>, emits a paste-ready Cowork project-instructions block, and registers the project in MANUAL.md.</li>
       </ol>
-      <div class="modebox"><b>On any other surface</b> the rite returns a single deterministic Claude Code work order instead — nothing half-scaffolded, ever.</div>
-      <h3 style="font-size:22px;margin:30px 0 4px">Handoff — closing an arc</h3>
-      <p class="muted" style="margin-bottom:6px">The command: <code>/council:handoff</code> (Claude Code and Cowork).</p>
+      <div class="modebox"><b>On any other surface</b> a new build returns a single deterministic Claude Code work order instead — nothing half-scaffolded, ever.</div>
+      <h3 style="font-size:22px;margin:30px 0 4px">Close out (Handoff) — closing an arc</h3>
+      <p class="muted" style="margin-bottom:6px">The command: <code>/council:handoff</code> (Claude Code and Cowork) — the "close out" half of the pair.</p>
       <ol class="steps">
         <li><b>Consumes</b> ARC.md — the arc inbox of decisions, slices, and flagged RULE: entries (Cowork appends, Claude Code consumes).</li>
         <li><b>Updates</b> CLAUDE.md's Current stage (durable truth), appends the arc to docs/history.md, promotes lessons to docs/lessons.md, and overwrites HANDOFF.md (last-arc snapshot + exact next steps).</li>
@@ -1590,7 +1591,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <footer>
   <div class="footer-in">
     <div>The Council · a private prospectus · generated from PERSONAS.md + skills</div>
-    <div class="mono">council v4.2.0 · last updated 2026-09-14</div>
+    <div class="mono">council v4.6.0 · last updated 2026-09-22</div>
   </div>
 </footer>
 
