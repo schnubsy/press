@@ -1,0 +1,137 @@
+{
+  "v": 1,
+  "tenants": {
+    "card-scout.html": {
+      "repo": "card-scout",
+      "tier": "personal",
+      "gate": "src/gate.js",
+      "vendored": "src/vendor/press-gate.js",
+      "release": "tools/release.js",
+      "build": null,
+      "output": null,
+      "deterministic": false,
+      "note": "card-scout.html at the repo root IS the artifact (no build.js); tools/inline-gate.mjs inlines the vendored gate in place. inline-gate --check green; root blob == press blob (aa0e7bb2, 2026-09-22)."
+    },
+    "kayley.html": {
+      "repo": null,
+      "tier": "public",
+      "gate": null,
+      "vendored": null,
+      "release": null,
+      "build": null,
+      "output": null,
+      "deterministic": false,
+      "note": "press-native page (DB-backed state, press_state lane 1); no source repo."
+    },
+    "council-guide.html": {
+      "repo": "council",
+      "tier": "public",
+      "gate": null,
+      "vendored": null,
+      "release": null,
+      "build": null,
+      "output": null,
+      "deterministic": false,
+      "note": "source is the council repo docs/council-guide.html; published Lane B with src=\"assets/ rewritten to src=\"council-assets/. No vendored gate."
+    },
+    "eagle-path.html": {
+      "repo": null,
+      "tier": "public",
+      "gate": null,
+      "vendored": null,
+      "release": null,
+      "build": null,
+      "output": null,
+      "deterministic": false,
+      "note": "press-native page (DB-backed state, press_tasks lane 2, replatformed from elevate-collab); no source repo."
+    },
+    "halvsies.html": {
+      "repo": null,
+      "tier": "public",
+      "gate": null,
+      "vendored": null,
+      "release": null,
+      "build": null,
+      "output": null,
+      "deterministic": false,
+      "note": "press-native page; no source repo."
+    },
+    "retirement.html": {
+      "repo": "retirement",
+      "tier": "personal",
+      "gate": "src/gate.js",
+      "vendored": "src/vendor/press-gate.js",
+      "release": "tools/release.js",
+      "build": "node build.js --public",
+      "output": "dist/index.html",
+      "deterministic": true,
+      "note": "public build embeds zero personal data; dist/index.html blob == press blob (792aa1ef) on 2026-09-22."
+    },
+    "giving.html": {
+      "repo": "giving-tracker",
+      "tier": "personal",
+      "gate": "src/gate.js",
+      "vendored": "src/vendor/press-gate.js",
+      "release": "tools/release.js",
+      "build": "node build.js",
+      "output": "dist/index.html",
+      "deterministic": false,
+      "note": "release rewrites PWA asset paths on stage (giving-assets/), so dist/index.html (d95c6f22) != served giving.html (ebf504dd)."
+    },
+    "agent-health.html": {
+      "repo": null,
+      "tier": "public",
+      "gate": null,
+      "vendored": null,
+      "release": null,
+      "build": null,
+      "output": null,
+      "deterministic": false,
+      "note": "press-native dashboard; reads Supabase all-apps public views at runtime; no source repo."
+    },
+    "fsa.html": {
+      "repo": "fsa-claims",
+      "tier": "personal",
+      "gate": "src/gate.js",
+      "vendored": "src/vendor/press-gate.js",
+      "release": "tools/release.js",
+      "build": "node build.js",
+      "output": "dist/index.html",
+      "deterministic": false,
+      "note": "build embeds a non-deterministic build-id <meta>, so dist/index.html (50546e80) != served fsa.html (5557cfa8)."
+    },
+    "perth.html": {
+      "repo": null,
+      "tier": "family",
+      "gate": "src/family-gate.js",
+      "vendored": null,
+      "release": null,
+      "build": null,
+      "output": null,
+      "deterministic": false,
+      "note": "press-native family-wing page; inlines the canonical family-gate directly in press; no source repo, no vendored copy."
+    },
+    "access.html": {
+      "repo": null,
+      "tier": "personal",
+      "gate": "src/gate.js",
+      "vendored": null,
+      "release": null,
+      "build": null,
+      "output": null,
+      "deterministic": false,
+      "note": "press-native family-wing admin; lives in the PRIVATE wing (real lock is src/gate.js) and also loads src/family-gate.js for admin OTP; no source repo."
+    },
+    "remit.html": {
+      "repo": "remit",
+      "tier": "family",
+      "gate": "src/family-gate.js",
+      "vendored": "src/vendor/family-gate.js",
+      "release": "tools/release.js",
+      "build": "node build.js",
+      "output": "dist/remit.html",
+      "deterministic": true,
+      "note": "deterministic build (no stamp); dist/remit.html blob == press blob (c866f3f4) on 2026-09-22."
+    }
+  }
+}

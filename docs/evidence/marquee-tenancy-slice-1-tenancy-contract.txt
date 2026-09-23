@@ -1,0 +1,37 @@
+marquee-tenancy — SLICE 1 evidence: tenancy contract + de-dup
+=============================================================
+Date: 2026-09-22   Branch: arc/marquee-tenancy
+
+FILES
+  press/tenants.json                        NEW (repo-owned; keyed by page filename)
+  press/docs/spec.md                        + "## Tenants" section (43 lines, <=60)
+  council/skills/hand/references/press.md    DB-backed-state block removed; pointer added
+  claude-environment/MANUAL.md §12.2         spaces.json/fail-closed prose -> pointer
+
+DONE-CRITERIA
+  [PASS] wc -l press.md = 24   (<= 70)
+  [PASS] grep -c "Open RLS" press.md = 0
+  [PASS] "spaces.json" in press.md + MANUAL §12.2 = pointer lines only
+         press.md: (none)   MANUAL §12.2: two pointer lines (registry bullet)
+  [PASS] tenants.json parses; key-set == pages.json (12 pages, key-sets equal)
+  [PASS] deterministic values proven by rebuild + git hash-object (table below)
+
+TENANTS.JSON DETERMINISM PROOF  (rebuilt each source repo, hashed vs live press blob)
+  page              repo           build                  source blob   live press blob   deterministic
+  remit.html        remit          node build.js          c866f3f4      c866f3f4          TRUE  (==)
+  retirement.html   retirement     node build.js --public 792aa1ef      792aa1ef          TRUE  (==)
+  card-scout.html   card-scout     (root page is artifact) aa0e7bb2     aa0e7bb2          false (page==press; inline-gate --check green; no build.js)
+  fsa.html          fsa-claims     node build.js          50546e80      5557cfa8          false (build-id <meta> is non-deterministic)
+  giving.html       giving-tracker node build.js          d95c6f22      ebf504dd          false (release rewrites PWA asset paths on stage)
+  (press-native pages: kayley, council-guide[src=council], eagle-path, halvsies, agent-health, perth, access — repo null / no rebuild)
+
+VENDORED-GATE PARITY  (pre-validates slice 3 T3; all MATCH — no source-repo drift)
+  press/src/gate.js        = 73889011bd7917fccc9c738f2bf8236a71396abb
+  press/src/family-gate.js = 528e1c13f9da036c779ea630544fef5a212dd469
+  giving-tracker/src/vendor/press-gate.js  MATCH
+  fsa-claims/src/vendor/press-gate.js      MATCH
+  retirement/src/vendor/press-gate.js      MATCH
+  card-scout/src/vendor/press-gate.js      MATCH
+  remit/src/vendor/family-gate.js          MATCH (family gate)
+
+TIER MAP (tenants.json vs spaces.json)  personal=[fsa,giving,retirement,card-scout,access] family=[remit,perth] else public — all consistent.
