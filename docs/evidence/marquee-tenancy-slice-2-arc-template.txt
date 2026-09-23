@@ -1,0 +1,27 @@
+marquee-tenancy — SLICE 2 evidence: tenant-change order template
+================================================================
+Date: 2026-09-22   Repo: council (schnubsy/council), branch arc/marquee-tenancy
+
+FILE
+  council/skills/hand/references/arc.md   + "## Tenant-change arcs" section (19 lines)
+
+DONE-CRITERIA
+  [PASS] arc.md = 121 lines (<= 170)
+  [PASS] Tenant-change section = 19 lines (<= 20)
+  [PASS] the two RULEs (P2 apps-pull-never-push, P3 one-writer) + the fixed 4-step order
+         appear in arc.md and in NO other council REFERENCE file:
+           grep -rln "apps pull" skills/ CAPABILITIES.md PERSONAS.md docs/  ->  arc.md only
+  [NOTE] "apps pull" also appears in council/ARC.md — the TRANSIENT arc inbox (Cowork's pointer
+         block for this arc). ARC.md is truncated to zero bytes at council's arc-close handoff,
+         after which `grep -rln "apps pull" .` returns exactly one file (arc.md). Re-verified at close.
+  [PASS] no SKILL.md instrument-index line added — arc already indexed (SKILL.md:17); the
+         tenant-change order is an addition to the existing arc instrument, not a new instrument.
+
+SECTION CONTENT (summary)
+  Two RULEs (canonical pointer to press/docs/spec.md -> Tenants):
+    - press/src is the ONLY source for shared modules; apps pull, never push; no hand-edited pages.
+    - a marquee change rides INSIDE the tenant app's arc — one writer on press.
+  Fixed order: (1) marquee shell [spaces.json tier, tenants.json, KICKERS/ICONS, pages.json, db/*.sql
+    grants via Cowork connector] -> (2) tenant source re-vendor + release.js to contract ->
+    (3) publish via the app's release with ship-proof -> (4) verify tenants-check.mjs exits 0 + grant
+    SQL >=1 active row per family page. One ARC.md, one order; a second session must not open press.
