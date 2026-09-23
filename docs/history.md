@@ -4,6 +4,24 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-09-22 — arc/marquee-tenancy (the marquee as a platform with tenants)
+
+Made the marquee↔tenant couplings explicit and auditable. **`tenants.json`** (repo-owned, like
+`spaces.json`) keys every `pages.json` page to `repo/tier/gate/vendored/release/build/deterministic`.
+**`docs/spec.md` → Tenants** is the single canonical contract (tenant owes / marquee owes / release-script
+contract / the two RULEs / hotfix rule); council `press.md` (31→24 lines, "Open RLS" removed) and MANUAL
+§12.2 shrank to pointers. **`tools/tenants-check.mjs`** audits every coupling — T1 registry, T2 source, T3
+vendored-gate byte-identity, T4 release contract, T5 rebuild-vs-live, T6 family-grants (emitted SQL) — 15
+node:test cases, `npm run tenants:check`. remit + retirement `release.js` (and remit `publish-checks.js`)
+now honour `PRESS_DIR`; retirement auto-copies into press, sha256-verified. Council **4.6.0**: audit DETECT
+group 7 "Marquee tenants" + an arc "Tenant-change arcs" order template; MANUAL §1.1 three-tier table.
+**Concurrency:** mid-arc, remit's `arc/scratchpad-rework` closed & shipped to press main (a989a4d) — a
+magic-link family-gate (now canonical `9eba177d`) + new `remit.html` (`2c4ac65e`); the branch was rebased
+onto it, which resolved a transient "gate drift" that was really a stale base. Gauntlet green: 63 node + 40
+Playwright, 0 skipped; `tenants-check --rebuild` 30 pass 0 fail. T6 grants read live: remit/perth 1 active
+each (🟢). `council-guide.html` republished v4.2.0→v4.6.0 (live 200, blob `e9273078`). Closed one PR/repo:
+press#14 (`9cf7e1c`), council#3 (`a67d14f`), remit#3 (`42c683c`), retirement#2 (`a47b277`), env#2 (`661f6ee`).
+
 ## 2026-09-22 — arc/marquee-polish (corrective UI batch + remit source repair)
 
 A five-slice corrective pass on the marquee UI batch plus a cross-repo drift fix. **S1 copy:** inverted the

@@ -23,19 +23,16 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 
 ## Current stage
 
-Live; **arc/marquee-polish COMPLETE (2026-09-22).** Corrective UI batch + a cross-repo source-drift repair.
-COPY inverted so the BIG text is the wing NAME and the small line the tagline (family "a safe space"/"The
-Family Wing"; private "behind the passkey"/"The Private Wing") in both cards and both wing views; the retired
-"A safer space for the fam" is gone from live source + tests. ICONS: perth = a plane (Feather paper-plane;
-Australia removed), remit = a banknote via a new first-match KICKERS rule (distinct from halvsies' $). LAYOUT:
-the two wing squares now fill their grid tracks — family's left edge and private's right edge are flush with
-the cards below (a family-lobby edge test asserts ≤1px; aspect-ratio dropped ≤480px so a long kicker can't
-clip the lockline). Eye LITE: 1 P0 (mobile clip) fixed. Lighthouse 89/96/96. `src/gate.js` untouched
-(`6080e25d…`). REMIT SOURCE repaired: re-vendored the canonical family-gate (`b5ff2b65`, requireSession) +
-added the dynamic-head back-link so `node build.js` is BYTE-IDENTICAL to the live `press/remit.html`
-(`c866f3f4`) — rebuildable without regressing the Phase-1 gate; NOT republished. Prior marquee UI batch +
-Family/RLS phases stay closed. Gauntlet green (43 node + 37 Playwright, 0 skipped). Closed via one PR per
-repo (press, remit) + per-page live verification (index.html).
+Live; **arc/marquee-tenancy COMPLETE (2026-09-22).** The marquee is a documented PLATFORM with TENANTS:
+`tenants.json` (repo-owned) keys every page to repo/tier/gate/vendored/release/deterministic; `docs/spec.md`
+→ Tenants is the canonical contract (council press.md + MANUAL §12.2 now point to it). `tools/tenants-check.mjs`
+audits every coupling (T1–T6; 15 tests; `npm run tenants:check`); remit + retirement `release.js` honour
+`PRESS_DIR`. Council 4.6.0 (audit DETECT group 7 + arc tenant-change template). Mid-arc remit's
+`arc/scratchpad-rework` shipped (magic-link family-gate `9eba177d` now canonical, remit.html `2c4ac65e`) — this
+branch was rebased onto it, so remit's vendored gate == canonical (no drift). Gauntlet green: 63 node + 40
+Playwright, 0 skipped; tenants-check --rebuild 30 pass 0 fail. `council-guide.html` republished v4.2.0→v4.6.0
+(live 200, blob `e9273078`). Closed one PR/repo (press#14 council#3 remit#3 retirement#2 env#2); T6 grants
+verified remit/perth = 1 active each.
 
 ## Project rules
 

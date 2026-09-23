@@ -264,3 +264,23 @@ comments, edits made in a dynamic template but not the static shell — or vice-
 **RULE [icons]:** don't hand-draw a country/complex silhouette for a row-size (26px) stroke glyph — it won't
 read. Use a simple, purpose-true Feather glyph (perth's runway → a paper-plane). Judge glyphs at their ACTUAL
 render size, never zoomed.
+
+## 2026-09-22 — arc/marquee-tenancy
+
+**RULE [git][press]:** a vendored-gate "drift" can be a STALE BASE, not real drift. This branch cut from
+`f96a247`; mid-arc remit's `arc/scratchpad-rework` merged a new canonical `family-gate.js` to press main.
+`tenants-check` T3 then flagged remit's vendored gate as drifted — but it was the WORKTREE's canonical that
+was behind. Always `git fetch && rebase origin/main` before trusting a cross-repo byte-compare; verify with
+`git hash-object` on BOTH the vendored copy and the CURRENT-main canonical, not a stale checkout. (My first
+`git hash-object <abs-path>` run from the wrong repo also misreported MATCH — run it with `git -C <repo>`.)
+
+**RULE [press]:** the marquee is a PLATFORM with TENANTS — the contract lives ONCE in `docs/spec.md` →
+Tenants; `tenants.json` is the registry; `tools/tenants-check.mjs` is the audit (run `--rebuild` before any
+tenant close). A tenant that FAILs is fixed in its SOURCE repo (re-vendor from `press/src`), NEVER by
+editing press; a needed republish is a guarded manual step. apps pull, never push; one writer on press.
+
+**RULE [supabase]:** the family-access tables key on the FULL page filename (`press_access_apps/grants.page`
+= `'remit.html'`), NOT the `press_state` stem, and the active flag is on the GRANT
+(`press_access_grants.active`), not `press_access_people.active`. A grants audit that stems the page or
+filters on people.active returns empty and reads as a false "gated-but-locked". Verify the schema
+(`information_schema.columns`) before trusting an audit query.

@@ -1,6 +1,6 @@
 # press — HANDOFF
 
-_Last updated: 2026-09-22 — arc/marquee-polish CLOSED_
+_Last updated: 2026-09-22 — arc/marquee-tenancy CLOSED_
 
 ## Standing rule — publish auto-close (do NOT re-litigate)
 
@@ -10,41 +10,42 @@ as part of closing out. (Auto-merge is still never enabled pre-emptively.) Set b
 
 ## Current state
 
-**arc/marquee-polish is COMPLETE** — a corrective UI batch on the marquee plus a remit source-drift repair.
-Copy inverted (BIG = wing name, small = tagline) everywhere; perth icon = a plane, remit icon = a banknote;
-the two wing squares are flush with the cards below; one Eye P0 (mobile card clip) fixed. `src/gate.js`
-untouched (`6080e25d`). Only `index.html` changed as a served page. Gauntlet green: **43 node + 37 Playwright,
-0 skipped** (37 = 35 + the 2 new edge-alignment tests). Lighthouse landing 89 perf / 96 a11y / 96 bp. Closed
-via one PR per repo (press + remit); see the close-out manifest / report for the index.html live-200 + hash proof.
+**arc/marquee-tenancy is COMPLETE.** The marquee is a documented **platform with tenants**: `tenants.json`
+(repo-owned) is the registry, `docs/spec.md` → Tenants the canonical contract, `tools/tenants-check.mjs` the
+audit (T1–T6). remit + retirement `release.js` honour `PRESS_DIR`. Council **4.6.0** (audit DETECT group 7 +
+arc tenant-change template). Five repos closed via one PR each; `council-guide.html` republished + live-verified.
+
+Mid-arc, remit's `arc/scratchpad-rework` shipped to press main (magic-link family-gate `9eba177d` now
+canonical, `remit.html` `2c4ac65e`); this branch was **rebased** onto it — remit's vendored gate == canonical
+(the "drift" tenants-check first flagged was a stale base, now resolved). No tenant is drifted.
 
 ## Shipped this arc
-- **Copy:** inverted labels in family+private card AND wing view (family "a safe space"/"The Family Wing";
-  private "behind the passkey"/"The Private Wing"); retired "A safer space for the fam" from live source+tests;
-  test pins updated (marquee.spec:109, family-lobby:72 + kicker).
-- **Icons:** perth → Feather paper-plane (Australia gone); remit → banknote via a new first-match `[/remit/]`
-  KICKERS rule (distinct from halvsies' `$`).
-- **Layout:** removed the square `max-height` so each wing square fills its 1fr track — family LEFT/private
-  RIGHT edges flush with the cards (dL=dR=0.00); 2 acceptance tests assert ≤1px; `aspect-ratio:auto` ≤480px
-  so a long kicker can't clip the lockline.
-- **remit source repair:** re-vendored the canonical family-gate (`b5ff2b65`, requireSession) + added the
-  dynamic-head back-link + aligned .tw-back CSS → `node build.js` is BYTE-IDENTICAL to the live
-  `press/remit.html` (`c866f3f4`). remit rebuildable without regressing the Phase-1 gate; **NOT republished**.
-- Landed 3 uncommitted council inbox files (remit ARC.md+HANDOFF.md, giving-tracker ARC.md) rather than discarding.
+- **press #14 (`9cf7e1c`):** `tenants.json`; `docs/spec.md` → Tenants; `tools/tenants-check.mjs` + 15 tests
+  (`npm run tenants:check`); CLAUDE.md pages-by-tier; **published** `council-guide.html` v4.2.0→v4.6.0.
+- **council #3 (`a67d14f`):** press.md → pointer (31→24 lines, "Open RLS" gone); arc.md tenant-change template;
+  audit.md group 7 + group-4 dossiers sweep; five stamps 4.6.0; trigger parity; bundle rebuilt (1,797,620 B).
+- **remit #3 (`42c683c`):** release.js + publish-checks.js honour `PRESS_DIR`.
+- **retirement #2 (`a47b277`):** release.js auto-copies dist → press/retirement.html (sha256-verified).
+- **claude-environment #2 (`661f6ee`):** MANUAL §12.2 + §1.1 pointers/tier-table; §7.1 stamp; CHANGELOG 4.6.0.
+- dossiers/dossier-core.md header renamed off the retired name (on disk, no git).
+
+## Verification
+- Gauntlet green: **63 node + 40 Playwright, 0 skipped**; `tenants-check --rebuild` 30 pass / 0 fail.
+- Ship proof (guide): live 200 · live blob `e9273078` == source · asset `seal_eye.svg` 200 · badge/footer v4.6.0.
+- T6 grants read live (Supabase MCP): `remit.html`=1, `perth.html`=1 active grant → 🟢 not gated-but-locked.
+- All five main checkouts reconciled: HEAD == each PR's merge SHA.
 
 ## Open / blockers
-- No blockers. `BACKLOG.md` holds non-P0 polish from the prior Eye pass (kicker taxonomy, mobile card
-  breathing room, FSA glyph semantics, card-scout asymmetry, collapsed-Connect void).
-- **remit has its own live, unstarted arc order** in `remit/ARC.md` (`arc/gate-hardening-and-fx`, slices 2–6,
-  Cowork-authored) — now committed. That is remit's next arc, independent of press.
+- **No blockers.** All close-out steps DONE (see the arc report's manifest). No tenant was flagged BLOCKED.
+- remit's own queued arc **`arc/gate-hardening-and-fx`** (remit/ARC.md) is untouched — still its next arc.
+- The press copy of `council-guide.html` is now current (v4.6.0); future council-guide edits still republish
+  (audit DETECT-3). `BACKLOG.md` holds prior non-P0 polish.
 
 ## Exact next steps
-Next arc (no press inbox pending): pick up `BACKLOG.md` polish, or start remit's `arc/gate-hardening-and-fx`
-from `remit/ARC.md`. MAIN CHECKOUT: `~/Documents/VSCode/press`. INBOX FILES: this HANDOFF + `BACKLOG.md`.
+No press inbox pending. Next arc: `BACKLOG.md` polish, or remit's `arc/gate-hardening-and-fx`.
+MAIN CHECKOUT: `~/Documents/VSCode/press`. INBOX FILES: this HANDOFF + `BACKLOG.md`.
 
-## Mark's manual steps (device check — Claude cannot do this; the final gate)
-1. **Verify the marquee live** (after Pages propagates):
-   `git -C ~/Documents/VSCode/press pull && grep -c "a safe space" index.html` (expect ≥1) `&&`
-   `open 'https://schnubsy.github.io/press/'` — expect: both wing cards read BIG name / small tagline
-   ("The Family Wing" over "a safe space"; "The Private Wing" over "behind the passkey"), the squares' outer
-   edges flush with the cards below, and on a phone the private card shows the full "Set up the private wing"
-   (no clip). Sign in to the family wing and confirm remit shows a banknote icon and perth a plane.
+## Mark's manual steps (the only things Claude cannot do)
+1. **Reload the council bundle:** in Claude Desktop, reload `dist/council.plugin`, then a fresh Cowork chat
+   canary — "state the council version and list the audit check groups" — **expect v4.6.0 and seven groups**
+   (…6. Projects, 7. Marquee tenants). A stale answer = the Desktop reload has not propagated (not a repo bug).
