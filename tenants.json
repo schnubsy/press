@@ -25,6 +25,7 @@
     },
     "council-guide.html": {
       "repo": "council",
+      "repoPath": "~/Documents/Claude/council-hub/council",
       "tier": "public",
       "gate": null,
       "vendored": null,
@@ -98,7 +99,7 @@
       "build": "node build.js",
       "output": "dist/index.html",
       "deterministic": false,
-      "note": "build embeds a non-deterministic build-id <meta>, so dist/index.html (50546e80) != served fsa.html (5557cfa8)."
+      "note": "build embeds a non-deterministic build-id <meta> (rebuild hash varies per run), so dist/index.html != served fsa.html (5557cfa8)."
     },
     "perth.html": {
       "repo": null,
@@ -131,7 +132,7 @@
       "build": "node build.js",
       "output": "dist/remit.html",
       "deterministic": true,
-      "note": "deterministic build (no stamp); dist/remit.html blob == press blob (c866f3f4) on 2026-09-22."
+      "note": "deterministic build (no stamp); dist/remit.html blob == press blob (2c4ac65e) on 2026-09-22 after arc/scratchpad-rework shipped. Vendored family-gate (9eba177d) == press/src/family-gate.js canonical (magic-link landing is now canonical)."
     }
   }
 }
