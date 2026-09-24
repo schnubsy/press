@@ -293,7 +293,10 @@ body.tw-sorting .tw-card{transition:none}
    "BEHIND THE PASSKEY" wrapping to 3 lines must not overflow a fixed square and clip the lockline).
    Width still = the grid track, so left/right edges stay flush with the cards below (grid stretches
    both cards to equal height). Squares are preserved on tablet/desktop. */
-@media(max-width:480px){.tw-wings .tw-secure,.tw-wings .tw-family{aspect-ratio:auto}}
+@media(max-width:480px){.tw-wings .tw-secure,.tw-wings .tw-family{aspect-ratio:auto}
+  /* wings-polish slice 2: each word of the wing heading on its own line at phone width. Explicit
+     per-word blocks — not natural wrap. Desktop/tablet keep the words inline (normal flow). */
+  .tw-wings h3.tw-wordlines span{display:block}}
 /* private-wing view */
 .tw-unlock{padding:32px 24px;border-radius:var(--tw-radius-card);background:var(--tw-glass-card);
   border:1px solid var(--tw-border-card);text-align:center;box-shadow:var(--tw-shadow-card)}
@@ -1383,14 +1386,12 @@ function clockUntil(expiresAt){
 }
 function secureCardHTML(){
   const st = vaultState(), n = personalCount();
-  let line;
-  if(st.sess)        line = `Unlocked · ${n} tools · ${clockUntil(st.sess.expiresAt)}`;
-  else if(st.enrolled) line = `Locked · ${n} tools · tap to unlock`;
-  else               line = `Set up the private wing`;
-  // Phase 4 swap: the card carries the tagline; the wing name moves to the wing-view title. The
-  // lockline still names the wing (the only wing identifier left on the card once the h3 changes).
+  // wings-polish slice 2: the card lockline is a plain tool COUNT — no lock state, no wall clock,
+  // no "tap to unlock". The only exception is the very first run: with no passkey enrolled yet, the
+  // card invites setup. (Lock state still lives inside the wing view, not on the lobby card.)
+  const line = st.enrolled ? `${n} ${n===1?'tool':'tools'}` : `Set up the private wing`;
   return `<a class="tw-secure" href="./?view=personal" draggable="false">`+
-    `<div class="k">⬤ behind the passkey</div><h3>The Private Wing</h3>`+
+    `<div class="k">⬤ behind the passkey</div>`+wordLines('The Private Wing')+
     `<div class="lockline">${esc(line)}</div>`+
     `<span class="sicon">${ICONS['Secure']}</span></a>`;
 }
@@ -1399,11 +1400,21 @@ function secureCardHTML(){
 // auth / vault calls: it only reads SPACES.family.length. The gate lives on the page, not here.
 function familyCardHTML(){
   const n = familyCount();
-  const line = `${n} ${n===1?'tool':'tools'} · sign in with a code`;
+  // wings-polish slice 2: lockline is a plain tool COUNT — the "sign in with a code" cue moves off
+  // the lobby card (the gate itself explains sign-in once the door is opened).
+  const line = `${n} ${n===1?'tool':'tools'}`;
   return `<a class="tw-family" href="./?view=family" draggable="false">`+
-    `<div class="k">⬤ a safe space</div><h3>The Family Wing</h3>`+
+    `<div class="k">⬤ a safe space</div>`+wordLines('The Family Wing')+
     `<div class="lockline">${esc(line)}</div>`+
     `<span class="sicon">${ICONS['Family']||ICONS['Secure']}</span></a>`;
+}
+// wings-polish slice 2: a wing heading whose words each sit on their own line at phone width.
+// Explicit per-word <span>s (block only under the ≤480px breakpoint) — never a reliance on the
+// browser's natural wrap. textContent stays "The Private Wing" / "The Family Wing" (spaces kept
+// between the spans), so the h3-name test contracts are unchanged.
+function wordLines(name){
+  const words = String(name).trim().split(/\s+/).map(w=>`<span>${esc(w)}</span>`).join(' ');
+  return `<h3 class="tw-wordlines">${words}</h3>`;
 }
 
 /* ══ R3 — shared portal state (sort order + archived pages) ══════════════════
