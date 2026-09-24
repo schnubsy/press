@@ -152,7 +152,7 @@
   .addrow{display:flex;gap:8px;margin-top:6px}
   .addrow input{flex:1}
   footer{max-width:640px;margin:6px auto 0;padding:14px 16px 24px;color:var(--muted);font-size:13px;text-align:center}
-  footer a{color:var(--accentA)}
+  footer a{color:var(--hit)} /* a11y: --accentA #149b6b is only 3.3:1 on --bg at 13px; --hit #0f7a4d is 4.94:1 (WCAG AA), and 8.4:1 in dark mode */
   /* feed filter bar — one compact row (When / Type / Sort / Search) + a status line */
   .feedbar{margin:2px 0 8px}
   .ftoolbar{display:flex;align-items:center;gap:8px;min-height:44px}
