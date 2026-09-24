@@ -10,3 +10,5 @@ Slice 2 — mobile wing cards. Status: DONE (one-word-per-line headings ≤480px
 Slice 3 — perth title. Status: DONE (title→"The Runway — Perth" in perth.html:6-7 + pages.json; h1 left alone; 3 PW green). NOTE: tenants-check has 4 T3 gate-drift fails from slice-1 (deferred re-vendors) — see HANDOFF.
 Slice 4 — Family Access redesign + opt-out grants (DDL applied by Cowork). Status: DONE — migration applied+live-verified (opt-out default true; revoked false; deactivated false; T6 perth/remit=1; advisor: has() authenticated-only, not anon). UI half green.
 Slice 5 — private-wing recovery kit. Status: DONE (Print recovery kit in unlocked wing; all keyring entries + restore steps; absent when locked; card-scout sentinel never printed; spec.md line added; 2 PW green + print screenshot; no P0).
+
+CLOSE (2026-09-24): all 5 slices DONE + green (65 node + 56 PW; inline green). Migration applied+live-verified. Gate 7d re-vendored into fsa-claims #14 + retirement #3 (merged). giving-tracker + card-scout SKIPPED (behind/dirty) -> tenants-check 26 pass / 2 fail (skips only) -> press arc held as DRAFT PR per Mark. Follow-ups + manifest in HANDOFF.

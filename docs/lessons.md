@@ -7,6 +7,25 @@ Tags on press commits follow: `chore(v<N>): <description>` for control-file work
 
 Evidence slice files follow: `v<N>-slice-<seq>-<topic>.txt` (e.g. `v4-slice-9-press.txt`).
 
+## arc/wings-polish (2026-09-24)
+
+- **A shared-module bump desyncs every tenant's vendored copy → T3 RED.** Changing `press/src/gate.js`
+  (here the 7-day vault TTL, inlined from `src/vault.js`) makes `tenants-check` T3 fail for every tenant
+  whose SOURCE repo still vendors the old byte. The light fix is a **gate-file-only re-vendor** per tenant
+  (`cp press/src/gate.js <repo>/src/vendor/press-gate.js`, `hash-object` assert, one-file commit, PR, merge)
+  — NO rebuild, NO release; the published page keeps the old value until that app's own next release.
+- **Guard every cross-repo re-vendor.** Only act on a tenant repo that is on `main`, clean, AND synced with
+  origin; SKIP (don't stash/pull/touch) any dirty or behind repo and list it as a follow-up. If tenants-check
+  stays RED only because of skipped repos, close the arc as a **DRAFT PR** — do not force the merge.
+- **`press_access_has` opt-out shape.** A grant row now records only a REVOCATION: TRUE = active person AND
+  `press_access_apps.gated` for the page AND **no** `active=false` grant. No row at all = granted. Deactivating
+  a person (`people.active=false`) denies everything (the function requires `p.active`). T6's "≥1 active grant
+  per family page" still holds via existing active=true rows; new people simply have no rows.
+- **access.html sign-in loop:** `FamilyGate.verifyCode()` returns `{session,status,code}` — persist
+  `.session`, never the wrapper, or the reload re-reads a bad record and loops. OTP codes are 6–10 digits.
+- **Playwright gotcha:** `route.request().url` is a METHOD — `new URL(req.url())`. `new URL(req.url)` throws
+  a bare "TypeError: Invalid URL" and the unfulfilled route hangs the page.
+
 ---
 
 ## Known lessons

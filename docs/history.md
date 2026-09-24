@@ -4,6 +4,30 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-09-24 — arc/wings-polish (private + family wing polish; opt-out grants)
+
+Five slices polishing both wings. **(1) Private-wing weekly re-lock** — vault TTL 8h→**7 days, fixed from
+unlock** (no slide-on-use). Bumped in the press-owned copies only (Mark's Option 2): `src/vault.js` source →
+inlined into `index.html` + `src/gate.js`; the four published tenant pages keep 8h until their own next
+release. `test/ttl-honored.spec.mjs` proves each published tenant page HONOURS a portal-minted 7-day session
+(reads `expiresAt`, never recomputes to 8h). **(2) Mobile wing cards** — headings render one word per line at
+≤480px via explicit per-word `<span>` blocks (desktop inline); both locklines are plain tool counts.
+**(3) perth title** → "The Runway — Perth". **(4) Family Access opt-out grants** — `access.html` redesigned
+to per-person cards with a switch per family tool (ON by default) + Deactivate; removed the "which tools are
+gated" section; fixed the sign-in loop (saved the `{session,status,code}` wrapper instead of `.session`) and
+accept 6–10 digit codes. `db/20260924_press_access_optout.sql` redefines `press_access_has` to opt-out (active
+person AND `press_access_apps.gated` AND no `active=false` grant) and ensures remit/perth gated=true; applied +
+live-verified by Cowork. **(5) Recovery kit** — the unlocked private wing prints a paper kit of every keyring
+entry (app, sync ID, passphrase) + restore steps; the paper kit is the recovery path, no email reset by design.
+
+Gauntlet: **65 node + 56 Playwright, 0 skipped; inline:check green.** Gate file (7d) re-vendored into
+**fsa-claims #14** + **retirement #3** (merged, reconciled); **giving-tracker** (behind origin) and
+**card-scout** (dirty tree) were SKIPPED under the guard → tenants-check **26 pass / 2 fail** (only the two
+skips). Per Mark, that closes the press arc as a **DRAFT PR** (no merge/publish yet) until the two are
+re-vendored. Branch `claude/arc-wings-polish-0e3d69`.
+
+---
+
 ## 2026-09-22 — arc/marquee-tenancy (the marquee as a platform with tenants)
 
 Made the marquee↔tenant couplings explicit and auditable. **`tenants.json`** (repo-owned, like
