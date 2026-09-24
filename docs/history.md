@@ -4,6 +4,14 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-09-24 — T7 tool-cfg check (#17)
+
+tenants-check gained **T7 `tool-cfg`**: every `spaces.json` personal page with a vault keyring entry must have a
+`TOOL_CFG` entry in `index.html`, so it can't silently drop out of Connect your tools or the recovery kit.
+4 tests; spec notes "reprint the recovery kit after adding a private tool or changing a passphrase". Merged `166f56b`.
+
+---
+
 ## 2026-09-24 — arc/wings-polish (private + family wing polish; opt-out grants)
 
 Five slices polishing both wings. **(1) Private-wing weekly re-lock** — vault TTL 8h→**7 days, fixed from

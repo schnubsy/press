@@ -23,18 +23,13 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 
 ## Current stage
 
-Live; **arc/wings-polish COMPLETE (2026-09-24).** Five slices: private-wing TTL **8h→7 days fixed from unlock**
-(press-owned copies — `src/vault.js`→inline into `index.html`+`src/gate.js`); lobby wing cards render **one word
-per line ≤480px** with plain-count locklines; perth title **"The Runway — Perth"**; a **printable private-wing
-recovery kit** (paper kit is the recovery path, no email reset); and **Family Access opt-out grants** —
-`access.html` redesigned to per-person cards with a switch per family tool (ON by default) + Deactivate, and
-`press_access_has` redefined to opt-out (active person AND gated family app AND no active=false grant).
-Migration `db/20260924_press_access_optout.sql` **applied + live-verified** (Mark remit/perth true, fsa false,
-unknown false; revoked→false; deactivated→false; T6 remit/perth=1; `press_access_has` authenticated-only, not
-anon). Gauntlet green: **65 node + 56 Playwright, 0 skipped; inline:check green; tenants-check 28 pass 0 fail.**
-Gate file (7d) re-vendored into all four tenant source repos — **fsa-claims #14, retirement #3, giving-tracker
-#10, card-scout #15** (merged). Press **PR #16 merged** to main + published. The four PUBLISHED tenant pages
-still inline 8h until each app's own next release (each honours a portal-minted 7-day session meanwhile).
+Live; **arc/wings-polish COMPLETE (2026-09-24, #16 `17091f6`)** + **T7 follow-up (#17 `166f56b`).**
+Private wing re-locks every **7 days, fixed from unlock**; mobile wing cards one word per line with "N tools";
+perth title "The Runway — Perth"; Family Access = invite + per-person family-app switches (**opt-out grants**,
+`press_access_has` live-verified); printable **private-wing recovery kit** (no email reset, by design).
+tenants-check **T7 `tool-cfg`**: every personal data page must be in `TOOL_CFG` (Connect your tools + kit).
+Gauntlet: node 69 · Playwright 56 · tenants-check 29/0. The 4 published tenant pages inline 8h until each
+app's own next release (vendored gate already 7d). No press inbox pending.
 
 ## Project rules
 

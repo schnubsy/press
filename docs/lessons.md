@@ -23,6 +23,18 @@ Evidence slice files follow: `v<N>-slice-<seq>-<topic>.txt` (e.g. `v4-slice-9-pr
   per family page" still holds via existing active=true rows; new people simply have no rows.
 - **access.html sign-in loop:** `FamilyGate.verifyCode()` returns `{session,status,code}` — persist
   `.session`, never the wrapper, or the reload re-reads a bad record and loops. OTP codes are 6–10 digits.
+- **Guard nuance — an unrelated dirty path is not a blocker.** card-scout's only dirty path was its own seeded
+  `ARC.md` (a future arc's inbox). Re-vendor around it: record its `hash-object`, branch, `git add` the vendor
+  file by name only, merge, assert the hash is UNCHANGED. Never commit/stash/discard another arc's inbox to
+  satisfy a clean-tree guard.
+- **RULE [press] (T7 `tool-cfg`):** every personal page with a vault keyring entry (`src/vault.js` →
+  `emptyKeyring`) MUST have a `TOOL_CFG` entry in `index.html`, or it drops out of Connect your tools AND the
+  recovery kit. Known gap: an app missing from BOTH passes — add both when adding a private tool.
+- **RULE [press]:** the recovery kit prints from the live keyring, but paper doesn't update — reprint after adding
+  a private tool or changing a passphrase. Never add an email reset for the private wing.
+- **[cowork]** Cloud Cowork sessions linked to the Mac can't write via the Filesystem connector (outputSchema
+  draft-07 rejected). Edits go through a folder connected to the session (device shell) — request
+  `~/Documents` once per chat; the connector's own folder settings don't grant it.
 - **Playwright gotcha:** `route.request().url` is a METHOD — `new URL(req.url())`. `new URL(req.url)` throws
   a bare "TypeError: Invalid URL" and the unfulfilled route hangs the page.
 
