@@ -205,6 +205,19 @@
   /* Slice 4d: sale-watch rows show a per-term status line + last match, one per line. */
   .watchrow{padding:10px 0;border-top:1px solid var(--line)} .watchrow:first-child{border-top:none;padding-top:2px}
   .watchrow .fchip{align-self:flex-start;flex:0 0 auto}
+  /* Slice 2 (pushover arc): sale-watch add row — a divider, then [term][compact Min % stepper][Watch]
+     on one line; the stepper matches the compact rule-card stepper (44px hit area, ~32px visible via a
+     6px transparent inset). On a phone the term takes the full first row; stepper + Watch share row 2. */
+  .watch-addrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px;
+    border-top:1px solid var(--line);padding-top:12px}
+  .watch-addrow .watch-addterm{flex:1 1 160px;min-width:0}
+  .watch-addrow .ctrl{gap:6px;flex:0 0 auto}
+  .watch-addrow .ctrl-lab{font-size:11px}
+  .watch-addrow .stepper{flex:0 0 auto}
+  .watch-addrow .stepper button{padding:6px;background-clip:content-box;font-size:16px} /* 44px hit, ~32 visible */
+  .watch-addrow .stepper output{min-width:34px;font-size:13px}
+  .watch-addrow #addwatch{flex:0 0 auto}
+  @media (max-width:480px){ .watch-addrow .watch-addterm{flex:1 1 100%} } /* term full width; stepper + Watch → row 2 */
   /* per-rule category segmented control (Slice 4) */
   /* Slice 5: rule cards compressed vertically — tighter padding, gaps and the category picker moved
      off the card into a ⋯ overflow menu (was a 4-button row). */
@@ -1539,13 +1552,17 @@
       +'<div class="card">'
         +'<div class="sub">Get alerted when a term is on sale — not just gift cards. One search per term, up to 10.</div>'
         +'<div id="watchlist" style="margin-top:8px"></div>'
-        +'<div class="ctrls" style="margin-top:8px"><div class="ctrl"><span class="ctrl-lab">Min % off</span>'
-          +'<div class="stepper" role="group" aria-label="Minimum percent off for a new watch">'
-          +'<button data-wnewdec aria-label="Decrease minimum percent">&minus;</button>'
-          +'<output id="newwatchmin">'+pctMinLabel(newWatchMin)+'</output>'
-          +'<button data-wnewinc aria-label="Increase minimum percent">+</button></div></div></div>'
-        +'<div class="addrow" style="margin-top:8px"><input id="newwatch" type="text" placeholder="e.g. Nintendo Switch 2" aria-label="Add a sale-watch term">'
-        +'<button class="btn primary" id="addwatch">Watch</button></div></div>';
+        // Slice 2 (pushover arc): the add row is ONE line under a divider — [term][compact Min % off
+        // stepper][Watch]. On a phone the term takes the full first row and the stepper + Watch share
+        // row 2. The divider stops the add-row stepper reading as a duplicate of the last watch row's.
+        +'<div class="watch-addrow">'
+          +'<input class="watch-addterm" id="newwatch" type="text" placeholder="e.g. Nintendo Switch 2" aria-label="Add a sale-watch term">'
+          +'<div class="ctrl"><span class="ctrl-lab">Min % off</span>'
+            +'<div class="stepper" role="group" aria-label="Minimum percent off for a new watch">'
+            +'<button data-wnewdec aria-label="Decrease minimum percent">&minus;</button>'
+            +'<output id="newwatchmin">'+pctMinLabel(newWatchMin)+'</output>'
+            +'<button data-wnewinc aria-label="Increase minimum percent">+</button></div></div>'
+          +'<button class="btn primary" id="addwatch">Watch</button></div></div>';
     renderRulesList();
     renderBlockList();
     renderWatchList();
@@ -1656,7 +1673,7 @@
   }
   // Slice 1: iPhone push health + a one-tap "Send test push". The health line reads the push-health
   // row the tick/test stamps; the button POSTs {action:'test_push'} to the Edge Function, gated on the
-  // page's x-plan-id sync_id (no shared secret on the page). The returned ntfy status shows inline.
+  // page's x-plan-id sync_id (no shared secret on the page). The real Pushover outcome shows inline.
   function pushHealthRow(){ var h=state.health||[]; for(var i=0;i<h.length;i++){ if(h[i].item_id==="push-health") return h[i]; } return null; }
   function pushHealthLine(){
     var r=pushHealthRow(); var e=(r&&r.extras)||{};
@@ -1683,7 +1700,7 @@
     var html=alertsSummary();
     html+=quickNav("alerts",groups);
     html+=groupHead("alerts","channels","Channels",2);
-    html+=tog("alert-iphone","iPhone push","Instant ntfy alert on a hit.");
+    html+=tog("alert-iphone","iPhone push (Pushover)","Instant Pushover alert on a hit.");
     html+=pushHealthCard();
     html+=tog("alert-gmail","Email","A copy to your inbox.");
     html+=groupHead("alerts","howoften","How often",2);
@@ -1782,7 +1799,7 @@
     if(b.id==="send-test-push"){ sendTestPush(b); return; }
   });
   // Slice 1: POST {action:'test_push'} to the Edge Function, gated on the page's sync_id (x-plan-id).
-  // Shows the returned ntfy status inline; never sends or displays the topic.
+  // Shows the REAL Pushover outcome inline; never sends or displays a Pushover credential.
   function sendTestPush(btn){
     var sid=planId(); var out=el("test-push-result");
     if(!sid){ if(out) out.textContent="Unlock the page first, then try again."; return; }
@@ -1794,12 +1811,11 @@
     }).then(function(r){ return r.json().catch(function(){return {};}).then(function(j){ return {status:r.status, j:j||{}}; }); })
       .then(function(res){
         var j=res.j;
-        if(res.status===200 && j.ntfy_status!=null){
-          if(j.ntfy_status>=200 && j.ntfy_status<300){ out.textContent="Sent ✓ (ntfy "+j.ntfy_status+"). If your phone stays silent, open the ntfy app and confirm you’re subscribed to the same topic."; }
-          else { out.textContent="ntfy returned HTTP "+j.ntfy_status+" — not delivered."; }
-        } else if(res.status===429){ out.textContent="Please wait "+(j.retry_after_s||60)+"s between test pushes."; }
+        if(res.status===200 && j.ok===true){ out.textContent="Sent ✓ (Pushover). If your phone stays silent, open the Pushover app and check notifications are allowed."; }
+        else if(res.status===200 && j.ok===false){ out.textContent="Pushover didn’t deliver"+(j.status?" (HTTP "+j.status+")":"")+" — not sent."; }
+        else if(res.status===429){ out.textContent="Please wait "+(j.retry_after_s||60)+"s between test pushes."; }
         else if(res.status===401){ out.textContent="Not authorized — unlock the page and try again."; }
-        else if(res.status===500){ out.textContent="Push isn’t configured on the server yet."; }
+        else if(res.status===500){ out.textContent="Pushover not set up yet."; }
         else { out.textContent="Couldn’t send a test push (error "+res.status+")."; }
       })
       .catch(function(){ if(out) out.textContent="Couldn’t reach the server — check your connection."; })
