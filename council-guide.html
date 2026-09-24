@@ -329,7 +329,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v4.6.0</span>
+    <span class="nav-badge">v4.8.0</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -520,7 +520,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
           </dl>
           <div class="p-quote">"A chair is to have no backside. It should be beautiful from all sides and angles."<span class="attr">— Hans Wegner</span></div>
           <div class="trade"><span class="dis">Discipline: the dossier informs Marlowe's judgment only — the cast never sees it, so their work stays honest.</span></div>
-          <div class="trade"><span class="dis">Owns the <b class="ink">Design</b> canvas instrument (<code>claude.ai/design</code> + the Desktop sidebar): every Eye engagement that crosses into building or tweaking editable UI on the canvas ends with a required <b class="ink">Canvas Brief</b> — a single paste-ready opening prompt (winning direction + intent, tokens/constraints, hard constraints, done-definition) she hands the Principal to drop in as the canvas's first message. She directs him to the canvas; she never drives it from a chat.</span></div>
+          <div class="trade"><span class="dis">Owns the <b class="ink">Design</b> round-trip instrument (<code>claude.ai/design</code> + the Desktop sidebar), worked in two verbs: <b class="ink">"take it to Design"</b> packages the UI and a required <b class="ink">Canvas Brief</b> (winning direction + intent, tokens/constraints, hard constraints, done-definition, screen inventory, frozen-vs-open) out to the canvas; <b class="ink">"bring it back"</b> diffs the returned edits, has Flow flag buildability, and turns them into a single build order. She directs the Principal to the canvas and never drives it from a chat; every file transfer, both ways, is performed for him — he never copies anything by hand.</span></div>
         </div>
       </article>
 
@@ -1034,7 +1034,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <div class="cap-head-txt">
           <span class="eyebrow c-eye">The Eye · Design</span>
           <h3>The Eye's instruments</h3>
-          <p>Design and UX. Three instruments — the <b class="ink">Deck</b> (finished slide decks from your content, Quill consulted on narrative), the <b class="ink">Canvas</b>, where an Eye engagement crosses from choosing a direction into building and tweaking real, editable UI, and <b class="ink">Render</b>, general-purpose image generation for any asset the Council needs.</p>
+          <p>Design and UX. Three instruments — the <b class="ink">Deck</b> (finished slide decks from your content, Quill consulted on narrative), the <b class="ink">Design</b> round-trip, a two-verb canvas exchange where "take it to Design" carries real editable UI out and "bring it back" returns it as a build, and <b class="ink">Render</b>, general-purpose image generation for any asset the Council needs.</p>
         </div>
       </div>
 
@@ -1045,7 +1045,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <details class="facet">
           <summary><span class="fmk">&#9656;</span>Input modes, the Eye consult &amp; where it runs</summary>
           <div class="facet-body">
-            <p>Produces a finished, nicely-designed <b class="ink"><code>.pptx</code></b> from the Principal's content, in one of <b class="ink">two input modes</b>: <b class="ink">compose</b> — text descriptions of the slides go in, the Eye authors the deck (pptx skill), Quill consulted on slide narrative — or <b class="ink">beautify</b> — existing slides supplied as either a <code>.pptx</code> on disk <i>or</i> pasted text and screenshots. This is the tool of record for slide decks; render remains the tool for standalone imagery, and Design (Canvas) for editable web and UI elements.</p>
+            <p>Produces a finished, nicely-designed <b class="ink"><code>.pptx</code></b> from the Principal's content, in one of <b class="ink">two input modes</b>: <b class="ink">compose</b> — text descriptions of the slides go in, the Eye authors the deck (pptx skill), Quill consulted on slide narrative — or <b class="ink">beautify</b> — existing slides supplied as either a <code>.pptx</code> on disk <i>or</i> pasted text and screenshots. This is the tool of record for slide decks; render remains the tool for standalone imagery, and the Design round-trip for editable web and UI elements.</p>
             <p><b class="ink">The Eye consults on look, by default.</b> Before building, the Eye offers <b class="ink">two or three quick look-options</b> — a one-line description each, such as Swiss and clean, editorial, or dark-mode executive — and the Principal's pick drives the deck's design tokens. This is the Eye running <b class="ink">LITE</b>, fast look-options rather than a full six-direction scored review. Saying <b class="ink">"skip Eye"</b> bypasses the directions entirely for a clean, professional default. The first-party <b class="ink">pptx skill</b> then builds the file, applying the chosen look, and the result is saved to <code>~/Documents/decks/</code>. Quill's slide discipline carries through (consulted): decision-first order, no padding.</p>
             <p><b class="ink">Home surface is Cowork</b> — the pptx skill and code execution both live there, and a file-access connector alone cannot generate a <code>.pptx</code>, so a chat-only surface emits the Cowork instruction rather than pretending to build inline. Beautify <b class="ink">always writes a new file</b> and never mutates the source in place, so a bad pass leaves the original untouched and the build can simply be re-issued.</p>
           </div>
@@ -1053,14 +1053,15 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </div>
 
       <div class="instr i-eye" id="cap-design">
-        <span class="who">Owner: Marlowe Holm (Eye lead) · trigger — "put it on the canvas" / "tweak this in Design"</span>
-        <h4>Design (Canvas)</h4>
-        <p class="instr-sum">The Claude-hosted design canvas — where an Eye engagement crosses from direction and scoring into building and tweaking editable UI. Marlowe directs you to the canvas and hands you a paste-ready Canvas Brief to open it.</p>
+        <span class="who">Owner: Marlowe Holm (Eye lead) · trigger — "take it to Design" (out) / "bring it back" (return)</span>
+        <h4>Design (round-trip)</h4>
+        <p class="instr-sum">The Claude-hosted design canvas, worked as a two-verb round-trip: <b class="ink">"take it to Design"</b> carries your UI out to the canvas, and <b class="ink">"bring it back"</b> returns your canvas edits as a build. Marlowe owns it; every file transfer, both ways, is performed for you — you never copy anything by hand.</p>
         <details class="facet">
-          <summary><span class="fmk">&#9656;</span>How it works &amp; the required Canvas Brief</summary>
+          <summary><span class="fmk">&#9656;</span>How it works — the two verbs &amp; the required Canvas Brief</summary>
           <div class="facet-body">
-            <p>The Claude-hosted design canvas — where an Eye engagement crosses from direction and scoring into building and tweaking editable visual and UI elements. It is Marlowe's instrument end to end: she directs the Principal <i>to</i> the canvas (the Desktop sidebar and <code>claude.ai/design</code> on web) and never operates it from inside a chat; it is not a mobile or in-chat tool. An instrument, never a persona — registered in the ledger like every other, though it lives under the Eye rather than a Hand seat.</p>
-            <p>Every engagement that routes to the canvas ends with a required <b class="ink">Canvas Brief</b> — a single paste-ready opening prompt Marlowe hands the Principal to drop into Design as its first message. One block, no assembly: the winning direction's name and intent, the design tokens and constraints that apply (or a pointer to the design system already seeded via <code>/design-sync</code> from Claude Code or an upload), the hard constraints (platform, responsiveness, accessibility), and what "done" means for the session. No canvas handoff is complete without it. Render, not Design, remains the tool of record for standalone imagery.</p>
+            <p>The Claude-hosted design canvas, where an Eye engagement crosses from direction and scoring into building and tweaking editable visual and UI elements. It is Marlowe's instrument end to end: she directs the Principal <i>to</i> the canvas (the Desktop sidebar and <code>claude.ai/design</code> on web) and never operates it from inside a chat; it is not a mobile tool. An instrument, never a persona — registered in the ledger like every other, though it lives under the Eye rather than a Hand seat. It carries a per-project design system named after the repo, kept in step with the code so the canvas and the codebase always agree.</p>
+            <p><b class="ink">Take it to Design</b> (outbound): the repo's current UI — or a chosen review winner's tokens and mockup — is packaged into screens and a Canvas Brief, and delivered into the canvas for you. Every engagement that routes to the canvas ends with a required <b class="ink">Canvas Brief</b> — a single paste-ready opening prompt Marlowe hands the Principal to drop into Design as its first message. One block, no assembly: the winning direction's name and intent, the design tokens and constraints that apply (or a pointer to the synced design system), the hard constraints (platform, responsiveness, accessibility), what "done" means, the screen inventory, what is frozen versus open, and how the work returns.</p>
+            <p><b class="ink">Bring it back</b> (return): your canvas edits are retrieved, diffed against what went out, and reviewed for buildability by Flow — and that is <b class="ink">how mockups become a build</b>: the diff becomes a single work order (a tokens pass first, then one step per changed screen, then a check of the built screens against the canvas) that the Principal receives ready to run. Render, not Design, remains the tool of record for standalone imagery.</p>
           </div>
         </details>
       </div>
@@ -1599,7 +1600,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <footer>
   <div class="footer-in">
     <div>The Council · a private prospectus · generated from PERSONAS.md + skills</div>
-    <div class="mono">council v4.6.0 · last updated 2026-09-22</div>
+    <div class="mono">council v4.8.0 · last updated 2026-09-24</div>
   </div>
 </footer>
 
