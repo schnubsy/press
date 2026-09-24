@@ -3132,6 +3132,12 @@ function newSeries(fields) {
 function seriesById(doc, id) { for (var i = 0; i < (doc.series || []).length; i++) if (doc.series[i].id === id) return doc.series[i]; return null; }
 function donationSeriesType(d) { return d.type === 'daf_grant' ? 'daf_grant' : d.type === 'money' ? 'money' : null; }
 
+// Bundling only ever creates a NEW bundle from LOOSE gifts — it must never pull a gift out of an
+// existing bundle (that is what used to spawn a second, duplicate bundle). Joining is joinSeries.
+function assertLoose(doc, ds) {
+  for (var i = 0; i < ds.length; i++) if (ds[i].series_id && seriesById(doc, ds[i].series_id)) throw new Error('One of those gifts is already in a bundle — use “Add to bundle” instead.');
+}
+
 // Bundle selected donations into ONE recurring series. All must share a charity and be the
 // same bundle-able type (money OR daf_grant — never mixed, so a series never mixes grants
 // with deductible gifts). Guesses cadence + amount (both editable after). Returns the series.
@@ -3146,6 +3152,7 @@ function bundle(doc, donationIds, opts) {
     if (ds[i].charity_id !== charity) throw new Error('All gifts must be to the same charity.');
     if (donationSeriesType(ds[i]) !== type) throw new Error('A series can’t mix cash gifts and DAF grants.');
   }
+  assertLoose(doc, ds);
   var dates = ds.map(function (d) { return d.date; }).filter(Boolean).sort();
   var s = newSeries({
     charity_id: charity, type: type, source: 'bundled',
@@ -3176,6 +3183,7 @@ function bundleAdhoc(doc, donationIds, opts) {
     if (ds[i].charity_id !== charity) throw new Error('All gifts must be to the same charity.');
     if (donationSeriesType(ds[i]) !== type) throw new Error('A group can’t mix cash gifts and DAF grants.');
   }
+  assertLoose(doc, ds);
   var label = (opts.label != null && String(opts.label).trim()) ? String(opts.label).trim() : null;
   var s = newSeries({
     charity_id: charity, type: type, source: 'bundled', kind: 'adhoc',
@@ -3203,6 +3211,59 @@ function makeRecurring(doc, donationId, opts) {
   doc.series.push(s);
   d.series_id = s.id;
   return s;
+}
+
+// Join EXISTING loose donations into an EXISTING series ("Add to bundle"). Same invariants as
+// bundle(): same charity, same bundle-able type (never mixes DAF grants with deductible gifts).
+// A gift already in ANOTHER series is refused (never silently stolen); one already in THIS
+// series is a no-op. Only series_id changes, so every total/export is unchanged. If a joined
+// gift is older than a recurring series' start, the start moves back so no false "gift due".
+// Returns the number of gifts newly joined.
+function joinSeries(doc, donationIds, seriesId) {
+  var s = seriesById(doc, seriesId);
+  if (!s) throw new Error('That bundle no longer exists.');
+  var ds = (donationIds || []).map(function (id) { return model.donationById(doc, id); }).filter(Boolean);
+  if (!ds.length) throw new Error('Select a gift to add.');
+  ds.forEach(function (d) {
+    if (d.charity_id !== s.charity_id) throw new Error('That gift is to a different charity than the bundle.');
+    if (donationSeriesType(d) !== s.type) throw new Error(s.type === 'daf_grant' ? 'Only DAF grants can join a DAF bundle.' : 'Only cash gifts can join a cash bundle.');
+    if (d.series_id && d.series_id !== s.id && seriesById(doc, d.series_id)) throw new Error('That gift is already in a different bundle.');
+  });
+  var n = 0;
+  ds.forEach(function (d) {
+    if (d.series_id === s.id) return;
+    d.series_id = s.id; n++;
+    if (s.kind !== 'adhoc' && d.date && (!s.start || d.date < s.start)) s.start = d.date;
+  });
+  return n;
+}
+
+// Merge 2+ bundles of the SAME charity + type into one (the one with the most gifts; a
+// recurring series beats an ad-hoc group). Every gift moves; the emptied bundles are removed.
+// Returns the surviving series.
+function mergeSeries(doc, seriesIds) {
+  var list = [];
+  (seriesIds || []).forEach(function (id) { var s = seriesById(doc, id); if (s && list.indexOf(s) < 0) list.push(s); });
+  if (list.length < 2) throw new Error('Select at least two bundles to merge.');
+  for (var i = 1; i < list.length; i++) {
+    if (list[i].charity_id !== list[0].charity_id) throw new Error('Only bundles to the same charity can merge.');
+    if (list[i].type !== list[0].type) throw new Error('A bundle can’t mix cash gifts and DAF grants.');
+  }
+  var target = list.slice().sort(function (a, b) {
+    var ra = a.kind === 'adhoc' ? 1 : 0, rb = b.kind === 'adhoc' ? 1 : 0;
+    if (ra !== rb) return ra - rb;
+    return seriesGifts(doc, b.id).length - seriesGifts(doc, a.id).length;
+  })[0];
+  list.forEach(function (s) {
+    if (s === target) return;
+    seriesGifts(doc, s.id).forEach(function (d) {
+      d.series_id = target.id;
+      if (target.kind !== 'adhoc' && d.date && (!target.start || d.date < target.start)) target.start = d.date;
+    });
+  });
+  var drop = list.filter(function (s) { return s !== target; }).map(function (s) { return s.id; });
+  doc.series = (doc.series || []).filter(function (s) { return drop.indexOf(s.id) < 0; });
+  return target;
 }
 
 // Un-bundle: clear series_id on the members and remove the series.
@@ -3274,7 +3335,7 @@ module.exports = {
   seriesGifts: seriesGifts, isPeriodFilled: isPeriodFilled, dueDate: dueDate,
   guessCadence: guessCadence, guessAmount: guessAmount,
   newSeries: newSeries, seriesById: seriesById, bundle: bundle, bundleAdhoc: bundleAdhoc,
-  makeRecurring: makeRecurring, unbundle: unbundle, dropEmptySeries: dropEmptySeries,
+  makeRecurring: makeRecurring, joinSeries: joinSeries, mergeSeries: mergeSeries, unbundle: unbundle, dropEmptySeries: dropEmptySeries,
   seriesSummary: seriesSummary, matchSeriesForDraft: matchSeriesForDraft,
   donationSeriesType: donationSeriesType,
 };
@@ -7829,6 +7890,13 @@ window.GT.exp = {
   // group (which contributes all its gift ids). rowCount drives Edit (exactly one); donationIds
   // (deduped) drive Delete + Duplicate; Bundle needs 2+ single rows, one charity, one bundle-able type.
   function bundleTypeOf(t){ return t==='daf_grant' ? 'daf_grant' : t==='money' ? 'money' : null; }
+  // Resolve what the Bundle button means for this selection (bundle-join arc). Every row is mapped
+  // to the bundle it lives in: a header row IS its bundle; a gift row inside an expanded bundle
+  // belongs to that bundle too. So "new gift + ANY row of the bundle" is an unambiguous join.
+  //   0 bundles, 2+ loose gifts        -> 'bundle' (Bundle recurring / Group, as before)
+  //   1 bundle, 1+ loose gifts         -> 'join'   (Add to bundle — moves ONLY the loose gifts)
+  //   2+ bundles (+ any loose gifts)   -> 'merge'  (Merge bundles — one bundle survives)
+  // All rows must share one charity and one bundle-able type (never mixes DAF grants + gifts).
   function selectionInfo(){
     var entries=Object.keys(state.selected).map(function(k){ return state.selected[k]; });
     var seen={}, donationIds=[];
@@ -7837,12 +7905,26 @@ window.GT.exp = {
       ids.forEach(function(id){ if(id && !seen[id]){ seen[id]=1; donationIds.push(id); } });
     });
     var hasSeries=entries.some(function(e){ return e.kind==='series'; });
-    var canBundle=false;
-    if(entries.length>=2 && !hasSeries){
-      var bt=bundleTypeOf(entries[0].type), ch=entries[0].charity_id;
-      canBundle = bt!=null && entries.every(function(e){ return bundleTypeOf(e.type)===bt && e.charity_id===ch; });
+    var seriesIds=[], looseIds=[], uniform=entries.length>0, bt=null, ch=null;
+    entries.forEach(function(e){
+      var sid=null, t=e.type, c=e.charity_id;
+      if(e.kind==='series') sid=e.seriesId;
+      else if(e.kind==='single'){ var d=M.donationById(state.doc, e.id); if(d && d.series_id && SER.seriesById(state.doc, d.series_id)) sid=d.series_id; }
+      else uniform=false;   // the virtual DAF group never bundles
+      if(sid){ var ser=SER.seriesById(state.doc, sid); if(ser){ t=ser.type; c=ser.charity_id; } if(seriesIds.indexOf(sid)<0) seriesIds.push(sid); }
+      else if(e.kind==='single') looseIds.push(e.id);
+      var b=bundleTypeOf(t);
+      if(bt===null && ch===null){ bt=b; ch=c; }
+      if(b==null || b!==bt || c!==ch) uniform=false;
+    });
+    var action=null;
+    if(uniform){
+      if(!seriesIds.length && looseIds.length>=2) action='bundle';
+      else if(seriesIds.length===1 && looseIds.length>=1) action='join';
+      else if(seriesIds.length>=2) action='merge';
     }
-    return { entries:entries, rowCount:entries.length, donationIds:donationIds, donCount:donationIds.length, hasSeries:hasSeries, canBundle:canBundle };
+    return { entries:entries, rowCount:entries.length, donationIds:donationIds, donCount:donationIds.length, hasSeries:hasSeries,
+      canBundle:action==='bundle', action:action, seriesIds:seriesIds, looseIds:looseIds };
   }
   function clearSelection(){ state.selected={}; renderList(); }
   function renderSelBar(){
@@ -7853,7 +7935,7 @@ window.GT.exp = {
     var bar=document.createElement('div'); bar.id='selBar'; bar.className='selbar';
     var lab=document.createElement('span'); lab.className='sl';
     lab.textContent = info.rowCount+' selected'
-      + (info.rowCount>=2 && !info.hasSeries && !info.canBundle ? ' — to bundle, pick gifts to ONE charity of the same type' : '');
+      + (info.rowCount>=2 && !info.action && info.looseIds.length+info.seriesIds.length>=2 ? ' — to bundle, pick gifts to ONE charity of the same type' : '');
     var acts=document.createElement('span'); acts.className='selacts';
 
     var edit=document.createElement('button'); edit.className='btn sm ghost'; edit.textContent='Edit'; edit.disabled=info.rowCount!==1;
@@ -7863,6 +7945,10 @@ window.GT.exp = {
       else { var d=M.donationById(state.doc, e.id); if(d) openLog(logKeyFor(d), d.id); }
     });
     var dup=document.createElement('button'); dup.className='btn sm ghost'; dup.textContent='Duplicate';
+    // A bundle header selects every gift in it — duplicating that silently doubles the whole series.
+    // Duplicate is for individual gifts only (bundle-join arc: this was the stray-duplicates path).
+    dup.disabled=info.hasSeries;
+    if(info.hasSeries) dup.title='Duplicate works on individual gifts, not whole bundles';
     dup.addEventListener('click', function(){
       var n=0; info.donationIds.forEach(function(id){ if(M.donationById(state.doc,id)){ M.duplicateDonation(state.doc,id); n++; } });
       clearSelectionState(); persistDoc(); toast(n+' donation'+(n>1?'s':'')+' duplicated ✓');
@@ -7883,6 +7969,17 @@ window.GT.exp = {
       var bgrp=document.createElement('button'); bgrp.className='btn sm ghost'; bgrp.textContent='Group';
       bgrp.addEventListener('click', function(){ doGroup(info.donationIds); });
       acts.appendChild(brec); acts.appendChild(bgrp);
+    } else if(info.action==='join'){
+      var target=SER.seriesById(state.doc, info.seriesIds[0]);
+      var bjoin=document.createElement('button'); bjoin.className='btn sm'; bjoin.id='selJoin';
+      bjoin.textContent='Add to bundle';
+      bjoin.title='Move the selected gift'+(info.looseIds.length>1?'s':'')+' into this '+(target&&target.kind==='adhoc'?'group':'recurring bundle');
+      bjoin.addEventListener('click', function(){ doJoin(info.looseIds, info.seriesIds[0]); });
+      acts.appendChild(bjoin);
+    } else if(info.action==='merge'){
+      var bmer=document.createElement('button'); bmer.className='btn sm'; bmer.id='selMerge'; bmer.textContent='Merge bundles';
+      bmer.addEventListener('click', function(){ doMerge(info.seriesIds, info.looseIds); });
+      acts.appendChild(bmer);
     } else {
       var bdis=document.createElement('button'); bdis.className='btn sm'; bdis.textContent='Bundle'; bdis.disabled=true;
       acts.appendChild(bdis);
@@ -7902,6 +7999,26 @@ window.GT.exp = {
       openSeriesEditor(s.id);   // guessed cadence + amount are editable now
       toast('Bundled · '+s.cadence+' · '+money(s.amount));
     } catch(e){ toast(e.message||'Could not bundle those gifts.', true); }
+  }
+  // Add loose gifts to an existing bundle (bundle-join arc). Only series_id changes; the bundle
+  // stays expanded so the user sees the gift land in it.
+  function doJoin(ids, seriesId){
+    try {
+      var n=SER.joinSeries(state.doc, ids, seriesId);
+      state.expanded['ser:'+seriesId]=true;
+      clearSelectionState(); persistDoc();
+      toast(n ? ('Added '+n+' gift'+(n>1?'s':'')+' to the bundle') : 'Already in that bundle');
+    } catch(e){ toast(e.message||'Could not add to that bundle.', true); }
+  }
+  // Merge 2+ same-charity bundles into one (and fold in any loose gifts also selected).
+  function doMerge(seriesIds, looseIds){
+    try {
+      var s=SER.mergeSeries(state.doc, seriesIds);
+      if(looseIds && looseIds.length) SER.joinSeries(state.doc, looseIds, s.id);
+      state.expanded['ser:'+s.id]=true;
+      clearSelectionState(); persistDoc();
+      toast('Merged into one bundle · '+SER.seriesGifts(state.doc, s.id).length+' gifts');
+    } catch(e){ toast(e.message||'Could not merge those bundles.', true); }
   }
   // Group (no schedule) — an ad-hoc series (S3). Prompts for an optional name; skipping is fine.
   function doGroup(ids){
