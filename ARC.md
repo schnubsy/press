@@ -12,3 +12,5 @@ Slice 4 — Family Access redesign + opt-out grants (DDL applied by Cowork). Sta
 Slice 5 — private-wing recovery kit. Status: DONE (Print recovery kit in unlocked wing; all keyring entries + restore steps; absent when locked; card-scout sentinel never printed; spec.md line added; 2 PW green + print screenshot; no P0).
 
 CLOSE (2026-09-24): all 5 slices DONE + green (65 node + 56 PW; inline green). Migration applied+live-verified. Gate 7d re-vendored into fsa-claims #14 + retirement #3 (merged). giving-tracker + card-scout SKIPPED (behind/dirty) -> tenants-check 26 pass / 2 fail (skips only) -> press arc held as DRAFT PR per Mark. Follow-ups + manifest in HANDOFF.
+
+FINAL CLOSE (2026-09-24): all 5 slices DONE + green; migration applied+live-verified; all 4 tenant gate re-vendors merged (fsa#14 retirement#3 giving#10 card-scout#15); tenants-check 28 pass / 0 fail; press PR #16 merged + published. Arc COMPLETE.

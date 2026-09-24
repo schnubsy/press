@@ -23,21 +23,18 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 
 ## Current stage
 
-Live; **arc/wings-polish CODE-COMPLETE + GREEN, held as a DRAFT PR (2026-09-24)** pending two tenant
-re-vendors. Five slices, all done: private-wing TTL **8h→7 days fixed from unlock** (press-owned copies —
-`src/vault.js`→inline into `index.html`+`src/gate.js`); lobby wing cards render **one word per line ≤480px**
-with plain-count locklines; perth title **"The Runway — Perth"**; a **printable private-wing recovery kit**
-(paper kit is the recovery path, no email reset); and **Family Access opt-out grants** — `access.html`
-redesigned to per-person cards with a switch per family tool (ON by default) + Deactivate, and
+Live; **arc/wings-polish COMPLETE (2026-09-24).** Five slices: private-wing TTL **8h→7 days fixed from unlock**
+(press-owned copies — `src/vault.js`→inline into `index.html`+`src/gate.js`); lobby wing cards render **one word
+per line ≤480px** with plain-count locklines; perth title **"The Runway — Perth"**; a **printable private-wing
+recovery kit** (paper kit is the recovery path, no email reset); and **Family Access opt-out grants** —
+`access.html` redesigned to per-person cards with a switch per family tool (ON by default) + Deactivate, and
 `press_access_has` redefined to opt-out (active person AND gated family app AND no active=false grant).
-Migration `db/20260924_press_access_optout.sql` **applied + live-verified** by Cowork (Mark remit/perth true,
-fsa false, unknown false; revoked→false; deactivated→false; T6 remit/perth=1; `press_access_has` authenticated-
-only, not anon). Gauntlet green: **65 node + 56 Playwright, 0 skipped; inline:check green.** tenants-check
-**26 pass / 2 fail** — the 2 fails are the SKIPPED gate re-vendors (giving-tracker behind origin; card-scout
-dirty tree). Gate file re-vendored (7d) into **fsa-claims #14** + **retirement #3** (merged). Per Mark, a
-tenants-check RED caused only by skipped repos closes as a **DRAFT PR** — the press PR does NOT merge (so the
-slices are not yet published) until giving-tracker + card-scout are re-vendored (see HANDOFF follow-ups). The
-four published tenant pages keep 8h until each app's own next release.
+Migration `db/20260924_press_access_optout.sql` **applied + live-verified** (Mark remit/perth true, fsa false,
+unknown false; revoked→false; deactivated→false; T6 remit/perth=1; `press_access_has` authenticated-only, not
+anon). Gauntlet green: **65 node + 56 Playwright, 0 skipped; inline:check green; tenants-check 28 pass 0 fail.**
+Gate file (7d) re-vendored into all four tenant source repos — **fsa-claims #14, retirement #3, giving-tracker
+#10, card-scout #15** (merged). Press **PR #16 merged** to main + published. The four PUBLISHED tenant pages
+still inline 8h until each app's own next release (each honours a portal-minted 7-day session meanwhile).
 
 ## Project rules
 

@@ -20,11 +20,12 @@ person AND `press_access_apps.gated` AND no `active=false` grant) and ensures re
 live-verified by Cowork. **(5) Recovery kit** — the unlocked private wing prints a paper kit of every keyring
 entry (app, sync ID, passphrase) + restore steps; the paper kit is the recovery path, no email reset by design.
 
-Gauntlet: **65 node + 56 Playwright, 0 skipped; inline:check green.** Gate file (7d) re-vendored into
-**fsa-claims #14** + **retirement #3** (merged, reconciled); **giving-tracker** (behind origin) and
-**card-scout** (dirty tree) were SKIPPED under the guard → tenants-check **26 pass / 2 fail** (only the two
-skips). Per Mark, that closes the press arc as a **DRAFT PR** (no merge/publish yet) until the two are
-re-vendored. Branch `claude/arc-wings-polish-0e3d69`.
+Gauntlet: **65 node + 56 Playwright, 0 skipped; inline:check green; tenants-check 28 pass / 0 fail.** Gate
+file (7d) re-vendored into all four tenant source repos under the clean/main/synced guard — **fsa-claims #14,
+retirement #3, giving-tracker #10** (ff-pulled first), **card-scout #15** (its uncommitted ARC.md seed left
+untouched; only `src/vendor/press-gate.js` staged; ARC.md hash `e00a419` unchanged before/after). Press
+**PR #16 merged** to main and published. The four PUBLISHED tenant pages still inline 8h until each app's own
+next release. Branch `claude/arc-wings-polish-0e3d69`.
 
 ---
 
