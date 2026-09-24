@@ -96,6 +96,10 @@ is not.
   **Print recovery kit** — a print-styled sheet of every keyring entry (app name, sync ID,
   passphrase) built in-browser from the unlocked keyring (nothing sent or stored anywhere new),
   hidden when locked. The paper kit is the recovery path; there is no email reset by design.
+  After adding a private tool or changing a passphrase, reprint the recovery kit.
+  Every personal-tier page in `spaces.json` that stores data must have a `TOOL_CFG` entry in
+  `index.html` (so it appears in *Connect your tools* and the recovery kit); `tools/tenants-check.mjs`
+  T7 enforces this, keying "stores data" off the vault keyring (`src/vault.js` → `emptyKeyring`).
 
 ## Page contract
 
