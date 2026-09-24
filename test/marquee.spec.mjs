@@ -164,11 +164,13 @@ test('enrol → 4 cards → lock → unlock → lock (full private-wing flow)', 
   await page.locator('#unlockBtn').click();
   await expect(page.locator('.tw-card')).toHaveCount(PERSONAL_FILES.length);
 
-  // landing now reads Unlocked, and loading it issues NO new vault request
+  // wings-polish slice 2: the lobby card lockline is now a plain tool COUNT — no "Unlocked",
+  // no wall clock, no "tap to unlock" (lock state lives inside the wing view). Loading the
+  // landing still issues NO new vault request.
   const before = state.vaultRequests;
   await page.goto(base + '/');
-  await expect(page.locator('.tw-secure .lockline')).toContainText('Unlocked');
-  await expect(page.locator('.tw-secure .lockline')).toContainText(`${PERSONAL_FILES.length} tools`);
+  await expect(page.locator('.tw-secure .lockline')).toHaveText(`${PERSONAL_FILES.length} tools`);
+  await expect(page.locator('.tw-secure .lockline')).not.toContainText('Unlocked');
   expect(state.vaultRequests).toBe(before);
 });
 

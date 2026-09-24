@@ -23,16 +23,18 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 
 ## Current stage
 
-Live; **arc/marquee-tenancy COMPLETE (2026-09-22).** The marquee is a documented PLATFORM with TENANTS:
-`tenants.json` (repo-owned) keys every page to repo/tier/gate/vendored/release/deterministic; `docs/spec.md`
-→ Tenants is the canonical contract (council press.md + MANUAL §12.2 now point to it). `tools/tenants-check.mjs`
-audits every coupling (T1–T6; 15 tests; `npm run tenants:check`); remit + retirement `release.js` honour
-`PRESS_DIR`. Council 4.6.0 (audit DETECT group 7 + arc tenant-change template). Mid-arc remit's
-`arc/scratchpad-rework` shipped (magic-link family-gate `9eba177d` now canonical, remit.html `2c4ac65e`) — this
-branch was rebased onto it, so remit's vendored gate == canonical (no drift). Gauntlet green: 63 node + 40
-Playwright, 0 skipped; tenants-check --rebuild 30 pass 0 fail. `council-guide.html` republished v4.2.0→v4.6.0
-(live 200, blob `e9273078`). Closed one PR/repo (press#14 council#3 remit#3 retirement#2 env#2); T6 grants
-verified remit/perth = 1 active each.
+Live; **arc/wings-polish COMPLETE (2026-09-24).** Five slices: private-wing TTL **8h→7 days fixed from unlock**
+(press-owned copies — `src/vault.js`→inline into `index.html`+`src/gate.js`); lobby wing cards render **one word
+per line ≤480px** with plain-count locklines; perth title **"The Runway — Perth"**; a **printable private-wing
+recovery kit** (paper kit is the recovery path, no email reset); and **Family Access opt-out grants** —
+`access.html` redesigned to per-person cards with a switch per family tool (ON by default) + Deactivate, and
+`press_access_has` redefined to opt-out (active person AND gated family app AND no active=false grant).
+Migration `db/20260924_press_access_optout.sql` **applied + live-verified** (Mark remit/perth true, fsa false,
+unknown false; revoked→false; deactivated→false; T6 remit/perth=1; `press_access_has` authenticated-only, not
+anon). Gauntlet green: **65 node + 56 Playwright, 0 skipped; inline:check green; tenants-check 28 pass 0 fail.**
+Gate file (7d) re-vendored into all four tenant source repos — **fsa-claims #14, retirement #3, giving-tracker
+#10, card-scout #15** (merged). Press **PR #16 merged** to main + published. The four PUBLISHED tenant pages
+still inline 8h until each app's own next release (each honours a portal-minted 7-day session meanwhile).
 
 ## Project rules
 

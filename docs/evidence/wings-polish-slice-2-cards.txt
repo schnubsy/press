@@ -1,0 +1,35 @@
+arc/wings-polish — SLICE 2 done-proof — mobile wing cards
+=========================================================
+Date: 2026-09-24
+Scope: index.html secureCardHTML / familyCardHTML + a new wordLines() helper + card CSS.
+
+CHANGES
+-------
+1. wordLines(name): wraps a wing heading's words in explicit per-word <span>s inside an
+   <h3 class="tw-wordlines">. textContent stays "The Private Wing" / "The Family Wing" (spaces
+   kept between spans) so the h3-name test contracts are unchanged.
+2. CSS @media(max-width:480px): `.tw-wings h3.tw-wordlines span{display:block}` — one word per line
+   at phone width by EXPLICIT block, not natural wrap. Desktop/tablet keep the words inline.
+3. Locklines are plain tool COUNTS on both cards:
+     private: st.enrolled ? "N tools" : "Set up the private wing"   (first-run exception kept)
+     family : "N tools"
+   Removed from the lobby cards: "Unlocked", the wall clock ("until <time>"), "Locked",
+   "tap to unlock", and "sign in with a code". (Lock state still lives inside the wing view.)
+
+VISUAL (Eye-LITE glance, docs/evidence/wings-polish-slice-2-cards-iphone15.png)
+------------------------------------------------------------------------------
+iPhone-15 width: FAMILY (left) "The / Family / Wing" · "1 tool"; PRIVATE (right)
+"The / Private / Wing" · "2 tools". Three words, three lines each, no clipping, edges flush.
+P0 findings: NONE.
+Desktop capture: docs/evidence/wings-polish-slice-2-cards-desktop.png (words inline, unchanged).
+
+PLAYWRIGHT — test/wing-cards.spec.mjs (3 tests) + regression on the pinned specs
+--------------------------------------------------------------------------------
+  ✓ iPhone-15: both headings 3 spans / 3 distinct line-tops / display:block; text unchanged;
+              lockline private "2 tools", family "1 tool"; none of the removed phrases present.
+  ✓ iPhone-15 first run (no passkey): private "Set up the private wing", family "1 tool".
+  ✓ desktop: heading spans display:inline (layout unchanged); desktop screenshot captured.
+Regression (unchanged contracts): marquee.spec h3 == "The Private Wing"; family-lobby h3 ==
+"The Family Wing"; marquee unlocked lockline updated to "N tools" (no "Unlocked").
+  14 passed (wing-cards + marquee + family-lobby).
+inline:check green (card edits are outside the @@VAULT_INLINE@@ block).

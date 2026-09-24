@@ -44,7 +44,7 @@
 
   var SESSION_KEY = 'press:vault:v1';
   var ENROLLED_FLAG = 'press:vault:enrolled';
-  var TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
+  var TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days, fixed from unlock
 
   // In-memory ONLY: the NON-EXTRACTABLE AES key derived at unlock/enrol, cached so a follow-on
   // reseal (updateKeyring) can re-seal the row WITHOUT another passkey tap. Never persisted; a

@@ -1,0 +1,28 @@
+arc/wings-polish — SLICE 3 done-proof — perth title
+===================================================
+Date: 2026-09-24
+Scope: rename the perth page title "Perth · The Runway" -> "The Runway — Perth" (em dash, title
+case). h1, view names and download filenames deliberately left alone.
+
+CHANGES
+-------
+perth.html:6   <title>The Runway — Perth</title>
+perth.html:7   <meta name="page-title" content="The Runway — Perth">
+pages.json     "perth.html": { "title": "The Runway — Perth" }
+Untouched: perth.html:267 <h1>The Runway</h1>; the meta description; board view names; downloads.
+
+PLAYWRIGHT — test/perth-title.spec.mjs (3 tests)
+------------------------------------------------
+  ✓ pages.json + perth.html carry the renamed title; old "Perth · The Runway" is gone; h1 intact.
+  ✓ the family-wing directory card shows "The Runway — Perth" (portal surface, behind a seeded
+    family session) and the old title appears nowhere on the page.
+  ✓ access.html titleFor() resolver (man[page].title || stem) resolves perth -> the new title,
+    evaluated against the REAL pages.json.
+
+TENANTS-CHECK
+-------------
+Slice 3 introduces NO tenant coupling change. `npm run tenants:check` currently reports 4 T3 gate
+DRIFT fails (card-scout / retirement / giving / fsa) — these are the SLICE-1 gate-TTL drift
+(press/src/gate.js 9e11ce15 [7d] vs each source repo's vendored press-gate.js 73889011 [8h]),
+i.e. the ratified Option-2 deferred re-vendors, NOT a slice-3 regression. Tracked in HANDOFF.
+node suite: 65 pass / 0 fail. inline:check green.

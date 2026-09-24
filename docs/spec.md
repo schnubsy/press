@@ -90,7 +90,12 @@ is not.
   passphrase). Log out / log back in applies to the **secure section only**.
 - The vault module lives at `src/vault.js` (unit-tested in Node) and is inlined verbatim
   into `index.html` via `tools/inline-vault.mjs` (`--check` guards drift). The site keeps no
-  build step.
+  build step. The private-wing session TTL is **7 days, fixed from unlock** (no slide-on-use).
+- **Recovery is a printable paper kit, not an email reset.** The passkey is only a convenience
+  keyring; each app's data is encrypted by that app's own passphrase. The unlocked wing offers
+  **Print recovery kit** — a print-styled sheet of every keyring entry (app name, sync ID,
+  passphrase) built in-browser from the unlocked keyring (nothing sent or stored anywhere new),
+  hidden when locked. The paper kit is the recovery path; there is no email reset by design.
 
 ## Page contract
 
