@@ -345,6 +345,11 @@
   .amtbtn { display:flex; align-items:center; gap:10px; min-height:30px; }
   .row.selected { background:rgba(217,138,78,0.12); box-shadow:inset 3px 0 0 var(--ember); }
   .row.seriesrow.selected { background:rgba(217,138,78,0.18); }
+  .row.draggable { cursor:grab; }
+  .row.dragging { opacity:0.45; }
+  body.dragging-gift .row.seriesrow { outline:1px dashed var(--line, rgba(255,255,255,0.25)); outline-offset:-2px; }
+  .row.seriesrow.droptarget { background:rgba(127,174,134,0.22); outline:2px solid var(--ledger, #7fae86); outline-offset:-2px; }
+  .row.seriesrow.dropbad { outline:2px dashed rgba(200,90,80,0.7); outline-offset:-2px; }
   /* selection-bar actions (§1af): their OWN track, always right-aligned, so nothing jumps to the
      left as the label grows. Buttons are ≥44px tall for a comfortable touch target on iPhone. */
   .selacts { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; flex:0 0 auto; }
@@ -3329,7 +3334,27 @@ function matchSeriesForDraft(doc, draft) {
   return null;
 }
 
+// Auto-join (bundle-auto arc): does an EXISTING loose donation clearly belong to a recurring
+// bundle? Same rules as a capture draft — same charity + type, amount within $1, and its date
+// fills a period that has no gift yet (so a second gift for a filled month is NEVER absorbed —
+// it stays loose for the user to judge). Ad-hoc groups have no schedule and never auto-join.
+// -> the series, or null.
+function matchSeriesForDonation(doc, d) {
+  if (!d || d.series_id && seriesById(doc, d.series_id)) return null;
+  var m = matchSeriesForDraft(doc, { charity_id: d.charity_id, type: d.type, amount: d.amount, date: d.date });
+  return m ? m.series : null;
+}
+// Join the donation to its matching bundle, if any. -> the series joined, or null.
+function autoJoin(doc, donationId) {
+  var d = model.donationById(doc, donationId);
+  var s = matchSeriesForDonation(doc, d);
+  if (!s) return null;
+  joinSeries(doc, [d.id], s.id);
+  return s;
+}
+
 module.exports = {
+  matchSeriesForDonation: matchSeriesForDonation, autoJoin: autoJoin,
   CADENCES: CADENCES, GRACE: GRACE,
   addCadence: addCadence, expectedDates: expectedDates, isFilledByGift: isFilledByGift,
   seriesGifts: seriesGifts, isPeriodFilled: isPeriodFilled, dueDate: dueDate,
@@ -7161,7 +7186,7 @@ window.GT.exp = {
   function readChartMeasure(){ try{ return LS.getItem(CMEASURE_KEY)==='deductible'?'deductible':'given'; }catch(e){ return 'given'; } }
   var state = { cfg:null, doc:null, year:(new Date()).getFullYear(), charResults:[], group:'date', sortDir:readSortDir(), log:null,
     view:readView(), chartMeasure:readChartMeasure(),
-    selected:{}, expanded:{}, autoAdded:[], heartbeat:undefined,
+    selected:{}, expanded:{}, autoAdded:[], autoJoined:[], dragId:null, heartbeat:undefined,
     tgSort:{ key:'date', dir:'desc' },
     inbox:{ drafts:[], unopenable:[], loading:false, pulledOnce:false } };
 
@@ -7481,6 +7506,20 @@ window.GT.exp = {
     amtwrap.appendChild(amt);
     el.appendChild(left); el.appendChild(who); el.appendChild(amtwrap);
     el.addEventListener('click', function(){ toggleSel({ key:d.id, kind:'single', id:d.id, charity_id:d.charity_id, type:d.type }); });
+    // Drag a LOOSE cash gift / DAF grant onto a bundle row to add it (bundle-auto arc). Mouse and
+    // trackpad; tap-select + "Add to bundle" is the equivalent everywhere (incl. iPhone).
+    if(!(d.series_id && SER.seriesById(state.doc, d.series_id)) && SER.donationSeriesType(d)){
+      el.draggable=true; el.classList.add('draggable');
+      el.addEventListener('dragstart', function(ev){
+        state.dragId=d.id; el.classList.add('dragging');
+        try{ ev.dataTransfer.effectAllowed='move'; ev.dataTransfer.setData('text/plain', d.id); }catch(e){}
+        document.body.classList.add('dragging-gift');
+      });
+      el.addEventListener('dragend', function(){
+        state.dragId=null; el.classList.remove('dragging'); document.body.classList.remove('dragging-gift');
+        Array.prototype.forEach.call(document.querySelectorAll('.droptarget'), function(x){ x.classList.remove('droptarget'); });
+      });
+    }
     return el;
   }
 
@@ -7555,6 +7594,15 @@ window.GT.exp = {
     // tapping the series row body selects the WHOLE group (every gift joins the selection)
     var giftIds=gifts.map(function(g){ return g.id; });
     row.addEventListener('click', function(){ toggleSel({ key:selKey, kind:'series', seriesId:seriesId, charity_id:ser.charity_id, type:ser.type, giftIds:giftIds }); });
+    // drop target: a loose gift dragged here joins THIS bundle (joinSeries enforces charity + type)
+    function dragOk(){ var g=state.dragId && M.donationById(state.doc, state.dragId); return !!(g && g.charity_id===ser.charity_id && SER.donationSeriesType(g)===ser.type); }
+    row.addEventListener('dragover', function(ev){ if(!state.dragId) return; ev.preventDefault(); var ok=dragOk(); row.classList.toggle('droptarget', ok); row.classList.toggle('dropbad', !ok); try{ ev.dataTransfer.dropEffect= ok?'move':'none'; }catch(e){} });
+    row.addEventListener('dragleave', function(){ row.classList.remove('droptarget'); row.classList.remove('dropbad'); });
+    row.addEventListener('drop', function(ev){
+      ev.preventDefault(); row.classList.remove('droptarget'); row.classList.remove('dropbad');
+      var id=state.dragId; state.dragId=null; document.body.classList.remove('dragging-gift');
+      if(id) doJoin([id], seriesId);
+    });
     wireGroupExpand(row, exp, gifts, 'ser:'+seriesId);   // §1ao: stable expand key survives re-render
   }
   // Subtitle for a series row. A recurring series shows its cadence (+ " · paused" when inactive);
@@ -7756,6 +7804,7 @@ window.GT.exp = {
     var sb=$('sortDir'); if(sb){ sb.textContent = state.sortDir==='asc' ? 'Oldest first ↑' : 'Newest first ↓'; sb.setAttribute('aria-pressed', state.sortDir==='asc'?'true':'false'); }
     $('rcptCnt').textContent = rows.length ? (rows.length+' this year') : '';
     renderAutoStrip(box);
+    renderJoinStrip(box);
     renderDueStrips(box);
     renderSelBar();
     if(!rows.length){
@@ -9282,6 +9331,7 @@ window.GT.exp = {
     try {
       saved = state.log.editingId ? M.editDonation(state.doc, state.log.editingId, payload) : M.addDonation(state.doc, payload);
     } catch(e){ toast(e.message||'Could not save this donation.', true); return; }
+    var joinedTo = (!state.log.editingId && saved && saved.id) ? noteAutoJoin(saved.id) : null;
     // upload any receipts staged on a NEW donation, now that it has an id
     var pending = state.log.pendingAttach || [];
     if(pending.length && saved && saved.id){
@@ -9300,7 +9350,7 @@ window.GT.exp = {
         else { var sv=ensureSaver(); if(sv) sv.request(state.doc); toast('Saved on this device — clears from the inbox once it syncs.'); }
       });
     } else {
-      persistDoc(); closeLog(); toast('Donation saved ✓');
+      persistDoc(); closeLog(); toast(joinedTo ? ('Saved ✓ — added to your '+joinedTo+' bundle') : 'Donation saved ✓');
     }
   }
 
@@ -9724,6 +9774,38 @@ window.GT.exp = {
     state.autoAdded=state.autoAdded.filter(function(x){ return x!==entry; });
     persistDoc(); if(!$('inboxSheet').hidden) renderInbox(); toast('Undone — back in your inbox');
   }
+  // ---- auto-join (bundle-auto arc) ----
+  // A NEW gift (hand-logged or approved from the inbox) that clearly matches a recurring bundle
+  // joins it automatically — never silently: it is listed in a strip with Undo. Only series_id
+  // changes, so no total or export moves. Returns the charity name for the toast, or null.
+  function noteAutoJoin(donationId){
+    var s=SER.autoJoin(state.doc, donationId); if(!s) return null;
+    var c=M.charityById(state.doc, s.charity_id), name=(c?c.name:'recurring')+' '+(s.cadence||'');
+    state.autoJoined.push({ donationId:donationId, seriesId:s.id, name:name.trim() });
+    return name.trim();
+  }
+  function undoAutoJoin(entry){
+    var d=M.donationById(state.doc, entry.donationId);
+    if(d && d.series_id===entry.seriesId) delete d.series_id;
+    state.autoJoined=state.autoJoined.filter(function(x){ return x!==entry; });
+    persistDoc(); toast('Undone — that gift is on its own again');
+  }
+  function renderJoinStrip(box){
+    if(!state.autoJoined.length) return;
+    var last=state.autoJoined[state.autoJoined.length-1];
+    var strip=document.createElement('div'); strip.className='autostrip'; strip.id='joinStrip';
+    var lab=document.createElement('span'); lab.className='al';
+    lab.textContent = state.autoJoined.length===1
+      ? 'Added to your '+last.name+' bundle automatically.'
+      : state.autoJoined.length+' gifts added to their bundles automatically.';
+    var acts=document.createElement('span'); acts.className='acts';
+    var undo=document.createElement('button'); undo.className='btn sm ghost'; undo.id='joinUndo'; undo.textContent='Undo';
+    undo.addEventListener('click', function(){ undoAutoJoin(last); });
+    var ok=document.createElement('button'); ok.className='btn sm'; ok.textContent='OK';
+    ok.addEventListener('click', function(){ state.autoJoined=[]; render(); });
+    acts.appendChild(undo); acts.appendChild(ok); strip.appendChild(lab); strip.appendChild(acts);
+    box.appendChild(strip);
+  }
   function renderAutoStrip(box){
     if(!state.autoAdded.length) return;
     var strip=document.createElement('div'); strip.className='autostrip';
@@ -10003,7 +10085,7 @@ window.GT.exp = {
       d.charity_id = await ensureDraftCharity(d);
       var payload = RV.draftPayload(d);
       var res = await RV.commitApproval({
-        apply: function(){ var c=M.addDonation(state.doc, payload); IB.attachFileToDonations(state.doc, d, [c.id]); },
+        apply: function(){ var c=M.addDonation(state.doc, payload); IB.attachFileToDonations(state.doc, d, [c.id]); noteAutoJoin(c.id); },
         persist: function(){ writeDocCache(state.doc); render(); },
         saveOnce: saveOnce,
         removeRow: function(){ return removeDraftRow(d); },
@@ -10045,7 +10127,7 @@ window.GT.exp = {
       try {
         d.charity_id = await ensureDraftCharity(d);
         var res = await RV.commitApproval({
-          apply: (function(p, dd){ return function(){ var c=M.addDonation(state.doc, p); IB.attachFileToDonations(state.doc, dd, [c.id]); }; })(RV.draftPayload(d), d),
+          apply: (function(p, dd){ return function(){ var c=M.addDonation(state.doc, p); IB.attachFileToDonations(state.doc, dd, [c.id]); noteAutoJoin(c.id); }; })(RV.draftPayload(d), d),
           persist: function(){ writeDocCache(state.doc); },
           saveOnce: saveOnce,
           removeRow: (function(dd){ return function(){ return removeDraftRow(dd); }; })(d),
