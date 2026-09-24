@@ -187,6 +187,71 @@ test('T6 family-grants EMITTED — SQL printed for family pages', () => {
   e.cleanup();
 });
 
+// --- T7 tool-cfg helpers: a vault.js whose emptyKeyring lists `apps`, and an index.html TOOL_CFG.
+function writeVault(press, apps) {
+  const entries = apps.map((a) => `        '${a}': { sync_id: '' }`).join(',\n');
+  writeFileSync(join(press, 'src', 'vault.js'),
+    `var emptyKeyring = function () {\n  return { v: 1, apps: {\n${entries}\n  } };\n};\n`);
+}
+function writeIndex(press, cfgApps) {
+  const entries = cfgApps.map((a) => `  '${a}': { label:'${a}', kind:'app' }`).join(',\n');
+  writeFileSync(join(press, 'index.html'),
+    `<html><body><script>\nconst TOOL_CFG = {\n${entries}${cfgApps.length ? ',' : ''}\n};\n</script></body></html>`);
+}
+
+test('T7 tool-cfg PASS — every personal data (keyring) page is in TOOL_CFG', () => {
+  const e = estate();
+  e.page('fsa.html').tier('fsa.html', 'personal')
+    .page('access.html').tier('access.html', 'personal')   // personal but NOT a keyring page -> exempt
+    .write();
+  writeVault(e.press, ['fsa.html']);        // fsa stores data; access does not
+  writeIndex(e.press, ['fsa.html']);
+  const r = e.run();
+  assert.match(line(r.out, 'T7 tool-cfg', '(marquee)'), /PASS.*1 personal data/);
+  assert.equal(r.code, 0);
+  e.cleanup();
+});
+
+test('T7 tool-cfg FAIL — a personal data page is missing from TOOL_CFG', () => {
+  const e = estate();
+  e.page('fsa.html').tier('fsa.html', 'personal')
+    .page('giving.html').tier('giving.html', 'personal')
+    .write();
+  writeVault(e.press, ['fsa.html', 'giving.html']);  // both store data
+  writeIndex(e.press, ['fsa.html']);                 // giving.html forgotten in TOOL_CFG
+  const r = e.run();
+  const l = line(r.out, 'T7 tool-cfg', '(marquee)');
+  assert.match(l, /FAIL/);
+  assert.match(l, /giving\.html/);
+  assert.doesNotMatch(l, /fsa\.html/);               // fsa is present, so not named
+  assert.equal(r.code, 1);
+  e.cleanup();
+});
+
+test('T7 tool-cfg — a personal NON-data page (no keyring entry) is exempt, not required in TOOL_CFG', () => {
+  const e = estate();
+  e.page('fsa.html').tier('fsa.html', 'personal')
+    .page('access.html').tier('access.html', 'personal')   // personal admin page, stores no data
+    .write();
+  writeVault(e.press, ['fsa.html']);        // only fsa is a keyring (data) page; access is not
+  writeIndex(e.press, ['fsa.html']);        // access is deliberately absent from TOOL_CFG
+  const r = e.run();
+  const l = line(r.out, 'T7 tool-cfg', '(marquee)');
+  assert.match(l, /PASS.*1 personal data/);  // fsa counted; access exempt (not a keyring page)
+  assert.doesNotMatch(l, /access\.html/);    // access is never flagged despite missing from TOOL_CFG
+  assert.equal(r.code, 0);
+  e.cleanup();
+});
+
+test('T7 tool-cfg SKIP — no vault.js / index.html to audit', () => {
+  const e = estate();
+  e.page('fsa.html').tier('fsa.html', 'personal').write();   // no vault.js, no index.html written
+  const r = e.run();
+  assert.match(line(r.out, 'T7 tool-cfg', '(marquee)'), /SKIP/);
+  assert.equal(r.code, 0);
+  e.cleanup();
+});
+
 test('clean estate exits 0; a single FAIL flips the exit to 1', () => {
   const e = estate();
   e.page('a.html').tier('a.html', 'personal').repo('appa').tenant('a.html', { repo: 'appa', tier: 'personal', gate: 'src/gate.js', vendored: 'src/vendor/press-gate.js', release: 'tools/release.js' }).write();

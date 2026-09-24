@@ -5,7 +5,7 @@
 // three repo-owned registries (tenants.json, pages.json, spaces.json) and, per tenant, runs one
 // named check. Prints PASS / FAIL / SKIP / INFO / EMITTED + a reason; EXITS 1 on any FAIL.
 //
-//   node tools/tenants-check.mjs                 # T1–T4 + T6 (no build)
+//   node tools/tenants-check.mjs                 # T1–T4 + T6 + T7 (no build)
 //   node tools/tenants-check.mjs --rebuild       # + T5 rebuild-vs-live for deterministic tenants
 //   node tools/tenants-check.mjs --press <dir>   # override the press root (default: where this lives)
 //   VSCODE_ROOT=<dir> node tools/tenants-check.mjs   # override the source-repos parent (default ~/Documents/VSCode)
@@ -148,6 +148,39 @@ for (const page of Object.keys(tenants)) {
           } else say('INFO', 'T5 rebuild', page, `non-deterministic — rebuild ${bo.slice(0, 8)} vs live ${bl.slice(0, 8)}`);
         }
       }
+    }
+  }
+}
+
+// ---- T7 tool-cfg — a personal page that STORES DATA must have a TOOL_CFG entry -------------
+// "Stores data" is read INDEPENDENTLY of TOOL_CFG (else the check is circular): a page stores data
+// iff the vault keyring (src/vault.js → emptyKeyring) holds an entry for it. Every such page that is
+// also personal-tier in spaces.json MUST appear in index.html's TOOL_CFG, or it silently drops out of
+// "Connect your tools" AND the recovery kit. (access.html is personal but has no keyring entry, so it
+// is correctly exempt.)
+{
+  const vaultPath = join(PRESS, 'src', 'vault.js');
+  const indexPath = join(PRESS, 'index.html');
+  if (!existsSync(vaultPath) || !existsSync(indexPath)) {
+    say('SKIP', 'T7 tool-cfg', '(marquee)', 'no src/vault.js or index.html to audit');
+  } else {
+    const vaultSrc = readFileSync(vaultPath, 'utf8');
+    const indexSrc = readFileSync(indexPath, 'utf8');
+    // keyring apps = the object keys inside emptyKeyring()'s `apps: { … }` (the vault's tool list).
+    const ks = vaultSrc.indexOf('emptyKeyring');
+    const ke = ks >= 0 ? vaultSrc.indexOf('};', ks) : -1;
+    const kregion = ke > ks ? vaultSrc.slice(ks, ke) : '';
+    const keyring = new Set([...kregion.matchAll(/'([a-z0-9-]+\.html)'\s*:/g)].map((m) => m[1]));
+    // TOOL_CFG keys in index.html.
+    const tcm = indexSrc.match(/const TOOL_CFG\s*=\s*\{([\s\S]*?)\n\};/);
+    const toolcfg = new Set(tcm ? [...tcm[1].matchAll(/'([a-z0-9-]+\.html)'\s*:/g)].map((m) => m[1]) : []);
+    if (!keyring.size) say('SKIP', 'T7 tool-cfg', '(marquee)', 'could not read the vault keyring (emptyKeyring)');
+    else if (!tcm) say('FAIL', 'T7 tool-cfg', '(marquee)', 'TOOL_CFG block not found in index.html');
+    else {
+      const dataPersonal = personal.filter((p) => keyring.has(p)); // personal pages that store data
+      const missing = dataPersonal.filter((p) => !toolcfg.has(p));
+      if (missing.length) say('FAIL', 'T7 tool-cfg', '(marquee)', `personal data page(s) with NO TOOL_CFG entry (won't show in Connect / recovery kit): ${missing.join(', ')}`);
+      else say('PASS', 'T7 tool-cfg', '(marquee)', `${dataPersonal.length} personal data page(s) all present in TOOL_CFG`);
     }
   }
 }
