@@ -1,0 +1,38 @@
+arc/wings-polish — SLICE 5 done-proof — private-wing recovery kit
+================================================================
+Date: 2026-09-24
+Scope: index.html private wing (unlocked only) + docs/spec.md.
+
+CHANGES
+-------
+1. paintPersonal (unlocked view): a new "🖨 Recovery kit" action in the secbar + a hidden
+   #recoveryKit container.
+2. recoveryKitHTML(man) / showRecoveryKit(root,man): builds a print-styled sheet ENTIRELY in
+   browser from the UNLOCKED keyring (vaultState().sess.keyring.apps) — one row per keyring entry
+   (app name via titleOf, sync ID, passphrase), a generated date, a "no email reset by design"
+   lede, and restore steps: New passkey -> Set up the private wing -> Connect your tools ->
+   Re-enter each app's sync ID + passphrase. Nothing is fetched, sent, or stored anywhere new.
+   card-scout (kind:'deals') prints "no passphrase — sync ID only"; its inert gate sentinel is
+   NEVER printed. showRecoveryKit fails closed: it renders nothing when st.sess is absent (locked).
+3. CSS: .tw-kit* panel styles + an @media print block that hides the whole page except
+   #recoveryKit (black-on-white, actions hidden).
+4. docs/spec.md: recovery is a printable paper kit, not an email reset (passkey = convenience
+   keyring; each app's data encrypted by its own passphrase; paper kit is the recovery path).
+
+VISUAL (Eye-LITE glance, docs/evidence/wings-polish-slice-5-recovery-kit-print.png)
+-----------------------------------------------------------------------------------
+Print-media capture: title + "Generated <date>", the convenience-keyring/no-email-reset lede,
+a 4-row table (FSA Claims / Giving / Retirement with passphrases; Card Scout = "no passphrase —
+sync ID only"), and the four numbered restore steps. Legible black-on-white. P0 findings: NONE.
+
+PLAYWRIGHT — test/recovery-kit.spec.mjs (2 tests)
+-------------------------------------------------
+  ✓ unlocked wing renders the kit: all four keyring entries (title + sync ID + passphrase) present;
+    card-scout shows "no passphrase" and the sentinel string is absent; restore steps + generated
+    date + "no email reset" present; kit hidden until requested.
+  ✓ locked wing shows NO recovery kit (#kitBtn and #recoveryKit both absent; unlock screen shown).
+
+FULL SUITE
+----------
+node: 65 pass / 0 fail / 0 skip.   Playwright: 52 pass / 0 fail.   inline:check green.
+(tenants-check's 4 T3 gate-drift fails are the slice-1 deferred re-vendors — see HANDOFF.)

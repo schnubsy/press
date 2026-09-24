@@ -316,6 +316,34 @@ body.tw-sorting .tw-card{transition:none}
   color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);padding:7px 12px;border-radius:var(--tw-radius-pill);
   cursor:pointer;background:rgba(16,12,30,.4)}
 .tw-mini:hover{border-color:var(--tw-violet);background:rgba(142,123,232,.12)}
+/* wings-polish slice 5 — the printable recovery kit. On screen it is a panel; on paper it is the
+   only thing that prints (everything else is hidden by the @media print block below). */
+.tw-kit{margin-top:18px}
+.tw-kit-page{border:1px solid var(--tw-hairline);border-radius:var(--tw-radius-card);
+  background:var(--tw-glass-card);padding:22px 20px}
+.tw-kit-hd{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;
+  border-bottom:1px solid var(--tw-hairline);padding-bottom:12px;margin-bottom:14px}
+.tw-kit-hd h3{font-family:var(--tw-font-display);font-weight:400;font-size:18px;margin:0}
+.tw-kit-when{font-family:var(--tw-font-meta);font-size:11px;color:var(--tw-muted)}
+.tw-kit-lede{font-size:var(--tw-body-sm);color:var(--tw-muted);margin:0 0 16px;max-width:520px}
+.tw-kit-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tw-kit-tbl th,.tw-kit-tbl td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--tw-hairline);vertical-align:top}
+.tw-kit-tbl thead th{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tw-muted)}
+.tw-kit-tbl tbody th{font-weight:600}
+.tw-kit-tbl code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;word-break:break-all}
+.tw-kit-empty{font-size:var(--tw-body-sm);color:var(--tw-muted)}
+.tw-kit-steps{margin-top:18px}
+.tw-kit-steps h4{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tw-muted);margin:0 0 8px}
+.tw-kit-steps ol{margin:0;padding-left:20px;font-size:13px;line-height:1.7}
+.tw-kit-actions{display:flex;gap:10px;margin-top:18px}
+@media print{
+  body *{visibility:hidden}
+  #recoveryKit,#recoveryKit *{visibility:visible}
+  #recoveryKit{position:absolute;left:0;top:0;width:100%}
+  .tw-kit-page{border:none;background:#fff;color:#000;padding:0}
+  .tw-kit-page code{color:#000}
+  .tw-noprint{display:none !important}
+}
 .tw-devices{margin-top:18px;border-top:1px solid var(--tw-hairline);padding-top:16px}
 .tw-devices h4{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--tw-muted);margin-bottom:12px}
@@ -1958,6 +1986,53 @@ function wireConnect(root, man){
   wireTools();
 }
 
+// wings-polish slice 5 — the printable recovery kit. Built ENTIRELY in-browser from the UNLOCKED
+// keyring; nothing is fetched, sent, or stored anywhere new. The passkey is only a convenience
+// keyring — each app's data is encrypted by that app's OWN passphrase — so this paper kit (sync ID
+// + passphrase per app) is the real recovery path. There is deliberately no email reset.
+function recoveryKitHTML(man){
+  const st = vaultState();
+  const apps = (st.sess && st.sess.keyring && st.sess.keyring.apps) ? st.sess.keyring.apps : {};
+  const when = new Date();
+  const stamp = when.toLocaleString(undefined, {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  const rows = Object.keys(apps).map(f=>{
+    const v = apps[f] || {};
+    const name = esc(titleOf(f, man));
+    const sync = v.sync_id ? esc(v.sync_id) : '—';
+    // card-scout (kind:'deals') has no passphrase — its inert sentinel is never printed as one.
+    const isDeals = (TOOL_CFG[f] && TOOL_CFG[f].kind === 'deals');
+    const pass = isDeals ? '<em>no passphrase — sync ID only</em>' : (v.pass ? esc(v.pass) : '—');
+    return `<tr><th scope="row">${name}</th><td><code>${sync}</code></td><td><code>${pass}</code></td></tr>`;
+  }).join('');
+  const body = rows
+    ? `<table class="tw-kit-tbl"><thead><tr><th>Tool</th><th>Sync ID</th><th>Passphrase</th></tr></thead><tbody>${rows}</tbody></table>`
+    : `<p class="tw-kit-empty">No tools are connected in this keyring yet — connect a tool, then print the kit.</p>`;
+  return `<div class="tw-kit-page">`+
+    `<div class="tw-kit-hd"><h3>Private Wing — recovery kit</h3><span class="tw-kit-when">Generated ${esc(stamp)}</span></div>`+
+    `<p class="tw-kit-lede">Keep this on paper, somewhere safe. The passkey only unlocks a convenience keyring; each tool's data is encrypted by its own passphrase below. This sheet is the recovery path — there is no email reset by design.</p>`+
+    body+
+    `<div class="tw-kit-steps"><h4>If you lose the passkey</h4><ol>`+
+      `<li>Create a <b>new passkey</b> on a device you control.</li>`+
+      `<li>Open the Private Wing and <b>Set up the private wing</b> with that passkey.</li>`+
+      `<li><b>Connect your tools</b> from the wing.</li>`+
+      `<li><b>Re-enter each app's sync ID + passphrase</b> from this sheet.</li>`+
+    `</ol></div>`+
+    `<div class="tw-kit-actions tw-noprint"><span class="tw-mini" id="kitPrint">🖨 Print</span><span class="tw-mini" id="kitDone">Done</span></div>`+
+  `</div>`;
+}
+function showRecoveryKit(root, man){
+  const st = vaultState();
+  const box = document.getElementById('recoveryKit');
+  if(!box) return;
+  if(!st.sess){ box.hidden = true; return; }   // never render a kit when locked
+  box.innerHTML = recoveryKitHTML(man);
+  box.hidden = false;
+  const p = document.getElementById('kitPrint'), d = document.getElementById('kitDone');
+  if(p) p.addEventListener('click', ()=>{ try{ window.print(); }catch(e){} });
+  if(d) d.addEventListener('click', ()=>{ box.hidden = true; box.innerHTML=''; });
+  try{ box.scrollIntoView({behavior:'smooth', block:'start'}); }catch(e){}
+}
+
 function paintPersonal(root, man){
   const back=`<a class="tw-back" href="index.html">← the marquee</a>`;
   const top=`<div class="tw-top"><span>behind the <b>passkey</b></span><span>personal tools</span></div>`;
@@ -1967,13 +2042,16 @@ function paintPersonal(root, man){
     root.innerHTML = back+top+`<h2 class="tw-title">The Private Wing</h2>`+
       `<div class="tw-dek">Unlocked · ${clockUntil(st.sess.expiresAt)}. Open any tool — no more prompts until you lock or it expires.</div>`+
       `<div class="tw-secbar"><span class="tw-mini" id="lockBtn">⏻ Lock now</span>`+
-      `<span class="tw-mini" id="devBtn">⚙ Devices</span></div>`+
+      `<span class="tw-mini" id="devBtn">⚙ Devices</span>`+
+      `<span class="tw-mini" id="kitBtn">🖨 Recovery kit</span></div>`+
       cards +
       renderConnect() +
       `<div class="tw-devices" id="devWrap" hidden><h4>Enrolled passkeys</h4><div id="devList"></div>`+
       `<div style="margin-top:14px"><span class="tw-mini" id="addBtn">＋ Add this device</span></div>`+
-      `<div class="tw-secmsg" id="devMsg"></div></div>`;
+      `<div class="tw-secmsg" id="devMsg"></div></div>`+
+      `<div class="tw-kit" id="recoveryKit" hidden></div>`;
     document.getElementById('lockBtn').addEventListener('click', ()=>{ PressVault.lock(); paintPersonal(root, man); });
+    document.getElementById('kitBtn').addEventListener('click', ()=>{ showRecoveryKit(root, man); });
     const devWrap=document.getElementById('devWrap');
     document.getElementById('devBtn').addEventListener('click', ()=>{ devWrap.hidden=!devWrap.hidden; if(!devWrap.hidden) loadDevices(root, man); });
     document.getElementById('addBtn').addEventListener('click', async ()=>{
