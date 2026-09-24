@@ -68,13 +68,26 @@
   main{max-width:640px;margin:0 auto;padding:14px 16px}
   section[hidden]{display:none}
   /* quick nav — a horizontally scrollable chip row, one per visible group */
-  .quicknav{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
-    padding:4px 2px 8px;margin:0 -2px;scroll-margin-top:calc(var(--stick) + var(--stick2) + 16px)}
-  .quicknav::-webkit-scrollbar{display:none}
+  /* Slice 6 (fixes arc): nav-style JUMP buttons — a CSS grid of N equal (1fr) columns that spans the
+     content column edge-to-edge (first button left == column left, last button right == column right).
+     Distinct from the Feed filter pills: squared 10px radius, card background, accent label, a trailing
+     ↓, a subtle shadow. Labels ellipsize (min-width:0) so N buttons never cause horizontal scroll; the
+     count is always kept. --qn-cols is set inline per container = number of groups. */
+  .quicknav{display:flex;flex-wrap:wrap;gap:8px;
+    padding:4px 0 8px;margin:0;scroll-margin-top:calc(var(--stick) + var(--stick2) + 16px)}
   .quicknav:empty{display:none}
-  .qchip{flex:0 0 auto;font-size:13px;font-weight:600;text-decoration:none;color:var(--ink);
-    background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:8px 12px;white-space:nowrap;min-height:36px;display:inline-flex;align-items:center}
-  .qchip:hover{border-color:var(--accentB)}
+  /* Each button flexes to an equal share; on a wide screen all N sit in ONE full-width row. On a
+     phone they wrap to 2 across so the category word stays legible (Eye P0), and a lone last item
+     flex-grows to fill the row so the grid still spans the column edge-to-edge on odd counts. */
+  .qchip{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;min-height:40px;
+    text-decoration:none;font-size:13px;font-weight:600;color:var(--accentA);
+    background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:8px 10px}
+  @media (max-width:480px){ .qchip{flex:1 1 calc(50% - 4px)} } /* 2-across on the phone — full labels fit */
+  .qchip:hover{border-color:var(--accentA)}
+  .qchip:focus-visible{outline:2px solid var(--accentA);outline-offset:2px}
+  .qlabel{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .qcount{flex:0 0 auto;color:var(--muted);font-weight:700}
+  .qdown{flex:0 0 auto;color:var(--accentA);font-weight:700}
   /* consistent section heading — full-width rule above, count, and a Top link */
   /* Slice 5: a subtle full-width accent band behind each heading; 48px gap from the previous section.
      scroll-margin-top is unchanged so every jump still lands the heading below the sticky stack. */
@@ -195,9 +208,19 @@
   /* per-rule category segmented control (Slice 4) */
   /* Slice 5: rule cards compressed vertically — tighter padding, gaps and the category picker moved
      off the card into a ⋯ overflow menu (was a 4-button row). */
-  #rules-list .card{padding:9px 12px;margin-bottom:7px}
-  #rules-list .ctrls{margin-top:8px;gap:8px 14px}
-  #rules-list .ctrl-lab{font-size:12px}
+  /* Slice 5 (fixes arc): compact rule cards — brand name is the largest text; both steppers inline on
+     ONE row; the stepper buttons keep a 44px hit area (border-box 44px) but READ ~32px via a 6px
+     transparent inset (background-clip:content-box). ~1.6× more cards per iPhone screen. */
+  #rules-list .card{padding:5px 10px;margin-bottom:5px}
+  #rules-list .title{font-size:18px;font-weight:700;line-height:1.1}
+  #rules-list .sub{font-size:12px;margin-top:1px}
+  #rules-list .ovf{font-size:16px}                 /* smaller than the 18px brand name (largest text) */
+  #rules-list .ctrls{margin-top:4px;gap:8px;flex-wrap:nowrap;align-items:center}
+  #rules-list .ctrl{flex:1 1 0;min-width:0;gap:5px}
+  #rules-list .ctrl-lab{font-size:11px;flex:0 0 auto}
+  #rules-list .stepper{flex:1 1 auto;min-width:0}
+  #rules-list .stepper button{flex:0 0 44px;padding:6px;background-clip:content-box;font-size:16px} /* 44px hit area, ~32px visible */
+  #rules-list .stepper output{flex:1 1 auto;min-width:34px;font-size:13px}
   /* ⋯ overflow menu (Move to…) */
   .rulehead-actions{position:relative;flex:0 0 auto}
   .ovf{width:44px;height:44px;border:1px solid var(--line);border-radius:10px;background:var(--card);
@@ -211,6 +234,15 @@
   .ovfmenu button:hover,.ovfmenu button:focus{background:var(--chip);outline:none}
   .ovfmenu button::before{content:"";width:18px;flex:0 0 auto;color:var(--accentA);font-weight:800}
   .ovfmenu button[aria-checked="true"]::before{content:"✓"}
+  /* Slice 3: delete a rule — separator + danger item + inline confirm */
+  .ovfmenu-sep{height:1px;background:var(--line);margin:6px 4px}
+  .ovfmenu button.ovf-danger{color:#c0392b}
+  .ovfmenu button.ovf-danger::before{content:""}
+  .ovf-confirm{display:flex;gap:6px;padding:2px 4px 4px}
+  .ovf-confirm button{min-height:44px;justify-content:center;font-weight:700}
+  .ovf-confirm button::before{content:""!important;width:0}
+  .ovf-confirm button.confirm-del{background:#c0392b;color:#fff}
+  .ovf-confirm button.confirm-cancel{background:var(--chip);color:var(--ink)}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -316,7 +348,7 @@
 
   var SESSION_KEY = 'press:vault:v1';
   var ENROLLED_FLAG = 'press:vault:enrolled';
-  var TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
+  var TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days, fixed from unlock
 
   // In-memory ONLY: the NON-EXTRACTABLE AES key derived at unlock/enrol, cached so a follow-on
   // reseal (updateKeyring) can re-seal the row WITHOUT another passkey tap. Never persisted; a
@@ -870,7 +902,7 @@
   var REST = SUPA + "/rest/v1/";
   var H = { apikey:KEY, Authorization:"Bearer "+KEY, "content-type":"application/json" };
 
-  var state = { sources:[], rules:[], settings:{}, toggles:{}, deals:[], locked:false, feedSeenAt:null, watch:[] };
+  var state = { sources:[], rules:[], settings:{}, toggles:{}, deals:[], locked:false, feedSeenAt:null, watch:[], health:[] };
   var ruleQuery = ""; // live Rules-tab search (not persisted)
   // Feed filter bar controls — per-viewer, not persisted server-side.
   var SEEN_ID = "feed-seen-at";          // press_state row whose updated_at is the "last looked" stamp
@@ -879,6 +911,7 @@
   var feedTypes = {};                     // multi-select card-type filter (restaurant/retail/retailer/other)
   var feedBrand = "";                     // brand search substring
   var feedSearchOpen = false;             // is the in-row brand search expanded
+  var newWatchMin = 0;                     // Slice 4: "Min % off" for the NEXT sale-watch to add (0 = Any)
   var el = function(id){ return document.getElementById(id); };
   var esc = function(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); };
   function sync(cls,txt){ var s=el("sync"); s.className=cls; s.textContent=txt; }
@@ -931,7 +964,8 @@
       api("press_tasks?page=eq."+PAGE+"&category=eq.rule&select=item_id,title,status,extras&order=title"),
       api("press_tasks?page=eq."+PAGE+"&category=eq.settings&select=item_id,extras"),
       api("press_state?page=eq."+PAGE+"&select=item_id,checked,updated_at"),
-      api("press_tasks?page=eq."+PAGE+"&category=eq.watch&select=item_id,title,status,extras&order=title")
+      api("press_tasks?page=eq."+PAGE+"&category=eq.watch&select=item_id,title,status,extras&order=title"),
+      api("press_tasks?page=eq."+PAGE+"&category=eq.health&select=item_id,extras")
     ];
     if(sid){
       // Only hits + near-misses are the feed. Everyday-price rows (verdict='no') are no longer loaded
@@ -949,8 +983,9 @@
         state.toggles[t.item_id]=t.checked===true;
       });
       state.watch = d[4]||[];
+      state.health = d[5]||[];
       state.locked = !sid;
-      state.deals = sid ? (d[5]||[]) : [];
+      state.deals = sid ? (d[6]||[]) : [];
       saveLS(); renderAll();
       if(sid) sync("ok","Synced"); else sync("locked","Locked");
     }).catch(function(e){
@@ -981,9 +1016,15 @@
   function quickNav(tab, groups){
     if(!groups.length) return '<div class="quicknav" id="qn-'+tab+'"></div>';
     var chips=groups.map(function(g){
-      return '<a class="qchip" href="#grp-'+tab+'-'+g.slug+'">'+esc(g.label)+' ('+g.count+')</a>';
+      // Slice 6: label may shorten (e.g. "Warehouse / retailer" → "Warehouse") but the count is kept;
+      // full label stays the accessible name so screen readers hear it.
+      var short=g.short||String(g.label).split(" / ")[0];
+      return '<a class="qchip" href="#grp-'+tab+'-'+g.slug+'" aria-label="Jump to '+esc(g.label)+' ('+g.count+')">'
+        +'<span class="qlabel">'+esc(short)+'</span>'
+        +'<span class="qcount">'+g.count+'</span>'
+        +'<span class="qdown" aria-hidden="true">↓</span></a>';
     }).join("");
-    return '<div class="quicknav" id="qn-'+tab+'" role="navigation" aria-label="Jump to a section">'+chips+'</div>';
+    return '<div class="quicknav" id="qn-'+tab+'" role="navigation" aria-label="Jump to a section" style="--qn-cols:'+groups.length+'">'+chips+'</div>';
   }
   function groupHead(tab, slug, label, count){
     return '<div class="grouphead" id="grp-'+tab+'-'+slug+'"><h2>'+esc(label)+'<span class="gcount">'+count+'</span></h2>'
@@ -1047,7 +1088,7 @@
     var e=d.extras||{};
     if(d.verdict==="near"){
       if(e.below_min_denom){ var dl=ruleMinDenomLabel(d); return "Below your "+((dl&&dl!=="Any")?dl:"$25")+" minimum"; }
-      if(e.unpriced) return "Needs a look — no price";
+      if(e.unpriced) return e.watch_term ? "Needs a look — discount unknown" : "Needs a look — no price";
       if(e.suspicious) return "Unusually high — double-check";
       return "Just missed your target"; // Slice 2: no "Hit"/"Near" copy on the Feed
     }
@@ -1104,7 +1145,9 @@
     return now-30*864e5; // 30d default (the data window is already 30d)
   }
   function withinWindow(d){ var f=dateFloorMs(); return !(f && dealTime(d)<f); }
-  function matchesBrand(d){ var q=(feedBrand||"").toLowerCase(); return !q || String(d.brand||"").toLowerCase().indexOf(q)>=0; }
+  // Slice 2: apostrophe-insensitive brand search — normBrand deletes ' ’ ʼ ` both sides, so
+  // "jimmy john's" finds "Jimmy Johns" (and vice-versa).
+  function matchesBrand(d){ var q=normBrand(feedBrand); return !q || normBrand(d.brand).indexOf(q)>=0; }
   function typesOnList(){ return Object.keys(feedTypes).filter(function(k){ return feedTypes[k]; }); }
   // Type counts are computed over the date + search filtered set (NOT the type-filtered set), so each
   // option shows how many rows it WOULD add. Unknown groups fall back to "other".
@@ -1422,6 +1465,9 @@
   // Slice 5: the category picker moved off the card into a ⋯ overflow menu ("Move to…"). The menu is
   // a radio group of the four categories with the current one checked; picking one writes extras.group
   // exactly as before (the same data-grp/data-grpval handler). Rendered hidden; the ⋯ button toggles it.
+  // Slice 3: the three seed stack/bonus rules are protected — no Delete item (they anchor the
+  // warehouse-stack + HEB-bonus judging).
+  var PROTECTED_RULES={ "rule-costco-stack":1, "rule-sams-club-stack":1, "rule-heb":1 };
   function overflowMenu(r){
     var cur=(r.extras&&r.extras.group)||"other";
     var label=esc(r.title);
@@ -1430,10 +1476,14 @@
       return '<button role="menuitemradio" aria-checked="'+on+'" data-grp="'+esc(r.item_id)+'" data-grpval="'+o[0]+'">'
         +esc(o[0]==="retailer"?"Warehouse":o[1])+'</button>';
     }).join("");
+    // Slice 3: Delete rule… (danger), below a separator — omitted for protected rules.
+    var del=PROTECTED_RULES[r.item_id] ? '' :
+      '<div class="ovfmenu-sep" role="separator"></div>'
+      +'<button class="ovf-danger" role="menuitem" data-del="'+esc(r.item_id)+'">Delete rule…</button>';
     return '<div class="rulehead-actions">'
-      +'<button class="ovf" data-ovf="'+esc(r.item_id)+'" aria-haspopup="menu" aria-expanded="false" aria-label="Move '+label+' to a category">⋯</button>'
-      +'<div class="ovfmenu" id="ovfmenu-'+esc(r.item_id)+'" role="menu" aria-label="Move '+label+' to a category" hidden>'
-      +'<div class="ovfmenu-label">Move to…</div>'+items+'</div>'
+      +'<button class="ovf" data-ovf="'+esc(r.item_id)+'" aria-haspopup="menu" aria-expanded="false" aria-label="Options for '+label+'">⋯</button>'
+      +'<div class="ovfmenu" id="ovfmenu-'+esc(r.item_id)+'" role="menu" aria-label="Options for '+label+'" hidden>'
+      +'<div class="ovfmenu-label">Move to…</div>'+items+del+'</div>'
       +'</div>';
   }
   function denomVal(x){ var v=x&&x.min_denom; return (v==null||v==="")?25:Number(v); }
@@ -1489,6 +1539,11 @@
       +'<div class="card">'
         +'<div class="sub">Get alerted when a term is on sale — not just gift cards. One search per term, up to 10.</div>'
         +'<div id="watchlist" style="margin-top:8px"></div>'
+        +'<div class="ctrls" style="margin-top:8px"><div class="ctrl"><span class="ctrl-lab">Min % off</span>'
+          +'<div class="stepper" role="group" aria-label="Minimum percent off for a new watch">'
+          +'<button data-wnewdec aria-label="Decrease minimum percent">&minus;</button>'
+          +'<output id="newwatchmin">'+pctMinLabel(newWatchMin)+'</output>'
+          +'<button data-wnewinc aria-label="Increase minimum percent">+</button></div></div></div>'
         +'<div class="addrow" style="margin-top:8px"><input id="newwatch" type="text" placeholder="e.g. Nintendo Switch 2" aria-label="Add a sale-watch term">'
         +'<button class="btn primary" id="addwatch">Watch</button></div></div>';
     renderRulesList();
@@ -1508,6 +1563,17 @@
     if(n>0) s+=" · "+n+" match"+(n===1?"":"es")+" in 30 days";
     return s;
   }
+  // Slice 4: "Any" for 0, else "N%". Shared by the per-row and add-row watch steppers.
+  function pctMinLabel(v){ return (Number(v)||0)<=0 ? "Any" : (Number(v)||0)+"%"; }
+  // Slice 4: per-watch "Min % off" stepper — only alert when the term is at least this much off.
+  function watchMinStepper(w){
+    var v=Number(w.extras&&w.extras.min_pct)||0;
+    return '<div class="ctrls"><div class="ctrl"><span class="ctrl-lab">Min % off</span>'
+      +'<div class="stepper" role="group" aria-label="Minimum percent off for '+esc(w.title)+'">'
+      +'<button data-wdec="'+esc(w.item_id)+'" aria-label="Decrease minimum percent">&minus;</button>'
+      +'<output>'+pctMinLabel(v)+'</output>'
+      +'<button data-winc="'+esc(w.item_id)+'" aria-label="Increase minimum percent">+</button></div></div></div>';
+  }
   function renderWatchList(){
     var host=el("watchlist"); if(!host) return;
     var items=watchTerms();
@@ -1521,6 +1587,7 @@
         +'<div class="grow"><div class="title">'+esc(w.title)+'</div>'
         +'<div class="sub">'+watchStatusLine(w)+'</div>'
         +match
+        +watchMinStepper(w)
         +'</div>'
         +'<button class="fchip" data-unwatch="'+esc(w.item_id)+'" aria-label="Remove watch '+esc(w.title)+'">✕</button>'
         +'</div></div>';
@@ -1538,11 +1605,11 @@
   }
   function renderRulesList(){
     var list=el("rules-list"), nav=el("rules-nav"); if(!list) return;
-    var q=(ruleQuery||"").toLowerCase();
+    var q=normBrand(ruleQuery); // Slice 2: apostrophe-insensitive ("jimmy john's" → "jimmy johns")
     var groups=[];
     RULE_GROUPS.forEach(function(g){
       var items=state.rules.filter(function(r){
-        return (r.extras&&r.extras.group)===g[0] && (!q || String(r.title||"").toLowerCase().indexOf(q)>=0);
+        return (r.extras&&r.extras.group)===g[0] && (!q || normBrand(r.title).indexOf(q)>=0);
       });
       if(items.length) groups.push({slug:g[0],label:g[1],count:items.length,list:items});
     });
@@ -1587,6 +1654,25 @@
     if(t["digest-daily"]) parts.push("Near misses arrive in one summary at "+fmtClock(s.digest_time||"07:30")+".");
     return '<div class="card summary"><p>'+esc(parts.join(" "))+'</p></div>';
   }
+  // Slice 1: iPhone push health + a one-tap "Send test push". The health line reads the push-health
+  // row the tick/test stamps; the button POSTs {action:'test_push'} to the Edge Function, gated on the
+  // page's x-plan-id sync_id (no shared secret on the page). The returned ntfy status shows inline.
+  function pushHealthRow(){ var h=state.health||[]; for(var i=0;i<h.length;i++){ if(h[i].item_id==="push-health") return h[i]; } return null; }
+  function pushHealthLine(){
+    var r=pushHealthRow(); var e=(r&&r.extras)||{};
+    if(e.last_error) return "Last push FAILED — "+esc(String(e.last_error));
+    if(e.last_ok_at) return "Last push OK "+esc(relTime(e.last_ok_at));
+    return "No test push sent yet.";
+  }
+  function pushHealthCard(){
+    return '<div class="card"><div class="row"><div class="grow">'
+      +'<div class="title">iPhone push health</div>'
+      +'<div class="sub" id="push-health-line">'+pushHealthLine()+'</div>'
+      +'<div class="sub" id="test-push-result" role="status" aria-live="polite"></div>'
+      +'</div>'
+      +'<button class="btn" id="send-test-push" style="min-height:44px;min-width:44px">Send test push</button>'
+      +'</div></div>';
+  }
   function renderAlerts(){
     var host=el("alerts"); var s=state.settings||{}; var t=state.toggles||{};
     function tog(id,label,desc){
@@ -1598,6 +1684,7 @@
     html+=quickNav("alerts",groups);
     html+=groupHead("alerts","channels","Channels",2);
     html+=tog("alert-iphone","iPhone push","Instant ntfy alert on a hit.");
+    html+=pushHealthCard();
     html+=tog("alert-gmail","Email","A copy to your inbox.");
     html+=groupHead("alerts","howoften","How often",2);
     var fc=s.feed_cadence||"3x-day";
@@ -1680,10 +1767,44 @@
     var ub=b.getAttribute("data-unblock"); if(ub){ removeBlock(ub); return; }
     // recategorize a rule (Slice 4)
     var grp=b.getAttribute("data-grp"); if(grp){ setRuleGroup(grp,b.getAttribute("data-grpval")); return; }
+    // delete a rule (Slice 3): ⋯ → "Delete rule…" swaps the menu to an inline confirm.
+    var del=b.getAttribute("data-del"); if(del){ showDeleteConfirm(del); return; }
+    var delok=b.getAttribute("data-delok"); if(delok){ deleteRule(delok); return; }
+    var delcancel=b.getAttribute("data-delcancel"); if(delcancel){ cancelDeleteConfirm(delcancel); return; }
     // sale watch (Slice 6)
     if(b.id==="addwatch"){ addWatch(); return; }
     var uw=b.getAttribute("data-unwatch"); if(uw){ removeWatch(uw); return; }
+    // Slice 4: per-watch + add-row Min % off steppers
+    var winc=b.getAttribute("data-winc"), wdec=b.getAttribute("data-wdec");
+    if(winc||wdec){ stepWatch(winc||wdec, winc?5:-5, b); return; }
+    if(b.hasAttribute("data-wnewinc")||b.hasAttribute("data-wnewdec")){ stepNewWatch(b.hasAttribute("data-wnewinc")?5:-5, b); return; }
+    // Slice 1: send test push
+    if(b.id==="send-test-push"){ sendTestPush(b); return; }
   });
+  // Slice 1: POST {action:'test_push'} to the Edge Function, gated on the page's sync_id (x-plan-id).
+  // Shows the returned ntfy status inline; never sends or displays the topic.
+  function sendTestPush(btn){
+    var sid=planId(); var out=el("test-push-result");
+    if(!sid){ if(out) out.textContent="Unlock the page first, then try again."; return; }
+    if(out) out.textContent=""; btn.disabled=true; var prev=btn.textContent; btn.textContent="Sending…";
+    fetch(SUPA+"/functions/v1/"+PAGE, {
+      method:"POST",
+      headers:{ "content-type":"application/json", "apikey":KEY, "x-plan-id":sid },
+      body: JSON.stringify({ action:"test_push" })
+    }).then(function(r){ return r.json().catch(function(){return {};}).then(function(j){ return {status:r.status, j:j||{}}; }); })
+      .then(function(res){
+        var j=res.j;
+        if(res.status===200 && j.ntfy_status!=null){
+          if(j.ntfy_status>=200 && j.ntfy_status<300){ out.textContent="Sent ✓ (ntfy "+j.ntfy_status+"). If your phone stays silent, open the ntfy app and confirm you’re subscribed to the same topic."; }
+          else { out.textContent="ntfy returned HTTP "+j.ntfy_status+" — not delivered."; }
+        } else if(res.status===429){ out.textContent="Please wait "+(j.retry_after_s||60)+"s between test pushes."; }
+        else if(res.status===401){ out.textContent="Not authorized — unlock the page and try again."; }
+        else if(res.status===500){ out.textContent="Push isn’t configured on the server yet."; }
+        else { out.textContent="Couldn’t send a test push (error "+res.status+")."; }
+      })
+      .catch(function(){ if(out) out.textContent="Couldn’t reach the server — check your connection."; })
+      .then(function(){ btn.disabled=false; btn.textContent=prev; });
+  }
   // Slice 5: ⋯ overflow-menu plumbing (open/close, outside-click, keyboard nav).
   function closeOverflowMenus(exceptId){
     var btns=document.querySelectorAll(".ovf[aria-expanded='true']");
@@ -1703,7 +1824,10 @@
       var first=m.querySelector("button[role='menuitemradio']"); if(first) first.focus(); }
   }
   document.addEventListener("click", function(ev){
-    if(!ev.target.closest(".rulehead-actions")) closeOverflowMenus();
+    // isConnected guard: an in-menu action (e.g. Slice 3 "Delete rule…" swapping the menu to a
+    // confirm) detaches ev.target; a detached node must NOT count as an outside click and close it.
+    var t=ev.target;
+    if(t && t.isConnected && !t.closest(".rulehead-actions")) closeOverflowMenus();
   });
   document.addEventListener("keydown", function(ev){
     var menu=ev.target.closest&&ev.target.closest(".ovfmenu"); if(!menu) return;
@@ -1753,10 +1877,20 @@
     if(!was){ btn.classList.add("primary"); btn.setAttribute("aria-pressed","true"); }
     withSave(patchDeal(id,{status:d.status,updated_at:new Date().toISOString()}));
   }
+  // Slice 2: a rule whose brand normalizes to the same key (apostrophes deleted) as `name`, or null.
+  function findRuleByBrand(name){
+    var nb=normBrand(name); if(!nb) return null;
+    for(var i=0;i<state.rules.length;i++){ if(normBrand(state.rules[i].title)===nb) return state.rules[i]; }
+    return null;
+  }
   function addBrand(){
     var inp=el("newbrand"); var name=(inp.value||"").trim(); if(!name) return;
-    var slug="rule-"+name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
-    if(find(state.rules,slug)){ inp.value=""; selectTab("tab-rules"); noteAdd("“"+name+"” is already in your rules."); return; }
+    // Slice 2: build the slug from normBrand so "Jimmy John's" → rule-jimmy-johns (matches the judge's
+    // key), and treat any brand that NORMALIZES to an existing rule as a duplicate — so adding
+    // "Jimmy John's" when "Jimmy Johns" exists reports "already in your rules" instead of a twin rule.
+    var slug="rule-"+normBrand(name).replace(/ /g,"-");
+    var dup=find(state.rules,slug)||findRuleByBrand(name);
+    if(dup){ inp.value=""; selectTab("tab-rules"); noteAdd("“"+name+"” is already in your rules."); return; }
     var grp=categorizeBrand(name); // Slice 4: guessed, not silently "other"
     var row={page:PAGE,item_id:slug,title:name,status:"on",category:"rule",position:999,
       extras:{group:grp,mode:"pct",min_pct:20,min_denom:25,note:""},updated_at:new Date().toISOString()};
@@ -1773,6 +1907,31 @@
     if(r.extras.group===val){ return; }
     r.extras.group=val; renderRulesList(); // the rule moves into its new group section
     withSave(patchTask(id,{extras:r.extras,updated_at:new Date().toISOString()}));
+  }
+  // ---------- delete a rule (Slice 3) ----------
+  // "Delete rule…" swaps the ⋯ menu contents to an inline "Delete <Brand>? [Delete] [Cancel]" confirm.
+  function showDeleteConfirm(id){
+    var r=find(state.rules,id); if(!r) return;
+    var m=el("ovfmenu-"+id); if(!m) return;
+    m.innerHTML='<div class="ovfmenu-label">Delete '+esc(r.title)+'?</div>'
+      +'<div class="ovf-confirm">'
+      +'<button class="confirm-del" data-delok="'+esc(id)+'">Delete</button>'
+      +'<button class="confirm-cancel" data-delcancel="'+esc(id)+'">Cancel</button>'
+      +'</div>';
+    var d=m.querySelector('[data-delok]'); if(d) d.focus();
+  }
+  // Cancel restores the normal menu (renderRulesList rebuilds the card) and returns focus to the ⋯.
+  function cancelDeleteConfirm(id){
+    renderRulesList();
+    var btn=document.querySelector('.ovf[data-ovf="'+id+'"]'); if(btn) btn.focus();
+  }
+  // Hard DELETE of the press_tasks row (same pattern as removeWatch), then re-render + focus the next
+  // card's ⋯ (or the Add-brand input when the list is now empty).
+  function deleteRule(id){
+    state.rules=state.rules.filter(function(r){ return r.item_id!==id; });
+    renderRulesList();
+    var next=document.querySelector('#rules-list .ovf'); if(next) next.focus(); else { var nb=el("newbrand"); if(nb) nb.focus(); }
+    withSave(api("press_tasks?page=eq."+PAGE+"&item_id=eq."+encodeURIComponent(id),{method:"DELETE",headers:{Prefer:"return=minimal"}}));
   }
   // ---------- blocked stores (Slice 3) ----------
   function saveSettings(){ return withSave(patchTask("settings",{extras:state.settings,updated_at:new Date().toISOString()})); }
@@ -1793,9 +1952,22 @@
     if(watchTerms().length>=10) return; // cap so a tick can't fan out unboundedly
     var slug="watch-"+term.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
     if(find(state.watch,slug)){ if(inp) inp.value=""; return; }
-    var row={page:PAGE,item_id:slug,title:term,status:"on",category:"watch",position:999,extras:{min_pct:0,note:""},updated_at:new Date().toISOString()};
-    state.watch.push(row); if(inp) inp.value=""; renderWatchList();
+    var row={page:PAGE,item_id:slug,title:term,status:"on",category:"watch",position:999,extras:{min_pct:newWatchMin,note:""},updated_at:new Date().toISOString()};
+    state.watch.push(row); if(inp) inp.value=""; newWatchMin=0; renderWatchList();
+    var nm=el("newwatchmin"); if(nm) nm.textContent=pctMinLabel(newWatchMin);
     withSave(api("press_tasks?on_conflict=page,item_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(row)}));
+  }
+  // Slice 4: per-watch "Min % off" stepper — 5-pt steps, 0 ("Any") to 90; writes extras.min_pct.
+  function stepWatch(id,delta,btn){
+    var w=find(state.watch,id); if(!w) return; w.extras=w.extras||{};
+    var v=Math.max(0,Math.min(90,(Number(w.extras.min_pct)||0)+delta));
+    w.extras.min_pct=v; var out=btn.parentNode.querySelector("output"); if(out) out.textContent=pctMinLabel(v);
+    withSave(patchTask(id,{extras:w.extras,updated_at:new Date().toISOString()}));
+  }
+  // Slice 4: the add-row "Min % off" for the NEXT watch (not yet persisted — applied on Watch).
+  function stepNewWatch(delta,btn){
+    newWatchMin=Math.max(0,Math.min(90,(Number(newWatchMin)||0)+delta));
+    var out=btn.parentNode.querySelector("output"); if(out) out.textContent=pctMinLabel(newWatchMin);
   }
   function removeWatch(id){
     state.watch=watchTerms().filter(function(w){ return w.item_id!==id; });
