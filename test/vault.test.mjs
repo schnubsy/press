@@ -111,6 +111,31 @@ test('session: save then load returns keyring + vaultId within TTL', () => {
   assert.ok(s.expiresAt - s.unlockedAt === V.TTL_MS);
 });
 
+test('arc/wings-polish slice 1: the private-wing TTL is 7 days, fixed from unlock', () => {
+  // The re-lock window is exactly one week — no longer the old 8-hour value.
+  assert.equal(V.TTL_MS, 7 * 24 * 60 * 60 * 1000, 'TTL_MS must be 7 days');
+  const before = Date.now();
+  const sess = V.saveSession(V.emptyKeyring(), 'v-ttl');
+  const after = Date.now();
+  // expiresAt sits exactly one TTL past unlockedAt (fixed from unlock, not a rounded/other value).
+  assert.equal(sess.expiresAt - sess.unlockedAt, V.TTL_MS);
+  assert.ok(sess.expiresAt >= before + V.TTL_MS && sess.expiresAt <= after + V.TTL_MS);
+});
+
+test('arc/wings-polish slice 1: loadSession does NOT slide the expiry on use (fixed from unlock)', () => {
+  V.saveSession(V.emptyKeyring(), 'v-fixed');
+  const stored = JSON.parse(globalThis.localStorage.getItem(V.SESSION_KEY));
+  const pinnedExpiry = stored.expiresAt - 3000; // pin the window into the (near) past-of-now but still valid
+  stored.expiresAt = pinnedExpiry; stored.unlockedAt = pinnedExpiry - V.TTL_MS;
+  globalThis.localStorage.setItem(V.SESSION_KEY, JSON.stringify(stored));
+  // Reading the session repeatedly must never push expiresAt forward (no refresh-on-use).
+  const a = V.loadSession(); const b = V.loadSession();
+  assert.equal(a.expiresAt, pinnedExpiry);
+  assert.equal(b.expiresAt, pinnedExpiry);
+  const afterRead = JSON.parse(globalThis.localStorage.getItem(V.SESSION_KEY));
+  assert.equal(afterRead.expiresAt, pinnedExpiry, 'the stored expiresAt is unchanged by loading');
+});
+
 test('session: an expired session loads as null and is removed', () => {
   V.saveSession(V.emptyKeyring(), 'v1');
   // force expiry by rewriting the stored record into the past

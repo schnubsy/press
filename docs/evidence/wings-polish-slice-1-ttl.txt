@@ -1,0 +1,57 @@
+arc/wings-polish — SLICE 1 done-proof — private wing weekly re-lock
+====================================================================
+Date: 2026-09-24
+Scope (ratified by Mark, Option 2): bump the private-wing TTL 8h -> 7 days, FIXED from unlock,
+in the PRESS-OWNED copies only. The four published tenant pages keep their inlined 8h constant
+until each source repo re-vendors + re-releases (numbered follow-ups in HANDOFF).
+
+CHANGE
+------
+src/vault.js:47  (source of truth)
+    -  var TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
+    +  var TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days, fixed from unlock
+Propagated verbatim by `node tools/inline-vault.mjs` into the two carriers:
+    index.html:409   var TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days, fixed from unlock
+    src/gate.js:72   var TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days, fixed from unlock
+
+FIXED-FROM-UNLOCK (no sliding refresh)
+--------------------------------------
+saveSession() sets expiresAt = unlockedAt + TTL_MS at unlock/enrol ONLY.
+loadSession() validates `Date.now() > sess.expiresAt` and returns the record UNCHANGED — it
+never rewrites expiresAt, so reading the session never slides the window forward.
+
+DONE-CHECK: no 8h constant in press-owned files
+-----------------------------------------------
+$ grep -rn '8 \* 60 \* 60' src/vault.js src/gate.js index.html
+  (no matches)                              <- press-owned files clean
+$ grep -rn '8 \* 60 \* 60' fsa.html giving.html retirement.html card-scout.html
+  card-scout.html:319 / fsa.html:804 / giving.html:948 / retirement.html:1067   <- DEFERRED (Option 2)
+
+$ npm run inline:check
+  inline-vault: index.html is in sync with src/vault.js
+  inline-vault: src/gate.js is in sync with src/vault.js
+
+UNIT TESTS (node --test) — 67 pass, 0 fail, 0 skip
+--------------------------------------------------
+  ✔ slice 1: the private-wing TTL is 7 days, fixed from unlock
+  ✔ slice 1: loadSession does NOT slide the expiry on use (fixed from unlock)
+
+PLAYWRIGHT — tenant pages honour a portal-minted 7-day expiresAt (test/ttl-honored.spec.mjs)
+-------------------------------------------------------------------------------------------
+Proves the safety property behind the deferral: the four PUBLISHED tenant pages READ expiresAt
+from the shared session; they do not recompute it from their own (still-8h) constant.
+  ✓ published fsa.html honours a 7-day session expiresAt (reads it, never recomputes to 8h)
+  ✓ published giving.html honours a 7-day session expiresAt
+  ✓ published retirement.html honours a 7-day session expiresAt
+  ✓ published card-scout.html honours a 7-day session expiresAt
+  4 passed
+Each asserts: loadSession() returns the seeded session; expiresAt - unlockedAt === 7 days;
+remaining life > 8h; and the stored expiresAt is untouched after boot.
+
+SUPABASE AUTH read-only check
+-----------------------------
+N/A to the private wing by design: the private-wing session is a CLIENT-SIDE localStorage vault
+(WebAuthn PRF + `press:vault:v1`), independent of Supabase Auth. A GoTrue session time-box /
+inactivity timeout governs the FAMILY wing's JWT, not the private-wing re-lock, so it cannot
+shorten the 7-day window. GoTrue config is not SQL-readable via the MCP; a dashboard glance
+(Auth > Sessions has no time-box) is listed as a Mark verification in HANDOFF for completeness.
