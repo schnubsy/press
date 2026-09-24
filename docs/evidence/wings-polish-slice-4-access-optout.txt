@@ -1,0 +1,46 @@
+arc/wings-polish — SLICE 4 done-proof — Family Access redesign + opt-out grants
+================================================================================
+Date: 2026-09-24   STATUS: code + migration AUTHORED; DDL apply pending Cowork (declared stop).
+
+CODE (access.html — press-native, ships from main on resume)
+------------------------------------------------------------
+- REMOVED the "Which tools are gated" section and the people×apps table grid (and every
+  public/private page from the screen).
+- People = one CARD per person: name + admin/last-seen, a switch per FAMILY tool
+  (spaces.family ∪ press_access_apps.gated), and Deactivate/Reactivate (active flag; never delete).
+  Switches are ON by default (opt-out); a deactivated person's switches show OFF and inert.
+- Add someone: name + email -> press_access_people; on success the grid refreshes and the new
+  person appears with every family tool ON. The (constant) family sign-in link is shown
+  permanently with Copy.
+- Opt-out writes: switch OFF -> upsert grant {active:false, revoked_at:now}; switch ON -> upsert
+  {active:true, revoked_at:null}. No row = granted.
+- BUG FIX (access.html sign-in loop): verifyCode returns {session,status,code}; the code now saves
+  r.SESSION (not the wrapper), so a reload re-reads a valid session instead of looping. Codes now
+  accepted at 6–10 digits (matches the shared family-gate), not only 6.
+
+MIGRATION (db/20260924_press_access_optout.sql — AUTHORED, apply by Cowork)
+--------------------------------------------------------------------------
+- Redefines press_access_has(page): active person AND page is a gated family app
+  (press_access_apps.gated) AND NOT EXISTS a grant row (email,page) with active=false.
+- Ensures remit.html + perth.html rows exist in press_access_apps with gated=true (idempotent).
+- Security: re-asserts `revoke execute ... from public, anon` then `grant ... to authenticated`
+  (lessons.md rule). RLS/policies/other helpers/the auth hook are untouched.
+
+PLAYWRIGHT (UI half, hermetic — stateful GoTrue+PostgREST mock): test/access-admin.spec.mjs
+-------------------------------------------------------------------------------------------
+  ✓ admin sign-in survives a reload (wrapper bug fix) and accepts a 6–10 digit code
+  ✓ People are cards with a switch per family tool, ON by default; "gate an app" section is gone
+  ✓ adding a person shows their card with every family tool ON
+  ✓ opting a person out of a tool writes an active=false grant that persists across a reload
+Regression: test/access.spec.mjs (passkey belt + admin sign-in reach) still 3/3 green.
+Full suite: node 65/0/0 · Playwright 56/0. Screenshot: wings-polish-slice-4-access-admin.png (no P0).
+
+RESUME TASKS (after Cowork applies the migration)
+-------------------------------------------------
+1. Verify the live function body / semantics via read-only MCP:
+   - active person, no grant rows: press_access_has('remit.html') AND ('perth.html') = true
+   - same person + an active=false grant on remit.html: = false
+   - a deactivated person (people.active=false): = false for both
+2. Advisor check: anon_security_definer_function_executable must NOT list press_access_has.
+3. T6 (tenants-check): remit.html + perth.html still >= 1 active grant each (Mark's rows untouched).
+4. Then finish the close (see HANDOFF close-out manifest).

@@ -77,6 +77,22 @@ input:focus{outline:2px solid var(--brass);outline-offset:1px}
 code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;color:var(--brass)}
 .linkrow{display:flex;gap:8px;margin-top:12px}
 .linkrow input{font-size:13px}
+/* People — one card per person, a switch per family tool. */
+.pcard{margin-top:14px;border:1px solid var(--brass-faint);border-radius:10px;padding:14px 14px 6px;background:rgba(201,162,109,.03)}
+.pcard.off{opacity:.55}
+.phd{display:flex;align-items:flex-start;gap:12px;justify-content:space-between;padding-bottom:10px;border-bottom:1px dotted var(--brass-faint)}
+.pnm{min-width:0}
+.pnm b{font-weight:400;font-size:15.5px}
+.pnm em{display:block;font-style:normal;font-size:11.5px;color:var(--faint);margin-top:3px}
+.pbtn{flex:none;background:transparent;border:1px solid var(--brass-dim);color:var(--brass);border-radius:6px;
+  font:500 10px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;padding:8px 10px;cursor:pointer;white-space:nowrap}
+.pbtn:hover{border-color:var(--brass)}
+.pbtn[disabled]{opacity:.6;cursor:progress}
+.pgrid{padding-top:4px}
+.prow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px dotted var(--brass-faint)}
+.prow:last-child{border-bottom:0}
+.pl{font-size:14px;color:var(--ink)}
+.sw2.dis{opacity:.4;cursor:not-allowed}
 </style></head><body>
 <main class="app" id="app"><div class="center"><p>Loading…</p></div></main>
 
@@ -111,7 +127,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
       '<h1>Access admin</h1><p>Sign in with your admin email to manage who can open which tool.</p>'+
       '<form id="ef"><label for="em">Admin email</label><input id="em" type="email" inputmode="email" autocomplete="email" autofocus placeholder="you@example.com">'+
       '<button class="btn" id="send" type="submit">Send me a code</button></form>'+
-      '<form id="cf" hidden><label for="cd">6-digit code</label><input id="cd" type="text" inputmode="numeric" maxlength="6" placeholder="••••••" style="letter-spacing:.4em;text-align:center">'+
+      '<form id="cf" hidden><label for="cd">Code from your email</label><input id="cd" type="text" inputmode="numeric" maxlength="10" placeholder="••••••" style="letter-spacing:.4em;text-align:center">'+
       '<button class="btn" id="ver" type="submit">Verify &amp; sign in</button></form>'+
       '<div class="msg '+(note&&note.cls||'')+'" id="m">'+(note&&note.text||'')+'</div>'+
       '<a class="back" href="index.html?view=personal" style="margin-top:16px">← the private wing</a></div>');
@@ -125,11 +141,14 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
     });
     cf.addEventListener('submit', async function(e){ e.preventDefault();
       var code=(document.getElementById('cd').value||'').trim();
-      if(!/^\d{6}$/.test(code)){ m.className='msg err'; m.textContent='The code is 6 digits.'; return; }
+      // 6–10 digits, matching the shared family-gate (GoTrue OTP length is configurable).
+      if(!/^\d{6,10}$/.test(code)){ m.className='msg err'; m.textContent='The code is 6–10 digits.'; return; }
       document.getElementById('ver').disabled=true; m.className='msg'; m.textContent='Signing in…';
-      var s; try{ s=await G.verifyCode(email, code); }catch(_){ s=null; }
-      if(!s){ document.getElementById('ver').disabled=false; m.className='msg err'; m.textContent='That didn’t work — check the code.'; return; }
-      G.saveSession(s); boot();
+      var r; try{ r=await G.verifyCode(email, code); }catch(_){ r=null; }
+      // BUG FIX: verifyCode returns { session, status, code } — persist r.SESSION, not the wrapper,
+      // or the reload re-reads a bad record and the admin sign-in loops.
+      if(!r || !r.session){ document.getElementById('ver').disabled=false; m.className='msg err'; m.textContent='That didn’t work — check the code.'; return; }
+      G.saveSession(r.session); boot();
     });
   }
 
@@ -170,9 +189,12 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
     apps.forEach(function(a){ if(a.gated) set[a.page]=true; });
     return Object.keys(set).sort();
   }
-  function grantOn(grants, email, page){
+  // OPT-OUT model: everyone active is granted every gated family app BY DEFAULT. The only thing a
+  // grant row records is a REVOCATION — active=false. So a person can open a page unless a row says
+  // otherwise; the switch is ON unless an active=false row exists (matching press_access_has).
+  function isRevoked(grants, email, page){
     var g = grants.find(function(x){ return x.email===email && x.page===page; });
-    return !!(g && g.active);
+    return !!(g && g.active===false);
   }
   function lastSeen(ts){
     if(!ts) return 'never signed in';
@@ -182,61 +204,64 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
   }
 
   function render(session, people, apps, grants, pages){
-    var cols = gatedPages(apps, pages);
+    // the family-wing apps = spaces.json family list UNION press_access_apps where gated.
+    var famApps = gatedPages(apps, pages);
     var head = '<a class="back" href="index.html?view=personal">← the private wing</a>'+
       '<div class="wing">Private wing · admin</div>'+
       '<div class="hd"><div class="r"><span class="who">Access</span><span class="mo">'+people.length+' '+(people.length===1?'person':'people')+'</span></div>'+
-      '<div class="sub">Who can open which tool</div></div>';
+      '<div class="sub">Who can open the family tools</div></div>';
 
-    // 1) the grid
-    var grid = '<section class="zone"><div class="zone-hd"><h2>Who gets what</h2><span class="tt"><em>tap to grant or revoke</em></span></div>';
-    if(!cols.length){ grid += '<p class="note" style="margin-top:10px">No gated tools yet. Gate one below and it becomes a column here.</p>'; }
+    // 1) People — one card per person, a switch per family tool (everyone is ON by default), plus
+    // Deactivate. There is no separate "which tools are gated" screen: the tools shown here ARE the
+    // gated family tools, and a new one is granted to everyone the moment it is gated.
+    var grid = '<section class="zone"><div class="zone-hd"><h2>People</h2><span class="tt"><em>on = can open · tap to opt out</em></span></div>';
+    if(!people.length){ grid += '<p class="note" style="margin-top:10px">No one added yet — add someone below.</p>'; }
+    else if(!famApps.length){ grid += '<p class="note" style="margin-top:10px">No family tools are gated yet, so there is nothing to switch. Gate a page from <code>spaces.json</code> (or its app row) and it appears for everyone here.</p>'; }
     else{
-      grid += '<table class="grid"><thead><tr><th>Person</th>'+cols.map(function(p){ return '<th>'+esc(titleFor(p,pages))+'</th>'; }).join('')+'</tr></thead><tbody>';
       grid += people.map(function(pn){
-        var cells = cols.map(function(pg){
-          var on = grantOn(grants, pn.email, pg);
-          return '<td><i class="sw2'+(on?' on':'')+'" role="switch" aria-checked="'+on+'" tabindex="0" data-grant="'+esc(pn.email)+'|'+esc(pg)+'"></i></td>';
+        var off = !pn.active;
+        var switches = famApps.map(function(pg){
+          var on = !isRevoked(grants, pn.email, pg);
+          // a deactivated person can open nothing (press_access_has requires people.active), so
+          // their switches are shown OFF and inert until they are reactivated.
+          var shown = off ? false : on;
+          var attrs = off ? ' aria-disabled="true"' : ' tabindex="0" data-grant="'+esc(pn.email)+'|'+esc(pg)+'"';
+          return '<div class="prow"><span class="pl">'+esc(titleFor(pg,pages))+'</span>'+
+            '<i class="sw2'+(shown?' on':'')+(off?' dis':'')+'" role="switch" aria-checked="'+shown+'"'+attrs+'></i></div>';
         }).join('');
-        return '<tr><td class="p"><b>'+esc(pn.name||pn.email)+'</b><em>'+(pn.is_admin?'admin · ':'')+esc(lastSeen(pn.last_seen_at))+'</em></td>'+cells+'</tr>';
+        return '<div class="pcard'+(off?' off':'')+'">'+
+          '<div class="phd"><span class="pnm"><b>'+esc(pn.name||pn.email)+'</b>'+
+            '<em>'+(pn.is_admin?'admin · ':'')+esc(lastSeen(pn.last_seen_at))+(off?' · deactivated':'')+'</em></span>'+
+            '<button class="pbtn" data-person="'+esc(pn.email)+'" data-next="'+(off?'true':'false')+'">'+(off?'Reactivate':'Deactivate')+'</button></div>'+
+          '<div class="pgrid">'+switches+'</div></div>';
       }).join('');
-      grid += '</tbody></table>';
     }
     grid += '</section>';
 
-    // 2) gate an app — every page in pages.json with a switch
-    var allPages = Object.keys(pages).sort();
-    var appMap = {}; apps.forEach(function(a){ appMap[a.page]=a; });
-    var gate = '<section class="zone"><div class="zone-hd"><h2>Which tools are gated</h2></div>';
-    gate += allPages.map(function(pg){
-      var bySpaces = GATED_BY_SPACES.indexOf(pg)!==-1;
-      var on = bySpaces || !!(appMap[pg]&&appMap[pg].gated);
-      var sub = bySpaces ? 'Family Wing — set in spaces.json' : (on ? 'gated' : 'public');
-      var ctrl = bySpaces ? '<span class="lock">locked on</span>'
-        : '<i class="sw2'+(on?' on':'')+'" role="switch" aria-checked="'+on+'" tabindex="0" data-app="'+esc(pg)+'"></i>';
-      return '<div class="arow"><span class="nm"><b>'+esc(titleFor(pg,pages))+'</b><em>'+esc(sub)+'</em></span>'+ctrl+'</div>';
-    }).join('');
-    gate += '<p class="note" style="margin-top:12px">Tools set in <code>spaces.json</code> can’t be un-gated here — the two sources only ever add protection, never remove it.</p></section>';
-
-    // 3) add someone
+    // 2) add someone — the sign-in link is the SAME for everyone, so it is shown permanently.
+    var signInLink = location.origin + location.pathname.replace(/access\.html$/, '') + 'index.html?view=family';
     var add = '<section class="zone"><div class="zone-hd"><h2>Add someone</h2></div>'+
       '<label for="an">Name</label><input id="an" type="text" placeholder="Their name">'+
       '<label for="ae">Email</label><input id="ae" type="email" inputmode="email" placeholder="them@example.com">'+
-      '<p class="note" style="margin-top:10px">Adding them lets that address request a code. Nothing is emailed from here — you’ll get a link to send them however you like.</p>'+
-      '<button class="btn ghost" id="addBtn">Add &amp; get their link</button>'+
-      '<div class="msg" id="addMsg"></div><div id="linkWrap"></div></section>';
+      '<p class="note" style="margin-top:10px">Adding them lets that address request a code, and grants every family tool by default. Opt them out of any tool from their card above.</p>'+
+      '<button class="btn ghost" id="addBtn">Add &amp; grant every tool</button>'+
+      '<div class="msg" id="addMsg"></div>'+
+      '<label style="margin-top:16px">Sign-in link — send to anyone you add</label>'+
+      '<div class="linkrow"><input id="lk" readonly value="'+esc(signInLink)+'"><button class="btn ghost" id="cp" style="margin:0;width:auto;white-space:nowrap">Copy</button></div>'+
+      '</section>';
 
-    h(head + grid + gate + add);
+    h(head + grid + add);
     wire(session, people, apps, grants, pages);
   }
 
   function wire(session, people, apps, grants, pages){
-    // grid: grant / revoke — upsert a row {email,page,active}
+    // per-person / per-app opt-out — switch OFF writes an active=false grant (a revocation),
+    // switch ON writes active=true (or clears the revocation). No row at all = granted by default.
     Array.prototype.forEach.call(document.querySelectorAll('[data-grant]'), function(sw){
       var toggle = async function(){
         if(sw.classList.contains('busy')) return;
         var parts = sw.getAttribute('data-grant').split('|'), email=parts[0], page=parts[1];
-        var next = !sw.classList.contains('on');
+        var next = !sw.classList.contains('on');   // next === true means GRANTED
         sw.classList.add('busy');
         try{
           await rest('/press_access_grants?on_conflict=email,page', { method:'POST',
@@ -250,22 +275,21 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
       sw.addEventListener('keydown', function(e){ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); toggle(); } });
     });
 
-    // gate an app — upsert {page,gated,label}
-    Array.prototype.forEach.call(document.querySelectorAll('[data-app]'), function(sw){
-      var toggle = async function(){
-        if(sw.classList.contains('busy')) return;
-        var page = sw.getAttribute('data-app'), next=!sw.classList.contains('on');
-        sw.classList.add('busy');
+    // Deactivate / Reactivate a person — flip press_access_people.active (never delete). A
+    // deactivated person keeps their grant rows but can open nothing (press_access_has needs
+    // people.active), so we just re-render the grid from fresh state.
+    Array.prototype.forEach.call(document.querySelectorAll('[data-person]'), function(btn){
+      btn.addEventListener('click', async function(){
+        if(btn.disabled) return;
+        var email = btn.getAttribute('data-person'), next = btn.getAttribute('data-next')==='true';
+        btn.disabled = true; var was = btn.textContent; btn.textContent = next?'Reactivating…':'Deactivating…';
         try{
-          await rest('/press_access_apps?on_conflict=page', { method:'POST',
+          await rest('/press_access_people?on_conflict=email', { method:'POST',
             headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
-            body: JSON.stringify({ page:page, gated:next, label: titleFor(page,pages) }) });
-          sw.classList.toggle('on', next); sw.setAttribute('aria-checked', next);
-        }catch(e){}
-        sw.classList.remove('busy');
-      };
-      sw.addEventListener('click', toggle);
-      sw.addEventListener('keydown', function(e){ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); toggle(); } });
+            body: JSON.stringify({ email:email, active:next }) });
+          loadAdmin(session);   // re-fetch + re-render so switches reflect the new active state
+        }catch(e){ btn.disabled=false; btn.textContent=was; }
+      });
     });
 
     // add a person
@@ -280,15 +304,15 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
         await rest('/press_access_people?on_conflict=email', { method:'POST',
           headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
           body: JSON.stringify({ email:email, name:name||null, active:true }) });
-        m.className='msg ok'; m.textContent=(name||email)+' added. Send them the link below.';
-        var url = location.origin + location.pathname.replace(/access\.html$/, '') ;
-        var link = url + 'index.html?view=family';
-        document.getElementById('linkWrap').innerHTML =
-          '<div class="linkrow"><input id="lk" readonly value="'+esc(link)+'"><button class="btn ghost" id="cp" style="margin:0;width:auto;white-space:nowrap">Copy</button></div>';
-        document.getElementById('cp').addEventListener('click', function(){ var i=document.getElementById('lk'); i.select(); try{ document.execCommand('copy'); this.textContent='Copied'; }catch(_){}});
-      }catch(e){ m.className='msg err'; m.textContent=(e.body&&e.body.message)||'Couldn’t add — are you signed in as an admin?'; }
-      addBtn.disabled=false;
+        // re-render from fresh state: the new person appears as a card with every family tool ON
+        // (opt-out default). The sign-in link is a permanent part of the Add section.
+        loadAdmin(session);
+      }catch(e){ addBtn.disabled=false; m.className='msg err'; m.textContent=(e.body&&e.body.message)||'Couldn’t add — are you signed in as an admin?'; }
     });
+
+    // copy the (constant) sign-in link
+    var cp = document.getElementById('cp');
+    if(cp) cp.addEventListener('click', function(){ var i=document.getElementById('lk'); i.select(); try{ document.execCommand('copy'); this.textContent='Copied'; }catch(_){}});
   }
 
   // ── private-wing passkey belt (defense-in-depth over the admin OTP + is_admin RLS) ──
