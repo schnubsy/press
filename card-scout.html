@@ -51,7 +51,11 @@
   .brand h1{font-size:20px;margin:0;letter-spacing:-.02em}
   .brand .logo{width:26px;height:26px;flex:0 0 auto}
   #sync{margin-left:auto;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--chip);color:var(--muted)}
-  #sync.ok{color:var(--hit)} #sync.err{color:var(--danger)} #sync.busy{color:var(--accentB)} #sync.locked{color:var(--muted)}
+  /* Slice 4 (Eye P1): the Synced/Saved state is a FILLED green pill (its own tinted background),
+     distinct from the app's plain accent text; badge-hit-fg over the .18 tint clears WCAG 4.5:1 in
+     both themes (light 5.90:1, dark 7.28:1 — verified by blending, docs/evidence/truthup-slice-4). */
+  #sync.ok{color:var(--badge-hit-fg);background:rgba(15,122,77,.18)}
+  #sync.err{color:var(--danger)} #sync.busy{color:var(--accentB)} #sync.locked{color:var(--muted)}
   /* back chip to the marquee's Private Wing */
   .tw-back{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 10px 6px 4px;margin-bottom:2px}
   .tw-back:hover{color:var(--ink)}
@@ -111,7 +115,9 @@
   .badge.warn{background:rgba(179,38,30,.12);color:var(--danger)}
   .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;background:#9aa4b1}
   .dot.ok{background:var(--hit)} .dot.err{background:var(--danger)} .dot.blocked{background:#c58a1e}
-  .dot.alerted{background:var(--hit);box-shadow:0 0 0 3px rgba(15,122,77,.18);margin-right:6px}
+  /* Slice 4 (Eye P1): the alerted marker is a HOLLOW hairline ring, not a filled dot, so it never
+     reads as a live/status dot (which are solid fills). Carries a tooltip + aria-label "Alerted". */
+  .dot.alerted{box-sizing:border-box;background:transparent;border:1.5px solid var(--hit);box-shadow:none;margin-right:6px}
   /* toggle — 52x44 hit area (iOS min), pill drawn 48x28 centred */
   .sw{position:relative;width:52px;height:44px;flex:0 0 auto;border:none;background:transparent;cursor:pointer;padding:0}
   .sw::before{content:"";position:absolute;top:50%;left:0;transform:translateY(-50%);width:48px;height:28px;border-radius:999px;background:#c7ccd3;transition:background .15s}
@@ -1070,7 +1076,7 @@
     var badgeClass=isHit?"hit":(d.verdict==="near"?"near":"");
     var badgeText=(p!=null?p+"% off":"Price unknown");
     return '<div class="card"><div class="row"><span class="badge '+badgeClass+'">'+esc(badgeText)+'</span>'
-      +(isHit?'<span class="dot alerted" role="img" aria-label="alerted"></span>':"")
+      +(isHit?'<span class="dot alerted" role="img" title="Alerted" aria-label="Alerted"></span>':"")
       +'<div class="grow"><div class="title">'+(isNew?'<span class="newtag">NEW</span>':"")+esc(d.brand||"Gift card")+'</div>'
       +'<div class="sub">'+sub+'</div></div></div>'
       +'<div class="row" style="margin-top:10px">'
@@ -1349,7 +1355,7 @@
     var dot=st==="live"?"ok":(st==="stale"?"err":"");
     var label=st==="live"?"Live":(st==="stale"?"Stale":"Coming soon");
     var lbcls=st==="live"?" hit":(st==="stale"?" warn":"");
-    var checked=x.last_checked?relTime(x.last_checked):"never";
+    var checked=x.last_checked?("checked "+relTime(x.last_checked)):"Not yet checked";
     var laneStr=[x.lane||"",x.cadence||""].filter(Boolean).join(" · ")+(x.bookmark?" · bookmark":"");
     var reason=st==="coming" ? (x.dormant_reason||"not wired up yet — can't be turned on")
       : (x.blocked ? "needs the browser lane — "+(x.browser_only_reason||x.last_error||"blocked to a server fetch")
@@ -1358,7 +1364,7 @@
     return '<div class="card'+(st==="coming"?" coming":"")+'"><div class="row">'
       +'<span class="dot '+dot+'" title="'+esc(label)+'"></span>'
       +'<div class="grow"><div class="title">'+esc(s.title)+' <span class="badge'+lbcls+'">'+label+'</span></div>'
-      +'<div class="sub">'+esc(laneStr)+' · checked '+esc(checked)+'</div>'
+      +'<div class="sub">'+esc(laneStr)+' · '+esc(checked)+'</div>'
       +(reason?'<div class="sub">'+esc(reason)+'</div>':"")+'</div>'
       +'<button class="sw" role="switch" aria-checked="'+on+'" aria-pressed="'+on+'" '
         +(disabled?'disabled aria-disabled="true" title="Coming soon — nothing checks this yet" ':'')
@@ -1491,13 +1497,16 @@
   }
   // The sale-watch terms (press_tasks category='watch') as removable chips + an add row (cap 10).
   function watchTerms(){ return state.watch||[]; }
-  // Slice 4d: "Checked 3×/day · last <time> · <N> matches in 30 days" from the watch row's extras
-  // (stamped by the tick). last_checked → relative time or "never".
+  // Slice 4d: watch status from the row's extras (stamped by the tick). Eye P1/P2 (truth-up Slice 4):
+  // never-checked reads "Not yet checked" (not "last never"); and the "0 matches in 30 days" clause is
+  // dropped when there are none, because the line below already shows "No matches yet" (no redundancy).
   function watchStatusLine(w){
     var e=w.extras||{};
-    var last=e.last_checked?relTime(e.last_checked):"never";
     var n=Number(e.matches_30d)||0;
-    return "Checked 3×/day · last "+esc(last)+" · "+n+" match"+(n===1?"":"es")+" in 30 days";
+    if(!e.last_checked) return "Not yet checked · checks 3×/day";
+    var s="Checked 3×/day · last "+esc(relTime(e.last_checked));
+    if(n>0) s+=" · "+n+" match"+(n===1?"":"es")+" in 30 days";
+    return s;
   }
   function renderWatchList(){
     var host=el("watchlist"); if(!host) return;
