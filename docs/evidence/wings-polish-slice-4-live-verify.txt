@@ -1,0 +1,36 @@
+arc/wings-polish — SLICE 4 LIVE VERIFICATION (post-DDL, on resume)
+==================================================================
+Date: 2026-09-24. Cowork applied db/20260924_press_access_optout.sql to eepjhpyziczrxvirczio
+(migration press_access_optout), byte-for-byte the committed body, ~09:16 CT.
+
+COWORK-VERIFIED (reported on resume)
+------------------------------------
+- press_access_has now carries the opt-out body.
+- Mark -> remit.html true, perth.html true, fsa.html false; unknown email -> false.
+- anon execute = false; authenticated execute = true.
+- advisor: press_access_has under authenticated_security_definer only (intended gate RPC),
+  NOT under anon_security_definer. Existing rows untouched (Mark active admin; 2 active grants
+  remit/perth; press_access_apps remit+perth gated=true).
+
+CODE-VERIFIED (this session, read-only via Supabase MCP; probe rows rolled back, 0 persisted)
+--------------------------------------------------------------------------------------------
+- T6 active grants per family page:  perth.html = 1,  remit.html = 1   (>= 1 each ✓)
+- opt-out default (active person, gated page, NO grant row):
+    press_access_has('perth.html') = TRUE  ✓
+- revoked row (active person with an active=false grant on remit.html):
+    press_access_has('remit.html') = FALSE  ✓
+- deactivated person (people.active=false):
+    press_access_has('perth.html') = FALSE, press_access_has('remit.html') = FALSE  ✓
+- probe_rows_remaining after both rolled-back simulations = 0 (no residue).
+
+ADVISOR (security, post-apply)
+------------------------------
+- authenticated_security_definer_function_executable (WARN, intended): press_access_has,
+  press_access_is_admin, press_access_touch — the gate/admin RPCs, as designed.
+- press_access_has does NOT appear under any anon lint (no enumeration oracle).
+- Unrelated / pre-existing (NOT introduced by this arc): rls_enabled_no_policy on
+  press_capture_seen / press_capture_state; security_definer_view on press_agent_*_public views;
+  auth_leaked_password_protection. Out of scope for wings-polish.
+
+CONCLUSION: slice 4 opt-out semantics are live and correct. UI half already green hermetically
+(test/access-admin.spec.mjs). Slice 4 DONE.
