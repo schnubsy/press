@@ -17,6 +17,10 @@
     --bg:#f6f7f9; --card:#ffffff; --ink:#161a22; --muted:#5b6470; --line:#e3e6ea;
     --accentA:#149b6b; --accentB:#b07d2a; --hit:#0f7a4d; --near:#8a6d1f; --danger:#b3261e;
     --chip:#eef1f4; --shadow:0 1px 2px rgba(16,20,30,.06),0 2px 8px rgba(16,20,30,.05);
+    --band:rgba(20,155,107,.08); /* Slice 5: subtle accent band behind each section heading */
+    /* Slice 6 (Eye P0): badge PILL text must clear WCAG 4.5:1 on its pale tint in light mode — the
+       verdict-at-a-glance signal. Darker than --hit/--near (which stay for dots/labels on plain bg). */
+    --badge-hit-fg:#0f5c34; --badge-near-fg:#6b4e12;
     --tap:44px;
     /* live-measured sticky offsets (JS: --stick = header height; --stick2 = Rules search bar) so
        jump-to-category anchors land BELOW the sticky stack, not buried under it. Seeded generously. */
@@ -26,6 +30,9 @@
     :root:not([data-theme="light"]){
       --bg:#0f1216; --card:#171b21; --ink:#eef1f5; --muted:#9aa4b1; --line:#272d36;
       --chip:#20262e; --shadow:0 1px 2px rgba(0,0,0,.4);
+      --band:rgba(79,195,138,.12); /* Slice 5: accent band, dark token */
+      /* Slice 6: in dark mode the tint is dark, so the BRIGHT accent text is the high-contrast choice. */
+      --badge-hit-fg:#4fc38a; --badge-near-fg:#e0bd8f;
       --accentA:#4fc38a; --accentB:#e0bd8f; --hit:#4fc38a; --near:#e0bd8f;
     }
   }
@@ -65,9 +72,11 @@
     background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:8px 12px;white-space:nowrap;min-height:36px;display:inline-flex;align-items:center}
   .qchip:hover{border-color:var(--accentB)}
   /* consistent section heading — full-width rule above, count, and a Top link */
-  .grouphead{display:flex;align-items:baseline;gap:10px;border-top:2px solid var(--line);
-    padding-top:18px;margin:36px 0 14px;scroll-margin-top:calc(var(--stick) + var(--stick2) + 16px)}
-  .grouphead:first-child{border-top:none;padding-top:0;margin-top:8px}
+  /* Slice 5: a subtle full-width accent band behind each heading; 48px gap from the previous section.
+     scroll-margin-top is unchanged so every jump still lands the heading below the sticky stack. */
+  .grouphead{display:flex;align-items:baseline;gap:10px;background:var(--band);border-radius:12px;
+    padding:10px 14px;margin:48px 0 14px;scroll-margin-top:calc(var(--stick) + var(--stick2) + 16px)}
+  .grouphead:first-child{margin-top:8px}
   .grouphead h2{font-size:24px;font-weight:800;letter-spacing:-.015em;margin:0;flex:1;min-width:0}
   .grouphead .gcount{display:inline-block;font-size:14px;font-weight:600;color:var(--muted);background:var(--chip);border-radius:999px;padding:1px 9px;margin-left:6px;vertical-align:middle}
   .grouphead .toplink{font-size:13px;font-weight:600;color:var(--accentA);text-decoration:none;flex:0 0 auto}
@@ -97,11 +106,12 @@
   .title{font-weight:600}
   .sub{font-size:13px;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}
   .badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--chip);color:var(--muted);margin-right:5px}
-  .badge.hit{background:rgba(15,122,77,.14);color:var(--hit)}
-  .badge.near{background:rgba(138,109,31,.16);color:var(--near)}
+  .badge.hit{background:rgba(15,122,77,.18);color:var(--badge-hit-fg)}
+  .badge.near{background:rgba(138,109,31,.22);color:var(--badge-near-fg)}
   .badge.warn{background:rgba(179,38,30,.12);color:var(--danger)}
   .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;background:#9aa4b1}
   .dot.ok{background:var(--hit)} .dot.err{background:var(--danger)} .dot.blocked{background:#c58a1e}
+  .dot.alerted{background:var(--hit);box-shadow:0 0 0 3px rgba(15,122,77,.18);margin-right:6px}
   /* toggle — 52x44 hit area (iOS min), pill drawn 48x28 centred */
   .sw{position:relative;width:52px;height:44px;flex:0 0 auto;border:none;background:transparent;cursor:pointer;padding:0}
   .sw::before{content:"";position:absolute;top:50%;left:0;transform:translateY(-50%);width:48px;height:28px;border-radius:999px;background:#c7ccd3;transition:background .15s}
@@ -173,11 +183,28 @@
   .tabbadge[hidden]{display:none} /* class display would otherwise override the [hidden] UA rule */
   nav button[aria-selected="true"] .tabbadge{background:#fff;color:var(--accentA)}
   .newtag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;padding:2px 6px;border-radius:999px;background:var(--danger);color:#fff;margin-right:6px}
+  /* Slice 4d: sale-watch rows show a per-term status line + last match, one per line. */
+  .watchrow{padding:10px 0;border-top:1px solid var(--line)} .watchrow:first-child{border-top:none;padding-top:2px}
+  .watchrow .fchip{align-self:flex-start;flex:0 0 auto}
   /* per-rule category segmented control (Slice 4) */
-  .seg{display:inline-flex;flex-wrap:wrap;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
-  .segbtn{border:none;border-right:1px solid var(--line);background:var(--card);color:var(--muted);font-size:13px;font-weight:600;padding:8px 10px;min-height:40px;cursor:pointer}
-  .segbtn:last-child{border-right:none}
-  .segbtn.on{color:#fff;background:linear-gradient(135deg,var(--accentA),var(--accentB))}
+  /* Slice 5: rule cards compressed vertically — tighter padding, gaps and the category picker moved
+     off the card into a ⋯ overflow menu (was a 4-button row). */
+  #rules-list .card{padding:9px 12px;margin-bottom:7px}
+  #rules-list .ctrls{margin-top:8px;gap:8px 14px}
+  #rules-list .ctrl-lab{font-size:12px}
+  /* ⋯ overflow menu (Move to…) */
+  .rulehead-actions{position:relative;flex:0 0 auto}
+  .ovf{width:44px;height:44px;border:1px solid var(--line);border-radius:10px;background:var(--card);
+    color:var(--muted);font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .ovf[aria-expanded="true"]{color:var(--ink);border-color:var(--accentA)}
+  .ovfmenu{position:absolute;right:0;top:48px;z-index:20;min-width:180px;background:var(--card);
+    border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:6px}
+  .ovfmenu-label{font-size:12px;color:var(--muted);font-weight:700;padding:6px 10px 4px}
+  .ovfmenu button{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;border:none;
+    background:none;color:var(--ink);font-size:15px;font-weight:600;text-align:left;padding:0 10px;border-radius:8px;cursor:pointer}
+  .ovfmenu button:hover,.ovfmenu button:focus{background:var(--chip);outline:none}
+  .ovfmenu button::before{content:"";width:18px;flex:0 0 auto;color:var(--accentA);font-weight:800}
+  .ovfmenu button[aria-checked="true"]::before{content:"✓"}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -972,11 +999,16 @@
         if(normBrand(rr.title)===b && rr.extras && KNOWN_GROUP[rr.extras.group]) return rr.extras.group; } }
     return "other";
   }
+  // Slice 2: the honest net cash you pay for the face value — "$40 for $50". net_cost folds in any
+  // bonus/stack saving (a free $10 HEB card on a $50 Starbucks buy reads $40 for $50), falling back to
+  // the price when net_cost is absent. An unpriced row returns "" — the badge already says "Price
+  // unknown", so there is no price line to show.
+  function netForFace(d){ return (d.extras&&d.extras.net_cost!=null)?d.extras.net_cost:d.price; }
   function priceLine(d){
-    if(d.price!=null&&d.face_value!=null) return "$"+d.price+" for $"+d.face_value;
-    if(d.price!=null) return "$"+d.price;
-    if(d.extras&&d.extras.unpriced) return "worth a look — price not parsed";
-    return "gift card";
+    var face=d.face_value, net=netForFace(d);
+    if(net!=null&&face!=null) return "$"+net+" for $"+face;
+    if(net!=null) return "$"+net;
+    return "";
   }
   // ---------- NEW marker + relative time (Slice 2) ----------
   function dealTime(d){ var t=new Date(d&&d.created_at||0).getTime(); return isNaN(t)?0:t; }
@@ -1011,7 +1043,7 @@
       if(e.below_min_denom){ var dl=ruleMinDenomLabel(d); return "Below your "+((dl&&dl!=="Any")?dl:"$25")+" minimum"; }
       if(e.unpriced) return "Needs a look — no price";
       if(e.suspicious) return "Unusually high — double-check";
-      return "Near miss";
+      return "Just missed your target"; // Slice 2: no "Hit"/"Near" copy on the Feed
     }
     return "";
   }
@@ -1022,16 +1054,23 @@
     var retailer=d.extras&&d.extras.retailer;
     var covers=d.extras&&d.extras.container_for; // Slice 5: "covers Total Wine"
     var reason=nearReason(d); // Slice 7
-    var sub=priceLine(d)
-      +(retailer?' · at '+esc(retailer):"")
-      +(covers&&covers.length?' · covers '+esc(covers.slice(0,3).join(", ")):"")
-      +(reason?' · '+esc(reason):"")
-      +(d.source?' · '+esc(String(d.source).replace(/^src-/,"")):"")
-      +(rt?' · '+esc(rt):"")
-      +(d.expiry?' · exp '+esc(d.expiry):"");
+    // Slice 2: build the sub from the parts that exist, joined by ' · ' — no leading separator when
+    // the price line is empty (an unpriced card).
+    var parts=[];
+    var pl=priceLine(d); if(pl) parts.push(pl);
+    if(retailer) parts.push('at '+esc(retailer));
+    if(covers&&covers.length) parts.push('covers '+esc(covers.slice(0,3).join(", ")));
+    if(reason) parts.push(esc(reason));
+    if(d.source) parts.push(esc(String(d.source).replace(/^src-/,"")));
+    if(rt) parts.push(esc(rt));
+    if(d.expiry) parts.push('exp '+esc(d.expiry));
+    var sub=parts.join(' · ');
+    // Slice 2: the badge is the real discount ("20% off"), never the words HIT/NEAR. An unpriced deal
+    // reads "Price unknown". A hit carries a small subtle alerted dot instead of a HIT label.
     var badgeClass=isHit?"hit":(d.verdict==="near"?"near":"");
-    var badgeText=(p!=null?p+"% off":(isHit?"HIT":d.verdict==="near"?"NEAR":"—"));
+    var badgeText=(p!=null?p+"% off":"Price unknown");
     return '<div class="card"><div class="row"><span class="badge '+badgeClass+'">'+esc(badgeText)+'</span>'
+      +(isHit?'<span class="dot alerted" role="img" aria-label="alerted"></span>':"")
       +'<div class="grow"><div class="title">'+(isNew?'<span class="newtag">NEW</span>':"")+esc(d.brand||"Gift card")+'</div>'
       +'<div class="sub">'+sub+'</div></div></div>'
       +'<div class="row" style="margin-top:10px">'
@@ -1374,14 +1413,22 @@
     for(var j=0;j<toks.length;j++){ if(RETAIL_KW.indexOf(toks[j])>=0) return "retail"; }
     return "other";
   }
-  // The 4-way category control shown on every rule row so any brand can be recategorized (Slice 4).
-  function groupSeg(r){
+  // Slice 5: the category picker moved off the card into a ⋯ overflow menu ("Move to…"). The menu is
+  // a radio group of the four categories with the current one checked; picking one writes extras.group
+  // exactly as before (the same data-grp/data-grpval handler). Rendered hidden; the ⋯ button toggles it.
+  function overflowMenu(r){
     var cur=(r.extras&&r.extras.group)||"other";
-    return '<div class="seg" role="group" aria-label="Category for '+esc(r.title)+'">'
-      +RULE_GROUPS.map(function(o){
-        var on=cur===o[0];
-        return '<button class="segbtn'+(on?" on":"")+'" data-grp="'+esc(r.item_id)+'" data-grpval="'+o[0]+'" aria-pressed="'+on+'">'+esc(o[0]==="retailer"?"Warehouse":o[1])+'</button>';
-      }).join("")+'</div>';
+    var label=esc(r.title);
+    var items=RULE_GROUPS.map(function(o){
+      var on=cur===o[0];
+      return '<button role="menuitemradio" aria-checked="'+on+'" data-grp="'+esc(r.item_id)+'" data-grpval="'+o[0]+'">'
+        +esc(o[0]==="retailer"?"Warehouse":o[1])+'</button>';
+    }).join("");
+    return '<div class="rulehead-actions">'
+      +'<button class="ovf" data-ovf="'+esc(r.item_id)+'" aria-haspopup="menu" aria-expanded="false" aria-label="Move '+label+' to a category">⋯</button>'
+      +'<div class="ovfmenu" id="ovfmenu-'+esc(r.item_id)+'" role="menu" aria-label="Move '+label+' to a category" hidden>'
+      +'<div class="ovfmenu-label">Move to…</div>'+items+'</div>'
+      +'</div>';
   }
   function denomVal(x){ var v=x&&x.min_denom; return (v==null||v==="")?25:Number(v); }
   function denomLabel(x){ var n=denomVal(x); return (!isFinite(n)||n<=0)?"Any":"$"+n; }
@@ -1395,7 +1442,8 @@
       +(modeBadge?'<div class="sub"><span class="badge">'+modeBadge+'</span>'
         +(mode==="bonus-booster"?' A free HEB card adds to the discount on the brand you buy — judged against that brand.':"")+'</div>':"")
       +'</div>'
-      +'<button class="sw" role="switch" aria-checked="'+on+'" aria-pressed="'+on+'" aria-label="Enable '+esc(r.title)+'" data-rule="'+esc(r.item_id)+'"></button></div>';
+      +'<button class="sw" role="switch" aria-checked="'+on+'" aria-pressed="'+on+'" aria-label="Enable '+esc(r.title)+'" data-rule="'+esc(r.item_id)+'"></button>'
+      +overflowMenu(r)+'</div>';
     var ctrls="";
     if(mode==="pct"){
       ctrls='<div class="ctrls">'
@@ -1407,7 +1455,7 @@
         +'</div>'
       +'</div>';
     }
-    return '<div class="card">'+head+ctrls+groupSeg(r)+'</div>';
+    return '<div class="card">'+head+ctrls+'</div>';
   }
   function renderRules(){
     var host=el("rules");
@@ -1434,7 +1482,7 @@
       +'<div class="grouphead"><h2>Sale watch</h2></div>'
       +'<div class="card">'
         +'<div class="sub">Get alerted when a term is on sale — not just gift cards. One search per term, up to 10.</div>'
-        +'<div id="watchlist" class="chiprow" style="flex-wrap:wrap;margin-top:8px"></div>'
+        +'<div id="watchlist" style="margin-top:8px"></div>'
         +'<div class="addrow" style="margin-top:8px"><input id="newwatch" type="text" placeholder="e.g. Nintendo Switch 2" aria-label="Add a sale-watch term">'
         +'<button class="btn primary" id="addwatch">Watch</button></div></div>';
     renderRulesList();
@@ -1443,12 +1491,30 @@
   }
   // The sale-watch terms (press_tasks category='watch') as removable chips + an add row (cap 10).
   function watchTerms(){ return state.watch||[]; }
+  // Slice 4d: "Checked 3×/day · last <time> · <N> matches in 30 days" from the watch row's extras
+  // (stamped by the tick). last_checked → relative time or "never".
+  function watchStatusLine(w){
+    var e=w.extras||{};
+    var last=e.last_checked?relTime(e.last_checked):"never";
+    var n=Number(e.matches_30d)||0;
+    return "Checked 3×/day · last "+esc(last)+" · "+n+" match"+(n===1?"":"es")+" in 30 days";
+  }
   function renderWatchList(){
     var host=el("watchlist"); if(!host) return;
     var items=watchTerms();
     if(!items.length){ host.innerHTML='<span class="sub">No sale watches.</span>'; return; }
     host.innerHTML=items.map(function(w){
-      return '<button class="fchip" data-unwatch="'+esc(w.item_id)+'" aria-label="Remove watch '+esc(w.title)+'">'+esc(w.title)+' ✕</button>';
+      var e=w.extras||{};
+      var match=e.last_match_url
+        ? '<div class="sub"><a class="deal" href="'+esc(e.last_match_url)+'" target="_blank" rel="noopener">Last match: '+esc(e.last_match_title||"view")+' &rarr;</a></div>'
+        : '<div class="sub">No matches yet</div>';
+      return '<div class="watchrow"><div class="row">'
+        +'<div class="grow"><div class="title">'+esc(w.title)+'</div>'
+        +'<div class="sub">'+watchStatusLine(w)+'</div>'
+        +match
+        +'</div>'
+        +'<button class="fchip" data-unwatch="'+esc(w.item_id)+'" aria-label="Remove watch '+esc(w.title)+'">✕</button>'
+        +'</div></div>';
     }).join("");
   }
   // The retailer blocklist (settings.extras.retailer_blocklist) as removable chips + an add row.
@@ -1565,6 +1631,9 @@
   function setSwitch(btn,on){ btn.setAttribute("aria-checked",on); btn.setAttribute("aria-pressed",on); }
   document.addEventListener("click", function(ev){
     var b=ev.target.closest("button, a"); if(!b) return;
+    // Slice 5: the ⋯ overflow menu (Move to…) — toggle; any other button click closes open menus.
+    var ovf=b.getAttribute("data-ovf"); if(ovf){ toggleOverflowMenu(ovf,b); return; }
+    if(!b.closest(".ovfmenu")) closeOverflowMenus();
     // tabs — opening the Feed tab is Mark "looking", so it clears the NEW badge (Slice 2).
     if(b.getAttribute("role")==="tab"){ selectTab(b.id); if(b.id==="tab-feed") markFeedSeen(); return; }
     // ---- feed filter bar (When / Type / Sort / Search + status links) ----
@@ -1605,6 +1674,39 @@
     // sale watch (Slice 6)
     if(b.id==="addwatch"){ addWatch(); return; }
     var uw=b.getAttribute("data-unwatch"); if(uw){ removeWatch(uw); return; }
+  });
+  // Slice 5: ⋯ overflow-menu plumbing (open/close, outside-click, keyboard nav).
+  function closeOverflowMenus(exceptId){
+    var btns=document.querySelectorAll(".ovf[aria-expanded='true']");
+    for(var i=0;i<btns.length;i++){
+      var id=btns[i].getAttribute("data-ovf");
+      if(exceptId&&id===exceptId) continue;
+      btns[i].setAttribute("aria-expanded","false");
+      var m=el("ovfmenu-"+id); if(m) m.hidden=true;
+    }
+  }
+  function toggleOverflowMenu(id,btn){
+    var m=el("ovfmenu-"+id); if(!m) return;
+    var open=btn.getAttribute("aria-expanded")==="true";
+    closeOverflowMenus(id);
+    if(open){ btn.setAttribute("aria-expanded","false"); m.hidden=true; }
+    else{ btn.setAttribute("aria-expanded","true"); m.hidden=false;
+      var first=m.querySelector("button[role='menuitemradio']"); if(first) first.focus(); }
+  }
+  document.addEventListener("click", function(ev){
+    if(!ev.target.closest(".rulehead-actions")) closeOverflowMenus();
+  });
+  document.addEventListener("keydown", function(ev){
+    var menu=ev.target.closest&&ev.target.closest(".ovfmenu"); if(!menu) return;
+    var id=menu.id.replace("ovfmenu-","");
+    var btn=document.querySelector(".ovf[data-ovf='"+id+"']");
+    if(ev.key==="Escape"){ closeOverflowMenus(); if(btn) btn.focus(); ev.preventDefault(); return; }
+    if(ev.key==="ArrowDown"||ev.key==="ArrowUp"){
+      var items=[].slice.call(menu.querySelectorAll("button[role='menuitemradio']"));
+      var i=items.indexOf(ev.target); if(i<0){ if(items[0]) items[0].focus(); ev.preventDefault(); return; }
+      var n=ev.key==="ArrowDown"?(i+1)%items.length:(i-1+items.length)%items.length;
+      items[n].focus(); ev.preventDefault();
+    }
   });
   document.addEventListener("change", function(ev){
     var f=ev.target.getAttribute && ev.target.getAttribute("data-set");
