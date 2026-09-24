@@ -37,28 +37,36 @@ Gauntlet at the stop: **node 65/0/0 · Playwright 56/0** (was 40) · `inline:che
 `eepjhpyziczrxvirczio`). It redefines `press_access_has(page)` to opt-out semantics and ensures
 `remit.html` + `perth.html` are `press_access_apps.gated=true`. Then tell Code to resume.
 
-## ⚠️ Decision needed before the close — tenants-check is RED (4 × T3)
+## ✅ RATIFIED (Mark 2026-09-24) — tenants-check green via gate-file re-vendor (Option 1, guarded)
 
 Slice 1 bumped `press/src/gate.js` to 7d (`9e11ce15`); the four tenant SOURCE repos still vendor the 8h
-gate (`73889011`), so `npm run tenants:check` now reports **4 T3 gate-drift fails** (card-scout, retirement,
-giving, fsa). This is the direct, expected consequence of Option 2 (press-owned copies only). The ARC rule
-is "tenants-check exits 0", and the auto-close treats a RED gate as a DRAFT PR. **Pick one at resume:**
-  (a) re-vendor ONLY the gate file (`cp press/src/gate.js → <repo>/src/vendor/press-gate.js`) in the 4
-      source repos so tenants-check → 0 fail, WITHOUT rebuilding/republishing their pages (published pages
-      stay 8h until their own release) — restores the invariant, touches 4 external repos minimally; or
-  (b) keep press-only and close this arc as a **DRAFT PR** with the 4 T3 fails documented as the follow-ups
-      below (no external repos touched); or
-  (c) full per-tenant re-vendor + release now (original Option 1).
+gate (`73889011`), so `npm run tenants:check` reports **4 T3 gate-drift fails**. Fix AT THE CLOSE by
+re-vendoring the gate FILE ONLY into each eligible tenant repo (no rebuild, no release):
 
-## Numbered follow-ups — the 4 tenant re-vendors (deferred by Option 2)
+**Per tenant repo — guard, then act:**
+- **Precondition:** working tree CLEAN **and** on `main` **synced with origin**. If not → **SKIP** that
+  repo, add it as a numbered follow-up below; DO NOT stash or touch in-progress work.
+- **Otherwise:** branch `chore/revendor-gate-7d` → `cp press/src/gate.js src/vendor/press-gate.js` →
+  assert `git hash-object src/vendor/press-gate.js` == canonical (`9e11ce15…`, re-read from press main at
+  execution) → commit THAT ONE FILE by name → push → `gh pr create --fill` → `gh pr merge --merge
+  --delete-branch` → reconcile that repo's main. **No rebuild, no release.**
+- After all eligible repos: `npm run tenants:check` must exit 0.
+- Each tenant's PUBLISHED page stays 8h until its own next release (that carries the 7d TTL onto the page).
 
-Each: `cp press/src/gate.js <repo>/src/vendor/press-gate.js`, then that repo's own release into press
-(honours `PRESS_DIR`), with ship proof, to carry the 7-day TTL onto the published page:
-1. **fsa-claims** → `fsa.html` (build embeds a non-deterministic build-id; dist != served is expected).
-2. **giving-tracker** → `giving.html` (release rewrites PWA asset paths on stage).
-3. **retirement** → `retirement.html` (deterministic public build; auto-copies into press sha256-verified).
-4. **card-scout** → `card-scout.html` (root file IS the artifact; `inline-gate --check` then blob-compare).
-Until done, `grep '8 * 60 * 60'` still hits those four published pages (by design).
+**Eligibility pre-check (2026-09-24, read-only; RE-VERIFY at execution — states drift):**
+- **fsa-claims** — main · clean · synced (0/0) → **ELIGIBLE**.
+- **retirement** — main · clean · synced (0/0) → **ELIGIBLE**.
+- **giving-tracker** — main · clean · **behind origin/main by 2** → **SKIP** (needs `git pull --ff-only`
+  first, then it becomes eligible) → follow-up 1.
+- **card-scout** — main · **1 dirty file** → **SKIP** (in-progress work; do not touch) → follow-up 2.
+
+## Numbered follow-ups (deferred)
+1. **giving-tracker** → re-vendor gate once its main is synced (`git pull --ff-only`), then the guarded
+   flow above. Its published `giving.html` also stays 8h until its own next release.
+2. **card-scout** → re-vendor gate once its working tree is clean, then the guarded flow. `card-scout.html`
+   (root IS the artifact) stays 8h until its own next release.
+Until every tenant is re-vendored AND has re-released, `grep '8 * 60 * 60'` still hits the published
+tenant pages (by design — Option 2).
 
 ## Resume checklist (Code, after the DDL is applied)
 1. Verify the live opt-out function via read-only MCP: no-grant person → `press_access_has` true for
