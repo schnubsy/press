@@ -8,7 +8,7 @@
 //   node tools/tenants-check.mjs                 # T1–T4 + T6 + T7 (no build)
 //   node tools/tenants-check.mjs --rebuild       # + T5 rebuild-vs-live for deterministic tenants
 //   node tools/tenants-check.mjs --press <dir>   # override the press root (default: where this lives)
-//   VSCODE_ROOT=<dir> node tools/tenants-check.mjs   # override the source-repos parent (default ~/Documents/VSCode)
+//   CODE_ROOT=<dir> node tools/tenants-check.mjs   # override the source-repos parent (default ~/Documents/code)
 //
 // No dependencies (Node ≥20). The DB checks it cannot reach are EMITTED as SQL, never asserted.
 import { readFileSync, existsSync, statSync } from 'node:fs';
@@ -24,7 +24,7 @@ const argVal = (f) => { const i = argv.indexOf(f); return i >= 0 ? argv[i + 1] :
 
 const SELF_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PRESS = resolve(argVal('--press') || SELF_ROOT);
-const VSCODE_ROOT = process.env.VSCODE_ROOT || join(homedir(), 'Documents', 'VSCode');
+const CODE_ROOT = process.env.CODE_ROOT || join(homedir(), 'Documents', 'code');
 const REBUILD = has('--rebuild');
 
 // ---- helpers ---------------------------------------------------------------
@@ -44,7 +44,7 @@ function gitBlobHash(path) { const b = readFileSync(path); const h = createHash(
 function isGitRepo(dir) { try { return existsSync(join(dir, '.git')) && statSync(join(dir, '.git')).size >= 0; } catch { return false; } }
 function resolveRepo(entry) {
   if (entry.repoPath) { let p = entry.repoPath; if (p.startsWith('~')) p = join(homedir(), p.replace(/^~[/]?/, '')); return resolve(p); }
-  return join(VSCODE_ROOT, entry.repo);
+  return join(CODE_ROOT, entry.repo);
 }
 
 // ---- load registries -------------------------------------------------------
@@ -56,7 +56,7 @@ const personal = Array.isArray(spaces.personal) ? spaces.personal : [];
 const family = Array.isArray(spaces.family) ? spaces.family : [];
 
 console.log(`tenants-check — press root: ${PRESS}`);
-console.log(`  source repos: ${VSCODE_ROOT}${REBUILD ? '   (--rebuild ON)' : ''}\n`);
+console.log(`  source repos: ${CODE_ROOT}${REBUILD ? '   (--rebuild ON)' : ''}\n`);
 
 // ---- per-tenant checks -----------------------------------------------------
 for (const page of Object.keys(tenants)) {

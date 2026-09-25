@@ -1,6 +1,6 @@
 // test/tenants-check.test.mjs — unit tests for tools/tenants-check.mjs (node:test, no deps).
 // Each test scaffolds a throwaway estate (a fake press root + fake source repos) under the OS temp
-// dir and runs the REAL checker against it via --press + VSCODE_ROOT, asserting exit code + output.
+// dir and runs the REAL checker against it via --press + CODE_ROOT, asserting exit code + output.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
@@ -49,7 +49,7 @@ function estate() {
       return this;
     },
     run(args = []) {
-      try { const out = execFileSync('node', [CHECKER, '--press', this.press, ...args], { env: { ...process.env, VSCODE_ROOT: this.vscode }, encoding: 'utf8' }); return { code: 0, out }; }
+      try { const out = execFileSync('node', [CHECKER, '--press', this.press, ...args], { env: { ...process.env, CODE_ROOT: this.vscode }, encoding: 'utf8' }); return { code: 0, out }; }
       catch (e) { return { code: e.status ?? 1, out: (e.stdout || '') + (e.stderr || '') }; }
     },
     cleanup() { rmSync(base, { recursive: true, force: true }); },

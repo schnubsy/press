@@ -30,7 +30,7 @@ Gauntlet: **69 node + 56 Playwright, 0 skipped; inline:check green; tenants-chec
 | push | DONE — `claude/arc-wings-polish-0e3d69`. |
 | PR | DONE — press #16 (`--base main`), flipped ready. |
 | merge | DONE — #16 `17091f6`; #17 `166f56b`. |
-| reconcile main | DONE — `~/Documents/VSCode/press` main HEAD == merge SHA. |
+| reconcile main | DONE — `~/Documents/code/press` main HEAD == merge SHA. |
 | migrations | DONE — `press_access_optout` applied by Cowork + live-verified (`wings-polish-slice-4-live-verify.txt`). |
 | tenant gate re-vendor | DONE — fsa-claims #14, retirement #3, giving-tracker #10, card-scout #15 (all merged; vendored == `9e11ce15`). |
 | deploy | N/A (no build step / no edge fn). |
@@ -50,7 +50,7 @@ untouched by this arc; card-scout's own session commits it as that arc's first a
 ## Exact next steps
 No press inbox pending (ARC.md empty). Next arc: `BACKLOG.md` polish, or remit's `arc/gate-hardening-and-fx`.
 Habit: reprint the recovery kit after adding a private tool or changing a passphrase (kit printed 2026-09-24).
-MAIN CHECKOUT: `~/Documents/VSCode/press`. INBOX FILES: this HANDOFF + `BACKLOG.md`.
+MAIN CHECKOUT: `~/Documents/code/press`. INBOX FILES: this HANDOFF + `BACKLOG.md`.
 
 ## Mark's manual steps
 None. (Council files unchanged; recovery kit already printed.)
