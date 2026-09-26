@@ -406,6 +406,25 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 .delconfirm .acts2{display:flex;gap:8px;justify-content:flex-end}
 .curmenu.delconfirm button{display:inline-flex;justify-content:center;min-height:44px;padding:0 14px;border-radius:4px;font:600 14px/1 var(--sans);box-shadow:inset 0 0 0 1px var(--brass-dim)}
 .curmenu.delconfirm [data-yes]{color:var(--rejected);box-shadow:inset 0 0 0 1px var(--rejected)}
+/* =============================================================================
+ * arc/ledger-simplify slice 1 — quick fixes.
+ * (a) "＋ Add section" wears the section-heading type (.bk) — brass kept.
+ * (b) the dollar-prefix letters (US, A) sit ~70% size on the same baseline as "$" and the digits.
+ * (c) amounts always win: the amount track is max-content and the input sizes to its value (JS);
+ *     the item name (minmax(0,1fr)) is the column that ellipsises.
+ * ========================================================================== */
+.addsec .linkbtn{font:600 12px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:var(--brass);min-height:44px}
+.cpx{font-size:.7em;letter-spacing:0;vertical-align:baseline}
+.erow{grid-template-columns:14px 22px minmax(0,1fr) auto max-content 32px}
+.erow .amt,.brow .amt{width:auto;min-width:78px;white-space:nowrap;box-sizing:content-box}
+.erow .what{white-space:nowrap;overflow:hidden}
+/* arc/ledger-simplify slice 2 — the tick is a visual "done": the whole line greys + strikes through
+   (description, note, currency, amount), stays editable, still counts. --muted #8f9bab on the stage
+   #0d1420 is 6.54:1 (6.00:1 on --raised) — struck text still meets WCAG AA (not relying on the decorative exemption). */
+.erow.paid .what,.erow.paid .note,.erow.paid .curpill,.erow.paid .curpill.off-home,.erow.paid .amt{
+  color:var(--muted);text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:rgba(143,155,171,.8)}
+/* arc/ledger-simplify slice 3 — the record sheet hides the USD-cost row + derived rate for a USD payment */
+.f2[hidden],.derived[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -976,19 +995,17 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 <script>
 /* eslint-disable */
 /* =============================================================================
- * remit money.js — THE MODEL made executable (Mark's rules, ratified 2026-09-22).
+ * remit money.js — THE MODEL made executable (ratified 2026-09-22; simplified 2026-09-26,
+ * arc/ledger-simplify — supersedes D2).
  *
- * remit is a nicely formatted scratch pad. Per kid page, per month, per currency:
- *   Total     = every live line in that currency (every section, both settle types).
- *   Settled   = transfers recorded (matched person_id + month + currency)
- *               + TICKED settle='paid_here' lines (already paid on this side, not in a transfer).
+ * remit is a nicely formatted scratch pad. Every line is a plain line. Per kid page, per month, per currency:
+ *   Total     = every live line in that currency (every section).
+ *   Settled   = payments/transfers recorded (matched person_id + month + currency) — ONLY.
  *   Remaining = Total − Settled.   Negative is fine → "Overpaid".
  *
- * No approval. Status is only 'requested' (unpaid) or 'paid'. For settle='transfer' lines the paid tick
- * is VISUAL ONLY (they settle via a recorded transfer, so a tick + a transfer can't double-count). For
- * settle='paid_here' lines the tick DRIVES settlement (D2, arc/design-port): ticked → Settled, unticked
- * → still in Remaining and shown in the foot. Transfers never lock a line; any existing transfer_id is
- * ignored. Negative amounts are normal (offsets). NEVER sum two currencies.
+ * The paid tick is a visual "done" and never touches the maths; `settle` is ignored (legacy column). A US
+ * cost is just a USD line, paid by recording a USD payment. Transfers never lock a line; any existing
+ * transfer_id is ignored. Negative amounts are normal (offsets). NEVER sum two currencies.
  *
  * Pure, no DOM, node-importable (assigns globalThis.Remit.money). All arithmetic goes through integer
  * cents so £803.96 + £72.61 − £100.00 never drifts.
@@ -1019,17 +1036,9 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   }
 
   function alive(it) { return !it.deleted_at; }
-  // Every live line counts. The only distinction the maths cares about is WHERE it settles:
-  //   settle='transfer'  → it belongs to the bundled FX transfer for its currency.
-  //   settle='paid_here' → already paid on this side; shown on its own line, never in the transfer.
-  function isTransferLine(it) { return alive(it) && it.settle === 'transfer'; }
-  function isPaidHere(it) { return alive(it) && it.settle === 'paid_here'; }
-  function isPaidTick(it) { return it.status === 'paid'; }
-  // D2 (arc/design-port amendment): a paid_here line counts as Settled ONLY when it is ticked
-  // (status 'paid'). An UNTICKED paid_here line is NOT settled — it stays in Remaining for its currency
-  // and surfaces in the transfers foot. For settle='transfer' lines the tick is still purely visual
-  // (they settle only via a recorded transfer) — that is what prevents double counting.
-  function isPaidHereSettled(it) { return isPaidHere(it) && isPaidTick(it); }
+  // Every live line counts toward its currency's transfer; there is no second kind of line any more.
+  function isTransferLine(it) { return alive(it); }
+  function isPaidTick(it) { return it.status === 'paid'; }   // visual "done" only
 
   // sumByCurrency(items, pred?) -> { GBP: 1444.20, USD: 12 } — grouped, NEVER cross-summed.
   function sumByCurrency(items, pred) {
@@ -1063,12 +1072,10 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   }
 
   // ── THE MODEL totals ─────────────────────────────────────────────────────────
-  // Total: every live line, per currency (both settle types, every section).
+  // Total: every live line, per currency (every section).
   function totalTotals(items) { return sumByCurrency((items || []).filter(alive)); }
-  // The transfer-destined lines and the paid-here lines, split out for display.
+  // every live line heads for its currency's transfer (kept as a name for reports + the foot)
   function transferLineTotals(items) { return sumByCurrency(items, isTransferLine); }
-  function paidHereTotals(items) { return sumByCurrency(items, isPaidHere); }               // all paid_here (display)
-  function paidHereSettledTotals(items) { return sumByCurrency(items, isPaidHereSettled); } // ticked only (Settled)
   // Transfers recorded for this page+month, per currency (amount_delivered is the money that landed).
   function transfersDelivered(transfers) {
     var acc = {};
@@ -1079,9 +1086,9 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     var out = {}; Object.keys(acc).forEach(function (k) { out[k] = fromCents(acc[k]); });
     return out;
   }
-  // Settled = TICKED paid_here lines + transfers recorded. Remaining = Total − Settled. (D2: an unticked
-  // paid_here line is in Total but not in Settled, so it lands in Remaining.)
-  function settledTotals(items, transfers) { return addMaps(paidHereSettledTotals(items), transfersDelivered(transfers)); }
+  // Settled = payments/transfers recorded, ONLY. Remaining = Total − Settled. (`items` is kept in the
+  // signature so callers don't change; ticks and `settle` never affect the maths.)
+  function settledTotals(items, transfers) { return addMaps(transfersDelivered(transfers)); }
   function remainingTotals(items, transfers) { return subMaps(totalTotals(items), settledTotals(items, transfers)); }
 
   // the single currency (or null) of a per-currency map with exactly one entry
@@ -1133,8 +1140,6 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     });
 
     var total     = totalTotals(items);
-    var paidHere  = paidHereTotals(items);
-    var paidHereSettled = paidHereSettledTotals(items);
     var settled   = settledTotals(items, transfers);
     var remaining = remainingTotals(items, transfers);
     var transferLines = transferLineTotals(items);
@@ -1148,8 +1153,6 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       sections: sectionRows,
       total: total,
       transferLines: transferLines,
-      paidHere: paidHere,               // all paid_here (display)
-      paidHereSettled: paidHereSettled, // ticked paid_here only (the settled part)
       transfers: transfers,
       transfersDelivered: transfersDelivered(transfers),
       settled: settled,
@@ -1162,11 +1165,9 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 
   Remit.money = {
     SYMBOLS: SYMBOLS, symbol: symbol, cents: cents, fromCents: fromCents, fmt: fmt,
-    alive: alive, isTransferLine: isTransferLine, isPaidHere: isPaidHere, isPaidTick: isPaidTick,
-    isPaidHereSettled: isPaidHereSettled,
+    alive: alive, isTransferLine: isTransferLine, isPaidTick: isPaidTick,
     sumByCurrency: sumByCurrency, addMaps: addMaps, subMaps: subMaps,
-    totalTotals: totalTotals, transferLineTotals: transferLineTotals, paidHereTotals: paidHereTotals,
-    paidHereSettledTotals: paidHereSettledTotals,
+    totalTotals: totalTotals, transferLineTotals: transferLineTotals,
     transfersDelivered: transfersDelivered, settledTotals: settledTotals, remainingTotals: remainingTotals,
     soleCurrency: soleCurrency, fmtByCurrency: fmtByCurrency, currenciesOf: currenciesOf,
     monthLabel: monthLabel, monthShort: monthShort, monthName: monthName, monthModel: monthModel,
@@ -1318,6 +1319,10 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   var _seq = 0;
   function uid(prefix) { _seq += 1; return (prefix || 'id') + '-' + Date.now().toString(36) + '-' + _seq; }
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
+  // The READ-TOLERANT LOADER (arc/ledger-simplify): `remit_items.settle` is a retired column — every line
+  // is a plain line. A legacy 'paid_here' row (until Cowork's retire_paid_here migration lands) is read as
+  // an ordinary 'transfer' line; nothing else in src/ knows the old value exists.
+  function readItems(rows) { return (rows || []).map(function (it) { if (it && it.settle === 'paid_here') it.settle = 'transfer'; return it; }); }
 
   // ── a tiny emitter mixin ─────────────────────────────────────────────────────
   function Emitter() { this._subs = []; }
@@ -1342,7 +1347,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     var d = clone(data || {});
     this.state = {
       people: d.people || [], periods: d.periods || [], budgets: d.budgets || [],
-      items: d.items || [], messages: d.messages || [], transfers: d.transfers || [], rates: d.rates || [],
+      items: readItems(d.items), messages: d.messages || [], transfers: d.transfers || [], rates: d.rates || [],
       commitments: d.commitments || [], sections: d.sections || [],
     };
     this._viewer = d.viewer || (this.state.people[0] && this.state.people[0].email) || 'unknown';
@@ -1600,7 +1605,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     var periods = await this._get('/remit_periods?select=*&person_id=eq.' + personId + '&year=eq.' + year + '&month=eq.' + month);
     var period = periods[0] || null;
     if (!period) return { period: null, items: [], messages: [] };
-    var items = await this._get('/remit_items?select=*&period_id=eq.' + period.id + '&deleted_at=is.null&order=sort_order.asc');
+    var items = readItems(await this._get('/remit_items?select=*&period_id=eq.' + period.id + '&deleted_at=is.null&order=sort_order.asc'));
     var sections = await this._get('/remit_sections?select=*&period_id=eq.' + period.id + '&deleted_at=is.null&order=sort_order.asc');
     var transfers = await this._get('/remit_transfers?select=*&person_id=eq.' + personId + '&period_year=eq.' + year + '&period_month=eq.' + month);
     var ids = items.map((it) => it.id);
@@ -1705,7 +1710,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   // still applies: an ungranted session reads nothing, so the reports simply render empty.
   SupabaseStore.prototype.getReportData = async function () {
     var periods = await this._get('/remit_periods?select=*');
-    var items = await this._get('/remit_items?select=*&deleted_at=is.null&order=sort_order.asc');
+    var items = readItems(await this._get('/remit_items?select=*&deleted_at=is.null&order=sort_order.asc'));
     var transfers = await this._get('/remit_transfers?select=*');
     var commitments = await this._get('/remit_commitments?select=*');
     return { people: this._people, periods: periods, items: items, transfers: transfers, commitments: commitments, rates: this._rates };
@@ -1730,7 +1735,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
  * every line is edited in place, every section ends with an empty row you type into to add, Enter
  * saves and opens the next empty row, Esc cancels, autosave on blur. Delete is a row control → soft
  * delete + Undo toast. A non-home-currency line groups under an "In <CUR>" subheading with its own
- * subtotal so it traces to its own transfer. Per-currency totals only; a paid tick is visual only.
+ * subtotal so it traces to its own transfer. Per-currency totals only; a paid tick is a visual "done".
  * ========================================================================== */
 (function (root) {
   'use strict';
@@ -1762,8 +1767,14 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   var CURSYM = { GBP: '£', USD: 'US$', AUD: 'A$', EUR: '€' };
   var CURNAME = { GBP: 'British pound', USD: 'US dollar', AUD: 'Australian dollar', EUR: 'Euro' };
   function curSym(c) { return CURSYM[c] || c; }
+  // LS1(b): the letter prefix of a dollar sign (US in US$, A in A$) renders ~70% size on the same
+  // baseline, so "$" and the digits lead. Takes an ALREADY-ESCAPED string, returns HTML.
+  function symHTML(s) { return String(s == null ? '' : s).replace(/\b(US|A)\$/g, '<span class="cpx">$1</span>$'); }
+  // LS1(c): amounts always win — the amount input sizes to its own value (never truncates); the item
+  // name is the column that gives way (minmax(0,1fr) + ellipsis).
+  function fitAmt(inp) { var n = String(inp.value || inp.placeholder || '').length; inp.style.width = Math.max(6, n + 1.5) + 'ch'; }
   function curPill(cur, homeCur) {
-    return '<button type="button" class="curpill' + (cur !== homeCur ? ' off-home' : '') + '" data-curbtn data-cur="' + esc(cur) + '" aria-haspopup="menu" aria-label="Currency: ' + esc(CURNAME[cur] || cur) + ' — change">' + esc(curSym(cur)) + '</button>';
+    return '<button type="button" class="curpill' + (cur !== homeCur ? ' off-home' : '') + '" data-curbtn data-cur="' + esc(cur) + '" aria-haspopup="menu" aria-label="Currency: ' + esc(CURNAME[cur] || cur) + ' — change">' + symHTML(esc(curSym(cur))) + '</button>';
   }
   // tap the sign → a menu of the currencies with full names; resolves the pick (or null). Anchored under
   // the button, flipped above it if the foot is in the way. Esc / outside-tap closes with null.
@@ -1774,7 +1785,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       var m = document.createElement('div');
       m.className = 'curmenu'; m.setAttribute('role', 'menu');
       m.innerHTML = CURR.map(function (c) {
-        return '<button type="button" role="menuitemradio" aria-checked="' + (c === cur) + '" data-pick="' + c + '"><span class="sym">' + curSym(c) + '</span><span class="nmx">' + CURNAME[c] + '</span><span class="code">' + c + '</span></button>';
+        return '<button type="button" role="menuitemradio" aria-checked="' + (c === cur) + '" data-pick="' + c + '"><span class="sym">' + symHTML(esc(curSym(c))) + '</span><span class="nmx">' + CURNAME[c] + '</span><span class="code">' + c + '</span></button>';
       }).join('');
       document.body.appendChild(m);
       var r = btn.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
@@ -1795,7 +1806,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       setTimeout(function () { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); }, 0);
     });
   }
-  window.RemitCur = { pick: pickCur, sym: curSym, name: CURNAME };
+  window.RemitCur = { pick: pickCur, sym: curSym, symHTML: symHTML, fitAmt: fitAmt, name: CURNAME };
 
   // B2/D3: a Yes/No confirm before a destructive × — anchored popover (same object as the currency
   // menu). "No" is the default (focused); Esc or an outside tap cancels. Resolves true only on Yes.
@@ -1862,12 +1873,12 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       var rows = byCur[cur].map((it) => erow(it, homeCur, null, sel.has(it.id))).join('');
       if (cur === homeCur) return rows;
       var s = {}; s[cur] = money.sumByCurrency(byCur[cur])[cur];
-      return '<div class="subbk">In ' + esc(cur) + '<span class="num">' + esc(money.fmtByCurrency(s)) + '</span></div>' + rows;
+      return '<div class="subbk">In ' + esc(cur) + '<span class="num">' + symHTML(esc(money.fmtByCurrency(s))) + '</span></div>' + rows;
     }).join('');
     // L8: a section header shows only its home-currency subtotal; any other currency is carried on
     // its own "In <CUR>" line above, never summed in (the never-sum rule stays intact).
     var headSub = sub; if (sub[homeCur] != null && Object.keys(sub).length > 1) { headSub = {}; headSub[homeCur] = sub[homeCur]; }
-    var subNum = '<span class="num">' + esc(money.fmtByCurrency(headSub)) + '</span>';
+    var subNum = '<span class="num">' + symHTML(esc(money.fmtByCurrency(headSub))) + '</span>';
     var head;
     if (opts.customSection) {
       var s = opts.customSection;
@@ -1915,9 +1926,12 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     }
 
     var sel = ctrl.selection || new Set();
-    var markAll = model.anyLines ? '<button type="button" class="linkbtn" id="markAllPaid">Mark all paid</button>' : '';
+    // LS2: the tick is a visual "done" (greyed + struck through, still counted). "Mark all paid" ticks
+    // every line on the page; once they are all ticked it reads "Mark all unpaid" and reverses it.
+    var allPaid = model.anyLines && ctrl.allRows().every(function (r) { return r.status === 'paid'; });
+    var markAll = model.anyLines ? '<button type="button" class="linkbtn" id="markAllPaid" data-to="' + (allPaid ? 'requested' : 'paid') + '">' + (allPaid ? 'Mark all unpaid' : 'Mark all paid') + '</button>' : '';
     var kid = '<section class="zone"><div class="zone-hd"><h2>' + esc(title) + '</h2>' +
-      '<span class="tt"><em>total</em> <span class="num">' + esc(money.fmtByCurrency(model.total) || money.fmt(0, homeCur)) + '</span></span></div>' +
+      '<span class="tt"><em>total</em> <span class="num">' + symHTML(esc(money.fmtByCurrency(model.total) || money.fmt(0, homeCur))) + '</span></span></div>' +
       sectionBlock('Recurring', model.recurring.rows, person, { bucket: 'recurring' }, sel, { defaults: true }) +
       sectionBlock('Extras', model.extras.rows, person, { bucket: 'extras' }, sel) +
       model.custom.map((c) => sectionBlock(c.section.name, c.rows, person, { bucket: 'custom', section_id: c.section.id }, sel, { customSection: c.section })).join('') +
@@ -1926,7 +1940,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 
     var riding =
       '<section class="riding"><div class="zone-hd"><h2>Riding along — Mark’s own</h2>' +
-      '<span class="tt"><em>subtotal</em> <span class="num">' + esc(money.fmtByCurrency(model.mine.subtotal) || money.fmt(0, homeCur)) + '</span></span></div>' +
+      '<span class="tt"><em>subtotal</em> <span class="num">' + symHTML(esc(money.fmtByCurrency(model.mine.subtotal) || money.fmt(0, homeCur))) + '</span></span></div>' +
       '<p class="why">Nothing to do with ' + esc(person ? person.name : 'the kid') + '. Bundled into the same transfer to pay one fee instead of two.</p>' +
       sectionBlock('Riding along', model.mine.rows, person, { bucket: 'mine' }, sel) + '</section>';
 
@@ -1937,35 +1951,27 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     wire(ctrl);
   }
 
-  // "Settled in <country>" — one section per currency, listing each transfer (date or "date unknown")
-  // and each paid_here line, subtotalled to Settled(currency).
+  // "Settled in <country>" — one section per currency that has recorded payments this month, listing
+  // each payment (date or "date unknown" · provider · note) with a × (confirm + undo), subtotalled to
+  // Settled(currency). THE MODEL (arc/ledger-simplify): recorded payments are the ONLY thing settled.
   function settledHTML(ctrl) {
     var model = ctrl.model; if (!model || !model.period) return '';
-    // D2: only TICKED paid_here lines are settled — an unticked one is not "settled here", it is in
-    // Remaining (and the foot). Its × unticks it (never changes settle).
-    var paidHereItems = ctrl.allRows().filter(function (it) { return it.settle === 'paid_here' && it.status === 'paid'; });
     var transfers = model.transfers || [];
-    var curs = money.currenciesOf(model.transfersDelivered, model.paidHereSettled);
+    var curs = Object.keys(model.transfersDelivered || {});
     if (!curs.length) return '';
     return curs.map(function (c) {
       var tx = transfers.filter(function (t) { return t.currency === c; });
-      var ph = paidHereItems.filter(function (it) { return it.currency === c; });
-      if (!tx.length && !ph.length) return '';
+      if (!tx.length) return '';
       var sub = {}; sub[c] = (model.settled[c] || 0);
       var rows = tx.map(function (t) {
         var when = t.sent_on ? fx.rateDayLabel(t.sent_on) : 'date unknown';
-        var prov = t.provider ? (' · ' + esc(t.provider)) : '';
-        return '<div class="srow" data-xfer="' + esc(t.id) + '"><span class="nm"><b>Transfer</b><em>' + esc(when) + prov + '</em></span>' +
-          '<span class="am num">' + money.fmt(t.amount_delivered || 0, c) + '</span>' +
-          '<button type="button" class="del" data-delxfer="' + esc(t.id) + '" aria-label="Delete transfer">×</button></div>';
-      }).join('');
-      var phRows = ph.map(function (it) {
-        return '<div class="srow"><span class="nm"><b>' + esc(it.description) + '</b><em>settled here</em></span>' +
-          '<span class="am num">' + money.fmt(it.amount, c) + '</span>' +
-          '<button type="button" class="del" data-unsettle="' + esc(it.id) + '" aria-label="Remove ' + esc(it.description) + ' from settled">×</button></div>';
+        var meta = [when, t.provider, t.note].filter(Boolean).map(esc).join(' · ');
+        return '<div class="srow" data-xfer="' + esc(t.id) + '"><span class="nm"><b>Payment</b><em>' + meta + '</em></span>' +
+          '<span class="am num">' + symHTML(esc(money.fmt(t.amount_delivered || 0, c))) + '</span>' +
+          '<button type="button" class="del" data-delxfer="' + esc(t.id) + '" aria-label="Delete payment">×</button></div>';
       }).join('');
       return '<section class="settled"><div class="zone-hd"><h2>Settled in ' + esc(WHERE[c] || c) + '</h2>' +
-        '<span class="tt"><span class="num">' + esc(money.fmtByCurrency(sub)) + '</span></span></div>' + rows + phRows + '</section>';
+        '<span class="tt"><span class="num">' + symHTML(esc(money.fmtByCurrency(sub))) + '</span></span></div>' + rows + '</section>';
     }).join('');
   }
 
@@ -1982,31 +1988,23 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       '</div></div>';
   }
 
-  // The "Transfers required" summary panel: one row per currency still outstanding — Remaining large,
-  // its USD equivalent small beside it with rate + rate date. Overpaid shows on its own. Always shows
-  // the record button.
+  // The "Transfers required" summary panel: one row per currency that has lines or recorded payments
+  // this month (hidden otherwise) — Remaining large, "/ <total> total" small beside it; Overpaid shows on
+  // its own. Always shows the record button. (L13: the USD estimate stays out of the foot.)
   function footerHTML(ctrl) {
     var model = ctrl.model;
     if (!model) return '';
-    var total = model.total || {}, tl = model.transferLines || {}, deliv = model.transfersDelivered || {};
-    // B4: show a currency only if something is still headed for transfer — a non-zero Remaining (which
-    // now includes an UNTICKED paid_here line, D2), OR any transfer line / recorded transfer (kept even
-    // at 0.00 so a fully-settled currency still reads). L13: the USD estimate line is dropped from the
-    // foot for now (fx.estimateLine is kept in the code, still used by the transfer sheet).
-    var curs = (model.currencies || []).filter(function (c) {
-      return money.cents(model.remaining[c] || 0) !== 0 || money.cents(tl[c] || 0) !== 0 || money.cents(deliv[c] || 0) !== 0;
-    });
-    // L12: Remaining large with a small "/ <total> total" beside it (the per-currency Total, so an
-    // unticked paid_here reads "US$336.00 / US$336.00 total"); "remaining"/"overpaid" words dropped.
+    var total = model.total || {}, deliv = model.transfersDelivered || {};
+    var curs = (model.currencies || []).filter(function (c) { return total[c] != null || deliv[c] != null; });
     var rows = curs.length ? curs.map(function (c) {
       var rem = model.remaining[c] || 0;
       var neg = money.cents(rem) < 0;
       var label = neg ? ('Overpaid · ' + c) : ('To transfer · ' + c);
-      return '<div class="tl"><span>' + esc(label) + '</span><div class="amts"><b class="num">' + money.fmt(Math.abs(rem), c) + '</b>' +
-        '<small class="num">/ ' + esc(money.fmt(total[c] || 0, c)) + ' total</small></div></div>';
+      return '<div class="tl"><span>' + esc(label) + '</span><div class="amts"><b class="num">' + symHTML(esc(money.fmt(Math.abs(rem), c))) + '</b>' +
+        '<small class="num">/ ' + symHTML(esc(money.fmt(total[c] || 0, c))) + ' total</small></div></div>';
     }).join('') : '<div class="tl"><span>Settled</span><b class="num">Nothing to transfer</b></div>';
     var title = curs.length ? '<div class="foot-t">Remaining transfers required</div>' : '';
-    var btn = '<button class="btn" id="recordTransfer">Record a ' + esc(money.monthName(ctrl.month)) + ' transfer</button>';
+    var btn = '<button class="btn" id="recordTransfer">Record a payment</button>';
     return '<div class="foot"><div class="in">' + title + rows + btn + '</div></div>';
   }
 
@@ -2058,25 +2056,15 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       var xid = rowEl.getAttribute('data-xfer');
       rowEl.addEventListener('click', (e) => { if (e.target.closest('[data-delxfer]')) return; ctrl.editTransfer(xid); });
     });
-    // D2: a "settled here" row's × unticks the line (status → unpaid) with a confirm — it NEVER changes
-    // settle. Unticking moves the line out of Settled, back into Remaining (and the foot). Undo re-ticks.
-    root.querySelectorAll('[data-unsettle]').forEach((b) => b.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      var iid = b.getAttribute('data-unsettle'), it = ctrl.itemById(iid); if (!it) return;
-      var ok = await confirmDel(b, it.description, { q: 'Remove “' + esc(it.description) + '” from settled? It goes back into Remaining.', yes: 'Yes, remove' });
-      if (!ok) return;
-      await store.updateItem(iid, { status: 'requested' });
-      Remit.ui.toast('“' + (it.description || 'Line') + '” moved back into Remaining.', { actionLabel: 'Undo', onAction: function () { store.updateItem(iid, { status: 'paid' }); } });
-    }));
-    // B2: a recorded transfer's × asks first, then deletes (Undo toast kept by deleteTransfer).
+    // B2: a recorded payment's × asks first, then deletes (Undo toast kept by deleteTransfer).
     root.querySelectorAll('[data-delxfer]').forEach((b) => b.addEventListener('click', async (e) => {
       e.stopPropagation();
       var xid = b.getAttribute('data-delxfer'), t = (ctrl.model.transfers || []).find((x) => x.id === xid);
-      var label = t ? money.fmt(t.amount_delivered || 0, t.currency) + ' transfer' : 'this transfer';
+      var label = t ? money.fmt(t.amount_delivered || 0, t.currency) + ' payment' : 'this payment';
       if (await confirmDel(b, label)) ctrl.deleteTransfer(xid);
     }));
     var rec = root.querySelector('#recordTransfer'); if (rec) rec.addEventListener('click', () => ctrl.recordTransfer());
-    var mall = root.querySelector('#markAllPaid'); if (mall) mall.addEventListener('click', () => ctrl.markAllPaid());
+    var mall = root.querySelector('#markAllPaid'); if (mall) mall.addEventListener('click', () => ctrl.markAllPaid(mall.getAttribute('data-to')));
     root.querySelectorAll('.selbar [data-sel]').forEach((b) => b.addEventListener('click', () => {
       var a = b.getAttribute('data-sel');
       if (a === 'paid') ctrl.markSelected('paid');
@@ -2114,6 +2102,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     var fields = rowEl.querySelectorAll('input[data-f]');
     fields.forEach((inp) => {
       inp.setAttribute('data-orig', inp.value);
+      if (inp.classList.contains('amt')) { fitAmt(inp); inp.addEventListener('input', () => fitAmt(inp)); }
       inp.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); commit(true); }
         else if (e.key === 'Escape') { e.preventDefault(); inp.value = inp.getAttribute('data-orig') || ''; inp.blur(); }
@@ -2137,7 +2126,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       var next = await pickCur(curBtn);
       if (!next || next === curBtn.getAttribute('data-cur')) return;
       if (isAdd) {
-        curBtn.setAttribute('data-cur', next); curBtn.textContent = curSym(next);
+        curBtn.setAttribute('data-cur', next); curBtn.innerHTML = symHTML(esc(curSym(next)));
         curBtn.classList.toggle('off-home', next !== homeCur);
         curBtn.setAttribute('aria-label', 'Currency: ' + CURNAME[next] + ' — change');
       } else { await store.updateItem(id, { currency: next }); }
@@ -2232,7 +2221,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       var t = (ctrl.model.transfers || []).find(function (x) { return x.id === id; });
       var snap = t ? JSON.parse(JSON.stringify(t)) : null;
       await store.deleteTransfer(id);
-      Remit.ui.toast('Transfer deleted.', { actionLabel: 'Undo', onAction: function () { if (snap) { delete snap.id; store.createTransfer(snap); } } });
+      Remit.ui.toast('Payment deleted.', { actionLabel: 'Undo', onAction: function () { if (snap) { delete snap.id; store.createTransfer(snap); } } });
     };
     ctrl.openBudgets = function () { if (Remit.ui.openBudgets) Remit.ui.openBudgets(ctrl); };
     ctrl.addSection = async function () { var period = await ctrl.ensurePeriod(); ctrl._focusSection = true; await store.addSection(period.id, 'New section'); };
@@ -2259,9 +2248,10 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       for (var i = 0; i < ids.length; i++) await store.softDelete(ids[i]);
       Remit.ui.toast(ids.length + ' deleted.', { actionLabel: 'Undo', onAction: function () { ids.forEach(function (id) { store.undoDelete(id); }); } });
     };
-    ctrl.markAllPaid = async function () {
-      var ids = ctrl.allRows().map(function (r) { return r.id; });
-      for (var i = 0; i < ids.length; i++) await store.updateItem(ids[i], { status: 'paid' });
+    ctrl.markAllPaid = async function (status) {
+      status = status || 'paid';
+      var ids = ctrl.allRows().filter(function (r) { return r.status !== status; }).map(function (r) { return r.id; });
+      for (var i = 0; i < ids.length; i++) await store.updateItem(ids[i], { status: status });
       ctrl.refresh();
     };
     ctrl.moveItem = async function (draggedId, targetId) {
@@ -2289,6 +2279,8 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   Remit.ui.mountMonth = mountMonth;
   Remit.ui.esc = esc;
   Remit.ui.toast = toast;
+  Remit.ui.symHTML = symHTML;
+  Remit.ui.fitAmt = fitAmt;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 </script>
 <!-- src/ui/drag.js -->
@@ -2452,10 +2444,11 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 
     // L5: the currency sign opens the shared currency menu (same popover as the month view), full names,
     // instead of tap-to-cycle. The pill renders the sign (US$ / A$ / £ / €), not the code.
-    sheet.querySelectorAll('.brow [data-cur]').forEach((btn) => { btn.textContent = window.RemitCur.sym(btn.getAttribute('data-cur')); btn.addEventListener('click', async () => {
+    sheet.querySelectorAll('.brow [data-cur]').forEach((btn) => { btn.innerHTML = window.RemitCur.symHTML(esc(window.RemitCur.sym(btn.getAttribute('data-cur')))); btn.addEventListener('click', async () => {
       var c = btn.getAttribute('data-cur'); var next = await window.RemitCur.pick(btn); if (!next || next === c) return;
-      btn.setAttribute('data-cur', next); btn.textContent = window.RemitCur.sym(next); btn.classList.toggle('off-home', next !== homeCur);
+      btn.setAttribute('data-cur', next); btn.innerHTML = window.RemitCur.symHTML(esc(window.RemitCur.sym(next))); btn.classList.toggle('off-home', next !== homeCur);
     }); });
+    sheet.querySelectorAll('.brow .amt').forEach((inp) => { window.RemitCur.fitAmt(inp); inp.addEventListener('input', () => window.RemitCur.fitAmt(inp)); });
     // remove a default (marks inactive) immediately
     sheet.querySelectorAll('[data-delbud]').forEach((btn) => btn.addEventListener('click', async () => {
       await store.deleteBudget(btn.getAttribute('data-delbud'));
@@ -2501,8 +2494,9 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 <script>
 /* eslint-disable */
 /* =============================================================================
- * remit ui/transfer.js — record a transfer (THE MODEL). A transfer belongs to the kid's page
- * (person_id) and NEVER locks a line. Fields: currency (default the one with most remaining),
+ * remit ui/transfer.js — "Record a payment" (THE MODEL). A payment (a remit_transfers row) belongs to the
+ * kid's page (person_id) and NEVER locks a line. It works for ANY currency, USD included — a US cost is
+ * just a USD line, paid by recording a USD payment (arc/ledger-simplify). Fields: currency (default the one with most remaining),
  * amount (default that remaining), date (today), provider, USD cost (optional), note. No limits —
  * overpay, underpay, many per month, negative all allowed. Recording it simply adds to Settled, so
  * Remaining = Total − Settled drops. The effective rate + cost vs the ECB mid are DERIVED for
@@ -2536,31 +2530,34 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 
     var wrap = document.createElement('div');
     var scrim = document.createElement('div'); scrim.className = 'scrim';
-    var sheet = document.createElement('div'); sheet.className = 'sheet'; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true'); sheet.setAttribute('aria-label', monthName + ' transfer');
+    var sheet = document.createElement('div'); sheet.className = 'sheet'; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true'); sheet.setAttribute('aria-label', editing ? 'Edit payment' : 'Record a payment');
     wrap.appendChild(scrim); wrap.appendChild(sheet); document.body.appendChild(wrap);
     var host = { wrap: wrap, scrim: scrim, sheet: sheet, onKey: function (e) { if (e.key === 'Escape') close(host); } };
     document.addEventListener('keydown', host.onKey); scrim.addEventListener('click', () => close(host));
 
-    var curOptions = (model.currencies.length ? model.currencies : [cur]);
-    if (editing && curOptions.indexOf(existing.currency) === -1) curOptions = curOptions.concat(existing.currency);
+    // every currency is offered — the month's own currencies first, then the rest
+    var curOptions = model.currencies.slice();
+    ['GBP', 'USD', 'AUD', 'EUR', cur].concat(editing ? [existing.currency] : []).forEach(function (c) { if (c && curOptions.indexOf(c) === -1) curOptions.push(c); });
     var initAmt = editing ? Number(existing.amount_delivered).toFixed(2) : (money.cents(remain) > 0 ? Number(remain).toFixed(2) : '');
     sheet.innerHTML = '<div class="grab"></div>' +
-      '<div class="f2" style="border-bottom-width:2px"><label>' + (editing ? 'Edit transfer' : 'Transfer') + '</label><div class="v">' + esc(monthName) + ' · ' + esc((store.getPerson(ctrl.personId) || {}).name || '') + '</div></div>' +
+      '<div class="f2" style="border-bottom-width:2px"><label>' + (editing ? 'Edit payment' : 'Record a payment') + '</label><div class="v">' + esc(monthName) + ' · ' + esc((store.getPerson(ctrl.personId) || {}).name || '') + '</div></div>' +
       '<div class="f2"><label>Currency</label><div class="v"><select id="t-cur">' + curOptions.map((c) => '<option value="' + esc(c) + '"' + (c === cur ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select></div></div>' +
       '<div class="f2"><label>Remaining</label><div class="v"><b class="num" style="font-size:18px" id="t-remain">' + money.fmt(remain, cur) + '</b></div></div>' +
       '<div class="f2"><label>Amount</label><div class="v"><input id="t-amt" inputmode="decimal" value="' + esc(initAmt) + '" placeholder="0.00"></div></div>' +
       '<div class="f2"><label>Sent on</label><div class="v"><input id="t-date" type="date" value="' + esc(editing && existing.sent_on ? existing.sent_on : todayISO()) + '"></div></div>' +
-      '<div class="f2"><label>Provider</label><div class="v"><input id="t-prov" type="text" value="' + esc(editing ? (existing.provider || '') : 'Wise') + '"></div></div>' +
-      '<div class="f2"><label>USD cost</label><div class="v"><input id="t-sent" inputmode="decimal" value="' + esc(editing && existing.amount_sent_usd != null ? existing.amount_sent_usd : '') + '" placeholder="optional"></div></div>' +
+      '<div class="f2"><label>Provider</label><div class="v"><input id="t-prov" type="text" value="' + esc(editing ? (existing.provider || '') : (cur === 'USD' ? '' : 'Wise')) + '" placeholder="optional"></div></div>' +
+      '<div class="f2" id="t-sent-row"><label>USD cost</label><div class="v"><input id="t-sent" inputmode="decimal" value="' + esc(editing && existing.amount_sent_usd != null ? existing.amount_sent_usd : '') + '" placeholder="optional"></div></div>' +
       '<div class="f2"><label>Note</label><div class="v"><input id="t-note" type="text" value="' + esc(editing ? (existing.note || '') : '') + '" placeholder="optional"></div></div>' +
       '<div class="derived" id="t-derived"><h4>Worked out for you</h4><div class="dl"><span>Enter the amount (and USD cost) above</span><b>—</b></div></div>' +
-      '<p class="note" style="margin-top:16px">No limits — overpay, underpay, or record several. Nothing is locked; this just adds to what’s settled.</p>' +
-      '<div class="acts"><button class="btn ghost" data-act="cancel">Cancel</button><button class="btn" data-act="save">' + (editing ? 'Save changes' : 'Save the transfer') + '</button></div>';
+      '<p class="note" style="margin-top:16px">No limits — any currency, overpay, underpay, or record several. Rate and fee are optional. Nothing is locked; this just adds to what’s settled.</p>' +
+      '<div class="acts"><button class="btn ghost" data-act="cancel">Cancel</button><button class="btn" data-act="save">' + (editing ? 'Save changes' : 'Save the payment') + '</button></div>';
 
     var $ = (id) => sheet.querySelector(id);
     function selCur() { return $('#t-cur').value; }
     function redraw() {
       var c = selCur();
+      // a USD payment has no FX leg — the optional USD cost (and the derived rate) only apply to the others
+      $('#t-sent-row').hidden = (c === 'USD'); $('#t-derived').hidden = (c === 'USD');
       var rr = fx.rateFor(store.getRates ? store.getRates() : [], c); mid = rr ? rr.rate : null;
       $('#t-remain').textContent = money.fmt(remaining[c] || 0, c);
       var amt = Number(($('#t-amt').value || '').trim()), sent = Number(($('#t-sent').value || '').trim());
@@ -2572,7 +2569,12 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
         (mid ? '<div class="dl"><span>ECB mid, ' + esc(fx.rateDayLabel(rr.day)) + '</span><b class="num">' + mid + '</b></div>' : '') +
         (m.costPct != null ? '<div class="dl"><span>All-in cost vs mid</span><b class="num">' + m.costPct.toFixed(2) + '%</b></div>' : '');
     }
-    $('#t-cur').addEventListener('change', function () { var c = selCur(); var r = remaining[c] || 0; $('#t-amt').value = money.cents(r) > 0 ? Number(r).toFixed(2) : ''; redraw(); });
+    $('#t-cur').addEventListener('change', function () {
+      var c = selCur(); var r = remaining[c] || 0; $('#t-amt').value = money.cents(r) > 0 ? Number(r).toFixed(2) : '';
+      // an untouched provider follows the currency: a USD payment has no FX provider, the others default to Wise
+      var pv = $('#t-prov'); if (!editing && (pv.value === 'Wise' || pv.value === '')) pv.value = c === 'USD' ? '' : 'Wise';
+      redraw();
+    });
     ['#t-amt', '#t-sent'].forEach((id) => $(id).addEventListener('input', redraw));
 
     $('[data-act="cancel"]').addEventListener('click', () => close(host));
@@ -2580,7 +2582,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       var c = selCur();
       var amt = Number(($('#t-amt').value || '').trim());
       if (!amt) { $('#t-amt').focus(); return; }
-      var sent = Number(($('#t-sent').value || '').trim());
+      var sent = c === 'USD' ? 0 : Number(($('#t-sent').value || '').trim());
       var fields = {
         person_id: ctrl.personId, period_year: ctrl.year, period_month: ctrl.month, currency: c,
         sent_on: $('#t-date').value || todayISO(), amount_delivered: amt, amount_sent_usd: sent || null,
@@ -2589,9 +2591,10 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       if (editing) await store.updateTransfer(existing.id, fields);
       else await store.createTransfer(fields);
       close(host);
-      Remit.ui.toast(money.fmt(amt, c) + (editing ? ' transfer updated.' : ' transfer recorded.'));
+      Remit.ui.toast(money.fmt(amt, c) + (editing ? ' payment updated.' : ' payment recorded.'));
     });
 
+    redraw();
     requestAnimationFrame(() => { scrim.classList.add('open'); sheet.classList.add('open'); });
   }
 
@@ -2626,7 +2629,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 
   // The import stamps every self-contradicting source line with this exact prefix (docs/evidence/
   // s9-import.md). It is the one reliable, data-driven signal a month needs a visible flag — a clean
-  // reclassification (e.g. Sep 2026's £200 paid_here) deliberately does NOT carry it.
+  // reclassification (e.g. Sep 2026's £200 already-paid line) deliberately does NOT carry it.
   var DISCREPANCY = 'Source note discrepancy:';
   function isFlagged(it) { return !!it && !!it.note && String(it.note).indexOf(DISCREPANCY) === 0; }
 
@@ -2673,7 +2676,6 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
         periodId: pr.id, year: pr.year, month: pr.month, label: money.monthLabel(pr.year, pr.month),
         personId: pr.person_id, personName: (personById[pr.person_id] || {}).name || '—',
         transfer: money.transferLineTotals(its),
-        settledHere: money.paidHereTotals(its),
         recurring: recur, extras: extra,
         count: its.length,
         flagged: flaggedItems.length > 0,
@@ -2690,14 +2692,13 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 
     // grand totals, per currency (never crossed)
     var grand = money.transferLineTotals(items);
-    var grandSettled = money.paidHereTotals(items);
 
-    // 3 — category drift: extras that actually happened (counted or settled-here), by half-year
+    // 3 — category drift: extras that actually happened, by half-year
     var driftMap = {};   // "2025 H1" -> cat -> {cur: cents}
     var halfOrder = {};  // half -> sort key (year*10 + half), newest first
     items.forEach(function (it) {
       if (it.bucket !== 'extras') return;
-      if (!(money.isTransferLine(it) || money.isPaidHere(it))) return;
+      if (!money.isTransferLine(it)) return;
       var pr = periodById[it.period_id]; if (!pr) return;
       var half = pr.month <= 6 ? 1 : 2;
       var key = pr.year + ' H' + half;
@@ -2742,7 +2743,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 
     return {
       months: months, monthlyByPerson: monthlyByPerson, emptyKids: emptyKids,
-      grand: grand, grandSettled: grandSettled,
+      grand: grand,
       drift: drift, transfers: xfers, commitments: commitmentsModel,
       flaggedCount: months.filter(function (m) { return m.flagged; }).length,
     };
@@ -2776,10 +2777,9 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
         var notes = m.flagged ? '<div class="rnotes">' + m.notes.map(function (n) {
           return '<p><b>' + esc(n.description) + '</b> · ' + esc(money.fmt(n.amount, n.currency)) + '<br>' + esc(n.note) + '</p>';
         }).join('') + '</div>' : '';
-        var settled = Object.keys(m.settledHere).length ? '<div class="rsub">' + esc(curLine(m.settledHere)) + ' settled here — not in the transfer</div>' : '';
         return '<div class="rmonth' + (m.flagged ? ' is-flagged' : '') + '">' +
           '<div class="rmrow"><span class="rml">' + esc(m.label) + (m.flagged ? ' ' + flagPill() : '') + '</span>' +
-          '<b class="num">' + esc(curLine(m.transfer)) + '</b></div>' + settled + notes + '</div>';
+          '<b class="num">' + esc(curLine(m.transfer)) + '</b></div>' + notes + '</div>';
       }).join('');
       return '<section class="rgroup"><h3>' + esc(grp.person.name) + '<span class="rgt num">' + esc(curLine(money.transferLineTotals(flatItems(grp)))) + ' total</span></h3>' + rows + '</section>';
     }).join('');
