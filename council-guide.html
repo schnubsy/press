@@ -329,7 +329,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v4.8.1</span>
+    <span class="nav-badge">v4.9.0</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -1287,6 +1287,20 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         </details>
       </div>
 
+      <div class="instr i-hand" id="cap-snag">
+        <span class="who">Owner: Snag · consulted Forge + Steward + Quill · trigger — "snag: &hellip;" / "run the train" / "fix now"</span>
+        <h4>Snag</h4>
+        <p class="instr-sum">One line from any surface — typed in chat or spoken to the phone — becomes a tracked issue on the right app, and once a month a maintenance train sweeps every app's open snags into a single arc and ships them. The backlog lives with each app; nothing is lost in a chat scroll.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Full detail — capture, the train, and shadow mode</summary>
+          <div class="facet-body">
+            <p><b class="ink">Capture.</b> Say <em>&ldquo;snag: the due date is missing on the task cards&rdquo;</em> and Snag works out which app it belongs to from a small routing table, decides whether it is a bug or an enhancement, writes a short imperative title and a what / where / why body, labels it, files it, and answers with the link — nothing else. If the app can't be told apart, it lands in a triage lane and she says so. Several at once (<em>&ldquo;snag &times;3&rdquo;</em>) file one each. A voice shortcut does the same from the phone, and anything marked <b class="ink">urgent</b> skips the queue and is offered an immediate fix.</p>
+            <p><b class="ink">The train.</b> On the second of each month — the day after the Steward's audit, never at the same time — the train reads the routing table, skips anything on <b class="ink">hold</b>, and for each app with open snags emits one arc: a slice per snag, each closed only by the change that fixes it. Apps run one after another, and a <b class="ink">visual diff</b> against the live page stops any change that moves more of the layout than it meant to.</p>
+            <p><b class="ink">Shadow mode, then trust.</b> The first three trains stop at an open pull request and send one list to tap; only after three clean runs does the train merge and publish on its own. Every publish records the page's previous fingerprint, so undoing a bad release is one step, not an investigation — and the monthly report leads with anything red.</p>
+          </div>
+        </details>
+      </div>
+
       <!-- Garrick (Hand lead) -->
       <div class="instr i-hand" id="cap-optimize">
         <span class="who">Owner: Garrick + Steward · trigger — "optimization review" / quarterly</span>
@@ -1577,6 +1591,11 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
               <td>The finished artifact — work order, spec, memo, or maintenance runbook.</td>
             </tr>
             <tr>
+              <td><span class="cmd">snag: …</span><span class="alias">also: "log a bug on …", "run the train"</span></td>
+              <td class="who">Snag (Tan Wei Lin)</td>
+              <td>A tracked issue on the right app, answered with its link — and a monthly train that ships the backlog.</td>
+            </tr>
+            <tr>
               <td><span class="cmd">kickoff / new project</span></td>
               <td class="who">The Kickoff rite</td>
               <td>Idea → worth-building check → one batched interview → scaffolded, git-initialized, handoff-ready repo.</td>
@@ -1600,7 +1619,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <footer>
   <div class="footer-in">
     <div>The Council · a private prospectus · generated from PERSONAS.md + skills</div>
-    <div class="mono">council v4.8.1 · last updated 2026-09-24</div>
+    <div class="mono">council v4.9.0 · last updated 2026-09-26</div>
   </div>
 </footer>
 
