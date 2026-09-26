@@ -136,6 +136,14 @@ registry is **`tenants.json`** (repo-owned like `spaces.json`), keyed by page fi
 `repo · tier · gate · vendored · release · build · output · deterministic · note`. This
 section is the **canonical** tenancy contract; the council reference and the MANUAL point here.
 
+**Snag train gates (registry parity + page-diff).** Every tenant page is also a row in the council
+snag registry (`~/Documents/Claude/council-hub/council/instruments/snag/registry.json`, same repo) —
+`tools/tenants-check.mjs` **T8 `registry-parity`** fails a page with no row or a repo mismatch, and a missing
+registry file is a FAIL, not a SKIP (`COUNCIL_DIR` overrides the path). The monthly snag train gates every
+page it rebuilds with **`tools/page-diff.mjs <built> <live-url>`** (Playwright, 1280×800 + 390×844,
+pixelmatch): above `--threshold` (default 2 % of pixels on either viewport) it exits 2 and the train goes
+🔴 unless the slice's scope declares a layout change. Both are dev-only tools; the site keeps no build step.
+
 **Two RULEs (the invariant this arc protects):**
 - **`press/src` is the ONLY source for shared modules — apps pull, never push.** A published
   page in press is NEVER hand-edited; a hotfix lands in the source repo and ships via that

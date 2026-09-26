@@ -9,6 +9,7 @@
 //   node tools/tenants-check.mjs --rebuild       # + T5 rebuild-vs-live for deterministic tenants
 //   node tools/tenants-check.mjs --press <dir>   # override the press root (default: where this lives)
 //   CODE_ROOT=<dir> node tools/tenants-check.mjs   # override the source-repos parent (default ~/Documents/code)
+//   COUNCIL_DIR=<dir> node tools/tenants-check.mjs # override the council repo for T8 (default ~/Documents/Claude/council-hub/council)
 //
 // No dependencies (Node ≥20). The DB checks it cannot reach are EMITTED as SQL, never asserted.
 import { readFileSync, existsSync, statSync } from 'node:fs';
@@ -26,6 +27,7 @@ const SELF_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PRESS = resolve(argVal('--press') || SELF_ROOT);
 const CODE_ROOT = process.env.CODE_ROOT || join(homedir(), 'Documents', 'code');
 const REBUILD = has('--rebuild');
+const COUNCIL_DIR = process.env.COUNCIL_DIR || join(homedir(), 'Documents', 'Claude', 'council-hub', 'council');
 
 // ---- helpers ---------------------------------------------------------------
 const C = { reset: '\x1b[0m', red: '\x1b[31m', grn: '\x1b[32m', yel: '\x1b[33m', dim: '\x1b[2m', cyn: '\x1b[36m' };
@@ -181,6 +183,29 @@ for (const page of Object.keys(tenants)) {
       const missing = dataPersonal.filter((p) => !toolcfg.has(p));
       if (missing.length) say('FAIL', 'T7 tool-cfg', '(marquee)', `personal data page(s) with NO TOOL_CFG entry (won't show in Connect / recovery kit): ${missing.join(', ')}`);
       else say('PASS', 'T7 tool-cfg', '(marquee)', `${dataPersonal.length} personal data page(s) all present in TOOL_CFG`);
+    }
+  }
+}
+
+// ---- T8 registry-parity — every tenant page has a council snag-registry row with the same repo ---------
+// The snag instrument (council skills/hand/references/snag.md) routes a snag about a page to the repo its
+// registry row names, and the monthly train sweeps apps from that registry — so a tenant missing from it
+// (or pointing at the wrong repo) is a page whose snags land nowhere. Missing registry file = FAIL, not SKIP.
+{
+  const regPath = join(COUNCIL_DIR, 'instruments', 'snag', 'registry.json');
+  let reg = null;
+  if (!existsSync(regPath)) say('FAIL', 'T8 registry-parity', '(marquee)', `snag registry MISSING at ${regPath} (set COUNCIL_DIR)`);
+  else {
+    try { reg = readJSON(regPath); } catch (e) { say('FAIL', 'T8 registry-parity', '(marquee)', `snag registry unreadable: ${e.message}`); }
+  }
+  if (reg) {
+    const rows = new Map((Array.isArray(reg.solutions) ? reg.solutions : []).filter((r) => r && r.page).map((r) => [r.page, r]));
+    for (const page of Object.keys(tenants)) {
+      const want = 'schnubsy/' + (tenants[page].repo || 'press');
+      const row = rows.get(page);
+      if (!row) say('FAIL', 'T8 registry-parity', page, `no snag-registry row (add it to council instruments/snag/registry.json)`);
+      else if (row.repo !== want) say('FAIL', 'T8 registry-parity', page, `registry repo ${row.repo} != tenants.json ${want}`);
+      else say('PASS', 'T8 registry-parity', page, `${row.id} → ${row.repo}`);
     }
   }
 }
