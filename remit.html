@@ -425,6 +425,17 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   color:var(--muted);text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:rgba(143,155,171,.8)}
 /* arc/ledger-simplify slice 3 — the record sheet hides the USD-cost row + derived rate for a USD payment */
 .f2[hidden],.derived[hidden]{display:none}
+/* =============================================================================
+ * arc/foot-and-resume slice 2 — the foot never hides content.
+ * --foot-h is the fixed foot's measured height (ResizeObserver, month.js watchFoot) — it already
+ * includes the foot's own safe-area padding, so the page pads by it + a small gap. The fallback
+ * (before JS measures) is the old 190px-ish estimate plus the safe area. The foot is opaque now
+ * (no gradient, no blur — nothing ghosts through), and toasts float just above it.
+ * ========================================================================== */
+.app{padding-bottom:calc(var(--foot-h,calc(172px + env(safe-area-inset-bottom))) + 24px)}
+@media(min-width:900px){.app{padding-bottom:calc(var(--foot-h,172px) + 32px)}}
+.foot{background:var(--stage);backdrop-filter:none;-webkit-backdrop-filter:none}
+.toast{bottom:calc(var(--foot-h,0px) + 14px)}
 </style>
 </head>
 <body>
@@ -2008,9 +2019,25 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     return '<div class="foot"><div class="in">' + title + rows + btn + '</div></div>';
   }
 
+  // arc/foot-and-resume S2: the fixed foot's real height → --foot-h on :root, so the scrolling page
+  // pads by it (the last row always clears the foot, however many currencies it grows to) and toasts
+  // sit above it. One observer, re-pointed at the fresh .foot after every render.
+  var _footRO = null;
+  function watchFoot(root) {
+    var foot = root.querySelector('.foot');
+    var set = function () {
+      var h = foot && foot.isConnected ? Math.ceil(foot.getBoundingClientRect().height) : 0;
+      document.documentElement.style.setProperty('--foot-h', h + 'px');
+    };
+    if (_footRO) { _footRO.disconnect(); _footRO = null; }
+    if (foot && typeof ResizeObserver !== 'undefined') { _footRO = new ResizeObserver(set); _footRO.observe(foot); }
+    set();
+  }
+
   // ── wiring ──────────────────────────────────────────────────────────────────
   function wire(ctrl) {
     var root = ctrl.root, store = ctrl.store;
+    watchFoot(root);
     root.querySelectorAll('[data-person]').forEach((b) => b.addEventListener('click', () => ctrl.setPerson(b.getAttribute('data-person'))));
     // B5: scroll the current month into the middle of the strip (only when the row actually overflows).
     var centreMonth = function () { var mg = root.querySelector('.mgrid'), mc = mg && mg.querySelector('[aria-current=true]'); if (mg && mc && mg.scrollWidth > mg.clientWidth) mg.scrollLeft = mc.offsetLeft - (mg.clientWidth - mc.offsetWidth) / 2; };
@@ -2185,17 +2212,36 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     }
   }
 
+  // arc/foot-and-resume S1: the last person + month viewed on THIS device. Every storage touch is
+  // try/catch — a private window or blocked storage simply falls back to the default view.
+  var LAST_VIEW = 'remit:lastView';
+  function readLastView() {
+    try {
+      var v = JSON.parse(localStorage.getItem(LAST_VIEW) || 'null');
+      if (v && typeof v.personId === 'string' && v.year >= 2000 && v.year <= 2100 && v.month >= 1 && v.month <= 12) return v;
+    } catch (e) {}
+    return null;
+  }
+  function writeLastView(ctrl) {
+    try { localStorage.setItem(LAST_VIEW, JSON.stringify({ personId: ctrl.personId, year: ctrl.year, month: ctrl.month })); } catch (e) {}
+  }
+
   // ── the month controller ──────────────────────────────────────────────────
+  // opts.personId/year/month = a deep link (wins); opts.fresh = a magic-link landing (ignores the
+  // remembered view). Otherwise the remembered view, if its person still exists; else the default.
   function mountMonth(root, store, opts) {
     opts = opts || {};
     var ctrl = { root: root, store: store, personId: null, year: null, month: null, model: null, years: [] };
     var kids = store.getPeople().filter((p) => p.is_kid);
-    ctrl.personId = opts.personId || (kids[0] && kids[0].id) || (store.getPeople()[0] && store.getPeople()[0].id);
+    var last = (opts.fresh || opts.personId) ? null : readLastView();
+    if (last && !kids.some((p) => p.id === last.personId)) last = null;
+    if (opts.personId && !store.getPeople().some((p) => p.id === opts.personId)) opts.personId = null;
+    ctrl.personId = opts.personId || (last && last.personId) || (kids[0] && kids[0].id) || (store.getPeople()[0] && store.getPeople()[0].id);
     // B5: the default month is the DEVICE-local date (was UTC — which rolled a day early in AU/UK
     // evenings). The strip auto-scrolls this month into view in wire().
     var today = new Date();
-    ctrl.year = opts.year || today.getFullYear();
-    ctrl.month = opts.month || (today.getMonth() + 1);
+    ctrl.year = opts.year || (last && last.year) || today.getFullYear();
+    ctrl.month = opts.month || (last && last.month) || (today.getMonth() + 1);
 
     ctrl.refresh = async function () {
       ctrl.years = await Promise.resolve(store.getYears ? store.getYears(ctrl.personId) : [ctrl.year]);
@@ -2210,9 +2256,9 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       ctrl.model = money.monthModel(data.period || { id: '__none' }, data.items, { transfers: data.transfers, sections: data.sections });
       render(ctrl);
     };
-    ctrl.setPerson = function (id) { ctrl.personId = id; ctrl.refresh(); };
-    ctrl.setYear = function (y) { ctrl.year = y; ctrl.refresh(); };
-    ctrl.setMonth = function (y, m) { ctrl.year = y; ctrl.month = m; ctrl.refresh(); };
+    ctrl.setPerson = function (id) { ctrl.personId = id; writeLastView(ctrl); ctrl.refresh(); };
+    ctrl.setYear = function (y) { ctrl.year = y; writeLastView(ctrl); ctrl.refresh(); };
+    ctrl.setMonth = function (y, m) { ctrl.year = y; ctrl.month = m; writeLastView(ctrl); ctrl.refresh(); };
     ctrl.materialise = async function () { await store.materialise(ctrl.personId, ctrl.year, ctrl.month); ctrl.refresh(); };
     ctrl.ensurePeriod = function () { return (ctrl.model && ctrl.model.period && ctrl.model.period.id && ctrl.model.period.id !== '__none') ? Promise.resolve(ctrl.model.period) : store.ensurePeriod(ctrl.personId, ctrl.year, ctrl.month); };
     ctrl.recordTransfer = function () { if (Remit.ui.openTransfer) Remit.ui.openTransfer(ctrl); };
@@ -2917,6 +2963,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   async function boot() {
     var mount = document.getElementById('remit-root');
     var fx = fixture();
+    var view = landingView();
     var store;
     if (fx) {
       store = Remit.store.createStore(null);          // fixture — the seam is injected, gate skipped
@@ -2928,8 +2975,22 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     }
     try { await store.load(); }
     catch (e) { mount.innerHTML = '<p style="padding:24px;color:var(--muted)">Couldn’t load your data — try again in a moment.</p>'; return; }
-    Remit.ui.mountMonth(mount, store);
+    Remit.ui.mountMonth(mount, store, view);
     if (!fx) offerAddToHomeScreen();
+  }
+
+  // arc/foot-and-resume S1: a deep link (?person=<id>&month=YYYY-MM) or a magic-link landing (tokens
+  // in the fragment — read BEFORE the gate strips it) wins over the remembered last view.
+  function landingView() {
+    var v = {};
+    try {
+      if (/(^#|&)access_token=/.test(location.hash || '')) v.fresh = true;
+      var q = new URLSearchParams(location.search || '');
+      var ym = /^(\d{4})-(\d{1,2})$/.exec(q.get('month') || '');
+      if (q.get('person')) v.personId = q.get('person');
+      if (ym && +ym[2] >= 1 && +ym[2] <= 12) { v.year = +ym[1]; v.month = +ym[2]; if (!v.personId) v.fresh = true; }
+    } catch (e) {}
+    return v;
   }
 
   // Offer Add to Home Screen once after the first sign-in. iOS has no beforeinstallprompt, so this
