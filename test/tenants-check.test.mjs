@@ -24,12 +24,18 @@ function estate() {
   const base = mkdtempSync(join(tmpdir(), 'tenants-check-'));
   const press = join(base, 'press');
   const vscode = join(base, 'vscode');
+  const council = join(base, 'council');
   mkdirSync(join(press, 'src'), { recursive: true });
   mkdirSync(vscode, { recursive: true });
+  mkdirSync(join(council, 'instruments', 'snag'), { recursive: true });
   writeFileSync(join(press, 'src', 'gate.js'), GATE);
   const reg = { pages: {}, spaces: { v: 2, personal: [], family: [] }, tenants: {} };
+  // T8: by default the council snag registry mirrors tenants.json; a test may edit it (snagRows) or drop it (noRegistry).
+  let snagEdit = null, noRegistry = false;
   return {
-    base, press, vscode,
+    base, press, vscode, council,
+    snagRows(fn) { snagEdit = fn; return this; },
+    noSnagRegistry() { noRegistry = true; return this; },
     page(name, content = '<html>' + name + '</html>') { writeFileSync(join(press, name), content); reg.pages[name] = { title: name }; return this; },
     tier(name, t) { if (t === 'personal') reg.spaces.personal.push(name); else if (t === 'family') reg.spaces.family.push(name); return this; },
     tenant(name, entry) { reg.tenants[name] = entry; return this; },
@@ -46,10 +52,15 @@ function estate() {
       writeFileSync(join(press, 'pages.json'), JSON.stringify(reg.pages, null, 2));
       writeFileSync(join(press, 'spaces.json'), JSON.stringify(reg.spaces));
       writeFileSync(join(press, 'tenants.json'), JSON.stringify({ v: 1, tenants: reg.tenants }, null, 2));
+      if (!noRegistry) {
+        let rows = Object.entries(reg.tenants).map(([page, t]) => ({ id: page.replace(/\.html$/, ''), kind: 'web', page, repo: 'schnubsy/' + (t.repo || 'press') }));
+        if (snagEdit) rows = snagEdit(rows);
+        writeFileSync(join(council, 'instruments', 'snag', 'registry.json'), JSON.stringify({ v: 1, solutions: rows }, null, 2));
+      }
       return this;
     },
     run(args = []) {
-      try { const out = execFileSync('node', [CHECKER, '--press', this.press, ...args], { env: { ...process.env, CODE_ROOT: this.vscode }, encoding: 'utf8' }); return { code: 0, out }; }
+      try { const out = execFileSync('node', [CHECKER, '--press', this.press, ...args], { env: { ...process.env, CODE_ROOT: this.vscode, COUNCIL_DIR: this.council }, encoding: 'utf8' }); return { code: 0, out }; }
       catch (e) { return { code: e.status ?? 1, out: (e.stdout || '') + (e.stderr || '') }; }
     },
     cleanup() { rmSync(base, { recursive: true, force: true }); },
@@ -256,5 +267,45 @@ test('clean estate exits 0; a single FAIL flips the exit to 1', () => {
   const e = estate();
   e.page('a.html').tier('a.html', 'personal').repo('appa').tenant('a.html', { repo: 'appa', tier: 'personal', gate: 'src/gate.js', vendored: 'src/vendor/press-gate.js', release: 'tools/release.js' }).write();
   assert.equal(e.run().code, 0);
+  e.cleanup();
+});
+
+test('T8 registry-parity PASS — every tenant page has a snag-registry row with the same repo', () => {
+  const e = estate();
+  e.page('a.html').tier('a.html', 'personal').repo('appa').tenant('a.html', { repo: 'appa', tier: 'personal', gate: 'src/gate.js', vendored: 'src/vendor/press-gate.js', release: 'tools/release.js' })
+    .page('k.html').tenant('k.html', { repo: null, tier: 'public', gate: null, vendored: null, release: null }).write();
+  const r = e.run();
+  assert.match(line(r.out, 'T8 registry-parity', 'a.html'), /PASS.*schnubsy\/appa/);
+  assert.match(line(r.out, 'T8 registry-parity', 'k.html'), /PASS.*schnubsy\/press/);
+  assert.equal(r.code, 0);
+  e.cleanup();
+});
+
+test('T8 registry-parity FAIL — a tenant page with no registry row', () => {
+  const e = estate();
+  e.page('k.html').tenant('k.html', { repo: null, tier: 'public', gate: null, vendored: null, release: null })
+    .snagRows(() => []).write();
+  const r = e.run();
+  assert.match(line(r.out, 'T8 registry-parity', 'k.html'), /FAIL.*no snag-registry row/);
+  assert.equal(r.code, 1);
+  e.cleanup();
+});
+
+test('T8 registry-parity FAIL — registry repo differs from tenants.json', () => {
+  const e = estate();
+  e.page('k.html').tenant('k.html', { repo: null, tier: 'public', gate: null, vendored: null, release: null })
+    .snagRows((rows) => rows.map((x) => ({ ...x, repo: 'schnubsy/elsewhere' }))).write();
+  const r = e.run();
+  assert.match(line(r.out, 'T8 registry-parity', 'k.html'), /FAIL.*schnubsy\/elsewhere != tenants\.json schnubsy\/press/);
+  assert.equal(r.code, 1);
+  e.cleanup();
+});
+
+test('T8 registry-parity FAIL (not SKIP) — the council registry file is missing', () => {
+  const e = estate();
+  e.page('k.html').tenant('k.html', { repo: null, tier: 'public', gate: null, vendored: null, release: null }).noSnagRegistry().write();
+  const r = e.run();
+  assert.match(line(r.out, 'T8 registry-parity', '(marquee)'), /FAIL.*MISSING/);
+  assert.equal(r.code, 1);
   e.cleanup();
 });

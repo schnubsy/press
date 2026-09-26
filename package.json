@@ -3,14 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "press marquee — dev-only test harness. The site itself has NO build step; these deps are never shipped.",
+  "description": "press marquee \u2014 dev-only test harness. The site itself has NO build step; these deps are never shipped.",
   "scripts": {
-    "test": "node --test test/vault.test.mjs test/family-gate.test.mjs test/tenants-check.test.mjs",
+    "test": "node --test test/vault.test.mjs test/family-gate.test.mjs test/tenants-check.test.mjs test/page-diff.test.mjs",
     "smoke": "playwright test",
     "inline:check": "node tools/inline-vault.mjs --check",
-    "tenants:check": "node tools/tenants-check.mjs"
+    "tenants:check": "node tools/tenants-check.mjs",
+    "page:diff": "node tools/page-diff.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0"
+    "@playwright/test": "^1.63.0",
+    "pixelmatch": "^7.2.0",
+    "pngjs": "^7.0.0"
   }
 }
