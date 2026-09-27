@@ -436,6 +436,27 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 @media(min-width:900px){.app{padding-bottom:calc(var(--foot-h,172px) + 32px)}}
 .foot{background:var(--stage);backdrop-filter:none;-webkit-backdrop-filter:none}
 .toast{bottom:calc(var(--foot-h,0px) + 14px)}
+
+/* =============================================================================
+ * arc/defaults-and-polish S4
+ * ========================================================================== */
+/* month strip (iPhone): a 44px-tall horizontal-only scroller (the 44px tap targets fit inside it, so it can
+   never scroll or settle vertically) that takes only its visual 22px in the row; labels centred on the
+   cross axis, snapping to a month after a swipe. */
+.period .mgrid{overflow-y:hidden;align-items:center;scroll-snap-type:x proximity;overscroll-behavior-x:contain;padding:13px 0;margin:-11px 0}
+.period .mgrid button{scroll-snap-align:center}
+/* payment sheet: WebKit draws <input type=date> with its own chrome (centred text, own height) — make
+   "Sent on" match the other fields' width, height and left alignment */
+.f2 .v input[type=date]{-webkit-appearance:none;appearance:none;display:block;width:100%;min-width:0;height:44px;text-align:left;line-height:1.3}
+.f2 .v input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0}
+.f2 .v input[type=date]::-webkit-datetime-edit{padding:0}
+/* amount validation: the inline message under a line / default / payment field */
+.amterr{margin:2px 0 6px;font:500 12.5px/1.35 var(--sans);color:#f0a393}
+.erow + .amterr{padding-left:44px}
+.f2 + .amterr{padding-left:130px}
+input[aria-invalid=true]{outline:1px solid #f0a393;outline-offset:1px}
+/* "Settled in…" rows: the USD figure, small + grey, right-aligned to the LEFT of the amount */
+.srow .usd{flex:0 1 auto;max-width:46%;text-align:right;font:400 11.5px/1.3 var(--sans);color:var(--faint);font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -1174,6 +1195,18 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     };
   }
 
+  // arc/defaults-and-polish S4: every amount field (line, default, payment) goes through this. '' → no
+  // amount (null, ok). A number — optional sign, thousands commas, up to 2 decimals — → its value.
+  // Anything else is rejected with the inline message and nothing is saved.
+  var AMOUNT_RE = /^[-+]?(\d{1,3}(,\d{3})+|\d+)?(\.\d{1,2})?$/;
+  var AMOUNT_MSG = 'Numbers only — e.g. 12.50';
+  function parseAmount(v) {
+    var s = String(v == null ? '' : v).trim();
+    if (s === '') return { ok: true, value: null };
+    if (!AMOUNT_RE.test(s) || !/\d/.test(s)) return { ok: false, value: null, error: AMOUNT_MSG };
+    return { ok: true, value: Number(s.replace(/,/g, '')) };
+  }
+
   Remit.money = {
     SYMBOLS: SYMBOLS, symbol: symbol, cents: cents, fromCents: fromCents, fmt: fmt,
     alive: alive, isTransferLine: isTransferLine, isPaidTick: isPaidTick,
@@ -1182,6 +1215,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     transfersDelivered: transfersDelivered, settledTotals: settledTotals, remainingTotals: remainingTotals,
     soleCurrency: soleCurrency, fmtByCurrency: fmtByCurrency, currenciesOf: currenciesOf,
     monthLabel: monthLabel, monthShort: monthShort, monthName: monthName, monthModel: monthModel,
+    parseAmount: parseAmount, AMOUNT_MSG: AMOUNT_MSG,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 </script>
@@ -1212,6 +1246,20 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     var rows = (rates || []).filter(function (r) { return r.base === 'USD' && r.quote === cur; });
     rows.sort(function (a, b) { return String(b.day).localeCompare(String(a.day)); });
     return rows[0] || null;
+  }
+
+  // arc/defaults-and-polish S4: the small grey USD figure on a "Settled in…" row. The RECORDED USD cost
+  // (amount_sent_usd) when present; else the ≈ estimate at the rate on/before the sent date (else the
+  // latest cached), carrying its rate and date; nothing for a USD payment or with no rate.
+  function paymentUsd(t, rates) {
+    if (!t || t.currency === 'USD') return null;
+    if (t.amount_sent_usd != null && Number(t.amount_sent_usd) > 0) return { kind: 'actual', text: money.fmt(Number(t.amount_sent_usd), 'USD') };
+    var rows = (rates || []).filter(function (r) { return r.base === 'USD' && r.quote === t.currency && r.rate; })
+      .sort(function (a, b) { return String(b.day).localeCompare(String(a.day)); });
+    var r = (t.sent_on && rows.find(function (x) { return String(x.day) <= String(t.sent_on); })) || rows[0];
+    if (!r) return null;
+    var usd = Number(t.amount_delivered || 0) / r.rate;
+    return { kind: 'estimate', text: '≈ US$' + Math.round(usd).toLocaleString('en-US') + ' · ' + r.rate + ' · ' + rateDayLabel(r.day) };
   }
 
   // The estimate line for a transfer total map. USD stays as-is (no estimate). One non-USD currency
@@ -1302,7 +1350,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     };
   }
 
-  Remit.fx = { rateDayLabel: rateDayLabel, rateFor: rateFor, estimateLine: estimateLine, fetchRates: fetchRates,
+  Remit.fx = { paymentUsd: paymentUsd, rateDayLabel: rateDayLabel, rateFor: rateFor, estimateLine: estimateLine, fetchRates: fetchRates,
     transferMetrics: transferMetrics, latestWorkingDay: latestWorkingDay, monthEndWorkingDay: monthEndWorkingDay,
     planRateFetches: planRateFetches };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
@@ -1334,6 +1382,46 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   // is a plain line. A legacy 'paid_here' row (until Cowork's retire_paid_here migration lands) is read as
   // an ordinary 'transfer' line; nothing else in src/ knows the old value exists.
   function readItems(rows) { return (rows || []).map(function (it) { if (it && it.settle === 'paid_here') it.settle = 'transfer'; return it; }); }
+
+  // arc/defaults-and-polish S1 — ONE set of recurring defaults per kid, on the (person, year)-keyed
+  // remit_budgets table with no schema change: the set in force for a year is the active rows of the
+  // LATEST year ≤ that year, so a set saved in 2026 spans 2027–2032 without copying a row. Saving while
+  // viewing month M REPLACES the default-linked lines (budget_id set) of every existing month ≥ M (box
+  // checked) or > M (unchecked) up to DEFAULTS_LAST_YEAR; hand-typed lines are never touched, a line's
+  // paid tick carries over, and months before M never change. Idempotent: re-saving yields the same set.
+  var DEFAULTS_LAST_YEAR = 2032;
+  function effectiveSet(rows, year) {
+    var mine = (rows || []).filter(function (b) { return b.active !== false && b.year <= year; });
+    if (!mine.length) return [];
+    var top = Math.max.apply(null, mine.map(function (b) { return b.year; }));
+    return mine.filter(function (b) { return b.year === top; });
+  }
+  function affectedPeriod(p, year, month, includeThisMonth) {
+    var at = p.year * 12 + p.month, from = year * 12 + month + (includeThisMonth ? 0 : 1);
+    return at >= from && p.year <= DEFAULTS_LAST_YEAR;
+  }
+  function budgetFields(r) {
+    return { label: String(r.label || '').trim() || '(untitled)', note: r.note || null, amount: Number(r.amount) || 0, currency: r.currency || 'GBP' };
+  }
+  // the replacement lines for one month: each saved default, keeping the old line's tick + position
+  // (matched on the default the line came from — `src` is the id the editor held), new ones appended.
+  function replacementLines(periodId, pairs, oldLines, maxOrder, viewer) {
+    var bySrc = {}; oldLines.forEach(function (it) { bySrc[it.budget_id] = it; });
+    var next = maxOrder;
+    return pairs.map(function (pr) {
+      var old = pr.src ? bySrc[pr.src] : null;
+      var order = old ? old.sort_order : (next += 10);
+      return { period_id: periodId, bucket: 'recurring', description: pr.b.label, note: pr.b.note || null, amount: pr.b.amount, currency: pr.b.currency,
+        settle: 'transfer', status: old && old.status === 'paid' ? 'paid' : 'requested', sort_order: order, budget_id: pr.b.id, created_by: viewer };
+    });
+  }
+
+  // S4: the year menu always offers the years the defaults span (through DEFAULTS_LAST_YEAR).
+  function yearList(ys) {
+    ys[new Date().getUTCFullYear()] = 1;
+    for (var y = 2027; y <= DEFAULTS_LAST_YEAR; y++) ys[y] = 1;
+    return Object.keys(ys).map(Number).sort(function (a, b) { return a - b; });
+  }
 
   // ── a tiny emitter mixin ─────────────────────────────────────────────────────
   function Emitter() { this._subs = []; }
@@ -1379,8 +1467,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   };
   FixtureStore.prototype.getYears = function (personId) {
     var ys = {}; this.state.periods.filter((p) => p.person_id === personId).forEach((p) => { ys[p.year] = 1; });
-    ys[new Date().getUTCFullYear()] = 1;
-    return Object.keys(ys).map(Number).sort((a, b) => a - b);
+    return yearList(ys);
   };
   FixtureStore.prototype.getPeriod = function (personId, year, month) {
     return this.state.periods.find((p) => p.person_id === personId && p.year === year && p.month === month) || null;
@@ -1415,7 +1502,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     s.deleted_at = nowISO(); this._emit(); return clone(s);
   };
   FixtureStore.prototype.getBudgets = function (personId, year) {
-    return this.state.budgets.filter((b) => b.person_id === personId && b.year === year && b.active !== false);
+    return effectiveSet(this.state.budgets.filter((b) => b.person_id === personId), year);
   };
   FixtureStore.prototype._item = function (id) { return this.state.items.find((it) => it.id === id); };
   FixtureStore.prototype.addItem = async function (periodId, fields) {
@@ -1457,20 +1544,31 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     this.state.budgets.push(b); this._emit(); return clone(b);
   };
   FixtureStore.prototype.deleteBudget = async function (id) { return this.setBudget(id, { active: false }); };
-  // apply the recurring defaults to an already-open month: update a line materialised from a default
-  // (matched on budget_id) to the default's amount/label/currency, or add it if missing. Idempotent.
-  FixtureStore.prototype.applyDefaultsToMonth = async function (personId, year, month) {
-    var period = this.getPeriod(personId, year, month);
-    if (!period) { period = { id: uid('period'), person_id: personId, year: year, month: month, materialised_at: nowISO(), closed_at: null }; this.state.periods.push(period); }
-    var budgets = this.getBudgets(personId, year);
-    var order = 0;
-    budgets.forEach((b) => {
-      order += 10;
-      var it = this.state.items.find((x) => x.period_id === period.id && x.budget_id === b.id && !x.deleted_at);
-      if (it) { it.amount = b.amount; it.description = b.label; it.currency = b.currency; it.note = b.note || null; it.updated_at = nowISO(); }
-      else { this.state.items.push({ id: uid('item'), period_id: period.id, bucket: b.bucket || 'recurring', description: b.label, note: b.note || null, amount: b.amount, currency: b.currency, settle: 'transfer', status: 'requested', sort_order: order, budget_id: b.id, transfer_id: null, created_by: this._viewer, created_at: nowISO(), updated_at: nowISO(), deleted_at: null }); }
+  // S1: save the kid's one set of defaults while viewing (year, month) and REPLACE it into every
+  // existing later month (see effectiveSet above). `rows` = [{ id?, label, note, amount, currency }].
+  FixtureStore.prototype.saveDefaults = async function (personId, year, month, rows, includeThisMonth) {
+    var cur = this.getBudgets(personId, year), sameYear = cur.length && cur[0].year === year;
+    var pairs = (rows || []).map((r) => {
+      var f = budgetFields(r), b = sameYear && r.id ? cur.find((x) => x.id === r.id) : null;
+      if (b) Object.assign(b, f);
+      else { b = Object.assign({ id: uid('bud'), person_id: personId, year: year, bucket: 'recurring', active: true }, f); this.state.budgets.push(b); }
+      return { src: r.id || null, b: b };
     });
-    this._emit(); return { period: period };
+    var kept = pairs.map((p) => p.b);
+    this.state.budgets.forEach((b) => {
+      if (b.person_id === personId && b.active !== false && ((b.year === year && kept.indexOf(b) === -1) || b.year > year)) b.active = false;
+    });
+    var when = nowISO();
+    this.state.periods.filter((p) => p.person_id === personId && affectedPeriod(p, year, month, includeThisMonth)).forEach((p) => {
+      var live = this.state.items.filter((it) => it.period_id === p.id && !it.deleted_at);
+      var old = live.filter((it) => it.budget_id);
+      old.forEach((it) => { it.deleted_at = when; it.updated_at = when; });
+      var maxOrder = live.filter((it) => it.bucket === 'recurring').reduce((m, it) => Math.max(m, it.sort_order || 0), 0);
+      replacementLines(p.id, pairs, old, maxOrder, this._viewer).forEach((it) => {
+        this.state.items.push(Object.assign({ id: uid('item'), transfer_id: null, created_at: when, updated_at: when, deleted_at: null }, it));
+      });
+    });
+    this._emit(); return clone(kept);
   };
   FixtureStore.prototype.softDelete = async function (id) { return this.updateItem(id, { deleted_at: nowISO() }); };
   FixtureStore.prototype.undoDelete = async function (id) { return this.updateItem(id, { deleted_at: null }); };
@@ -1489,22 +1587,22 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     this.state.messages.forEach((m) => { if (m.item_id === itemId && (m.read_by || []).indexOf(v) === -1) { m.read_by = (m.read_by || []).concat(v); touched = true; } });
     if (touched) this._emit();
   };
-  // materialise the yearly plan into a month, at most once per (period, budget) — spec §5.5.
+  // materialise the defaults into a month ONCE, when it is first created (S2: a created month is never
+  // re-materialised — an emptied recurring section stays empty).
   FixtureStore.prototype.materialise = async function (personId, year, month) {
     var period = this.getPeriod(personId, year, month);
-    if (!period) { period = { id: uid('period'), person_id: personId, year: year, month: month, materialised_at: null, closed_at: null }; this.state.periods.push(period); }
+    if (period) return { period: period, added: 0 };
+    period = { id: uid('period'), person_id: personId, year: year, month: month, materialised_at: null, closed_at: null }; this.state.periods.push(period);
     var budgets = this.getBudgets(personId, year);
     var order = 0, added = 0;
     budgets.forEach((b) => {
-      var exists = this.state.items.some((it) => it.period_id === period.id && it.budget_id === b.id && !it.deleted_at);
-      if (exists) return;
       order += 10; added++;
       this.state.items.push({ id: uid('item'), period_id: period.id, bucket: b.bucket || 'recurring', description: b.label, note: b.note || null,
         amount: b.amount, currency: b.currency, settle: 'transfer', status: 'requested', sort_order: order, budget_id: b.id, transfer_id: null,
         created_by: this._viewer, created_at: nowISO(), updated_at: nowISO(), deleted_at: null });
     });
-    period.materialised_at = period.materialised_at || nowISO();
-    if (added) this._emit();
+    period.materialised_at = nowISO();
+    this._emit();
     return { period: period, added: added };
   };
   // THE MODEL: a transfer belongs to a kid's page (person_id) and never locks any line.
@@ -1607,8 +1705,8 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   };
   SupabaseStore.prototype.getYears = async function (personId) {
     var rows = []; try { rows = await this._get('/remit_periods?select=year&person_id=eq.' + personId); } catch (e) { rows = []; }
-    var ys = {}; rows.forEach((r) => { ys[r.year] = 1; }); ys[new Date().getUTCFullYear()] = 1;
-    return Object.keys(ys).map(Number).sort((a, b) => a - b);
+    var ys = {}; rows.forEach((r) => { ys[r.year] = 1; });
+    return yearList(ys);
   };
   SupabaseStore.prototype.getMonthData = async function (personId, year, month) {
     // first view of a month with no cached rate for its month-end → backfill it (non-blocking, §7)
@@ -1641,7 +1739,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     return (await this._post('/remit_periods', { person_id: personId, year: year, month: month }))[0];
   };
   SupabaseStore.prototype.getBudgets = async function (personId, year) {
-    return this._get('/remit_budgets?select=*&person_id=eq.' + personId + '&year=eq.' + year + '&active=is.true');
+    return effectiveSet(await this._get('/remit_budgets?select=*&person_id=eq.' + personId + '&year=lte.' + year + '&active=is.true&order=year.desc,created_at.asc'), year);
   };
   SupabaseStore.prototype.addItem = async function (periodId, fields) {
     var body = Object.assign({ period_id: periodId, settle: 'transfer', status: 'requested', created_by: this.viewer() }, fields);
@@ -1662,19 +1760,44 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   SupabaseStore.prototype.setBudget = async function (id, patch) { var r = await this._patch('/remit_budgets?id=eq.' + id, patch); this._emit(); return r && r[0]; };
   SupabaseStore.prototype.addBudget = async function (fields) { var r = await this._post('/remit_budgets', fields); this._emit(); return r && r[0]; };
   SupabaseStore.prototype.deleteBudget = async function (id) { return this.setBudget(id, { active: false }); };
-  SupabaseStore.prototype.applyDefaultsToMonth = async function (personId, year, month) {
-    var period = (await this._get('/remit_periods?select=*&person_id=eq.' + personId + '&year=eq.' + year + '&month=eq.' + month))[0];
-    if (!period) period = (await this._post('/remit_periods', { person_id: personId, year: year, month: month, materialised_at: nowISO() }))[0];
-    var budgets = await this.getBudgets(personId, year);
-    var existing = await this._get('/remit_items?select=id,budget_id&period_id=eq.' + period.id + '&deleted_at=is.null');
-    var byBudget = {}; existing.forEach((e) => { if (e.budget_id) byBudget[e.budget_id] = e.id; });
-    var order = 0;
-    for (var i = 0; i < budgets.length; i++) {
-      var b = budgets[i]; order += 10;
-      if (byBudget[b.id]) await this._patch('/remit_items?id=eq.' + byBudget[b.id], { amount: b.amount, description: b.label, currency: b.currency, note: b.note || null });
-      else await this._post('/remit_items', { period_id: period.id, bucket: b.bucket, description: b.label, note: b.note || null, amount: b.amount, currency: b.currency, settle: 'transfer', status: 'requested', sort_order: order, budget_id: b.id, created_by: this.viewer() });
+  // S1 (see FixtureStore.saveDefaults): the budget writes, then ONE soft-delete PATCH over every affected
+  // month's default-linked lines and ONE bulk POST of the replacement lines. Delete precedes insert so the
+  // partial unique index (period_id, budget_id) where deleted_at is null is never tripped.
+  SupabaseStore.prototype.saveDefaults = async function (personId, year, month, rows, includeThisMonth) {
+    var cur = await this.getBudgets(personId, year), sameYear = cur.length && cur[0].year === year;
+    var pairs = [], inserts = [];
+    for (var i = 0; i < (rows || []).length; i++) {
+      var r = rows[i], f = budgetFields(r), b = sameYear && r.id ? cur.find((x) => x.id === r.id) : null;
+      if (b) {
+        if (b.label !== f.label || (b.note || null) !== f.note || Number(b.amount) !== f.amount || b.currency !== f.currency) await this._patch('/remit_budgets?id=eq.' + b.id, f);
+        pairs.push({ src: r.id, b: Object.assign({}, b, f) });
+      } else {
+        var body = Object.assign({ person_id: personId, year: year, bucket: 'recurring', active: true }, f);
+        pairs.push({ src: r.id || null, b: body }); inserts.push(body);
+      }
     }
-    this._emit(); return { period: period };
+    if (inserts.length) {
+      var made = await this._post('/remit_budgets', inserts);
+      var k = 0; pairs.forEach((p) => { if (!p.b.id) p.b = made[k++]; });
+    }
+    var keptIds = pairs.map((p) => p.b.id);
+    await this._patch('/remit_budgets?person_id=eq.' + personId + '&year=eq.' + year + '&active=is.true' + (keptIds.length ? '&id=not.in.(' + keptIds.join(',') + ')' : ''), { active: false });
+    await this._patch('/remit_budgets?person_id=eq.' + personId + '&year=gt.' + year + '&active=is.true', { active: false });
+    var periods = (await this._get('/remit_periods?select=id,year,month&person_id=eq.' + personId + '&year=gte.' + year))
+      .filter((p) => affectedPeriod(p, year, month, includeThisMonth));
+    if (periods.length) {
+      var live = await this._get('/remit_items?select=id,period_id,bucket,budget_id,status,sort_order&period_id=in.(' + periods.map((p) => p.id).join(',') + ')&deleted_at=is.null');
+      var old = live.filter((it) => it.budget_id);
+      if (old.length) await this._patch('/remit_items?id=in.(' + old.map((it) => it.id).join(',') + ')', { deleted_at: nowISO() });
+      var viewer = this.viewer(), fresh = [];
+      periods.forEach((p) => {
+        var mine = live.filter((it) => it.period_id === p.id);
+        var maxOrder = mine.filter((it) => it.bucket === 'recurring').reduce((m, it) => Math.max(m, it.sort_order || 0), 0);
+        fresh = fresh.concat(replacementLines(p.id, pairs, mine.filter((it) => it.budget_id), maxOrder, viewer));
+      });
+      if (fresh.length) await this._post('/remit_items', fresh, 'return=minimal');
+    }
+    this._emit(); return pairs.map((p) => p.b);
   };
   SupabaseStore.prototype.softDelete = function (id) { return this.updateItem(id, { deleted_at: nowISO() }); };
   SupabaseStore.prototype.undoDelete = function (id) { return this.updateItem(id, { deleted_at: null }); };
@@ -1693,17 +1816,16 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     if (msgs.length) this._emit();
   };
   SupabaseStore.prototype.materialise = async function (personId, year, month) {
-    var periods = await this._get('/remit_periods?select=*&person_id=eq.' + personId + '&year=eq.' + year + '&month=eq.' + month);
-    var period = periods[0];
-    if (!period) period = (await this._post('/remit_periods', { person_id: personId, year: year, month: month, materialised_at: nowISO() }))[0];
-    var budgets = await this.getBudgets(personId, year);
-    var existing = await this._get('/remit_items?select=budget_id&period_id=eq.' + period.id + '&deleted_at=is.null');
-    var have = {}; existing.forEach((e) => { if (e.budget_id) have[e.budget_id] = true; });
-    var added = 0, order = 0;
-    for (var i = 0; i < budgets.length; i++) { var b = budgets[i]; if (have[b.id]) continue; order += 10; added++;
-      await this._post('/remit_items', { period_id: period.id, bucket: b.bucket, description: b.label, note: b.note || null, amount: b.amount, currency: b.currency, settle: 'transfer', status: 'requested', sort_order: order, budget_id: b.id, created_by: this.viewer() }); }
-    if (added) this._emit();
-    return { period: period, added: added };
+    var q = '/remit_periods?select=*&person_id=eq.' + personId + '&year=eq.' + year + '&month=eq.' + month;
+    var period = (await this._get(q))[0];
+    if (period) return { period: period, added: 0 };          // S2: a created month is never re-materialised
+    try { period = (await this._post('/remit_periods', { person_id: personId, year: year, month: month, materialised_at: nowISO() }))[0]; }
+    catch (e) { period = (await this._get(q))[0]; if (period) return { period: period, added: 0 }; throw e; }   // lost a create race
+    var budgets = await this.getBudgets(personId, year), viewer = this.viewer();
+    var lines = budgets.map((b, i) => ({ period_id: period.id, bucket: b.bucket || 'recurring', description: b.label, note: b.note || null, amount: b.amount, currency: b.currency, settle: 'transfer', status: 'requested', sort_order: (i + 1) * 10, budget_id: b.id, created_by: viewer }));
+    if (lines.length) await this._post('/remit_items', lines, 'return=minimal');
+    this._emit();
+    return { period: period, added: lines.length };
   };
   // THE MODEL: a transfer carries person_id and never locks a line.
   SupabaseStore.prototype.createTransfer = async function (fields) {
@@ -1735,7 +1857,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     return fx ? new FixtureStore(fx) : new SupabaseStore(gate);
   }
 
-  Remit.store = { FixtureStore: FixtureStore, SupabaseStore: SupabaseStore, createStore: createStore, monthStrip: monthStrip };
+  Remit.store = { FixtureStore: FixtureStore, SupabaseStore: SupabaseStore, createStore: createStore, monthStrip: monthStrip, DEFAULTS_LAST_YEAR: DEFAULTS_LAST_YEAR };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 </script>
 <!-- src/ui/month.js -->
@@ -1950,13 +2072,14 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       '</section>';
 
     var riding =
-      '<section class="riding"><div class="zone-hd"><h2>Riding along — Mark’s own</h2>' +
+      '<section class="riding"><div class="zone-hd"><h2>Riding along — Dad’s own</h2>' +
       '<span class="tt"><em>subtotal</em> <span class="num">' + symHTML(esc(money.fmtByCurrency(model.mine.subtotal) || money.fmt(0, homeCur))) + '</span></span></div>' +
       '<p class="why">Nothing to do with ' + esc(person ? person.name : 'the kid') + '. Bundled into the same transfer to pay one fee instead of two.</p>' +
       sectionBlock('Riding along', model.mine.rows, person, { bucket: 'mine' }, sel) + '</section>';
 
     // L11: "Mark all paid" lives on the bottom link row now (the month header shows the total only).
-    var addBar = '<p class="note" style="margin-top:26px"><button type="button" class="linkbtn" id="planBtn">Recurring defaults</button> · <button type="button" class="linkbtn" id="reportsBtn">Reports</button>' + (markAll ? ' · ' + markAll : '') + '</p>';
+    // S1: the defaults are edited only from "Edit defaults" at the top — the bottom link is gone.
+    var addBar = '<p class="note linkrow" style="margin-top:26px"><button type="button" class="linkbtn" id="reportsBtn">Reports</button>' + (markAll ? ' · ' + markAll : '') + '</p>';
 
     root.innerHTML = head + seg + strip + kid + riding + settledHTML(ctrl) + addBar + selbarHTML(ctrl) + footerHTML(ctrl);
     wire(ctrl);
@@ -1977,7 +2100,9 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       var rows = tx.map(function (t) {
         var when = t.sent_on ? fx.rateDayLabel(t.sent_on) : 'date unknown';
         var meta = [when, t.provider, t.note].filter(Boolean).map(esc).join(' · ');
+        var usd = fx.paymentUsd(t, ctrl.store.getRates ? ctrl.store.getRates() : []);
         return '<div class="srow" data-xfer="' + esc(t.id) + '"><span class="nm"><b>Payment</b><em>' + meta + '</em></span>' +
+          (usd ? '<small class="usd num" data-usd="' + usd.kind + '">' + symHTML(esc(usd.text)) + '</small>' : '') +
           '<span class="am num">' + symHTML(esc(money.fmt(t.amount_delivered || 0, c))) + '</span>' +
           '<button type="button" class="del" data-delxfer="' + esc(t.id) + '" aria-label="Delete payment">×</button></div>';
       }).join('');
@@ -2061,7 +2186,6 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       setTimeout(() => { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); var c = m.querySelector('[aria-checked=true]'); if (c) c.focus(); }, 0);
     });
     root.querySelectorAll('[data-ym]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); var p = a.getAttribute('data-ym').split('-'); ctrl.setMonth(+p[0], +p[1]); }));
-    var plan = root.querySelector('#planBtn'); if (plan) plan.addEventListener('click', () => ctrl.openBudgets());
     var edef = root.querySelector('#editDefaults'); if (edef) edef.addEventListener('click', () => ctrl.openBudgets());
     var addsec = root.querySelector('#addSection'); if (addsec) addsec.addEventListener('click', () => ctrl.addSection());
     var rep = root.querySelector('#reportsBtn'); if (rep) rep.addEventListener('click', () => ctrl.openReports());
@@ -2117,7 +2241,16 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     }
   }
 
-  function num(v) { v = String(v == null ? '' : v).trim(); if (v === '') return null; var n = Number(v); return isNaN(n) ? null : n; }
+  function num(v) { return money.parseAmount(v).value; }
+  // S4: an inline "numbers only" message under a row / field; cleared as soon as the value is fixed.
+  function amtError(anchor, input, msg) {
+    var next = anchor.nextElementSibling, box = next && next.classList.contains('amterr') ? next : null;
+    if (!msg) { if (box) box.remove(); input.removeAttribute('aria-invalid'); return; }
+    if (!box) { box = document.createElement('p'); box.className = 'amterr'; box.setAttribute('role', 'alert'); anchor.after(box); }
+    box.textContent = msg; input.setAttribute('aria-invalid', 'true');
+  }
+  Remit.ui = Remit.ui || {};
+  Remit.ui.amtError = amtError;
 
   function wireRow(ctrl, rowEl) {
     var store = ctrl.store;
@@ -2129,7 +2262,7 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     var fields = rowEl.querySelectorAll('input[data-f]');
     fields.forEach((inp) => {
       inp.setAttribute('data-orig', inp.value);
-      if (inp.classList.contains('amt')) { fitAmt(inp); inp.addEventListener('input', () => fitAmt(inp)); }
+      if (inp.classList.contains('amt')) { fitAmt(inp); inp.addEventListener('input', () => { fitAmt(inp); if (money.parseAmount(inp.value).ok) amtError(rowEl, inp, null); }); }
       inp.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); commit(true); }
         else if (e.key === 'Escape') { e.preventDefault(); inp.value = inp.getAttribute('data-orig') || ''; inp.blur(); }
@@ -2181,6 +2314,9 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
     async function commit(advance) {
       if (state.busy || state.committed) return;
       var vals = read();
+      var amtInp = rowEl.querySelector('[data-f="amount"]'), pa = money.parseAmount(vals.amount);
+      amtError(rowEl, amtInp, pa.ok ? null : pa.error);
+      if (!pa.ok) return;                                   // S4: a non-number never saves
       if (isAdd) {
         var desc = (vals.description || '').trim();
         var amount = num(vals.amount);
@@ -2247,7 +2383,8 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       ctrl.years = await Promise.resolve(store.getYears ? store.getYears(ctrl.personId) : [ctrl.year]);
       if (ctrl.years.indexOf(ctrl.year) === -1) ctrl.years = ctrl.years.concat(ctrl.year).sort((a, b) => a - b);
       var probe = await store.getMonthData(ctrl.personId, ctrl.year, ctrl.month);
-      if ((!probe.period || probe.items.length === 0)) {
+      // S2: only a month that has never been created picks up the defaults — an emptied one stays empty
+      if (!probe.period) {
         var budgets = await Promise.resolve(store.getBudgets(ctrl.personId, ctrl.year));
         if (budgets && budgets.length) await store.materialise(ctrl.personId, ctrl.year, ctrl.month);
       }
@@ -2432,12 +2569,12 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 <script>
 /* eslint-disable */
 /* =============================================================================
- * remit ui/budgets.js — the recurring DEFAULTS editor (THE MODEL / slice 9). An overlay of the same
- * inline rows as the month, over the person's yearly recurring plan (remit_budgets — the source that
- * materialises into each new month). Add / edit / remove a default (what · amount · currency). A
- * "also update this month" toggle pushes the edited defaults into the open month too. Editing a
- * recurring line INSIDE a month never changes the defaults, and this never changes a month unless the
- * toggle is on.
+ * remit ui/budgets.js — the recurring DEFAULTS editor (THE MODEL / slice 9; arc/defaults-and-polish).
+ * An overlay of the same inline rows as the month, over the kid's ONE set of defaults (remit_budgets —
+ * the source that materialises into each new month). Add / edit / remove a default (what · amount ·
+ * currency) — all local until Save. Saving REPLACES the default lines of every existing month after the
+ * open one (and the open one too when "Include <month>" is ticked) — store.saveDefaults. Editing a
+ * recurring line INSIDE a month never changes the defaults.
  *
  * NOTE: the order named `remit_commitments` for defaults, but that table is the tuition/residence
  * LEDGER (kind/due_on/paid_on/reference — shown in Reports → Commitments) and is not what
@@ -2452,7 +2589,12 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
   var CURR = ['GBP', 'USD', 'AUD', 'EUR'];
 
   function close(host) { host.scrim.classList.remove('open'); host.sheet.classList.remove('open'); setTimeout(() => host.wrap.remove(), 240); document.removeEventListener('keydown', host.onKey); }
-  function num(v) { v = String(v == null ? '' : v).trim(); if (v === '') return null; var n = Number(v); return isNaN(n) ? null : n; }
+  function num(v) { return money.parseAmount(v).value; }
+  // S4: flag a non-number amount inline on its row; true when the row's amount is fine
+  function checkAmt(r) {
+    var inp = r.querySelector('[data-f="amount"]'), pa = money.parseAmount(inp.value);
+    Remit.ui.amtError(r, inp, pa.ok ? null : pa.error); return pa.ok;
+  }
 
   async function openBudgets(ctrl) {
     var store = ctrl.store, person = store.getPerson(ctrl.personId) || store.getPeople()[0];
@@ -2482,49 +2624,68 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
 
     sheet.innerHTML = '<div class="grab"></div>' +
       '<div class="f" style="border-bottom-width:2px"><label style="color:var(--brass)">Defaults</label><div class="v">' +
-      esc(person.name) + ' · ' + ctrl.year + ' recurring plan</div></div>' +
+      esc(person.name) + ' · recurring every month</div></div>' +
       '<div id="brows">' + budgets.map(row).join('') + row(null) + '</div>' +
-      '<label class="alsorow"><input type="checkbox" id="alsoMonth"> also update ' + esc(money.monthName(ctrl.month)) + ' now</label>' +
-      '<p class="note" style="margin-top:8px">Changing a default changes <b>future</b> months. Editing a line inside a month never touches these.</p>' +
+      '<label class="alsorow"><input type="checkbox" id="alsoMonth"> include ' + esc(money.monthName(ctrl.month)) + ' ' + ctrl.year + '</label>' +
+      '<p class="note" style="margin-top:8px">Saving replaces the recurring lines of every month after ' + esc(money.monthName(ctrl.month)) +
+      ' (and ' + esc(money.monthName(ctrl.month)) + ' itself when ticked). Earlier months never change. Editing a line inside a month never touches these.</p>' +
       '<div class="acts"><button class="btn ghost" data-act="cancel">Cancel</button><button class="btn" data-act="save">Save defaults</button></div>';
 
     // L5: the currency sign opens the shared currency menu (same popover as the month view), full names,
     // instead of tap-to-cycle. The pill renders the sign (US$ / A$ / £ / €), not the code.
-    sheet.querySelectorAll('.brow [data-cur]').forEach((btn) => { btn.innerHTML = window.RemitCur.symHTML(esc(window.RemitCur.sym(btn.getAttribute('data-cur')))); btn.addEventListener('click', async () => {
-      var c = btn.getAttribute('data-cur'); var next = await window.RemitCur.pick(btn); if (!next || next === c) return;
-      btn.setAttribute('data-cur', next); btn.innerHTML = window.RemitCur.symHTML(esc(window.RemitCur.sym(next))); btn.classList.toggle('off-home', next !== homeCur);
-    }); });
-    sheet.querySelectorAll('.brow .amt').forEach((inp) => { window.RemitCur.fitAmt(inp); inp.addEventListener('input', () => window.RemitCur.fitAmt(inp)); });
-    // remove a default (marks inactive) immediately
-    sheet.querySelectorAll('[data-delbud]').forEach((btn) => btn.addEventListener('click', async () => {
-      await store.deleteBudget(btn.getAttribute('data-delbud'));
-      btn.closest('.brow').remove();
-    }));
+    function wireRow(r) {
+      var btn = r.querySelector('[data-cur]');
+      btn.innerHTML = window.RemitCur.symHTML(esc(window.RemitCur.sym(btn.getAttribute('data-cur'))));
+      btn.addEventListener('click', async () => {
+        var c = btn.getAttribute('data-cur'); var next = await window.RemitCur.pick(btn); if (!next || next === c) return;
+        btn.setAttribute('data-cur', next); btn.innerHTML = window.RemitCur.symHTML(esc(window.RemitCur.sym(next))); btn.classList.toggle('off-home', next !== homeCur);
+      });
+      var inp = r.querySelector('.amt'); window.RemitCur.fitAmt(inp);
+      inp.addEventListener('input', () => { window.RemitCur.fitAmt(inp); if (money.parseAmount(inp.value).ok) Remit.ui.amtError(r, inp, null); });
+    }
+    sheet.querySelectorAll('.brow').forEach(wireRow);
+    // remove a default from the set (local until Save — Cancel keeps it)
+    function wireDel(btn) { btn.addEventListener('click', () => { var r = btn.closest('.brow'), e = r.nextElementSibling; if (e && e.classList.contains('amterr')) e.remove(); r.remove(); }); }
+    sheet.querySelectorAll('[data-delbud]').forEach(wireDel);
+    // S3: Enter in the add-row — or leaving it with something typed — turns it into a pending default and
+    // opens a fresh empty "Add a default…" row beneath, so several can be added in a row with no reload.
+    function wireAdd(r) {
+      function promote(focusNext) {
+        if (!r.hasAttribute('data-add')) return;
+        var label = (r.querySelector('[data-f="label"]').value || '').trim(), amt = (r.querySelector('[data-f="amount"]').value || '').trim();
+        if (!label && !amt) return;
+        if (!checkAmt(r)) return;
+        r.removeAttribute('data-add'); r.setAttribute('data-bud', '');
+        r.querySelector('[data-f="label"]').setAttribute('placeholder', 'What');
+        var del = r.querySelector('.del'), x = document.createElement('button');
+        x.type = 'button'; x.className = 'del'; x.setAttribute('aria-label', 'Remove ' + (label || 'default')); x.textContent = '×';
+        del.replaceWith(x); wireDel(x);
+        var tmp = document.createElement('div'); tmp.innerHTML = row(null);
+        var fresh = tmp.firstChild; r.after(fresh); wireRow(fresh); wireAdd(fresh);
+        if (focusNext) fresh.querySelector('[data-f="label"]').focus();
+      }
+      r.querySelectorAll('input').forEach((inp) => {
+        inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); promote(true); } });
+        inp.addEventListener('blur', () => setTimeout(() => { if (!r.contains(document.activeElement)) promote(false); }, 0));
+      });
+    }
+
+    sheet.querySelectorAll('.brow[data-add]').forEach(wireAdd);
 
     sheet.querySelector('[data-act="cancel"]').addEventListener('click', () => close(host));
     sheet.querySelector('[data-act="save"]').addEventListener('click', async () => {
-      var rows = sheet.querySelectorAll('.brow');
-      for (var i = 0; i < rows.length; i++) {
-        var r = rows[i];
+      var bad = Array.from(sheet.querySelectorAll('.brow')).filter((r) => !checkAmt(r));
+      if (bad.length) { bad[0].querySelector('[data-f="amount"]').focus(); return; }     // S4: nothing saves
+      var set = [];
+      sheet.querySelectorAll('.brow').forEach((r) => {
         var label = (r.querySelector('[data-f="label"]').value || '').trim();
         var note = (r.querySelector('[data-f="note"]').value || '').trim();
         var amount = num(r.querySelector('[data-f="amount"]').value);
-        var cur = r.querySelector('[data-cur]').getAttribute('data-cur');
-        if (r.hasAttribute('data-add')) {
-          if (!label && amount == null) continue;
-          await store.addBudget({ person_id: person.id, year: ctrl.year, label: label || '(untitled)', note: note || null, amount: amount == null ? 0 : amount, currency: cur, bucket: 'recurring', active: true });
-        } else {
-          var id = r.getAttribute('data-bud');
-          var b = budgets.find((x) => x.id === id); if (!b) continue;
-          var patch = {};
-          if (label && label !== b.label) patch.label = label;
-          if (note !== (b.note || '')) patch.note = note || null;
-          if (amount != null && amount !== Number(b.amount)) patch.amount = amount;
-          if (cur !== b.currency) patch.currency = cur;
-          if (Object.keys(patch).length) await store.setBudget(id, patch);
-        }
-      }
-      if (sheet.querySelector('#alsoMonth').checked) await store.applyDefaultsToMonth(person.id, ctrl.year, ctrl.month);
+        if (r.hasAttribute('data-add') && !label && amount == null) return;
+        set.push({ id: r.getAttribute('data-bud') || null, label: label, note: note || null, amount: amount == null ? 0 : amount,
+          currency: r.querySelector('[data-cur]').getAttribute('data-cur') });
+      });
+      await store.saveDefaults(person.id, ctrl.year, ctrl.month, set, sheet.querySelector('#alsoMonth').checked);
       close(host); Remit.ui.toast('Defaults saved.');
       ctrl.refresh();
     });
@@ -2621,14 +2782,23 @@ body:before{content:"";position:fixed;inset:0;background:var(--weave);pointer-ev
       var pv = $('#t-prov'); if (!editing && (pv.value === 'Wise' || pv.value === '')) pv.value = c === 'USD' ? '' : 'Wise';
       redraw();
     });
-    ['#t-amt', '#t-sent'].forEach((id) => $(id).addEventListener('input', redraw));
+    ['#t-amt', '#t-sent'].forEach((id) => $(id).addEventListener('input', () => {
+      if (money.parseAmount($(id).value).ok) Remit.ui.amtError($(id).closest('.f2'), $(id), null);
+      redraw();
+    }));
 
     $('[data-act="cancel"]').addEventListener('click', () => close(host));
     $('[data-act="save"]').addEventListener('click', async () => {
       var c = selCur();
-      var amt = Number(($('#t-amt').value || '').trim());
+      // S4: a non-number amount or USD cost shows the inline message and saves nothing
+      var pa = money.parseAmount($('#t-amt').value), ps = c === 'USD' ? { ok: true, value: null } : money.parseAmount($('#t-sent').value);
+      Remit.ui.amtError($('#t-amt').closest('.f2'), $('#t-amt'), pa.ok ? null : pa.error);
+      Remit.ui.amtError($('#t-sent').closest('.f2'), $('#t-sent'), ps.ok ? null : ps.error);
+      if (!pa.ok) { $('#t-amt').focus(); return; }
+      if (!ps.ok) { $('#t-sent').focus(); return; }
+      var amt = pa.value;
       if (!amt) { $('#t-amt').focus(); return; }
-      var sent = c === 'USD' ? 0 : Number(($('#t-sent').value || '').trim());
+      var sent = ps.value;
       var fields = {
         person_id: ctrl.personId, period_year: ctrl.year, period_month: ctrl.month, currency: c,
         sent_on: $('#t-date').value || todayISO(), amount_delivered: amt, amount_sent_usd: sent || null,
