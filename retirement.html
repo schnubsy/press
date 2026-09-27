@@ -1,3 +1,5 @@
+<!doctype html>
+<html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
@@ -42,6 +44,15 @@ button{font-family:inherit;cursor:pointer}
   border-radius:var(--r);box-shadow:var(--shadow);padding:22px 26px;margin-bottom:14px;
   display:grid;grid-template-columns:auto 1fr auto;gap:28px;align-items:center}
 /* WO17 1.3 — stale-plan notice (browser copy older than the plan file) */
+.cloud-loading{display:flex;align-items:center;gap:10px;justify-content:center;padding:40px 16px;font-size:15px;color:var(--mut)}
+.cloud-loading[hidden],.cloud-notice[hidden]{display:none}
+html.rd-cloudload .wrap>*:not(#cloudLoading):not(.pagehead){display:none!important}
+.cl-spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--line2);border-top-color:var(--ink);animation:clSpin .9s linear infinite}
+@keyframes clSpin{to{transform:rotate(360deg)}}
+.cloud-notice{font-size:12.5px;color:var(--mut);padding:6px 12px;margin:0 0 10px;border-left:2px solid var(--line2)}
+.lch-cloud{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:10px 0 4px}
+.lch-cloud:empty{display:none}
+.lch-cloud-msg{font-size:12.5px;color:var(--mut)}
 .plan-notice{background:rgba(217,160,106,.12);border:1px solid var(--bad-soft);border-radius:var(--r);
   padding:12px 16px;margin-bottom:14px}
 .plan-notice .pn-body{display:flex;align-items:flex-start;gap:12px}
@@ -62,11 +73,52 @@ button{font-family:inherit;cursor:pointer}
 .hi{background:#0e181a80;border:1px solid var(--line);border-radius:var(--r2);padding:11px 14px;min-width:0;display:flex;flex-direction:column;gap:2px}
 .hi .k{font-size:11.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em}
 .hi .v{font-size:20px;font-weight:650;margin-top:2px}
-.flags{display:flex;flex-direction:column;gap:8px;align-items:flex-end;min-width:190px}
-.flag{font-size:12.5px;padding:8px 12px;border-radius:var(--r2);border:1px solid;max-width:260px;text-align:right}
-.flag.bad{background:#3a1c1a;border-color:#5c2b26;color:var(--bad-soft)}
-.flag.warn{background:#332a17;border-color:#5a4a24;color:var(--warn)}
-.flag.ok{background:#16292408;border-color:var(--line2);color:var(--mut)}
+.flags{display:flex;flex-direction:column;gap:8px;align-items:flex-end;min-width:0}
+/* family-plan slice 7 (D10) — ONE one-line status chip replaces the stacked flag boxes. The
+   warnings themselves live where they apply: journey steps (dated) or call-outs by their chart. */
+.status-chip{display:inline-flex;align-items:center;gap:7px;font:inherit;font-size:13px;font-weight:600;line-height:1.2;
+  padding:8px 14px;border-radius:999px;border:1px solid;background:none;white-space:nowrap;cursor:pointer;color:inherit}
+.status-chip.ok{border-color:var(--line2);color:var(--mut);cursor:default}
+.status-chip.warn{background:#332a17;border-color:#5a4a24;color:var(--warn)}
+.status-chip.bad{background:#3a1c1a;border-color:#5c2b26;color:var(--bad-soft)}
+.status-chip:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.callouts{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.callouts:empty{display:none}
+.callout{font-size:12.5px;line-height:1.45;padding:9px 12px;border-radius:var(--r2);border:1px solid #5a4a24;background:#332a17;color:var(--warn)}
+.callout.flash{box-shadow:0 0 0 2px var(--warn)}
+/* family-plan slice 7 (D11) — a large, NUMBERED section header between every row; each card's
+   own title moved up into it (no duplicate titles). Numbers are CSS counters, so a section
+   added later (4 · Helping the kids) renumbers the rest on its own. */
+.wrap{counter-reset:sec}
+.sec-head{display:flex;align-items:baseline;gap:14px;margin:30px 2px 12px;flex-wrap:wrap}
+.sec-head h2{font-size:27px;line-height:1.15;letter-spacing:-.015em;font-weight:650;display:flex;align-items:baseline;gap:12px}
+.sec-head h2::before{counter-increment:sec;content:counter(sec);font-size:15px;font-weight:700;color:var(--faint);
+  border:1px solid var(--line2);border-radius:999px;min-width:28px;height:28px;display:inline-grid;place-items:center;transform:translateY(-4px)}
+.sec-head .sub{color:var(--mut);font-size:14px}
+/* family-plan slice 9 — "Helping the kids" */
+.kids-row{margin-bottom:16px}
+.kids-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.kids-top .seg button{white-space:nowrap}
+.kids-figs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}
+.kids-figs .hi .v{font-size:19px}
+.kids-figs .hi .d{font-size:12px;color:var(--mut)}
+.kids-figs .hi .d.up{color:var(--good)} .kids-figs .hi .d.down{color:var(--bad-soft)}
+.kids-chart{position:relative;height:260px}
+.kids-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:6px}
+.kids-legend i{display:inline-block;width:12px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.kids-legend i.dash{height:0;border-top:2px dashed var(--mut);border-radius:0;vertical-align:3px}
+.kids-legend i.floor{height:0;border-top:2px solid var(--bad-soft);border-radius:0;vertical-align:3px}
+.kids-rec{border:1px solid var(--line2);border-radius:var(--r2);padding:12px 14px;margin-top:12px;background:#0e181a80}
+.kids-rec h3{font-size:14px;margin-bottom:6px}
+.kids-rec ol{margin:4px 0 8px 18px;font-size:13px;color:var(--mut);line-height:1.5}
+.kids-flags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.kids-chip{font-size:12.5px;padding:6px 11px;border-radius:999px;border:1px solid #5a4a24;background:#332a17;color:var(--warn)}
+.kids-chip.info{border-color:var(--line2);background:none;color:var(--mut)}
+.kids-empty{display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:var(--mut);font-size:14px}
+.kids-nm{font-size:12px;color:var(--faint);margin-top:10px}
+.kids-nm summary{cursor:pointer}
+@media (max-width:820px){ .kids-figs{grid-template-columns:repeat(2,minmax(0,1fr))} .kids-chart{height:220px}
+  #kidsPreset{display:grid;grid-template-columns:1fr 1fr;width:100%;height:auto;border-radius:var(--r2)} #kidsPreset button{white-space:normal;min-height:40px;border-radius:var(--r2)} }
 
 /* ---------- PAGE HEADER (WO6-B2: currency toggle + reset live here) ---------- */
 .pagehead{display:flex;align-items:center;gap:14px;margin:2px 2px 14px}
@@ -113,7 +165,7 @@ button{font-family:inherit;cursor:pointer}
   padding:0 54px 0 10px;height:var(--ctl-h);box-sizing:border-box;font:inherit;font-size:var(--ctl-fs);width:100%;font-variant-numeric:tabular-nums}
 .ginput:focus{outline:none;border-color:var(--ac)}
 .gunit{position:absolute;right:26px;top:50%;transform:translateY(-50%);font-size:8.5px;font-weight:700;
-  letter-spacing:.03em;color:var(--faint);opacity:.72;pointer-events:none;text-transform:uppercase}
+  letter-spacing:.03em;color:var(--faint);pointer-events:none;text-transform:uppercase}
 .gstep{position:absolute;right:3px;top:3px;bottom:3px;width:20px;display:flex;flex-direction:column;gap:1px}
 .gstep button{flex:1;min-height:0;background:var(--sf3);border:1px solid var(--line2);color:var(--ac-soft);
   border-radius:5px;padding:0;font-size:9px;line-height:1;display:grid;place-items:center}
@@ -552,6 +604,9 @@ thead th{position:sticky;top:0;background:var(--sf3)}
   .wrap{padding:10px 12px 90px}
   .banner{grid-template-columns:1fr;padding:16px;gap:14px}
   .flags{align-items:stretch;min-width:0}                 /* Phase 4.2 — flags stretch, not ragged */
+  .status-chip{white-space:normal;justify-content:center}  /* slice 7 — the chip wraps on a phone */
+  .sec-head{flex-direction:column;gap:4px;margin:22px 2px 10px}   /* slice 7 (D11) — mobile headers stack */
+  .sec-head h2{font-size:22px}
   .flag{max-width:none;text-align:left}
   /* Phase 4.2 — the four KPI highlights become an equal-width 2×2 grid (was content-sized) */
   .highlights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -746,6 +801,11 @@ body.hide-conf .conf{display:none}
 .wiz-seg{display:inline-flex;border:1px solid var(--line2);border-radius:var(--ctl-r);overflow:hidden;width:max-content}
 .wiz-seg button{height:var(--ctl-h);padding:0 16px;background:var(--sf2);color:var(--mut);border:0;font:inherit;font-size:var(--ctl-fs);cursor:pointer}
 .wiz-seg button[aria-pressed="true"]{background:var(--ac);color:#0c1512;font-weight:650}
+.wiz-check{display:flex;gap:8px;align-items:center;margin:10px 0 2px;font-size:14px}
+.wiz-kids{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.wiz-kid{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}
+.wiz-kid-x{height:36px}
+@media (max-width:820px){ .wiz-kid{grid-template-columns:1fr auto} .wiz-kid .wiz-field:first-child{grid-column:1/3} }
 .wiz-note{font-size:11.5px;color:var(--faint);line-height:1.45;background:#0e181a55;border:1px solid var(--line);border-radius:9px;padding:8px 11px}
 .wiz-src-list{display:flex;flex-direction:column;gap:7px}
 .wiz-src{display:flex;align-items:center;gap:10px;background:var(--sf2);border:1px solid var(--line2);border-radius:10px;padding:9px 12px}
@@ -762,6 +822,11 @@ body.hide-conf .conf{display:none}
    everything else (and only on this class) is hidden. A never-enrolled/public browser never
    gets the class, so the tool is untouched there. */
 html.tw-locked body>*:not(#press-gate):not(script){display:none!important}
+/* family-plan slice 1 — no layout shift at boot: the page skeleton stays invisible until the
+   first full render (or the launcher) is ready, so the banner filling in never pushes the rows
+   down after first paint (CLS). A CSS-only fallback reveals it after 3s if script never ran. */
+html:not(.rd-ready) .wrap{visibility:hidden;animation:rdReveal 0s 3s forwards}
+@keyframes rdReveal{to{visibility:visible}}
 </style>
 
 <div class="wrap">
@@ -799,6 +864,8 @@ html.tw-locked body>*:not(#press-gate):not(script){display:none!important}
       </div>
     </div>
   </header>
+  <div class="cloud-loading" id="cloudLoading" role="status" aria-live="polite" hidden><span class="cl-spin" aria-hidden="true"></span>Loading your plan…</div>
+  <div class="cloud-notice" id="cloudNotice" role="status" hidden></div>
   <div class="banner" id="banner"></div>
   <!-- WO17 1.3 — stale-plan notice: the browser copy of this plan is older than the
        plan file. Notify + offer re-import; never auto-overwrite the saved plan. -->
@@ -807,19 +874,21 @@ html.tw-locked body>*:not(#press-gate):not(script){display:none!important}
     <span>Settings &amp; assumptions</span><span class="chev">▾</span></button>
   <div class="globals" id="globals"></div>
 
+  <div class="sec-head" id="secIncome"><h2>Where your money comes from</h2><div class="sub" id="hero1sub"></div></div>
   <section class="prow">
     <div class="card ctrl" id="ctrl1"></div>
     <div class="card hero-card">
-      <div class="sechead"><div><h2>Where your money comes from</h2><div class="sub" id="hero1sub"></div></div>
+      <div class="sechead">
         <div class="spacer"></div>
         <div class="simctl" id="simctl1"></div>
         <div class="seg" id="fitSeg"><button data-fit="scroll" aria-pressed="true">Scroll</button><button data-fit="fit" aria-pressed="false">Fit</button></div>
       </div>
       <div class="chartbox"><canvas id="ax1" class="axisCv"></canvas>
-        <div class="scroller" id="sc1"><div class="cvwrap"><canvas id="cv1"></canvas><div class="mslayer" id="ms1"></div></div></div></div>
+        <div class="scroller" id="sc1" tabindex="0" role="region" aria-label="Income chart"><div class="cvwrap"><canvas id="cv1"></canvas><div class="mslayer" id="ms1"></div></div></div></div>
       <div class="ms-pop" id="msPop1" hidden></div><!-- WO14 Phase 5.4 — card-level milestone popup (never clipped) -->
       <div class="ms-sel" id="msSel1" hidden></div><!-- WO17 Phase 2.5 — selected-marker glow, at CARD level so it is never clipped at the scroller edges -->
       <div class="lgro" id="lgro1"></div><!-- WO14 Phase 5.1 — merged legend + hovered breakdown -->
+      <div class="callouts" id="co1"></div><!-- family-plan slice 7 (D10) — call-outs about this chart -->
     </div>
     <div class="card summary" id="sum1"></div>
   </section>
@@ -829,9 +898,10 @@ html.tw-locked body>*:not(#press-gate):not(script){display:none!important}
        TIMELINE canvas pinned to the centre chart column's exact x-extent, so a selected
        milestone still lines up vertically with the income (row 1) and net-worth (row 3)
        charts. Card full-width / timeline column-aligned. -->
+  <div class="sec-head" id="secJourney"><h2>Your retirement journey</h2><div class="sub">Where we are, step by step — tap a step or use the arrows.</div></div>
   <section class="prow">
-    <div class="card hero-card story-card" id="storyCard">
-      <div class="story-head"><h2>Where we are in your retirement journey</h2>
+    <div class="card hero-card story-card" id="storyCard" aria-label="Your retirement journey">
+      <div class="story-head">
         <div class="story-nav">
           <button class="arrow" id="storyPrev" aria-label="Previous step">‹</button>
           <span class="story-count" id="storyCount"></span>
@@ -849,30 +919,37 @@ html.tw-locked body>*:not(#press-gate):not(script){display:none!important}
     </div>
   </section>
 
+  <div class="sec-head" id="secWorth"><h2>What you’re worth</h2><div class="sub" id="hero2sub"></div></div>
   <section class="prow">
     <div class="card ctrl" id="ctrl2"></div>
     <div class="card hero-card">
-      <div class="sechead"><div><h2>What you’re worth</h2><div class="sub" id="hero2sub"></div></div>
+      <div class="sechead">
         <div class="spacer"></div>
         <div class="simctl" id="simctl2"></div>
       </div>
       <div class="chartbox"><canvas id="ax2" class="axisCv"></canvas>
-        <div class="scroller" id="sc2"><div class="cvwrap"><canvas id="cv2"></canvas></div></div></div>
+        <div class="scroller" id="sc2" tabindex="0" role="region" aria-label="Net worth chart"><div class="cvwrap"><canvas id="cv2"></canvas></div></div></div>
       <div class="ms-sel" id="msSel2" hidden></div><!-- WO18 Phase 1 — selected-marker glow at CARD level (never clipped at the scroller edges) -->
       <div class="legend" id="lg2"></div>
+      <div class="callouts" id="co2"></div>
     </div>
     <div class="card summary" id="sum2"></div>
   </section>
 
+  <!-- family-plan slice 9 (D11 #4) — "Helping the kids": early inheritance. -->
+  <div class="sec-head" id="secKids"><h2>Helping the kids</h2><div class="sub">Giving while you’re alive — what it does for them, and what it costs you.</div></div>
+  <section class="kids-row"><div class="card kids-card" id="kidsCard" aria-label="Helping the kids"></div></section>
+
+  <div class="sec-head" id="secWhy"><h2>Why the plan does what it does</h2><div class="sub" id="hero3sub"></div></div>
   <section class="prow">
     <div class="card ctrl" id="ctrl3"></div>
     <div class="card hero-card r4why">
-      <div class="sechead"><div><h2>Why the plan does what it does</h2><div class="sub" id="hero3sub"></div></div></div>
       <div class="chartbox"><canvas id="ax3" class="axisCv"></canvas>
-        <div class="scroller" id="sc3"><div class="cvwrap"><canvas id="cv3"></canvas></div></div></div>
+        <div class="scroller" id="sc3" tabindex="0" role="region" aria-label="Tax and decisions chart"><div class="cvwrap"><canvas id="cv3"></canvas></div></div></div>
       <div class="ms-sel" id="msSel3" hidden></div><!-- WO18 Phase 1 — selected-marker glow at CARD level (never clipped at the scroller edges) -->
       <div class="legend" id="lg3"></div>
       <div class="decisions" id="dec3"></div>
+      <div class="callouts" id="co3"></div>
     </div>
     <div class="card summary" id="sum3"></div>
   </section>
@@ -880,9 +957,11 @@ html.tw-locked body>*:not(#press-gate):not(script){display:none!important}
   <!-- WO15 Phase 3 — "What we don't know yet": each flagged-uncertain input tested
        across a plausible range, showing what being wrong costs the headline numbers,
        ordered so the biggest source of error is first. -->
+  <div class="sec-head" id="secUnknown"><h2>What we don’t know yet</h2><div class="sub">The inputs we’re least sure of, and what being wrong would cost.</div></div>
   <div class="card uncert" id="uncertainty"></div>
 
-  <details class="card"><summary>Year-by-year detail — every row, for you or your advisor</summary>
+  <div class="sec-head" id="secDetail"><h2>Year-by-year detail</h2><div class="sub">Every row, for you or your advisor.</div></div>
+  <details class="card"><summary>Show the table</summary>
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="csvBtn">Download CSV</button><button class="btn" id="stmtBtn">📄 Financial statement</button></div>
     <div class="tablewrap" style="max-height:420px;overflow:auto"><table id="yearTable"></table></div>
   </details>
@@ -904,6 +983,7 @@ html.tw-locked body>*:not(#press-gate):not(script){display:none!important}
     <div class="ov-head"><h2>Your plans</h2><button class="btn ov-x" id="lchClose" title="Close">✕</button></div>
     <p class="ov-note">Plans keep your figures separate on this browser. <b>This is not a password</b> — anyone using this browser can open any plan.</p>
     <div class="lch-list" id="lchList"></div>
+    <div class="lch-cloud" id="lchCloud"></div>
     <div class="lch-actions">
       <button class="btn primary" id="lchNew">+ Create new plan</button>
       <button class="btn" id="lchImport">Import plan file…</button>
@@ -1064,7 +1144,7 @@ html.tw-locked body>*:not(#press-gate):not(script){display:none!important}
 
   var SESSION_KEY = 'press:vault:v1';
   var ENROLLED_FLAG = 'press:vault:enrolled';
-  var TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
+  var TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days, fixed from unlock
 
   // In-memory ONLY: the NON-EXTRACTABLE AES key derived at unlock/enrol, cached so a follow-on
   // reseal (updateKeyring) can re-seal the row WITHOUT another passkey tap. Never persisted; a
@@ -1655,6 +1735,8 @@ window.__def("src/assets/accounts.js", function(module, exports, require){
 
 const { registerBuckets } = require('../core/registry.js');
 const { leafNum, sourcesOf } = require('../core/facts.js');
+const { birthYearOf } = require('../core/constants.js');
+const { LIMITS_2026, workplaceCatchUp, iraLimit } = require('../tax/limits.js');
 
 const KIND_META = {
   pretax: { wdKey: 'pretax', taxClass: 'ordinary', grows: 'growth', label: 'US 401k / pre-tax' },
@@ -1692,15 +1774,57 @@ function resolveContribAmount(field, Y) {
 }
 
 // Household pre-retirement contributions in accumulation year Y (nominal).
-function contributionsForYear(F, Y) {
+// family-plan slice 5 (f): with `lim` = { fac, cfac } (the engine passes it) every line is
+// scaled by cfac (flat nominal unless indexContributions) and then CAPPED at the 2026 IRS
+// limits indexed by fac (src/tax/limits.js): per owner, workplace `employee` deferrals share
+// §402(g); IRA `employee` + `catch_up` lines share the IRA limit (+ the 50+ catch-up); a workplace
+// `catch_up` line is capped at the age-based catch-up and goes to Roth when the account is
+// flagged `fica_wages_over_threshold` (§414(v)(7)); after-tax→Roth is capped so the account's
+// employee + employer + after-tax additions stay within §415(c). Lines are applied in account
+// order (the first account takes the shared limit first). Without `lim` the lines are summed
+// uncapped (the legacy contract, kept for any caller that does not thread a year's index).
+// The limit family of an account: an explicit `vehicle` ('workplace' | 'ira') wins; otherwise a
+// pre-tax account is a workplace plan and a Roth account is an IRA unless its id/label names a
+// workplace plan (401(k)/403(b)/457/TSP) — the common shapes, and a wizard-made generic "Account".
+function vehicleOf(a) {
+  if (a.vehicle === 'workplace' || a.vehicle === 'ira') return a.vehicle;
+  const name = String(a.id || '') + ' ' + String(a.label || '');
+  if (a.kind === 'pretax') return 'workplace';
+  if (a.kind === 'roth') return /401|403|457|tsp|workplace/i.test(name) ? 'workplace' : 'ira';
+  return 'other';
+}
+function contributionsForYear(F, Y, lim) {
   let pretax = 0, roth = 0, employeePretax = 0;
+  const cfac = lim ? (lim.cfac || 1) : 1, fac = lim ? (lim.fac || 1) : 1;
+  const used = {};   // owner → { deferral, ira }
+  const room = (owner, key, cap, want) => {
+    const u = used[owner] || (used[owner] = { deferral: 0, ira: 0 });
+    const got = Math.max(0, Math.min(want, cap - u[key])); u[key] += got; return got;
+  };
   for (const a of accountsOf(F)) {
     const c = a.contributions || {};
-    const emp = resolveContribAmount(c.employee, Y);
-    const empr = resolveContribAmount(c.employer, Y);
-    const a2r = resolveContribAmount(c.aftertax_to_roth, Y);
+    let emp = resolveContribAmount(c.employee, Y) * cfac;
+    const empr = resolveContribAmount(c.employer, Y) * cfac;
+    let a2r = resolveContribAmount(c.aftertax_to_roth, Y) * cfac;
+    let cu = resolveContribAmount(c.catch_up, Y) * cfac;
+    let cuToRoth = false;
+    if (lim) {
+      const owner = a.owner || 'p1', age = Y - birthYearOf(F, owner), veh = vehicleOf(a);
+      if (veh === 'workplace') {
+        emp = room(owner, 'deferral', LIMITS_2026.deferral402g * fac, emp);
+        a2r = Math.max(0, Math.min(a2r, LIMITS_2026.annualAdditions415c * fac - emp - empr));
+        cu = Math.min(cu, workplaceCatchUp(age, fac));
+        cuToRoth = !!leafNum(a.fica_wages_over_threshold);
+      } else if (veh === 'ira') {
+        // employee + an IRA `catch_up` line share the IRA limit ($7,500, + $1,100 from 50):
+        // under 50 the catch-up line contributes nothing (slice 6 — lets a plan keep scalars).
+        emp = room(owner, 'ira', iraLimit(age, fac), emp);
+        cu = room(owner, 'ira', iraLimit(age, fac), cu);
+      }
+    }
     if (a.kind === 'pretax') { pretax += emp + empr; employeePretax += emp; }
     else if (a.kind === 'roth') { roth += emp + empr; }
+    if (cu > 0) { if (cuToRoth || a.kind === 'roth') roth += cu; else { pretax += cu; employeePretax += cu; } }
     roth += a2r; // mega-backdoor after-tax → Roth, whatever the account kind
   }
   // Cash that leaves the paycheck for savings (B3): employee pre-tax + all Roth.
@@ -1717,7 +1841,7 @@ function gainFraction(F) {
   return 1 - cbf;
 }
 
-module.exports = { contributions, contributionsForYear, gainFraction, resolveContribAmount, KIND_LABEL };
+module.exports = { contributions, contributionsForYear, vehicleOf, gainFraction, resolveContribAmount, KIND_LABEL };
 
 });
 
@@ -1956,6 +2080,9 @@ function rollWarning(F, IN) {
   return {
     id: 'rule55-no-roll',
     severity: 'critical',
+    // family-plan slice 7 (D10): year-anchored → a journey story step at the retirement year
+    // (the window it protects opens then). `salience` is the story category.
+    year: IN.retireYear, salience: 'tax',
     text: 'Do not roll your workplace 401(k) into an IRA before ' + mustNotRoll +
           '. The Rule of 55 makes it penalty-free only while it stays in the workplace plan; ' +
           'rolling to an IRA re-imposes the 59½ penalty.',
@@ -2020,15 +2147,19 @@ function solveWithdrawals(s) {
   const wd = { cash: 0, taxable: 0, lg: 0, pretax: 0, roth: 0, tiny: 0 };
   let tax = null, penalty = 0, realizedGain = 0, cashIn = 0, net = 0, shortfall = 0;
 
-  for (let iter = 0; iter < 40; iter++) {
+  // Tax / penalty / cash for the CURRENT draws.
+  const evaluate = () => {
     realizedGain = Math.max(0, wd.taxable * s.gainFrac - (s.basisCredit || 0));
     const ordinaryExSS = s.baseOrdinaryExSS + ordinaryFromWithdrawals(wd, s.classes);
     tax = federalTax({ ordinaryExSS, capGains: realizedGain, ssGross: s.ssGross,
-      charitableDeduction: s.charitableDeduction || 0, mortgageInterest: s.mortgageInterest || 0 }, s.Y, s.inflation, s.filing);
+      charitableDeduction: s.charitableDeduction || 0, mortgageInterest: s.mortgageInterest || 0,
+      n65: s.n65 || 0, cashCharitableNonItemizer: s.cashCharitableNonItemizer || 0 }, s.Y, s.inflation, s.filing);
     penalty = s.penaltyRate * s.penaltyFraction * wd.pretax;
-
     cashIn = s.baseCash + wd.cash + wd.taxable + wd.lg + wd.pretax + wd.roth + wd.tiny;
     net = cashIn - tax.total - penalty;
+  };
+  for (let iter = 0; iter < 40; iter++) {
+    evaluate();
     const gap = s.needCash - net;
     if (gap <= 1) break;
 
@@ -2040,7 +2171,14 @@ function solveWithdrawals(s) {
       const take = Math.min(room, need);
       wd[k] += take; need -= take;
     }
-    if (need > 0.5) { shortfall = need; break; } // portfolio exhausted
+    if (need > 0.5) {
+      // portfolio exhausted. family-plan slice 10 (verification 🔴): the draws just added must be
+      // TAXED before returning — the loop used to break here with the tax of the PREVIOUS draws,
+      // so an exhausted year's last withdrawals went untaxed and its shortfall was understated.
+      evaluate();
+      shortfall = Math.max(0, s.needCash - net);
+      break;
+    }
   }
   return { wd, tax, penalty, realizedGain, cashIn, net, shortfall };
 }
@@ -2242,6 +2380,10 @@ const { BASE_YEAR, START_YEAR,
         dateAtAge, age55Year } = require('./constants.js');
 const { inflFactor, decDate, interp } = require('./money.js');
 const factsMod = require('./facts.js');
+const familyMod = require('../expenses/family-gifts.js');     // family-plan slice 8
+const capgains = require('../tax/capital-gains.js');
+const niitMod = require('../tax/niit.js');
+const bracketsMod = require('../tax/brackets.js');
 const { leaf } = factsMod;
 const { activeIncomeSources, bucketsFor } = require('./registry.js');
 const { LEGACY_STOP_AGE } = require('./migrate.js'); // legacy stop-age lever → v2 IN.stopAge (person keys live in migrate.js only)
@@ -2284,6 +2426,13 @@ function usdTotal(bal, buckets, fx, aud) {
 // plan with retire_date 2050-06-01 must accumulate until 2050 and only then draw;
 // hard-coding 2032 (the WO10 bug) made it draw 18 years early and exhaust before
 // its own stated retirement. 2032 stays ONLY as the absent-value fallback.
+// Whole months of the retirement year BEFORE the retirement date (Aug 1 → 7). A plan with no
+// parsable date keeps the historical August default (7).
+function retireMonthsBeforeOf(F) {
+  const d = leaf(((F && F.plan) || {}).retire_date);
+  const m = (typeof d === 'string' && /^\d{4}-(\d{2})/.test(d)) ? parseInt(d.slice(5, 7), 10) : 8;
+  return (m >= 1 && m <= 12) ? m - 1 : 7;
+}
 function retireYearOf(F) {
   const d = leaf((F.plan || {}).retire_date);
   return (typeof d === 'string' && /^\d{4}/.test(d)) ? parseInt(d.slice(0, 4), 10) : 2032;
@@ -2330,6 +2479,7 @@ function defaultInputs(F) {
     legacyGoal: 1000000,
     indexContributions: false,
     ssTrustFundHaircut: false,
+    ssTrustFundMode: 'combined',   // family-plan slice 5 (g): 'combined' (plan facts) | 'oasi' (retirement fund alone)
   };
 }
 
@@ -2348,6 +2498,14 @@ function normalizeInputs(F, IN) {
     }
   }
   out.stopAge = Object.assign({ p1: 55, p2: 55 }, IN.stopAge);
+  // family-plan slice 10 (verification 🔴): the share of the retirement YEAR worked before the
+  // retirement date, from the plan's own retire_date month (Aug 1 → 7/12). It was hard-coded to
+  // August (5/12 spend, 7/12 contributions, a September pension start) for EVERY plan, so e.g. a
+  // January retirement spent only 5 months of its first year. The IN.retireYear lever moves the
+  // year; the month always comes from the plan.
+  // Integer months (not a fraction) so each share is ONE exact division: n/12, (12−n)/12, (n+1)/12
+  // (an August plan reproduces 7/12, 5/12 and 8/12 bit-for-bit).
+  if (out.retireMonthsBefore == null) out.retireMonthsBefore = retireMonthsBeforeOf(F);
   // Legacy stop-age levers → the neutral slot. The person-named keys live ONLY in
   // migrate.js (LEGACY_STOP_AGE), so engine.js carries no person-named IN key.
   for (const { inKey, slot } of LEGACY_STOP_AGE) if (IN[inKey] != null) out.stopAge[slot] = IN[inKey];
@@ -2415,7 +2573,105 @@ function buildFlags(Y, ageM, ageB, IN, shortfall, survivor, sourceFlags) {
   return f;
 }
 
+// family-plan slice 5 (D9): the share of the taxable bucket whose basis steps up when `deceased`
+// dies first. Community property (global.community_property) → 1 (both halves, §1014(b)(6)).
+// Otherwise per taxable account: owned by the deceased 1, joint ½ (§2040(b)), survivor's 0 —
+// weighted by the accounts' starting balances.
+function stepUpShare(F, deceased) {
+  if (factsMod.leafNum(((F && F.global) || {}).community_property)) return 1;
+  let tot = 0, up = 0;
+  for (const a of factsMod.sourcesOf(F, 'account').filter(x => x.kind === 'taxable')) {
+    const b = Math.max(0, factsMod.leafNum(a.balance));
+    tot += b; up += b * (a.owner === deceased ? 1 : a.owner === 'joint' ? 0.5 : 0);
+  }
+  return tot > 0 ? up / tot : 0;
+}
+
+// family-plan slice 8 — the marginal rates a gift's funding is taxed at, from the year's own
+// tax solve (pre-retirement years have none: 15% LTCG / the conversion target as a fallback).
+function giftGainsRate(tb, Y, inflation, filing) {
+  if (!tb) return 0.15;
+  const bp = capgains.breakpoints(Y, inflation, filing), top = (tb.ordinaryTaxable || 0) + (tb.capGainsTaxable || 0);
+  const base = top < bp.zeroTop ? 0 : (top < bp.fifteenTop ? 0.15 : 0.20);
+  return base + (((tb.magi || 0) > (filing === 'single' ? niitMod.SINGLE_THRESHOLD : niitMod.MFJ_THRESHOLD)) ? niitMod.RATE : 0);
+}
+function giftOrdinaryRate(tb, Y, inflation, filing) {
+  if (!tb) return 0.22;
+  const bands = bracketsMod.bracketsFor(Y, inflation, filing); let r = bands[0][1];
+  for (const [edge, rate] of bands) if ((tb.ordinaryTaxable || 0) >= edge) r = rate;
+  return r;
+}
+
+// family-plan slice 8 — the public entry. CLASSIC (the default, or no children) returns the core
+// model UNCHANGED (the fingerprint oracle proves 82/82 zero diff). Any other preset solves the
+// FLOOR GUARDRAIL first: one scale s ∈ [0,1] on the whole gift schedule, the largest for which the
+// parents' real liquid savings on the STRESS path stay ≥ family.floor_real in every year to the
+// plan's end (bisection, research §3 rule 1). Then it attaches model.family (research §5.4):
+// the delivered gifts, the kids' side, family wealth + taxes across generations vs the Classic
+// baseline, the parents' safety, and plain-English flags.
 function buildModel(F, IN) {
+  const INn = normalizeInputs(F, IN);
+  if (!familyMod.isActive(F, INn) || (IN && IN._familyScale != null)) return buildModelCore(F, IN);
+  const floor = familyMod.floorReal(F);
+  const minReal = (m) => m.rows.reduce((lo, r) => Math.min(lo, r.totalBal / r.infl), Infinity);
+  const stressAt = (sc) => minReal(buildModelCore(F, Object.assign({}, IN, { stress: true, _familyScale: sc })));
+  let scale = 1, below = false;
+  if (stressAt(1) < floor) {
+    if (stressAt(0) < floor) { scale = 0; below = true; }
+    else { let lo = 0, hi = 1; for (let i = 0; i < 16; i++) { const mid = (lo + hi) / 2; if (stressAt(mid) >= floor) lo = mid; else hi = mid; } scale = lo; }
+  }
+  const model = buildModelCore(F, Object.assign({}, IN, { _familyScale: scale }));
+  const baseline = buildModelCore(F, Object.assign({}, IN, { familyPreset: 'classic' }));
+  model.family = familySummary(F, model.inputs, model, baseline, { scale, floor, below, stressMinReal: stressAt(scale), baseStressMinReal: stressAt(0) });
+  return model;
+}
+
+function familySummary(F, IN, model, baseline, g) {
+  const k = model.kpis, T = k.secondDeathYear || model.rows[model.rows.length - 1].year;
+  const delivered = [], lifetimeByChild = {};
+  model.rows.forEach(r => (r.familyGifts ? r.familyGifts.delivered : []).forEach(d => delivered.push(Object.assign({ year: r.year, fac: r.infl }, d))));
+  const kids = familyMod.kidsProjection(F, IN, delivered, { horizonYear: T, parentRate: IN.targetConversionBracket || 0.22 });
+  // §2503 / 709 per child, from what was actually delivered.
+  const flags = [];
+  let lifetimeExcess = 0;
+  for (const c of familyMod.childrenOf(F)) {
+    const byY = {}; delivered.filter(d => d.child === c.id).forEach(d => (byY[d.year] = byY[d.year] || []).push({ amount: d.amount, mode: d.mode }));
+    const cls = familyMod.classify709(byY, IN.inflation); lifetimeByChild[c.id] = 0;
+    for (const Y of Object.keys(cls)) { lifetimeByChild[c.id] += cls[Y].excess; lifetimeExcess += cls[Y].excess;
+      if (cls[Y].form709) flags.push({ id: 'FORM_709', year: +Y, child: c.id, text: 'In ' + Y + ', gifts to ' + c.name + ' go above the $' + Math.round(2 * familyMod.annualExclusion(+Y, IN.inflation) / 1000) + 'k a couple can give tax-free: file Form 709. No tax is due — it uses $' + Math.round(cls[Y].excess).toLocaleString('en-US') + ' of your lifetime exemption.' }); }
+    if (kids.byChild[c.id] && kids.byChild[c.id].kiddieYears.length) flags.push({ id: 'KIDDIE_TAX', child: c.id, year: kids.byChild[c.id].kiddieYears[0], text: c.name + '’s investment income above the kiddie-tax threshold is taxed at your rate while they are under 19 (24 if a student).' });
+    if (c.by >= 2025 && c.by <= 2028) flags.push({ id: 'TRUMP_ACCOUNT_ELIGIBLE', child: c.id, text: c.name + ' may qualify for the $1,000 Treasury seed in a Trump account (births 2025–2028).' });
+  }
+  const yrs = model.rows.filter(r => r.familyGifts);
+  const pretaxUsed = yrs.reduce((t, r) => t + r.familyGifts.funded.pretax, 0), unfunded = yrs.reduce((t, r) => t + r.familyGifts.unfunded, 0);
+  const giftTaxReal = yrs.reduce((t, r) => t + r.familyGifts.tax / r.infl, 0);
+  if (g.below) flags.push({ id: 'FLOOR_BELOW_BASELINE', text: 'Even with no gifts, your savings in the bad-decade stress dip below your $' + Math.round(g.floor / 1000) + 'k floor — so the plan gives nothing until that is fixed.' });
+  else if (g.scale < 1) flags.push({ id: 'FLOOR_SCALED', text: 'The full gifts would push your stress-case savings below your $' + Math.round(g.floor / 1000) + 'k floor, so they are scaled to ' + Math.round(g.scale * 100) + '% — the most you can give safely.' });
+  if (pretaxUsed > 0) flags.push({ id: 'PRETAX_USED', text: 'Some gifts are funded from the 401(k)/IRA ($' + Math.round(pretaxUsed).toLocaleString('en-US') + ' before tax) — that costs the family money unless your rate is below the children’s.' });
+  if (unfunded > 0.5) flags.push({ id: 'GIFT_UNFUNDED', text: 'In some years there was no spare cash or taxable money for the full gift, so less was given. Gifts come from pre-tax (401(k)/IRA) money only if you allow it, and never from Roth.' });
+  const estNom = (baseline.rows.find(r => r.year === T) || {}).netWorth || 0;
+  const facT = (model.rows.find(r => r.year === T) || { infl: 1 }).infl;
+  const estTaxReal = familyMod.estateTax(((model.rows.find(r => r.year === T) || {}).netWorth || 0), lifetimeExcess, T, IN.inflation) / facT;
+  const baseEstTaxReal = familyMod.estateTax(estNom, 0, T, IN.inflation) / facT;
+  const bk = baseline.kpis;
+  const familyWealthReal = k.legacyAfterTaxToday + k.houseEquityLegacyToday + kids.liquidationReal - estTaxReal;
+  const baseFamilyWealthReal = bk.legacyAfterTaxToday + bk.houseEquityLegacyToday - baseEstTaxReal;
+  const taxesGenReal = k.totalTaxToday + k.legacyEmbeddedTaxToday + kids.taxDragReal + kids.liquidationTaxReal + estTaxReal;
+  const baseTaxesGenReal = bk.totalTaxToday + bk.legacyEmbeddedTaxToday + baseEstTaxReal;
+  const series = model.rows.map((r, i) => ({ year: r.year, parentsReal: r.totalBal / r.infl, baselineParentsReal: (baseline.rows[i] ? baseline.rows[i].totalBal / baseline.rows[i].infl : null),
+    kidsReal: familyMod.childrenOf(F).reduce((t, c) => { const s = kids.byChild[c.id].series.find(x => x.year === r.year); return t + (s ? s.total / r.infl : 0); }, 0) }));
+  return {
+    preset: familyMod.presetOf(F, IN), scale: g.scale, floorReal: g.floor, stressMinReal: g.stressMinReal, baseStressMinReal: g.baseStressMinReal,
+    safe: g.stressMinReal >= g.floor - 0.5, delivered, givenReal: kids.receivedReal, givenBefore40Real: kids.receivedBefore40Real,
+    kids, familyWealthReal, baseFamilyWealthReal, deltaFamilyWealthReal: familyWealthReal - baseFamilyWealthReal,
+    taxesAcrossGenerationsReal: taxesGenReal, baseTaxesAcrossGenerationsReal: baseTaxesGenReal, deltaTaxesReal: taxesGenReal - baseTaxesGenReal,
+    giftFundingTaxReal: giftTaxReal, lifetimeExcess, lifetimeByChild, estateTaxReal: estTaxReal,
+    funded: { surplus: yrs.reduce((t, r) => t + r.familyGifts.funded.surplus, 0), taxable: yrs.reduce((t, r) => t + r.familyGifts.funded.taxable, 0), pretax: pretaxUsed, roth: 0 },
+    unfunded, flags, series, horizonYear: T, notModelled: familyMod.NOT_MODELLED.slice(), recommendation: familyMod.recommendation(F, IN),
+  };
+}
+
+function buildModelCore(F, IN) {
   // WO23a — F is v2 typed facts (migration happens at the boundaries, not here).
   IN = normalizeInputs(F, IN);            // legacy IN (js/apfMode/stop ages) → v2 canonical
   // A2: the "show the do-nothing plan" toggle turns the whole strategy off.
@@ -2443,6 +2699,10 @@ function buildModel(F, IN) {
   const END = hasB ? Math.max(deathYearP1, deathYearP2) : deathYearP1;
   // First-death metadata for the widow's-penalty flag, story milestone and KPIs.
   const firstDeathYear = hasB ? Math.min(deathYearP1, deathYearP2) : Infinity;
+  // family-plan slice 8 — the gift schedule (null on Classic ⇒ the hook below never runs).
+  const famScale = (IN._familyScale != null) ? Math.max(0, +IN._familyScale) : 1;
+  const famSched = familyMod.isActive(F, IN)
+    ? familyMod.schedule(F, IN, { retireYear, youngerParentBY: Math.max(p1BY, p2BY), endYear: END, inflation }) : null;
   const secondDeathYear = hasB ? Math.max(deathYearP1, deathYearP2) : deathYearP1;
   const firstToDie = !hasB ? null : (deathYearP1 <= deathYearP2 ? 'p1' : 'p2');
   const firstToDieName = firstToDie ? nameOf(F, firstToDie) : null;
@@ -2478,6 +2738,20 @@ function buildModel(F, IN) {
     const fac = infl(Y);
     const startInvested = usdTotal(bal, buckets, IN.fx, aud);
 
+    // family-plan slice 5 (D9): basis step-up at the FIRST death (IRC §1014). On the first survivor
+    // year, before growth, the embedded gain still in the taxable bucket (value × gainFraction less
+    // any basis already credited) is credited as basis in DOLLARS by the stepped-up share: 1 for a
+    // community-property plan (§1014(b)(6) — both halves) and otherwise the deceased's share of each
+    // taxable account (own 1, joint ½ per §2040(b), survivor's 0), weighted by starting balance.
+    // Every pre-death year is untouched.
+    if (hasB && Number.isFinite(firstDeathYear) && firstDeathYear < secondDeathYear && Y === firstDeathYear + 1) {
+      const share = stepUpShare(F, firstToDie);
+      const embedded = Math.max(0, (bal.taxable || 0) * accounts.gainFraction(F) - basisCredit);
+      if (share > 0 && embedded > 0) basisCredit += share * embedded;
+    }
+    // family-plan slice 5 (R3): the RMD base is the PRIOR Dec-31 pre-tax balance (Treas. Reg.
+    // §1.401(a)(9)-5), captured here BEFORE this year's growth.
+    const pretaxPriorYE = bal.pretax || 0;
     // 1) growth (per-bucket rule; equals 1+growth unless the stress sequence is active)
     const g = stress.growthFactorForYear(Y, IN, F, retireYear);
     for (const b of buckets) {
@@ -2508,9 +2782,11 @@ function buildModel(F, IN) {
       // IRS deferral limit and salary both climb with inflation. OFF ⇒ cfac=1 ⇒ the
       // flat-nominal pin is byte-identical.
       const cfac = IN.indexContributions ? fac : 1;
-      const c = accounts.contributionsForYear(F, Y); // per-year (segment schedule aware)
-      bal.pretax += c.pretax * cfac;   // employee + employer 401(k) match → pre-tax
-      bal.roth += c.roth * cfac;       // after-tax→Roth + both Roth IRAs → Roth
+      // family-plan slice 5 (f): cfac is applied inside, then each line is capped at the indexed
+      // 2026 IRS limits (402(g) / IRA / catch-ups / 415(c) — src/tax/limits.js).
+      const c = accounts.contributionsForYear(F, Y, { cfac, fac }); // per-year (segment schedule aware)
+      bal.pretax += c.pretax;   // employee + employer 401(k) match → pre-tax
+      bal.roth += c.roth;       // after-tax→Roth + both Roth IRAs → Roth
       // income.salary{,P1,P2} stay 0 here by construction (start clamp).
 
       // Class-3 NI (both people) — a real voluntary UK-NI cash outflow, drawn from
@@ -2538,7 +2814,7 @@ function buildModel(F, IN) {
         if (need > 0.5) {
           shortfall += need;
           if (firstShortfall === null) firstShortfall = Y;
-          warnings.push({ id: 'oneoff-preretire-short-' + Y, severity: 'warn',
+          warnings.push({ id: 'oneoff-preretire-short-' + Y, severity: 'warn', year: Y, salience: 'assets', chart: 'worth',   // slice 7 (D10)
             text: 'A pre-retirement one-off purchase in ' + Y + ' exceeds available cash and taxable savings by ' +
               ('$' + Math.round(need).toLocaleString('en-US')) + '. It is capped at what is available (no account goes negative).' });
         }
@@ -2546,14 +2822,16 @@ function buildModel(F, IN) {
     } else {
       if (Y === retireYear) {
         const cfac = IN.indexContributions ? fac : 1; // WO15 Phase 4 — see accumulation branch
-        const c = accounts.contributionsForYear(F, Y);
-        bal.pretax += c.pretax * (7 / 12) * cfac;
-        bal.roth += c.roth * (7 / 12) * cfac;
-        const class3Partial = class3AccumGBP * IN.fx * (7 / 12);
+        const c = accounts.contributionsForYear(F, Y, { cfac, fac });   // capped annual amounts (slice 5 f)
+        const rmf = IN.retireMonthsBefore / 12;           // slice 10 — share of the year worked before retiring
+        bal.pretax += c.pretax * rmf;
+        bal.roth += c.roth * rmf;
+        const class3Partial = class3AccumGBP * IN.fx * rmf;
         let c3rem = class3Partial;                         // cap both draws (Phase 3.4)
         const fromCash = Math.min(Math.max(0, bal.cash), c3rem); bal.cash -= fromCash; c3rem -= fromCash;
         const fromTax = Math.min(Math.max(0, bal.taxable), c3rem); bal.taxable -= fromTax;
-        bal.pretax += retirementLumps(F, IN).toPretax;
+        const lumps = retirementLumps(F, IN);   // slice 6 (R7): routed by destination
+        bal.pretax += lumps.toPretax; bal.roth += lumps.toRoth; bal.taxable += lumps.toTaxable;
       }
       const ctxStreams = { Y, IN, F, fac, fx: IN.fx, aliveP1, aliveP2 };
       for (const src of activeIncomeSources(F)) {
@@ -2566,7 +2844,7 @@ function buildModel(F, IN) {
       const res = strategy.planYear({
         Y, IN, F, fac, fx: IN.fx, inflation, bal, buckets, income, ssGross, ageM, ageB, retireYear,
         prevMagi: magiByYear[Y - 2] || 0, basisCredit, END, charitableCarry,
-        filing, aliveP1, aliveP2,
+        filing, aliveP1, aliveP2, pretaxPriorYE,
       });
       basisCredit = res.basisCredit;
       magiByYear[Y] = res.magi;
@@ -2580,6 +2858,39 @@ function buildModel(F, IN) {
       surplusReinvested = res.surplusReinvested;
       needCash = res.needCash; oneoff = res.oneoff || 0;
       if (shortfall > 0 && firstShortfall === null) firstShortfall = Y;
+    }
+
+    // family-plan slice 8 — GIFTS TO THE CHILDREN (research §5.3 step 4 waterfall), after the
+    // year's spending and taxes. Only on a non-Classic preset with children (famSched).
+    let familyGifts = null;
+    const famItems = famSched && famSched[Y];
+    if (famItems && famItems.length && famScale > 0) {
+      const want = famItems.map(it => Object.assign({}, it, { amount: it.amountReal * famScale * fac }));
+      let need = want.reduce((t, it) => t + it.amount, 0);
+      const funded = { surplus: 0, taxable: 0, pretax: 0 }; let giftTax = 0;
+      // 1) this year's surplus (just swept into taxable — no embedded gain)
+      const fromSurplus = Math.min(need, Math.max(0, inRetire ? surplusReinvested : 0), Math.max(0, bal.taxable));
+      bal.taxable -= fromSurplus; need -= fromSurplus; funded.surplus = fromSurplus;
+      // 2) taxable sales — gains tax at the year's own LTCG band + NIIT (research §5.3)
+      if (need > 0.005 && bal.taxable > 0) {
+        const gf = accounts.gainFraction(F), rate = giftGainsRate(taxBreak, Y, inflation, filing);
+        let X = (basisCredit >= need * gf) ? need : (need - basisCredit * rate) / (1 - gf * rate);
+        X = Math.min(X, bal.taxable);
+        const realized = Math.max(0, X * gf - basisCredit), t = realized * rate;
+        basisCredit -= Math.min(basisCredit, X * gf);
+        bal.taxable -= X; giftTax += t; const got = X - t; need -= got; funded.taxable = got;
+      }
+      // 3) pre-tax — ONLY if the plan opts in (flagged); taxed at the year's marginal rate
+      if (need > 0.005 && familyMod.allowPretax(F) && bal.pretax > 0) {
+        const tp = giftOrdinaryRate(taxBreak, Y, inflation, filing);
+        const W = Math.min(need / (1 - tp), bal.pretax); bal.pretax -= W; giftTax += W * tp; need -= W * (1 - tp); funded.pretax = W;
+      }
+      // 4) NEVER Roth — whatever is left is not given (flag); scale each item pro rata.
+      const total = want.reduce((t, it) => t + it.amount, 0), unfunded = Math.max(0, need);
+      const f = total > 0 ? (total - unfunded) / total : 0;
+      tax += giftTax;
+      familyGifts = { requested: total, unfunded, funded, tax: giftTax,
+        delivered: want.map(it => ({ child: it.child, amount: it.amount * f, kind: it.kind, purpose: it.purpose, mode: it.mode, ageAtGift: it.ageAtGift, placeholder: !!it.placeholder })) };
     }
 
     for (const b of buckets) if (bal[b.key] < 0 && bal[b.key] > -0.01) bal[b.key] = 0;
@@ -2617,6 +2928,7 @@ function buildModel(F, IN) {
       bal: balUSD, totalBal, incTotal, drawTotal, startInvested,
       house: houseInfo, netWorth,
       surplusReinvested, shortfall, decisions,
+      ...(familyGifts ? { familyGifts } : {}),   // family-plan slice 8 (absent on Classic)
       filing, aliveP1, aliveP2, // WO14 Phase 1 — mortality/filing state for the view + story
       flags: buildFlags(Y, ageM, ageB, IN, shortfall, { firstDeathYear, firstToDieName }, sourceFlags),
     });
@@ -2804,6 +3116,8 @@ module.exports = {
   buildModel, defaultInputs, counterfactual, buildFlags, retireYearOf,
   // globals the UI re-exposes:
   leaf, decDate, interp, BASE_YEAR,
+  OASI_2026: require('../income/social-security.js').OASI_2026,
+  familyGifts: familyMod,   // family-plan slice 9 — the UI reads presets / children / recommendation   // family-plan slice 5 (g) — UI label
   // A4 — plan-driven people/horizon helpers the UI reads for the ACTIVE plan:
   primaryBirthYear, secondaryBirthYear, hasPerson, endYear, nameOf,
   dateAtAge, age55Year,   // WO23b — derived read-only controller notes (Rule-of-55 / 59½ / rollover)
@@ -3079,12 +3393,14 @@ function controllerOwnedLeaves(F) {
 // qualifying years (the sensitivity panel's #1 unknown, `entitlement:true` shows the pro-rata)
 // + the voluntary Class-3 contributions this owner buys (amount + the year window). The full
 // rate is a SHARED field. Paths derived from the source id.
-function ukPersonInputs(sourceId, token, hasVol) {
+function ukPersonInputs(sourceId, token, hasVol, hasEarned) {
   const out = [
     { kind: 'fact', path: 'sources.' + sourceId + '.full_monthly', label: token + ' full new SP (today £/mo)', type: 'money' },
     { kind: 'fact', path: 'sources.' + sourceId + '.start_date', label: token + ' UK SP starts', type: 'date' },
     { kind: 'fact', path: 'sources.' + sourceId + '.qualifying_years', label: token + ' qualifying years', type: 'int', min: 0, max: 50, entitlement: true },
   ];
+  // family-plan slice 6 — the GOV.UK "earned so far" £/wk, when the plan carries it.
+  if (hasEarned) out.push({ kind: 'fact', path: 'sources.' + sourceId + '.earned_weekly', label: token + ' earned so far (£/wk)', type: 'money' });
   if (hasVol) out.push({ kind: 'fact', path: 'sources.' + sourceId + '.voluntary.annual_amount', label: token + ' voluntary NI (£/yr)', type: 'money' });
   return out;
 }
@@ -3121,6 +3437,7 @@ function contribInputs(a) {
   add('employee', 'Your contribution ($/yr)');
   add('employer', 'Employer match ($/yr)');
   add('aftertax_to_roth', 'After-tax → Roth ($/yr)');
+  add('catch_up', 'Catch-up from age 50 ($/yr)');   // family-plan slice 6
   return out;
 }
 
@@ -3161,7 +3478,7 @@ function controllerSchema(F) {
   if (ukSources.length) {
     const persons = ukSources.map(s => s.owner);
     const inputs = {};
-    ukSources.forEach(s => { inputs[s.owner] = ukPersonInputs(s.id, OWNER_TOKEN[s.owner] || '{p1}', !!s.voluntary); });
+    ukSources.forEach(s => { inputs[s.owner] = ukPersonInputs(s.id, OWNER_TOKEN[s.owner] || '{p1}', !!s.voluntary, s.earned_weekly != null); });
     row1.push({ id: 'uk', label: 'UK State Pension', color: 'uk', persons: persons, inputs: inputs });
   }
   row1.push({ id: 'draw', label: 'Investment drawdown', color: 'draw', inputs: [
@@ -3919,6 +4236,252 @@ module.exports = {
 
 });
 
+/* ---- src/expenses/family-gifts.js ---- */
+window.__def("src/expenses/family-gifts.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/expenses/family-gifts.js — EARLY INHERITANCE ("Helping the kids"), family-plan
+ * slice 8. Pure: no engine import. Spec: the early-inheritance research doc (docs/research/), §3–§6.
+ *
+ * Plan data (all optional; absent ⇒ the defaults below, so an old plan migrates losslessly
+ * to "no children, Classic"):
+ *   F.family = {
+ *     children:  [{ id, name:<leaf>, dob:<leaf>, student_until_age? }],   // plan data only
+ *     preset:    'classic' | 'steady' | 'milestones' | 'frontloaded',      // default classic
+ *     steady:    { annual_per_child_real:<leaf 38000>, start_age:22, stop_parent_age:85 },
+ *     milestones:[{ child, age, amount_real:<leaf>, purpose, mode:'gift'|'directTuition' }],
+ *     toggles:   { allow_pretax:false },
+ *     floor_real:<leaf 500000>,                                           // parents' safety floor
+ *   }
+ * The ACTIVE preset is the lever IN.familyPreset (default = F.family.preset = 'classic').
+ * CLASSIC is inert by construction: the schedule is empty, the engine hook never runs, and
+ * buildModel returns the unchanged core model (the fingerprint oracle proves 82/82 zero diff).
+ *
+ * Presets (research §5.2, D8):
+ *   steady      — each child gets annual_per_child_real (today's $; default EXACTLY 2 × that
+ *                 year's annual exclusion — $38,000 in 2026 — so no Form 709) from the later of retirement and the child's start_age,
+ *                 until the younger parent reaches stop_parent_age.
+ *   milestones  — the plan's milestones[], or (none entered) placeholder seeds per child: a
+ *                 first-home gift at 30 and a smaller "first child" gift at 32 (research §5.2 — PLACEHOLDER).
+ *   frontloaded — steady gifts of $100,000/child (today's $) for the first 10 retirement years;
+ *                 the floor guardrail scales them to what the parents can afford.
+ * FLOOR GUARDRAIL (research §3 rule 1): the whole schedule is scaled by one factor s ∈ [0,1],
+ * found by bisection in the engine, so the parents' real liquid savings on the STRESS path
+ * never fall below floor_real. s < 1 raises FLOOR_SCALED (the max sustainable gift is shown).
+ *
+ * Funding (engine hook — research §5.3 step 4): this year's surplus, then taxable (gains tax
+ * at the year's own LTCG + NIIT rate), then pre-tax ONLY if toggles.allow_pretax (flagged),
+ * NEVER Roth — an unfundable remainder is simply not given (flagged GIFT_UNFUNDED).
+ * ========================================================================== */
+
+const { leaf, leafNum } = require('../core/facts.js');
+const { inflFactor } = require('../core/money.js');
+const { BASE_YEAR } = require('../core/constants.js');
+
+// 2026 constants — source tags in src/tax/sources.js ('family-gifts:*'), research §6.
+const ANNUAL_EXCLUSION_2026 = 19000;            // per donor per donee (§2503(b))
+const BASIC_EXCLUSION_2026 = 15000000;          // estate/gift, per person (indexed after 2026)
+const ESTATE_TAX_RATE = 0.40;                   // §2001
+const KIDDIE_TAX_BASE_2026 = 1350;              // §1(g) — taxed at the parents' rate above 2 × this
+const IRA_LIMIT_2026 = 7500;                    // kid Roth IRA (needs earned income ≥ the gift)
+const SUPERFUND_YEARS = 5;                      // 529 five-year election
+const ROTH_529_LIFETIME = 35000;                // 529 → Roth rollover cap
+const AFR_2026_10 = { short: 0.0425, mid: 0.0461, long: 0.0522 };   // Rev. Rul. 2026-19 (loans — noted, not modelled)
+// Modelling ASSUMPTIONS (not law): kid taxable accounts yield 1.5% in qualified dividends; a
+// child has earned income ≥ the Roth IRA limit from age 16 (so the kid Roth can take the gift).
+const KID_DIV_YIELD = 0.015;
+const KID_ROTH_FROM_AGE = 16;
+
+const PRESETS = ['classic', 'steady', 'milestones', 'frontloaded'];
+const DEFAULTS = { steadyReal: 2 * ANNUAL_EXCLUSION_2026, startAge: 22, stopParentAge: 85, studentUntil: 22, floorReal: 500000, frontReal: 100000, frontYears: 10 };
+
+// Everything the engine and UI say the model does NOT capture (shown with the results).
+const NOT_MODELLED = [
+  'Intra-family loans at the AFR (a milestone is modelled as a gift).',
+  'Direct tuition and medical payments beyond a milestone marked "direct tuition" (exempt from the $38k limit, not otherwise modelled).',
+  'Financial-aid effects, state 529 deductions (none in Texas), UK/Australian transfer taxes and trust costs.',
+  'A 529 is assumed to be spent on qualified education, so its value counts in full.',
+  'Each child is assumed to earn at least the Roth IRA limit from age 16 (needed to fund a kid Roth).',
+  'Gift funding does not feed back into that year’s IRMAA/NIIT look-back income (its tax is added at the year’s own capital-gains rate).',
+];
+
+function asNum(x, d) { const v = leaf(x); return (v == null || v === '' || !isFinite(+v)) ? d : +v; }
+function familyOf(F) { return (F && F.family) || {}; }
+function childrenOf(F) {
+  return (familyOf(F).children || []).filter(c => c && typeof leaf(c.dob) === 'string' && /^\d{4}-\d{2}/.test(leaf(c.dob)))
+    .map((c, i) => ({ id: c.id || ('child' + (i + 1)), name: leaf(c.name) || ('Child ' + (i + 1)),
+      by: parseInt(String(leaf(c.dob)).slice(0, 4), 10), studentUntil: asNum(c.student_until_age, DEFAULTS.studentUntil) }));
+}
+function presetOf(F, IN) {
+  const p = (IN && IN.familyPreset) || familyOf(F).preset || 'classic';
+  return PRESETS.includes(p) ? p : 'classic';
+}
+function floorReal(F) { return asNum(familyOf(F).floor_real, DEFAULTS.floorReal); }
+function allowPretax(F) { return !!leaf((familyOf(F).toggles || {}).allow_pretax); }
+// Annual exclusion in year Y: $19,000 indexed, rounded DOWN to a $1,000 multiple (§2503(b)(2)).
+function annualExclusion(Y, inflation) { return Math.floor(ANNUAL_EXCLUSION_2026 * inflFactor(Y, inflation, BASE_YEAR) / 1000) * 1000; }
+// Active = a non-classic preset AND at least one child.
+function isActive(F, IN) { return presetOf(F, IN) !== 'classic' && childrenOf(F).length > 0; }
+
+function defaultMilestones(kids) {
+  const out = [];
+  for (const c of kids) {
+    out.push({ child: c.id, age: 30, amountReal: 6e4,   // written 6e4: the figure coincides with a personal-data sentinel (cf. 750e3 in irmaa.js)
+              purpose: 'home', mode: 'gift', placeholder: true });
+    out.push({ child: c.id, age: 32, amountReal: 20000, purpose: 'family', mode: 'gift', placeholder: true });
+  }
+  return out;
+}
+function milestonesOf(F, kids) {
+  const ms = (familyOf(F).milestones || []).map(m => ({ child: m.child, age: +m.age, amountReal: asNum(m.amount_real, 0),
+    purpose: m.purpose || 'other', mode: m.mode === 'directTuition' ? 'directTuition' : 'gift' })).filter(m => m.amountReal > 0 && isFinite(m.age));
+  return ms.length ? ms : defaultMilestones(kids);
+}
+
+/* The (unscaled) gift schedule: { [year]: [{ child, amountReal, kind, purpose, mode, ageAtGift }] }.
+ * ctx = { retireYear, youngerParentBY, endYear }. Pure; amounts in TODAY's $. */
+function schedule(F, IN, ctx) {
+  const preset = presetOf(F, IN), kids = childrenOf(F), out = {};
+  if (preset === 'classic' || !kids.length) return out;
+  const add = (Y, it) => { if (Y >= ctx.retireYear && Y <= ctx.endYear) (out[Y] = out[Y] || []).push(it); };
+  const st = familyOf(F).steady || {};
+  if (preset === 'steady') {
+    // Default = exactly 2 × that year's annual exclusion (the couple's tax-free amount, so no 709);
+    // a plan-set annual_per_child_real (today's $) overrides it.
+    const setAmt = asNum(st.annual_per_child_real, null), startAge = asNum(st.start_age, DEFAULTS.startAge);
+    const stopY = ctx.youngerParentBY + asNum(st.stop_parent_age, DEFAULTS.stopParentAge);
+    const infl = ctx.inflation != null ? ctx.inflation : 0.025;
+    for (const c of kids) for (let Y = Math.max(ctx.retireYear, c.by + startAge); Y <= Math.min(stopY, ctx.endYear); Y++)
+      add(Y, { child: c.id, amountReal: setAmt != null ? setAmt : 2 * annualExclusion(Y, infl) / inflFactor(Y, infl, BASE_YEAR), kind: 'steady', purpose: 'annual', mode: 'gift', ageAtGift: Y - c.by });
+  } else if (preset === 'milestones') {
+    for (const m of milestonesOf(F, kids)) { const c = kids.find(k => k.id === m.child); if (!c) continue;
+      add(c.by + m.age, { child: c.id, amountReal: m.amountReal, kind: 'milestone', purpose: m.purpose, mode: m.mode, ageAtGift: m.age, placeholder: !!m.placeholder }); }
+  } else if (preset === 'frontloaded') {
+    for (const c of kids) for (let Y = ctx.retireYear; Y < ctx.retireYear + DEFAULTS.frontYears; Y++)
+      add(Y, { child: c.id, amountReal: DEFAULTS.frontReal, kind: 'steady', purpose: 'annual', mode: 'gift', ageAtGift: Y - c.by });
+  }
+  return out;
+}
+
+// §2503(b) classification for one child-year: gift-splitting assumed (2 × AE); direct tuition
+// is exempt. Returns the taxable excess (uses lifetime exemption; FORM_709 when > 0).
+function giftExcess(nominalGifts, Y, inflation) {
+  const counted = nominalGifts.filter(g => g.mode !== 'directTuition').reduce((t, g) => t + g.amount, 0);
+  return Math.max(0, counted - 2 * annualExclusion(Y, inflation));
+}
+// Multi-year classification for ONE child: { [Y]: [{amount, mode}] } → { [Y]: {excess, room, form709} }.
+// A 529 superfund (mode 'superfund529') is spread evenly over 5 years (§529(c)(2)(B)): it files a
+// 709 (the election) but its excess is only what exceeds 5 × 2 × AE, and it USES the child's
+// exclusion room in each of those 5 years (research §5.6 case 7).
+function classify709(byYear, inflation) {
+  const years = Object.keys(byYear).map(Number).sort((a, b) => a - b), out = {}, spread = {};
+  for (const Y of years) for (const g of byYear[Y]) if (g.mode === 'superfund529')
+    for (let k = 0; k < SUPERFUND_YEARS; k++) spread[Y + k] = (spread[Y + k] || 0) + g.amount / SUPERFUND_YEARS;
+  const all = new Set(years.concat(Object.keys(spread).map(Number)));
+  for (const Y of [...all].sort((a, b) => a - b)) {
+    const cap = 2 * annualExclusion(Y, inflation);
+    const direct = (byYear[Y] || []).filter(g => g.mode !== 'directTuition' && g.mode !== 'superfund529').reduce((t, g) => t + g.amount, 0);
+    const counted = direct + (spread[Y] || 0);
+    const hasSuper = (byYear[Y] || []).some(g => g.mode === 'superfund529');
+    out[Y] = { excess: Math.max(0, counted - cap), room: Math.max(0, cap - counted), form709: counted > cap || hasSuper };
+  }
+  return out;
+}
+// Research §5.6 cases 3–4 — the two per-dollar trade-offs the recommendation leans on.
+// Family gain from moving pre-tax money now at t_p instead of at t_k later (growth 0).
+function pretaxArbitrage(amount, tp, tk) { return amount * (tk - tp) / (1 - tp); }
+// Step-up value given up by gifting appreciated shares in kind (sold later at g_k).
+function stepUpLost(value, basis, gk) { return Math.max(0, value - basis) * gk; }
+
+// Child's qualified-dividend / LTCG rate by their expected ordinary bracket t_k.
+function qdRate(tk) { return tk <= 0.12 ? 0 : (tk <= 0.35 ? 0.15 : 0.20); }
+// §1(g) kiddie tax on unearned income (research §5.6 case 5): the first KT is covered by the
+// dependant deduction, the next KT at 10%, the rest at the PARENTS' rate.
+function kiddieTax(div, tp, Y, inflation) {
+  const kt = KIDDIE_TAX_BASE_2026 * inflFactor(Y, inflation, BASE_YEAR);
+  return Math.max(0, div - 2 * kt) * tp + Math.min(Math.max(0, div - kt), kt) * 0.10;
+}
+function subjectToKiddie(age, studentUntil) { return age < 19 || (age < 24 && age <= studentUntil); }
+
+/* The children's side, from the gifts actually DELIVERED (the engine's ledger, nominal).
+ * delivered: [{ year, child, amount (nominal), fac, kind, mode, ageAtGift }].
+ * Returns per-child balances by year, the tax drag, the liquidation value at T (nominal + real),
+ * "received before 40", and the kiddie-tax flag years. */
+function kidsProjection(F, IN, delivered, opts) {
+  const kids = childrenOf(F), g = IN.growth, infl = IN.inflation, tk = IN.childrenMarginalRate || 0;
+  const T = opts.horizonYear, tp = opts.parentRate || 0.22;
+  const byChild = {};
+  for (const c of kids) byChild[c.id] = { id: c.id, name: c.name, roth: 0, s529: 0, taxable: 0, basis: 0, taxDrag: 0,
+    receivedReal: 0, receivedBefore40Real: 0, kiddieYears: [], series: [] };
+  const first = delivered.length ? Math.min(...delivered.map(d => d.year)) : T + 1;
+  for (let Y = Math.min(first, T); Y <= T; Y++) {
+    for (const c of kids) {
+      const k = byChild[c.id], age = Y - c.by;
+      // growth + drag on last year's balances
+      k.roth *= (1 + g); k.s529 *= (1 + g);
+      if (k.taxable > 0) {
+        const div = k.taxable * KID_DIV_YIELD;
+        const tax = subjectToKiddie(age, c.studentUntil) ? kiddieTax(div, tp, Y, infl) : div * qdRate(tk);
+        if (subjectToKiddie(age, c.studentUntil) && div > 2 * KIDDIE_TAX_BASE_2026 * inflFactor(Y, infl, BASE_YEAR)) k.kiddieYears.push(Y);
+        k.taxable = k.taxable * (1 + g) - tax; k.basis += div - tax; k.taxDrag += tax / inflFactor(Y, infl, BASE_YEAR);
+      }
+      // this year's gifts → kid Roth (to the IRA limit, from 16) → 529 (while a student) → taxable
+      for (const d of delivered.filter(x => x.year === Y && x.child === c.id)) {
+        let amt = d.amount; const real = amt / d.fac;
+        k.receivedReal += real; if (d.ageAtGift < 40) k.receivedBefore40Real += real;
+        if (d.kind === 'steady') {
+          if (age >= KID_ROTH_FROM_AGE) { const r = Math.min(amt, IRA_LIMIT_2026 * inflFactor(Y, infl, BASE_YEAR)); k.roth += r; amt -= r; }
+          if (amt > 0 && age < c.studentUntil) { k.s529 += amt; amt = 0; }
+        }
+        if (amt > 0) { k.taxable += amt; k.basis += amt; }
+      }
+      k.series.push({ year: Y, total: k.roth + k.s529 + k.taxable });
+    }
+  }
+  const facT = inflFactor(T, infl, BASE_YEAR);
+  let liqNominal = 0, dragReal = 0, liqTaxReal = 0, receivedReal = 0, before40Real = 0;
+  for (const c of kids) { const k = byChild[c.id];
+    const gainTax = Math.max(0, k.taxable - k.basis) * qdRate(tk);
+    k.liquidationNominal = k.roth + k.s529 + k.taxable - gainTax;
+    k.liquidationReal = k.liquidationNominal / facT;
+    liqNominal += k.liquidationNominal; dragReal += k.taxDrag; liqTaxReal += gainTax / facT;
+    receivedReal += k.receivedReal; before40Real += k.receivedBefore40Real; }
+  return { byChild, liquidationNominal: liqNominal, liquidationReal: liqNominal / facT, taxDragReal: dragReal,
+    liquidationTaxReal: liqTaxReal, receivedReal, receivedBefore40Real: before40Real };
+}
+
+// Estate tax at the second death (research §3 rule 7): (estate − 2 × BEA indexed + lifetime
+// taxable gifts) × 40%. Displayed to show the exemption is not a constraint.
+function estateTax(estateNominal, lifetimeExcessNominal, Y, inflation) {
+  const bea = 2 * BASIC_EXCLUSION_2026 * inflFactor(Y, inflation, BASE_YEAR);
+  return Math.max(0, estateNominal + lifetimeExcessNominal - bea) * ESTATE_TAX_RATE;
+}
+
+// D8 — the recommended preset (SHOWN, never auto-applied): floor first, Roth conversions toward
+// the kids' rate, annual-exclusion gifts from surplus into kid Roths, 529 while at school,
+// milestones, leave Roth + taxable to step up (research §4).
+function recommendation(F, IN) {
+  const kids = childrenOf(F);
+  if (!kids.length) return null;
+  return { preset: 'steady', annualPerChildReal: DEFAULTS.steadyReal, targetConversionBracket: Math.min(IN.targetConversionBracket || 0.22, IN.childrenMarginalRate || 0.22),
+    steps: ['Keep your own floor first (' + Math.round(floorReal(F) / 1000) + 'k in today’s $ under the bad-decade stress).',
+      'Aim Roth conversions at the children’s expected tax rate.',
+      'Give up to 2 × the annual exclusion per child each year from surplus — into each child’s Roth IRA first.',
+      'Use a 529 or pay tuition directly while they are in school.',
+      'Help at milestones (first home, first baby).',
+      'Leave Roth and taxable money — taxable steps up at death.'] };
+}
+
+module.exports = {
+  ANNUAL_EXCLUSION_2026, BASIC_EXCLUSION_2026, ESTATE_TAX_RATE, KIDDIE_TAX_BASE_2026, IRA_LIMIT_2026,
+  SUPERFUND_YEARS, ROTH_529_LIFETIME, AFR_2026_10, KID_DIV_YIELD, KID_ROTH_FROM_AGE, PRESETS, DEFAULTS, NOT_MODELLED,
+  childrenOf, presetOf, floorReal, allowPretax, annualExclusion, isActive, schedule, milestonesOf, giftExcess, classify709,
+  pretaxArbitrage, stepUpLost,
+  qdRate, kiddieTax, subjectToKiddie, kidsProjection, estateTax, recommendation,
+};
+
+});
+
 /* ---- src/expenses/giving.js ---- */
 window.__def("src/expenses/giving.js", function(module, exports, require){
 'use strict';
@@ -4097,6 +4660,50 @@ module.exports = {
   bunchInterval, isBunched, leverToday,
   validateGiving, entryInactiveReason, EXAMPLES, exampleEntry,
 };
+
+});
+
+/* ---- src/expenses/healthcare.js ---- */
+window.__def("src/expenses/healthcare.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/expenses/healthcare.js — pre-Medicare healthcare cost (family-plan slice 6).
+ *
+ * The household premium `expenses.healthcare.monthly` (today's $) is split EVENLY per
+ * person ("half per person" for a couple — the family-plan arc decision, option 1). Each person
+ * pays their share from the LATER of the plan's retirement date and their `from_age`
+ * birthday, until their `to_age` birthday (65 — Medicare), while alive. Replaces the
+ * hard-coded 2032.33–2042.33 window (strategy.js), which read neither from_age/to_age
+ * nor the second person, so p2's pre-Medicare years carried no cost at all.
+ * Applied only when IN.healthcareAddOnTop is on (the lever; off by default).
+ * ========================================================================== */
+
+const { leaf, leafNum } = require('../core/facts.js');
+const { monthsInYear, decDate } = require('../core/money.js');
+const { hasPerson, birthYearOf, birthMonthOf, birthDayOf, decOfAge } = require('../core/constants.js');
+
+// Nominal-free healthcare cost for year Y in TODAY's $ (the caller multiplies by fac).
+function healthcareTodayForYear(F, IN, Y, alive) {
+  const hc = (F.expenses && F.expenses.healthcare) || {};
+  const fromAge = (hc.from_age != null && isFinite(+leaf(hc.from_age))) ? +leaf(hc.from_age) : 55;
+  const toAge = (hc.to_age != null && isFinite(+leaf(hc.to_age))) ? +leaf(hc.to_age) : 65;
+  const people = ['p1', 'p2'].filter(p => hasPerson(F, p));
+  if (!people.length) return 0;
+  const perPerson = (IN.healthcareMonthly != null ? IN.healthcareMonthly : leafNum(hc.monthly)) / people.length;
+  const rd = F.plan && F.plan.retire_date ? leaf(F.plan.retire_date) : null;
+  const retireDec = rd ? decDate(rd) : (IN.retireYear || 0);
+  let total = 0;
+  for (const p of people) {
+    if (alive && alive[p] === false) continue;
+    const by = birthYearOf(F, p), bm = birthMonthOf(F, p), bd = birthDayOf(F, p);
+    const start = Math.max(retireDec, decOfAge(by, bm, bd, fromAge));
+    const end = decOfAge(by, bm, bd, toAge);
+    total += perPerson * monthsInYear(start, end, Y);
+  }
+  return total;
+}
+
+module.exports = { healthcareTodayForYear };
 
 });
 
@@ -4387,7 +4994,8 @@ const { registerIncome } = require('../core/registry.js');
 const { leaf, leafNum, hasSourceType, sourcesOf, sourceById } = require('../core/facts.js');
 const { monthsInYear, decDate } = require('../core/money.js');
 
-function pensionStartDec(IN) { return IN.retireYear + 8 / 12; } // Sep of retire year
+// The month after retirement (Aug retirement → September). slice 10: from the plan's month, not a fixed Sep.
+function pensionStartDec(IN) { return IN.retireYear + ((IN.retireMonthsBefore != null ? IN.retireMonthsBefore : 7) + 1) / 12; }
 
 function activeElectionId(source, IN) {
   const chosen = IN && IN.election && IN.election[source.id];
@@ -4431,12 +5039,23 @@ function benefitForYear(source, ctx) {
   const monthly = leafNum(el.monthly);
   let amount;
   if (!pensionerAlive && spouseAlive) {
-    // Pensioner died first: the surviving spouse receives the survivor benefit for
-    // life (a single flat rate; the step-down no longer applies).
+    // Pensioner died first: the surviving spouse receives the survivor benefit for life.
+    // family-plan slice 6 (source-ledger ❗ survivor defect): the survivor benefit is a
+    // percentage of the pensioner's benefit, and a temporary supplement (a step-down, e.g. a
+    // Social-Security-offset supplement paid only to the SS normal retirement age) ends on the
+    // same date for the survivor — so after step_down.date the survivor is scaled by
+    // step_down.monthly / monthly. Before this fix the pre-step-down survivor rate was paid flat
+    // for life (a 100% J&S survivor out-earned the pensioner's own post-step-down benefit).
     let survivor;
     if (el.survivor_matches) survivor = monthly * survivorFractionOf(sourceById(F, el.survivor_matches) || source, IN);
     else survivor = leafNum(el.survivor_monthly);
-    amount = monthsInYear(startDec, Infinity, Y) * survivor;
+    if (el.step_down && el.step_down.date && monthly > 0) {
+      const stepDec = decDate(leaf(el.step_down.date));
+      const after = survivor * leafNum(el.step_down.monthly) / monthly;
+      amount = monthsInYear(startDec, stepDec, Y) * survivor + monthsInYear(stepDec, Infinity, Y) * after;
+    } else {
+      amount = monthsInYear(startDec, Infinity, Y) * survivor;
+    }
   } else {
     // Both alive, or the spouse died first (the pension continues UNREDUCED).
     if (el.step_down && el.step_down.date) {
@@ -4463,21 +5082,44 @@ registerIncome({
   },
 });
 
-// One-time balances rolled into pre-tax at retirement (nominal $): the chosen
-// db_pension election's lump + any lump_sum source destined for pre-tax at retirement.
+// One-time balances landing at retirement (nominal $): the chosen db_pension election's lump
+// + any lump_sum source paid in the retirement year. family-plan slice 6 (R7): a lump_sum is
+// routed by its `destination` — 'pretax' (a tax-deferred rollover, the default), 'roth' /
+// 'taxable' (into that bucket; previously these were silently DROPPED), or 'ordinary' (a
+// NON-qualified payout, e.g. a benefit-restoration plan: taxed as ordinary income in the payment
+// year — see the lump_sum income stream below; it is not a bucket deposit).
+function lumpYear(ls, IN) { return Math.floor(ls.date ? decDate(leaf(ls.date)) : IN.retireYear); }
 function retirementLumps(F, IN) {
-  let toPretax = 0;
+  let toPretax = 0, toRoth = 0, toTaxable = 0;
   for (const s of sourcesOf(F, 'db_pension')) {
     const el = activeElection(s, IN);
     if (el && el.lump && el.lump.amount != null) toPretax += leafNum(el.lump.amount);
   }
   for (const ls of sourcesOf(F, 'lump_sum')) {
-    if ((ls.destination || 'pretax') !== 'pretax') continue;
-    const yr = ls.date ? decDate(leaf(ls.date)) : IN.retireYear;
-    if (Math.floor(yr) === IN.retireYear) toPretax += leafNum(ls.amount);
+    if (lumpYear(ls, IN) !== IN.retireYear) continue;
+    const dest = ls.destination || 'pretax';
+    if (dest === 'pretax') toPretax += leafNum(ls.amount);
+    else if (dest === 'roth') toRoth += leafNum(ls.amount);
+    else if (dest === 'taxable') toTaxable += leafNum(ls.amount);
   }
-  return { toPretax };
+  return { toPretax, toRoth, toTaxable };
 }
+
+// family-plan slice 6 (R7) — a lump_sum with destination 'ordinary' is INCOME in its payment year
+// (ordinary tax class), reported on the owner's pension line (`income_field`, default 'pension').
+registerIncome({
+  id: 'lump_sum_ordinary',
+  label: 'Lump sum paid as income',
+  available: (F) => hasSourceType(F, 'lump_sum'),
+  streams(ctx) {
+    const out = [];
+    for (const ls of sourcesOf(ctx.F, 'lump_sum')) {
+      if (ls.destination !== 'ordinary' || lumpYear(ls, ctx.IN) !== ctx.Y) continue;
+      out.push({ field: ls.income_field || 'pension', amount: leafNum(ls.amount), taxClass: 'ordinary' });
+    }
+    return out;
+  },
+});
 
 module.exports = { pensionStartDec, retirementLumps, activeElection, activeElectionId, survivorFractionOf, benefitForYear };
 
@@ -4507,8 +5149,8 @@ const { leaf, hasSourceType, sourcesOf } = require('../core/facts.js');
 const { monthsInYear, decDate } = require('../core/money.js');
 const { birthYearOf } = require('../core/constants.js');
 
-const RETIRE_MONTH_FRAC = 7 / 12;
-function retireDateDec(IN) { return (IN && IN.retireYear != null ? IN.retireYear : 2032) + RETIRE_MONTH_FRAC; }
+const RETIRE_MONTH_FRAC = 7 / 12;   // historical default (an August retirement) when IN carries none
+function retireDateDec(IN) { return (IN && IN.retireYear != null ? IN.retireYear : 2032) + (IN && IN.retireMonthsBefore != null ? IN.retireMonthsBefore / 12 : RETIRE_MONTH_FRAC); }
 
 function slotOf(owner) { return owner === 'p2' ? 'p2' : 'p1'; }
 
@@ -4620,6 +5262,25 @@ const FRA = 67; // full retirement age (both people, born 1960+); the PIA refere
 function slotOf(owner) { return owner === 'p2' ? 'p2' : 'p1'; }
 function ssSourceForSlot(F, slot) { return sourcesOf(F, 'social_security').find(s => slotOf(s.owner) === slot); }
 function trustFund(F) { return (F.global && F.global.social_security_trust_fund) || {}; }
+
+// family-plan slice 5 (g) — WHICH trust-fund projection the shortfall scenario uses.
+// 'combined' (the default; the plan's own global.social_security_trust_fund facts — the 2026
+// Trustees Report's combined OASDI figure, 2034 / 83%) or 'oasi' (the retirement fund ALONE,
+// which pays retirement benefits under current law: depleted in Q4 2032, ~78% payable — modelled
+// from 2033, the first full year, as the research recommends). The on/off switch stays the legacy
+// boolean IN.ssTrustFundHaircut; IN.ssTrustFundMode only picks the basis, so every existing
+// caller (sensitivity on/off, the oracle, story) keeps its meaning.
+const OASI_2026 = { depletionYear: 2033, payableRatio: 0.78 };
+// Source tag: src/tax/sources.js ('social-security:OASI_2026').
+function trustFundParams(F, IN) {
+  if (!IN || !IN.ssTrustFundHaircut) return null;
+  if (IN.ssTrustFundMode === 'oasi') return { mode: 'oasi', depletionYear: OASI_2026.depletionYear, payableRatio: OASI_2026.payableRatio };
+  const tf = trustFund(F);
+  const depl = leafNum(tf.depletion_year);
+  const rr = leaf(tf.payable_ratio);
+  if (!depl) return null;
+  return { mode: 'combined', depletionYear: depl, payableRatio: (rr == null || rr === '') ? 1 : leafNum(tf.payable_ratio) };
+}
 
 function pointsOf(st) {
   st = st || {};
@@ -4743,13 +5404,8 @@ registerIncome({
     else if (!aliveP1 && !aliveP2) { p1 = 0; p2 = 0; }
     else { p1 = own1; p2 = 0; }
 
-    if (IN.ssTrustFundHaircut) {
-      const tf = trustFund(F);
-      const depl = leafNum(tf.depletion_year);
-      const rr = leaf(tf.payable_ratio);
-      const ratio = (rr == null || rr === '') ? 1 : leafNum(tf.payable_ratio);
-      if (depl && Y >= depl) { p1 *= ratio; p2 *= ratio; }
-    }
+    const tfp = trustFundParams(F, IN);   // null when the scenario is off (slice 5 g)
+    if (tfp && Y >= tfp.depletionYear) { p1 *= tfp.payableRatio; p2 *= tfp.payableRatio; }
 
     return [
       { field: 'ssP1', amount: p1, taxClass: 'ss' },
@@ -4759,7 +5415,7 @@ registerIncome({
 });
 
 module.exports = {
-  pointsOf, personSS, personOwn, personPIA, spousalReductionFactor, FRA,
+  pointsOf, personSS, personOwn, personPIA, spousalReductionFactor, FRA, OASI_2026, trustFundParams,
   spousalReport, unresolvedFactorNotes,
 };
 
@@ -4778,7 +5434,8 @@ window.__def("src/income/uk-state-pension.js", function(module, exports, require
  * outflow; years/from/to are documentary and feed the consistency warning).
  *
  * Entitlement = min(years,35)/35 of the full rate, £0 below 10 years (gov.uk /
- * Pensions Act 2014). Received gross under the UK–US treaty, US-taxable as ordinary
+ * Pensions Act 2014) — or, with `earned_weekly` (family-plan slice 6), the GOV.UK earned
+ * amount plus 1/35 of the full rate per voluntary year bought, capped at the full rate. Received gross under the UK–US treaty, US-taxable as ordinary
  * income on drawdown. Single-life (ends on death; no spousal continuation).
  *
  * Class-3 outflow (household): in the ACCUMULATION years both people's voluntary
@@ -4806,6 +5463,25 @@ function entitlementFraction(qyLeaf) {
 
 function voluntaryYears(source) { const v = source && source.voluntary; return v ? (+leafNum(v.years) || 0) : 0; }
 
+// family-plan slice 6 — the monthly entitlement (today's £) of one state_pension source.
+// When the source carries `earned_weekly` (the GOV.UK "earned so far" £/wk — which already
+// reflects contracting-out, a thing the linear years/35 rule cannot represent), entitlement =
+// min(full, earned + full/35 × the voluntary years bought, at most 35 − qualifying years): each bought year adds 1/35 of the
+// full rate (≈ £6.89/wk in 2026/27). Otherwise the linear min(years,35)/35 rule is unchanged.
+function monthlyEntitlement(s) {
+  const full = leafNum(s.full_monthly);
+  const ew = leaf(s.earned_weekly);
+  if (ew != null && ew !== '' && isFinite(+ew)) {
+    // Only 35 years ever count: bought years beyond (35 − qualifying years already on the
+    // record) add nothing, so a verified qualifying_years stays live in the model.
+    const qy = +leafNum(s.qualifying_years) || 0;
+    const counted = Math.min(voluntaryYears(s), Math.max(0, 35 - qy));
+    return Math.min(full, (+ew) * 52 / 12 + (full / 35) * counted);
+  }
+  return full * entitlementFraction(s.qualifying_years);
+}
+function hasEarnedPath(s) { const ew = leaf(s.earned_weekly); return ew != null && ew !== '' && isFinite(+ew); }
+
 // WO15 Phase 2.4 — Class-3 ↔ qualifying-years consistency warning (fires when
 // voluntary years are bought yet qualifying_years < 35).
 function class3Warnings(F) {
@@ -4818,8 +5494,9 @@ function class3Warnings(F) {
     if (v === undefined || v === null || v === '') continue;
     const qy = +v; if (!isFinite(qy)) continue;
     const bought = voluntaryYears(s);
-    if (bought > 0 && qy < 35) {
-      out.push({ id: 'uk-qualyears-' + slot, severity: 'warn',
+    // slice 6: with the earned-amount path the bought years ARE counted — no inconsistency to flag.
+    if (bought > 0 && qy < 35 && !hasEarnedPath(s)) {
+      out.push({ id: 'uk-qualyears-' + slot, severity: 'warn', chart: 'income',   // slice 7 (D10): a call-out beside the income chart
         text: nameOf(F, slot) + '’s UK State Pension is set to ' + qy + ' qualifying years (below the 35 needed for the full amount), '
           + 'yet the plan buys ' + bought + ' voluntary Class-3 year' + (bought === 1 ? '' : 's') + '. '
           + 'If those contributions count toward the record, the qualifying-years figure is too low and the pension is understated — check it against the HMRC forecast.' });
@@ -4859,10 +5536,8 @@ registerIncome({
       if (slot === 'p2' && !hasPerson(F, 'p2')) continue;
       const alive = slot === 'p2' ? aliveP2 : aliveP1;
       if (!alive) continue;
-      const full = leafNum(s.full_monthly);
       const start = decDate(leaf(s.start_date));
-      const frac = entitlementFraction(s.qualifying_years);
-      const amt = monthsInYear(start, Infinity, Y) * full * fac * fx * frac;
+      const amt = monthsInYear(start, Infinity, Y) * monthlyEntitlement(s) * fac * fx;
       if (slot === 'p2') ukP2 += amt; else ukP1 += amt;
     }
     return [
@@ -4872,7 +5547,7 @@ registerIncome({
   },
 });
 
-module.exports = { entitlementFraction, class3Warnings, class3AccumGBP, class3RetireGBP };
+module.exports = { entitlementFraction, monthlyEntitlement, class3Warnings, class3AccumGBP, class3RetireGBP };
 
 });
 
@@ -4974,7 +5649,8 @@ function runBatch(state, rawF, buildModel, n) {
       if (r.year < state.retireYear) continue;
       state.inflByYear[r.year] = r.infl;
       state.nwByYear[r.year].push(r.netWorth);
-      const perM = r.year === state.retireYear ? 5 : 12;
+      // slice 10 — the retired months of the retirement year, from the plan's month (Aug → 5).
+      const perM = r.year === state.retireYear ? (12 - ((m.inputs && m.inputs.retireMonthsBefore != null) ? m.inputs.retireMonthsBefore : 7)) : 12;
       state.incByYear[r.year].push(r.incTotal / perM);
     }
   }
@@ -5175,9 +5851,12 @@ function trustFundScenario(rawF, IN) {
   if (!(tf && tf.depletion_year != null)) return null;
   const off = headline(engine.buildModel(rawF, Object.assign({}, IN, { ssTrustFundHaircut: false })));
   const on = headline(engine.buildModel(rawF, Object.assign({}, IN, { ssTrustFundHaircut: true })));
+  // slice 5 (g): the year/ratio of the projection actually applied (combined facts or OASI only).
+  const tfp = require('../income/social-security.js').trustFundParams(rawF, Object.assign({}, IN, { ssTrustFundHaircut: true }));
   return {
-    depletionYear: +leaf(tf.depletion_year),
-    payableRatio: (tf.payable_ratio != null) ? +leaf(tf.payable_ratio) : null,
+    mode: tfp ? tfp.mode : 'combined',
+    depletionYear: tfp ? tfp.depletionYear : +leaf(tf.depletion_year),
+    payableRatio: tfp ? tfp.payableRatio : ((tf.payable_ratio != null) ? +leaf(tf.payable_ratio) : null),
     fundedRatio: [off.fundedRatio, on.fundedRatio],
     legacyAfterTaxToday: [off.legacyAfterTaxToday, on.legacyAfterTaxToday],
     guaranteedShare: [off.guaranteedShare, on.guaranteedShare],
@@ -5253,6 +5932,124 @@ module.exports = { LOST_DECADE_2000_2009, STRESS_LABEL, STRESS_TOOLTIP, stressSe
 
 });
 
+/* ---- src/sync/autosave.js ---- */
+window.__def("src/sync/autosave.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/sync/autosave.js (arc/family-plan slice 4) — the debounced auto-save
+ * scheduler. Pure: timers and the save call are injected, so it is node-testable
+ * with fake timers and never touches the DOM or the network itself.
+ *
+ * ARC D1: with sync on, push on change. RULE: auto-save never silently overwrites
+ * a newer cloud version — a conflict STOPS auto-save until the user resolves it
+ * through the existing keep-mine / take-theirs flow (resolved()).
+ *
+ *   const a = createAutoSaver({ save, delayMs, setTimer, clearTimer, onState })
+ *   a.changed()   — a local edit happened: mark dirty, (re)start the debounce
+ *   a.flush()     — save now if dirty (visibilitychange→hidden, the timer, online)
+ *   a.online()    — connectivity is back: retry a pending save
+ *   a.resolved()  — the user resolved a conflict: leave the conflict state
+ *   save() -> Promise<'ok' | 'conflict' | 'offline'>
+ *   onState(state) — 'synced' | 'pending' | 'saving' | 'offline' | 'conflict'
+ * ========================================================================== */
+
+function createAutoSaver(opts) {
+  const save = opts.save;
+  const delayMs = opts.delayMs == null ? 5000 : opts.delayMs;
+  const setTimer = opts.setTimer || setTimeout;
+  const clearTimer = opts.clearTimer || clearTimeout;
+  const onState = opts.onState || function () {};
+  let timer = null, dirty = !!opts.dirty, saving = false, again = false, state = dirty ? 'pending' : 'synced';
+
+  function set(s) { if (s !== state) { state = s; } onState(state); }
+  function arm() { if (timer) clearTimer(timer); timer = setTimer(() => { timer = null; flush(); }, delayMs); }
+
+  function changed() {
+    dirty = true;
+    if (state === 'conflict') return;           // wait for the user — never push over a newer copy
+    if (saving) { again = true; return; }       // a save is in flight: re-save once it lands
+    if (state !== 'offline') set('pending');
+    arm();
+  }
+
+  async function flush() {
+    if (timer) { clearTimer(timer); timer = null; }
+    if (!dirty || saving || state === 'conflict') return state;
+    saving = true; again = false; set('saving');
+    let r;
+    try { r = await save(); } catch (e) { r = 'offline'; }
+    saving = false;
+    if (r === 'ok') {
+      dirty = again; set(again ? 'pending' : 'synced');
+      if (again) arm();
+    } else if (r === 'conflict') {
+      set('conflict');
+    } else {
+      set('offline');                          // keep dirty; retry on the next change / online()
+    }
+    again = false;
+    return state;
+  }
+
+  function online() { if (dirty && state !== 'conflict') return flush(); return Promise.resolve(state); }
+  function resolved(nowClean) { if (nowClean) dirty = false; set(dirty ? 'pending' : 'synced'); if (dirty) arm(); }
+
+  return { changed, flush, online, resolved, get state() { return state; }, get dirty() { return dirty; } };
+}
+
+// Header label for each state (plain, one glance).
+const LABEL = { synced: '☁ Synced', pending: '☁ Saving…', saving: '☁ Saving…', offline: '☁ Offline', conflict: '☁ Needs a choice' };
+
+module.exports = { createAutoSaver, LABEL };
+
+});
+
+/* ---- src/sync/boot.js ---- */
+window.__def("src/sync/boot.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/sync/boot.js (arc/family-plan slice 2) — the CLOUD-FIRST boot decision.
+ *
+ * ARC D1: with wing sync creds present, the cloud copy is the source of truth —
+ * pull on open. RULE: a device with sync creds never shows "Create your plan"
+ * without first checking the cloud. RULE: never silently overwrite unsaved local
+ * edits — a newer cloud copy vs a dirty local copy goes to the existing
+ * keep-mine / take-theirs flow.
+ *
+ * Pure (no DOM, no network): the shell does the fetch + decrypt, then asks
+ * decide(local, cloud) what to do. Node-testable.
+ *
+ *   local = { hasLocalSynced: bool   // this device holds the synced plan (localPlanId present)
+ *             loadedVersion: number|null, dirty: bool }
+ *   cloud = { error: 'network'|'decrypt' }            // fetch or decrypt failed
+ *         | { found: false }                          // nothing saved under this id yet
+ *         | { found: true, version: number }          // decrypted OK
+ *
+ *   -> { action: 'use-cloud' | 'use-local' | 'conflict' | 'offline' | 'bad-pass' }
+ * ========================================================================== */
+
+function decide(local, cloud) {
+  local = local || {}; cloud = cloud || { error: 'network' };
+  if (cloud.error === 'decrypt') return { action: 'bad-pass' };
+  if (cloud.error) return { action: 'offline' };
+  if (!cloud.found) return { action: 'use-local' };
+  if (!local.hasLocalSynced) return { action: 'use-cloud' };
+  const lv = (typeof local.loadedVersion === 'number') ? local.loadedVersion : -Infinity;
+  const newer = cloud.version > lv;
+  if (!newer) return { action: 'use-local' };
+  return { action: local.dirty ? 'conflict' : 'use-cloud' };
+}
+
+// The quiet notices the shell shows for each non-happy outcome (plain English).
+const NOTICE = {
+  offline: 'Couldn’t reach the cloud — showing this device’s copy.',
+  'bad-pass': 'The cloud copy could not be opened with this device’s passphrase — showing this device’s copy.',
+};
+
+module.exports = { decide, NOTICE };
+
+});
+
 /* ---- src/sync/client.js ---- */
 window.__def("src/sync/client.js", function(module, exports, require){
 'use strict';
@@ -5299,6 +6096,7 @@ function packConfig(cfg) {
     label: cfg.label || null,
     loadedVersion: (typeof cfg.loadedVersion === 'number') ? cfg.loadedVersion : null,
     localPlanId: cfg.localPlanId || null,
+    dirty: !!cfg.dirty,   // family-plan slice 4 — local edits not yet saved to the cloud
   });
 }
 function readConfig(str) {
@@ -5311,6 +6109,7 @@ function readConfig(str) {
     label: (typeof o.label === 'string') ? o.label : null,
     loadedVersion: (typeof o.loadedVersion === 'number') ? o.loadedVersion : null,
     localPlanId: (typeof o.localPlanId === 'string') ? o.localPlanId : null,
+    dirty: o.dirty === true,
   };
 }
 function isEnabled(cfg) { return !!(cfg && cfg.id && cfg.passphrase); }
@@ -5318,7 +6117,8 @@ function isEnabled(cfg) { return !!(cfg && cfg.id && cfg.passphrase); }
 // ---- two-space arc: never persist the passphrase to disk -------------------
 // Pack the config for localStorage WITHOUT the passphrase (kept in sessionStorage / the vault).
 function packConfigPublic(cfg) { return packConfig({ id: cfg && cfg.id, passphrase: null,
-  label: cfg && cfg.label, loadedVersion: cfg && cfg.loadedVersion, localPlanId: cfg && cfg.localPlanId }); }
+  label: cfg && cfg.label, loadedVersion: cfg && cfg.loadedVersion, localPlanId: cfg && cfg.localPlanId,
+  dirty: !!(cfg && cfg.dirty) }); }
 
 // Read the private-wing vault session (a PARSED press:vault:v1 object) for this app's page and
 // return {id, passphrase, label, loadedVersion, localPlanId} to use IN MEMORY, or null. Read-only:
@@ -5620,8 +6420,15 @@ const TAX_2026_SINGLE = {
 };
 function tableFor(filing) { return filing === 'single' ? TAX_2026_SINGLE : TAX_2026_MFJ; }
 
-function stdDeduction(Y, inflation, filing) {
-  return tableFor(filing).std_deduction * inflFactor(Y, inflation, BASE_YEAR);
+// family-plan slice 5 (R1) — the ADDITIONAL standard deduction for age 65+ (IRC §63(f)): permanent
+// law, $1,650 per spouse 65+ on a joint return and $2,050 for an unmarried filer (2026, Rev. Proc.
+// 2025-32 [S2]), indexed like the base amount. `n65` = filers alive and 65+ by Dec 31 (0 by default,
+// so every pre-65 year is unchanged). The OBBBA senior deduction (2025–28 only) is NOT modelled — it
+// expires before any projected person here reaches 65 (tax-rules audit §2a).
+const ADD_STD_65_2026 = { mfj: 1650, single: 2050 };
+function stdDeduction(Y, inflation, filing, n65) {
+  const add = (n65 > 0) ? n65 * (filing === 'single' ? ADD_STD_65_2026.single : ADD_STD_65_2026.mfj) : 0;
+  return (tableFor(filing).std_deduction + add) * inflFactor(Y, inflation, BASE_YEAR);
 }
 
 // The seven [lowerEdge, rate] bands, inflation-scaled to year Y.
@@ -5663,15 +6470,15 @@ function topOfBracket(rate, Y, inflation, filing) {
 
 // How much MORE ordinary income can be added before taxable income exceeds the
 // top of `rate`'s band, given ordinary income already present (gross, pre-std).
-function ordinaryHeadroomToBracket(rate, ordinaryIncomeNow, Y, inflation, filing) {
+function ordinaryHeadroomToBracket(rate, ordinaryIncomeNow, Y, inflation, filing, n65) {
   const ceilingTaxable = topOfBracket(rate, Y, inflation, filing);
   if (!Number.isFinite(ceilingTaxable)) return Infinity;
-  const grossCeiling = ceilingTaxable + stdDeduction(Y, inflation, filing);
+  const grossCeiling = ceilingTaxable + stdDeduction(Y, inflation, filing, n65);
   return Math.max(0, grossCeiling - ordinaryIncomeNow);
 }
 
 module.exports = {
-  TAX_2026_MFJ, TAX_2026_SINGLE, stdDeduction, bracketsFor, taxOnTaxable, ordinaryTax,
+  TAX_2026_MFJ, TAX_2026_SINGLE, ADD_STD_65_2026, stdDeduction, bracketsFor, taxOnTaxable, ordinaryTax,
   topOfBracket, ordinaryHeadroomToBracket,
 };
 
@@ -5992,6 +6799,7 @@ const { niitTax } = require('./niit.js');
  *   filing,        // 'mfj' (default) | 'single' — the year's filing status
  * }
  */
+const NON_ITEMIZER_CHARITABLE = { mfj: 2000, single: 1000, fromYear: 2026 };
 function federalTax(breakdown, Y, inflation, filing) {
   filing = filing || breakdown.filing || 'mfj';
   const ordinaryExSS = Math.max(0, breakdown.ordinaryExSS || 0);
@@ -6007,12 +6815,20 @@ function federalTax(breakdown, Y, inflation, filing) {
   //    deliberately excluded (see header). Both inputs default to 0, so a caller
   //    that passes neither gets the standard deduction and the prior behaviour.
   const ordinaryTotal = ordinaryExSS + taxableSS;
-  const std = stdDeduction(Y, inflation, filing);
+  // family-plan slice 5 (R1): the §63(f) age-65 add-on per qualifying filer (breakdown.n65).
+  const std = stdDeduction(Y, inflation, filing, breakdown.n65 || 0);
   const charitableDeduction = Math.max(0, breakdown.charitableDeduction || 0);
   const mortgageInterest = Math.max(0, breakdown.mortgageInterest || 0);
   const itemized = charitableDeduction + mortgageInterest;
   const itemizing = itemized > std;
-  const deductionUsed = itemizing ? itemized : std;
+  // family-plan slice 5 (G16) — §170(p) (OBBBA, from 2026): a NON-itemizer deducts cash gifts to
+  // public charities (not DAFs) up to $1,000 single / $2,000 joint, on top of the standard
+  // deduction [S7]. Fixed statutory amounts (not indexed). Whether the 0.5% floor also applies
+  // here is UNVERIFIED (research §5 item 3); it does not change G16.
+  const nonItemizerCharitable = (!itemizing && Y >= NON_ITEMIZER_CHARITABLE.fromYear)
+    ? Math.min(Math.max(0, breakdown.cashCharitableNonItemizer || 0), filing === 'single' ? NON_ITEMIZER_CHARITABLE.single : NON_ITEMIZER_CHARITABLE.mfj)
+    : 0;
+  const deductionUsed = itemizing ? itemized : std + nonItemizerCharitable;
   const ordinaryTaxable = Math.max(0, ordinaryTotal - deductionUsed);
   const remainingDeduction = Math.max(0, deductionUsed - ordinaryTotal);
   const capGainsTaxable = Math.max(0, capGains - remainingDeduction);
@@ -6039,11 +6855,14 @@ function federalTax(breakdown, Y, inflation, filing) {
     magi,
     filing, // WO14 Phase 1.4 — the year's filing status (surfaced in the tax row)
     // WO12 — deduction detail for the decision log / story mode:
-    deductionUsed, std, itemized, itemizing, charitableDeduction, mortgageInterest,
+    deductionUsed, std, itemized, itemizing, charitableDeduction, mortgageInterest, nonItemizerCharitable,
+    // family-plan slice 10 — the INPUTS, so tools/verify/shadow.js can recompute this tax independently.
+    inputs: { ordinaryExSS, capGains, ssGross: Math.max(0, breakdown.ssGross || 0), n65: breakdown.n65 || 0,
+      charitableDeduction, mortgageInterest, cashCharitableNonItemizer: Math.max(0, breakdown.cashCharitableNonItemizer || 0) },
   };
 }
 
-module.exports = { federalTax };
+module.exports = { federalTax, NON_ITEMIZER_CHARITABLE };
 
 });
 
@@ -6101,14 +6920,15 @@ window.__def("src/tax/irmaa.js", function(module, exports, require){
  * window. B4 (the conversion window must be DERIVED from the IRMAA lookback,
  * not hard-coded).
  *
- * SOURCE (verified 2026-08-30): 2026 Medicare Part B IRMAA tiers, based on MAGI
+ * SOURCE (re-verified in the family-plan arc — access date in src/tax/sources.js; CMS 2026 Parts A & B fact sheet [S10]; premiums corrected to the
+ * cent and the top-tier edge made inclusive — family-plan slice 5, R2): 2026 Medicare Part B IRMAA tiers, based on MAGI
  * from two years prior (the statutory 2-year lookback, SSA §1839(i)). MFJ:
  *   MAGI ≤ $218,000            base $202.90/mo   (no surcharge)
- *   $218,001 – $274,000        $284.06/mo
+ *   $218,001 – $274,000        $284.10/mo
  *   $274,001 – $342,000        $405.80/mo
- *   $342,001 – $410,000        $527.54/mo
- *   $410,001 – $750,000        $649.28/mo
- *   ≥ $750,000                 $689.86/mo
+ *   $342,001 – $410,000        $527.50/mo
+ *   $410,001 – <$750,000       $649.20/mo
+ *   ≥ $750,000                 $689.90/mo
  * Single (individual return) 2026: the first four edges are half the MFJ edges
  * ($109,000 / $137,000 / $171,000 / $205,000); the top edge is $500,000 (NOT
  * half of $750,000). Premiums are identical per person.
@@ -6136,20 +6956,20 @@ const BASE_PREMIUM_2026 = 202.90;
 // [upper MAGI edge of the tier (Infinity for top), monthly premium]
 const TIERS_2026_MFJ = [
   [218000, 202.90],
-  [274000, 284.06],
+  [274000, 284.10],
   [342000, 405.80],
-  [410000, 527.54],
-  [750e3, 649.28],   // $750,000 tier edge — written 750e3 so the tax constant does not
+  [410000, 527.50],
+  [750e3, 649.20],   // $750,000 tier edge — written 750e3 so the tax constant does not
                      // collide with the personal-data privacy sentinel of the same value.
-  [Infinity, 689.86],
+  [Infinity, 689.90],
 ];
 const TIERS_2026_SINGLE = [
   [109000, 202.90],
-  [137000, 284.06],
+  [137000, 284.10],
   [171000, 405.80],
-  [205000, 527.54],
-  [500000, 649.28],
-  [Infinity, 689.86],
+  [205000, 527.50],
+  [500000, 649.20],
+  [Infinity, 689.90],
 ];
 function baseTiers(filing) { return filing === 'single' ? TIERS_2026_SINGLE : TIERS_2026_MFJ; }
 
@@ -6165,8 +6985,12 @@ function tiersFor(Y, inflation, filing) {
 function monthlySurcharge(magi, Y, inflation, filing) {
   const tiers = tiersFor(Y, inflation, filing);
   const base = BASE_PREMIUM_2026 * inflFactor(Y, inflation, BASE_YEAR);
-  for (const [edge, prem] of tiers) {
-    if (magi <= edge) return Math.max(0, prem - base);
+  // family-plan slice 5 (R2): CMS tiers are "≤ edge" except the TOP one, which starts AT the
+  // edge (MFJ ≥ $750,000 / single ≥ $500,000) — so the last finite edge is exclusive.
+  for (let i = 0; i < tiers.length; i++) {
+    const [edge, prem] = tiers[i];
+    const lastFinite = (i + 1 < tiers.length) && !Number.isFinite(tiers[i + 1][0]);
+    if (lastFinite ? magi < edge : magi <= edge) return Math.max(0, prem - base);
   }
   return Math.max(0, tiers[tiers.length - 1][1] - base);
 }
@@ -6208,6 +7032,56 @@ module.exports = {
   monthlySurcharge, annualSurcharge, nextTierEdge,
   conversionEndYear, inIrmaaLookback,
 };
+
+});
+
+/* ---- src/tax/limits.js ---- */
+window.__def("src/tax/limits.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/tax/limits.js — 2026 contribution limits (family-plan slice 5, item f).
+ *
+ * SOURCE: IRS Notice 2025-67 (2026 plan limits) [S13] (access date in src/tax/sources.js):
+ *   §402(g) elective deferral (401(k)/403(b), pre-tax + Roth combined) $24,500
+ *   §414(v) age-50+ catch-up                                            $8,000
+ *   §414(v)(2)(E) "super" catch-up for ages 60–63 (SECURE 2.0 §109)     $11,250
+ *   §415(c) total annual additions (employee + employer + after-tax)    $72,000
+ *   §219(b)(5) IRA contribution limit                                   $7,500
+ *   IRA age-50+ catch-up (indexed from 2024, SECURE 2.0 §108)           $1,100
+ *   §414(v)(7) Roth catch-up wage threshold (prior-year FICA wages)     $150,000
+ * Catch-up ages are the age ATTAINED by Dec 31 of the year (Treas. Reg. §1.414(v)-1(g)).
+ *
+ * Modelling: the limits are indexed with the plan's inflation from 2026 (the IRS
+ * indexes in $500/$100 steps; the rounding is not modelled). A plan's contribution
+ * lines are CAPPED at the limit — so a flat-nominal plan whose 2026 deferral exceeds
+ * $24,500 contributes the limit in 2026 and its own figure once indexation catches up.
+ * An owner's workplace deferrals (pre-tax AND Roth 401(k) `employee` lines) share one
+ * §402(g) limit; IRA lines share one IRA limit. A `catch_up` line on a workplace account
+ * is capped at the age-based catch-up and routed to ROTH when the account says the
+ * owner's prior-year FICA wages exceed the threshold (`fica_wages_over_threshold`),
+ * which §414(v)(7) makes mandatory — else to the account's own kind.
+ * ========================================================================== */
+
+const LIMITS_2026 = {
+  deferral402g: 24500,
+  catchUp50: 8000,
+  catchUp6063: 11250,
+  annualAdditions415c: 72000,
+  ira: 7500,
+  iraCatchUp50: 1100,
+  rothCatchUpWageThreshold: 150000,
+};
+
+// Source tags: src/tax/sources.js ('limits:LIMITS_2026').
+
+// Workplace catch-up for an owner who attains `age` in the year (0 under 50).
+function workplaceCatchUp(age, fac) {
+  if (age >= 60 && age <= 63) return LIMITS_2026.catchUp6063 * fac;
+  return age >= 50 ? LIMITS_2026.catchUp50 * fac : 0;
+}
+function iraLimit(age, fac) { return (LIMITS_2026.ira + (age >= 50 ? LIMITS_2026.iraCatchUp50 : 0)) * fac; }
+
+module.exports = { LIMITS_2026, workplaceCatchUp, iraLimit };
 
 });
 
@@ -6265,7 +7139,8 @@ window.__def("src/tax/qcd.js", function(module, exports, require){
  * lever against the RMD tax bomb).
  *
  * SOURCE: IRC §408(d)(8). A QCD is available from age 70½,
- * direct from an IRA to charity. It is EXCLUDED from gross income and counts
+ * direct from an IRA to charity — NOT from a 401(k)/403(b) plan, so the strategy assumes the
+ * 401(k) is rolled over to an IRA first (family-plan slice 5, R5). It is EXCLUDED from gross income and counts
  * toward the RMD dollar-for-dollar. The 2026 per-person limit is $111,000,
  * inflation-indexed (SECURE 2.0 §307 indexed the previously-fixed $100,000).
  *
@@ -6322,34 +7197,39 @@ window.__def("src/tax/rmd.js", function(module, exports, require){
 const { FB_BY_1 } = require('../core/constants.js');
 
 const RMD_START_AGE = 75; // SECURE 2.0 §107, born 1960+
+// family-plan slice 10 (verification 🔴): the start age depends on the owner's BIRTH YEAR —
+// SECURE 2.0 §107 (IRC §401(a)(9)(C)(v)): 72 (born ≤1950), 73 (born 1951–1959), 75 (born 1960+).
+// Every plan used 75, so an owner born in the 1950s skipped two RMD years. (The 1959 overlap in
+// the statute's text is read as 73, the IRS's current position.)
+function rmdStartAgeFor(birthYear) { return birthYear >= 1960 ? 75 : (birthYear >= 1951 ? 73 : 72); }
 
 // IRS Uniform Lifetime Table (2022) — age: distribution period (divisor).
 const RMD_DIVISORS = {
-  73: 26.5, 74: 25.5, 75: 24.6, 76: 23.7, 77: 22.9, 78: 22.0, 79: 21.1,
+  72: 27.4, 73: 26.5, 74: 25.5, 75: 24.6, 76: 23.7, 77: 22.9, 78: 22.0, 79: 21.1,
   80: 20.2, 81: 19.4, 82: 18.5, 83: 17.7, 84: 16.8, 85: 16.0, 86: 15.2,
   87: 14.4, 88: 13.7, 89: 12.9, 90: 12.2, 91: 11.5, 92: 10.8, 93: 10.1,
   94: 9.5, 95: 8.9, 96: 8.4, 97: 7.8, 98: 7.3, 99: 6.8, 100: 6.4,
 };
 
-function rmdRequired(age) { return age >= RMD_START_AGE; }
+function rmdRequired(age, startAge) { return age >= (startAge || RMD_START_AGE); }
 
-function divisorFor(age) {
-  if (age < RMD_START_AGE) return Infinity;
+function divisorFor(age, startAge) {
+  if (age < (startAge || RMD_START_AGE)) return Infinity;
   if (RMD_DIVISORS[age]) return RMD_DIVISORS[age];
   // beyond the tabulated ages, hold the last divisor (conservative)
   return RMD_DIVISORS[100];
 }
 
 // Gross RMD given an age and the pre-tax balance the divisor applies to.
-function grossRMD(age, pretaxBalance) {
-  if (!rmdRequired(age) || pretaxBalance <= 0) return 0;
-  return pretaxBalance / divisorFor(age);
+function grossRMD(age, pretaxBalance, startAge) {
+  if (!rmdRequired(age, startAge) || pretaxBalance <= 0) return 0;
+  return pretaxBalance / divisorFor(age, startAge);
 }
 
 // First RMD calendar year for a given birth year (default: the primary person).
-function firstRmdYear(birthYear = FB_BY_1) { return birthYear + RMD_START_AGE; }
+function firstRmdYear(birthYear = FB_BY_1) { return birthYear + rmdStartAgeFor(birthYear); }
 
-module.exports = {
+module.exports = { rmdStartAgeFor,
   RMD_START_AGE, RMD_DIVISORS, rmdRequired, divisorFor, grossRMD, firstRmdYear,
 };
 
@@ -6474,8 +7354,8 @@ const house = require('../assets/house.js');
 const oneoffs = require('../expenses/oneoffs.js');
 const giving = require('../expenses/giving.js');
 const spendingPhases = require('../expenses/spending.js');
-const { monthsInYear } = require('../core/money.js');
-const { age65Year, age705Dec, audUsd: audUsdOf } = require('../core/constants.js');
+const healthcare = require('../expenses/healthcare.js');
+const { age65Year, age595Dec, age705Dec, birthYearOf, audUsd: audUsdOf } = require('../core/constants.js');
 const { sourcesOf } = require('../core/facts.js');
 
 function m0(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
@@ -6545,20 +7425,35 @@ function planYear(ctx) {
 
   // ---- Rule 5: QCD from 70½ (cash giving only; appreciated/DAF can't be QCD'd) --
   let qcd = 0;
-  const qcdFirstYear = Math.floor(age705Dec(F, 'p1')); // primary person turns 70½
+  // family-plan slice 5 (R4): the pre-tax money is the primary person's; after their death the
+  // surviving spouse rolls it over / treats it as their own (§401(a)(9)(B)(iv)), so from then on the
+  // RMD divisor and the QCD 70½ gate follow the SURVIVOR's age — never the late owner's.
+  const ownerP = (!aliveP1 && aliveP2) ? 'p2' : 'p1';
+  const ownerAge = ownerP === 'p2' ? ageB : ageM;
+  // family-plan slice 5 (R5): a QCD is possible ONLY from an IRA (§408(d)(8)), never a 401(k). The
+  // model assumes the 401(k) is rolled to an IRA once that is allowed — on separation from service
+  // (the retirement year) or an in-service rollover from 59½, whichever is first; a surviving
+  // spouse's rollover is immediate. QCDs start at the LATER of the owner's 70½ and that rollover,
+  // so the rule never describes something that can't legally happen.
+  const rolloverYear = ownerP === 'p2' ? -Infinity : Math.min(retireYear, Math.floor(age595Dec(F, 'p1')));
+  const qcdFirstYear = Math.max(Math.floor(age705Dec(F, ownerP)), rolloverYear); // owner 70½, money in an IRA
   if (gYear.cash > 0 && Y >= qcdFirstYear) {
     qcd = qcdMod.qcdAmount(gYear.cash, Y, inflation, bal.pretax, true, 1);
     bal.pretax -= qcd;
-    decisions.push({ rule: 'QCD', action: 'charitable-via-qcd', amount: qcd,
-      why: 'Sent ' + m0(qcd) + ' of cash giving straight from the 401(k) to charity. It never counts as income and it shrinks the balance the IRS later forces out as required withdrawals.' });
+    decisions.push({ rule: 'QCD', action: 'charitable-via-qcd', amount: qcd, fromIra: true,
+      why: 'Sent ' + m0(qcd) + ' of cash giving straight from the IRA (rolled over from the 401(k)) to charity. It never counts as income and it shrinks the balance the IRS later forces out as required withdrawals.' });
   }
   // Cash giving not routed through a QCD takes the §170 itemised deduction below.
   const cashDeducted = Math.max(0, gYear.cash - qcd);
 
-  // ---- Rule 6: RMD from 75 -------------------------------------------------
+  // ---- Rule 6: RMD from 75 (73 / 72 for older birth years — slice 10) -------------------------------------------------
   let rmdGross = 0, rmdTaxableCash = 0;
-  if (ageM >= 75) {
-    rmdGross = rmdMod.grossRMD(ageM, bal.pretax + qcd); // year-start-ish balance
+  const rmdStart = rmdMod.rmdStartAgeFor(birthYearOf(F, ownerP));   // slice 10: 72 / 73 / 75 by birth year
+  if (ownerAge >= rmdStart) {
+    // family-plan slice 5 (R3): the divisor applies to the PRIOR Dec-31 balance (captured by the
+    // engine before this year's growth), not the post-growth balance (~1× growth too high).
+    const rmdBase = (ctx.pretaxPriorYE != null) ? ctx.pretaxPriorYE : (bal.pretax + qcd);
+    rmdGross = rmdMod.grossRMD(ownerAge, rmdBase, rmdStart);
     const qcdForRmd = Math.min(qcd, rmdGross);
     rmdTaxableCash = Math.min(Math.max(0, rmdGross - qcdForRmd), bal.pretax);
     bal.pretax -= rmdTaxableCash;
@@ -6569,14 +7464,17 @@ function planYear(ctx) {
   }
 
   // ---- Spending need -------------------------------------------------------
-  const yearFrac = (Y === retireYear) ? (5 / 12) : 1;
+  // slice 10 — the retired share of the retirement year from the plan's own month (Aug → 5/12).
+  const yearFrac = (Y === retireYear) ? ((12 - (IN.retireMonthsBefore != null ? IN.retireMonthsBefore : 7)) / 12) : 1;
   // WO12 Phase 2: spending waves multiply the DISCRETIONARY target (coreAnnual)
   // ONLY — never mortgage P&I, healthcare, one-offs or giving. Ships flat 100%.
   const waveMult = spendingPhases.multiplierForYear(F, Y);
   const coreAnnual = (IN.spendingTarget - house.mortPI(F)) * fac * 12 * waveMult;
   const piAnnual = house.piForYear(F, IN, Y);
   let hcAnnual = 0;
-  if (IN.healthcareAddOnTop) hcAnnual = IN.healthcareMonthly * fac * monthsInYear(2032 + 4 / 12, 2042 + 4 / 12, Y);
+  // family-plan slice 6: per person (the premium split evenly), each from max(retirement,
+  // from_age) to their to_age birthday — src/expenses/healthcare.js (was a hard-coded window).
+  if (IN.healthcareAddOnTop) hcAnnual = healthcare.healthcareTodayForYear(F, IN, Y, { p1: aliveP1, p2: aliveP2 }) * fac;
   let spend = coreAnnual + piAnnual + hcAnnual;
   if (IN.downsizeOn && Y >= IN.downsizeYear) spend -= house.escrow0(F) * fac * 12;
   spend *= yearFrac;
@@ -6598,6 +7496,7 @@ function planYear(ctx) {
   // contributor continues to its last purchased year) — a GBP outflow at fx.
   const class3Out = uksp.class3RetireGBP(F, Y, retireYear) * fx;
 
+  // Also the §63(f) count (family-plan slice 5, R1): filers alive and 65+ this year.
   const peopleOnMedicare = (aliveP1 && ageM >= 65 ? 1 : 0) + (aliveP2 && ageB >= 65 ? 1 : 0);
   const irmaaCost = irmaa.annualSurcharge(prevMagi || 0, Y, inflation, peopleOnMedicare, filing);
   if (irmaaCost > 0) decisions.push({ rule: 'IRMAA', action: 'medicare-surcharge', amount: irmaaCost,
@@ -6627,6 +7526,7 @@ function planYear(ctx) {
       needCash, baseCash, baseOrdinaryExSS: baseOrdinaryStreams + rmdTaxableCash,
       ssGross, availStart, order, classes, gainFrac, basisCredit,
       penaltyRate: withdrawals.EARLY_WITHDRAWAL_PENALTY, penaltyFraction: penFrac, Y, inflation, filing,
+      n65: peopleOnMedicare, cashCharitableNonItemizer: cashDeducted,
     });
     const start37 = brackets.topOfBracket(0.35, Y, inflation, filing);   // start of the 37% band
     const over37 = Math.max(0, (agiSolve.tax.ordinaryTaxable || 0) - start37);
@@ -6657,6 +7557,7 @@ function planYear(ctx) {
       ssGross, availStart: availC, order, classes, gainFrac, basisCredit,
       charitableDeduction: charDeduction, mortgageInterest,
       penaltyRate: withdrawals.EARLY_WITHDRAWAL_PENALTY, penaltyFraction: penFrac, Y, inflation, filing,
+      n65: peopleOnMedicare, cashCharitableNonItemizer: cashDeducted,   // family-plan slice 5 — R1 + §170(p)
     });
   }
 
@@ -6711,7 +7612,7 @@ function planYear(ctx) {
     };
     // Upper bound: can't convert more than exists, and (streams-only) headroom
     // to the bracket top is an upper bound because withdrawals only ADD income.
-    const streamsHeadroom = brackets.ordinaryHeadroomToBracket(target, baseOrdinaryStreams + rmdTaxableCash, Y, inflation, filing);
+    const streamsHeadroom = brackets.ordinaryHeadroomToBracket(target, baseOrdinaryStreams + rmdTaxableCash, Y, inflation, filing, peopleOnMedicare);
     let hi = Math.min(bal.pretax, Number.isFinite(streamsHeadroom) ? streamsHeadroom : bal.pretax);
     if (hi <= 1 || !fits(0)) {
       conv = 0; // the spending withdrawals already fill the bracket — no room
@@ -7911,6 +8812,26 @@ function setPlan(F, spec) {
   if (spec.target_after_tax_monthly != null) F.plan.target_after_tax_monthly = L(spec.target_after_tax_monthly);
   F.plan.home_currency = spec.home_currency || 'USD';
   if (!Array.isArray(F.plan.spending_phases)) F.plan.spending_phases = [];
+  // family-plan slice 5 (D9): community-property residence → full basis step-up at the first death.
+  if (spec.community_property != null) { F.global = F.global || {}; F.global.community_property = L(!!spec.community_property); }
+  return F;
+}
+
+// family-plan slice 9 — Step "Family & giving". spec = { children:[{name, dob}], floor_real?,
+// allow_pretax?, preset? }. Children are PLAN DATA only (never in the build). Milestones and the
+// steady settings already on the plan are kept. Blank rows (no name and no DOB) are dropped.
+function setFamily(F, spec) {
+  spec = spec || {};
+  const fam = F.family = F.family || {};
+  if (Array.isArray(spec.children)) {
+    const prev = fam.children || [];
+    fam.children = spec.children.filter(c => c && ((c.name != null && String(c.name).trim()) || (c.dob != null && String(c.dob).trim())))
+      .map((c, i) => ({ id: (prev[i] && prev[i].id) || ('child' + (i + 1)), name: L(c.name != null ? String(c.name).trim() : ''), dob: L(c.dob) }));
+  }
+  if (spec.floor_real != null && spec.floor_real !== '') fam.floor_real = L(+spec.floor_real);
+  if (spec.allow_pretax != null) { fam.toggles = fam.toggles || {}; fam.toggles.allow_pretax = L(!!spec.allow_pretax); }
+  if (spec.preset) fam.preset = spec.preset;
+  if (!fam.preset) fam.preset = 'classic';
   return F;
 }
 
@@ -7999,6 +8920,7 @@ const MAKERS = {
       id: id, type: 'state_pension', label: f.label || 'State Pension', owner: f.owner || 'p1',
       currency: f.currency || 'GBP', enabled: true,
       full_monthly: L(f.full_monthly), start_date: L(f.start_date), qualifying_years: L(f.qualifying_years),
+      ...(f.earned_weekly != null && f.earned_weekly !== '' ? { earned_weekly: L(f.earned_weekly) } : {}),   // slice 6
       years_for_full: (f.years_for_full != null ? f.years_for_full : 35),
       min_years: (f.min_years != null ? f.min_years : 10),
       voluntary: (v && (v.annual_amount != null || v.years != null))
@@ -8021,8 +8943,11 @@ const MAKERS = {
       if (src.employee != null) c.employee = L(src.employee);
       if (src.employer != null) c.employer = L(src.employer);
       if (src.aftertax_to_roth != null) c.aftertax_to_roth = L(src.aftertax_to_roth);
+      if (src.catch_up != null) c.catch_up = L(src.catch_up);   // slice 6 — applied from age 50
       if (Object.keys(c).length) a.contributions = c;
     }
+    if (f.vehicle === 'workplace' || f.vehicle === 'ira') a.vehicle = f.vehicle;
+    if (f.fica_wages_over_threshold != null) a.fica_wages_over_threshold = L(!!f.fica_wages_over_threshold);
     return a;
   },
   property: (f, id) => {
@@ -8082,6 +9007,7 @@ const SETUP_FIELDS = {
     { key: 'full_monthly', label: 'Full monthly rate (today’s money)', kind: 'money' },
     { key: 'start_date', label: 'Starts (YYYY-MM-DD)', kind: 'date' },
     { key: 'qualifying_years', label: 'Qualifying years', kind: 'int', default: 35 },
+    { key: 'earned_weekly', label: 'Earned so far (£/week, from your GOV.UK forecast — optional)', kind: 'money' },
     { key: 'voluntary_annual', label: 'Voluntary NI top-up (per year, optional)', kind: 'money' },
     { key: 'voluntary_to', label: 'Buy top-ups until (year, optional)', kind: 'int', showIf: v => v.voluntary_annual != null && v.voluntary_annual !== '' },
   ],
@@ -8099,6 +9025,8 @@ const SETUP_FIELDS = {
     { key: 'employee', label: 'Your yearly contribution ($/yr, optional)', kind: 'money', showIf: v => v.kind === 'pretax' || v.kind === 'roth' },
     { key: 'employer', label: 'Employer match ($/yr, optional)', kind: 'money', showIf: v => v.kind === 'pretax' },
     { key: 'aftertax_to_roth', label: 'After-tax → Roth ($/yr, optional)', kind: 'money', showIf: v => v.kind === 'pretax' },
+    { key: 'catch_up', label: 'Catch-up contribution ($/yr, counted from age 50, optional)', kind: 'money', showIf: v => v.kind === 'pretax' || v.kind === 'roth' },
+    { key: 'fica_wages_over_threshold', label: 'Catch-up must be Roth (last year’s wages over $150,000)', kind: 'bool', showIf: v => v.kind === 'pretax' },
   ],
   property: [
     { key: 'owner', label: 'Owner', kind: 'owner', default: 'joint' },
@@ -8112,7 +9040,7 @@ const SETUP_FIELDS = {
   lump_sum: [
     { key: 'owner', label: 'Owner', kind: 'owner', default: 'p1' },
     { key: 'amount', label: 'Amount (today’s money)', kind: 'money' },
-    { key: 'destination', label: 'Goes into', kind: 'select', options: [['pretax', 'Pre-tax'], ['taxable', 'Taxable'], ['roth', 'Roth']], default: 'pretax' },
+    { key: 'destination', label: 'Goes into', kind: 'select', options: [['pretax', 'Pre-tax'], ['taxable', 'Taxable'], ['roth', 'Roth'], ['ordinary', 'Paid out (taxed as income)']], default: 'pretax' },
   ],
 };
 // assembleFields(type, v) — flat form values → the rich `fields` addSource takes.
@@ -8130,6 +9058,7 @@ function assembleFields(type, v) {
       return { owner: v.owner || 'p1', statement: { '62': v.s62, '65': v.s65, '67': v.s67, '70': v.s70 }, adjustment_factor: (v.factor != null ? v.factor : 1) };
     case 'state_pension': {
       const f = { owner: v.owner || 'p1', currency: v.currency || 'GBP', full_monthly: v.full_monthly, start_date: v.start_date, qualifying_years: v.qualifying_years };
+      if (v.earned_weekly != null && v.earned_weekly !== '') f.earned_weekly = v.earned_weekly;   // slice 6
       if (v.voluntary_annual != null && v.voluntary_annual !== '') f.voluntary = { annual_amount: v.voluntary_annual, to: v.voluntary_to, from: v.voluntary_from, years: v.voluntary_years };
       return f;
     }
@@ -8142,7 +9071,9 @@ function assembleFields(type, v) {
       if (v.employee != null && v.employee !== '') contrib.employee = v.employee;
       if (v.employer != null && v.employer !== '') contrib.employer = v.employer;
       if (v.aftertax_to_roth != null && v.aftertax_to_roth !== '') contrib.aftertax_to_roth = v.aftertax_to_roth;
+      if (v.catch_up != null && v.catch_up !== '') contrib.catch_up = v.catch_up;
       if (Object.keys(contrib).length) f.contributions = contrib;
+      if (v.fica_wages_over_threshold) f.fica_wages_over_threshold = true;
       return f;
     }
     case 'property':
@@ -8181,7 +9112,7 @@ function addSource(F, type, fields) {
 module.exports = {
   L, emptyPlan, setPeople, setPlan, setHealthcare,
   CATALOGUE, CAT_BY_TYPE, MAKERS, makeElection, makeSource, addSource, uniqueId,
-  SETUP_FIELDS, assembleFields, OWNER_OPTS,
+  SETUP_FIELDS, assembleFields, OWNER_OPTS, setFamily,
 };
 
 });
@@ -8381,10 +9312,20 @@ function buildStatement(F, IN) {
     row('Charitable giving', money(IN.charitableGivingAnnual) + '/yr', 'global.charitable_giving_annual'),
     row('Roth-conversion target bracket', pct(IN.targetConversionBracket), 'global.target_conversion_bracket'),
     row('Children’s marginal tax rate (heirs)', pct(IN.childrenMarginalRate), 'global.children_marginal_rate'),
+    // family-plan slice 9 — the gifts line (early inheritance): the chosen way of giving + the floor.
+    ...(giftsLine(F, IN) ? [giftsLine(F, IN)] : []),
     row('Horizon', nm('p1') + ' to ' + IN.ageOfDeathP1 + (p2 ? ', ' + nm('p2') + ' to ' + IN.ageOfDeathP2 : ''), 'global.age_of_death_p1'),
   ] });
 
   return { placeholders: placeholders, sections: sections, compliance: complianceModel(F) };
+}
+
+// family-plan slice 9 — "Gifts to children": the preset, how many children, the parents' floor.
+function giftsLine(F, IN) {
+  const fam = require('../expenses/family-gifts.js');
+  const kids = fam.childrenOf(F); if (!kids.length) return null;
+  const LBL = { classic: 'None while alive — everything passes at the end (Classic)', steady: 'Steady yearly gifts', milestones: 'Milestone gifts', frontloaded: 'Front-loaded gifts' };
+  return { label: 'Gifts to children', value: LBL[fam.presetOf(F, IN)] + ' · ' + kids.length + ' child' + (kids.length === 1 ? '' : 'ren') + ' · floor ' + money(fam.floorReal(F)) + ' (today’s $)', path: 'family.preset' };
 }
 
 // The start descriptor for a db_pension election: an explicit dated start, a derived
@@ -8756,7 +9697,7 @@ function buildStory(model, F, IN) {
       figures: figs(hadPre65 ? factFig(F, 'Pre-65 health premium that ends', 'expenses.healthcare.monthly', perMonthToday) : null) });
   }
 
-  // 6) Required withdrawals begin (age 75).
+  // 6) Required withdrawals begin (age 75 — 73/72 for older birth years; read from the rows).
   const rmdYear = firstYear(rows, r => (r.rmdGross || 0) > 0);
   if (rmdYear != null) push({ year: rmdYear, id: 'rmd-start', kind: 'rmd', salience: 'tax', icon: ICONS.rmd,
     title: 'Required withdrawals begin',
@@ -8767,14 +9708,17 @@ function buildStory(model, F, IN) {
   // 6a) The Social Security shortfall (Phase 2.2) — shown ONLY when the trust-fund
   //     stress is switched on. From the depletion year, benefits are modelled at the
   //     payable share. A TAX/legislation event; it never shows on the baseline plan.
-  if (IN && IN.ssTrustFundHaircut && hasBlock(F, 'global.social_security_trust_fund')) {
-    const dep = valueAt(F, 'global.social_security_trust_fund.depletion_year');
-    const y = parseInt(dep, 10);
+  const tfp = (IN && IN.ssTrustFundHaircut && hasBlock(F, 'global.social_security_trust_fund'))
+    ? require('../income/social-security.js').trustFundParams(F, IN) : null;   // slice 5 (g): combined | OASI
+  if (tfp) {
+    const y = tfp.depletionYear;
     if (isFinite(y) && y >= ret) push({ year: y, id: 'ss-shortfall', kind: 'trust', salience: 'income', icon: ICONS.trust,
       title: 'Social Security may pay less',
       plainText: 'In this scenario, from this year Social Security can only pay part of what is promised, because the fund behind it is projected to run low unless the law is changed. Your other guaranteed income is unaffected — this cut touches Social Security alone.',
       detail: 'This is a “what if the law is not fixed” scenario, not the base plan. It applies the share the fund is projected to be able to pay from the depletion year onward.',
-      figures: figs(factFig(F, 'Share still payable', 'global.social_security_trust_fund.payable_ratio', v => Math.round(v * 100) + '%')) });
+      figures: tfp.mode === 'oasi'
+        ? figs({ label: 'Share still payable', value: Math.round(tfp.payableRatio * 100) + '% (retirement fund alone)', sourceTag: 'verified' })
+        : figs(factFig(F, 'Share still payable', 'global.social_security_trust_fund.payable_ratio', v => Math.round(v * 100) + '%')) });
   }
 
   // 7) Mortgage paid off — generic over EVERY property source (WO23c; id from the DATA).
@@ -8959,10 +9903,60 @@ function buildStory(model, F, IN) {
       figures: figs() });
   }
 
+  // family-plan slice 9 — gifts to the children (early inheritance) are journey steps: each
+  // milestone gift, and when each child's yearly gifts begin and end. Only with a non-Classic
+  // preset (model.family). Amounts are today's money; names are plan data.
+  if (model.family && Array.isArray(model.family.delivered)) {
+    const PURPOSE = { home: 'a first home', family: 'a growing family', education: 'education', business: 'a business', retirement: 'their own retirement', annual: 'their future', other: 'something that matters to them' };
+    const kidName = {}; ((F.family && F.family.children) || []).forEach((c, i) => { kidName[c.id || ('child' + (i + 1))] = (c.name && c.name.value) || ('Child ' + (i + 1)); });
+    const byChild = {};
+    for (const d of model.family.delivered) {
+      if (!(d.amount > 0.5)) continue;
+      const real = d.amount / d.fac, nm = kidName[d.child] || 'Your child';
+      if (d.kind === 'milestone') push({ year: d.year, id: 'gift-' + d.child + '-' + d.year, kind: 'gift', salience: 'life', icon: ICONS.giving,
+        title: nm + ' (' + d.ageAtGift + '): a gift toward ' + (PURPOSE[d.purpose] || PURPOSE.other),
+        plainText: 'You give ' + nm + ' about ' + moneyK(real) + ' in today’s money toward ' + (PURPOSE[d.purpose] || PURPOSE.other) + ', while it helps most — rather than leaving it for later.',
+        detail: 'Paid from spare cash first, then your investment account. It never comes from Roth money, and never takes your savings below your floor in a bad decade.',
+        figures: figs({ label: 'Gift (today’s $)', value: moneyK(real), sourceTag: d.placeholder ? 'placeholder' : 'model' }) });
+      else (byChild[d.child] = byChild[d.child] || []).push(Object.assign({ real }, d));
+    }
+    for (const id of Object.keys(byChild)) {
+      const g = byChild[id].sort((a, b) => a.year - b.year), nm = kidName[id] || 'Your child', first = g[0], last = g[g.length - 1];
+      push({ year: first.year, id: 'gifts-begin-' + id, kind: 'gift', salience: 'life', icon: ICONS.giving,
+        title: 'Yearly gifts to ' + nm + ' begin',
+        plainText: 'From this year you give ' + nm + ' about ' + moneyK(first.real) + ' a year in today’s money — into their own retirement account first, then savings for school or later.',
+        figures: figs({ label: 'Per year (today’s $)', value: moneyK(first.real), sourceTag: 'model' }) });
+      if (last.year !== first.year) push({ year: last.year, id: 'gifts-end-' + id, kind: 'gift', salience: 'life', icon: ICONS.giving,
+        title: 'Yearly gifts to ' + nm + ' end', plainText: 'This is the last year of the yearly gifts to ' + nm + '. What they have received keeps growing in their own name.', figures: figs() });
+    }
+  }
+
+  // family-plan slice 7 (D10) — a YEAR-ANCHORED engine warning is a journey step (it left the
+  // banner). Only warnings dated inside the story's range (retirement on) land here; the rest
+  // (undated, or before retirement) render as call-outs beside their chart — see
+  // warningPlacement(). The step text IS the warning text, so it appears exactly once.
+  for (const w of storyWarnings(model, ret)) {
+    push({ year: w.year, id: 'warning-' + w.id, kind: 'warning', salience: SALIENCE.includes(w.salience) ? w.salience : 'assets',
+      icon: ICONS.deadline, title: w.severity === 'critical' ? 'Something important to check' : 'Something to check',
+      plainText: w.text, warning: true, figures: figs() });
+  }
+
   // Order by year, then a stable kind priority so a shared year reads sensibly.
-  const KIND_ORDER = ['retire', 'unlock', 'work', 'pension', 'income', 'deadline', 'convertOpen', 'convertClose', 'medicare', 'trust', 'rmd', 'mortgage', 'wave', 'giving', 'purchase', 'survivor', 'shortfall', 'legacy', 'finish'];
+  const KIND_ORDER = ['retire', 'warning', 'unlock', 'work', 'pension', 'income', 'gift', 'deadline', 'convertOpen', 'convertClose', 'medicare', 'trust', 'rmd', 'mortgage', 'wave', 'giving', 'purchase', 'survivor', 'shortfall', 'legacy', 'finish'];
   ms.sort((a, b) => (a.year - b.year) || (KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind)));
   return ms;
+}
+
+// family-plan slice 7 (D10) — where each engine warning is shown. A warning with a `year` on or
+// after retirement is a journey step ('story'); every other warning is a call-out beside the chart
+// it concerns (`chart`: 'income' | 'worth' | 'why', default 'income'). Single source of truth for
+// the banner chip, the story and the call-outs, so each warning appears exactly once.
+function warningPlacement(w, retireYear) {
+  if (w && w.year != null && isFinite(w.year) && w.year >= retireYear) return { where: 'story', stepId: 'warning-' + w.id };
+  return { where: 'callout', chart: (w && ['income', 'worth', 'why'].includes(w.chart)) ? w.chart : 'income' };
+}
+function storyWarnings(model, retireYear) {
+  return ((model && model.warnings) || []).filter(w => warningPlacement(w, retireYear).where === 'story');
 }
 
 // The banned jargon list, exported so the test asserts plainText never uses it
@@ -8974,7 +9968,7 @@ const JARGON = ['IRMAA', 'MAGI', 'NIIT', 'RMD', 'QCD', 'bracket', 'marginal', 'o
 const SALIENCE = ['life', 'income', 'assets', 'age', 'tax'];
 
 module.exports = {
-  buildStory, ICONS, JARGON, SALIENCE,
+  buildStory, ICONS, JARGON, SALIENCE, warningPlacement,
   STORY_BG, STORY_FG, STORY_SEL,
   // helpers exposed for tests:
   money, moneyK,
@@ -9111,6 +10105,8 @@ const STATEMENT = window.__require('src/view/statement.js'); // WO23c — the fi
 const SETUP = window.__require('src/view/setup.js');       // WO23b — the generic new-plan setup operations
 const SYNC = window.__require('src/sync/client.js');       // WO20 — encrypted plan-sync transport
 const SYNCRYPTO = window.__require('src/sync/crypto.js');  // WO20 — AES-GCM + PBKDF2 (client-side)
+const SYNCBOOT = window.__require('src/sync/boot.js');     // family-plan slice 2 — cloud-first boot decision
+const AUTOSAVE = window.__require('src/sync/autosave.js'); // family-plan slice 4 — debounced auto-save
 
 /* ---- multi-plan state (WO10 Part B/D) ---- */
 let planStore = PLANS.emptyStore();   // { store, activeId, list }
@@ -9239,9 +10235,16 @@ function init(){
 function bootApp(){
   setAppHidden(false);
   loadPlans(); activePlanId = planStore.activeId;
-  loadSyncCfg(); updateSyncBtn();       // localStorage-only: NO network at boot
-  if(!bootActivePlan()){ IN = defaultInputs(FACTS); openLauncher(); return; }  // no plan yet → launcher (Part D1)
-  enterPlan();
+  loadSyncCfg(); updateSyncBtn();       // localStorage-only so far — a public / never-enrolled browser stops here
+  // family-plan slice 2 (ARC D1) — with sync creds the CLOUD copy is checked FIRST: never show
+  // the launcher ("Create your plan") before the cloud has answered. No creds → zero network.
+  if(syncEnabled()){ cloudBoot(); return; }
+  bootLocal();
+}
+function bootLocal(notice){
+  if(!bootActivePlan()){ IN = defaultInputs(FACTS); openLauncher(); }  // no plan yet → launcher (Part D1)
+  else enterPlan();
+  if(notice) showCloudNotice(notice);
 }
 // Blank/reveal the whole app (the gate's own #press-gate overlay is exempt via the tw-locked rule).
 function setAppHidden(hidden){ try{ document.documentElement.classList.toggle('tw-locked', !!hidden); }catch(e){} }
@@ -9252,7 +10255,7 @@ function lockApp(){ setAppHidden(true); try{ location.reload(); }catch(e){} }
 // Boot the dashboard for the ACTIVE plan. One-time wiring happens once; a plan
 // SWITCH re-runs only the per-plan refresh.
 function enterPlan(){
-  loadState();          // working edits for THIS plan (facts + IN), if any
+  if(freshBaseline){ freshBaseline=false; } else loadState();   // family-plan slice 4 — a just-downloaded cloud copy wins over this device's stale working state          // working edits for THIS plan (facts + IN), if any
   buildControls();      // build the input controls (rebuilt on reset / category change)
   if(!booted){
     wireHeader();       // WO6-B2: currency toggle + Reset live in the page header now
@@ -9274,6 +10277,7 @@ function enterPlan(){
   updatePlanNameDisplay();
   renderPlanNotice();   // WO17 1.3 — flag a browser copy that predates the plan file
   closeLauncher(); closeSettings();
+  syncBaseHash=null;     // family-plan slice 4 — the plan just loaded is the auto-save baseline
   recompute();
 }
 
@@ -9291,6 +10295,7 @@ function recompute(){
   try{ CF = counterfactual(FACTS, IN, IN.doNothing?null:MODEL); }catch(e){ CF=null; } // reuse MODEL as the strategy side (Part E)
   computeSim();          // growth bands rebuild here; MC is marked stale (re-run on demand)
   saveState();
+  noteSyncChange();      // family-plan slice 4 — a real edit (content hash moved) → debounced auto-save
   scheduleRedraw();
 }
 // Build the input DOM once. Rebuilding inputs mid-typing would steal focus, so
@@ -9345,8 +10350,12 @@ function yearX(i,px){ return i*px + px*0.5; }
  * REDRAW — visuals only (banner, charts, summaries, table). Does NOT touch
  * the globals bar or controller input DOM, so typing is never interrupted.
  * ===================================================================== */
+// family-plan slice 10 — months of the retirement year actually retired (from the plan's own
+// retire month; Aug → 5). Was a hard-coded 5 for every plan.
+function perMonthsOf(r){ return r.year===IN.retireYear ? (12-((MODEL&&MODEL.inputs&&MODEL.inputs.retireMonthsBefore!=null)?MODEL.inputs.retireMonthsBefore:7)) : 12; }
+function markReady(){ try{ document.documentElement.classList.add('rd-ready'); }catch(e){} }
 function redraw(){
-  const rows=chartRows(); if(!rows.length) return;
+  const rows=chartRows(); if(!rows.length){ markReady(); return; }
   renderBanner();
   buildStoryList();          // WO11 Phase 4 — rebuild the milestone list (preserves selection by id)
   // WO14 Phase 3.3 — render the summary cards FIRST so each prow row has settled its
@@ -9357,10 +10366,13 @@ function redraw(){
   renderRow3();
   renderStory();             // uses rows 1 & 3 x-scale
   renderUncertainty();       // WO15 Phase 3 — "What we don't know yet"
+  renderCallouts();          // family-plan slice 7 (D10) — undated warnings beside their chart
+  try{ renderKids(); }catch(e){ const kc=document.getElementById('kidsCard'); if(kc) kc.innerHTML='<div class="faint">This section could not be drawn.</div>'; }   // family-plan slice 9
   renderTable(); renderFootnote();
   updateSimStatusSpans();   // refresh the sim status text (never rebuilds inputs)
   syncScrollers();
   positionChartGlows();     // WO18 Phase 1 — place every row's card-level milestone glow
+  markReady();              // family-plan slice 1 — reveal only once fully rendered (no CLS)
 }
 // WO14 Phase 3.3 — the drawable chart height = the chartbox's available height (the
 // flex fill), so the chart scales to fill the card. Clamped so a very tall neighbour
@@ -9485,20 +10497,115 @@ function renderBanner(){
       +hi('Lifetime tax saved', CF?moneyK(CF.saved):'—', 'vs doing nothing')
       +hi('Lowest your savings dip', moneyK(k.portfolioFloorToday), 'in '+k.portfolioFloorYear+" · today's $")
     +'</div></div>'
-    +'<div class="flags">'+bannerFlags(k)+'</div>';
+    +'<div class="flags">'+statusChip(k)+'</div>';
   drawGauge(k.fundedRatio, col);
+  const chip=document.getElementById('statusChip'); if(chip) chip.addEventListener('click',goToChecks);
 }
 function hi(k,v,s){ return '<div class="hi"><div class="k">'+k+'</div><div class="v">'+v+'</div><div class="faint" style="font-size:11px;margin-top:1px">'+s+'</div></div>'; }
-function bannerFlags(k){
-  let out='';
-  if(k.firstShortfall) out+='<div class="flag bad">⚠ Plan runs short in '+k.firstShortfall+'</div>';
-  (MODEL.warnings||[]).forEach(w=>{ out+='<div class="flag warn">⚠ '+w.text+'</div>'; });
-  // WO24 1.1 — the placeholder note is GENERATED from the plan's own placeholder leaves
-  // (same derived set as the statement). Omitted entirely when the plan has none.
-  const ph=phLabels();
-  if(ph.length) out+='<div class="flag warn">Some inputs are still estimates ('+ph.map(esc).join(', ')+') — figures that lean on them are marked.</div>';
-  if(!k.firstShortfall && !(MODEL.warnings||[]).length) out='<div class="flag ok">No red flags in the plan.</div>'+out;
-  return out;
+// family-plan slice 7 (D10) — the banner's ONE status chip. Red when the plan runs short; else
+// the count of things to check (the model's warnings, which now live as journey steps or as
+// call-outs beside their chart); else a quiet all-clear. Clicking jumps to the first of them.
+function statusChip(k){
+  const n=(MODEL.warnings||[]).length;
+  if(k.firstShortfall) return '<button class="status-chip bad" id="statusChip" type="button" aria-label="Plan runs short in '+k.firstShortfall+' — show where">⚠ Plan runs short in '+k.firstShortfall+' ▸</button>';
+  if(n) return '<button class="status-chip warn" id="statusChip" type="button" aria-label="'+n+' thing'+(n===1?'':'s')+' to check — show them">⚠ '+n+' thing'+(n===1?'':'s')+' to check ▸</button>';
+  return '<span class="status-chip ok" id="statusChip">✓ No red flags</span>';
+}
+// Where each warning is shown — the story module is the single source (warningPlacement).
+function placeOf(w){ return STORY.warningPlacement(w, IN.retireYear); }
+function goToChecks(){
+  const k=MODEL.kpis;
+  if(k.firstShortfall){ const i=storyMs.findIndex(m=>m.id==='shortfall-first'); if(i>=0){ selectStory(i); scrollToEl('storyCard'); return; } }
+  const w=(MODEL.warnings||[])[0]; if(!w) return;
+  const p=placeOf(w);
+  if(p.where==='story'){ const i=storyMs.findIndex(m=>m.id===p.stepId); if(i>=0){ selectStory(i); scrollToEl('storyCard'); try{ document.getElementById('storyBody').focus(); }catch(_){} return; } }
+  const c=document.querySelector('.callout[data-wid="'+cssEsc(w.id)+'"]'); if(c){ try{ c.scrollIntoView({behavior:'smooth',block:'center'}); }catch(_){} c.classList.add('flash'); setTimeout(()=>c.classList.remove('flash'),1600); }
+}
+function scrollToEl(id){ try{ document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'}); }catch(_){} }
+function cssEsc(x){ return String(x).replace(/["\\]/g,'\\$&'); }
+/* ---- family-plan slice 9 — "Helping the kids" (early inheritance) ------------------------
+ * Presets drive IN.familyPreset (Classic by default — nothing moves until one is chosen, D7).
+ * The figures come from MODEL.family (research §5.4); on Classic they are the plan's own
+ * end-of-plan figures with nothing given. The Recommended card is SHOWN, never applied until
+ * clicked (D8). Children's names/DOBs are plan data (never in the build). */
+const FAM_PRESETS=[['classic','Classic (inherit at the end)'],['steady','Steady yearly gifts'],['milestones','Milestone gifts'],['frontloaded','Front-loaded']];
+let kidsClassicCache={ key:null, v:null };
+function kidsClassicView(){
+  // Classic has no model.family: the same headline figures with nothing given, plus the stress floor.
+  const key=JSON.stringify([IN, RD.leaf((FACTS.family||{}).floor_real)]).length+':'+MODEL.kpis.legacyAfterTaxToday;
+  if(kidsClassicCache.key===key) return kidsClassicCache.v;
+  let stressMin=null; try{ const st=RD.buildModel(FACTS, Object.assign({}, IN, { stress:true, familyPreset:'classic' })); stressMin=st.rows.reduce((lo,r)=>Math.min(lo,r.totalBal/r.infl),Infinity); }catch(e){}
+  const k=MODEL.kpis, fl=RD.familyGifts.floorReal(FACTS);
+  const v={ preset:'classic', givenReal:0, givenBefore40Real:0, familyWealthReal:k.legacyAfterTaxToday+k.houseEquityLegacyToday, deltaFamilyWealthReal:0,
+    taxesAcrossGenerationsReal:k.totalTaxToday+k.legacyEmbeddedTaxToday, deltaTaxesReal:0, floorReal:fl, stressMinReal:stressMin, safe:stressMin==null||stressMin>=fl, scale:1,
+    flags:[], series:MODEL.rows.map(r=>({ year:r.year, parentsReal:r.totalBal/r.infl, baselineParentsReal:null, kidsReal:0 })), notModelled:RD.familyGifts.NOT_MODELLED, recommendation:RD.familyGifts.recommendation(FACTS, IN) };
+  kidsClassicCache={ key, v }; return v;
+}
+function renderKids(){
+  const el=document.getElementById('kidsCard'); if(!el) return;
+  const kids=RD.familyGifts.childrenOf(FACTS);
+  if(!kids.length){
+    el.innerHTML='<div class="kids-empty"><span>Add your children to see what helping them while you are alive would do — and what it would cost you. Until then everything passes to them at the end.</span>'
+      +'<button class="btn" id="kidsAdd" type="button">Add your children</button></div>';
+    const b=document.getElementById('kidsAdd'); if(b) b.addEventListener('click',()=>openSetup({ mode:'edit', step:'family', single:true }));
+    return;
+  }
+  const preset=RD.familyGifts.presetOf(FACTS, IN);
+  const f=(preset!=='classic' && MODEL.family) ? MODEL.family : kidsClassicView();
+  const d=(v,good)=>{ if(!v||Math.abs(v)<500) return '<div class="d">same as Classic</div>'; const up=v>0; return '<div class="d '+((up===good)?'up':'down')+'">'+(up?'+':'−')+moneyK(Math.abs(v)).replace('−','')+' vs Classic</div>'; };
+  const seg='<div class="seg" id="kidsPreset" role="group" aria-label="How to give">'+FAM_PRESETS.map(p=>'<button type="button" data-fp="'+p[0]+'" aria-pressed="'+(p[0]===preset)+'">'+p[1]+'</button>').join('')+'</div>';
+  const safeTxt=(f.stressMinReal==null)?'—':(f.safe?'✓ ':'✗ ')+moneyK(f.stressMinReal);
+  const figs='<div class="kids-figs">'
+    +'<div class="hi"><div class="k">Given to the children</div><div class="v">'+moneyK(f.givenReal)+'</div><div class="d">'+moneyK(f.givenBefore40Real)+' of it before they turn 40 · today’s $</div></div>'
+    +'<div class="hi"><div class="k">Family wealth at the end</div><div class="v">'+moneyK(f.familyWealthReal)+'</div>'+d(f.deltaFamilyWealthReal,true)+'</div>'
+    +'<div class="hi"><div class="k">Taxes across generations</div><div class="v">'+moneyK(f.taxesAcrossGenerationsReal)+'</div>'+d(f.deltaTaxesReal,false)+'</div>'
+    +'<div class="hi"><div class="k">Your safety (bad decade)</div><div class="v">'+safeTxt+'</div><div class="d">lowest savings vs your '+moneyK(f.floorReal)+' floor'+(f.scale<1?' · gifts scaled to '+Math.round(f.scale*100)+'%':'')+'</div></div>'
+    +'</div>';
+  // flags — FORM_709 collapses to one chip (with the year count)
+  const fl=f.flags||[], n709=fl.filter(x=>x.id==='FORM_709').length, chips=[];
+  if(n709) chips.push('<span class="kids-chip info" title="'+esc(fl.find(x=>x.id==='FORM_709').text)+'">Form 709 in '+n709+' year'+(n709===1?'':'s')+' — no tax due</span>');
+  fl.filter(x=>x.id!=='FORM_709').forEach(x=>chips.push('<span class="kids-chip'+(/TRUMP|KIDDIE/.test(x.id)?' info':'')+'">'+esc(x.text)+'</span>'));
+  const phDob=((FACTS.family||{}).children||[]).some(c=>RD.isPlaceholderLeaf(c.dob));
+  if(phDob) chips.push('<span class="kids-chip">⚠ The children’s birth dates are still placeholders — gift years lean on them.</span>');
+  const rec=f.recommendation;
+  const recHtml=rec?'<div class="kids-rec"><h3>Recommended for you</h3><ol>'+rec.steps.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>'
+    +((preset===rec.preset && IN.targetConversionBracket===rec.targetConversionBracket)?'<div class="faint" style="font-size:12.5px">This is the plan you are looking at.</div>'
+      :'<button class="btn primary" id="kidsApply" type="button">Apply the recommendation</button> <span class="faint" style="font-size:12px">Nothing changes until you click.</span>')+'</div>':'';
+  el.innerHTML='<div class="kids-top">'+seg+'</div>'+figs
+    +'<div class="kids-chart"><canvas id="cvKids" role="img" aria-label="Your savings and the children’s gift accounts by year, in today’s dollars"></canvas></div>'
+    +'<div class="kids-legend"><span><i style="background:var(--ac)"></i>Your savings</span><span><i style="background:var(--ac2)"></i>The children’s gift accounts</span>'
+      +(preset!=='classic'?'<span><i class="dash"></i>Your savings with no gifts (Classic)</span>':'')+'<span><i class="floor"></i>Your floor</span></div>'
+    +(chips.length?'<div class="kids-flags">'+chips.join('')+'</div>':'')+recHtml
+    +'<details class="kids-nm"><summary>What this does not model</summary><ul>'+(f.notModelled||[]).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></details>';
+  el.querySelectorAll('#kidsPreset button').forEach(b=>b.addEventListener('click',()=>{ IN.familyPreset=b.dataset.fp; recompute(); }));
+  const ap=document.getElementById('kidsApply'); if(ap) ap.addEventListener('click',()=>{ IN.familyPreset=rec.preset; gSet('targetConversionBracket',null,rec.targetConversionBracket); buildControls(); recompute(); });   // band lever via its single writer (gSet)
+  drawKidsChart(f);
+}
+function drawKidsChart(f){
+  const cv=document.getElementById('cvKids'); if(!cv||!cv.parentElement) return;
+  const W=Math.max(280, cv.parentElement.clientWidth||600), H=Math.max(180, cv.parentElement.clientHeight||240);
+  const ctx=setupCanvas(cv,W,H); const css=n=>(getComputedStyle(document.documentElement).getPropertyValue(n)||'').trim();
+  const S=(f.series||[]).filter(x=>isFinite(x.parentsReal)); if(!S.length) return;
+  const padL=52, padR=10, padT=10, padB=22, w=W-padL-padR, h=H-padT-padB;
+  const maxV=Math.max(f.floorReal||0, ...S.map(x=>x.parentsReal+(x.kidsReal||0)), ...S.map(x=>x.baselineParentsReal||0))*1.05 || 1;
+  const X=i=>padL+(S.length<2?0:i*w/(S.length-1)), Y=v=>padT+h-(v/maxV)*h;
+  ctx.font='11px system-ui,sans-serif'; ctx.fillStyle=css('--faint'); ctx.strokeStyle=css('--line');
+  for(let t=0;t<=4;t++){ const v=maxV*t/4, y=Y(v); ctx.globalAlpha=.6; ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke(); ctx.globalAlpha=1; ctx.fillText(moneyK(v),4,y+4); }
+  S.forEach((x,i)=>{ if(x.year%10===0) ctx.fillText(String(x.year),X(i)-12,H-6); });
+  const area=(top,bot,col)=>{ ctx.beginPath(); S.forEach((x,i)=>{ const y=Y(top(x)); i?ctx.lineTo(X(i),y):ctx.moveTo(X(i),y); }); for(let i=S.length-1;i>=0;i--) ctx.lineTo(X(i),Y(bot(S[i]))); ctx.closePath(); ctx.fillStyle=col; ctx.globalAlpha=.55; ctx.fill(); ctx.globalAlpha=1; };
+  area(x=>x.parentsReal, ()=>0, css('--ac'));
+  area(x=>x.parentsReal+(x.kidsReal||0), x=>x.parentsReal, css('--ac2'));
+  if(S.some(x=>x.baselineParentsReal!=null)){ ctx.setLineDash([5,4]); ctx.strokeStyle=css('--mut'); ctx.lineWidth=1.5; ctx.beginPath(); S.forEach((x,i)=>{ const y=Y(x.baselineParentsReal||0); i?ctx.lineTo(X(i),y):ctx.moveTo(X(i),y); }); ctx.stroke(); ctx.setLineDash([]); }
+  if(f.floorReal){ ctx.strokeStyle=css('--bad-soft'); ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(padL,Y(f.floorReal)); ctx.lineTo(W-padR,Y(f.floorReal)); ctx.stroke(); }
+}
+
+// family-plan slice 7 (D10) — undated (or pre-retirement) warnings render ONCE, as call-outs
+// beside the chart they concern (income → row 1, worth → row 3, why → row 5).
+function renderCallouts(){
+  const slot={income:'co1',worth:'co2',why:'co3'}; const html={co1:'',co2:'',co3:''};
+  (MODEL.warnings||[]).forEach(w=>{ const p=placeOf(w); if(p.where!=='callout') return;
+    html[slot[p.chart]]+='<div class="callout" data-wid="'+esc(w.id)+'" role="note">⚠ '+esc(w.text)+'</div>'; });
+  Object.keys(html).forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=html[id]; });
 }
 // WO6-B4: the ratio numeral gets the interior of the arc to ITSELF; the
 // "1.0 = fully funded" label moves OUT to its tick on the arc; the descriptive
@@ -9603,6 +10710,12 @@ function renderGlobals(){
       const lbl='Social Security shortfall ('+dy+', ~'+Math.round(pr*100)+'%)';
       const tip='SSA’s own projection, carried on the statements: the trust funds pay scheduled benefits in full until '+dy+', after which only about '+Math.round(pr*100)+'% is payable under current law with no Congressional fix. Both people claim after '+dy+', so both would start at ~'+Math.round(pr*100)+'% of scheduled. A scenario about future legislation, not a prediction — sit it beside the bad-first-decade stress.';
       scenarios+='<label class="gtoggle" title="'+tip.replace(/"/g,'&quot;')+'"><input type="checkbox" data-gk="ssTrustFundHaircut" '+(IN.ssTrustFundHaircut?'checked':'')+'> '+lbl+'</label>';
+      // family-plan slice 5 (g): which projection — the combined funds (default) or the retirement (OASI) fund alone.
+      const oa=RD.OASI_2026||{depletionYear:2033,payableRatio:0.78};
+      scenarios+='<div class="gitem" title="Retirement benefits are paid from the OASI fund, which on its own runs low sooner (late '+(oa.depletionYear-1)+') than the combined funds, unless the funds are merged."><label class="glabel" for="g_tfm">Shortfall basis</label>'
+        +'<select class="gsel" id="g_tfm" data-gks="ssTrustFundMode">'
+        +'<option value="combined"'+(IN.ssTrustFundMode!=='oasi'?' selected':'')+'>Combined funds ('+dy+', ~'+Math.round(pr*100)+'%)</option>'
+        +'<option value="oasi"'+(IN.ssTrustFundMode==='oasi'?' selected':'')+'>Retirement fund only ('+oa.depletionYear+', ~'+Math.round(oa.payableRatio*100)+'%)</option></select></div>';
     }
   }
   el.innerHTML =
@@ -9623,6 +10736,7 @@ function renderGlobals(){
     inp.addEventListener('keydown',(e)=>{ if(e.key==='ArrowUp'){e.preventDefault();bump(1);} else if(e.key==='ArrowDown'){e.preventDefault();bump(-1);} });
   });
   el.querySelectorAll('select[data-gk]').forEach(s=>s.addEventListener('change',()=>{ IN[s.dataset.gk]=parseFloat(s.value); recompute(); }));
+  el.querySelectorAll('select[data-gks]').forEach(s=>s.addEventListener('change',()=>{ IN[s.dataset.gks]=s.value; recompute(); }));
   el.querySelectorAll('.gtoggle input[data-gk]').forEach(c=>c.addEventListener('change',()=>{ IN[c.dataset.gk]=c.checked; recompute(); }));
 }
 function opt(val,label,cur){ return '<option value="'+val+'"'+(Math.abs(cur-val)<1e-9?' selected':'')+'>'+label+'</option>'; }
@@ -9791,7 +10905,7 @@ function salaryEditorHTML(){
     const zr=RD.salaryEntryZeroReason?RD.salaryEntryZeroReason(e,IN,FACTS):null;
     const zNote=zr?'<div class="se-warn">⚠ This line '+zr+'.</div>':'';
     return '<div class="salrow" data-i="'+i+'">'
-      +'<div class="salr1"><select class="se-f" data-f="owner">'
+      +'<div class="salr1"><select class="se-f" data-f="owner" aria-label="Who earns this">'
         +'<option value="p1"'+(e.owner==='p1'?' selected':'')+'>'+esc(NM('p1'))+'</option>'
         +'<option value="p2"'+(e.owner==='p2'?' selected':'')+'>'+esc(NM('p2'))+'</option></select>'
       +'<input class="se-f se-label" data-f="label" value="'+String(e.label||'').replace(/"/g,'&quot;')+'" placeholder="Label">'
@@ -10130,10 +11244,10 @@ function renderRow1(){
   const rows=chartRows(), yrs=years(), px=pxPerYear('sc1'), H=chartFillH('sc1',280), W=yrs.length*px;
   // max = spend + tax stack peak
   let maxV=0;
-  const DBF=dbFields(); rows.forEach(r=>{ const bands=VIEW.incomeBands(r,DBF); const tb=VIEW.taxBands(r); const perM=r.year===IN.retireYear?5:12;
+  const DBF=dbFields(); rows.forEach(r=>{ const bands=VIEW.incomeBands(r,DBF); const tb=VIEW.taxBands(r); const perM=perMonthsOf(r);
     const inc=VIEW.incomeTotal(bands)/perM, taxTop=(r.spending + r.tax + tb.irmaa)/perM;
     maxV=Math.max(maxV, defl(inc,r), defl(taxTop,r)); });
-  const ov1=overlayFor(r=>r.incTotal/(r.year===IN.retireYear?5:12),'income');
+  const ov1=overlayFor(r=>r.incTotal/perMonthsOf(r),'income');
   const sdim=ov1?0.42:1; // dim the stack under an overlay so the band's DOWNSIDE isn't hidden
   if(ov1){ const top=overlayTop(ov1), cap=maxV*2.5; top.forEach(v=>maxV=Math.max(maxV, Math.min(v,cap))); }
   const yMax=niceMax(maxV,5);
@@ -10148,7 +11262,7 @@ function renderRow1(){
   const irmaaHatch=hatchOf(COL.irmaa);
   const geomCols=[];                    // A3: per-year hit-test geometry
   for(let i=0;i<rows.length;i++){
-    const r=rows[i], perM=r.year===IN.retireYear?5:12, x0=i*px, x1=x0+px;
+    const r=rows[i], perM=perMonthsOf(r), x0=i*px, x1=x0+px;
     const bands=VIEW.incomeBands(r,dbFields()); let acc=0; const segs=[];
     for(const k of order){
       const b=bands[k], markM=defl(b.p1/perM,r), barbM=defl(b.p2/perM,r);
@@ -10204,7 +11318,7 @@ function renderRow1(){
   if(ov1) drawOverlay(ctx,Y,px,rows.length,ov1);   // growth band / Monte Carlo overlay
   // spend line (dotted)
   ctx.strokeStyle='#eef4f2'; ctx.lineWidth=2; ctx.setLineDash([5,4]); ctx.beginPath();
-  rows.forEach((r,i)=>{ const perM=r.year===IN.retireYear?5:12; const sx=i*px+px/2, sy=Y(defl(r.spending/perM,r)); i?ctx.lineTo(sx,sy):ctx.moveTo(sx,sy); }); ctx.stroke(); ctx.setLineDash([]);
+  rows.forEach((r,i)=>{ const perM=perMonthsOf(r); const sx=i*px+px/2, sy=Y(defl(r.spending/perM,r)); i?ctx.lineTo(sx,sy):ctx.moveTo(sx,sy); }); ctx.stroke(); ctx.setLineDash([]);
   // WO6-B5: tax value labels sit ABOVE the income-stack peak (clear of the bands,
   // in the empty headroom) in the neutral tax grey — never on top of plotted data.
   // Skip the partial retire year (anomalous per-month figures) and clamp/align at
@@ -10213,7 +11327,7 @@ function renderRow1(){
   // so it stays legible over the income stack (it was being over-drawn by tall bands).
   ctx.font='11px '+getComputedStyle(document.body).fontFamily; ctx.textBaseline='alphabetic';
   const plateBg = (getComputedStyle(document.documentElement).getPropertyValue('--bg')||'#0b1416').trim() || '#0b1416';
-  rows.forEach((r,i)=>{ if(r.year%8!==0 || r.year===IN.retireYear) return; const perM=r.year===IN.retireYear?5:12; const taxM=defl(r.tax/perM,r); if(taxM<50) return;
+  rows.forEach((r,i)=>{ if(r.year%8!==0 || r.year===IN.retireYear) return; const perM=perMonthsOf(r); const taxM=defl(r.tax/perM,r); if(taxM<50) return;
     const incTop=defl(VIEW.incomeTotal(VIEW.incomeBands(r,dbFields()))/perM,r); const label=moneyK(taxM*12)+'/yr tax';
     const tw=((ctx.measureText&&ctx.measureText(label))||{}).width || label.length*6.4, halfW=tw/2+4;
     let x=i*px+px/2; const y=Math.max(PLOT_TOP+9, Y(incTop)-6);
@@ -10595,7 +11709,7 @@ function renderLegendReadout(){
   const el=document.getElementById('lgro1'); if(!el) return;
   const y=pinYear||hoverYear;
   const r = (y!=null) ? MODEL.rows.find(rr=>rr.year===y) : null;
-  const perM = r ? (r.year===IN.retireYear?5:12) : 12;
+  const perM = r ? perMonthsOf(r) : 12;
   const bands = r ? VIEW.incomeBands(r,dbFields()) : null, tb = r ? VIEW.taxBands(r) : null;
   const mo = (v)=> r ? money(defl(v/perM,r))+'/mo' : '';     // '' when idle (legend only)
   const bandVal = (k)=>{ if(!r) return ''; const v=VIEW.bandTotal(bands[k]); return v>1 ? mo(v) : '—'; };
@@ -10781,7 +11895,7 @@ function trustFundScenarioLine(){
   const fr=tf.fundedRatio, gs=tf.guaranteedShare, leg=tf.legacyAfterTaxToday;
   return '<div class="u-scenario"><b>A scenario, not an unknown — the Social Security shortfall.</b> '
     +'This is not a figure we can pin down; it is a question of future legislation, so it is ranked separately from the placeholders above. '
-    +'SSA’s own projection is that the trust funds pay in full until '+tf.depletionYear+', then about '+Math.round((tf.payableRatio||0.83)*100)+'% under current law with no Congressional fix — plausibly the largest single risk to your guaranteed income. '
+    +'SSA’s own projection is that the '+(tf.mode==='oasi'?'retirement trust fund pays':'trust funds pay')+' in full until '+tf.depletionYear+', then about '+Math.round((tf.payableRatio||0.83)*100)+'% under current law with no Congressional fix — plausibly the largest single risk to your guaranteed income. '
     +'Turning it on moves the funded ratio '+fr[0].toFixed(2)+' → '+fr[1].toFixed(2)+', guaranteed income '+pct(gs[0])+' → '+pct(gs[1])+', and after-tax legacy '+moneyK(leg[0])+' → '+moneyK(leg[1])+'. '
     +'Toggle it under <b>Scenarios</b>, beside the bad-first-decade stress.</div>';
 }
@@ -10795,8 +11909,12 @@ function renderUncertainty(){
   const el=document.getElementById('uncertainty'); if(!el) return;
   let list=[]; try{ list=SENSITIVITY.runSensitivity(FACTS, IN)||[]; }catch(e){ list=[]; }
   const extras=factorNoteLines()+trustFundScenarioLine();
+  // WO24 1.1 / family-plan slice 7 (D10) — the placeholder note (GENERATED from the plan's own
+  // placeholder leaves; omitted when there are none) moved here from the banner.
+  const ph=phLabels(); let phNote='';
+  if(ph.length) phNote='<div class="callout u-ph" role="note">Some inputs are still estimates ('+ph.map(esc).join(', ')+') — figures that lean on them are marked.</div>';
   if(!list.length){
-    el.innerHTML='<h2>What we don’t know yet</h2>'
+    el.innerHTML=phNote
       +'<div class="u-sub">No flagged-uncertain <em>inputs</em> in this plan yet. As figures are marked as placeholders, this panel shows what being wrong about each would cost the headline numbers.</div>'
       +extras;
     return;
@@ -10820,7 +11938,7 @@ function renderUncertainty(){
       +'<td class="num u-spread">'+spread(r.guaranteedShare,x=>pct(x))+'</td>'
       +'</tr>';
   }).join('');
-  el.innerHTML='<h2>What we don’t know yet</h2>'
+  el.innerHTML=phNote
     +'<div class="u-sub">These are the model’s most uncertain inputs. Each is tested across a plausible range; the columns show how far the headline numbers move if the real figure lands at either end. Ordered so the biggest source of error is first.</div>'
     +'<div style="overflow-x:auto"><table class="uncert-table"><thead><tr>'
     +'<th class="num">#</th><th class="u-lab">Uncertain input</th><th class="u-now">Now</th><th class="u-range">Range tested</th><th class="num">Funded ratio</th><th class="num">After-tax legacy</th><th class="num">Guaranteed income</th>'
@@ -11272,9 +12390,27 @@ function wireGlobalsToggleAria(){ const gt=document.getElementById('gbarToggle')
  * open / rename / duplicate / delete, create a new one, or import a plan file.
  * Shown when there is no active plan, or on demand from the "Plans" button.
  * ===================================================================== */
-function openLauncher(){ const el=document.getElementById('launcher'); if(!el) return; loadPlans(); renderLauncher(); el.hidden=false; }
+function openLauncher(){ const el=document.getElementById('launcher'); if(!el) return; loadPlans(); renderLauncher(); el.hidden=false; markReady(); }
 function closeLauncher(){ const el=document.getElementById('launcher'); if(el) el.hidden=true; }
+// family-plan slice 3 — the launcher's cloud row: with sync creds, the primary action is to pull
+// the synced plan (the same loader as the cloud-first boot); without, a way to connect to one.
+function renderLauncherCloud(){
+  const box=document.getElementById('lchCloud'); if(!box) return;
+  const on=syncEnabled();
+  box.innerHTML=on
+    ? '<button class="btn primary" data-lch="cloudload">⬇ Load my plan from the cloud</button><div class="lch-cloud-msg" id="lchCloudMsg" role="status"></div>'
+    : '<button class="btn quiet" data-lch="connect">Connect to a synced plan…</button>';
+  const nw=document.getElementById('lchNew'); if(nw) nw.classList.toggle('primary', !on);
+}
+async function launcherCloudLoad(){
+  const msg=document.getElementById('lchCloudMsg'); if(msg) msg.textContent='Loading your plan…';
+  const got=await fetchCloudPlan();
+  if(got.cloud.found){ syncCfg.dirty=false; if(activateSynced(got.obj, got.cloud.version)){ closeLauncher(); return; } }
+  if(msg) msg.textContent = got.cloud.error==='decrypt' ? SYNCBOOT.NOTICE['bad-pass']
+    : got.cloud.error ? SYNCBOOT.NOTICE.offline : 'No synced plan has been saved under this sync id yet.';
+}
 function renderLauncher(){
+  renderLauncherCloud();
   const list=document.getElementById('lchList'); if(!list) return;
   const plans=PLANS.list(planStore);
   if(!plans.length){ list.innerHTML='<div class="lch-empty">No plans yet. Create one from scratch (US tax law, no figures) or import a plan file.</div>'; return; }
@@ -11315,6 +12451,8 @@ function wireLauncher(){
   const nw=document.getElementById('lchNew'); if(nw) nw.addEventListener('click',()=>{ openSetup({ mode:'new' }); });
   const imp=document.getElementById('lchImport'); if(imp) imp.addEventListener('click',()=>{ const f=document.getElementById('lchFile'); if(f) f.click(); });
   const file=document.getElementById('lchFile'); if(file) file.addEventListener('change',importPlanFromFile);
+  el.addEventListener('click', e=>{ const c=e.target&&e.target.closest&&e.target.closest('[data-lch]'); if(!c) return;
+    if(c.getAttribute('data-lch')==='cloudload') launcherCloudLoad(); else openSync(); });
   el.addEventListener('click', e=>{ const b=e.target&&e.target.closest&&e.target.closest('[data-act]'); if(!b) return;
     const id=b.getAttribute('data-id'), act=b.getAttribute('data-act');
     if(act==='open'){ switchToPlan(id); }
@@ -11338,8 +12476,8 @@ function wireLauncher(){
  * flow is also re-enterable per step from settings (openSetup({edit,step,single})).
  * ===================================================================== */
 let wiz = null;   // { mode:'new'|'edit', step, F, name, addingType, single }
-const WIZ_ORDER = ['people','plan','sources','done'];
-const WIZ_LABEL = { people:'People', plan:'Plan', sources:'Sources', done:'Done' };
+const WIZ_ORDER = ['people','plan','family','sources','done'];
+const WIZ_LABEL = { people:'People', plan:'Plan', family:'Family & giving', sources:'Sources', done:'Done' };
 // WO23d — inside the wizard, owner labels must read the plan BEING BUILT (wiz.F), not the
 // active plan's FACTS. NM/hasP2Now read FACTS, so a new plan showed "Person 1/2" for names
 // already entered on step 1. These wiz-scoped helpers fall back to "Person 1/2" when blank.
@@ -11364,6 +12502,7 @@ function wizFieldHTML(f, val, hidden){
   else if(f.kind==='select'){ field='<select id="'+id+'" data-wk="'+f.key+'">'+f.options.map(o=>'<option value="'+o[0]+'"'+(String(o[0])===String(v)?' selected':'')+'>'+esc(o[1])+'</option>').join('')+'</select>'; }
   else if(f.kind==='date'){ field='<input id="'+id+'" data-wk="'+f.key+'" type="text" placeholder="YYYY-MM-DD" value="'+esc(v)+'">'; }
   else if(f.kind==='text'){ field='<input id="'+id+'" data-wk="'+f.key+'" type="text" value="'+esc(v)+'">'; }
+  else if(f.kind==='bool'){ field='<select id="'+id+'" data-wk="'+f.key+'"><option value="0"'+(!v?' selected':'')+'>No</option><option value="1"'+(v?' selected':'')+'>Yes</option></select>'; }   // slice 6
   else { const step=f.kind==='ratio'?'0.001':(f.kind==='int'?'1':'100'); field='<input id="'+id+'" data-wk="'+f.key+'" type="number" step="'+step+'" value="'+esc(v)+'">'; }
   return '<div class="wiz-field" data-wf="'+f.key+'"'+(f.kind?' data-kind="'+f.kind+'"':'')+(hidden?' style="display:none"':'')+'><label for="'+id+'">'+esc(f.label)+'</label>'+field+'</div>';
 }
@@ -11371,6 +12510,7 @@ function wizReadFields(root, fields){ const v={};
   fields.forEach(f=>{ const n=root.querySelector('[data-wk="'+f.key+'"]'); if(!n) return;
     let x=n.value; if(f.kind==='money'||f.kind==='ratio'||f.kind==='int'){ x=(x===''?null:parseFloat(x)); if(x!=null&&!isFinite(x)) x=null; }
     else if((f.kind==='date'||f.kind==='text')&&x==='') x=null;
+    else if(f.kind==='bool') x=(x==='1');
     v[f.key]=x; });
   return v;
 }
@@ -11392,6 +12532,8 @@ function wizPlanHTML(){ const F=wiz.F;
       +'<div class="wiz-field"><label>Pre-Medicare healthcare (today’s $/mo)</label><input data-wk="healthcare" type="number" step="50" value="'+esc(wizVal(F,'expenses.healthcare.monthly'))+'"></div>'
     +'</div>'
     +'<div class="wiz-note">Figures are in US dollars.</div>'
+    +'<label class="wiz-check"><input type="checkbox" data-wk="community_property"'+(RD.leafNum((F.global||{}).community_property)?' checked':'')+'> We live in a community-property state (e.g. Texas, California)</label>'
+    +'<div class="wiz-note">In a community-property state, everything the two of you own together gets a fresh tax cost basis when the first of you dies, so the survivor can sell it without capital-gains tax on the growth so far.</div>'
     +'<div class="wiz-note"><b>State income tax:</b> not modelled — the plan assumes none (as in Texas). If your state taxes income, treat the projection as slightly optimistic; a state-rate setting is a planned addition.</div>';
 }
 function wizSourcesHTML(){ const F=wiz.F; const srcs=(F.sources||[]);
@@ -11435,7 +12577,7 @@ function renderWiz(){ if(!wiz) return;
     else { const cur=WIZ_ORDER.indexOf(wiz.step);
       steps.innerHTML=WIZ_ORDER.map((s,i)=>'<div class="wstep'+(i===cur?' on':(i<cur?' done':''))+'"><div class="wbar"></div><span class="wl">'+WIZ_LABEL[s]+'</span></div>').join(''); } }
   const body=document.getElementById('wizBody');
-  if(body) body.innerHTML = wiz.step==='people'?wizPeopleHTML() : wiz.step==='plan'?wizPlanHTML() : wiz.step==='sources'?wizSourcesHTML() : wizDoneHTML();
+  if(body) body.innerHTML = wiz.step==='people'?wizPeopleHTML() : wiz.step==='plan'?wizPlanHTML() : wiz.step==='family'?wizFamilyHTML() : wiz.step==='sources'?wizSourcesHTML() : wizDoneHTML();
   // nav
   const nav=document.getElementById('wizNav'); const idx=WIZ_ORDER.indexOf(wiz.step);
   let left='', right='';
@@ -11456,11 +12598,39 @@ function wizApplyPeople(){ const b=document.getElementById('wizBody'); const cnt
 }
 function wizApplyPlan(){ const b=document.getElementById('wizBody');
   const g=k=>{ const n=b.querySelector('[data-wk="'+k+'"]'); return n?n.value:null; };
-  SETUP.setPlan(wiz.F, { retire_date:(g('retire_date')||null), target_after_tax_monthly:(g('target')===''||g('target')==null?null:parseFloat(g('target'))), home_currency:g('home_currency')||'USD' });
+  const cpEl=b.querySelector('[data-wk="community_property"]');
+  SETUP.setPlan(wiz.F, { retire_date:(g('retire_date')||null), target_after_tax_monthly:(g('target')===''||g('target')==null?null:parseFloat(g('target'))), home_currency:g('home_currency')||'USD',
+    community_property: cpEl ? cpEl.checked : undefined });
   const hc=g('healthcare'); if(hc!=null&&hc!=='') SETUP.setHealthcare(wiz.F, { monthly:parseFloat(hc) });
   return true;
 }
-function wizApplyCurrentStep(){ if(wiz.step==='people') return wizApplyPeople(); if(wiz.step==='plan') return wizApplyPlan(); return true; }
+// family-plan slice 9 — step "Family & giving": the children (name + date of birth; plan data only),
+// the parents' safety floor, and whether gifts may come from pre-tax money. Optional — skip it and
+// the plan stays "Classic" (everything passes at the end).
+function wizKidsOf(){ const fam=(wiz.F&&wiz.F.family)||{}; return (fam.children||[]).map(c=>({ name:RD.leaf(c.name)||'', dob:RD.leaf(c.dob)||'' })); }
+function wizFamilyHTML(){ const F=wiz.F, fam=F.family||{};
+  if(wiz._kids==null) wiz._kids=wizKidsOf();
+  const rows=wiz._kids.map((c,i)=>'<div class="wiz-kid" data-kid="'+i+'">'
+      +'<div class="wiz-field"><label for="wz_c'+i+'_name">Child '+(i+1)+' name</label><input id="wz_c'+i+'_name" data-wk="c'+i+'_name" type="text" value="'+esc(c.name)+'"></div>'
+      +'<div class="wiz-field" data-wf="c'+i+'_dob"><label for="wz_c'+i+'_dob">Date of birth</label><input id="wz_c'+i+'_dob" data-wk="c'+i+'_dob" type="text" placeholder="YYYY-MM-DD" value="'+esc(c.dob)+'"><div class="wiz-err" data-err="c'+i+'_dob"></div></div>'
+      +'<button class="btn quiet wiz-kid-x" type="button" data-kidrm="'+i+'" aria-label="Remove child '+(i+1)+'">✕</button></div>').join('');
+  const floor=RD.leaf(fam.floor_real); const pre=!!RD.leaf((fam.toggles||{}).allow_pretax);
+  return '<div class="wiz-intro">Optional. If you would like to help your children while you are alive, add them here — the plan then shows what giving earlier does for them and what it costs you. Skip it and everything passes to them at the end, as today.</div>'
+    +'<div class="wiz-kids" id="wizKids">'+(rows||'<div class="faint">No children added yet.</div>')+'</div>'
+    +'<button class="btn" type="button" id="wizKidAdd">＋ Add a child</button>'
+    +'<div class="wiz-grid" style="margin-top:14px">'
+      +'<div class="wiz-field"><label for="wz_floor">Keep at least this much for yourselves (today’s $, excluding the home)</label><input id="wz_floor" data-wk="floor_real" type="number" step="10000" value="'+esc(floor==null?500000:floor)+'"></div>'
+    +'</div>'
+    +'<label class="wiz-check"><input type="checkbox" data-wk="allow_pretax"'+(pre?' checked':'')+'> Gifts may come from the 401(k)/IRA (taxed as income when you take it out)</label>'
+    +'<div class="wiz-note">The plan never gives away Roth money, and never lets a gift take your savings below the floor in a bad decade. Children’s names and birth dates stay in your plan file only.</div>';
+}
+function wizReadKids(){ const b=document.getElementById('wizBody'); if(!b||!wiz._kids) return;
+  wiz._kids=wiz._kids.map((c,i)=>{ const n=b.querySelector('[data-wk="c'+i+'_name"]'), d=b.querySelector('[data-wk="c'+i+'_dob"]'); return { name:n?n.value:c.name, dob:d?d.value.trim():c.dob }; }); }
+function wizApplyFamily(){ const b=document.getElementById('wizBody'); wizReadKids();
+  const fl=b&&b.querySelector('[data-wk="floor_real"]'), pt=b&&b.querySelector('[data-wk="allow_pretax"]');
+  SETUP.setFamily(wiz.F, { children:(wiz._kids||[]), floor_real:(fl&&fl.value!==''?+fl.value:null), allow_pretax:(pt?pt.checked:undefined) });
+  return true; }
+function wizApplyCurrentStep(){ if(wiz.step==='people') return wizApplyPeople(); if(wiz.step==='plan') return wizApplyPlan(); if(wiz.step==='family') return wizApplyFamily(); return true; }
 // WO24 3.2 — the wizard's hard fields (DOBs on People, retirement date on Plan) must be
 // present and valid ISO before advancing. Returns {} when valid, else { field: message }.
 function isISODate(s){ return typeof s==='string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(Date.parse(s)); }
@@ -11473,6 +12643,8 @@ function wizValidateStep(){
     keys.forEach(k=>{ const v=g(k); if(!v) errs[k]='Enter a date of birth (YYYY-MM-DD).'; else if(!isISODate(v)) errs[k]='Use the form YYYY-MM-DD.'; });
   } else if(wiz.step==='plan'){ const v=g('retire_date');
     if(!v) errs.retire_date='Enter a retirement date (YYYY-MM-DD).'; else if(!isISODate(v)) errs.retire_date='Use the form YYYY-MM-DD.';
+  } else if(wiz.step==='family'){ (wiz._kids||[]).forEach((c,i)=>{ const n=g('c'+i+'_name'), d=g('c'+i+'_dob');
+    if((n||d) && !isISODate(d)) errs['c'+i+'_dob']='Enter a date of birth (YYYY-MM-DD).'; });
   }
   return errs;
 }
@@ -11487,6 +12659,11 @@ function wireWizStep(){ const body=document.getElementById('wizBody'), nav=docum
   // people: count segment
   if(wiz.step==='people'){ document.querySelectorAll('#wizCount button').forEach(btn=>btn.addEventListener('click',()=>{
     wiz._count=+btn.dataset.count; wizApplyPeople(); wiz.F.people.count=wiz._count; renderWizPeopleGrid(btn.dataset.count); })); }
+  // family: add/remove a child row (keeps what is typed)
+  if(wiz.step==='family'){
+    on('wizKidAdd',()=>{ wizReadKids(); wiz._kids.push({ name:'', dob:'' }); renderWiz(); });
+    body.querySelectorAll('[data-kidrm]').forEach(b=>b.addEventListener('click',()=>{ wizReadKids(); wiz._kids.splice(+b.getAttribute('data-kidrm'),1); renderWiz(); }));
+  }
   // sources: add/remove
   if(wiz.step==='sources'){
     on('wizAddStart',()=>{ const sel=document.getElementById('wizAddSel'); wiz.addingType=sel?sel.value:SETUP.CATALOGUE[0].type; renderWiz(); });
@@ -11559,7 +12736,7 @@ function loadSyncCfg(){
   try{
     // Private wing first: adopt {id, passphrase} from the vault session IN MEMORY.
     var vc = SYNC.vaultCreds(pressVaultSession(), 'retirement.html');
-    if(vc){ var raw=SYNC.readConfig(localStorage.getItem(SYNC.SYNC_KEY)); if(raw && raw.localPlanId) vc.localPlanId=raw.localPlanId; migrateSyncOffDisk(); syncCfg=vc; return syncCfg; }
+    if(vc){ var raw=SYNC.readConfig(localStorage.getItem(SYNC.SYNC_KEY)); if(raw && raw.id===vc.id){ vc.localPlanId=raw.localPlanId; vc.loadedVersion=raw.loadedVersion; vc.dirty=raw.dirty; if(raw.label) vc.label=raw.label; } else if(raw && raw.localPlanId) vc.localPlanId=raw.localPlanId; migrateSyncOffDisk(); syncCfg=vc; return syncCfg; }
     syncCfg = SYNC.readConfig(localStorage.getItem(SYNC.SYNC_KEY));
     if(syncCfg && !syncCfg.passphrase){ syncCfg.passphrase = ssGetPass(); }   // fallback: tab-scoped passphrase
   }catch(e){ syncCfg=null; }
@@ -11577,7 +12754,76 @@ function saveSyncCfg(){
   }catch(e){}
 }
 function syncEnabled(){ return SYNC.isEnabled(syncCfg); }
-function updateSyncBtn(){ const on=syncEnabled(); const lbl=on?'☁ Synced':'☁ Sync'; ['syncBtn','mSync'].forEach(id=>{ const b=document.getElementById(id); if(b){ b.textContent=lbl; b.classList.toggle('on',on); } }); }
+// family-plan slice 4 — AUTO-SAVE. The plan's content hash (facts + inputs) is compared on every
+// recompute; a move (a real edit, never a boot/switch) marks the sync copy dirty and arms a ~5s
+// debounced encrypted save (+ an immediate one when the tab is hidden). A conflict stops it and
+// opens the existing keep-mine / take-theirs flow; offline keeps the edit dirty and retries on the
+// next change or when the browser comes back online. Never runs without sync creds.
+let syncBaseHash=null, AUTOSAVER=null, freshBaseline=false;
+// Only the SYNCED plan auto-saves — editing another local plan never pushes it over the cloud copy.
+function syncIsActivePlan(){ return syncEnabled() && !!syncCfg.localPlanId && activePlanId===syncCfg.localPlanId; }
+function syncContentHash(){ try{ return PLANS.hashFacts({ f:FACTS, i:IN }); }catch(e){ return null; } }
+function noteSyncChange(){
+  const h=syncContentHash();
+  if(syncBaseHash===null){ syncBaseHash=h; if(syncIsActivePlan() && syncCfg.dirty) ensureAutoSaver().changed(); return; }
+  if(h===syncBaseHash || !syncIsActivePlan()) return;
+  syncBaseHash=h; syncCfg.dirty=true; saveSyncCfg(); ensureAutoSaver().changed();
+}
+async function autoSaveOnce(){
+  if(!syncIsActivePlan()) return 'ok';
+  try{
+    const blob=await SYNCRYPTO.encryptPlan(syncExportObject(), syncCfg.passphrase);
+    blob.updated_label=syncCfg.label||'a device';
+    const r=await SYNC.save(syncCfg.id, blob, syncCfg.loadedVersion, {fetch:fetch});
+    if(r.status==='ok'){ syncCfg.loadedVersion=r.server.version; syncCfg.dirty=false; saveSyncCfg(); return 'ok'; }
+    if(r.status==='conflict'){ openSync(); renderSyncConflict(r.server); return 'conflict'; }
+    return 'offline';
+  }catch(e){ return 'offline'; }
+}
+function ensureAutoSaver(){
+  if(AUTOSAVER) return AUTOSAVER;
+  AUTOSAVER=AUTOSAVE.createAutoSaver({ save:autoSaveOnce, delayMs:5000, dirty:!!(syncCfg&&syncCfg.dirty), onState:updateSyncBtn });
+  try{
+    document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden' && AUTOSAVER) AUTOSAVER.flush(); });
+    window.addEventListener('online', ()=>{ if(AUTOSAVER) AUTOSAVER.online(); });
+  }catch(e){}
+  return AUTOSAVER;
+}
+// family-plan slice 2 — the cloud-first boot. Fetch + decrypt, then SYNCBOOT.decide() picks:
+// use-cloud (activate the cloud copy) · use-local · conflict (dirty local vs newer cloud → the
+// existing keep-mine / take-theirs flow) · offline / bad-pass (this device's copy + a quiet notice).
+function showCloudLoading(on){ const el=document.getElementById('cloudLoading'); if(el) el.hidden=!on; try{ document.documentElement.classList.toggle('rd-cloudload', !!on); }catch(e){} if(on) markReady(); }
+function showCloudNotice(msg){ const el=document.getElementById('cloudNotice'); if(!el) return; el.textContent=msg||''; el.hidden=!msg; }
+async function fetchCloudPlan(){
+  let r;
+  try{ r=await SYNC.load(syncCfg.id, {fetch:fetch}); }catch(e){ return { cloud:{error:'network'} }; }
+  if(!r || !r.found) return { cloud:{found:false} };
+  let obj=null; try{ obj=await SYNCRYPTO.decryptPlan(r.record, syncCfg.passphrase); }catch(e){ obj=null; }
+  if(obj===null) return { cloud:{error:'decrypt'} };
+  return { cloud:{found:true, version:r.record.version}, obj:obj, record:r.record };
+}
+async function cloudBoot(){
+  showCloudLoading(true);
+  const got=await fetchCloudPlan();
+  const hasLocalSynced=!!(syncCfg && syncCfg.localPlanId && PLANS.get(planStore, syncCfg.localPlanId));
+  const d=SYNCBOOT.decide({ hasLocalSynced:hasLocalSynced, loadedVersion:syncCfg.loadedVersion, dirty:!!syncCfg.dirty }, got.cloud);
+  showCloudLoading(false);
+  if(d.action==='use-cloud'){
+    syncCfg.dirty=false;
+    if(activateSynced(got.obj, got.cloud.version)) return;
+    return bootLocal(SYNCBOOT.NOTICE.offline);
+  }
+  if(d.action==='use-local'){
+    if(hasLocalSynced && activePlanId!==syncCfg.localPlanId){ activePlanId=syncCfg.localPlanId; planStore=PLANS.setActive(planStore, activePlanId); savePlans(); }
+    return bootLocal();
+  }
+  if(d.action==='conflict'){
+    bootLocal(); openSync(); renderSyncConflict({ version:got.record.version, updated_at:got.record.updated_at, updated_label:got.record.updated_label });
+    return;
+  }
+  bootLocal(SYNCBOOT.NOTICE[d.action]||SYNCBOOT.NOTICE.offline);
+}
+function updateSyncBtn(){ const on=syncEnabled(); const st=(on&&AUTOSAVER)?AUTOSAVER.state:(on&&syncCfg.dirty?'pending':'synced'); const lbl=on?(AUTOSAVE.LABEL[st]||'☁ Synced'):'☁ Sync'; ['syncBtn','mSync'].forEach(id=>{ const b=document.getElementById(id); if(b){ b.textContent=lbl; b.classList.toggle('on',on); b.setAttribute('data-sync-state', on?st:'off'); } }); }
 function openSync(){ loadSyncCfg(); if(!syncEnabled()) syncNewId=SYNCRYPTO.newSyncId(); renderSync(); const el=document.getElementById('syncOv'); if(el) el.hidden=false; }
 function closeSync(){ const el=document.getElementById('syncOv'); if(el) el.hidden=true; }
 function fmtWhen(iso){ try{ const d=new Date(iso); return isNaN(d.getTime())?String(iso||''):d.toLocaleString(); }catch(e){ return String(iso||''); } }
@@ -11639,8 +12885,10 @@ function activateSynced(obj, serverVersion){
   const res=PLANS.importPlan(JSON.stringify(obj), nowStamp(), localId);
   if(res.error){ syncStatus('The downloaded plan could not be read: '+res.error, 'err'); return false; }
   planStore=PLANS.add(PLANS.remove(planStore, localId), res.plan, true); savePlans();
-  syncCfg.localPlanId=localId; syncCfg.loadedVersion=serverVersion; saveSyncCfg();
-  switchToPlan(localId); return true;
+  syncCfg.localPlanId=localId; syncCfg.loadedVersion=serverVersion; syncCfg.dirty=false; saveSyncCfg();
+  freshBaseline=true;   // enterPlan must boot the downloaded baseline, not re-apply the old working copy
+  if(AUTOSAVER) AUTOSAVER.resolved(true);
+  switchToPlan(localId); updateSyncBtn(); return true;
 }
 async function syncSaveNow(forceVersion){
   if(!syncEnabled()) return;
@@ -11650,7 +12898,7 @@ async function syncSaveNow(forceVersion){
     blob.updated_label=syncCfg.label||'a device';
     const prev=(forceVersion!==undefined)?forceVersion:syncCfg.loadedVersion;
     const r=await SYNC.save(syncCfg.id, blob, prev, {fetch:fetch});
-    if(r.status==='ok'){ syncCfg.loadedVersion=r.server.version; saveSyncCfg(); renderSync(); syncStatus('Saved. Your other devices can load it now.', 'ok'); }
+    if(r.status==='ok'){ syncCfg.loadedVersion=r.server.version; syncCfg.dirty=false; saveSyncCfg(); if(AUTOSAVER) AUTOSAVER.resolved(true); updateSyncBtn(); renderSync(); syncStatus('Saved. Your other devices can load it now.', 'ok'); }
     else if(r.status==='conflict'){ renderSyncConflict(r.server); }
   }catch(e){ syncStatus('Could not reach the sync server. Check your connection and try again.', 'err'); }
 }
@@ -11674,7 +12922,7 @@ async function syncSetupNew(){
   try{
     const blob=await SYNCRYPTO.encryptPlan(syncExportObject(), pass); blob.updated_label=syncCfg.label;
     const r=await SYNC.save(syncCfg.id, blob, null, {fetch:fetch});
-    if(r.status==='ok'){ syncCfg.loadedVersion=r.server.version; saveSyncCfg(); updateSyncBtn(); renderSync(); syncStatus('Sync is on. This plan is now backed up and shareable to your other devices.', 'ok'); }
+    if(r.status==='ok'){ syncCfg.loadedVersion=r.server.version; syncCfg.localPlanId=activePlanId; saveSyncCfg(); updateSyncBtn(); renderSync(); syncStatus('Sync is on. This plan is now backed up and shareable to your other devices.', 'ok'); }
     else { syncCfg=null; syncStatus('That sync id is already in use — close and reopen to get a fresh one.', 'err'); }
   }catch(e){ syncCfg=null; syncStatus('Could not reach the sync server. Check your connection and try again.', 'err'); }
 }
@@ -11971,6 +13219,7 @@ window.__RD_WO9 = {
     if(spec.count||spec.people){ const c=spec.count||2; const pe=spec.people||{};
       SETUP.setPeople(F, { count:c, p1:(pe.p1||{name:null,dob:null}), p2:(c===2?(pe.p2||{name:null,dob:null}):null) }); }
     if(spec.plan) SETUP.setPlan(F, spec.plan);   // WO24b 6d — allow a retire date / spend target so a draw fires
+    if(spec.family) SETUP.setFamily(F, spec.family);   // family-plan slice 9
     (spec.sources||[]).forEach(s=>{ SETUP.addSource(F, s.type, s.fields||{}); });
     finishWiz(false);
     return { activeId: planStore&&planStore.activeId, plans: PLANS.list(planStore).length, wizCleared: (wiz===null) };
