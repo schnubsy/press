@@ -133,6 +133,17 @@
       "output": "dist/remit.html",
       "deterministic": true,
       "note": "deterministic build (no stamp); dist/remit.html blob == press blob (2c4ac65e) on 2026-09-22 after arc/scratchpad-rework shipped. Vendored family-gate (9eba177d) == press/src/family-gate.js canonical (magic-link landing is now canonical)."
+    },
+    "optimo.html": {
+      "repo": "optimo",
+      "tier": "family",
+      "gate": "src/family-gate.js",
+      "vendored": "src/vendor/family-gate.js",
+      "release": "tools/release.js",
+      "build": "node build-press.mjs",
+      "output": "dist/optimo.html",
+      "deterministic": true,
+      "note": "launcher card for the optimo PWA (https://schnubsy.github.io/optimo/); build-press.mjs inlines the vendored family gate — deterministic, publish-checks rebuilds + compares. Added by optimo arc 2 slice 6."
     }
   }
 }
