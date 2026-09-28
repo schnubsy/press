@@ -1315,7 +1315,7 @@ body.tw-sorting .tw-card{transition:none}
 const OWNER='schnubsy', REPO='press';
 const API=`https://api.github.com/repos/${OWNER}/${REPO}/contents`;
 const RAW=`https://raw.githubusercontent.com/${OWNER}/${REPO}/main`;
-const KICKERS=[[/remit/,'Remit'], // remit FIRST (first-match wins) so it can never fall through to Money/Page
+const KICKERS=[[/remit/,'Family Transfers'], // remit FIRST (first-match wins) so it can never fall through to Money/Page. Kicker "Family Transfers", title "Remit" (pages.json) — Mark, 2026-09-27
   [/agent-health|health|monitor|status/,'Monitor'],[/halvsies|split|money|budget|spend/,'Money'],[/council/,'Reference'],[/checklist|prep|kayley|eagle/,'Checklist'],
   [/log|notes|journal/,'Notes'],[/guide|how-?to|readme/,'Guide'],
   // Phase 3 — the wing pages get real page-type icons (matched before the generic 'Page' fallback).
@@ -1349,9 +1349,9 @@ const ICONS={
   // Perth — a PLANE (Feather "send" paper-plane): a flight/runway glyph that stays crisp at 26px.
   // (Replaced the hand-drawn Australia, which did not read at row size.)
   'Perth':      '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
-  // Remit — family money transfers. A banknote (Lucide "banknote"), deliberately distinct from the
-  // bare $ dollar-sign used for halvsies' Money.
-  'Remit':      '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01"/><path d="M18 12h.01"/></svg>'
+  // Family Transfers (remit.html) — a banknote (Lucide "banknote"), deliberately distinct from the
+  // bare $ dollar-sign used for halvsies' Money. Keyed by the kicker, so it follows the kicker's name.
+  'Family Transfers': '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01"/><path d="M18 12h.01"/></svg>'
 };
 const iconFor=k=>ICONS[k]||ICONS['Page'];
 /* R3.4/R3.5 — Feather "sunrise" inside the "new" pill (early morning sun = fresh) */
