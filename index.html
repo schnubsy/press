@@ -1319,7 +1319,7 @@ const KICKERS=[[/remit/,'Family Transfers'], // remit FIRST (first-match wins) s
   [/agent-health|health|monitor|status/,'Monitor'],[/halvsies|split|money|budget|spend/,'Money'],[/council/,'Reference'],[/checklist|prep|kayley|eagle/,'Checklist'],
   [/log|notes|journal/,'Notes'],[/guide|how-?to|readme/,'Guide'],
   // Phase 3 — the wing pages get real page-type icons (matched before the generic 'Page' fallback).
-  [/fsa/,'FSA'],[/giving/,'Giving'],[/retirement/,'Retirement'],[/card-scout/,'Cards'],[/perth/,'Perth']];
+  [/fsa/,'FSA'],[/giving/,'Giving'],[/retirement/,'Retirement'],[/card-scout/,'Cards'],[/cardsharp/,'Gift Cards'],[/perth/,'Perth']];
 const kicker=f=>{for(const[re,k]of KICKERS)if(re.test(f))return k;return 'Page';};
 const titleize=f=>f.replace(/\.html$/,'').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -1343,6 +1343,7 @@ const ICONS={
   'Family':    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
   // Private-wing pages (Phase 3): each gets a real Feather-grade glyph via the KICKERS map below.
   'FSA':        '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
+  'Gift Cards': '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="16" height="12" rx="2"/><line x1="2" y1="11" x2="18" y2="11"/><line x1="20" y1="2" x2="20" y2="8"/><line x1="17" y1="5" x2="23" y2="5"/></svg>', // cardsharp — a card with a sparkle
   'Giving':     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>',
   'Retirement': '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
   'Cards':      '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',
@@ -1806,8 +1807,9 @@ const TOOL_CFG = {
   'giving.html':     { label:'Giving Tracker',      kind:'app', table:'press_giving',     idcol:'id',      select:'ciphertext,iv,salt,kdf_iters', env:(r)=>r },
   'retirement.html': { label:'Retirement Projection',kind:'app', table:'press_retirement', idcol:'id',      select:'ciphertext,iv,salt,kdf_iters', env:(r)=>r },
   'card-scout.html': { label:'Card Scout',          kind:'deals' }, // sync-id-only; verified against press_deals
+  'cardsharp.html':  { label:'Cardsharp',           kind:'app', table:'press_cardsharp',  idcol:'sync_id', select:'doc,version',                 env:(r)=>r.doc },
 };
-const CONNECT_TOOLS = ['fsa.html','giving.html','retirement.html','card-scout.html'];
+const CONNECT_TOOLS = ['fsa.html','giving.html','retirement.html','card-scout.html','cardsharp.html'];
 
 /* CARD_SCOUT_GATE_SENTINEL — an INERT, PUBLIC shape-filler. NOT a secret, NOT a passphrase.
    Card Scout has no passphrase of its own: its data is gated by the sync_id capability

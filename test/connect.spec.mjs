@@ -14,7 +14,7 @@ import { setupVirtualAuthenticator, buildEnvelope, enrolInPage } from '../src/ga
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const INDEX = readFileSync(join(ROOT, 'index.html'), 'utf8');
 const PUBLIC_FILES = ['council-guide.html', 'agent-health.html'];
-const PERSONAL_FILES = ['fsa.html', 'giving.html', 'retirement.html', 'card-scout.html'];
+const PERSONAL_FILES = ['fsa.html', 'giving.html', 'retirement.html', 'card-scout.html', 'cardsharp.html'];
 const MANIFEST = Object.fromEntries([...PUBLIC_FILES, ...PERSONAL_FILES].map((f) => [f, { title: f.replace(/\.html$/, '') }]));
 const SPACES = { v: 1, personal: PERSONAL_FILES };
 
@@ -23,6 +23,9 @@ const PASS = 'zzzzz-yyyyy-xxxxx-wwwww';               // fsa passphrase (throwaw
 const DOC = { v: 2, hello: 'fsa', years: { '2026': { claims: [] } } };
 const CARD_SYNC = 'c1a2r3d4e5f6a7b8c9d0e1f2a3b4c5d6';  // throwaway card-scout sync id the deals mock accepts
 const CARD_WRONG = '00000000000000000000000000000000';
+const CS_SYNC = 'c0ffee00c0ffee00c0ffee00c0ffee00';   // cardsharp sync id (throwaway)
+const CS_PASS = 'test-only-pass-phrase-cardsharp';   // cardsharp passphrase (throwaway)
+const CS_DOC = { v: 1, retailers: [], cards: [], entries: [] };
 const CARD_SCOUT_GATE_SENTINEL = 'not-a-secret:card-scout-has-no-passphrase:sentinel-only-to-satisfy-credsFor'; // MUST match index.html
 
 let server, base;
@@ -34,7 +37,7 @@ test.beforeAll(async () => {
 test.afterAll(async () => { if (server) await new Promise((r) => server.close(r)); });
 
 async function harness(page, context) {
-  const state = { vault: new Map(), fsaEnv: null, fsaGets: 0, dealsGets: 0 };
+  const state = { vault: new Map(), fsaEnv: null, fsaGets: 0, dealsGets: 0, csEnv: null, csGets: 0 };
   await context.route('https://api.github.com/**', (route) => {
     const body = [...PUBLIC_FILES, ...PERSONAL_FILES, 'index.html'].map((name) => ({ type: 'file', name }));
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
@@ -66,6 +69,13 @@ async function harness(page, context) {
     const m = u.match(/sync_id=eq\.([0-9a-fA-F]+)/);
     const sid = m ? m[1] : '';
     const rows = (sid === SYNC && state.fsaEnv) ? [{ doc: state.fsaEnv, version: 1 }] : [];
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(rows) });
+  });
+  // press_cardsharp — one row for CS_SYNC only; header-gated on x-plan-id (mismatch → empty, like real RLS)
+  await context.route('**/rest/v1/press_cardsharp**', (route) => {
+    state.csGets++;
+    const sid = route.request().headers()['x-plan-id'] || '';
+    const rows = (sid === CS_SYNC && state.csEnv) ? [{ doc: state.csEnv, version: 0 }] : [];
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(rows) });
   });
   // press_deals — header-gated on x-plan-id = card-scout sync_id. A WRONG key returns a 200 with
@@ -122,6 +132,29 @@ test('DEFECT 2: a second device (reachable row, no local flag) adopts via Setup 
   expect([...state.vault.values()].length).toBe(1);
 });
 
+// cardsharp (2026-09-28): an app-kind tool on press_cardsharp — verified by decrypting its real row
+// (sync_id column, envelope in `doc`) before anything is sealed into the keyring.
+test('Cardsharp connects only after its press_cardsharp row decrypts; a wrong passphrase stores nothing', async ({ page, context }) => {
+  const state = await harness(page, context);
+  await enrolEmptyAndOpen(page, state);
+  state.csEnv = await buildEnvelope(page, { doc: CS_DOC, passphrase: CS_PASS });
+  const t = tool(page, 'cardsharp.html');
+  await expect(t.locator('.tw-tool-name')).toHaveText('Cardsharp');
+  await expect(t.locator('.tw-pass')).toHaveCount(1);
+  await t.locator('.tw-sync').fill(CS_SYNC);
+  await t.locator('.tw-pass').fill('not-the-passphrase');
+  await t.locator('.tw-verify').click();
+  await expect(t.locator('.tw-tool-msg')).toContainText('did not open');
+  let kr = await page.evaluate(() => window.PressVault.loadSession().keyring.apps['cardsharp.html']);
+  expect(kr && kr.sync_id).toBeFalsy();
+  await t.locator('.tw-pass').fill(CS_PASS);
+  await t.locator('.tw-verify').click();
+  await expect(t.locator('.tw-tool-msg')).toContainText('Connected');
+  kr = await page.evaluate(() => window.PressVault.loadSession().keyring.apps['cardsharp.html']);
+  expect(kr).toEqual({ sync_id: CS_SYNC, pass: CS_PASS });
+  expect(state.csGets).toBeGreaterThanOrEqual(2);
+});
+
 // Phase 5 (slice 3): the "Connect your tools" section collapses once EVERY tool is connected — a quiet
 // "Manage" toggle — and a click expands it (rebuilding the rows like a Reconnect drawer). Viewport-independent.
 test('every tool connected: the section renders COLLAPSED; Manage expands, collapse clears the rows', async ({ page, context }) => {
@@ -132,6 +165,7 @@ test('every tool connected: the section renders COLLAPSED; Manage expands, colla
     'giving.html': { sync_id: SYNC, pass: PASS },
     'retirement.html': { sync_id: SYNC, pass: PASS },
     'card-scout.html': { sync_id: CARD_SYNC, pass: CARD_SCOUT_GATE_SENTINEL },
+    'cardsharp.html': { sync_id: CS_SYNC, pass: CS_PASS },
   } });
   await page.reload();
   const sect = page.locator('.tw-connect');
@@ -141,8 +175,8 @@ test('every tool connected: the section renders COLLAPSED; Manage expands, colla
   await expect(sect.locator('.tw-tool')).toHaveCount(0);             // no tool rows in the DOM while collapsed
   await toggle.click();                                             // expand
   await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-  await expect(sect.locator('.tw-tool')).toHaveCount(4);            // all four rows rebuilt
-  await expect(sect.locator('.tw-reconnect')).toHaveCount(4);        // each connected row offers Reconnect
+  await expect(sect.locator('.tw-tool')).toHaveCount(5);            // all five rows rebuilt
+  await expect(sect.locator('.tw-reconnect')).toHaveCount(5);        // each connected row offers Reconnect
   await toggle.click();                                             // collapse again
   await expect(sect.locator('.tw-tool')).toHaveCount(0);            // rows removed from the DOM
 });

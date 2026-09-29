@@ -144,6 +144,17 @@
       "output": "dist/optimo.html",
       "deterministic": true,
       "note": "launcher card for the optimo PWA (https://schnubsy.github.io/optimo/); build-press.mjs inlines the vendored family gate — deterministic, publish-checks rebuilds + compares. Added by optimo arc 2 slice 6."
+    },
+    "cardsharp.html": {
+      "repo": "cardsharp",
+      "tier": "personal",
+      "gate": "src/gate.js",
+      "vendored": "src/vendor/press-gate.js",
+      "release": "tools/release.js",
+      "build": "node build.js",
+      "output": "dist/index.html",
+      "deterministic": true,
+      "note": "build id = git short sha (no timestamp), so a rebuild at the published commit is byte-identical to cardsharp.html. Registered 2026-09-28 (cardsharp Arc 1)."
     }
   }
 }
