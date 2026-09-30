@@ -1,3 +1,5 @@
 ## 2026-09-26 — snag parity + page-diff: see council arc/snag
 
 → optimo ARC.md 2026-09-27 arc 2, slice 6 (optimo.html family-wing launcher; published at optimo close via optimo/tools/release.js)
+
+→ cardsharp ARC.md 2026-09-28 Arc 1, slice 5 (cardsharp.html private-wing tenant: spaces/tenants/pages, KICKERS/ICONS, TOOL_CFG + Connect; published at cardsharp close via cardsharp/tools/release.js)
