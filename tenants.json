@@ -154,7 +154,7 @@
       "build": "node build.js",
       "output": "dist/index.html",
       "deterministic": true,
-      "note": "build id = git short sha (no timestamp), so a rebuild at the published commit is byte-identical to cardsharp.html. Registered 2026-09-28 (cardsharp Arc 1)."
+      "note": "build id = content hash of the build inputs (src-<sha256 prefix>, no git sha, no timestamp), so a rebuild at any commit with the same sources is byte-identical to cardsharp.html — docs-only commits cannot break T5. Registered 2026-09-28 (cardsharp Arc 1); content-hash id 2026-10-01 (cardsharp PR #2)."
     }
   }
 }
