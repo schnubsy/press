@@ -257,6 +257,41 @@
   .ovf-confirm button.confirm-del{background:#c0392b;color:#fff}
   .ovf-confirm button.confirm-cancel{background:var(--chip);color:var(--ink)}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  /* Enhancements Slice 7 — metrics tiles, at-a-glance summary, inline watch edit. */
+  .sumtitle{margin:0 0 8px;font-size:16px;font-weight:800;color:var(--ink)}
+  .glance{margin:0;padding-left:18px;font-size:14px;line-height:1.55}
+  .glance li{margin:1px 0}
+  .glance strong{font-weight:700;color:var(--ink)}
+  .metrics .hero{margin:2px 0 10px}
+  .herovalue{font-size:44px;line-height:1.05;font-weight:800;letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums}
+  .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+  .tile{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--card);min-width:0}
+  .tlabel{font-size:12px;color:var(--muted);font-weight:600}
+  .tvalue{font-size:22px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:2px}
+  .tnote{font-size:11.5px;color:var(--muted);margin-top:1px}
+  @media (max-width:560px){ .tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .herovalue{font-size:40px} }
+  .wterm{all:unset;cursor:text;border-bottom:1px dashed var(--line);font:inherit;color:inherit;min-height:24px}
+  .wterm:hover{border-bottom-color:var(--muted)}
+  .wterm:focus-visible{outline:2px solid var(--accentA);outline-offset:2px;border-radius:4px}
+  .wedit{font:inherit;font-weight:700;width:100%;max-width:340px;padding:6px 8px;border:1px solid var(--accentA);border-radius:8px;background:var(--card);color:var(--ink)}
+  /* Enhancements Slice 6 — swipe-to-delete track behind each feed card. */
+  .swipe{position:relative;margin-bottom:10px;border-radius:14px}
+  .swipe .card.deal{position:relative;margin-bottom:0;transition:transform .18s ease;touch-action:pan-y}
+  .swipe-del{position:absolute;top:0;right:0;bottom:0;width:88px;border:0;border-radius:0 14px 14px 0;background:var(--danger);
+    color:#fff;font-weight:700;font-size:14px;cursor:pointer;visibility:hidden}
+  .swipe.open .swipe-del,.swipe.dragging .swipe-del{visibility:visible}
+  .swipe.dragging,.swipe.dragging *{-webkit-user-select:none;user-select:none}
+  .card.deal .rulehead-actions{align-self:flex-start}
+  /* Enhancements Slice 5 — Run full test: two test buttons + a 4-step result list. */
+  .testrow{flex-wrap:wrap}
+  .testbtns{display:flex;flex-direction:column;gap:8px;flex:0 0 auto}
+  .steps{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+  .steps:empty{display:none}
+  .steps .step strong{color:var(--ink);font-weight:600}
+  .steps .step.ok .mark{color:var(--hit);font-weight:800}
+  .steps .step.fail .mark{color:var(--danger);font-weight:800}
+  .vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  @media (max-width:520px){ .testbtns{flex-direction:row;flex-wrap:wrap;width:100%} .testbtns .btn{flex:1 1 auto} }
 </style>
 </head>
 <body>
@@ -983,7 +1018,11 @@
     if(sid){
       // Only hits + near-misses are the feed. Everyday-price rows (verdict='no') are no longer loaded
       // — Mark's tool surfaces deals that beat his rules, not shelf prices.
-      q.push(api("press_deals?page=eq."+PAGE+"&created_at=gte."+since30()+"&verdict=in.(hit,near)&order=created_at.desc&select=item_id,brand,category,face_value,price,pct_off,expiry,url,source,verdict,status,extras,created_at"));
+      q.push(api("press_deals?page=eq."+PAGE+"&created_at=gte."+since30()+"&verdict=in.(hit,near)&status=neq.deleted&order=created_at.desc&select=item_id,brand,category,face_value,price,pct_off,expiry,url,source,verdict,status,extras,created_at"));
+      // Judge backlog (enhancements Slice 4): browser-lane rows still waiting for the agent.
+      q.push(api("press_deals?page=eq."+PAGE+"&status=eq.raw&select=item_id,created_at,updated_at"));
+      // Savings log (enhancements Slice 6, D1): one row per Bought/Skip, kept forever.
+      q.push(api("press_tasks?page=eq."+PAGE+"&category=eq.savings&select=item_id,title,status,extras,updated_at"));
     }
     return Promise.all(q).then(function(rs){
       return Promise.all(rs.map(function(r){ if(!r.ok) throw new Error("http "+r.status); return r.json(); }));
@@ -999,6 +1038,8 @@
       state.health = d[5]||[];
       state.locked = !sid;
       state.deals = sid ? (d[6]||[]) : [];
+      state.raw = sid ? (d[7]||[]) : [];
+      state.savings = sid ? (d[8]||[]) : [];
       saveLS(); renderAll();
       if(sid) sync("ok","Synced"); else sync("locked","Locked");
     }).catch(function(e){
@@ -1129,16 +1170,26 @@
     // reads "Price unknown". A hit carries a small subtle alerted dot instead of a HIT label.
     var badgeClass=isHit?"hit":(d.verdict==="near"?"near":"");
     var badgeText=(p!=null?p+"% off":"Price unknown");
-    return '<div class="card"><div class="row"><span class="badge '+badgeClass+'">'+esc(badgeText)+'</span>'
+    // Enhancements Slice 6: the card sits in a swipe track — swipe left ≥60px reveals a red Delete
+    // (touch + pointer); keyboard/desktop users get the same Delete in the card's ⋯ menu.
+    var label=esc(d.brand||"Gift card");
+    var menu='<div class="rulehead-actions">'
+      +'<button class="ovf" data-ovf="'+esc(d.item_id)+'" aria-haspopup="menu" aria-expanded="false" aria-label="Options for '+label+' deal">⋯</button>'
+      +'<div class="ovfmenu" id="ovfmenu-'+esc(d.item_id)+'" role="menu" aria-label="Options for '+label+' deal" hidden>'
+      +'<button class="ovf-danger" role="menuitem" data-deldeal="'+esc(d.item_id)+'">Delete — hide for good</button>'
+      +'</div></div>';
+    return '<div class="swipe" data-swipe="'+esc(d.item_id)+'">'
+      +'<button class="swipe-del" data-deldeal="'+esc(d.item_id)+'" tabindex="-1" aria-hidden="true">Delete</button>'
+      +'<div class="card deal"><div class="row"><span class="badge '+badgeClass+'">'+esc(badgeText)+'</span>'
       +(isHit?'<span class="dot alerted" role="img" title="Alerted" aria-label="Alerted"></span>':"")
-      +'<div class="grow"><div class="title">'+(isNew?'<span class="newtag">NEW</span>':"")+esc(d.brand||"Gift card")+'</div>'
-      +'<div class="sub">'+sub+'</div></div></div>'
+      +'<div class="grow"><div class="title">'+(isNew?'<span class="newtag">NEW</span>':"")+label+'</div>'
+      +'<div class="sub">'+sub+'</div></div>'+menu+'</div>'
       +'<div class="row" style="margin-top:10px">'
       +(d.url?'<a class="deal" href="'+esc(d.url)+'" target="_blank" rel="noopener">Open deal &rarr;</a>':'<span class="sub">no link</span>')
       +'<span class="grow"></span>'
       +'<button class="btn small'+(bought?" primary":"")+'" data-buy="'+esc(d.item_id)+'" aria-pressed="'+bought+'">Bought</button> '
       +'<button class="btn small'+(skip?" primary":"")+'" data-skip="'+esc(d.item_id)+'" aria-pressed="'+skip+'">Skip</button>'
-      +'</div></div>';
+      +'</div></div></div>';
   }
   function lockedPanel(){
     return '<div class="card summary"><div class="empty locked">'
@@ -1601,7 +1652,7 @@
         ? '<div class="sub"><a class="deal" href="'+esc(e.last_match_url)+'" target="_blank" rel="noopener">Last match: '+esc(e.last_match_title||"view")+' &rarr;</a></div>'
         : '<div class="sub">No matches yet</div>';
       return '<div class="watchrow"><div class="row">'
-        +'<div class="grow"><div class="title">'+esc(w.title)+'</div>'
+        +'<div class="grow"><div class="title"><button class="wterm" data-editwatch="'+esc(w.item_id)+'" aria-label="Edit watch term '+esc(w.title)+'">'+esc(w.title)+'</button></div>'
         +'<div class="sub">'+watchStatusLine(w)+'</div>'
         +match
         +watchMinStepper(w)
@@ -1656,20 +1707,76 @@
     return "three times a day (7am, noon, 6pm)"; // 3x-day default
   }
   function weekdayName(code){ for(var i=0;i<WEEKDAYS.length;i++) if(WEEKDAYS[i][0]===code) return WEEKDAYS[i][1]; return "Wednesday"; }
+  // Enhancements Slice 7 — "Current setup — at a glance": scannable bullets with bold keys (replaces prose).
+  function lastRunIso(){
+    var t=0;
+    (state.sources||[]).forEach(function(x){ var e=x.extras||{}; if(e.lane==="cloud"&&e.last_checked){ var v=Date.parse(e.last_checked); if(!isNaN(v)&&v>t) t=v; } });
+    return t?new Date(t).toISOString():null;
+  }
   function alertsSummary(){
     var s=state.settings||{}, t=state.toggles||{};
+    var brands=(state.rules||[]).filter(function(r){ return r.status==="on"&&!PROTECTED_RULES[r.item_id]&&!(r.extras&&r.extras.container); }).length;
     var feeds=state.sources.filter(function(x){ return x.status==="on" && x.extras && x.extras.lane==="cloud"; }).length;
     var shops=state.sources.filter(function(x){ return x.status==="on" && x.extras && x.extras.bookmark; }).length;
-    var chans=[]; if(t["alert-iphone"]) chans.push("your iPhone"); if(t["alert-gmail"]) chans.push("email");
-    var chStr=chans.length?chans.join(" and "):"no channels yet — turn one on below";
-    var parts=[];
-    parts.push("Right now: "+cadencePhrase(s.feed_cadence)+" Card Scout checks your "+feeds+" deal feed"+(feeds===1?"":"s")
-      +", and every "+weekdayName(s.weekly_day||"wed")+" it also checks your "+shops+" bookmarked shop"+(shops===1?"":"s")+".");
-    parts.push("Alerts go to "+chStr+".");
-    if(t["quiet-hours"]) parts.push("Hits reach you straight away, except between "+fmtClock(s.quiet_start||"22:00")+" and "+fmtClock(s.quiet_end||"07:00")+".");
-    else parts.push("Hits reach you straight away.");
-    if(t["digest-daily"]) parts.push("Near misses arrive in one summary at "+fmtClock(s.digest_time||"07:30")+".");
-    return '<div class="card summary"><p>'+esc(parts.join(" "))+'</p></div>';
+    var chans=[]; if(t["alert-iphone"]) chans.push("iPhone"); if(t["alert-gmail"]) chans.push("email");
+    var alerts=(chans.length?chans.join(" + "):"no channel on")+" · "+((s.mode||"instant")==="digest"?"digest only":"instant")
+      +(t["digest-daily"]?" · near-miss digest "+fmtClock(s.digest_time||"07:30"):"");
+    var quiet=t["quiet-hours"]?fmtClock(s.quiet_start||"22:00")+" – "+fmtClock(s.quiet_end||"07:00"):"Off";
+    var md=Number(s.min_denom_default); var minv=(!isFinite(md)||md<=0)?"$25 (default)":"$"+md;
+    var w=(state.watch||[]).filter(function(x){ return x.status==="on"; });
+    var watches=w.length?w.length+" — "+w.slice(0,3).map(function(x){ return x.title; }).join(", ")+(w.length>3?" +"+(w.length-3):""):"None";
+    var lr=lastRunIso();
+    var items=[
+      ["Brands watched", brands+" brand"+(brands===1?"":"s")],
+      ["Stores", feeds+" deal feed"+(feeds===1?"":"s")+" "+cadencePhrase(s.feed_cadence)+" · "+shops+" shop"+(shops===1?"":"s")+" every "+weekdayName(s.weekly_day||"wed")],
+      ["Alerts", alerts],
+      ["Quiet hours", quiet],
+      ["Min card value", minv],
+      ["Sale watches", watches],
+      ["Last run", lr?relTime(lr):"Not yet"]
+    ];
+    return '<div class="card summary" id="setup-summary"><h3 class="sumtitle">Current setup — at a glance</h3><ul class="glance">'
+      +items.map(function(i){ return '<li><strong>'+esc(i[0])+':</strong> '+esc(i[1])+'</li>'; }).join("")
+      +'</ul></div>';
+  }
+  // Enhancements Slice 7 — metrics from the permanent savings log (press_tasks category='savings', D1)
+  // + the 30-day deals. Stat tiles (dataviz: label · value, ink tokens, no color-only meaning).
+  function ctMonthKey(iso){
+    try{ return new Intl.DateTimeFormat("en-CA",{timeZone:"America/Chicago",year:"numeric",month:"2-digit"}).format(new Date(iso)); }catch(e){ return String(iso||"").slice(0,7); }
+  }
+  function money(n){ var v=Number(n)||0; return "$"+(Math.abs(v)>=10000?(v/1000).toFixed(1)+"K":v.toFixed(v%1?2:0)); }
+  function metrics(nowMs){
+    var sv=state.savings||[], deals=state.deals||[];
+    var bought=sv.filter(function(r){ return r.status==="bought"; }), skipped=sv.filter(function(r){ return r.status==="skip"; });
+    var savedOf=function(r){ var x=r.extras&&r.extras.saved; return isFinite(Number(x))?Number(x):0; };
+    var month=ctMonthKey(new Date(nowMs).toISOString());
+    var total=bought.reduce(function(a,r){ return a+savedOf(r); },0);
+    var thisMonth=bought.filter(function(r){ return ctMonthKey((r.extras&&r.extras.at)||r.updated_at)===month; }).reduce(function(a,r){ return a+savedOf(r); },0);
+    var floor=nowMs-30*864e5;
+    var in30=deals.filter(function(d){ return dealTime(d)>=floor; });
+    var alerts30=in30.filter(function(d){ return d.status==="alerted"||(d.extras&&d.extras.alert); }).length;
+    var hits30=in30.filter(function(d){ return d.verdict==="hit"; });
+    var hitBought=hits30.filter(function(d){ return d.status==="bought"; }).length;
+    var flagged=in30.filter(function(d){ return d.extras&&d.extras.suspicious; }).length;
+    return { total:total, month:thisMonth, bought:bought.length, skipped:skipped.length, alerts30:alerts30,
+      rate:hits30.length?Math.round(100*hitBought/hits30.length):null, hits30:hits30.length, flagged:flagged,
+      backlog:backlogState(state.raw, nowMs) };
+  }
+  var BACKLOG_WORD={green:"OK",amber:"Slow",red:"Stuck"};
+  function metricsCard(){
+    var m=metrics(Date.now());
+    function tile(id,label,value,note){ return '<div class="tile" id="m-'+id+'"><div class="tlabel">'+esc(label)+'</div><div class="tvalue">'+esc(value)+'</div>'+(note?'<div class="tnote">'+esc(note)+'</div>':'')+'</div>'; }
+    return '<div class="card metrics" id="metrics"><h3 class="sumtitle">Savings &amp; activity</h3>'
+      +'<div class="hero"><div class="tlabel">Total saved, all time</div><div class="herovalue" id="m-total">'+esc(money(m.total))+'</div></div>'
+      +'<div class="tiles">'
+      +tile("month","Saved this month",money(m.month))
+      +tile("bought","Cards bought",String(m.bought))
+      +tile("skipped","Skipped",String(m.skipped))
+      +tile("alerts","Alerts sent (30 d)",String(m.alerts30))
+      +tile("rate","Hit-to-bought rate",m.rate==null?"—":m.rate+"%",m.hits30?m.hits30+" hit"+(m.hits30===1?"":"s")+" in 30 d":"no hits in 30 d")
+      +tile("flagged","Too-good flags (30 d)",String(m.flagged),"60%+ off — double-check")
+      +'<div class="tile" id="m-backlog"><div class="tlabel">Judge backlog</div><div class="tvalue"><span aria-hidden="true">'+BACKLOG_ICON[m.backlog.level]+'</span> '+m.backlog.n+'</div><div class="tnote">'+esc(BACKLOG_WORD[m.backlog.level])+(m.backlog.n?" · oldest "+ageLabel(m.backlog.oldestMin):"")+'</div></div>'
+      +'</div></div>';
   }
   // Slice 1: iPhone push health + a one-tap "Send test push". The health line reads the push-health
   // row the tick/test stamps; the button POSTs {action:'test_push'} to the Edge Function, gated on the
@@ -1682,13 +1789,39 @@
     return "No test push sent yet.";
   }
   function pushHealthCard(){
-    return '<div class="card"><div class="row"><div class="grow">'
+    return '<div class="card"><div class="row testrow"><div class="grow">'
       +'<div class="title">iPhone push health</div>'
       +'<div class="sub" id="push-health-line">'+pushHealthLine()+'</div>'
       +'<div class="sub" id="test-push-result" role="status" aria-live="polite"></div>'
       +'</div>'
+      +'<div class="testbtns">'
       +'<button class="btn" id="send-test-push" style="min-height:44px;min-width:44px">Send test push</button>'
-      +'</div></div>';
+      +'<button class="btn" id="run-full-test" style="min-height:44px;min-width:44px">Run full test</button>'
+      +'</div>'
+      +'</div>'
+      // Enhancements Slice 5: the full plumbing test's step-by-step result (source fetch · judge · push · email).
+      +'<ul class="steps" id="full-test-result" role="status" aria-live="polite" aria-label="Full test result"></ul>'
+      +'</div>';
+  }
+  // Judge backlog (enhancements Slice 4) — mirrors judge.mjs backlogState: age = since the row became
+  // raw (updated_at, else created_at). 🟢 none older than 60 min · 🟡 any > 60 min · 🔴 any > 6 h.
+  function backlogState(rows, nowMs){
+    var oldest=0, n=(rows||[]).length;
+    (rows||[]).forEach(function(r){ var t=Date.parse((r&&(r.updated_at||r.created_at))||""); if(!isNaN(t)) oldest=Math.max(oldest, Math.floor((nowMs-t)/60000)); });
+    var level = (n===0||oldest<=60) ? "green" : (oldest>360 ? "red" : "amber");
+    return {n:n, oldestMin:n?oldest:0, level:level};
+  }
+  function ageLabel(min){ return min>=120 ? Math.round(min/60)+"h" : Math.round(min)+"m"; }
+  var BACKLOG_ICON={green:"🟢",amber:"🟡",red:"🔴"};
+  function backlogLine(){
+    var b=backlogState(state.raw, Date.now());
+    var txt = b.n ? "Judge backlog: "+b.n+" waiting (oldest "+ageLabel(b.oldestMin)+")" : "Judge backlog: 0 waiting";
+    return '<span aria-hidden="true">'+BACKLOG_ICON[b.level]+'</span> '+esc(txt);
+  }
+  function judgeHealthCard(){
+    return '<div class="card"><div class="title">Agent health</div>'
+      +'<div class="sub" id="backlog-line">'+backlogLine()+'</div>'
+      +'<div class="helper">Browser-lane finds waiting to be judged. Red (over 6 h) is also flagged in the daily digest.</div></div>';
   }
   function renderAlerts(){
     var host=el("alerts"); var s=state.settings||{}; var t=state.toggles||{};
@@ -1697,11 +1830,12 @@
         +'<button class="sw" role="switch" aria-checked="'+(t[id]===true)+'" aria-pressed="'+(t[id]===true)+'" aria-label="'+label+'" data-toggle="'+id+'"></button></div></div>';
     }
     var groups=[{slug:"channels",label:"Channels",count:2},{slug:"howoften",label:"How often",count:2},{slug:"timing",label:"Timing",count:4}];
-    var html=alertsSummary();
+    var html=metricsCard()+alertsSummary();
     html+=quickNav("alerts",groups);
     html+=groupHead("alerts","channels","Channels",2);
     html+=tog("alert-iphone","iPhone push (Pushover)","Instant Pushover alert on a hit.");
     html+=pushHealthCard();
+    html+=judgeHealthCard();
     html+=tog("alert-gmail","Email","A copy to your inbox.");
     html+=groupHead("alerts","howoften","How often",2);
     var fc=s.feed_cadence||"3x-day";
@@ -1774,6 +1908,9 @@
     // alert toggle — re-render the summary so it reflects the change live
     var tg=b.getAttribute("data-toggle");
     if(tg){ var on3=state.toggles[tg]!==true; state.toggles[tg]=on3; setSwitch(b,on3); withSave(upsertState(tg,on3)); renderAlerts(); return; }
+    // delete a deal (swipe-revealed button or the ⋯ menu item) — Enhancements Slice 6
+    var dd=b.getAttribute("data-deldeal");
+    if(dd){ closeOverflowMenus(); deleteDeal(dd); return; }
     // bought / skip
     var buy=b.getAttribute("data-buy"), skip=b.getAttribute("data-skip");
     if(buy||skip){ markDeal(buy||skip, buy?"bought":"skip", b); return; }
@@ -1791,12 +1928,14 @@
     // sale watch (Slice 6)
     if(b.id==="addwatch"){ addWatch(); return; }
     var uw=b.getAttribute("data-unwatch"); if(uw){ removeWatch(uw); return; }
+    var ew=b.getAttribute("data-editwatch"); if(ew){ editWatch(ew); return; }
     // Slice 4: per-watch + add-row Min % off steppers
     var winc=b.getAttribute("data-winc"), wdec=b.getAttribute("data-wdec");
     if(winc||wdec){ stepWatch(winc||wdec, winc?5:-5, b); return; }
     if(b.hasAttribute("data-wnewinc")||b.hasAttribute("data-wnewdec")){ stepNewWatch(b.hasAttribute("data-wnewinc")?5:-5, b); return; }
     // Slice 1: send test push
     if(b.id==="send-test-push"){ sendTestPush(b); return; }
+    if(b.id==="run-full-test"){ runFullTest(b); return; }
   });
   // Slice 1: POST {action:'test_push'} to the Edge Function, gated on the page's sync_id (x-plan-id).
   // Shows the REAL Pushover outcome inline; never sends or displays a Pushover credential.
@@ -1821,6 +1960,80 @@
       .catch(function(){ if(out) out.textContent="Couldn’t reach the server — check your connection."; })
       .then(function(){ btn.disabled=false; btn.textContent=prev; });
   }
+  // Enhancements Slice 5 — "Run full test": a REAL tick (outside-hours gate bypassed for this call) and an
+  // ALWAYS-sent Pushover + email report, gated on the page's x-plan-id like the test push (no secret on the
+  // page). Renders each step ✓/✗ with its detail; 1 per 5 min server-side.
+  var FULL_STEPS=["source fetch","judge","push","email"];
+  function renderFullTestSteps(steps){
+    var out=el("full-test-result"); if(!out) return;
+    var by={}; (steps||[]).forEach(function(x){ by[x.step]=x; });
+    out.innerHTML=FULL_STEPS.map(function(name){
+      var x=by[name]; var st=!x?"pending":(x.ok?"ok":"fail");
+      var mark=st==="ok"?"✓":(st==="fail"?"✗":"…");
+      return '<li class="step '+st+'" data-step="'+esc(name)+'"><span class="mark" aria-hidden="true">'+mark+'</span> <strong>'+esc(name)+'</strong>'
+        +'<span class="vh">'+(st==="ok"?" passed":(st==="fail"?" failed":" not run"))+'</span>'
+        +(x&&x.detail?' — <span class="detail">'+esc(x.detail)+'</span>':"")+'</li>';
+    }).join("");
+  }
+  function runFullTest(btn){
+    var sid=planId(); var out=el("full-test-result");
+    if(!sid){ if(out) out.innerHTML='<li class="step fail">Unlock the page first, then try again.</li>'; return; }
+    btn.disabled=true; var prev=btn.textContent; btn.textContent="Running…";
+    if(out) out.innerHTML='<li class="step pending">Running a real check — this takes up to a minute…</li>';
+    fetch(SUPA+"/functions/v1/"+PAGE, {
+      method:"POST",
+      headers:{ "content-type":"application/json", "apikey":KEY, "x-plan-id":sid },
+      body: JSON.stringify({ action:"full_test" })
+    }).then(function(r){ return r.json().catch(function(){return {};}).then(function(j){ return {status:r.status, j:j||{}}; }); })
+      .then(function(res){
+        var j=res.j;
+        if(res.status===200 && j.steps){ renderFullTestSteps(j.steps); }
+        else if(res.status===429){ out.innerHTML='<li class="step fail">Please wait '+Math.ceil((j.retry_after_s||300)/60)+' min between full tests.</li>'; }
+        else if(res.status===401){ out.innerHTML='<li class="step fail">Not authorized — unlock the page and try again.</li>'; }
+        else { out.innerHTML='<li class="step fail">The full test couldn’t run (error '+res.status+').</li>'; }
+      })
+      .catch(function(){ if(out) out.innerHTML='<li class="step fail">Couldn’t reach the server — check your connection.</li>'; })
+      .then(function(){ btn.disabled=false; btn.textContent=prev; });
+  }
+  // Enhancements Slice 6 — swipe left on a feed card (touch + pointer). Drag ≥60px left → the card stays
+  // open at -88px revealing the red Delete; less → it springs back. Vertical scrolls are left alone, and a
+  // drag never triggers the card's buttons/links.
+  var SWIPE_OPEN=88, SWIPE_MIN=60;
+  (function installSwipe(){
+    var st=null;
+    function closeOthers(except){ document.querySelectorAll(".swipe.open").forEach(function(w){ if(w!==except){ w.classList.remove("open"); var c=w.querySelector(".card.deal"); if(c) c.style.transform=""; } }); }
+    document.addEventListener("pointerdown", function(ev){
+      var card=ev.target.closest&&ev.target.closest(".swipe .card.deal");
+      if(!card){ if(!(ev.target.closest&&ev.target.closest(".swipe-del"))) closeOthers(null); return; }
+      if(ev.target.closest(".ovf,.ovfmenu")) return;
+      var wrap=card.parentNode;
+      st={wrap:wrap,card:card,x:ev.clientX,y:ev.clientY,dx:0,base:wrap.classList.contains("open")?-SWIPE_OPEN:0,drag:false,id:ev.pointerId};
+    });
+    document.addEventListener("pointermove", function(ev){
+      if(!st||ev.pointerId!==st.id) return;
+      var dx=ev.clientX-st.x, dy=ev.clientY-st.y;
+      if(!st.drag){ if(Math.abs(dx)<8) return; if(Math.abs(dy)>Math.abs(dx)){ st=null; return; } st.drag=true; closeOthers(st.wrap); st.card.style.transition="none"; }
+      ev.preventDefault();
+      var sel=window.getSelection&&window.getSelection(); if(sel&&sel.removeAllRanges) sel.removeAllRanges();
+      st.dx=dx; var x=Math.max(-SWIPE_OPEN-24, Math.min(0, st.base+dx));
+      st.card.style.transform="translateX("+x+"px)";
+      st.wrap.classList.add("dragging");
+    });
+    function end(ev){
+      if(!st||(ev&&ev.pointerId!==st.id)) return;
+      var s0=st; st=null;
+      s0.card.style.transition=""; s0.wrap.classList.remove("dragging");
+      if(!s0.drag) return;
+      var open = (s0.base+s0.dx) <= -SWIPE_MIN;
+      s0.wrap.classList.toggle("open",open);
+      s0.card.style.transform=open?"translateX(-"+SWIPE_OPEN+"px)":"";
+      // swallow the click a drag would otherwise fire on the card's buttons/links
+      var swallow=function(e){ e.stopPropagation(); e.preventDefault(); document.removeEventListener("click",swallow,true); };
+      document.addEventListener("click",swallow,true); setTimeout(function(){ document.removeEventListener("click",swallow,true); },0);
+    }
+    document.addEventListener("pointerup", end);
+    document.addEventListener("pointercancel", end);
+  })();
   // Slice 5: ⋯ overflow-menu plumbing (open/close, outside-click, keyboard nav).
   function closeOverflowMenus(exceptId){
     var btns=document.querySelectorAll(".ovf[aria-expanded='true']");
@@ -1837,7 +2050,7 @@
     closeOverflowMenus(id);
     if(open){ btn.setAttribute("aria-expanded","false"); m.hidden=true; }
     else{ btn.setAttribute("aria-expanded","true"); m.hidden=false;
-      var first=m.querySelector("button[role='menuitemradio']"); if(first) first.focus(); }
+      var first=m.querySelector("button[role='menuitemradio'],button[role='menuitem']"); if(first) first.focus(); }
   }
   document.addEventListener("click", function(ev){
     // isConnected guard: an in-menu action (e.g. Slice 3 "Delete rule…" swapping the menu to a
@@ -1851,7 +2064,7 @@
     var btn=document.querySelector(".ovf[data-ovf='"+id+"']");
     if(ev.key==="Escape"){ closeOverflowMenus(); if(btn) btn.focus(); ev.preventDefault(); return; }
     if(ev.key==="ArrowDown"||ev.key==="ArrowUp"){
-      var items=[].slice.call(menu.querySelectorAll("button[role='menuitemradio']"));
+      var items=[].slice.call(menu.querySelectorAll("button[role='menuitemradio'],button[role='menuitem']"));
       var i=items.indexOf(ev.target); if(i<0){ if(items[0]) items[0].focus(); ev.preventDefault(); return; }
       var n=ev.key==="ArrowDown"?(i+1)%items.length:(i-1+items.length)%items.length;
       items[n].focus(); ev.preventDefault();
@@ -1885,13 +2098,55 @@
     r.extras.min_denom=v; var out=btn.parentNode.querySelector("output"); if(out) out.textContent=(v<=0?"Any":"$"+v);
     withSave(patchTask(id,{extras:r.extras,updated_at:new Date().toISOString()}));
   }
+  // Enhancements Slice 6 — Bought / Skip also write ONE row to the permanent savings log (press_tasks,
+  // category='savings', item_id='sv-'+deal id, sync_id column via api(); D1: never pruned). The deal's
+  // extras.user_status carries the decision so a browser-lane re-run can never undo it. Un-ticking removes
+  // the log row (a correction, not a decision).
+  function round2(n){ return Math.round(n*100)/100; }
+  function savingsRow(d,status){
+    var face=d.face_value!=null?Number(d.face_value):null;
+    var paid=netForFace(d); paid=paid!=null?Number(paid):null;
+    var saved=(face!=null&&paid!=null)?round2(face-paid):null;
+    return {page:PAGE,item_id:"sv-"+d.item_id,title:String(d.brand||"Gift card").slice(0,200),status:status,category:"savings",position:999,
+      extras:{face:face,paid:paid,saved:saved,pct:pct(d),retailer:(d.extras&&d.extras.retailer)||null,source:d.source||null,
+        verdict:d.verdict||null,deal_item_id:d.item_id,at:new Date().toISOString()},updated_at:new Date().toISOString()};
+  }
+  function writeSavings(d,status){
+    if(status==="bought"||status==="skip"){
+      var row=savingsRow(d,status);
+      state.savings=(state.savings||[]).filter(function(x){ return x.item_id!==row.item_id; }).concat([row]);
+      return api("press_tasks?on_conflict=page,item_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(row)});
+    }
+    state.savings=(state.savings||[]).filter(function(x){ return x.item_id!=="sv-"+d.item_id; });
+    return api("press_tasks?page=eq."+PAGE+"&item_id=eq."+encodeURIComponent("sv-"+d.item_id),{method:"DELETE",headers:{Prefer:"return=minimal"}});
+  }
+  function dealExtras(d,userStatus){
+    var e=Object.assign({}, d.extras||{});
+    if(userStatus) e.user_status=userStatus; else delete e.user_status;
+    return e;
+  }
   function markDeal(id,status,btn){
-    var d=find(state.deals,id); var was=d.status===status; d.status=was?"judged":status;
+    var d=find(state.deals,id); var was=d.status===status;
+    var next=was?(d.extras&&d.extras.alert?"alerted":"judged"):status;
+    d.status=next; d.extras=dealExtras(d, was?null:status);
     // reflect on both buttons in the card
     var card=btn.closest(".card");
     card.querySelectorAll("[data-buy],[data-skip]").forEach(function(x){ x.classList.remove("primary"); x.setAttribute("aria-pressed","false"); });
     if(!was){ btn.classList.add("primary"); btn.setAttribute("aria-pressed","true"); }
-    withSave(patchDeal(id,{status:d.status,updated_at:new Date().toISOString()}));
+    withSave(Promise.all([
+      patchDeal(id,{status:d.status,extras:d.extras,updated_at:new Date().toISOString()}),
+      writeSavings(d, was?null:status)
+    ]).then(function(rs){ return {ok:rs.every(function(r){ return r&&r.ok; })}; }));
+    if(typeof renderAlerts==="function"&&el("alerts")) renderAlerts();
+  }
+  // Enhancements Slice 6 (D2) — Delete = hide for good: status 'deleted' (+ extras.user_status so a re-run
+  // never resurrects it). Never shown, never re-alerted; the 30-day prune clears it.
+  function deleteDeal(id){
+    var d=find(state.deals,id); if(!d) return;
+    d.status="deleted"; d.extras=dealExtras(d,"deleted");
+    state.deals=state.deals.filter(function(x){ return x.item_id!==id; });
+    renderFeedList(); renderFeedBadge();
+    withSave(patchDeal(id,{status:"deleted",extras:d.extras,updated_at:new Date().toISOString()}));
   }
   // Slice 2: a rule whose brand normalizes to the same key (apostrophes deleted) as `name`, or null.
   function findRuleByBrand(name){
@@ -1984,6 +2239,24 @@
   function stepNewWatch(delta,btn){
     newWatchMin=Math.max(0,Math.min(90,(Number(newWatchMin)||0)+delta));
     var out=btn.parentNode.querySelector("output"); if(out) out.textContent=pctMinLabel(newWatchMin);
+  }
+  // Enhancements Slice 7 — click a watch's term to edit it inline. Enter or blur saves (press_tasks
+  // title), Esc cancels; an empty term is never saved (the original stays).
+  function editWatch(id){
+    var w=find(state.watch,id); var btn=document.querySelector('[data-editwatch="'+id+'"]'); if(!w||!btn) return;
+    var inp=document.createElement("input"); inp.type="text"; inp.className="wedit"; inp.value=w.title; inp.maxLength=80;
+    inp.setAttribute("aria-label","Watch term"); var done=false;
+    function finish(save){
+      if(done) return; done=true;
+      var v=(inp.value||"").trim();
+      if(save&&v&&v!==w.title){ w.title=v; withSave(patchTask(id,{title:v,updated_at:new Date().toISOString()})); }
+      else if(save&&!v){ sync("err","A watch term can’t be empty"); }
+      renderWatchList();
+      var nb=document.querySelector('[data-editwatch="'+id+'"]'); if(nb) nb.focus();
+    }
+    inp.addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); finish(true); } else if(e.key==="Escape"){ e.preventDefault(); finish(false); } });
+    inp.addEventListener("blur",function(){ finish(true); });
+    btn.replaceWith(inp); inp.focus(); inp.select();
   }
   function removeWatch(id){
     state.watch=watchTerms().filter(function(w){ return w.item_id!==id; });
