@@ -12,7 +12,7 @@
   <title>Cardsharp</title>
   <meta name="page-title" content="Cardsharp">
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxMjEzMkEiLz48cmVjdCB4PSI5IiB5PSIxNyIgd2lkdGg9IjQ2IiBoZWlnaHQ9IjMwIiByeD0iNSIgZmlsbD0iIzJFQzVFOCIvPjxyZWN0IHg9IjkiIHk9IjI0IiB3aWR0aD0iNDYiIGhlaWdodD0iNiIgZmlsbD0iIzEyMTMyQSIvPjxyZWN0IHg9IjE1IiB5PSIzNiIgd2lkdGg9IjEyIiBoZWlnaHQ9IjUiIHJ4PSIxLjUiIGZpbGw9IiNGNEY2RkIiLz48L3N2Zz4=">
-  <meta name="build" content="src-12848397f211">
+  <meta name="build" content="src-decc9f336899">
   <meta name="brandfetch-client" content="1idiEFKfEWGXeRo3uBi">
   <style>
 /* styles/tokens.css */
@@ -47,8 +47,8 @@
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   --blur: blur(22px) saturate(170%);
   --bar-fade: rgba(11, 11, 28, 0.92);
-  --pill-solid: rgba(24, 24, 40, 0.94); /* sticky section headers: content slides under them */
-  --bar-solid: rgba(14, 14, 32, 0.96); /* the scrolled top bar */
+  --pill-solid: rgb(24, 24, 40); /* sticky section headers: content slides under them */
+  --bar-solid: rgba(14, 14, 32, 0.985); /* the scrolled top bar */
   --switch-off: rgba(160, 160, 172, 0.55);
   --panel: rgba(12, 12, 28, 0.55); /* desktop: the app's column panel */
   --row-solid: #1F1E35; /* swipe rows: opaque so the red tray stays hidden behind the face */
@@ -88,8 +88,8 @@
     --glass-hi: rgba(255, 255, 255, 0.9);
     --shadow: 0 10px 30px rgba(30, 30, 60, 0.12);
     --bar-fade: rgba(242, 243, 248, 0.92);
-    --pill-solid: rgba(250, 250, 253, 0.95);
-    --bar-solid: rgba(244, 245, 250, 0.96);
+    --pill-solid: rgb(250, 250, 253);
+    --bar-solid: rgba(244, 245, 250, 0.985);
     --switch-off: rgba(110, 110, 122, 0.62);
     --panel: rgba(255, 255, 255, 0.55);
     --row-solid: #FBFBFD;
@@ -121,8 +121,8 @@
   --glass-hi: rgba(255, 255, 255, 0.9);
   --shadow: 0 10px 30px rgba(30, 30, 60, 0.12);
   --bar-fade: rgba(242, 243, 248, 0.92);
-  --pill-solid: rgba(250, 250, 253, 0.95);
-  --bar-solid: rgba(244, 245, 250, 0.96);
+  --pill-solid: rgb(250, 250, 253);
+  --bar-solid: rgba(244, 245, 250, 0.985);
   --switch-off: rgba(110, 110, 122, 0.62);
   --panel: rgba(255, 255, 255, 0.55);
   --row-solid: #FBFBFD;
@@ -143,7 +143,7 @@ html {
   background: var(--bg);
   /* sticky chrome (top bar + jump row + section header, tab bar): anything scrolled into view — a
      focused card, a jump target — lands clear of it (WCAG 2.4.11 focus not obscured) */
-  scroll-padding: calc(env(safe-area-inset-top) + 150px) 0 calc(env(safe-area-inset-bottom) + var(--tabbar-h) + 28px);
+  scroll-padding: calc(env(safe-area-inset-top) + 176px) 0 calc(env(safe-area-inset-bottom) + var(--tabbar-h) + 28px);
 }
 body {
   min-height: 100vh; min-height: 100dvh;
@@ -202,10 +202,9 @@ body.scrolled #topbar::before { opacity: 1; }
 .brand { display: grid; justify-items: center; gap: 2px; }
 .wordmark { font-weight: 700; letter-spacing: -0.01em; font-size: 17px; line-height: 1.2; }
 .brand .pill { padding: 0 7px; line-height: 16px; letter-spacing: 0.04em; } /* the Demo marker sits under the wordmark so the side columns stay balanced */
-body.title-shown .wordmark { opacity: 0; visibility: hidden; }
+body.title-shown .wordmark { opacity: 0; visibility: hidden; position: absolute; } /* Eye P0 (Arc 3): the Demo pill then centres in the bar instead of floating under a hidden title */
 .bar-actions { justify-self: end; display: flex; align-items: center; gap: 8px; }
 .pill { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-pill); background: var(--glass); border: 0.5px solid var(--glass-edge); color: var(--ink-2); }
-.overflow { position: relative; }
 .glass-btn {
   width: 44px; height: 44px; border-radius: 22px;
   display: grid; place-items: center;
@@ -213,13 +212,6 @@ body.title-shown .wordmark { opacity: 0; visibility: hidden; }
   -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
 }
 .glass-btn svg { width: 22px; height: 22px; fill: currentColor; stroke: none; }
-.menu {
-  position: absolute; right: 0; top: 52px; min-width: 190px; padding: 6px;
-  border-radius: var(--r-md); background: var(--glass-strong); display: grid;
-}
-.menu[hidden] { display: none; }
-.menu button { text-align: left; padding: 10px 12px; border-radius: 10px; font-size: 15px; }
-.menu button:hover { background: var(--glass); }
 
 /* ---- panels ---- */
 #app { max-width: 560px; margin: 0 auto; padding: 8px var(--gutter) calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 32px); }
@@ -244,24 +236,31 @@ body.title-shown .wordmark { opacity: 0; visibility: hidden; }
    the Saving chip still clear it): each later card is pulled up over the one before it
    (margin = peek − card height, card height = 100cqi ÷ 1.586), so only the front card of a group shows
    in full. Plain native scroll with momentum: NO scroll-snap, no scroll-jacking (100+ cards must stay
-   smooth). Section headers are sticky under the top bar and carry a quiet back-to-top control. */
+   smooth). Section headers are sticky under the top bar and carry a quiet back-to-top control.
+   Arc 3 (Mark): the header band is CLEAR GLASS — no tint, a light blur that fades out at its top and
+   bottom edges — and the title pills are 40% bigger than Arc 2b (20px → 28px type, 7/16 → 10/22 padding). */
 .stack { display: grid; gap: 26px; padding-top: 4px; --peek: 52px; }
 .stack-head {
   position: sticky; top: calc(env(safe-area-inset-top) + 58px); z-index: 6; isolation: isolate;
+  --glass-blur: blur(14px);
   display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 6px; padding: 6px 0;
 }
-/* Eye P0 (Arc 2b): a stuck header sat straight on the card strips ("Retail" over "ALDI") — a full-bleed
-   band behind it now hides what scrolls under, fading out at its foot */
+/* Arc 2b put an opaque --bar-solid band here (Eye P0: "Retail" sat on "ALDI"). Arc 3: the band is clear
+   glass — background fully transparent, a ~14px backdrop blur, masked so it fades out at its top and bottom
+   edges. The pill keeps its own solid face, so the header TEXT holds ≥ 4.5:1 over any card beneath. */
 .stack-head::before {
-  content: ''; position: absolute; inset: 0 calc(-1 * var(--gutter)); z-index: -1; pointer-events: none;
-  background: linear-gradient(var(--bar-solid) 75%, transparent);
+  content: ''; position: absolute; inset: -4px 0; z-index: -1; pointer-events: none; /* the column only (Eye P0: no halo past the cards) */
+  background: transparent;
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 24%, #000 76%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 24%, #000 76%, transparent 100%);
 }
 .stack-pill {
-  padding: 7px 16px; border-radius: var(--r-pill); background: var(--pill-solid); border: 0.5px solid var(--glass-edge);
+  padding: 9.8px 22.4px; border-radius: var(--r-pill); background: var(--pill-solid); border: 0.5px solid var(--glass-edge);
   -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: var(--shadow);
-  font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); line-height: 1.25;
+  font-size: 28px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); line-height: 1.25;
 }
-.to-top { width: 36px; height: 36px; border-radius: 18px; background: var(--pill-solid); color: var(--ink-2); box-shadow: var(--shadow); }
+.to-top { width: 44px; height: 44px; border-radius: 22px; background: var(--pill-solid); color: var(--ink-2); box-shadow: var(--shadow); }
 .to-top svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; }
 .stack-pile { display: grid; }
 .stack-pile > .gcard + .gcard { margin-top: calc(var(--peek) - 100cqi / 1.586); }
@@ -282,28 +281,34 @@ body.title-shown .wordmark { opacity: 0; visibility: hidden; }
 .gcard:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; z-index: 3; }
 .gcard:hover { z-index: 2; }
 .gcard.is-zero { filter: grayscale(0.85) brightness(0.78); }
-.gc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; min-height: 26px; }
+.gc-top { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; min-height: 26px; }
 .gc-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gc-star { letter-spacing: 0; }
 .gc-badge {
   flex: none; padding: 4px 10px; border-radius: var(--r-pill); font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
   background: rgba(0, 0, 0, 0.28); border: 0.5px solid rgba(255, 255, 255, 0.28);
 }
-.gc-mid { flex: 1; display: grid; place-items: center; }
+.gc-mid { flex: 1; }
 .gc-logo { display: grid; place-items: center; border-radius: 16px; background: #fff; overflow: hidden; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); }
-/* the logo is as large as the card allows: ~47–49% of the card height, centred, with a clear gap to the
-   name strip and the balance. Sized from the card's parent container (a full-width card: 100cqi − its
-   36px padding = the card's content width). */
+/* Arc 3 (Mark: "logo even bigger"): the logo sits on its own layer UNDER the text, anchored left, filling
+   the card from just below the name strip (top 48px = 14px padding + 26px strip + 8px) to the bottom padding
+   — ~70% of the card height. It is capped at half the content width so the balance column on the right
+   always keeps ≥ 8px clearance (e2e measures every demo card). Sized from the card's container: card height
+   = 100cqi ÷ 1.586, content width = 100cqi − 36px. */
 .stack-group, .detail, .add-preview { container-type: inline-size; }
-.gc-logo-lg { --cw: calc(100cqi - 36px); width: calc(var(--cw) * 0.33); height: calc(var(--cw) * 0.33); border-radius: calc(var(--cw) * 0.07); }
+.gc-logo-lg {
+  --s: min(calc(100cqi / 1.586 - 64px), calc((100cqi - 36px) * 0.5));
+  position: absolute; z-index: 0; left: 18px; top: 48px;
+  width: var(--s); height: var(--s); border-radius: calc(var(--s) * 0.16);
+}
 .gc-logo-sm { width: 32px; height: 32px; border-radius: 9px; }
 .gc-logo img { width: 100%; height: 100%; object-fit: contain; }
 .gc-logo.is-mono { background: rgba(0, 0, 0, 0.24); border: 0.5px solid rgba(255, 255, 255, 0.3); box-shadow: none; }
 .gc-mono { font-weight: 800; letter-spacing: -0.02em; font-size: 24px; color: #fff; }
-.gc-logo-lg .gc-mono { font-size: calc(var(--cw) * 0.13); }
+.gc-logo-lg .gc-mono { font-size: calc(var(--s) * 0.36); }
 .gc-logo-sm .gc-mono { font-size: 12px; }
-.gc-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
-.gc-pips { display: grid; gap: 3px; margin-bottom: 4px; }
+.gc-bottom { position: relative; z-index: 1; display: flex; justify-content: flex-end; align-items: flex-end; }
+.gc-pips { display: grid; justify-items: end; gap: 3px; margin-bottom: 7px; } /* Arc 3: above the balance (the logo owns the left) */
 .gc-pips i { display: block; height: 3px; width: 28px; border-radius: 2px; background: rgba(255, 255, 255, 0.75); }
 .gc-pips i:nth-child(2) { width: 22px; opacity: 0.7; }
 .gc-pips i:nth-child(3) { width: 16px; opacity: 0.45; }
@@ -394,7 +399,7 @@ dialog.sheet.is-branded .log-spend-btn:not(:disabled) { box-shadow: 0 8px 24px c
 /* the page under an open sheet cannot scroll (dom.lockScroll pins the body); the sheet keeps its own
    scroll and never chains it to the page */
 html.scroll-locked { overflow: hidden; }
-dialog.sheet::backdrop { background: rgba(0, 0, 0, 0.5); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+dialog.sheet::backdrop { background: rgba(0, 0, 0, 0.55); /* Eye P1 (Arc 2b): the hero logo read as cut by the sheet edge */ -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .sheet-body { display: grid; gap: 14px; padding: 10px var(--gutter) calc(env(safe-area-inset-bottom) + 20px); }
 .sheet-body::before { content: ''; justify-self: center; width: 38px; height: 5px; border-radius: 3px; background: var(--glass-edge); margin-bottom: 2px; }
 .sheet-head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 44px; }
@@ -414,13 +419,23 @@ dialog.sheet::backdrop { background: rgba(0, 0, 0, 0.5); -webkit-backdrop-filter
 .amount { display: flex; justify-content: center; align-items: baseline; gap: 4px; padding: 8px 0 0; }
 .amount-cur { font-family: var(--font-num); font-size: 40px; font-weight: 300; color: var(--ink-2); }
 .amount-in {
-  width: 6.5ch; font-family: var(--font-num); font-size: 64px; font-weight: 200; letter-spacing: -0.03em; text-align: left;
+  /* Eye P1 (Arc 2b): "$ 250" sat left of centre — the input is sized to its content (JS sets the width in
+     ch from the value or placeholder; field-sizing where supported), so "$ + amount" centres as one unit */
+  width: 4.6ch; min-width: 2.6ch; max-width: 8.6ch; field-sizing: content; padding: 0;
+  font-family: var(--font-num); font-size: 64px; font-weight: 200; letter-spacing: -0.03em; text-align: center;
   color: var(--ink); background: transparent; border: 0; caret-color: var(--accent); font-variant-numeric: tabular-nums;
 }
 .amount-in::placeholder { color: var(--ink-3); }
 .amount-in:focus-visible { outline: none; }
 .amount-after { text-align: center; color: var(--ink-2); min-height: 1.4em; font-size: 15px; }
 .amount-after.is-error { color: var(--err-ink); font-weight: 600; }
+/* Eye P1 (Arc 2b): during a split the "Using" row says what will happen, and the drains list under After */
+.using-split { font-weight: 600; color: var(--ink); }
+.split-drains { list-style: none; display: grid; gap: 2px; justify-items: center; color: var(--ink-2); font-size: 14px; font-variant-numeric: tabular-nums; margin-top: -2px; }
+.confirm-undo { text-align: center; color: var(--ink-3); font-size: 13px; margin-top: -4px; }
+.info-sub { display: block; color: var(--ink-2); font-size: 13px; font-weight: 400; }
+.gc-logo.is-glyph { background: rgba(255, 255, 255, 0.14); border: 0.5px solid rgba(255, 255, 255, 0.3); box-shadow: none; color: #fff; }
+.gc-logo.is-glyph svg { width: 46%; height: 46%; stroke-width: 1.6; }
 .confirm-q { font-size: 19px; font-weight: 600; text-align: center; padding: 10px 4px; text-wrap: balance; }
 .confirm-q:focus { outline: none; }
 
@@ -450,6 +465,9 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
 .suggest-txt { display: grid; }
 .suggest-name { font-weight: 600; }
 .suggest-dom { font-size: 13px; color: var(--ink-2); }
+/* Arc 3: the on-demand Brand Search row — quiet, under the catalog block */
+.suggest-more { min-height: 44px; color: var(--ink-2); font-size: 15px; font-weight: 600; border-top: 1px solid var(--glass-edge); border-radius: 0 0 12px 12px; margin-top: 4px; }
+.suggest-more svg { width: 18px; height: 18px; flex: none; margin: 0 7px; }
 .add-caption { text-align: center; color: var(--ink-2); font-size: 15px; margin-top: -4px; }
 .add-caption.is-error { color: var(--err-ink); font-weight: 600; }
 .hint { color: var(--ink-2); font-weight: 400; }
@@ -514,6 +532,43 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
 
 .load-msg { text-align: center; color: var(--ink-2); padding: 48px 12px 0; }
 
+/* Settings › YNAB (Arc 3 slice 7) */
+.ynab-settings { padding-bottom: 6px; }
+.ynab-settings .row { align-items: center; }
+.ynab-settings dd { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; min-width: 0; }
+.ynab-conn.is-ok dd { color: var(--ok-ink); font-weight: 600; }
+.ynab-pick { min-height: 40px; max-width: 58vw; padding: 0 8px; font: inherit; font-size: 15px; color: var(--ink); background: var(--glass); border: 0.5px solid var(--glass-edge); border-radius: 9px; }
+.ynab-pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.posting-btn { min-height: 36px; padding: 0 12px; border-radius: var(--r-pill); font-size: 14px; font-weight: 600; color: var(--accent); background: var(--glass); border: 0.5px solid var(--glass-edge); }
+.posting-btn:disabled { color: var(--ink-2); opacity: 0.6; cursor: not-allowed; } /* locked until cutover (W6) — reads as unavailable */
+.ynab-sub { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-2); margin: 14px 16px 2px; border-top: 1px solid var(--glass-edge); padding-top: 14px; }
+.ynab-queue { color: var(--ink-2); font-size: 14px; margin: 8px 16px 0; }
+.ynab-settings .ynab-note { margin: 0; padding: 10px 16px 14px; }
+.danger-btn.is-calm { background: var(--accent); color: var(--accent-ink); }
+.sync-badge { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: var(--r-pill); font-size: 11px; font-weight: 700; letter-spacing: 0.02em; color: var(--ink); background: var(--glass); border: 0.5px solid var(--glass-edge); vertical-align: 1px; }
+
+/* Reports › All activity (Arc 3): a table in its own scroll area; the header row is sticky inside it */
+.all-activity { margin-top: 22px; }
+.ra-title { display: flex; align-items: baseline; justify-content: space-between; margin: 0 4px 8px; }
+.ra-title .section-h { margin: 0; }
+.ra-count { color: var(--ink-3); font-size: 13px; }
+.ra-scroll { max-height: min(560px, calc(100dvh - 230px - env(safe-area-inset-bottom))); /* Eye P0: ends above the tab bar */ overflow-y: auto; overscroll-behavior: contain; border-radius: var(--r-md); background: var(--sheet-bg); }
+.ra-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ra-head { position: sticky; top: 0; z-index: 2; background: var(--sheet-bg); border-bottom: 1px solid var(--glass-edge); }
+.ra-row { display: grid; grid-template-columns: 104px minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.ra-hrow { padding: 10px 16px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+.ra-body .ra-row { padding: 10px 16px; cursor: pointer; }
+.ra-body .ra-row + .ra-row { border-top: 1px solid var(--glass-edge); }
+.ra-row.swipe > .swipe-face { display: grid; grid-template-columns: 104px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px 16px; background: var(--sheet-bg); }
+.ra-body .ra-date { color: var(--ink-2); font-size: 14px; font-variant-numeric: tabular-nums; }
+.ra-brand-in { display: grid; min-width: 0; }
+.ra-link { color: var(--ink); font-weight: 600; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ra-link:hover { text-decoration: underline; }
+.ra-kind { color: var(--ink-2); font-size: 13px; }
+.ra-amt { text-align: right; }
+.ra-amt-in { font-variant-numeric: tabular-nums; font-weight: 600; }
+.ra-amt-in.is-credit { color: var(--ok-ink); }
+
 /* Reports widgets */
 .widget { border-radius: var(--r-lg); padding: 18px 20px; }
 .hero-widget { margin-bottom: 12px; }
@@ -530,6 +585,17 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
 .row + .row { border-top: 1px solid var(--glass-edge); }
 .row dd { color: var(--ink-2); text-align: right; }
 .foot-note { color: var(--ink-3); font-size: 12px; margin: 24px 4px 0; }
+/* Settings (Arc 3): Appearance — a Light / Dark segmented switch (native radios, so arrows + Space work);
+   Account — Sign out as a full-width row button (live mode only). */
+.row-control { align-items: center; padding-top: 9px; padding-bottom: 9px; }
+.segmented { display: inline-grid; grid-auto-flow: column; gap: 2px; padding: 2px; border-radius: 10px; background: var(--glass); border: 0.5px solid var(--glass-edge); }
+.segmented label { position: relative; display: grid; place-items: center; min-width: 76px; min-height: 32px; border-radius: 8px; font-size: 15px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+.segmented input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.segmented label:has(input:checked) { background: var(--accent); color: var(--accent-ink); }
+.segmented label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.row-btn { width: 100%; text-align: left; color: var(--ink); font-weight: 600; min-height: 48px; }
+/* card detail + Log Spend: only the in-page back arrow — the top-left "← Private Wing" link steps aside */
+body.in-detail #topbar .back { visibility: hidden; }
 
 /* ---- tab bar ---- */
 #tabbar {
@@ -553,7 +619,7 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
 /* Transitions are opt-in via body.ready (set two frames after boot), so the tab restored from #hash
    paints selected on the first frame instead of animating away from the static Cards default. */
 @media (prefers-reduced-motion: no-preference) {
-  body.ready .tab, body.ready .menu button { transition: background-color 160ms ease, color 160ms ease; }
+  body.ready .tab { transition: background-color 160ms ease, color 160ms ease; }
   body.ready #topbar::before, body.ready .wordmark { transition: opacity 200ms ease, visibility 200ms; }
   /* spring-feel lift: an overshooting curve, never on reduced motion */
   body.ready .gcard { transition: transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 240ms ease; }
@@ -566,41 +632,51 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
 }
 
-/* ---- home search + section jump row (Arc 2b, spec §9c simplified) ----
-   A small search field at the top of Cards filters as you type. Under it, a slim sticky row of section
-   chips: tap → the section header scrolls to the top; the chip of the section under the chrome is
-   highlighted. The row hides while the search has text. Section headers then stick below the row. */
-.cards-tools { margin: 2px 0 8px; }
+/* ---- home search + section jump row (Arc 2b, spec §9c simplified; Arc 3 reshaped) ----
+   Search is HIDDEN until asked for: pull down at the top of the stack (iOS-style, ~60px threshold), or on
+   desktop the top-bar search icon / the "/" key. It hides again once it is empty and scrolled away. The
+   field is slimmer than Arc 2b. Under it, a slim sticky row of section chips, auto-sized so the set spreads
+   evenly across the row with equal gaps edge to edge (wrapping only when even the smallest size can't
+   fit); the band is full-bleed on desktop too (Eye P1, Arc 2b). Section headers stick below the row. */
+.cards-tools { margin: 0 0 8px; }
+body.ready .cards-tools.is-revealing { animation: search-drop 220ms cubic-bezier(0.2, 0.9, 0.25, 1.1); }
+@keyframes search-drop { from { opacity: 0; transform: translateY(-14px); } }
+@media (prefers-reduced-motion: reduce) { body.ready .cards-tools.is-revealing { animation: none; } }
 .search-field {
-  display: flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 5px 0 12px; border-radius: 13px;
+  display: flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 4px 0 10px; border-radius: 11px;
   background: var(--glass); border: 0.5px solid var(--glass-edge);
 }
 .search-field:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
-.search-field > svg { width: 18px; height: 18px; flex: none; color: var(--ink-2); }
+.search-field > svg { width: 16px; height: 16px; flex: none; color: var(--ink-2); }
 .search-field input {
-  flex: 1; min-width: 0; min-height: 42px; font: inherit; font-size: 16px; /* 16px: no iOS focus zoom */
+  flex: 1; min-width: 0; min-height: 36px; font: inherit; font-size: 16px; /* 16px: no iOS focus zoom */
   color: var(--ink); background: transparent; border: 0; -webkit-appearance: none; appearance: none;
 }
 .search-field input:focus-visible { outline: none; }
 .search-field input::placeholder { color: var(--ink-2); }
 .search-field input::-webkit-search-cancel-button, .search-field input::-webkit-search-decoration { -webkit-appearance: none; display: none; }
-.search-clear { flex: none; width: 34px; height: 34px; border-radius: 17px; display: grid; place-items: center; color: var(--ink-2); }
-.search-clear svg { width: 16px; height: 16px; stroke-width: 2.4; }
+.search-clear { flex: none; width: 30px; height: 30px; border-radius: 15px; display: grid; place-items: center; color: var(--ink-2); }
+.search-clear svg { width: 15px; height: 15px; stroke-width: 2.4; }
 .search-clear:hover { background: var(--glass); }
+.search-btn svg { fill: none; stroke: currentColor; stroke-width: 2; width: 20px; height: 20px; }
+/* the search icon is the desktop affordance (no pull gesture without touch) */
+@media (hover: none), (pointer: coarse) { .search-btn { display: none !important; } }
 .jump-row {
   position: sticky; top: calc(env(safe-area-inset-top) + 58px); z-index: 7;
-  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
-  height: 44px; align-items: center; margin: 0 calc(-1 * var(--gutter)) 10px; padding: 0 var(--gutter);
+  display: flex; flex-wrap: nowrap; justify-content: space-evenly; align-items: center; row-gap: 6px;
+  min-height: 40px; margin: 0 calc(-1 * var(--gutter)) 10px; padding: 4px 0;
   background: var(--bar-solid); -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
+  /* full-bleed band on desktop too, without widening the row the chips spread across */
+  box-shadow: 0 0 0 100vmax var(--bar-solid); clip-path: inset(0 -100vmax);
 }
-.jump-row::-webkit-scrollbar { display: none; }
+.jump-row.is-wrapped { flex-wrap: wrap; }
 .jump-chip {
-  flex: none; min-height: 32px; padding: 0 13px; border-radius: var(--r-pill); white-space: nowrap;
-  font-size: 14px; font-weight: 600; color: var(--ink-2); background: var(--glass); border: 0.5px solid var(--glass-edge);
+  flex: none; min-height: 26px; padding: 0 var(--jp, 10px); border-radius: var(--r-pill); white-space: nowrap;
+  font-size: var(--jf, 13px); font-weight: 600; color: var(--ink-2); background: var(--glass); border: 0.5px solid var(--glass-edge);
 }
 .jump-chip[aria-current="true"] { color: var(--accent-ink); background: var(--accent); border-color: transparent; }
 .jump-star { letter-spacing: 0; }
-#panel-cards.has-jump .stack-head { top: calc(env(safe-area-inset-top) + 102px); }
+#panel-cards.has-jump .stack-head { top: calc(env(safe-area-inset-top) + 58px + var(--jump-h, 48px)); }
 .search-empty { text-align: center; color: var(--ink-2); font-size: 16px; padding: 36px 12px 8px; }
 
 /* Eye P1 (Arc 2): on a wide desktop the 560px column floated in empty wallpaper. From 900px the app
@@ -626,18 +702,12 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
       <span id="demo-pill" class="pill" hidden>Demo</span>
     </span>
     <div class="bar-actions">
+      <button id="search-btn" class="glass-btn search-btn" type="button" aria-label="Search cards (/)" aria-controls="cards-tools" aria-expanded="false" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><line x1="16" y1="16" x2="20.5" y2="20.5"/></svg>
+      </button>
       <button id="add-btn" class="glass-btn add-btn" type="button" aria-label="Add gift card" hidden>
         <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
-      <div id="overflow" class="overflow">
-        <button id="overflow-btn" class="glass-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="overflow-menu" aria-label="Menu">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
-        </button>
-        <div id="overflow-menu" class="glass menu" role="menu" hidden>
-          <button id="theme-toggle" type="button" role="menuitem">Toggle theme</button>
-          <button id="signout" type="button" role="menuitem" hidden>Lock</button>
-        </div>
-      </div>
     </div>
   </header>
 
@@ -675,28 +745,40 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
       <div class="glass widget hero-widget">
         <p class="widget-label">Owed to YNAB</p>
         <p id="owed-total" class="widget-figure">$0.00</p>
-        <p class="widget-sub">Reports fill in as you log spends.</p>
+        <p id="ynab-pill" class="widget-sub"></p>
       </div>
       <div class="two-up">
         <div class="glass widget"><p class="widget-label">Total balance</p><p id="total-balance" class="widget-figure small">$0.00</p><p id="card-count" class="widget-sub">0 cards</p></div>
         <div class="glass widget"><p class="widget-label">Saved lifetime</p><p id="saved-total" class="widget-figure small">$0.00</p><p class="widget-sub">on spends so far</p></div>
       </div>
+      <section id="all-activity" class="all-activity" aria-labelledby="all-activity-h"></section>
     </section>
 
     <section id="panel-settings" class="panel" role="tabpanel" aria-labelledby="tab-settings" tabindex="-1" hidden>
       <h1 class="page-title">Settings</h1>
-      <h2 class="group-title">YNAB</h2>
-      <dl class="glass group">
-        <div class="row"><dt>Posting</dt><dd id="set-posting">Off · dry-run</dd></div>
-        <div class="row"><dt>Budget</dt><dd id="set-budget">—</dd></div>
-        <div class="row"><dt>Account</dt><dd id="set-account">—</dd></div>
-        <div class="row"><dt>Gift cards category</dt><dd id="set-giftcat">—</dd></div>
-      </dl>
       <h2 class="group-title">Cards</h2>
       <dl class="glass group">
         <div class="row"><dt>Categories</dt><dd id="set-categories">—</dd></div>
         <div class="row"><dt>Stale retailer after</dt><dd id="set-stale">—</dd></div>
       </dl>
+      <h2 class="group-title">YNAB</h2>
+      <div id="ynab-settings" class="glass group ynab-settings"></div>
+      <h2 class="group-title">Appearance</h2>
+      <div class="glass group">
+        <div class="row row-control">
+          <span id="theme-label">Theme</span>
+          <div class="segmented" role="radiogroup" aria-labelledby="theme-label">
+            <label><input type="radio" name="theme" value="light"><span>Light</span></label>
+            <label><input type="radio" name="theme" value="dark"><span>Dark</span></label>
+          </div>
+        </div>
+      </div>
+      <div id="account-section" hidden>
+        <h2 class="group-title">Account</h2>
+        <div class="glass group">
+          <button id="signout" class="row row-btn" type="button">Sign out</button>
+        </div>
+      </div>
       <p id="build-note" class="foot-note"></p>
     </section>
   </main>
@@ -729,6 +811,7 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
       <div id="spend-using" class="glass group sheet-row">
         <label for="spend-card">Using</label>
         <select id="spend-card"></select>
+        <span id="spend-split" class="using-split" hidden></span>
       </div>
       <div class="amount">
         <span class="amount-cur" aria-hidden="true">$</span>
@@ -736,6 +819,7 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
         <input id="spend-amt" class="amount-in" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" placeholder="0.00" aria-describedby="spend-after">
       </div>
       <p id="spend-after" class="amount-after" aria-live="polite"></p>
+      <ul id="spend-drains" class="split-drains" aria-label="How the split drains your cards" hidden></ul>
       <div class="glass group sheet-row">
         <label for="spend-date">Date</label>
         <input id="spend-date" type="date">
@@ -829,6 +913,7 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
       </div>
       <p id="confirm-msg" class="confirm-q"></p>
       <p id="confirm-more" class="confirm-more" hidden></p>
+      <p id="confirm-undo" class="confirm-undo">You can undo for 6 seconds.</p>
       <button id="confirm-go" class="danger-btn" type="button">Delete</button>
     </div>
   </dialog>
@@ -1146,7 +1231,40 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
   "amctheatres.com": "Other",
   "chipotle.com": "Restaurant"
  },
- "queue": [],
+ "queue": [
+  {
+   "key": "demo-5:post",
+   "spendId": "demo-5",
+   "kind": "post",
+   "status": "dry-run",
+   "attempts": 0,
+   "nextAt": 0
+  },
+  {
+   "key": "demo-13:post",
+   "spendId": "demo-13",
+   "kind": "post",
+   "status": "dry-run",
+   "attempts": 0,
+   "nextAt": 0
+  },
+  {
+   "key": "demo-26:post",
+   "spendId": "demo-26",
+   "kind": "post",
+   "status": "dry-run",
+   "attempts": 0,
+   "nextAt": 0
+  },
+  {
+   "key": "demo-32:post",
+   "spendId": "demo-32",
+   "kind": "post",
+   "status": "dry-run",
+   "attempts": 0,
+   "nextAt": 0
+  }
+ ],
  "settings": {
   "ynab": {
    "budget": "Family Budget",
@@ -2220,6 +2338,149 @@ async function persistDoc({ client, syncId, passphrase, doc, version, salt, reba
 }
 
 
+/* ---- src/core/ynabq.js ---- */
+// src/core/ynabq.js — the YNAB queue (Arc 3 slice 7), as pure data over the document. K4: the queue lives
+// in the encrypted doc (doc.queue), keyed by the spend's entry key; every post/reverse carries a deterministic
+// import_id (computed by the cardsharp-ynab function from that key), so a retry can never double-post.
+//
+// One queue entry per spend ({spendId}:post) and, if a POSTED spend is later deleted, one reversal
+// ({spendId}:reverse). Status:
+//   dry-run        posting is OFF (W6) — shown, never sent. Dry-run entries stay dry-run after cutover: those
+//                  spends reached YNAB through Notion/Pipedream already.
+//   needs-mapping  posting is ON but the retailer's category (or the account / Gift cards category) has no
+//                  YNAB mapping yet — logged anyway (YNAB never blocks logging); posts once mapped.
+//   pending        ready to send (nextAt = earliest attempt).
+//   failed         the last attempt failed; retryable → backoff, else paused (token rejected → reconnect).
+//   posted         YNAB has it (txId, importId, and the exact fields posted — a reversal mirrors them).
+//   skipped        a $0 shift — nothing to move in YNAB.
+// The ledger's entries carry ynabSyncStatus 'dry-run' | 'pending' | 'posted' on a spend's first entry; only
+// 'posted' freezes a spend's shift through a delete replay (Mark, 2026-10-03: "freeze posted").
+
+const BACKOFF_BASE_MS = 30_000, BACKOFF_MAX_MS = 60 * 60_000;
+const UNDO_GRACE_MS = 7_000; // a reversal waits out the 6-second Undo before it is sent
+const ACTIVE = new Set(['pending', 'failed', 'needs-mapping']);
+
+const backoffMs = (attempts) => Math.min(BACKOFF_MAX_MS, BACKOFF_BASE_MS * 2 ** Math.max(0, attempts - 1));
+const ynabSettings = (doc) => (doc.settings && doc.settings.ynab) || {};
+const postingOn = (doc) => !!ynabSettings(doc).postingEnabled;
+
+function retailerOfCard(doc, cardId) {
+  const card = (doc.cards || []).find((c) => c.id === cardId);
+  return card ? (doc.retailers || []).find((r) => r.id === card.retailerId) : null;
+}
+// The YNAB ids a post for this app category needs, or null when anything is unmapped.
+function mappingFor(doc, category) {
+  const y = ynabSettings(doc), ids = y.ids || {};
+  const from = (ids.categories || {})[category || 'Other'];
+  if (!ids.accountId || !ids.giftCategoryId || !from) return null;
+  return { accountId: ids.accountId, giftCategoryId: ids.giftCategoryId, fromCategoryId: from, ...(ids.payeeId ? { payeeId: ids.payeeId } : { payeeName: y.payee || 'xfer' }) };
+}
+function statusForNew(doc, retailer) {
+  if (!postingOn(doc)) return 'dry-run';
+  return mappingFor(doc, retailer && retailer.category) ? 'pending' : 'needs-mapping';
+}
+const queueOf = (doc) => doc.queue || [];
+const queueEntry = (doc, spendId, kind = 'post') => queueOf(doc).find((q) => q.key === `${spendId}:${kind}`) || null;
+
+// the first entry of a spend group carries its shift and its sync status
+function spendHead(doc, spendId) {
+  return (doc.entries || []).find((e) => (e.spendId || e.id) === spendId) || null;
+}
+
+function addPostEntry(doc, spendId, retailer, now = 0) {
+  const status = statusForNew(doc, retailer);
+  const q = { key: `${spendId}:post`, spendId, kind: 'post', status, attempts: 0, nextAt: now };
+  return { ...doc, queue: [...queueOf(doc).filter((x) => x.key !== q.key), q] };
+}
+
+// After a delete replay: drop the post entries of every removed spend; a removed spend that was POSTED gets
+// a reversal of exactly what was posted (it waits out the Undo window first).
+function queueAfterRemoval(doc, removedSpendIds, before, now = 0) {
+  const gone = new Set(removedSpendIds);
+  let queue = queueOf(doc).filter((q) => !(q.kind === 'post' && gone.has(q.spendId)));
+  const reversals = [];
+  for (const id of gone) {
+    const posted = queueEntry(before, id, 'post');
+    if (!posted || posted.status !== 'posted' || !posted.sent) continue;
+    const rev = { key: `${id}:reverse`, spendId: id, kind: 'reverse', status: 'pending', attempts: 0, nextAt: now + UNDO_GRACE_MS, sent: posted.sent };
+    queue = [...queue.filter((q) => q.key !== rev.key), rev];
+    reversals.push({ spendId: id, amount: posted.sent.amount });
+  }
+  return { doc: { ...doc, queue }, reversals };
+}
+
+// The request body the cardsharp-ynab function takes for a due entry, or { skip } / { unmapped }.
+function requestFor(doc, q) {
+  const y = ynabSettings(doc);
+  if (q.kind === 'reverse') return { body: { action: 'reverse', entryKey: q.spendId, budgetName: y.budget || 'Family Budget', ...q.sent } };
+  const head = spendHead(doc, q.spendId);
+  if (!head) return { gone: true };
+  const r = retailerOfCard(doc, head.cardId);
+  if (!(head.ynabShift > 0)) return { skip: true }; // nothing (or nothing sane) to move
+  const map = mappingFor(doc, r && r.category);
+  if (!map) return { unmapped: true };
+  const sent = { amount: head.ynabShift, date: head.date, retailer: r.name, ...map };
+  return { body: { action: 'post', entryKey: q.spendId, budgetName: y.budget || 'Family Budget', ...sent }, sent };
+}
+
+function dueEntries(doc, now) {
+  if (!postingOn(doc)) return [];
+  return queueOf(doc).filter((q) => (q.status === 'pending' || (q.status === 'failed' && !q.paused)) && (q.nextAt || 0) <= now);
+}
+
+// Apply a function result to one queue entry (and, for a post, stamp the ledger 'posted').
+function queueResultMut(doc, key, result, now = 0) {
+  const q = queueOf(doc).find((x) => x.key === key);
+  if (!q) return { doc };
+  let next = { ...q };
+  if (result.ok) next = { ...next, status: 'posted', importId: result.import_id, txId: result.transaction_id, postedAt: now, ...(result.sent ? { sent: result.sent } : {}), error: undefined, paused: undefined };
+  else if (result.skip) next = { ...next, status: 'skipped' };
+  else if (result.unmapped) next = { ...next, status: 'needs-mapping' };
+  else {
+    const attempts = (q.attempts || 0) + 1;
+    next = { ...next, status: 'failed', attempts, error: result.error || 'failed', ...(result.retryable ? { nextAt: now + backoffMs(attempts), paused: undefined } : { paused: true }) };
+  }
+  for (const k of Object.keys(next)) if (next[k] === undefined) delete next[k];
+  let entries = doc.entries;
+  if (result.ok && q.kind === 'post') entries = (doc.entries || []).map((e) => ((e.spendId || e.id) === q.spendId && e.ynabSyncStatus ? { ...e, ynabSyncStatus: 'posted' } : e));
+  return { doc: { ...doc, entries, queue: queueOf(doc).map((x) => (x.key === key ? next : x)) } };
+}
+
+// Settings › YNAB: names (display) + ids (posting). Mapping changes re-check needs-mapping entries.
+function setYnabSettingsMut(doc, patch) {
+  const y = ynabSettings(doc);
+  const ids = { ...(y.ids || {}), ...(patch.ids || {}), categories: { ...((y.ids || {}).categories || {}), ...((patch.ids || {}).categories || {}) } };
+  const ynab = { ...y, ...patch, ids, categoryMap: { ...(y.categoryMap || {}), ...(patch.categoryMap || {}) } };
+  let next = { ...doc, settings: { ...doc.settings, ynab } };
+  next = { ...next, queue: queueOf(next).map((q) => {
+    if (q.status !== 'needs-mapping') return q;
+    const head = spendHead(next, q.spendId), r = head && retailerOfCard(next, head.cardId);
+    return mappingFor(next, r && r.category) ? { ...q, status: 'pending', nextAt: 0 } : q;
+  }) };
+  return { doc: next };
+}
+
+// The W6 cutover switch. Turning ON never sends the dry-run history (it reached YNAB via Notion/Pipedream).
+function setPostingMut(doc, on) {
+  return { doc: { ...doc, settings: { ...doc.settings, ynab: { ...ynabSettings(doc), postingEnabled: !!on } } } };
+}
+
+// What Settings / Reports show.
+function queueSummary(doc) {
+  const out = { 'dry-run': 0, pending: 0, failed: 0, 'needs-mapping': 0, posted: 0, paused: false };
+  for (const q of queueOf(doc)) { out[q.status] = (out[q.status] || 0) + 1; if (q.paused) out.paused = true; }
+  out.active = out.pending + out.failed + out['needs-mapping'];
+  return out;
+}
+// badge for a spend row: the reversal wins over the post
+function badgeFor(doc, spendId) {
+  const rev = queueEntry(doc, spendId, 'reverse'), post = queueEntry(doc, spendId, 'post');
+  const q = rev && rev.status !== 'posted' ? rev : post;
+  if (!q || !ACTIVE.has(q.status)) return null;
+  return q.status === 'needs-mapping' ? 'Map category' : q.status === 'failed' ? (q.paused ? 'Sync paused' : 'Retrying') : q.kind === 'reverse' ? 'Reversal pending' : 'Pending sync';
+}
+
+
 /* ---- src/core/mutations.js ---- */
 // src/core/mutations.js — every write to the Cardsharp document (Arc 2). Pure doc → doc functions
 // plus commitChange, the one path a change takes to the cloud: apply → seal → persistDoc (optimistic
@@ -2229,6 +2490,7 @@ async function persistDoc({ client, syncId, passphrase, doc, version, salt, reba
 // ledger already owns `logSpend`. Money is integer cents throughout; the K3 maths and the
 // one-shift-per-spend rule are the ledger's (logSpendMut delegates to ledger.logSpend).
 // Card numbers and PINs only ever live inside the document — never logged, never thrown in a message.
+
 
 
 
@@ -2322,9 +2584,12 @@ function addCardsMut(doc, retailer, fields, { newId = replayableIds() } = {}) {
 
 // logSpend — one spend on a retailer: one LedgerEntry per drawn card, ONE YNAB shift (K3) on the
 // first. draws (optional) = the sheet's confirmed cascade; omitted → the ledger plans smallest-first.
-// YNAB posting is OFF until cutover (W6), so every spend is recorded as a dry-run.
-function logSpendMut(doc, retailerId, amount, date, draws, { newId = replayableIds() } = {}) {
-  if (!(doc.retailers || []).some((r) => r.id === retailerId)) throw new Error(`unknown retailer ${retailerId}`);
+// YNAB posting is OFF until cutover (W6), so every spend is recorded as a dry-run. Arc 3: every spend also
+// gets its queue entry ({spendId}:post — dry-run / pending / needs-mapping, core/ynabq). Logging never waits
+// on YNAB: the queue is flushed after the write, in the background.
+function logSpendMut(doc, retailerId, amount, date, draws, { newId = replayableIds(), now = Date.now() } = {}) {
+  const retailer = (doc.retailers || []).find((r) => r.id === retailerId);
+  if (!retailer) throw new Error(`unknown retailer ${retailerId}`);
   if (!DATE_RE.test(String(date))) throw new TypeError('date must be YYYY-MM-DD');
   assertCents(amount, 'amount');
   if (amount <= 0) throw new RangeError('spend must be more than $0.00');
@@ -2334,7 +2599,7 @@ function logSpendMut(doc, retailerId, amount, date, draws, { newId = replayableI
     ...(draws && draws.length ? { draws } : {}),
     ynabSyncStatus: posting ? 'pending' : 'dry-run',
   });
-  return { doc: res.doc, entries: res.entries, shift: res.shift };
+  return { doc: addPostEntry(res.doc, res.entries[0].spendId, retailer, now), entries: res.entries, shift: res.shift };
 }
 
 function setFavoriteMut(doc, retailerId, favorite) {
@@ -2365,8 +2630,9 @@ function setCardDetailsMut(doc, cardId, { number, pin } = {}) {
 // "Saving %" equal a document that never had the removed item — to the cent. Spends keep their draws;
 // a spend that drew from a deleted card is re-planned smallest-first across the remaining cards (or
 // removed if they can't cover it, or if it drew ONLY from that card). Refunds recompute their shift.
-// Imported history (migration / adjustment) keeps its stored amounts and shift. Anything already sent
-// to YNAB (ynabSyncStatus other than 'dry-run') is never removed or rewritten.
+// Imported history (migration / adjustment) keeps its stored amounts and shift.
+// Arc 3 (Mark: "freeze posted"): a spend already POSTED to YNAB keeps its posted shift through the replay
+// (its draws may re-plan); if it is removed, the caller queues a reversal of exactly what was posted.
 
 class SyncedEntryError extends Error {
   constructor() { super('Already sent to YNAB — reverse it instead'); this.name = 'SyncedEntryError'; this.code = 'synced'; }
@@ -2378,7 +2644,6 @@ class UndoStaleError extends Error {
   constructor() { super('the document changed since — undo skipped'); this.name = 'UndoStaleError'; this.code = 'undoStale'; }
 }
 
-const isSynced = (status) => status != null && status !== 'dry-run';
 const groupStatus = (entries) => (entries.find((e) => e.ynabSyncStatus) || {}).ynabSyncStatus;
 const sameEntries = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -2416,6 +2681,10 @@ function replayRetailer(doc, retailerId, { dropSpendIds = [], dropCardIds = [] }
       if (!res && kept.length) {
         try { res = logSpend(work, base); didReplan = true; } catch (e) { if (e.code !== 'insufficientBalance') throw e; }
       }
+      if (res && status === 'posted') { // freeze the posted shift (YNAB already moved exactly that)
+        const frozen = { ...res.entries[0], ynabShift: g.entries[0].ynabShift || 0 };
+        res = { ...res, entries: [frozen, ...res.entries.slice(1)], doc: { ...res.doc, entries: res.doc.entries.map((e) => (e.id === frozen.id ? frozen : e)) } };
+      }
       if (res) { next = res.entries; work = res.doc; }
     } else if (g.type === 'refund') {
       const e = g.entries[0];
@@ -2431,7 +2700,6 @@ function replayRetailer(doc, retailerId, { dropSpendIds = [], dropCardIds = [] }
         next = kept;
       }
     }
-    if (isSynced(status) && (!next || !sameEntries(next, g.entries))) throw new SyncedEntryError();
     if (next) { out.set(g.key, next); if (didReplan) replanned.push(g.key); }
     else removed.push({ spendId: g.key, type: g.type, amount: drawn });
   }
@@ -2455,27 +2723,29 @@ function retailerOfSpend(doc, spendId) {
   return { retailerId: card.retailerId, group };
 }
 
-// deleteSpend — removes the spend (all of its draws) and replays the retailer's later entries.
-function deleteSpendMut(doc, spendId) {
+// deleteSpend — removes the spend (all of its draws) and replays the retailer's later entries. A removed
+// spend that was POSTED queues a reversal (Arc 3); its post entry goes either way.
+function deleteSpendMut(doc, spendId, { now = Date.now() } = {}) {
   const { retailerId, group } = retailerOfSpend(doc, spendId);
-  if (isSynced(groupStatus(group))) throw new SyncedEntryError();
   const res = replayRetailer(doc, retailerId, { dropSpendIds: [spendId] });
+  const q = queueAfterRemoval(res.doc, res.removed.map((r) => r.spendId), doc, now);
   return {
-    doc: res.doc, retailerId, type: group[0].type, amount: group.reduce((t, e) => t - e.amount, 0),
-    alsoRemoved: res.removed.filter((r) => r.spendId !== spendId), replanned: res.replanned,
+    doc: q.doc, retailerId, type: group[0].type, amount: group.reduce((t, e) => t - e.amount, 0),
+    alsoRemoved: res.removed.filter((r) => r.spendId !== spendId), replanned: res.replanned, reversals: q.reversals,
   };
 }
 
 // deleteCard — removes the card and its entries (replayed as above); the retailer goes with its last card.
-function deleteCardMut(doc, cardId) {
+function deleteCardMut(doc, cardId, { now = Date.now() } = {}) {
   const card = (doc.cards || []).find((c) => c.id === cardId);
   if (!card) throw new Error('unknown card');
   const retailerId = card.retailerId;
   const res = replayRetailer(doc, retailerId, { dropCardIds: [cardId] });
-  let next = res.doc;
+  const q = queueAfterRemoval(res.doc, res.removed.map((r) => r.spendId), doc, now);
+  let next = q.doc;
   const retailerRemoved = !next.cards.some((c) => c.retailerId === retailerId);
   if (retailerRemoved) next = { ...next, retailers: next.retailers.filter((r) => r.id !== retailerId) };
-  return { doc: next, retailerId, removed: res.removed, replanned: res.replanned, retailerRemoved };
+  return { doc: next, retailerId, removed: res.removed, replanned: res.replanned, retailerRemoved, reversals: q.reversals };
 }
 
 // setRetailerCategory — moves the BRAND (cards hang off the retailer) and remembers it for the domain.
@@ -3000,9 +3270,12 @@ function retailerSummary(doc, r) {
 
 const byName = (a, b) => String(a.retailer.name).localeCompare(String(b.retailer.name), undefined, { sensitivity: 'base' });
 
-// Home search (Arc 2b): does retailer r match the query? Word-prefix on the retailer name, its catalog
-// aliases and its category (apostrophes/case/diacritics ignored, "the" optional); a query of 2–4
-// digits matches a card's last 4. Card numbers stay in memory — they are never rendered by this.
+// Home search: does retailer r match the query? (Arc 3 slice 1 — Mark: "S" showed Apple, via its alias
+// "app store".) The brand NAME matches by word-prefix at any length ("the" optional, spaces optional);
+// a catalog ALIAS only when the query is ≥ 3 chars and the alias STARTS with it; the CATEGORY only for a
+// ≥ 3-char query that starts one of its words ("rest" → Restaurant). Apostrophes/case/diacritics are
+// ignored. A query of 2–4 digits matches a card's last 4 — card numbers are never rendered by this.
+const ALIAS_MIN = 3, CATEGORY_MIN = 3;
 function retailerMatches(doc, r, query) {
   const q = normName(query);
   if (!q) return true;
@@ -3010,9 +3283,11 @@ function retailerMatches(doc, r, query) {
     return cardsOf(doc, r.id).some((c) => String(c.number || '').replace(/\D/g, '').slice(-4).includes(q));
   }
   const known = catalogByDomain(r.brandDomain);
-  const hay = [r.name, ...(known ? [known.name, ...known.aliases] : []), r.category || 'Other'].map(normName);
   const qs = q.replace(/ /g, '');
-  return hay.some((h) => (' ' + h).includes(' ' + q) || h.replace(/^the /, '').replace(/ /g, '').startsWith(qs));
+  const names = [r.name, ...(known ? [known.name] : [])].map(normName);
+  if (names.some((h) => (' ' + h).includes(' ' + q) || h.replace(/^the /, '').replace(/ /g, '').startsWith(qs))) return true;
+  if (q.length >= ALIAS_MIN && known && known.aliases.map(normName).some((a) => a.startsWith(q) || a.replace(/ /g, '').startsWith(qs))) return true;
+  return q.length >= CATEGORY_MIN && (' ' + normName(r.category || 'Other')).includes(' ' + q);
 }
 
 // → [{ key, label, items: [retailerSummary…] }], empty groups dropped. opts.query filters (home search).
@@ -3227,6 +3502,43 @@ function bigDemoDoc(n = 100) {
 }
 
 
+/* ---- src/core/activity.js ---- */
+// src/core/activity.js — Reports › All activity (Arc 3), as pure data. One row per EVENT, newest first:
+//  - a spend is ONE row however many cards it drained (its LedgerEntries share a spendId; the per-card
+//    split stays on the brand's detail screen) — a deduction, amount = Σ entry amounts (negative);
+//  - refunds / adjustments / imported history keep their sign (one row per spendId group);
+//  - every card is a "Card added" row: +face on its purchase date.
+// Ties on a date: the later-logged event first (spends logged after a card bought the same day sit above it).
+// Card numbers and PINs are never read here.
+
+
+const ACTIVITY_KINDS = { spend: 'Spend', refund: 'Refund', migration: 'Imported', adjustment: 'Adjustment', card: 'Card added' };
+
+function activityLog(doc) {
+  const cards = doc.cards || [], retailers = doc.retailers || [];
+  const cardById = new Map(cards.map((c) => [c.id, c]));
+  const nameOf = new Map(retailers.map((r) => [r.id, r.name]));
+  const rows = [];
+  const groups = new Map();
+  (doc.entries || []).forEach((e, i) => {
+    const card = cardById.get(e.cardId);
+    if (!card) return;
+    const key = e.spendId || e.id;
+    if (!groups.has(key)) {
+      const g = { kind: e.type in ACTIVITY_KINDS ? e.type : 'adjustment', key, spendId: key, retailerId: card.retailerId, date: e.date, amount: 0, cardCount: 0, seq: cards.length + i };
+      groups.set(key, g); rows.push(g);
+    }
+    const g = groups.get(key);
+    g.amount += assertCents(e.amount, 'entry.amount');
+    g.cardCount += 1;
+    if (e.ynabSyncStatus && !g.ynabSyncStatus) g.ynabSyncStatus = e.ynabSyncStatus;
+  });
+  cards.forEach((c, i) => rows.push({ kind: 'card', key: `card:${c.id}`, cardId: c.id, retailerId: c.retailerId, date: c.purchaseDate, amount: assertCents(c.face, 'card.face'), cardCount: 1, seq: i }));
+  for (const r of rows) { r.brand = nameOf.get(r.retailerId) || '—'; r.label = ACTIVITY_KINDS[r.kind]; }
+  return rows.sort((a, b) => String(b.date).localeCompare(String(a.date)) || b.seq - a.seq);
+}
+
+
 /* ---- src/ui/dom.js ---- */
 // src/ui/dom.js — the two DOM helpers every UI module shares (one scope after the build).
 function $(id) { return document.getElementById(id); }
@@ -3360,7 +3672,8 @@ let pending = null;
 function settle(v) { const f = pending; pending = null; const d = $('confirm-sheet'); if (d.open) d.close(); if (f) f(v); }
 
 let confirmWired = false;
-function confirmSheet({ title, message, more = '', action = 'Delete' }) {
+// undoHint: the "You can undo for 6 seconds." caption (deletes); danger: the red action button.
+function confirmSheet({ title, message, more = '', action = 'Delete', undoHint = true, danger = true }) {
   if (!confirmWired) {
     confirmWired = true;
     $('confirm-cancel').addEventListener('click', () => settle(false));
@@ -3374,6 +3687,8 @@ function confirmSheet({ title, message, more = '', action = 'Delete' }) {
   $('confirm-more').textContent = more;
   $('confirm-more').hidden = !more;
   $('confirm-go').textContent = action;
+  $('confirm-undo').hidden = !undoHint;
+  $('confirm-go').classList.toggle('is-calm', !danger);
   return new Promise((resolve) => {
     pending = resolve;
     openSheet($('confirm-sheet'));
@@ -3407,6 +3722,12 @@ function brandfetchClient() {
 // 404, offline) swaps in the monogram, so a card face is never empty.
 function logoTile(retailer, size = 'lg') {
   const tile = el('span', `gc-logo gc-logo-${size}`);
+  // Eye P1 (Arc 2b): the Add Card ghost showed "NG" initials — a neutral gift glyph until a brand is picked
+  if (retailer.glyph === 'gift') {
+    tile.classList.add('is-glyph');
+    tile.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><rect x="5" y="12" width="14" height="8.5" rx="1"/><line x1="12" y1="8" x2="12" y2="20.5"/><path d="M12 8c-1.5-3.5-5.5-4-5.5-1.5S10 8 12 8zM12 8c1.5-3.5 5.5-4 5.5-1.5S14 8 12 8z"/></svg>';
+    return tile;
+  }
   const mono = () => { tile.replaceChildren(el('span', 'gc-mono', monogram(retailer.name))); tile.classList.add('is-mono'); };
   const url = logoUrl(retailer.brandDomain, brandfetchClient());
   if (!url) { mono(); return tile; }
@@ -3440,13 +3761,13 @@ function cardFace(s, opts = {}) {
   const mid = el('span', 'gc-mid');
   mid.append(logoTile(r, 'lg'));
   const bottom = el('span', 'gc-bottom');
-  if (s.cardCount > 1) {
+  const bal = el('span', 'gc-bal');
+  if (s.cardCount > 1) { // multi-card pips ride above the balance (Arc 3: the logo owns the left side)
     const pips = el('span', 'gc-pips');
     pips.setAttribute('aria-hidden', 'true');
     for (let i = 0; i < Math.min(3, s.cardCount); i++) pips.append(el('i'));
-    bottom.append(pips);
+    bal.append(pips);
   }
-  const bal = el('span', 'gc-bal');
   bal.append(el('small', null, opts.balanceLabel || 'Balance'), el('span', 'gc-amt', formatCents(s.balance)));
   bottom.append(bal);
   card.append(top, mid, bottom);
@@ -3495,6 +3816,27 @@ function jumpTo(key) {
   const y = sec.getBoundingClientRect().top + window.scrollY - stickyTop();
   window.scrollTo({ top: Math.max(0, Math.round(y)), behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
 }
+// Auto-size (Arc 3): the largest chip size at which the whole set fits on one line with at least
+// JUMP_MIN_GAP between chips and at the edges; justify-content: space-evenly then makes every gap equal,
+// edge to edge. Smaller than the smallest size → wrap. Publishes the row height for the sticky headers.
+const JUMP_SIZES = [[12, 8], [11.5, 7], [11, 6]]; // Arc 2b was 14px / 13px // [font px, side padding px]
+const JUMP_MIN_GAP = 6;
+function fitJumpRow(row) {
+  if (!row || row.hidden) return;
+  const chips = [...row.querySelectorAll('.jump-chip')];
+  const avail = row.clientWidth;
+  if (!chips.length || !avail) return;
+  let fits = false;
+  row.classList.remove('is-wrapped');
+  for (const [f, p] of JUMP_SIZES) {
+    row.style.setProperty('--jf', `${f}px`); row.style.setProperty('--jp', `${p}px`);
+    const total = chips.reduce((t, c) => t + c.getBoundingClientRect().width, 0);
+    if (total + JUMP_MIN_GAP * (chips.length + 1) <= avail) { fits = true; break; }
+  }
+  row.classList.toggle('is-wrapped', !fits);
+  const panel = row.closest('.panel');
+  if (panel) panel.style.setProperty('--jump-h', `${Math.round(row.getBoundingClientRect().height)}px`);
+}
 function paintJumpRow(row, groups) {
   row.replaceChildren(...groups.map((g) => {
     const b = el('button', 'jump-chip', g.label.replace(/^★\s*/, ''));
@@ -3504,6 +3846,7 @@ function paintJumpRow(row, groups) {
     b.addEventListener('click', () => jumpTo(g.key));
     return b;
   }));
+  fitJumpRow(row);
   markCurrentSection(row);
 }
 // The current section = the last one whose top has reached the sticky chrome.
@@ -3532,6 +3875,7 @@ function markCurrentSection(row) {
 // list and Card info: numbers + PINs revealed on tap, tap-to-copy, hidden again after 30s and whenever
 // the view is left, the tab changes, the page hides or the vault locks. Nothing secret is ever logged.
 // Activity rows and card rows swipe left to Delete (a real, focusable button in the tray).
+
 
 
 
@@ -3605,7 +3949,10 @@ function activityRows(doc, retailerId, labels, onDeleteSpend) {
     const li = el('li', `act-row act-${e.type}`);
     const kind = e.type === 'refund' ? 'Refund' : e.type === 'migration' ? 'Imported' : e.type === 'spend' ? 'Spend' : 'Adjustment';
     const left = el('span', 'act-what');
-    left.append(el('span', 'act-title', `${kind} · ${labels.get(e.cardId) || 'Card'}`), el('span', 'act-date', fmtDate(e.date, true)));
+    const title = el('span', 'act-title', `${kind} · ${labels.get(e.cardId) || 'Card'}`);
+    const badge = e.type === 'spend' && e.ynabShift ? badgeFor(doc, e.spendId || e.id) : null; // Arc 3: pending sync
+    if (badge) title.append(el('span', 'sync-badge', badge));
+    left.append(title, el('span', 'act-date', fmtDate(e.date, true)));
     const amt = el('span', `act-amt${e.amount > 0 ? ' is-credit' : ''}`, `${e.amount > 0 ? '+' : ''}${formatCents(e.amount)}`);
     li.append(left, amt);
     if (onDeleteSpend) makeSwipe(li, { label: `Delete ${kind.toLowerCase()} ${formatCents(Math.abs(e.amount))}, ${fmtDate(e.date, true)}`, onDelete: () => onDeleteSpend(e.spendId || e.id) });
@@ -3695,6 +4042,7 @@ function paintDetail(doc, retailerId, handlers = {}) {
   const row = (k, v) => { const rw = el('div', 'row'); rw.append(el('dt', null, k), v instanceof Node ? v : el('dd', null, v)); dl.append(rw); return rw; };
   row('Original balance', formatCents(face));
   row('Total paid', formatCents(paid));
+  row('Owed to YNAB', formatCents(s.owed)).classList.add('owed-row'); // per RETAILER: paid − Σ shifts (K2)
   // "(avg 23.2%) Saved $X" — avg = Σsaved ÷ Σface over the retailer's cards (1 dp, integer maths)
   const saved = el('dd', 'saved-dd');
   saved.append(el('span', 'avg-pct', `(avg ${avgSavingPct(face - paid, face)})`), document.createTextNode(` Saved ${formatCents(face - paid)}`));
@@ -3734,7 +4082,10 @@ function paintDetail(doc, retailerId, handlers = {}) {
   for (const c of [...cards].sort((a, b) => labels.get(a.id).localeCompare(labels.get(b.id), undefined, { numeric: true }))) {
     const row = el('div', 'info-row');
     const head = el('div', 'info-head');
-    head.append(el('span', 'info-label', labels.get(c.id)));
+    // Eye P1 (Arc 2b): a swiped row kept no identity — it reads "Card 3 · $100.00", "No details" beneath
+    const label = el('span', 'info-label', `${labels.get(c.id)} · ${formatCents(cardBalance(doc, c))}`);
+    if (!c.number && !c.pin) label.append(el('span', 'info-sub', 'No details'));
+    head.append(label);
     if (c.number || c.pin) {
       const btn = el('button', 'reveal-btn', 'Reveal');
       btn.type = 'button';
@@ -3743,7 +4094,7 @@ function paintDetail(doc, retailerId, handlers = {}) {
       btn.setAttribute('aria-label', `Reveal number and PIN for ${labels.get(c.id)}`);
       btn.addEventListener('click', () => revealSecrets(c, row, btn));
       head.append(btn);
-    } else head.append(el('span', 'info-none', 'No card details stored'));
+    }
     row.append(head);
     if (onDeleteCard) makeSwipe(row, { label: `Delete ${labels.get(c.id)}`, onDelete: () => onDeleteCard(c.id) });
     ilist.append(row);
@@ -3796,8 +4147,30 @@ function parseAmount(raw) {
 }
 const optionText = (label, bal) => `${label} · ${formatCents(bal)}`;
 
+// Size the amount input to its content (ch, tabular digits) so "$ + amount" stays centred as one unit.
+function sizeAmount() {
+  const i = $('spend-amt');
+  const n = Math.min(8, Math.max(2, (i.value || i.placeholder || '').length));
+  i.style.width = `${n + 0.6}ch`;
+}
+// Eye P1 (Arc 2b): while the amount exceeds the picked card, "Using" reads "Auto-split · N cards" and the
+// drains (the same smallest-first plan the cascade will propose) list under After.
+function showSplit(draws) {
+  const using = $('spend-using'), list = $('spend-drains');
+  const on = !!draws && draws.length > 1;
+  $('spend-card').hidden = on;
+  $('spend-split').hidden = !on;
+  using.querySelector('label').textContent = on ? 'Split' : 'Using';
+  list.hidden = !on;
+  if (!on) { list.replaceChildren(); return; }
+  $('spend-split').textContent = `Auto-split · ${draws.length} cards`;
+  const bal = new Map(liveCards(sheet.doc, sheet.retailerId).map((c) => [c.id, c.balance]));
+  list.replaceChildren(...draws.map((d) => el('li', null, `${sheet.labels.get(d.cardId)}: ${formatCents(bal.get(d.cardId))} → ${formatCents(bal.get(d.cardId) - d.amount)}`)));
+}
+
 // Recompute the preview / validity line from the current inputs.
 function update() {
+  sizeAmount();
   const { doc, retailerId } = sheet;
   const total = retailerBalance(doc, retailerId);
   const amount = parseAmount($('spend-amt').value);
@@ -3805,14 +4178,16 @@ function update() {
   const chosen = cards.find((c) => c.id === $('spend-card').value) || cards[0];
   const msg = $('spend-after'), go = $('spend-go');
   msg.classList.remove('is-error');
+  showSplit(null);
   if ($('spend-amt').value.trim() && amount === null) { msg.textContent = 'Enter an amount like 12.50'; msg.classList.add('is-error'); go.disabled = true; return; }
   if (amount === null) { msg.textContent = `After: ${formatCents(total)} remaining`; go.disabled = true; return; }
   if (amount > total) {
     msg.textContent = `Only ${formatCents(total)} left across your ${sheet.retailerName} cards`;
     msg.classList.add('is-error'); go.disabled = true; return;
   }
-  const split = chosen && amount > chosen.balance ? ' · splits across cards' : '';
-  msg.textContent = `After: ${formatCents(total - amount)} remaining${split}`;
+  const splits = chosen && amount > chosen.balance;
+  msg.textContent = `After: ${formatCents(total - amount)} remaining`;
+  if (splits) showSplit(plan(amount, cards, { firstCardId: chosen.id }));
   go.disabled = false;
 }
 
@@ -3938,6 +4313,9 @@ function openSpendSheet(doc, retailerId, onCommit) {
 // (≥ 2 chars, ~250ms debounce, results cached per query in memory, stale responses ignored, filtered:
 // one per domain, no catalog domains, no foreign brands unless asked, max 3) and is skipped entirely
 // once the catalog fills its block for a ≥ 4-char query. Never the keyed Brand API.
+// Arc 3 slice 1 (Mark): when the catalog HAS a match, Brand Search does not run on its own — a quiet
+// "Search more brands" row (a real option: tap, or arrow + Enter) runs it on demand. No catalog match →
+// the fallback runs as before.
 
 
 
@@ -4021,7 +4399,7 @@ function renderAdd() {
   const ready = !!add.brand || !!known || (okFace && !!v.name);
   const retailer = ready
     ? { id: 'preview', name: v.name || 'Retailer', brandDomain: add.brand ? add.brand.domain : known && known.brandDomain, brandColor: (known && known.brandColor) || (add.brand && add.brand.brandColor), favorite: v.favorite }
-    : { id: 'preview', name: 'New gift card', brandColor: GHOST_COLOR };
+    : { id: 'preview', name: 'New gift card', brandColor: GHOST_COLOR, glyph: 'gift' };
   const preview = cardFace({ retailer, balance: face * add.qty, owed: paid * add.qty, saving: okFace && okPaid ? savingLabel(paid, face) : '', cardCount: add.qty, zero: false }, { tag: 'div' });
   preview.classList.toggle('is-ghost', !ready);
   $('add-preview-card').replaceChildren(preview);
@@ -4049,11 +4427,23 @@ function suggestOption(r, i) {
   opt.addEventListener('click', () => pickBrand(i));
   return opt;
 }
-// Two blocks: the catalog on top, Brand Search below an "Other brands" divider.
-function showSuggest(catalogRows, otherRows = []) {
+// Two blocks: the catalog on top, Brand Search below an "Other brands" divider — or, while Brand Search
+// has not run, a "Search more brands" row under the catalog block.
+const MORE = { source: 'more', name: 'Search more brands' };
+function moreOption(i) {
+  const opt = el('div', 'suggest-row suggest-more');
+  opt.id = `add-opt-${i}`; opt.setAttribute('role', 'option'); opt.setAttribute('aria-selected', 'false');
+  opt.dataset.source = 'more';
+  opt.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><line x1="16" y1="16" x2="20.5" y2="20.5"/></svg>';
+  opt.append(el('span', 'suggest-more-txt', MORE.name));
+  opt.addEventListener('mousedown', (e) => e.preventDefault());
+  opt.addEventListener('click', () => pickBrand(i));
+  return opt;
+}
+function showSuggest(catalogRows, otherRows = [], { more = false, none = false } = {}) {
   const list = $('add-suggest');
   const keep = add.active >= 0 && add.active < catalogRows.length ? add.active : -1;
-  add.results = [...catalogRows, ...otherRows]; add.active = -1;
+  add.results = [...catalogRows, ...otherRows, ...(more ? [MORE] : [])]; add.active = -1;
   if (!add.results.length) { closeSuggest(); return; }
   const blocks = [];
   if (catalogRows.length) {
@@ -4065,6 +4455,14 @@ function showSuggest(catalogRows, otherRows = []) {
     const g = el('div', 'suggest-group suggest-other'); g.setAttribute('role', 'group'); g.setAttribute('aria-label', 'Other brands');
     const div = el('div', 'suggest-divider', 'Other brands'); div.setAttribute('aria-hidden', 'true');
     g.append(div, ...otherRows.map((r, i) => suggestOption(r, catalogRows.length + i)));
+    blocks.push(g);
+  } else if (more) {
+    const g = el('div', 'suggest-group'); g.setAttribute('role', 'group'); g.setAttribute('aria-label', 'More brands');
+    g.append(moreOption(catalogRows.length));
+    blocks.push(g);
+  } else if (none) {
+    const g = el('div', 'suggest-group suggest-none'); g.setAttribute('role', 'group'); g.setAttribute('aria-label', 'Other brands');
+    g.append(el('div', 'suggest-divider', 'No other brands'));
     blocks.push(g);
   }
   list.replaceChildren(...blocks);
@@ -4083,6 +4481,7 @@ function setActive(i) {
 function pickBrand(i) {
   const r = add.results[i];
   if (!r) return;
+  if (r.source === 'more') { searchMore(); return; }
   add.brand = r;
   $('add-retailer').value = r.name;
   closeSuggest();
@@ -4090,6 +4489,26 @@ function pickBrand(i) {
   $('add-face').focus();
 }
 
+// Brand Search for the current query; stale answers (the user typed on) are dropped.
+function runFallback(q, seq, catalogRows, { onDemand = false } = {}) {
+  return (async () => {
+    try {
+      const rows = await searchBrands(q);
+      if (seq !== add.seq) return;
+      const others = filterFallback(rows, q, catalogRows.map((r) => r.domain)).map((r) => ({ ...r, source: 'brandfetch' }));
+      if (others.length || onDemand) showSuggest(catalogRows, others, { none: onDemand && !others.length });
+      if (onDemand && others.length) setActive(catalogRows.length);
+    } catch (_) {
+      if (onDemand && seq === add.seq) showSuggest(catalogRows, [], { none: true });
+      /* search is a nicety: the catalog block (or a free-typed retailer) always works */
+    }
+  })();
+}
+function searchMore() {
+  const q = $('add-retailer').value.trim();
+  const catalogRows = add.results.filter((r) => r.source === 'catalog');
+  runFallback(q, add.seq, catalogRows, { onDemand: true });
+}
 function onRetailerInput() {
   add.brand = null; // typing again un-picks the brand (a free-typed name is fine: monogram logo)
   refreshCategory(); renderAdd();
@@ -4098,21 +4517,16 @@ function onRetailerInput() {
   const seq = ++add.seq;
   if (normName(q).length < 2) { closeSuggest(); return; }
   const catalogRows = searchCatalog(q, CATALOG_MAX).map((b) => ({ name: b.name, domain: b.domain, category: b.category, brandColor: b.brandColor, source: 'catalog' }));
-  showSuggest(catalogRows);
-  if (!needsFallback(q, catalogRows.length) || !brandfetchClient()) return;
-  add.timer = setTimeout(async () => {
-    try {
-      const rows = await searchBrands(q);
-      if (seq !== add.seq) return;
-      const others = filterFallback(rows, q, catalogRows.map((r) => r.domain)).map((r) => ({ ...r, source: 'brandfetch' }));
-      if (others.length) showSuggest(catalogRows, others);
-    } catch (_) { /* search is a nicety: the catalog block (or a free-typed retailer) always works */ }
-  }, SEARCH_DEBOUNCE_MS);
+  const canSearch = needsFallback(q, catalogRows.length) && !!brandfetchClient();
+  // a catalog match → no automatic Brand Search; offer it as a row instead
+  showSuggest(catalogRows, [], { more: canSearch && catalogRows.length > 0 });
+  if (!canSearch || catalogRows.length) return;
+  add.timer = setTimeout(() => runFallback(q, seq, catalogRows), SEARCH_DEBOUNCE_MS);
 }
 function onRetailerKey(e) {
   const open = !$('add-suggest').hidden;
   if (e.key === 'ArrowDown' && open) { e.preventDefault(); setActive(add.active + 1); }
-  else if (e.key === 'ArrowUp' && open) { e.preventDefault(); setActive(add.active - 1); }
+  else if (e.key === 'ArrowUp' && open) { e.preventDefault(); setActive(add.active < 0 ? -1 : add.active - 1); } // ↑ from the field → the last row
   else if (e.key === 'Enter' && open && add.active >= 0) { e.preventDefault(); pickBrand(add.active); }
   else if (e.key === 'Escape' && open) { e.preventDefault(); e.stopPropagation(); closeSuggest(); }
 }
@@ -4137,7 +4551,8 @@ function wireAdd() {
   $('add-cancel').addEventListener('click', () => $('add-sheet').close());
   $('add-retailer').addEventListener('input', onRetailerInput);
   $('add-retailer').addEventListener('keydown', onRetailerKey);
-  $('add-retailer').addEventListener('blur', () => setTimeout(closeSuggest, 120));
+  // close on blur — unless focus came back to the field meanwhile (a stale timer must not shut fresh rows)
+  $('add-retailer').addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== $('add-retailer')) closeSuggest(); }, 120));
   for (const id of ['add-face', 'add-paid', 'add-fav', 'add-number', 'add-pin']) $(id).addEventListener('input', renderAdd);
   $('add-category').addEventListener('change', () => { add.catTouched = true; $('add-cat-hint').textContent = ''; renderAdd(); });
   $('add-qty-dec').addEventListener('click', () => { add.qty = Math.max(1, add.qty - 1); renderAdd(); });
@@ -4213,6 +4628,280 @@ function openCapture(doc, retailerId, cardIds, { onSet, onDone }) {
 function updateCaptureDoc(doc) { cap.doc = doc; }
 
 
+/* ---- src/ui/reports.js ---- */
+// src/ui/reports.js — Reports › All activity (Arc 3 slice 4): every event newest first — Date · Brand ·
+// Amount — in its own scroll area with a sticky header row. Spends are deductions (−$X), added cards are
+// increases (+$face, "Card added"), refunds/adjustments keep their sign; one row per spend. Tap a row →
+// that brand's detail. Swipe left (or focus the tray's Delete) → the same confirm + replay + 6s Undo as the
+// detail screen: a spend row deletes the spend, a "Card added" row deletes that card (and its spends).
+// ARIA table (role=table/row/cell): a real <table> can't host the swipe tray.
+
+
+
+
+
+
+
+
+const cell = (cls, child) => { const c = el('div', `ra-cell ${cls}`); c.setAttribute('role', 'cell'); if (child != null) c.append(child); return c; };
+
+// handlers: { onDeleteSpend(spendId), onDeleteCard(cardId) }
+function paintActivity(doc, root, handlers = {}) {
+  const rows = doc ? activityLog(doc) : [];
+  root.replaceChildren();
+  const h = el('h2', 'section-h', 'All activity'); h.id = 'all-activity-h';
+  const count = el('span', 'ra-count', rows.length ? `${rows.length} ${rows.length === 1 ? 'event' : 'events'}` : '');
+  const head = el('div', 'ra-title'); head.append(h, count);
+  root.append(head);
+  if (!rows.length) { root.append(el('p', 'act-empty glass group', 'No activity yet — add a card to start.')); return 0; }
+
+  const scroll = el('div', 'ra-scroll glass group');
+  scroll.tabIndex = 0; // a keyboard-scrollable region (axe: scrollable-region-focusable)
+  const table = el('div', 'ra-table'); table.setAttribute('role', 'table'); table.setAttribute('aria-labelledby', 'all-activity-h');
+  table.setAttribute('aria-rowcount', String(rows.length + 1));
+  const thead = el('div', 'ra-head'); thead.setAttribute('role', 'rowgroup');
+  const hr = el('div', 'ra-row ra-hrow'); hr.setAttribute('role', 'row');
+  for (const [t, cls] of [['Date', 'ra-date'], ['Brand', 'ra-brand'], ['Amount', 'ra-amt']]) { const c = el('div', `ra-cell ${cls}`, t); c.setAttribute('role', 'columnheader'); hr.append(c); }
+  thead.append(hr);
+  const body = el('div', 'ra-body'); body.setAttribute('role', 'rowgroup');
+  for (const r of rows) {
+    const row = el('div', `ra-row ra-${r.kind}`); row.setAttribute('role', 'row');
+    row.dataset.kind = r.kind; row.dataset.key = r.key; row.dataset.retailer = r.retailerId; row.dataset.amount = String(r.amount);
+    const link = el('a', 'ra-link', r.brand); link.href = routeHref(`card/${encodeURIComponent(r.retailerId)}`);
+    const kindTxt = el('span', 'ra-kind', r.kind === 'spend' && r.cardCount > 1 ? `Spend · ${r.cardCount} cards` : r.label);
+    const badge = r.kind === 'spend' ? badgeFor(doc, r.spendId) : null; // Arc 3: pending sync
+    if (badge) kindTxt.append(el('span', 'sync-badge', badge));
+    const brand = el('span', 'ra-brand-in'); brand.append(link, kindTxt);
+    const amt = el('span', `ra-amt-in${r.amount > 0 ? ' is-credit' : ''}`, `${r.amount > 0 ? '+' : ''}${formatCents(r.amount)}`);
+    row.append(cell('ra-date', fmtDate(r.date, true)), cell('ra-brand', brand), cell('ra-amt', amt));
+    // the whole row is a tap target for the brand detail (the link is the keyboard path)
+    row.addEventListener('click', (e) => { if (e.target.closest('a, button')) return; location.hash = `card/${encodeURIComponent(r.retailerId)}`; });
+    const del = r.kind === 'card' ? handlers.onDeleteCard && (() => handlers.onDeleteCard(r.cardId))
+      : handlers.onDeleteSpend && (() => handlers.onDeleteSpend(r.spendId));
+    if (del) {
+      const what = r.kind === 'card' ? `card added ${formatCents(r.amount)}` : `${r.label.toLowerCase()} ${formatCents(Math.abs(r.amount))}`;
+      makeSwipe(row, { label: `Delete ${what}, ${r.brand}, ${fmtDate(r.date, true)}`, onDelete: del });
+      row.querySelector(':scope > .swipe-tray').setAttribute('role', 'cell');
+    }
+    body.append(row);
+  }
+  table.append(thead, body);
+  scroll.append(table);
+  root.append(scroll);
+  return rows.length;
+}
+
+
+/* ---- src/ui/ynab.js ---- */
+// src/ui/ynab.js — YNAB in the app (Arc 3 slice 7): the cardsharp-ynab client, the background queue flush,
+// and Settings › YNAB. Browser → Edge Function only (W4): the YNAB token never reaches the page; the call is
+// gated by the x-plan-id the passkey unlock released.
+//  - Settings › YNAB (under Cards): account, payee, Gift cards category and a per-app-category → YNAB
+//    category mapping, filled from the function's `config`. Not reachable (not deployed yet, offline, demo)
+//    → "Connect after deploy" with the current values. Names are matched once to ids when config loads.
+//  - Posting is OFF (W6) and the switch is locked behind an explicit cutover confirm. This arc never flips
+//    it: the confirm is reachable only with the test-only `?demo=1&ynabtest=1` flag.
+//  - Flush: due queue entries go one at a time (post / reverse); results are committed back into the doc;
+//    retries back off; "token rejected" pauses the queue and Settings says "Reconnect required".
+//    Logging NEVER waits on any of this.
+
+
+
+
+const YNAB_FN = 'https://eepjhpyziczrxvirczio.supabase.co/functions/v1/cardsharp-ynab';
+const W6_TEXT = 'Turn this on only at cutover — after you’ve stopped logging gift card spends in Notion. Pipedream still posts every Notion spend to YNAB; with both on, each spend would post twice.';
+const yn = { ctx: null, flushing: false, again: false, timer: null, config: null, configState: 'idle' };
+
+// ctx: { doc() → current doc, commit(change) → Promise (quiet: no toasts), planId() → string, enabled() → may
+// call the function, cutoverAllowed() → may turn posting on, demo: bool }
+function initYnab(ctx) {
+  yn.ctx = ctx;
+  addEventListener('online', () => flushQueue());
+  setInterval(() => { if (!document.hidden) flushQueue(); }, 60_000);
+}
+
+async function callFn(body) {
+  try {
+    const res = await fetch(YNAB_FN, { method: 'POST', headers: { 'content-type': 'application/json', 'x-plan-id': yn.ctx.planId() }, body: JSON.stringify(body) });
+    let data = null;
+    try { data = await res.json(); } catch (_) { /* not JSON */ }
+    if (res.ok && data && data.ok) return data;
+    const retryable = data && typeof data.retryable === 'boolean' ? data.retryable : res.status >= 500 || res.status === 429;
+    return { ok: false, error: (data && data.error) || `HTTP ${res.status}`, retryable, status: res.status };
+  } catch (_) {
+    return { ok: false, error: 'unreachable', retryable: true, status: 0 };
+  }
+}
+
+// ---- the queue flush: one entry at a time; never concurrent; reschedules itself for the next due entry ----
+async function flushQueue() {
+  const ctx = yn.ctx;
+  if (!ctx || !ctx.enabled() || !ctx.doc()) return;
+  if (yn.flushing) { yn.again = true; return; }
+  yn.flushing = true;
+  try {
+    do {
+      yn.again = false;
+      for (const q of dueEntries(ctx.doc(), Date.now())) {
+        const req = requestFor(ctx.doc(), q);
+        let result;
+        if (req.gone || req.skip) result = { skip: true };
+        else if (req.unmapped) result = { unmapped: true };
+        else {
+          const res = await callFn(req.body);
+          result = res.ok ? { ...res, sent: req.sent || q.sent } : res;
+        }
+        await ctx.commit((doc) => queueResultMut(doc, q.key, result, Date.now()));
+      }
+    } while (yn.again);
+  } finally {
+    yn.flushing = false;
+    scheduleNext();
+  }
+}
+function scheduleNext() {
+  clearTimeout(yn.timer);
+  const doc = yn.ctx.doc();
+  if (!doc || !postingOn(doc)) return;
+  const next = (doc.queue || []).filter((q) => q.status === 'pending' || (q.status === 'failed' && !q.paused)).map((q) => q.nextAt || 0);
+  if (!next.length) return;
+  yn.timer = setTimeout(flushQueue, Math.max(250, Math.min(...next) - Date.now()));
+}
+
+// ---- Settings › YNAB ----
+async function loadConfig(force = false) {
+  const ctx = yn.ctx;
+  if (!ctx || !ctx.doc()) return;
+  if (!ctx.enabled()) { yn.configState = 'unreachable'; paintYnabSettings(); return; }
+  if (yn.configState === 'loading' || (yn.configState === 'ok' && !force)) return;
+  yn.configState = 'loading';
+  paintYnabSettings();
+  const res = await callFn({ action: 'config', budgetName: ((ctx.doc().settings || {}).ynab || {}).budget || 'Family Budget' });
+  if (!res.ok) { yn.configState = res.error === 'token rejected' ? 'rejected' : 'unreachable'; paintYnabSettings(); return; }
+  yn.config = res; yn.configState = 'ok';
+  await resolveIds();
+  paintYnabSettings();
+}
+// match the W5 names in Settings to YNAB ids, once (account, payee, Gift cards, each mapped category)
+async function resolveIds() {
+  const doc = yn.ctx.doc(), y = (doc.settings && doc.settings.ynab) || {}, ids = y.ids || {}, c = yn.config;
+  const byName = (list, name) => (list.find((x) => x.name === name) || {}).id;
+  const patch = { ids: { categories: {} } };
+  let changed = false;
+  const want = (k, v) => { if (v && ids[k] !== v && !ids[k]) { patch.ids[k] = v; changed = true; } };
+  want('accountId', byName(c.accounts, y.account));
+  want('payeeId', byName(c.payees, y.payee));
+  want('giftCategoryId', byName(c.categories, y.giftCardsCategory));
+  for (const [app, name] of Object.entries(y.categoryMap || {})) {
+    const id = byName(c.categories, name);
+    if (id && !(ids.categories || {})[app]) { patch.ids.categories[app] = id; changed = true; }
+  }
+  if (changed) await yn.ctx.commit((d) => setYnabSettingsMut(d, patch));
+}
+
+function row(label, valueNode, id) {
+  const r = el('div', 'row');
+  const dt = el('dt', null, label), dd = el('dd');
+  if (id) dd.id = id;
+  if (valueNode instanceof Node) dd.append(valueNode); else dd.textContent = valueNode;
+  r.append(dt, dd);
+  return r;
+}
+function picker(id, label, options, value, onPick) {
+  const s = el('select', 'ynab-pick');
+  s.id = id; s.setAttribute('aria-label', label);
+  if (!options.some((o) => o.id === value)) { const o = el('option', null, 'Not mapped'); o.value = ''; s.append(o); }
+  for (const o of options) { const opt = el('option', null, o.group ? `${o.name} · ${o.group}` : o.name); opt.value = o.id; s.append(opt); }
+  s.value = value || '';
+  s.addEventListener('change', () => { const o = options.find((x) => x.id === s.value); if (o) onPick(o); });
+  return s;
+}
+
+function paintYnabSettings() {
+  const root = $('ynab-settings');
+  const ctx = yn.ctx;
+  if (!root || !ctx) return;
+  const doc = ctx.doc();
+  if (!doc) { root.replaceChildren(); return; }
+  const y = (doc.settings && doc.settings.ynab) || {}, ids = y.ids || {}, sum = queueSummary(doc);
+  const ok = yn.configState === 'ok' && yn.config;
+  const save = (patch, msg) => ctx.commit((d) => setYnabSettingsMut(d, patch)).then(() => { toast(msg); paintYnabSettings(); flushQueue(); });
+  const rows = [];
+  // connection
+  const conn = sum.paused || yn.configState === 'rejected' ? 'Reconnect required'
+    : ok ? `Connected · ${yn.config.budget.name}` : yn.configState === 'loading' ? 'Checking…' : 'Connect after deploy';
+  const c = row('Connection', conn, 'set-connection');
+  c.classList.add('ynab-conn', ok ? 'is-ok' : 'is-off');
+  rows.push(c);
+  // posting (W6: OFF, locked behind the cutover confirm)
+  const post = el('span', 'posting-val');
+  post.append(el('span', null, y.postingEnabled ? 'On' : 'Off · dry-run'));
+  const pb = el('button', 'posting-btn', y.postingEnabled ? 'Turn off' : 'Turn on at cutover…');
+  pb.type = 'button'; pb.id = 'posting-btn';
+  const locked = !y.postingEnabled && !ctx.cutoverAllowed();
+  pb.disabled = locked;
+  if (locked) pb.setAttribute('aria-describedby', 'posting-lock');
+  pb.addEventListener('click', async () => {
+    if (y.postingEnabled) { await ctx.commit((d) => setPostingMut(d, false)); toast('YNAB posting off — dry-run'); paintYnabSettings(); return; }
+    const yes = await confirmSheet({ title: 'Turn on YNAB posting?', message: W6_TEXT, action: 'Turn on posting', undoHint: false, danger: false });
+    if (!yes) return;
+    await ctx.commit((d) => setPostingMut(d, true));
+    toast('YNAB posting on');
+    paintYnabSettings();
+    flushQueue();
+  });
+  const pr = row('Posting', post);
+  post.id = 'set-posting';
+  pr.querySelector('dd').append(pb);
+  rows.push(pr);
+  rows.push(row('Budget', y.budget || '—', 'set-budget'));
+  if (ok) {
+    const cats = yn.config.categories;
+    rows.push(row('Account', picker('ynab-account', 'YNAB account', yn.config.accounts, ids.accountId, (o) => save({ account: o.name, ids: { accountId: o.id } }, `Account: ${o.name}`))));
+    rows.push(row('Payee', picker('ynab-payee', 'YNAB payee', yn.config.payees, ids.payeeId, (o) => save({ payee: o.name, ids: { payeeId: o.id } }, `Payee: ${o.name}`))));
+    rows.push(row('Gift cards category', picker('ynab-gift', 'YNAB Gift cards category', cats, ids.giftCategoryId, (o) => save({ giftCardsCategory: o.name, ids: { giftCategoryId: o.id } }, `Gift cards: ${o.name}`))));
+  } else {
+    rows.push(row('Account', y.account || '—', 'set-account'));
+    rows.push(row('Payee', y.payee || '—', 'set-payee'));
+    rows.push(row('Gift cards category', y.giftCardsCategory || '—', 'set-giftcat'));
+  }
+  const dl = el('dl', 'ynab-rows');
+  dl.append(...rows);
+  // per app category → the YNAB category a spend's shift moves FROM
+  const map = el('dl', 'ynab-rows ynab-map');
+  map.setAttribute('aria-label', 'Category mapping');
+  for (const app of doc.categories || []) {
+    const name = (y.categoryMap || {})[app];
+    const r = ok
+      ? row(`${app} spends from`, picker(`ynab-map-${app.replace(/\W+/g, '-')}`, `YNAB category for ${app} spends`, yn.config.categories, (ids.categories || {})[app], (o) => save({ categoryMap: { [app]: o.name }, ids: { categories: { [app]: o.id } } }, `${app} → ${o.name}`)))
+      : row(`${app} spends from`, name || 'Not mapped');
+    r.dataset.cat = app;
+    map.append(r);
+  }
+  const q = el('p', 'ynab-queue', queueText(doc, sum));
+  q.id = 'ynab-queue';
+  const lock = el('p', 'foot-note ynab-note', locked ? 'Posting stays off until cutover (W6): Cardsharp shows what it would post, and sends nothing.' : '');
+  lock.id = 'posting-lock';
+  root.replaceChildren(dl, el('h3', 'ynab-sub', 'Category mapping'), map, q, lock);
+  root.dataset.state = yn.configState;
+}
+function queueText(doc, sum = queueSummary(doc)) {
+  const parts = [];
+  if (sum.active) parts.push(`${sum.active} waiting to sync`);
+  if (sum['needs-mapping']) parts.push(`${sum['needs-mapping']} need a category mapping`);
+  if (sum.posted) parts.push(`${sum.posted} posted`);
+  if (sum['dry-run']) parts.push(`${sum['dry-run']} dry-run`);
+  return parts.length ? `Queue: ${parts.join(' · ')}` : 'Queue: empty';
+}
+function syncPill(doc) {
+  const sum = queueSummary(doc);
+  if (sum.paused) return 'Sync paused — reconnect';
+  if (sum.active) return `${sum.active} pending`;
+  return postingOn(doc) ? '' : 'Dry-run · nothing sent to YNAB';
+}
+const configState = () => yn.configState;
+
+
 /* ---- src/ui/app.js ---- */
 // src/ui/app.js — boot + the three-tab shell (Cards · Reports · Settings). Browser only; e2e-tested.
 // Demo mode (?demo=1, or localhost without ?demo=0) paints the bundled #demo-fixture and never
@@ -4233,12 +4922,14 @@ function updateCaptureDoc(doc) { cap.doc = doc; }
 
 
 
+
+
 const PAGE = 'cardsharp.html';
 const THEME_KEY = 'cardsharp:theme';
 const TABS = ['cards', 'reports', 'settings'];
 // state doubles as the commitChange context: { doc, version, salt, demo, client, syncId, passphrase }.
 // The live creds sit here only while unlocked (writes need them); lockDown drops them with the doc.
-const state = { doc: null, version: null, salt: null, tab: 'cards', demo: false, client: null, syncId: null, passphrase: null, detailId: null, stackScroll: 0, query: '' };
+const state = { doc: null, version: null, salt: null, tab: 'cards', demo: false, client: null, syncId: null, passphrase: null, detailId: null, stackScroll: 0, query: '', searchOpen: false, ynabTest: false };
 
 function isDemo() {
   const p = new URLSearchParams(location.search);
@@ -4261,33 +4952,29 @@ function loadDemoDoc() {
   const el = $('demo-fixture'); try { return el ? JSON.parse(el.textContent) : null; } catch (_) { return null; }
 }
 
-// ---- theme: follows the OS unless pinned; the pin is a per-device convenience only ----
+// ---- theme: follows the OS until the person picks one in Settings › Appearance (Arc 3; the old "…" menu
+// toggle is gone). The pick is a per-device convenience (localStorage), never synced. ----
+const osTheme = () => (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+function pinnedTheme() {
+  try { const t = localStorage.getItem(THEME_KEY); return t === 'light' || t === 'dark' ? t : null; } catch (_) { return null; } // storage blocked — follow the OS
+}
+function syncThemeSwitch() {
+  const cur = document.documentElement.dataset.theme || osTheme();
+  for (const r of document.querySelectorAll('input[name="theme"]')) r.checked = r.value === cur;
+}
 function initTheme() {
-  let pinned = null;
-  try { pinned = localStorage.getItem(THEME_KEY); } catch (_) { /* storage blocked — follow the OS */ }
-  if (pinned === 'light' || pinned === 'dark') document.documentElement.dataset.theme = pinned;
-}
-function toggleTheme() {
-  const root = document.documentElement;
-  const cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  const next = cur === 'light' ? 'dark' : 'light';
-  root.dataset.theme = next;
-  try { localStorage.setItem(THEME_KEY, next); } catch (_) { /* ok */ }
-}
-
-// ---- overflow menu ----
-function initOverflow() {
-  const btn = $('overflow-btn'), menu = $('overflow-menu');
-  const close = () => { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const open = menu.hidden;
-    menu.hidden = !open; btn.setAttribute('aria-expanded', String(open));
-    if (open) { const first = menu.querySelector('button:not([hidden])'); if (first) first.focus(); }
-  });
-  document.addEventListener('click', (e) => { if (!menu.hidden && !menu.contains(e.target)) close(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menu.hidden) { close(); btn.focus(); } });
-  menu.addEventListener('click', () => close());
+  const pinned = pinnedTheme();
+  if (pinned) document.documentElement.dataset.theme = pinned;
+  for (const r of document.querySelectorAll('input[name="theme"]')) {
+    r.addEventListener('change', () => {
+      if (!r.checked) return;
+      document.documentElement.dataset.theme = r.value;
+      try { localStorage.setItem(THEME_KEY, r.value); } catch (_) { /* ok — this session only */ }
+    });
+  }
+  // not picked yet → keep following the OS as it changes
+  matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => { if (!pinnedTheme()) syncThemeSwitch(); });
+  syncThemeSwitch();
 }
 
 // ---- chrome: scroll-edge fade + large-title wordmark collapse (Eye P1s, Arc 2 slice 1) ----
@@ -4307,17 +4994,71 @@ function initChrome() {
 }
 
 // ---- home search + section jump row (Arc 2b): filters as you type (synchronous, no debounce) ----
+// Arc 3 (Mark): the search field is hidden until asked for — pull down at the top of the stack
+// (iOS-style, PULL_PX threshold; touch, touch-type pointer events, or iOS rubber-band overscroll), or on
+// desktop the top-bar search icon / the "/" key. Once empty, unfocused and scrolled past, it hides again.
+const PULL_PX = 60;
+const cardsHome = () => state.tab === 'cards' && !state.detailId && !!state.doc && ((state.doc.cards || []).length > 0);
+function showSearch(focus) {
+  if (!cardsHome()) return;
+  const was = state.searchOpen;
+  state.searchOpen = true;
+  paint();
+  const tools = $('cards-tools');
+  if (!was) { tools.classList.remove('is-revealing'); void tools.offsetWidth; tools.classList.add('is-revealing'); }
+  if (focus) $('card-search').focus();
+}
+function hideSearch() {
+  if (!state.searchOpen) return;
+  const tools = $('cards-tools');
+  const h = tools.hidden ? 0 : tools.getBoundingClientRect().height + 8;
+  const away = tools.getBoundingClientRect().bottom < 0;
+  state.searchOpen = false;
+  paint();
+  if (away && h) window.scrollBy(0, -h); // keep the cards under the finger where they were
+}
 function initSearch() {
   const input = $('card-search'), clear = $('card-search-clear');
   const set = (v) => { state.query = v; paint(); };
   input.addEventListener('input', () => set(input.value));
   input.addEventListener('keydown', (e) => { if (e.key === 'Escape' && input.value) { e.preventDefault(); input.value = ''; set(''); } });
   clear.addEventListener('click', () => { input.value = ''; set(''); input.focus(); });
+  $('search-btn').addEventListener('click', () => showSearch(true));
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+    const t = e.target;
+    if (t && (t.closest('input, textarea, select, [contenteditable="true"]') || t.closest('dialog[open]'))) return;
+    if (document.querySelector('dialog[open]') || !cardsHome()) return;
+    e.preventDefault();
+    showSearch(true);
+  });
+  // pull-down: a downward drag that starts while the page is at the very top
+  let startY = null;
+  const begin = (y) => { startY = window.scrollY <= 0 && cardsHome() && !state.searchOpen ? y : null; };
+  const move = (y) => { if (startY !== null && y - startY >= PULL_PX) { startY = null; showSearch(false); } };
+  const end = () => { startY = null; };
+  const stack = $('panel-cards');
+  stack.addEventListener('touchstart', (e) => begin(e.touches[0].clientY), { passive: true });
+  stack.addEventListener('touchmove', (e) => move(e.touches[0].clientY), { passive: true });
+  stack.addEventListener('touchend', end, { passive: true });
+  stack.addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') begin(e.clientY); });
+  stack.addEventListener('pointermove', (e) => { if (e.pointerType === 'touch') move(e.clientY); });
+  for (const t of ['pointerup', 'pointercancel']) stack.addEventListener(t, end);
   let queued = false;
   addEventListener('scroll', () => {
+    if (window.scrollY < -PULL_PX / 2 && cardsHome()) showSearch(false); // iOS rubber-band overscroll at the top
     if (queued) return; queued = true;
-    requestAnimationFrame(() => { queued = false; if (!$('jump-row').hidden) markCurrentSection($('jump-row')); });
+    requestAnimationFrame(() => {
+      queued = false;
+      if (!$('jump-row').hidden) markCurrentSection($('jump-row'));
+      const tools = $('cards-tools');
+      if (state.searchOpen && !state.query && document.activeElement !== input && !tools.hidden && tools.getBoundingClientRect().bottom < 0) hideSearch();
+    });
   }, { passive: true });
+  addEventListener('resize', () => fitJumpRow($('jump-row')));
+  // a jump with the search open and empty: put the field away FIRST, so the jump lands on the right header
+  // (hiding it mid-scroll would shift the page under the smooth scroll)
+  $('jump-row').addEventListener('click', () => { if (state.searchOpen && !state.query) hideSearch(); }, true);
 }
 
 // ---- tabs (WAI-ARIA tabs: roving tabindex, arrows/Home/End) ----
@@ -4333,6 +5074,9 @@ function selectTab(name, focus, keepHash) {
     panel.hidden = !on;
   }
   $('add-btn').hidden = name !== 'cards' || !state.doc;
+  $('search-btn').hidden = name !== 'cards' || !state.doc || !(state.doc.cards || []).length || state.searchOpen || !!state.detailId;
+  if (name === 'settings') loadConfig();
+  if (name === 'reports' && state.doc) paintActivity(state.doc, $('all-activity'), { onDeleteSpend: deleteSpend, onDeleteCard: deleteCard });
   if (focus) $(`tab-${name}`).focus();
   if (!keepHash) { try { history.replaceState(null, '', `#${name}`); } catch (_) { /* ok */ } }
   window.scrollTo(0, 0);
@@ -4382,6 +5126,7 @@ function showDetailView(id) {
     document.body.classList.add('in-detail');
     $('detail').hidden = false; $('stack').hidden = true; $('cards-empty').hidden = true;
     $('cards-tools').hidden = true; $('jump-row').hidden = true; $('search-empty').hidden = true;
+    $('search-btn').hidden = true;
     window.scrollTo(0, 0);
     if (first) { const t = $('detail-title'); if (t) t.focus({ preventScroll: true }); }
   };
@@ -4426,8 +5171,12 @@ function errorText(e) {
     : e && e.code === 'replay' ? 'That can’t be removed without leaving a card below $0 — nothing was changed.'
     : null;
 }
+// ?demo=1&ynabtest=1 (TEST ONLY): the demo doc survives a reload (sessionStorage) so e2e can prove the
+// queue never double-posts across reloads; the mocked cardsharp-ynab function is the only network.
+const TEST_DOC_KEY = 'cardsharp:ynabtest-doc';
+function persistTestDoc() { if (state.ynabTest) { try { sessionStorage.setItem(TEST_DOC_KEY, JSON.stringify(state.doc)); } catch (_) { /* ok */ } } }
 async function apply(change) {
-  try { const res = await commitChange(state, change); paint(); return res; }
+  try { const res = await commitChange(state, change); persistTestDoc(); paint(); flushQueue(); return res; }
   catch (e) {
     toast(errorText(e) || (e && e.code === 'noRow' ? 'No Cardsharp document yet — run the first-row bootstrap first.'
       : e && e.code === 'insufficientBalance' ? 'That’s more than these cards hold — nothing was logged.'
@@ -4454,22 +5203,25 @@ async function deleteWithUndo(change, message) {
   const after = state.doc;
   toast(message, 6000, { label: 'Undo', onClick: async () => { if (await apply((doc) => undoMut(doc, before, after))) toast('Restored'); } });
 }
+const reversalNote = (p) => (p.reversals && p.reversals.length ? ' This will also post a reversal to YNAB.' : '');
 async function deleteSpend(spendId) {
   let p;
-  try { p = deleteSpendMut(state.doc, spendId); } catch (e) { toast(errorText(e) || 'That entry can’t be removed.'); return; }
+  const now = Date.now();
+  try { p = deleteSpendMut(state.doc, spendId, { now }); } catch (e) { toast(errorText(e) || 'That entry can’t be removed.'); return; }
   const r = state.doc.retailers.find((x) => x.id === p.retailerId);
   const kind = p.type === 'refund' ? 'refund' : p.type === 'spend' ? 'spend' : 'entry';
   const shown = formatCents(Math.abs(p.amount));
   const more = [
     p.alsoRemoved.length ? `Also removes ${plural(p.alsoRemoved.length, 'later spend', 'later spends')} the cards can no longer cover.` : '',
     p.replanned.length ? `Re-plans ${plural(p.replanned.length, 'spend', 'spends')} across your ${r.name} cards.` : '',
-  ].filter(Boolean).join(' ');
-  const ok = await confirmSheet({ title: `Delete ${kind}?`, message: `Removes ${shown} ${kind} · ${r.name} balance → ${formatCents(retailerBalance(p.doc, p.retailerId))}`, more, action: `Delete ${kind}` });
-  if (ok) await deleteWithUndo((doc) => deleteSpendMut(doc, spendId), `Deleted ${shown} ${kind}`);
+  ].filter(Boolean).join(' ') + reversalNote(p);
+  const ok = await confirmSheet({ title: `Delete ${kind}?`, message: `Removes ${shown} ${kind} · ${r.name} balance → ${formatCents(retailerBalance(p.doc, p.retailerId))}`, more: more.trim(), action: `Delete ${kind}` });
+  if (ok) await deleteWithUndo((doc) => deleteSpendMut(doc, spendId, { now }), `Deleted ${shown} ${kind}`);
 }
 async function deleteCard(cardId) {
   let p;
-  try { p = deleteCardMut(state.doc, cardId); } catch (e) { toast(errorText(e) || 'That card can’t be removed.'); return; }
+  const now = Date.now();
+  try { p = deleteCardMut(state.doc, cardId, { now }); } catch (e) { toast(errorText(e) || 'That card can’t be removed.'); return; }
   const r = state.doc.retailers.find((x) => x.id === p.retailerId);
   const card = state.doc.cards.find((c) => c.id === cardId);
   const label = cardLabels(state.doc, p.retailerId).get(cardId);
@@ -4478,9 +5230,9 @@ async function deleteCard(cardId) {
   const more = [
     p.removed.length ? `Also removes ${plural(p.removed.length, 'spend', 'spends')} drawn from this card.` : '',
     p.replanned.length ? `Moves ${plural(p.replanned.length, 'split spend', 'split spends')} onto your other ${r.name} cards.` : '',
-  ].filter(Boolean).join(' ');
-  const ok = await confirmSheet({ title: 'Delete card?', message, more, action: 'Delete card' });
-  if (ok) await deleteWithUndo((doc) => deleteCardMut(doc, cardId), `Deleted ${label}`);
+  ].filter(Boolean).join(' ') + reversalNote(p);
+  const ok = await confirmSheet({ title: 'Delete card?', message, more: more.trim(), action: 'Delete card' });
+  if (ok) await deleteWithUndo((doc) => deleteCardMut(doc, cardId, { now }), `Deleted ${label}`);
 }
 
 // Add Card (+ in the top bar on Cards). Single → toast, back to the stack. Bulk → the capture
@@ -4538,7 +5290,9 @@ function paint() {
   const q = state.query.trim();
   const groups = doc ? paintStack(doc, $('stack'), q) : [];
   const tools = !!doc && cards.length > 0 && !state.detailId;
-  $('cards-tools').hidden = !tools;
+  $('cards-tools').hidden = !tools || !state.searchOpen;
+  $('search-btn').hidden = !tools || state.tab !== 'cards' || state.searchOpen;
+  $('search-btn').setAttribute('aria-expanded', String(tools && state.searchOpen));
   $('jump-row').hidden = !tools || !!q || groups.length < 2;
   $('panel-cards').classList.toggle('has-jump', tools && !$('jump-row').hidden);
   if (tools && !$('jump-row').hidden) paintJumpRow($('jump-row'), groups);
@@ -4549,6 +5303,7 @@ function paint() {
   $('owed-total').textContent = formatCents(t.owed);
   $('total-balance').textContent = formatCents(t.balance);
   $('saved-total').textContent = formatCents(t.saved);
+  if (state.tab === 'reports') paintActivity(doc, $('all-activity'), { onDeleteSpend: deleteSpend, onDeleteCard: deleteCard });
   $('cards-empty').hidden = !doc || cards.length > 0 || !!state.detailId;
   $('stack').hidden = !doc || cards.length === 0 || !!state.detailId;
   if (!$('jump-row').hidden) markCurrentSection($('jump-row')); // after the stack is visible (layout is real)
@@ -4557,11 +5312,8 @@ function paint() {
   $('card-count').textContent = `${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`;
 
   const s = (doc && doc.settings) || {};
-  const y = s.ynab || {};
-  $('set-posting').textContent = y.postingEnabled ? 'On' : 'Off · dry-run';
-  $('set-budget').textContent = y.budget || '—';
-  $('set-account').textContent = y.account || '—';
-  $('set-giftcat').textContent = y.giftCardsCategory || '—';
+  $('ynab-pill').textContent = doc ? syncPill(doc) : '';
+  paintYnabSettings();
   $('set-categories').textContent = ((doc && doc.categories) || []).join(' · ') || '—';
   $('set-stale').textContent = s.staleMonths ? `${s.staleMonths} months` : '—';
   const build = document.querySelector('meta[name="build"]');
@@ -4572,9 +5324,9 @@ function paint() {
 function setSignedOutView(on) {
   $('app').hidden = on;
   $('tabbar').hidden = on;
-  $('signout').hidden = on;
 }
 function wireLock() {
+  $('account-section').hidden = false; // live mode only: Settings › Account › Sign out
   $('signout').addEventListener('click', () => { try { if (globalThis.PressVault) PressVault.lock(); } catch (_) { /* ok */ } });
 }
 function lockDown() {
@@ -4612,6 +5364,7 @@ async function hydrate(creds) {
     showMessage('');
     paint();
     route();
+    flushQueue(); // anything queued from another session goes now (posting OFF until cutover: nothing)
   } catch (_) {
     showMessage('Could not reach your Cardsharp data. Check your connection, then reload.');
   }
@@ -4619,23 +5372,32 @@ async function hydrate(creds) {
 
 function boot() {
   initTheme();
-  $('theme-toggle').addEventListener('click', toggleTheme);
-  initOverflow();
   $('add-btn').addEventListener('click', () => { if (state.doc) openAdd(); });
   initChrome();
   initSearch();
+  initYnab({
+    doc: () => state.doc,
+    // background writes are quiet: a failed queue update just retries on the next flush
+    commit: async (change) => { try { await commitChange(state, change); persistTestDoc(); paint(); } catch (_) { /* next flush */ } },
+    planId: () => (state.demo ? '0'.repeat(32) : state.syncId),
+    enabled: () => (state.demo ? state.ynabTest : !!state.syncId), // demo never touches the network (except the test flag)
+    cutoverAllowed: () => state.ynabTest, // W6: this arc never turns posting on outside the test flag
+  });
   initTabs();
   document.addEventListener('visibilitychange', () => { if (document.hidden) hideSecrets(); });
 
   if (isDemo()) {
     state.demo = true;
+    state.ynabTest = new URLSearchParams(location.search).get('ynabtest') === '1';
     state.doc = loadDemoDoc();
+    if (state.ynabTest) { try { const kept = sessionStorage.getItem(TEST_DOC_KEY); if (kept) state.doc = JSON.parse(kept); } catch (_) { /* ok */ } }
     $('demo-pill').hidden = false;
     // demo only: a read-only snapshot for the e2e ledger invariants (never in live mode — no secrets)
     window.cardsharpDemo = { doc: () => JSON.parse(JSON.stringify(state.doc)) };
     paint();
     route();
     reveal();
+    flushQueue();
     return;
   }
 
