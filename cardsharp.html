@@ -12,7 +12,7 @@
   <title>Cardsharp</title>
   <meta name="page-title" content="Cardsharp">
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxMjEzMkEiLz48cmVjdCB4PSI5IiB5PSIxNyIgd2lkdGg9IjQ2IiBoZWlnaHQ9IjMwIiByeD0iNSIgZmlsbD0iIzJFQzVFOCIvPjxyZWN0IHg9IjkiIHk9IjI0IiB3aWR0aD0iNDYiIGhlaWdodD0iNiIgZmlsbD0iIzEyMTMyQSIvPjxyZWN0IHg9IjE1IiB5PSIzNiIgd2lkdGg9IjEyIiBoZWlnaHQ9IjUiIHJ4PSIxLjUiIGZpbGw9IiNGNEY2RkIiLz48L3N2Zz4=">
-  <meta name="build" content="src-85a5179e0efe">
+  <meta name="build" content="src-12848397f211">
   <meta name="brandfetch-client" content="1idiEFKfEWGXeRo3uBi">
   <style>
 /* styles/tokens.css */
@@ -46,7 +46,13 @@
   --glass-hi: rgba(255, 255, 255, 0.22);
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   --blur: blur(22px) saturate(170%);
-  --bar-fade: rgba(11, 11, 28, 0.78);
+  --bar-fade: rgba(11, 11, 28, 0.92);
+  --pill-solid: rgba(24, 24, 40, 0.94); /* sticky section headers: content slides under them */
+  --bar-solid: rgba(14, 14, 32, 0.96); /* the scrolled top bar */
+  --switch-off: rgba(160, 160, 172, 0.55);
+  --panel: rgba(12, 12, 28, 0.55); /* desktop: the app's column panel */
+  --row-solid: #1F1E35; /* swipe rows: opaque so the red tray stays hidden behind the face */
+  --danger: #D92D20; /* white text 4.8:1 */
   --ghost-edge: rgba(255, 255, 255, 0.22);
   --warn-ink: #FBBF24;
   --err-ink: #FCA5A5;
@@ -81,7 +87,12 @@
     --glass-edge: rgba(20, 20, 40, 0.10);
     --glass-hi: rgba(255, 255, 255, 0.9);
     --shadow: 0 10px 30px rgba(30, 30, 60, 0.12);
-    --bar-fade: rgba(242, 243, 248, 0.80);
+    --bar-fade: rgba(242, 243, 248, 0.92);
+    --pill-solid: rgba(250, 250, 253, 0.95);
+    --bar-solid: rgba(244, 245, 250, 0.96);
+    --switch-off: rgba(110, 110, 122, 0.62);
+    --panel: rgba(255, 255, 255, 0.55);
+    --row-solid: #FBFBFD;
     --ghost-edge: rgba(20, 20, 40, 0.18);
     --warn-ink: #8A5A00;
     --err-ink: #B42318;
@@ -109,7 +120,12 @@
   --glass-edge: rgba(20, 20, 40, 0.10);
   --glass-hi: rgba(255, 255, 255, 0.9);
   --shadow: 0 10px 30px rgba(30, 30, 60, 0.12);
-  --bar-fade: rgba(242, 243, 248, 0.80);
+  --bar-fade: rgba(242, 243, 248, 0.92);
+  --pill-solid: rgba(250, 250, 253, 0.95);
+  --bar-solid: rgba(244, 245, 250, 0.96);
+  --switch-off: rgba(110, 110, 122, 0.62);
+  --panel: rgba(255, 255, 255, 0.55);
+  --row-solid: #FBFBFD;
   --ghost-edge: rgba(20, 20, 40, 0.18);
   --warn-ink: #8A5A00;
   --err-ink: #B42318;
@@ -123,7 +139,12 @@
 /* base.css — layout + components for the three-tab shell. Mobile-first; desktop centres a
    phone-width column. Things-3 calm for Reports/Settings, glass chrome for bars and buttons. */
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html { background: var(--bg); }
+html {
+  background: var(--bg);
+  /* sticky chrome (top bar + jump row + section header, tab bar): anything scrolled into view — a
+     focused card, a jump target — lands clear of it (WCAG 2.4.11 focus not obscured) */
+  scroll-padding: calc(env(safe-area-inset-top) + 150px) 0 calc(env(safe-area-inset-bottom) + var(--tabbar-h) + 28px);
+}
 body {
   min-height: 100vh; min-height: 100dvh;
   font-family: var(--font); color: var(--ink); background: transparent;
@@ -164,10 +185,12 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   padding: calc(env(safe-area-inset-top) + 6px) max(var(--gutter), calc((100% - 560px) / 2 + var(--gutter))) 6px;
 }
 #topbar::before {
-  content: ''; position: absolute; inset: 0 0 -18px; z-index: -1; pointer-events: none;
-  background: linear-gradient(to bottom, var(--bar-fade) 0%, var(--bar-fade) 62%, transparent 100%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
-  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent); mask-image: linear-gradient(to bottom, #000 70%, transparent);
+  content: ''; position: absolute; inset: 0 0 -8px; z-index: -1; pointer-events: none;
+  /* Eye P1 (Arc 2): the scrolled bar let rows ("Notes", section headers) show through and collide with
+     "Private Wing" — now a near-opaque strong glass that only fades in its last few pixels */
+  background: linear-gradient(to bottom, var(--bar-solid) 0%, var(--bar-solid) 84%, transparent 100%);
+  -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+  -webkit-mask-image: linear-gradient(to bottom, #000 84%, transparent); mask-image: linear-gradient(to bottom, #000 84%, transparent);
   opacity: 0;
 }
 body.scrolled #topbar::before { opacity: 1; }
@@ -217,20 +240,31 @@ body.title-shown .wordmark { opacity: 0; visibility: hidden; }
 .empty-sub { color: var(--ink-2); max-width: 30ch; font-size: 15px; text-wrap: balance; }
 
 /* ---- Cards · the stack (spec §5) ----
-   Groups fan their cards with a ~76px peek: each later card is pulled up over the one before it
-   (margin = peek − card height, card height = 100cqi ÷ 1.586), so only the front card of a group
-   shows in full. Focus/hover raise a card above its neighbours. */
-.stack { display: grid; gap: 22px; padding-top: 4px; }
-html:has(#panel-cards:not([hidden]) .stack:not([hidden])) { scroll-snap-type: y proximity; }
-.stack-group { container-type: inline-size; scroll-snap-align: start; scroll-margin-top: 72px; }
-.stack-pill {
-  display: block; width: max-content; margin: 0 auto 10px; padding: 6px 14px;
-  border-radius: var(--r-pill); background: var(--glass); border: 0.5px solid var(--glass-edge);
-  -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
-  font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2);
+   Groups fan their cards with a 52px peek (Arc 2b, tighter than Arc 2's 76px — the retailer name and
+   the Saving chip still clear it): each later card is pulled up over the one before it
+   (margin = peek − card height, card height = 100cqi ÷ 1.586), so only the front card of a group shows
+   in full. Plain native scroll with momentum: NO scroll-snap, no scroll-jacking (100+ cards must stay
+   smooth). Section headers are sticky under the top bar and carry a quiet back-to-top control. */
+.stack { display: grid; gap: 26px; padding-top: 4px; --peek: 52px; }
+.stack-head {
+  position: sticky; top: calc(env(safe-area-inset-top) + 58px); z-index: 6; isolation: isolate;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 6px; padding: 6px 0;
 }
+/* Eye P0 (Arc 2b): a stuck header sat straight on the card strips ("Retail" over "ALDI") — a full-bleed
+   band behind it now hides what scrolls under, fading out at its foot */
+.stack-head::before {
+  content: ''; position: absolute; inset: 0 calc(-1 * var(--gutter)); z-index: -1; pointer-events: none;
+  background: linear-gradient(var(--bar-solid) 75%, transparent);
+}
+.stack-pill {
+  padding: 7px 16px; border-radius: var(--r-pill); background: var(--pill-solid); border: 0.5px solid var(--glass-edge);
+  -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: var(--shadow);
+  font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); line-height: 1.25;
+}
+.to-top { width: 36px; height: 36px; border-radius: 18px; background: var(--pill-solid); color: var(--ink-2); box-shadow: var(--shadow); }
+.to-top svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; }
 .stack-pile { display: grid; }
-.stack-pile > .gcard + .gcard { margin-top: calc(76px - 100cqi / 1.586); }
+.stack-pile > .gcard + .gcard { margin-top: calc(var(--peek) - 100cqi / 1.586); }
 /* peeking cards show only their top strip (name + badge): no logo/balance bleed-through (§5) */
 .stack-pile > .gcard:not(:last-child) :is(.gc-mid, .gc-bottom) { visibility: hidden; }
 
@@ -257,11 +291,16 @@ html:has(#panel-cards:not([hidden]) .stack:not([hidden])) { scroll-snap-type: y 
 }
 .gc-mid { flex: 1; display: grid; place-items: center; }
 .gc-logo { display: grid; place-items: center; border-radius: 16px; background: #fff; overflow: hidden; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); }
-.gc-logo-lg { width: 64px; height: 64px; }
+/* the logo is as large as the card allows: ~47–49% of the card height, centred, with a clear gap to the
+   name strip and the balance. Sized from the card's parent container (a full-width card: 100cqi − its
+   36px padding = the card's content width). */
+.stack-group, .detail, .add-preview { container-type: inline-size; }
+.gc-logo-lg { --cw: calc(100cqi - 36px); width: calc(var(--cw) * 0.33); height: calc(var(--cw) * 0.33); border-radius: calc(var(--cw) * 0.07); }
 .gc-logo-sm { width: 32px; height: 32px; border-radius: 9px; }
 .gc-logo img { width: 100%; height: 100%; object-fit: contain; }
 .gc-logo.is-mono { background: rgba(0, 0, 0, 0.24); border: 0.5px solid rgba(255, 255, 255, 0.3); box-shadow: none; }
 .gc-mono { font-weight: 800; letter-spacing: -0.02em; font-size: 24px; color: #fff; }
+.gc-logo-lg .gc-mono { font-size: calc(var(--cw) * 0.13); }
 .gc-logo-sm .gc-mono { font-size: 12px; }
 .gc-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
 .gc-pips { display: grid; gap: 3px; margin-bottom: 4px; }
@@ -325,12 +364,15 @@ html:has(#panel-cards:not([hidden]) .stack:not([hidden])) { scroll-snap-type: y 
 .reveal-btn { min-height: 44px; padding: 0 14px; border-radius: var(--r-pill); color: var(--accent); font-weight: 700; }
 .info-secret { display: grid; gap: 8px; padding: 2px 0 10px; }
 .secret-val {
-  display: grid; grid-template-columns: auto 1fr auto; align-items: baseline; gap: 10px; min-height: 44px; padding: 10px 12px;
+  display: grid; grid-template-columns: auto 1fr; grid-template-areas: "label text" ". hint"; align-items: baseline; column-gap: 12px; row-gap: 2px;
+  min-height: 44px; padding: 10px 12px;
   border-radius: 12px; background: var(--glass); border: 0.5px solid var(--glass-edge); text-align: left;
 }
 .secret-label { font-size: 12px; color: var(--ink-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
-.secret-text { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 17px; letter-spacing: 0.06em; }
-.secret-hint { font-size: 12px; color: var(--ink-2); }
+.secret-label { grid-area: label; }
+/* Eye P1 (Arc 2): the revealed number wrapped ("6066 0000 / 1111 4821") — one line, "Tap to copy" under it */
+.secret-text { grid-area: text; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 16px; letter-spacing: 0.02em; white-space: nowrap; }
+.secret-hint { grid-area: hint; font-size: 12px; color: var(--ink-2); }
 
 /* ---- bottom sheets (Log Spend §8; Add Card §8b reuses them) ---- */
 dialog.sheet {
@@ -339,6 +381,19 @@ dialog.sheet {
   background: var(--sheet-bg); /* solid, no backdrop-filter — see tokens --sheet-bg */
   box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.35); overflow-y: auto; overscroll-behavior: contain;
 }
+dialog.sheet.is-branded { border-top: 3px solid var(--brand); }
+dialog.sheet.is-branded .log-spend-btn:not(:disabled) { box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 30%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.3); }
+.sheet-logo { justify-self: end; display: grid; }
+.sheet-logo .gc-logo-sm { width: 34px; height: 34px; border-radius: 10px; }
+/* the selector chevron wears the accent (the brand) */
+#spend-card, #spend-next {
+  -webkit-appearance: none; appearance: none; padding-right: 22px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%), linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+  background-position: calc(100% - 9px) 52%, calc(100% - 4px) 52%; background-size: 5px 5px; background-repeat: no-repeat;
+}
+/* the page under an open sheet cannot scroll (dom.lockScroll pins the body); the sheet keeps its own
+   scroll and never chains it to the page */
+html.scroll-locked { overflow: hidden; }
 dialog.sheet::backdrop { background: rgba(0, 0, 0, 0.5); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .sheet-body { display: grid; gap: 14px; padding: 10px var(--gutter) calc(env(safe-area-inset-bottom) + 20px); }
 .sheet-body::before { content: ''; justify-self: center; width: 38px; height: 5px; border-radius: 3px; background: var(--glass-edge); margin-bottom: 2px; }
@@ -347,11 +402,13 @@ dialog.sheet::backdrop { background: rgba(0, 0, 0, 0.5); -webkit-backdrop-filter
 .sheet-link { justify-self: start; min-height: 44px; padding: 0 4px; color: var(--accent); font-size: 17px; }
 .sheet-link.end { justify-self: end; font-weight: 700; }
 .sheet-link:disabled { color: var(--ink-2); cursor: default; }
+/* Eye P1 (Arc 2): the disabled Save read bold/bright — quieter until the form is valid */
+.sheet-link.end:disabled { color: var(--ink-3); font-weight: 600; }
 .sheet-sub { text-align: center; color: var(--ink-2); font-weight: 600; margin-top: -8px; }
 .sheet-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 50px; padding: 4px 16px; }
 .sheet-row label { font-weight: 600; flex: none; }
 .sheet-row select, .sheet-row input {
-  min-width: 0; min-height: 44px; font: inherit; color: var(--ink); background: transparent; border: 0; text-align: right; text-align-last: right;
+  min-width: 0; min-height: 44px; padding: 0 10px; font: inherit; /* Eye P1: the focus ring no longer hugs the text */ color: var(--ink); background: transparent; border: 0; text-align: right; text-align-last: right;
 }
 .sheet-row select:focus-visible, .sheet-row input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
 .amount { display: flex; justify-content: center; align-items: baseline; gap: 4px; padding: 8px 0 0; }
@@ -372,6 +429,8 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
 .add-btn svg { fill: none; stroke: currentColor; stroke-width: 2.2; }
 .add-preview { position: relative; width: min(100%, 300px); justify-self: center; }
 .add-preview .gcard { pointer-events: none; }
+.add-preview .gcard.is-ghost { filter: saturate(0.4); }
+.add-preview .gcard.is-ghost .gc-logo { opacity: 0.7; }
 .qty-badge {
   position: absolute; top: -10px; left: 50%; transform: translateX(-50%); padding: 3px 12px; border-radius: var(--r-pill);
   background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 14px; box-shadow: var(--shadow);
@@ -385,6 +444,7 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
 .field > input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .suggest { list-style: none; position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + 6px); padding: 6px; border-radius: var(--r-md); background: var(--sheet-bg); max-height: 300px; overflow-y: auto; }
 .suggest-row { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 10px; border-radius: 12px; cursor: pointer; }
+.suggest-divider { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); padding: 10px 10px 4px; margin-top: 4px; border-top: 1px solid var(--glass-edge); }
 .suggest-row[aria-selected="true"], .suggest-row:hover { background: var(--glass); }
 .suggest-row .gc-logo-sm { background: #fff; flex: none; }
 .suggest-txt { display: grid; }
@@ -397,7 +457,7 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
 .stepper button { width: 44px; height: 44px; border-radius: 22px; font-size: 22px; background: var(--glass); border: 0.5px solid var(--glass-edge); }
 .stepper button:disabled { opacity: 0.45; cursor: default; }
 .stepper output { min-width: 2.5ch; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
-.switch { appearance: none; -webkit-appearance: none; width: 51px; height: 31px; border-radius: 16px; background: var(--glass-edge); position: relative; cursor: pointer; flex: none; min-height: 0 !important; }
+.switch { appearance: none; -webkit-appearance: none; width: 51px; height: 31px; border-radius: 16px; background: var(--switch-off); /* visible off track (WCAG 1.4.11) */ position: relative; cursor: pointer; flex: none; min-height: 0 !important; }
 .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25); }
 .switch:checked { background: var(--accent); }
 .switch:checked::after { left: 22px; }
@@ -409,6 +469,37 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
 .capture-actions { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
 .btn-ghost { min-height: 56px; border-radius: var(--r-pill); background: var(--glass); border: 0.5px solid var(--glass-edge); font-weight: 700; font-size: 17px; }
 
+/* ---- swipe-to-delete rows + the confirm sheet (Arc 2b) ----
+   Rows that can be deleted sit on a SOLID surface (the face must hide the red tray behind it). */
+.solid-group { background: var(--row-solid); border: 0.5px solid var(--glass-edge); box-shadow: var(--shadow); }
+.swipe { position: relative; overflow: hidden; padding: 0 !important; display: block !important; } /* the face spans the row */
+.swipe-face {
+  position: relative; z-index: 1; background: var(--row-solid); touch-action: pan-y;
+  transform: translateX(var(--dx, 0px));
+}
+.act-row.swipe > .swipe-face { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; }
+.info-row.swipe > .swipe-face { padding: 6px 16px; }
+@media (prefers-reduced-motion: no-preference) { body.ready .swipe:not(.dragging) > .swipe-face { transition: transform 220ms cubic-bezier(0.2, 0.9, 0.25, 1); } }
+.swipe-tray { position: absolute; inset: 0 0 0 auto; width: 88px; display: flex; }
+.swipe-del { flex: 1; background: var(--danger); color: #fff; font-weight: 700; font-size: 15px; }
+.swipe-del:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+.saved-dd .avg-pct { color: var(--ink-2); margin-right: 2px; }
+.cat-row { align-items: center; padding-top: 6px; padding-bottom: 6px; }
+.cat-pick {
+  min-height: 36px; padding: 0 28px 0 10px; font: inherit; font-size: 16px; color: var(--ink-2); text-align: right; text-align-last: right;
+  background: transparent; border: 0; border-radius: 10px; -webkit-appearance: none; appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 14px) 52%, calc(100% - 9px) 52%; background-size: 5px 5px; background-repeat: no-repeat;
+}
+.cat-pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.subcard.is-empty { opacity: 0.55; }
+.confirm-more { text-align: center; color: var(--ink-2); font-size: 15px; margin-top: -6px; text-wrap: balance; }
+.danger-btn {
+  display: flex; align-items: center; justify-content: center; min-height: 56px; border-radius: var(--r-pill);
+  font-size: 17px; font-weight: 700; color: #fff; background: var(--danger); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.danger-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
 /* ---- toast (one polite live region) ---- */
 .toast {
   position: fixed; z-index: 60; left: 50%; bottom: calc(env(safe-area-inset-bottom) + var(--tabbar-h) + 28px);
@@ -418,6 +509,8 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
   -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); font-weight: 600; font-size: 15px;
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast.has-action.show { pointer-events: auto; display: flex; align-items: center; gap: 14px; padding: 6px 6px 6px 18px; }
+.toast-action { min-height: 36px; padding: 0 14px; border-radius: var(--r-pill); font-weight: 700; color: var(--accent-ink); background: var(--accent); }
 
 .load-msg { text-align: center; color: var(--ink-2); padding: 48px 12px 0; }
 
@@ -446,7 +539,8 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
   border-radius: var(--r-pill); padding: 6px;
   /* stronger glass than panels: cards scroll under the bar, and the selected label must keep AA
      contrast whatever passes beneath it */
-  background: var(--glass-strong);
+  background: var(--bar-solid);
+  -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); /* Eye P1: no content through the bar */
 }
 .tabs { height: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .tab {
@@ -470,6 +564,55 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
 }
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+
+/* ---- home search + section jump row (Arc 2b, spec §9c simplified) ----
+   A small search field at the top of Cards filters as you type. Under it, a slim sticky row of section
+   chips: tap → the section header scrolls to the top; the chip of the section under the chrome is
+   highlighted. The row hides while the search has text. Section headers then stick below the row. */
+.cards-tools { margin: 2px 0 8px; }
+.search-field {
+  display: flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 5px 0 12px; border-radius: 13px;
+  background: var(--glass); border: 0.5px solid var(--glass-edge);
+}
+.search-field:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.search-field > svg { width: 18px; height: 18px; flex: none; color: var(--ink-2); }
+.search-field input {
+  flex: 1; min-width: 0; min-height: 42px; font: inherit; font-size: 16px; /* 16px: no iOS focus zoom */
+  color: var(--ink); background: transparent; border: 0; -webkit-appearance: none; appearance: none;
+}
+.search-field input:focus-visible { outline: none; }
+.search-field input::placeholder { color: var(--ink-2); }
+.search-field input::-webkit-search-cancel-button, .search-field input::-webkit-search-decoration { -webkit-appearance: none; display: none; }
+.search-clear { flex: none; width: 34px; height: 34px; border-radius: 17px; display: grid; place-items: center; color: var(--ink-2); }
+.search-clear svg { width: 16px; height: 16px; stroke-width: 2.4; }
+.search-clear:hover { background: var(--glass); }
+.jump-row {
+  position: sticky; top: calc(env(safe-area-inset-top) + 58px); z-index: 7;
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
+  height: 44px; align-items: center; margin: 0 calc(-1 * var(--gutter)) 10px; padding: 0 var(--gutter);
+  background: var(--bar-solid); -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
+}
+.jump-row::-webkit-scrollbar { display: none; }
+.jump-chip {
+  flex: none; min-height: 32px; padding: 0 13px; border-radius: var(--r-pill); white-space: nowrap;
+  font-size: 14px; font-weight: 600; color: var(--ink-2); background: var(--glass); border: 0.5px solid var(--glass-edge);
+}
+.jump-chip[aria-current="true"] { color: var(--accent-ink); background: var(--accent); border-color: transparent; }
+.jump-star { letter-spacing: 0; }
+#panel-cards.has-jump .stack-head { top: calc(env(safe-area-inset-top) + 102px); }
+.search-empty { text-align: center; color: var(--ink-2); font-size: 16px; padding: 36px 12px 8px; }
+
+/* Eye P1 (Arc 2): on a wide desktop the 560px column floated in empty wallpaper. From 900px the app
+   sits on a quiet full-height panel (a wider 640px column), so the page reads as one surface. */
+@media (min-width: 900px) {
+  #app { max-width: 640px; }
+  #topbar { padding-left: max(var(--gutter), calc((100% - 640px) / 2 + var(--gutter))); padding-right: max(var(--gutter), calc((100% - 640px) / 2 + var(--gutter))); }
+  .wallpaper::after {
+    content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 704px; transform: translateX(-50%);
+    background: var(--panel); border-left: 0.5px solid var(--glass-edge); border-right: 0.5px solid var(--glass-edge);
+    box-shadow: 0 0 80px rgba(0, 0, 0, 0.18);
+  }
 }
 
 </style>
@@ -511,6 +654,18 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
         <p class="empty-sub">Your gift cards will stack here, grouped by category, with what each one really costs.</p>
       </div>
       <p id="load-msg" class="load-msg" role="status" hidden></p>
+      <div id="cards-tools" class="cards-tools" hidden>
+        <div class="search-field">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><line x1="16" y1="16" x2="20.5" y2="20.5"/></svg>
+          <label for="card-search" class="vh">Search cards</label>
+          <input id="card-search" type="search" placeholder="Search" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-describedby="search-empty">
+          <button id="card-search-clear" class="search-clear" type="button" aria-label="Clear search" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="7" y1="7" x2="17" y2="17"/><line x1="17" y1="7" x2="7" y2="17"/></svg>
+          </button>
+        </div>
+      </div>
+      <nav id="jump-row" class="jump-row" aria-label="Jump to section" hidden></nav>
+      <p id="search-empty" class="search-empty" role="status" hidden></p>
       <div id="stack" class="stack" hidden></div>
       <div id="detail" class="detail" hidden></div>
     </section>
@@ -568,7 +723,7 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
       <div class="sheet-head">
         <button id="spend-cancel" class="sheet-link" type="button">Cancel</button>
         <h2 id="spend-title" class="sheet-title">Log Spend</h2>
-        <span class="sheet-head-pad" aria-hidden="true"></span>
+        <span id="spend-logo" class="sheet-logo" aria-hidden="true"></span>
       </div>
       <p class="sheet-sub" id="spend-retailer"></p>
       <div id="spend-using" class="glass group sheet-row">
@@ -616,7 +771,7 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
       <div class="field combo">
         <label for="add-retailer">Retailer</label>
         <input id="add-retailer" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="add-suggest" autocapitalize="words" spellcheck="false" placeholder="Search brands — e.g. Starbucks" required>
-        <ul id="add-suggest" class="suggest glass" role="listbox" aria-label="Brand suggestions" hidden></ul>
+        <div id="add-suggest" class="suggest glass" role="listbox" aria-label="Brand suggestions" hidden></div>
       </div>
       <div class="glass group">
         <div class="sheet-row"><label for="add-face">Face value</label><input id="add-face" type="text" inputmode="decimal" placeholder="$0.00" required></div>
@@ -640,7 +795,6 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
         <div class="sheet-row"><label for="add-where">Where bought</label><input id="add-where" type="text" placeholder="Optional"></div>
         <div class="sheet-row"><label for="add-notes">Notes</label><input id="add-notes" type="text" placeholder="Optional"></div>
       </div>
-      <p id="add-totals" class="add-caption" hidden></p>
       <p class="foot-note">Card numbers and PINs live only inside your encrypted document.</p>
     </form>
   </dialog>
@@ -664,6 +818,19 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
         <button id="capture-next" class="log-spend-btn" type="submit">Next</button>
       </div>
     </form>
+  </dialog>
+
+  <dialog id="confirm-sheet" class="sheet" aria-labelledby="confirm-title" aria-describedby="confirm-msg">
+    <div class="sheet-body">
+      <div class="sheet-head">
+        <button id="confirm-cancel" class="sheet-link" type="button">Cancel</button>
+        <h2 id="confirm-title" class="sheet-title">Delete?</h2>
+        <span class="sheet-head-pad" aria-hidden="true"></span>
+      </div>
+      <p id="confirm-msg" class="confirm-q"></p>
+      <p id="confirm-more" class="confirm-more" hidden></p>
+      <button id="confirm-go" class="danger-btn" type="button">Delete</button>
+    </div>
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -2192,6 +2359,142 @@ function setCardDetailsMut(doc, cardId, { number, pin } = {}) {
   };
 }
 
+// ---- Arc 2b: deletes REPLAY, never patch ----------------------------------------------------------
+// Removing a spend or a card rebuilds that retailer's entries in date order (ties: the order they were
+// logged) through the ledger engine, so every later K3 shift is recomputed and balances, owed, rate and
+// "Saving %" equal a document that never had the removed item — to the cent. Spends keep their draws;
+// a spend that drew from a deleted card is re-planned smallest-first across the remaining cards (or
+// removed if they can't cover it, or if it drew ONLY from that card). Refunds recompute their shift.
+// Imported history (migration / adjustment) keeps its stored amounts and shift. Anything already sent
+// to YNAB (ynabSyncStatus other than 'dry-run') is never removed or rewritten.
+
+class SyncedEntryError extends Error {
+  constructor() { super('Already sent to YNAB — reverse it instead'); this.name = 'SyncedEntryError'; this.code = 'synced'; }
+}
+class ReplayError extends Error {
+  constructor(msg) { super(msg); this.name = 'ReplayError'; this.code = 'replay'; }
+}
+class UndoStaleError extends Error {
+  constructor() { super('the document changed since — undo skipped'); this.name = 'UndoStaleError'; this.code = 'undoStale'; }
+}
+
+const isSynced = (status) => status != null && status !== 'dry-run';
+const groupStatus = (entries) => (entries.find((e) => e.ynabSyncStatus) || {}).ynabSyncStatus;
+const sameEntries = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+// replayRetailer(doc, retailerId, { dropSpendIds, dropCardIds }) → { doc, removed, replanned }.
+// removed: [{ spendId, type, amount }] (amount = cents drawn, positive) · replanned: [spendId].
+function replayRetailer(doc, retailerId, { dropSpendIds = [], dropCardIds = [] } = {}) {
+  const dropS = new Set(dropSpendIds), dropC = new Set(dropCardIds);
+  const cardIds = new Set(cardsOf(doc, retailerId).map((c) => c.id));
+  const all = doc.entries || [];
+  const groups = new Map();
+  all.forEach((e, i) => {
+    if (!cardIds.has(e.cardId)) return;
+    const key = e.spendId || e.id;
+    if (!groups.has(key)) groups.set(key, { key, first: i, date: e.date, type: e.type, entries: [] });
+    groups.get(key).entries.push(e);
+  });
+  const ordered = [...groups.values()].sort((a, b) => String(a.date).localeCompare(String(b.date)) || a.first - b.first);
+
+  let work = { ...doc, cards: (doc.cards || []).filter((c) => !dropC.has(c.id)), entries: all.filter((e) => !cardIds.has(e.cardId)) };
+  const out = new Map(), removed = [], replanned = [];
+  for (const g of ordered) {
+    const status = groupStatus(g.entries);
+    const drawn = g.entries.reduce((t, e) => t - e.amount, 0);
+    let next = null, didReplan = false;
+    if (dropS.has(g.key)) next = null;
+    else if (g.type === 'spend') {
+      const draws = g.entries.map((e) => ({ cardId: e.cardId, amount: -e.amount }));
+      const kept = draws.filter((d) => !dropC.has(d.cardId));
+      const note = g.entries[0].note;
+      const base = { id: g.key, retailerId, amount: drawn, date: g.date, ...(status ? { ynabSyncStatus: status } : {}), ...(note ? { note } : {}) };
+      let res = null;
+      if (kept.length === draws.length) {
+        try { res = logSpend(work, { ...base, draws }); } catch (e) { if (!(e instanceof RangeError)) throw e; }
+      }
+      if (!res && kept.length) {
+        try { res = logSpend(work, base); didReplan = true; } catch (e) { if (e.code !== 'insufficientBalance') throw e; }
+      }
+      if (res) { next = res.entries; work = res.doc; }
+    } else if (g.type === 'refund') {
+      const e = g.entries[0];
+      if (!dropC.has(e.cardId)) { const res = logRefund(work, { id: g.key, cardId: e.cardId, amount: e.amount, date: e.date }); next = res.entries; work = res.doc; }
+    } else {
+      const kept = g.entries.filter((e) => !dropC.has(e.cardId));
+      if (kept.length) {
+        work = { ...work, entries: [...work.entries, ...kept] };
+        for (const e of kept) {
+          const card = work.cards.find((c) => c.id === e.cardId);
+          if (cardBalance(work, card) < 0) throw new ReplayError('that would leave a card with a negative balance — nothing was changed');
+        }
+        next = kept;
+      }
+    }
+    if (isSynced(status) && (!next || !sameEntries(next, g.entries))) throw new SyncedEntryError();
+    if (next) { out.set(g.key, next); if (didReplan) replanned.push(g.key); }
+    else removed.push({ spendId: g.key, type: g.type, amount: drawn });
+  }
+  // entries go back where they were (a spend's group sits at its first entry's position)
+  const emitted = new Set(), entries = [];
+  for (const e of all) {
+    if (!cardIds.has(e.cardId)) { entries.push(e); continue; }
+    const key = e.spendId || e.id;
+    if (emitted.has(key)) continue;
+    emitted.add(key);
+    if (out.has(key)) entries.push(...out.get(key));
+  }
+  return { doc: { ...doc, cards: work.cards, entries }, removed, replanned };
+}
+
+function retailerOfSpend(doc, spendId) {
+  const group = (doc.entries || []).filter((e) => (e.spendId || e.id) === spendId);
+  if (!group.length) throw new Error('unknown spend');
+  const card = (doc.cards || []).find((c) => c.id === group[0].cardId);
+  if (!card) throw new Error('unknown spend');
+  return { retailerId: card.retailerId, group };
+}
+
+// deleteSpend — removes the spend (all of its draws) and replays the retailer's later entries.
+function deleteSpendMut(doc, spendId) {
+  const { retailerId, group } = retailerOfSpend(doc, spendId);
+  if (isSynced(groupStatus(group))) throw new SyncedEntryError();
+  const res = replayRetailer(doc, retailerId, { dropSpendIds: [spendId] });
+  return {
+    doc: res.doc, retailerId, type: group[0].type, amount: group.reduce((t, e) => t - e.amount, 0),
+    alsoRemoved: res.removed.filter((r) => r.spendId !== spendId), replanned: res.replanned,
+  };
+}
+
+// deleteCard — removes the card and its entries (replayed as above); the retailer goes with its last card.
+function deleteCardMut(doc, cardId) {
+  const card = (doc.cards || []).find((c) => c.id === cardId);
+  if (!card) throw new Error('unknown card');
+  const retailerId = card.retailerId;
+  const res = replayRetailer(doc, retailerId, { dropCardIds: [cardId] });
+  let next = res.doc;
+  const retailerRemoved = !next.cards.some((c) => c.retailerId === retailerId);
+  if (retailerRemoved) next = { ...next, retailers: next.retailers.filter((r) => r.id !== retailerId) };
+  return { doc: next, retailerId, removed: res.removed, replanned: res.replanned, retailerRemoved };
+}
+
+// setRetailerCategory — moves the BRAND (cards hang off the retailer) and remembers it for the domain.
+function setRetailerCategoryMut(doc, retailerId, category) {
+  const r = (doc.retailers || []).find((x) => x.id === retailerId);
+  if (!r) throw new Error(`unknown retailer ${retailerId}`);
+  if (!(doc.categories || []).includes(category)) throw new RangeError(`unknown category ${category}`);
+  let next = { ...doc, retailers: doc.retailers.map((x) => (x.id === retailerId ? { ...x, category } : x)) };
+  if (r.brandDomain) next = rememberCategoryMut(next, r.brandDomain, category).doc;
+  return { doc: next };
+}
+
+// undo — put back the document as it was before a change, but only if nothing else has changed it
+// since (the doc must still be exactly what that change wrote); never clobbers another device's write.
+function undoMut(doc, snapshot, expected) {
+  if (JSON.stringify(doc) !== JSON.stringify(expected)) throw new UndoStaleError();
+  return { doc: snapshot };
+}
+
 // commitChange — the ONE write path. ctx: { doc, version, salt, demo, client, syncId, passphrase }.
 // change(doc, newId) → { doc, ...result }. Demo: in memory only. Live: refuses when no row exists
 // (NoRowError — the bootstrap creates the row, never a stray first write), then persistDoc with a
@@ -2212,11 +2515,472 @@ async function commitChange(ctx, change) {
 }
 
 
+/* ---- src/core/retailers.js ---- */
+// src/core/retailers.js — the curated catalog of US brands that sell gift cards (Arc 2b slice 1) and
+// the Add Card search over it. Mark typed "McDon" and Brandfetch's free Brand Search answered "McDon
+// Group", "Gibson McDonald", "McDonald's Philippines": the catalog answers first (instant, offline,
+// with the right category), and Brand Search only fills in below it, filtered.
+//
+// One row per brand: "Name|domain|category|aliases (comma-separated)|brandColor". Category letters:
+// R Restaurant · T Retail · O Other. A row's position is its popularity rank (earlier = more popular),
+// which breaks ties between equally strong matches. Domains are what the logo CDN is built from.
+
+const CATALOG_ROWS = [
+  // ---- the most-bought gift cards, roughly in order ----
+  'Amazon|amazon.com|T|amazon.com,amzn|#FF9900',
+  'Starbucks|starbucks.com|R||#00704A',
+  'Target|target.com|T||#CC0000',
+  'Walmart|walmart.com|T|wal-mart|#0071CE',
+  'Apple|apple.com|T|itunes,app store,apple store|#1D1D1F',
+  "McDonald's|mcdonalds.com|R|mcdonalds,mickey ds|#DA291C",
+  'The Home Depot|homedepot.com|T|home depot,homedepot|#F96302',
+  "Lowe's|lowes.com|T|lowes|#004990",
+  'Best Buy|bestbuy.com|T|bestbuy|#0046BE',
+  'DoorDash|doordash.com|R|door dash|#FF3008',
+  'Uber Eats|ubereats.com|R|ubereats|#06C167',
+  'Uber|uber.com|O|uber rides|#000000',
+  'Chick-fil-A|chick-fil-a.com|R|chickfila,chick fil a|#E51636',
+  "Dunkin'|dunkindonuts.com|R|dunkin,dunkin donuts|#FF671F",
+  'Chipotle|chipotle.com|R|chipotle mexican grill|#A81612',
+  'Costco|costco.com|T||#E31837',
+  'Sephora|sephora.com|T||#000000',
+  'Netflix|netflix.com|O||#E50914',
+  'Spotify|spotify.com|O||#1DB954',
+  'Xbox|xbox.com|O|microsoft,xbox live|#107C10',
+  'PlayStation|playstation.com|O|sony,psn,playstation store|#003791',
+  'Nintendo|nintendo.com|O|nintendo eshop,eshop|#E60012',
+  'Google Play|google.com|O|google,play store|#01875F',
+  "Macy's|macys.com|T|macys|#E21A2C",
+  'Nordstrom|nordstrom.com|T||#000000',
+  'The Cheesecake Factory|thecheesecakefactory.com|R|cheesecake factory|#5B3A1E',
+  'Olive Garden|olivegarden.com|R||#5C6E2F',
+  'Ulta Beauty|ulta.com|T|ulta|#F26B3A',
+  'Whole Foods Market|wholefoodsmarket.com|T|whole foods|#00674B',
+  'Airbnb|airbnb.com|O||#FF5A5F',
+  'Southwest Airlines|southwest.com|O|southwest|#304CB2',
+  'Delta Air Lines|delta.com|O|delta,delta airlines|#003366',
+  'AMC Theatres|amctheatres.com|O|amc|#A50034',
+  'Taco Bell|tacobell.com|R||#702082',
+  "Wendy's|wendys.com|R|wendys|#E2203D",
+  'Panera Bread|panerabread.com|R|panera|#4B6B33',
+  "Domino's|dominos.com|R|dominos,dominos pizza|#006491",
+  "Applebee's|applebees.com|R|applebees|#C8102E",
+  'Outback Steakhouse|outback.com|R|outback|#8C1D18',
+  'Instacart|instacart.com|T||#0AAD0A',
+  // ---- restaurants, coffee, delivery ----
+  'Burger King|bk.com|R|bk|#D62300',
+  'Subway|subway.com|R||#008C15',
+  'Pizza Hut|pizzahut.com|R||#EE3124',
+  "Papa John's|papajohns.com|R|papa johns|#00A160",
+  'Grubhub|grubhub.com|R|grub hub|#F63440',
+  "Chili's|chilis.com|R|chilis|#C8102E",
+  'Texas Roadhouse|texasroadhouse.com|R||#8B1A1A',
+  'Red Lobster|redlobster.com|R||#B7121F',
+  'Buffalo Wild Wings|buffalowildwings.com|R|bww,bdubs,b dubs|#FFC72C',
+  'Cracker Barrel|crackerbarrel.com|R||#6B4423',
+  'IHOP|ihop.com|R||#0A5EB0',
+  "Denny's|dennys.com|R|dennys|#E31837",
+  'Panda Express|pandaexpress.com|R|panda|#D52B1E',
+  'KFC|kfc.com|R|kentucky fried chicken|#A3080C',
+  'Popeyes|popeyes.com|R|popeyes louisiana kitchen|#F26522',
+  'Sonic Drive-In|sonicdrivein.com|R|sonic|#0072CE',
+  "Arby's|arbys.com|R|arbys|#D71920",
+  'Jack in the Box|jackinthebox.com|R||#E31837',
+  'Five Guys|fiveguys.com|R||#D2112B',
+  'Shake Shack|shakeshack.com|R||#1F1F1F',
+  'In-N-Out Burger|in-n-out.com|R|in n out,innout|#DA291C',
+  "Culver's|culvers.com|R|culvers|#005DAA",
+  'Whataburger|whataburger.com|R||#F36F21',
+  "Raising Cane's|raisingcanes.com|R|raising canes,canes|#C8102E",
+  "Jersey Mike's|jerseymikes.com|R|jersey mikes|#003B71",
+  "Jimmy John's|jimmyjohns.com|R|jimmy johns|#C8102E",
+  'Firehouse Subs|firehousesubs.com|R||#B22222',
+  'Wingstop|wingstop.com|R||#00573F',
+  'Qdoba|qdoba.com|R||#8C1D40',
+  "Moe's Southwest Grill|moes.com|R|moes|#00843D",
+  'Noodles & Company|noodles.com|R|noodles and company|#E31837',
+  'Sweetgreen|sweetgreen.com|R||#0F5132',
+  'Cava|cava.com|R||#2B4C3F',
+  "P.F. Chang's|pfchangs.com|R|pf changs|#8B0000",
+  'Red Robin|redrobin.com|R||#C8102E',
+  'TGI Fridays|tgifridays.com|R|fridays,tgi fridays|#E31837',
+  'LongHorn Steakhouse|longhornsteakhouse.com|R|longhorn|#7A2E1F',
+  "Ruth's Chris Steak House|ruthschris.com|R|ruths chris|#7A0019",
+  "Morton's The Steakhouse|mortons.com|R|mortons|#1F1F1F",
+  'The Capital Grille|thecapitalgrille.com|R|capital grille|#1F1F1F',
+  "Maggiano's Little Italy|maggianos.com|R|maggianos|#7A1F1F",
+  "Carrabba's Italian Grill|carrabbas.com|R|carrabbas|#7A1F1F",
+  'Bonefish Grill|bonefishgrill.com|R|bonefish|#1F3A5F',
+  'Benihana|benihana.com|R||#C8102E',
+  "BJ's Restaurant & Brewhouse|bjsrestaurants.com|R|bjs restaurant|#B22222",
+  'Krispy Kreme|krispykreme.com|R||#00843D',
+  'Tim Hortons|timhortons.com|R|tims|#C8102E',
+  "Peet's Coffee|peets.com|R|peets|#3E2A1E",
+  'Dutch Bros Coffee|dutchbros.com|R|dutch bros|#003B71',
+  'Caribou Coffee|cariboucoffee.com|R|caribou|#4E2A1E',
+  'The Coffee Bean & Tea Leaf|coffeebean.com|R|coffee bean|#5C2D91',
+  'Blue Bottle Coffee|bluebottlecoffee.com|R|blue bottle|#00A3E0',
+  'Jamba|jamba.com|R|jamba juice|#7AB800',
+  'Smoothie King|smoothieking.com|R||#C8102E',
+  'Baskin-Robbins|baskinrobbins.com|R|baskin robbins|#DA1884',
+  'Dairy Queen|dairyqueen.com|R|dq|#EE3124',
+  'Cold Stone Creamery|coldstonecreamery.com|R|cold stone|#8B1A1A',
+  'Cinnabon|cinnabon.com|R||#0B3C7D',
+  "Auntie Anne's|auntieannes.com|R|auntie annes|#003B71",
+  'Insomnia Cookies|insomniacookies.com|R||#1F1F5F',
+  'Crumbl Cookies|crumblcookies.com|R|crumbl|#E8A0B4',
+  "Zaxby's|zaxbys.com|R|zaxbys|#C8102E",
+  'Bojangles|bojangles.com|R||#F58220',
+  "Church's Texas Chicken|churchs.com|R|churchs chicken|#E31837",
+  'Del Taco|deltaco.com|R||#C8102E',
+  'El Pollo Loco|elpolloloco.com|R||#E31837',
+  "Carl's Jr.|carlsjr.com|R|carls jr|#E31837",
+  "Hardee's|hardees.com|R|hardees|#E31837",
+  'White Castle|whitecastle.com|R||#1F3A93',
+  "Steak 'n Shake|steaknshake.com|R|steak n shake|#E31837",
+  'Potbelly|potbelly.com|R||#4E2A1E',
+  "McAlister's Deli|mcalistersdeli.com|R|mcalisters|#8B0000",
+  'Waffle House|wafflehouse.com|R||#F2C200',
+  'Bob Evans|bobevans.com|R||#C8102E',
+  'First Watch|firstwatch.com|R||#F58220',
+  'Yard House|yardhouse.com|R||#1F1F1F',
+  'Seasons 52|seasons52.com|R||#3E4A2E',
+  'Fogo de Chão|fogodechao.com|R|fogo de chao,fogo|#8B1A1A',
+  'Hooters|hooters.com|R||#F58220',
+  "Chuy's|chuys.com|R|chuys|#00843D",
+  'On The Border|ontheborder.com|R||#8B1A1A',
+  "Landry's|landrysinc.com|R|landrys|#1F3A5F",
+  'Pei Wei|peiwei.com|R||#C8102E',
+  // ---- retail: big-box, grocery, pharmacy ----
+  "Sam's Club|samsclub.com|T|sams club|#0067A0",
+  "BJ's Wholesale Club|bjs.com|T|bjs wholesale|#D50032",
+  'Kroger|kroger.com|T||#0F4C81',
+  "Trader Joe's|traderjoes.com|T|trader joes|#C8102E",
+  'Safeway|safeway.com|T||#E31837',
+  'Albertsons|albertsons.com|T||#0070BA',
+  'Publix|publix.com|T||#3E8E41',
+  'H-E-B|heb.com|T|heb|#E31837',
+  'Wegmans|wegmans.com|T||#1F1F1F',
+  'Meijer|meijer.com|T||#E31837',
+  'Aldi|aldi.us|T||#00005F',
+  'Sprouts Farmers Market|sprouts.com|T|sprouts|#4E8B2E',
+  'Food Lion|foodlion.com|T||#0057A8',
+  'Giant Eagle|gianteagle.com|T||#E31837',
+  'ShopRite|shoprite.com|T|shop rite|#E31837',
+  'Stop & Shop|stopandshop.com|T|stop and shop|#E31837',
+  'Hy-Vee|hy-vee.com|T|hyvee|#E31837',
+  'Walgreens|walgreens.com|T||#E31837',
+  'CVS Pharmacy|cvs.com|T|cvs|#CC0000',
+  'Rite Aid|riteaid.com|T||#1F3A93',
+  'Dollar General|dollargeneral.com|T||#FFC800',
+  'Dollar Tree|dollartree.com|T||#00843D',
+  'Five Below|fivebelow.com|T||#0072CE',
+  // ---- department stores, off-price ----
+  'Nordstrom Rack|nordstromrack.com|T||#1F1F1F',
+  "Kohl's|kohls.com|T|kohls|#859CBA",
+  'JCPenney|jcpenney.com|T|jc penney,penneys|#E31837',
+  "Bloomingdale's|bloomingdales.com|T|bloomingdales|#1F1F1F",
+  'Saks Fifth Avenue|saksfifthavenue.com|T|saks|#1F1F1F',
+  'Saks OFF 5TH|saksoff5th.com|T|off 5th|#1F1F1F',
+  'Neiman Marcus|neimanmarcus.com|T||#1F1F1F',
+  "Dillard's|dillards.com|T|dillards|#1F1F1F",
+  'Belk|belk.com|T||#003B71',
+  'TJ Maxx|tjmaxx.com|T|tjmaxx,t j maxx,tjx|#C8102E',
+  'Marshalls|marshalls.com|T||#003B71',
+  'HomeGoods|homegoods.com|T|home goods|#E31837',
+  'Ross Dress for Less|rossstores.com|T|ross|#0057A8',
+  'Burlington|burlington.com|T|burlington coat factory|#C8102E',
+  'QVC|qvc.com|T||#1F1F1F',
+  // ---- apparel, shoes, sporting goods ----
+  'Old Navy|oldnavy.com|T||#003B71',
+  'Gap|gap.com|T||#002868',
+  'Banana Republic|bananarepublic.com|T||#1F1F1F',
+  'Athleta|athleta.com|T||#1F1F1F',
+  'J.Crew|jcrew.com|T|j crew,jcrew|#1F1F1F',
+  'Abercrombie & Fitch|abercrombie.com|T|abercrombie|#1F1F1F',
+  'American Eagle|ae.com|T|american eagle outfitters,aeo|#1F3A5F',
+  'Hollister|hollisterco.com|T||#7A1F1F',
+  'H&M|hm.com|T|h and m,hm|#E50010',
+  'Zara|zara.com|T||#1F1F1F',
+  'Uniqlo|uniqlo.com|T||#FF0000',
+  'Forever 21|forever21.com|T||#FFD200',
+  'Urban Outfitters|urbanoutfitters.com|T||#1F1F1F',
+  'Anthropologie|anthropologie.com|T||#5C4A3E',
+  'Free People|freepeople.com|T||#1F1F1F',
+  'Lululemon|lululemon.com|T||#D22030',
+  'Nike|nike.com|T||#111111',
+  'Adidas|adidas.com|T||#000000',
+  'Under Armour|underarmour.com|T||#1D1D1D',
+  'Foot Locker|footlocker.com|T||#1F1F1F',
+  'Finish Line|finishline.com|T||#1F1F1F',
+  'DSW|dsw.com|T|designer shoe warehouse|#1F1F1F',
+  'Famous Footwear|famousfootwear.com|T||#C8102E',
+  'Skechers|skechers.com|T||#003B71',
+  "Dick's Sporting Goods|dickssportinggoods.com|T|dicks|#00543C",
+  'Academy Sports + Outdoors|academy.com|T|academy sports|#003B71',
+  'REI|rei.com|T|rei co op|#3E5C2E',
+  'Bass Pro Shops|basspro.com|T|bass pro|#1F3A5F',
+  "Cabela's|cabelas.com|T|cabelas|#5C4A1E",
+  'Patagonia|patagonia.com|T||#1F1F1F',
+  'The North Face|thenorthface.com|T|north face|#1F1F1F',
+  'Columbia Sportswear|columbia.com|T|columbia|#1F3A5F',
+  "Levi's|levi.com|T|levis|#C41230",
+  "Victoria's Secret|victoriassecret.com|T|victorias secret|#1F1F1F",
+  'Crocs|crocs.com|T||#1F1F1F',
+  'Vans|vans.com|T||#C8102E',
+  'Converse|converse.com|T||#1F1F1F',
+  'New Balance|newbalance.com|T||#CF0A2C',
+  'Brooks Running|brooksrunning.com|T|brooks|#1F3A93',
+  'Fanatics|fanatics.com|T||#1F1F1F',
+  'Express|express.com|T||#1F1F1F',
+  'Torrid|torrid.com|T||#1F1F1F',
+  'Lane Bryant|lanebryant.com|T||#1F1F1F',
+  "Chico's|chicos.com|T|chicos|#1F1F1F",
+  'Talbots|talbots.com|T||#C8102E',
+  'Ann Taylor|anntaylor.com|T||#1F1F1F',
+  'LOFT|loft.com|T|ann taylor loft|#1F1F1F',
+  "Carter's|carters.com|T|carters|#00A3E0",
+  "The Children's Place|childrensplace.com|T|childrens place|#1F3A93",
+  "Lands' End|landsend.com|T|lands end|#1F3A5F",
+  'L.L.Bean|llbean.com|T|ll bean,llbean|#1F3A2E',
+  'Eddie Bauer|eddiebauer.com|T||#1F1F1F',
+  'Ralph Lauren|ralphlauren.com|T|polo|#1F2A44',
+  'Tommy Hilfiger|tommy.com|T|tommy|#1F2A44',
+  'Coach|coach.com|T||#1F1F1F',
+  'Kate Spade|katespade.com|T||#1F1F1F',
+  'Michael Kors|michaelkors.com|T||#1F1F1F',
+  // ---- beauty, jewelry, gifts ----
+  'Bath & Body Works|bathandbodyworks.com|T|bath and body works,bbw|#1F3A93',
+  'MAC Cosmetics|maccosmetics.com|T|mac|#000000',
+  'Lush|lush.com|T||#1F1F1F',
+  "Kiehl's|kiehls.com|T|kiehls|#1F1F1F",
+  'The Body Shop|thebodyshop.com|T|body shop|#004236',
+  'Sally Beauty|sallybeauty.com|T||#5C2D91',
+  'Kay Jewelers|kay.com|T|kay|#5C2D91',
+  'Zales|zales.com|T||#1F3A93',
+  'Pandora|pandora.net|T|pandora jewelry|#1F1F1F',
+  'Tiffany & Co.|tiffany.com|T|tiffany|#0ABAB5',
+  "Claire's|claires.com|T|claires|#7A1F7A",
+  'Warby Parker|warbyparker.com|T||#1F3A5F',
+  'Hallmark|hallmark.com|T||#5C2D91',
+  '1-800-Flowers|1800flowers.com|T|1800 flowers|#5C2D91',
+  'Edible Arrangements|ediblearrangements.com|T|edible|#C8102E',
+  'Shutterfly|shutterfly.com|T||#F58220',
+  'Build-A-Bear Workshop|buildabear.com|T|build a bear|#C8102E',
+  // ---- home, hardware, hobby, books, office, pets, auto ----
+  'IKEA|ikea.com|T||#0058A3',
+  'Wayfair|wayfair.com|T||#7B189F',
+  'Pottery Barn|potterybarn.com|T||#1F1F1F',
+  'Williams Sonoma|williams-sonoma.com|T|williams-sonoma|#1F1F1F',
+  'West Elm|westelm.com|T||#1F1F1F',
+  'Crate & Barrel|crateandbarrel.com|T|crate and barrel|#1F1F1F',
+  'Bed Bath & Beyond|bedbathandbeyond.com|T|bed bath and beyond|#003B71',
+  "Kirkland's|kirklands.com|T|kirklands|#1F1F1F",
+  'At Home|athome.com|T||#C8102E',
+  'Sur La Table|surlatable.com|T||#1F1F1F',
+  'The Container Store|containerstore.com|T|container store|#1F3A93',
+  'Michaels|michaels.com|T||#C8102E',
+  'Hobby Lobby|hobbylobby.com|T||#F58220',
+  'Barnes & Noble|barnesandnoble.com|T|barnes and noble,b&n|#2A5934',
+  'Books-A-Million|booksamillion.com|T|books a million,bam|#C8102E',
+  'GameStop|gamestop.com|T|game stop|#C8102E',
+  'Staples|staples.com|T||#CC0000',
+  'Office Depot|officedepot.com|T|officemax|#C8102E',
+  'Petco|petco.com|T||#00539F',
+  'PetSmart|petsmart.com|T|pet smart|#C8102E',
+  'Chewy|chewy.com|T||#1C49C2',
+  'Tractor Supply|tractorsupply.com|T|tractor supply co|#C8102E',
+  'Ace Hardware|acehardware.com|T|ace|#D40029',
+  'Menards|menards.com|T||#00843D',
+  'Harbor Freight|harborfreight.com|T|harbor freight tools|#C8102E',
+  'AutoZone|autozone.com|T|auto zone|#F37F00',
+  'Advance Auto Parts|advanceautoparts.com|T|advance auto|#C8102E',
+  "O'Reilly Auto Parts|oreillyauto.com|T|oreilly|#00843D",
+  'Big Lots|biglots.com|T||#F58220',
+  // ---- online, electronics ----
+  'eBay|ebay.com|T||#E53238',
+  'Etsy|etsy.com|T||#F1641E',
+  'Newegg|newegg.com|T||#F7A600',
+  'Overstock|overstock.com|T||#C8102E',
+  'Bose|bose.com|T||#1F1F1F',
+  'Samsung|samsung.com|T||#1428A0',
+  'Dell|dell.com|T||#007DB8',
+  // ---- travel, hotels, rideshare ----
+  'Lyft|lyft.com|O||#FF00BF',
+  'American Airlines|aa.com|O|american|#0078D2',
+  'United Airlines|united.com|O|united|#002244',
+  'JetBlue|jetblue.com|O|jet blue|#003876',
+  'Alaska Airlines|alaskaair.com|O|alaska|#01426A',
+  'Spirit Airlines|spirit.com|O|spirit|#1F1F1F',
+  'Frontier Airlines|flyfrontier.com|O|frontier|#00843D',
+  'Hawaiian Airlines|hawaiianairlines.com|O|hawaiian|#5C2D91',
+  'Marriott|marriott.com|O|marriott bonvoy,bonvoy|#7A1F1F',
+  'Hilton|hilton.com|O|hilton honors|#104C97',
+  'Hyatt|hyatt.com|O||#1F3A5F',
+  'IHG Hotels & Resorts|ihg.com|O|ihg,holiday inn|#1F3A5F',
+  'Choice Hotels|choicehotels.com|O||#003B71',
+  'Wyndham Hotels|wyndhamhotels.com|O|wyndham|#003B71',
+  'Best Western|bestwestern.com|O||#003B71',
+  'Hotels.com|hotels.com|O||#C8102E',
+  'Expedia|expedia.com|O||#1F3A93',
+  'Booking.com|booking.com|O|booking|#003580',
+  'Carnival Cruise Line|carnival.com|O|carnival|#1F3A93',
+  'Royal Caribbean|royalcaribbean.com|O||#1F3A93',
+  'Norwegian Cruise Line|ncl.com|O|norwegian,ncl|#1F3A5F',
+  'Amtrak|amtrak.com|O||#00537E',
+  'Greyhound|greyhound.com|O||#0057A8',
+  // ---- entertainment, streaming, gaming ----
+  'Regal|regmovies.com|O|regal cinemas|#C8102E',
+  'Cinemark|cinemark.com|O||#C8102E',
+  'Fandango|fandango.com|O||#F15A24',
+  'Hulu|hulu.com|O||#1CE783',
+  'Disney+|disneyplus.com|O|disney plus|#113CCF',
+  'Disney|disney.com|O|disney parks,disneyland,disney world|#113CCF',
+  'YouTube|youtube.com|O|youtube premium|#FF0000',
+  'Max|max.com|O|hbo max,hbo|#002BE7',
+  'Paramount+|paramountplus.com|O|paramount plus|#0064FF',
+  'Peacock|peacocktv.com|O||#1F1F1F',
+  'Audible|audible.com|O||#F8991C',
+  'Steam|steampowered.com|O|valve|#1B2838',
+  'Roblox|roblox.com|O||#1F1F1F',
+  'Epic Games|epicgames.com|O|fortnite,v bucks|#1F1F1F',
+  'Minecraft|minecraft.net|O||#3C8527',
+  'Twitch|twitch.tv|O||#9146FF',
+  "Dave & Buster's|daveandbusters.com|O|dave and busters|#C8102E",
+  'Topgolf|topgolf.com|O|top golf|#00539F',
+  'Main Event|mainevent.com|O||#1F3A93',
+  'Six Flags|sixflags.com|O||#1F3A93',
+  'SeaWorld|seaworld.com|O|sea world|#00539F',
+  'Universal Orlando|universalorlando.com|O|universal studios|#1F3A93',
+  'Ticketmaster|ticketmaster.com|O||#026CDF',
+  'StubHub|stubhub.com|O|stub hub|#3F1D74',
+  'Live Nation|livenation.com|O||#C8102E',
+  // ---- services, fuel, prepaid ----
+  'Massage Envy|massageenvy.com|O||#5C2D91',
+  'Great Clips|greatclips.com|O||#C8102E',
+  'Shell|shell.com|O||#DD1D21',
+  'Chevron|chevron.com|O||#0054A4',
+  'ExxonMobil|exxon.com|O|exxon,mobil|#C8102E',
+  'BP|bp.com|O||#009900',
+  'Speedway|speedway.com|O||#C8102E',
+  'Wawa|wawa.com|O||#C8102E',
+  'Sheetz|sheetz.com|O||#C8102E',
+  '7-Eleven|7-eleven.com|O|7 eleven,seven eleven|#008163',
+  'Circle K|circlek.com|O||#E31837',
+  "Casey's|caseys.com|O|caseys|#C8102E",
+  'QuikTrip|qt.com|O|qt|#C8102E',
+  'Vanilla Visa|vanillagift.com|O|visa gift card,visa|#1F3A93',
+  'American Express Gift Card|americanexpress.com|O|amex,american express|#006FCF',
+];
+
+const CATEGORY = { R: 'Restaurant', T: 'Retail', O: 'Other' };
+
+// normalise: lower-case, diacritics off, apostrophes dropped ("McDonald's" → "mcdonalds"), "&" → "and",
+// every other non-alphanumeric run → one space.
+function normName(s) {
+  return String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '')
+    .replace(/['’`.]/g, '').replace(/&/g, ' and ').replace(/\+/g, ' plus ').replace(/[^a-z0-9]+/g, ' ').trim();
+}
+const sqz = (s) => s.replace(/ /g, '');
+const stripThe = (s) => s.replace(/^the /, '');
+
+const CATALOG = CATALOG_ROWS.map((row, rank) => {
+  const [name, domain, cat, aliases, brandColor] = row.split('|');
+  const keys = [...new Set([normName(name), stripThe(normName(name)), ...String(aliases || '').split(',').filter(Boolean).map(normName)])];
+  return { name, domain, category: CATEGORY[cat], aliases: (aliases || '').split(',').filter(Boolean), rank, keys, ...(brandColor ? { brandColor } : {}) };
+});
+const BY_DOMAIN = new Map(CATALOG.map((b) => [b.domain, b]));
+
+function catalogByDomain(domain) {
+  const d = String(domain || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '');
+  return (d && BY_DOMAIN.get(d)) || null;
+}
+
+// Levenshtein distance, early-out above 1 (we only ever ask "within one edit?").
+function within1(a, b) {
+  if (Math.abs(a.length - b.length) > 1) return false;
+  let i = 0, j = 0, edits = 0;
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) { i++; j++; continue; }
+    if (++edits > 1) return false;
+    if (a.length > b.length) i++; else if (b.length > a.length) j++; else { i++; j++; }
+  }
+  return edits + (a.length - i) + (b.length - j) <= 1;
+}
+
+// Match strength of query q against one brand: 0 prefix · 1 word-prefix · 2 fuzzy (≤1 edit, same first letter) · null none.
+function strength(q, brand) {
+  const qs = sqz(q);
+  let best = null;
+  for (const k of brand.keys) {
+    if (k.startsWith(q) || sqz(k).startsWith(qs)) return 0;
+    if ((' ' + k).includes(' ' + q)) best = 1;
+  }
+  if (best === null && qs.length >= 4) {
+    for (const k of brand.keys) {
+      const ks = sqz(k);
+      if (ks[0] !== qs[0]) continue; // a typo rarely hits the first letter; this keeps fuzzy quiet
+      for (const L of [qs.length - 1, qs.length, qs.length + 1]) if (L > 0 && L <= ks.length && within1(qs, ks.slice(0, L))) return 2;
+    }
+  }
+  return best;
+}
+
+// searchCatalog(query, limit) → catalog rows, strongest match first, then by popularity rank.
+function searchCatalog(query, limit = 5) {
+  const q = normName(query);
+  if (!q) return [];
+  const hits = [];
+  for (const b of CATALOG) { const s = strength(q, b); if (s !== null) hits.push([s, b]); }
+  hits.sort((x, y) => x[0] - y[0] || x[1].rank - y[1].rank);
+  return hits.slice(0, limit).map(([, b]) => b);
+}
+
+const CATALOG_MAX = 5;
+const FALLBACK_MAX = 3;
+// Brand Search is a fallback only: skipped once the catalog fills its block for a ≥4-char query.
+function needsFallback(query, catalogCount) {
+  const q = normName(query);
+  return q.length >= 2 && !(catalogCount >= CATALOG_MAX && q.length >= 4);
+}
+
+// Generic or US-friendly two-letter TLDs that do NOT mark a foreign brand.
+const OK_CC_TLDS = new Set(['us', 'co', 'io', 'ai', 'tv', 'me', 'gg', 'fm', 'ly', 'to', 'so', 'sh', 'app']);
+const COUNTRIES = ['philippines', 'canada', 'uk', 'united kingdom', 'england', 'ireland', 'india', 'australia', 'new zealand',
+  'mexico', 'japan', 'china', 'korea', 'germany', 'deutschland', 'france', 'italy', 'italia', 'spain', 'espana', 'brazil', 'brasil',
+  'argentina', 'chile', 'colombia', 'peru', 'singapore', 'malaysia', 'indonesia', 'thailand', 'vietnam', 'pakistan', 'nigeria',
+  'south africa', 'kenya', 'egypt', 'turkey', 'israel', 'uae', 'dubai', 'saudi', 'qatar', 'netherlands', 'belgium', 'sweden',
+  'norway', 'denmark', 'finland', 'poland', 'portugal', 'greece', 'austria', 'switzerland', 'russia', 'ukraine', 'hong kong', 'taiwan'];
+const namesCountry = (s) => { const n = ' ' + normName(s) + ' '; return COUNTRIES.some((c) => n.includes(` ${c} `)); };
+
+// filterFallback(rows, query, shownDomains) → Brand Search rows worth showing under "Other brands":
+// one per domain, none already in the catalog (or already shown), no foreign brand unless the query
+// names a country, at most FALLBACK_MAX.
+function filterFallback(rows, query, shownDomains = []) {
+  const allowForeign = namesCountry(query);
+  const seen = new Set(shownDomains.map((d) => String(d).toLowerCase()));
+  const out = [];
+  for (const r of rows || []) {
+    const domain = String((r && r.domain) || '').toLowerCase();
+    if (!domain || !r.name || seen.has(domain) || BY_DOMAIN.has(domain)) continue;
+    if (!allowForeign) {
+      const tld = domain.split('.').pop();
+      if ((tld.length === 2 && !OK_CC_TLDS.has(tld)) || namesCountry(r.name)) continue;
+    }
+    seen.add(domain);
+    out.push(r);
+    if (out.length >= FALLBACK_MAX) break;
+  }
+  return out;
+}
+
+
 /* ---- src/core/stack.js ---- */
 // src/core/stack.js — what the Cards stack shows, as pure data (spec §5). Unit-tested; the UI only
 // paints it. Order: ★ Favorites → each category (the doc's category order) → A–Z within a group;
 // retailers with no balance left sink into a final "Used up" group, dimmed. Balances, owed and
 // "Saving X%" are per RETAILER (the stack's unit); card counts drive the multi-card pips.
+
 
 
 const FAVORITES = '★ Favorites';
@@ -2236,9 +3000,25 @@ function retailerSummary(doc, r) {
 
 const byName = (a, b) => String(a.retailer.name).localeCompare(String(b.retailer.name), undefined, { sensitivity: 'base' });
 
-// → [{ key, label, items: [retailerSummary…] }], empty groups dropped.
-function stackGroups(doc) {
-  const all = (doc.retailers || []).map((r) => retailerSummary(doc, r)).filter((s) => s.cardCount > 0);
+// Home search (Arc 2b): does retailer r match the query? Word-prefix on the retailer name, its catalog
+// aliases and its category (apostrophes/case/diacritics ignored, "the" optional); a query of 2–4
+// digits matches a card's last 4. Card numbers stay in memory — they are never rendered by this.
+function retailerMatches(doc, r, query) {
+  const q = normName(query);
+  if (!q) return true;
+  if (/^\d{2,4}$/.test(q)) {
+    return cardsOf(doc, r.id).some((c) => String(c.number || '').replace(/\D/g, '').slice(-4).includes(q));
+  }
+  const known = catalogByDomain(r.brandDomain);
+  const hay = [r.name, ...(known ? [known.name, ...known.aliases] : []), r.category || 'Other'].map(normName);
+  const qs = q.replace(/ /g, '');
+  return hay.some((h) => (' ' + h).includes(' ' + q) || h.replace(/^the /, '').replace(/ /g, '').startsWith(qs));
+}
+
+// → [{ key, label, items: [retailerSummary…] }], empty groups dropped. opts.query filters (home search).
+function stackGroups(doc, { query = '' } = {}) {
+  const all = (doc.retailers || []).filter((r) => retailerMatches(doc, r, query))
+    .map((r) => retailerSummary(doc, r)).filter((s) => s.cardCount > 0);
   const live = all.filter((s) => !s.zero), zero = all.filter((s) => s.zero).sort(byName);
   const groups = [{ key: 'favorites', label: FAVORITES, items: live.filter((s) => s.retailer.favorite).sort(byName) }];
   const rest = live.filter((s) => !s.retailer.favorite);
@@ -2288,6 +3068,56 @@ function cardColors(retailer) {
   return { from: base, to: deep };
 }
 
+// ---- branded sheets (Arc 2b): the Log Spend sheet takes its palette from the retailer's brand colour
+// (the same source as the card face). Every pair is contrast-checked against BOTH the plain sheet and
+// the tinted surface: accent (button / focus ring / chevron / links) ≥ 4.5:1 — stricter than the 3:1 a
+// control needs, so it is also safe as link text — on-accent text ≥ 4.5:1, dim (secondary text) ≥ 4.5:1.
+// A brand colour that fails has its LIGHTNESS shifted (hue and saturation kept) until it passes; it never
+// falls back to grey. Pure + unit-tested for every demo brand and the edge colours.
+const SHEET_BG = { dark: '#181826', light: '#F8F8FB' };   // tokens --sheet-bg
+const SHEET_INK = { dark: '#F4F6FB', light: '#15161F' };  // tokens --ink
+const ON_DARK_INK = '#0B0B14';
+function contrast(a, b) {
+  const la = luminance(hexToRgb(a)), lb = luminance(hexToRgb(b));
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+function rgbToHsl([r, g, b]) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2;
+  if (max === min) return [0, 0, l];
+  const d = max - min, s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  const h = max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [h * 60, s, l];
+}
+function hslToHex(h, s, l) {
+  const k = (n) => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+  const f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return toHex([f(0) * 255, f(8) * 255, f(4) * 255]);
+}
+function mix(a, b, t) { const x = hexToRgb(a), y = hexToRgb(b); return toHex(x.map((v, i) => v * t + y[i] * (1 - t))); }
+// the lightness nearest to l0 (same hue + saturation) for which ok(hex) holds
+function nearestLightness(h, s, l0, ok) {
+  for (let step = 0; step <= 100; step++) {
+    for (const l of step ? [l0 + step / 100, l0 - step / 100] : [l0]) {
+      if (l < 0 || l > 1) continue;
+      const hex = hslToHex(h, s, l);
+      if (ok(hex)) return hex;
+    }
+  }
+  return null;
+}
+function sheetPalette(retailer, theme = 'dark') {
+  const bg = SHEET_BG[theme] || SHEET_BG.dark;
+  const brand = (retailer && hexToRgb(retailer.brandColor) && String(retailer.brandColor)) || cardColors(retailer).from;
+  const [h, s, l0] = rgbToHsl(hexToRgb(brand));
+  const tint = mix(brand, bg, theme === 'light' ? 0.07 : 0.10);
+  const surfaces = [bg, tint];
+  const onFor = (hex) => (contrast(hex, '#FFFFFF') >= contrast(hex, ON_DARK_INK) ? '#FFFFFF' : ON_DARK_INK);
+  const accent = nearestLightness(h, s, l0, (hex) => surfaces.every((x) => contrast(hex, x) >= 4.5) && contrast(hex, onFor(hex)) >= 4.5);
+  const dim = nearestLightness(h, Math.min(s, 0.32), theme === 'light' ? 0.32 : 0.78, (hex) => surfaces.every((x) => contrast(hex, x) >= 4.5));
+  return { brand, accent, onAccent: onFor(accent), dim, tint, bg, ink: SHEET_INK[theme] || SHEET_INK.dark };
+}
+
 function monogram(name) {
   const words = String(name || '?').replace(/^the\s+/i, '').split(/[\s&-]+/).filter(Boolean);
   return (words.length > 1 ? words[0][0] + words[1][0] : (words[0] || '?').slice(0, 2)).toUpperCase();
@@ -2304,9 +3134,11 @@ function logoUrl(domain, clientId) {
 
 /* ---- src/core/category.js ---- */
 // src/core/category.js — the suggested category for a brand (spec §8b, K7), WITHOUT the keyed Brand
-// API: 1. the user's remembered choice for this domain (doc.brandMemory) → 2. an industry string, only
-// if a search result happens to carry one → 3. a keyword / known-chain map over the name + domain →
-// 4. Other. A suggestion is only ever one of the doc's own categories.
+// API: 1. the user's remembered choice for this domain (doc.brandMemory) → 2. the curated catalog's
+// category for this domain (core/retailers.js) → 3. an industry string, only if a search result
+// happens to carry one → 4. a keyword / known-chain map over the name + domain → 5. Other.
+// A suggestion is only ever one of the doc's own categories.
+
 
 const RESTAURANT_CHAINS = ['starbucks', 'mcdonalds', 'chipotle', 'doordash', 'ubereats', 'grubhub', 'panera', 'dunkin',
   'subway', 'cheesecakefactory', 'olivegarden', 'kfc', 'tacobell', 'chickfila', 'wendys', 'dominos', 'pizzahut', 'shakeshack',
@@ -2346,18 +3178,52 @@ function keywordCategory(name, domain) {
   return null;
 }
 
-// → { category, source: 'remembered' | 'industry' | 'keyword' | 'default' }
+// → { category, source: 'remembered' | 'catalog' | 'industry' | 'keyword' | 'default' }
 function suggestCategory(doc, { name, domain, industry } = {}) {
   const cats = (doc && doc.categories) || ['Restaurant', 'Retail', 'Other'];
   const ok = (c) => (c && cats.includes(c) ? c : null);
   const dom = String(domain || '').trim().toLowerCase().replace(/^www\./, '');
   const remembered = dom && doc && doc.brandMemory ? ok(doc.brandMemory[dom]) : null;
   if (remembered) return { category: remembered, source: 'remembered' };
+  const known = catalogByDomain(dom);
+  const cat = known ? ok(known.category) : null;
+  if (cat) return { category: cat, source: 'catalog' };
   const ind = ok(industryCategory(industry));
   if (ind) return { category: ind, source: 'industry' };
   const kw = ok(keywordCategory(name, dom));
   if (kw) return { category: kw, source: 'keyword' };
   return { category: cats.includes('Other') ? 'Other' : cats[cats.length - 1], source: 'default' };
+}
+
+
+/* ---- src/core/demo.js ---- */
+// src/core/demo.js — `?demo=1&cards=N` (demo mode only): a deterministic N-card document for the
+// scroll / Lighthouse / search checks (Arc 2b). Built THROUGH the real mutations from the curated
+// catalog, so it is always a state the app itself could have produced. Never used in live mode.
+
+
+
+
+const BIG_FACES = [2500, 5000, 10000, 2000, 7500];
+const BIG_PCT_OFF = [10, 15, 20, 5, 25];
+
+function bigDemoDoc(n = 100) {
+  let k = 0;
+  const newId = replayableIds(() => `big-${++k}`);
+  let doc = emptyDoc(), cards = 0, i = 0;
+  while (cards < n) {
+    const b = CATALOG[(i * 7) % CATALOG.length]; // 7 is coprime with the catalog size: every brand once
+    const qty = Math.min(n - cards, 1 + (i % 3));
+    const face = BIG_FACES[i % 5], paid = face * (100 - BIG_PCT_OFF[i % 5]) / 100;
+    const date = `2026-0${1 + (i % 9)}-15`;
+    const r = addCardsMut(doc, { name: b.name, brandDomain: b.domain, brandColor: b.brandColor },
+      { face, paid, qty, date, category: b.category, favorite: i % 17 === 0 }, { newId });
+    doc = r.doc;
+    if (i % 11 === 5) doc = logSpendMut(doc, r.retailerId, face * qty, '2026-09-20', null, { newId }).doc; // used up
+    else if (i % 4 === 1) doc = logSpendMut(doc, r.retailerId, Math.floor(face * qty / 3), '2026-09-18', null, { newId }).doc;
+    cards += qty; i++;
+  }
+  return doc;
 }
 
 
@@ -2367,25 +3233,170 @@ function $(id) { return document.getElementById(id); }
 function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
 
 // One polite live region for every confirmation ("Logged $12.50", "Copied"). Re-announces repeats.
+// action { label, onClick } adds a button (the 6-second Undo after a delete); it dismisses the toast.
 let toastTimer = null;
-function toast(msg, ms = 2600) {
+function toast(msg, ms = 2600, action = null) {
   const t = document.getElementById('toast');
   if (!t) return;
   t.textContent = '';
+  t.classList.toggle('has-action', !!action);
   clearTimeout(toastTimer);
-  requestAnimationFrame(() => { t.textContent = msg; t.classList.add('show'); });
-  toastTimer = setTimeout(() => { t.classList.remove('show'); }, ms);
+  requestAnimationFrame(() => {
+    t.replaceChildren(el('span', 'toast-msg', msg));
+    if (action) {
+      const b = el('button', 'toast-action', action.label);
+      b.type = 'button';
+      b.addEventListener('click', () => { clearTimeout(toastTimer); t.classList.remove('show', 'has-action'); action.onClick(); });
+      t.append(b);
+    }
+    t.classList.add('show');
+  });
+  toastTimer = setTimeout(() => { t.classList.remove('show', 'has-action'); }, ms);
 }
+
+// ---- sheets lock the page underneath (Arc 2b) ----
+// iOS-Safari-safe: the body is pinned with position:fixed at -scrollY (overflow:hidden alone does not
+// stop iOS rubber-banding the page behind a sheet), and the scroll position is restored on close.
+// Counted, so a sheet opened from another sheet keeps the lock until the last one closes.
+let lockDepth = 0, lockedY = 0;
+function lockScroll() {
+  if (lockDepth++ > 0) return;
+  lockedY = window.scrollY;
+  const b = document.body.style;
+  b.position = 'fixed'; b.top = `-${lockedY}px`; b.left = '0'; b.right = '0'; b.width = '100%';
+  document.documentElement.classList.add('scroll-locked');
+}
+function unlockScroll() {
+  if (lockDepth === 0 || --lockDepth > 0) return;
+  const b = document.body.style;
+  b.position = ''; b.top = ''; b.left = ''; b.right = ''; b.width = '';
+  document.documentElement.classList.remove('scroll-locked');
+  window.scrollTo(0, lockedY);
+}
+// openSheet(dialog) — showModal + lock the page until this dialog closes.
+function openSheet(d) {
+  if (d.open) return;
+  d.showModal();
+  lockScroll();
+  d.addEventListener('close', unlockScroll, { once: true });
+}
+
+
+/* ---- src/ui/swipe.js ---- */
+// src/ui/swipe.js — swipe-left-to-delete rows (Arc 2b). The row's content slides left over a tray
+// holding a real "Delete" button. Swipe is the touch gesture (pointer events, so a mouse drag works
+// too); the button is ALWAYS in the tab order and the accessibility tree — focusing it opens the row,
+// so keyboard and screen-reader users reach the same action (axe 0). Vertical drags scroll the page.
+
+
+const TRAY_W = 88;
+let openRow = null;
+
+function setOpen(row, on) {
+  const face = row.querySelector(':scope > .swipe-face');
+  if (!face) return;
+  face.style.setProperty('--dx', on ? `${-TRAY_W}px` : '0px');
+  row.classList.toggle('is-open', on);
+  if (on && openRow && openRow !== row) setOpen(openRow, false);
+  openRow = on ? row : (openRow === row ? null : openRow);
+}
+function closeSwipes() { if (openRow) setOpen(openRow, false); }
+
+// makeSwipe(row, { label, onDelete }) — wraps row's current children in a sliding face + a tray.
+function makeSwipe(row, { label, onDelete }) {
+  const face = el('div', 'swipe-face');
+  face.append(...row.childNodes);
+  const tray = el('div', 'swipe-tray');
+  const del = el('button', 'swipe-del', 'Delete');
+  del.type = 'button';
+  del.setAttribute('aria-label', label);
+  del.addEventListener('focus', () => setOpen(row, true));
+  del.addEventListener('click', () => { setOpen(row, false); onDelete(); });
+  tray.append(del);
+  row.classList.add('swipe');
+  row.append(tray, face);
+  row.addEventListener('focusout', (e) => { if (!row.contains(e.relatedTarget)) setOpen(row, false); });
+
+  let start = null, dragging = false, dx = 0;
+  face.addEventListener('pointerdown', (e) => {
+    if (e.button) return;
+    start = { x: e.clientX, y: e.clientY, base: row.classList.contains('is-open') ? -TRAY_W : 0, id: e.pointerId };
+    dragging = false;
+  });
+  face.addEventListener('pointermove', (e) => {
+    if (!start) return;
+    const mx = e.clientX - start.x, my = e.clientY - start.y;
+    if (!dragging) {
+      if (Math.abs(mx) < 8) return;
+      if (Math.abs(my) > Math.abs(mx)) { start = null; return; } // a vertical drag: let the page scroll
+      dragging = true;
+      row.classList.add('dragging');
+      try { face.setPointerCapture(start.id); } catch (_) { /* synthetic or already released */ }
+    }
+    dx = Math.max(-TRAY_W, Math.min(0, start.base + mx));
+    face.style.setProperty('--dx', `${dx}px`);
+  });
+  const end = () => {
+    if (!start) return;
+    if (dragging) setOpen(row, dx < -TRAY_W / 2);
+    start = null; dragging = false;
+    row.classList.remove('dragging');
+  };
+  face.addEventListener('pointerup', end);
+  face.addEventListener('pointercancel', end);
+  // a tap on an open row's face closes it (and swallows that tap)
+  face.addEventListener('click', (e) => { if (row.classList.contains('is-open')) { e.preventDefault(); e.stopPropagation(); setOpen(row, false); } }, true);
+  return row;
+}
+
+
+/* ---- src/ui/confirm.js ---- */
+// src/ui/confirm.js — the one confirm sheet for destructive actions (Arc 2b deletes). It states the
+// impact in plain words ("Removes $12.50 spend · Starbucks balance → $277.50") before anything changes.
+// confirmSheet({ title, message, more, action }) → Promise<boolean> (true = confirmed).
+
+
+let pending = null;
+function settle(v) { const f = pending; pending = null; const d = $('confirm-sheet'); if (d.open) d.close(); if (f) f(v); }
+
+let confirmWired = false;
+function confirmSheet({ title, message, more = '', action = 'Delete' }) {
+  if (!confirmWired) {
+    confirmWired = true;
+    $('confirm-cancel').addEventListener('click', () => settle(false));
+    $('confirm-go').addEventListener('click', () => settle(true));
+    $('confirm-sheet').addEventListener('close', () => settle(false));
+    $('confirm-sheet').addEventListener('click', (e) => { if (e.target === $('confirm-sheet')) settle(false); });
+  }
+  if (pending) settle(false);
+  $('confirm-title').textContent = title;
+  $('confirm-msg').textContent = message;
+  $('confirm-more').textContent = more;
+  $('confirm-more').hidden = !more;
+  $('confirm-go').textContent = action;
+  return new Promise((resolve) => {
+    pending = resolve;
+    openSheet($('confirm-sheet'));
+    $('confirm-cancel').focus(); // the safe choice has focus
+  });
+}
+function closeConfirm() { if (pending || $('confirm-sheet').open) settle(false); }
 
 
 /* ---- src/ui/cards.js ---- */
 // src/ui/cards.js — the Cards stack (spec §5, mockup home v2) and the card face it is built from.
 // Wallet interaction, Cash App faces: CR80 1.586:1 cards fanned vertically in their group with a
-// ~76px peek; each later card covers the one above, so only the group's front card shows in full.
+// 52px peek (Arc 2b: tighter); each later card covers the one above, so only the group's front card
+// shows in full. Plain native scroll — no snap, no scroll-jacking.
 // Card numbers and PINs are never rendered here.
 
 
 
+
+// In-page route links carry the full same-document URL (path + query + #route), not a bare "#…":
+// clicking still only changes the hash, and axe never mistakes an offscreen card (e.g. under a
+// scroll-locked sheet) for a skip link with no target.
+function routeHref(route) { return `${location.pathname}${location.search}#${route}`; }
 
 function brandfetchClient() {
   const m = document.querySelector('meta[name="brandfetch-client"]');
@@ -2402,7 +3413,7 @@ function logoTile(retailer, size = 'lg') {
   const img = new Image();
   img.alt = ''; img.decoding = 'async'; img.loading = size === 'lg' ? 'eager' : 'lazy';
   img.referrerPolicy = 'strict-origin-when-cross-origin'; // the CDN requires the Referer (W11)
-  img.width = img.height = size === 'lg' ? 64 : 32;
+  img.width = img.height = size === 'lg' ? 160 : 32; // the CDN serves 400×400; CSS sizes the tile
   img.addEventListener('error', mono, { once: true });
   img.src = url;
   tile.append(img);
@@ -2418,7 +3429,7 @@ function cardFace(s, opts = {}) {
   if (s.zero) card.classList.add('is-zero');
   card.dataset.retailer = r.id;
   if (card.tagName === 'A') {
-    card.href = `#card/${encodeURIComponent(r.id)}`;
+    card.href = routeHref(`card/${encodeURIComponent(r.id)}`);
     card.setAttribute('aria-label', `${r.name}, ${formatCents(s.balance)}${s.saving ? `, ${s.saving}` : ', used up'}${s.cardCount > 1 ? `, ${s.cardCount} cards` : ''}`);
   }
   const name = el('span', 'gc-name', r.name);
@@ -2442,29 +3453,86 @@ function cardFace(s, opts = {}) {
   return card;
 }
 
-function paintStack(doc, root) {
+const prefersReducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const toTop = () => window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+
+// Each group: a sticky section header (title + a quiet "↑" back to the top) over its fanned pile.
+// query (home search) filters the stack; returns the painted groups (the jump row is built from them).
+function paintStack(doc, root, query = '') {
   root.replaceChildren();
-  for (const g of stackGroups(doc)) {
+  const groups = stackGroups(doc, { query });
+  for (const g of groups) {
     const sec = el('section', 'stack-group');
     sec.dataset.group = g.key;
     const id = `grp-${g.key.replace(/[^a-z0-9]+/gi, '-')}`;
+    const head = el('div', 'stack-head');
     const pill = el('h2', 'stack-pill', g.label);
     pill.id = id;
+    const up = el('button', 'to-top glass-btn');
+    up.type = 'button';
+    up.setAttribute('aria-label', 'Back to top');
+    up.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>'; // an arrow, not a collapse chevron (Eye P0)
+    up.addEventListener('click', toTop);
+    head.append(pill, up);
     sec.setAttribute('aria-labelledby', id);
     const pile = el('div', 'stack-pile');
     for (const s of g.items) pile.append(cardFace(s));
-    sec.append(pill, pile);
+    sec.append(head, pile);
     root.append(sec);
+  }
+  return groups;
+}
+
+// ---- section jump row (Arc 2b): one quiet chip per section; tap → smooth-scroll the section header
+// to the top (under the sticky chrome); the chip of the section under the chrome is highlighted. ----
+const stickyTop = () => {
+  const bar = document.getElementById('topbar'), row = document.getElementById('jump-row');
+  return (bar ? bar.getBoundingClientRect().bottom : 0) + (row && !row.hidden ? row.getBoundingClientRect().height : 0);
+};
+function jumpTo(key) {
+  const sec = document.querySelector(`.stack-group[data-group="${CSS.escape(key)}"]`);
+  if (!sec) return;
+  const y = sec.getBoundingClientRect().top + window.scrollY - stickyTop();
+  window.scrollTo({ top: Math.max(0, Math.round(y)), behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+}
+function paintJumpRow(row, groups) {
+  row.replaceChildren(...groups.map((g) => {
+    const b = el('button', 'jump-chip', g.label.replace(/^★\s*/, ''));
+    b.type = 'button';
+    b.dataset.group = g.key;
+    if (g.key === 'favorites') b.prepend(el('span', 'jump-star', '★ '));
+    b.addEventListener('click', () => jumpTo(g.key));
+    return b;
+  }));
+  markCurrentSection(row);
+}
+// The current section = the last one whose top has reached the sticky chrome.
+function markCurrentSection(row) {
+  const line = stickyTop() + 2;
+  let cur = null;
+  for (const sec of document.querySelectorAll('#stack .stack-group')) if (sec.getBoundingClientRect().top <= line) cur = sec.dataset.group;
+  if (!cur) { const first = document.querySelector('#stack .stack-group'); cur = first && first.dataset.group; }
+  for (const b of row.querySelectorAll('.jump-chip')) {
+    const on = b.dataset.group === cur;
+    if (on) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+    if (on && b.dataset.on !== '1') { // keep the current chip in view inside the row, never scroll the page
+      const r = b.getBoundingClientRect(), rr = row.getBoundingClientRect();
+      if (r.left < rr.left || r.right > rr.right) row.scrollLeft += r.left - rr.left - 16;
+    }
+    b.dataset.on = on ? '1' : '';
   }
 }
 
 
 /* ---- src/ui/detail.js ---- */
 // src/ui/detail.js — card detail (spec §6, mockup card-detail). Route `#card/<retailerId>`.
-// Hero = the retailer card (total balance + Saving %), sub-cards smallest-first (tap → filter the
-// activity to that card), the Log Spend button, a Details disclosure, the activity list and Card
-// info: numbers + PINs revealed on tap, tap-to-copy, hidden again after 30s and whenever the view
-// is left, the tab changes, the page hides or the vault locks. Nothing secret is ever logged.
+// Hero = the retailer card (total balance + Saving %), sub-cards highest balance first with the $0
+// cards dimmed at the right (Arc 2b; tap → filter the activity to that card), the Log Spend button,
+// a Details disclosure (avg saving %, a category picker that moves the whole brand), the activity
+// list and Card info: numbers + PINs revealed on tap, tap-to-copy, hidden again after 30s and whenever
+// the view is left, the tab changes, the page hides or the vault locks. Nothing secret is ever logged.
+// Activity rows and card rows swipe left to Delete (a real, focusable button in the tray).
+
 
 
 
@@ -2490,6 +3558,12 @@ function cardLabels(doc, retailerId) {
   const out = new Map();
   cards.forEach((c, i) => { const l4 = lastFour(c.number); out.set(c.id, l4 ? `Card · ${l4}` : `Card ${i + 1}`); });
   return out;
+}
+// "23.2%" — Σsaved ÷ Σface to 1 dp, in integer tenths of a percent (no float rounding surprises).
+function avgSavingPct(saved, face) {
+  if (face <= 0) return '0.0%';
+  const t = Math.round(saved * 1000 / face);
+  return `${Math.floor(t / 10)}.${Math.abs(t % 10)}%`;
 }
 // "Almost done": still has money, but at most a fifth of its face value.
 const almostDone = (bal, face) => bal > 0 && bal * 5 <= face;
@@ -2519,11 +3593,11 @@ function revealSecrets(card, row, btn) {
     b.addEventListener('click', () => copy(value));
     box.append(b);
   }
-  row.append(box);
+  (row.querySelector(':scope > .swipe-face') || row).append(box);
   detailState.revealTimer = setTimeout(hideSecrets, REVEAL_MS);
 }
 
-function activityRows(doc, retailerId, labels) {
+function activityRows(doc, retailerId, labels, onDeleteSpend) {
   const ids = new Set(cardsOf(doc, retailerId).map((c) => c.id));
   const rows = (doc.entries || []).filter((e) => ids.has(e.cardId) && (!detailState.filterCardId || e.cardId === detailState.filterCardId));
   rows.sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.id).localeCompare(String(a.id)));
@@ -2534,12 +3608,14 @@ function activityRows(doc, retailerId, labels) {
     left.append(el('span', 'act-title', `${kind} · ${labels.get(e.cardId) || 'Card'}`), el('span', 'act-date', fmtDate(e.date, true)));
     const amt = el('span', `act-amt${e.amount > 0 ? ' is-credit' : ''}`, `${e.amount > 0 ? '+' : ''}${formatCents(e.amount)}`);
     li.append(left, amt);
+    if (onDeleteSpend) makeSwipe(li, { label: `Delete ${kind.toLowerCase()} ${formatCents(Math.abs(e.amount))}, ${fmtDate(e.date, true)}`, onDelete: () => onDeleteSpend(e.spendId || e.id) });
     return li;
   });
 }
 
 // Paint the detail for retailerId into #detail. Returns false when the retailer no longer exists.
-function paintDetail(doc, retailerId, { onLogSpend, onFavorite } = {}) {
+function paintDetail(doc, retailerId, handlers = {}) {
+  const { onLogSpend, onFavorite, onRecategorise, onDeleteSpend, onDeleteCard } = handlers;
   const r = (doc.retailers || []).find((x) => x.id === retailerId);
   if (!r) return false;
   if (detailState.retailerId !== retailerId) { detailState.filterCardId = null; hideSecrets(); }
@@ -2554,7 +3630,7 @@ function paintDetail(doc, retailerId, { onLogSpend, onFavorite } = {}) {
   // nav: back · title · ⋯ (favorite)
   const nav = el('div', 'detail-nav');
   const back = el('a', 'detail-back glass-btn');
-  back.href = '#cards'; back.setAttribute('aria-label', 'Back to cards');
+  back.href = routeHref('cards'); back.setAttribute('aria-label', 'Back to cards');
   back.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19"/></svg>';
   const title = el('h1', 'detail-title', r.name);
   title.id = 'detail-title'; title.tabIndex = -1;
@@ -2574,13 +3650,15 @@ function paintDetail(doc, retailerId, { onLogSpend, onFavorite } = {}) {
 
   const parts = [nav, hero];
 
-  // sub-cards (only with 2+ cards), smallest balance first
+  // sub-cards (only with 2+ cards): highest balance first; the $0 cards sit at the right, dimmed
   if (cards.length > 1) {
     const sec = el('section', 'subcards');
     sec.setAttribute('aria-labelledby', 'subcards-h');
-    const h = el('h2', 'section-h', `Cards · ${cards.length}`); h.id = 'subcards-h';
+    const states = cards.map((c) => ({ c, id: c.id, balance: cardBalance(doc, c), purchaseDate: c.purchaseDate }))
+      .sort((a, b) => b.balance - a.balance || byDrawOrder(a, b));
+    const active = states.filter((x) => x.balance > 0).length;
+    const h = el('h2', 'section-h', `Cards · ${active} active / ${cards.length} total`); h.id = 'subcards-h';
     const row = el('div', 'subcard-row');
-    const states = cards.map((c) => ({ c, id: c.id, balance: cardBalance(doc, c), purchaseDate: c.purchaseDate })).sort(byDrawOrder);
     for (const st of states) {
       const b = el('button', 'subcard');
       b.type = 'button';
@@ -2592,7 +3670,7 @@ function paintDetail(doc, retailerId, { onLogSpend, onFavorite } = {}) {
       if (st.balance === 0) b.classList.add('is-empty');
       b.append(el('span', 'sc-label', labels.get(st.id)), el('span', 'sc-bal', formatCents(st.balance)),
         el('span', 'sc-note', st.balance === 0 ? 'Empty' : low ? 'Almost done' : `Bought ${monthYear(st.c.purchaseDate)}`));
-      b.addEventListener('click', () => { detailState.filterCardId = on ? null : st.id; paintDetail(doc, retailerId, { onLogSpend, onFavorite }); const again = root.querySelector(`.subcard[data-card="${st.id}"]`); if (again) again.focus(); });
+      b.addEventListener('click', () => { detailState.filterCardId = on ? null : st.id; paintDetail(doc, retailerId, handlers); const again = root.querySelector(`.subcard[data-card="${st.id}"]`); if (again) again.focus(); });
       row.append(b);
     }
     sec.append(h, row);
@@ -2614,10 +3692,24 @@ function paintDetail(doc, retailerId, { onLogSpend, onFavorite } = {}) {
   const dl = el('dl');
   const face = cards.reduce((t, c) => t + c.face, 0), paid = cards.reduce((t, c) => t + c.paid, 0);
   const notes = [...new Set(cards.map((c) => c.notes).filter(Boolean))].join(' · ');
-  for (const [k, v] of [['Original balance', formatCents(face)], ['Total paid', formatCents(paid)], ['Total saved', formatCents(face - paid)],
-    ['Cards', String(cards.length)], ['Category', r.category || 'Other'], ['Notes', notes || '—']]) {
-    const row = el('div', 'row'); row.append(el('dt', null, k), el('dd', null, v)); dl.append(row);
-  }
+  const row = (k, v) => { const rw = el('div', 'row'); rw.append(el('dt', null, k), v instanceof Node ? v : el('dd', null, v)); dl.append(rw); return rw; };
+  row('Original balance', formatCents(face));
+  row('Total paid', formatCents(paid));
+  // "(avg 23.2%) Saved $X" — avg = Σsaved ÷ Σface over the retailer's cards (1 dp, integer maths)
+  const saved = el('dd', 'saved-dd');
+  saved.append(el('span', 'avg-pct', `(avg ${avgSavingPct(face - paid, face)})`), document.createTextNode(` Saved ${formatCents(face - paid)}`));
+  row('Total saved', saved).classList.add('saved-row');
+  row('Cards', String(cards.length));
+  const catDd = el('dd', 'cat-dd');
+  const sel = el('select', 'cat-pick');
+  sel.id = 'detail-category'; sel.setAttribute('aria-label', `Category for ${r.name}`);
+  const cats = [...new Set([...(doc.categories || []), r.category || 'Other'])];
+  sel.append(...cats.map((c) => { const o = el('option', null, c); o.value = c; return o; }));
+  sel.value = r.category || 'Other';
+  sel.addEventListener('change', () => onRecategorise && onRecategorise(retailerId, sel.value));
+  catDd.append(sel);
+  row('Category', catDd).classList.add('cat-row');
+  row('Notes', notes || '—');
   det.append(sum, dl);
   parts.push(det);
 
@@ -2626,8 +3718,8 @@ function paintDetail(doc, retailerId, { onLogSpend, onFavorite } = {}) {
   act.setAttribute('aria-labelledby', 'activity-h');
   const ah = el('h2', 'section-h', detailState.filterCardId ? `Activity · ${labels.get(detailState.filterCardId)}` : 'Activity');
   ah.id = 'activity-h';
-  const rows = activityRows(doc, retailerId, labels);
-  const list = el('ul', 'glass group act-list');
+  const rows = activityRows(doc, retailerId, labels, onDeleteSpend);
+  const list = el('ul', 'group solid-group act-list');
   list.id = 'activity';
   if (rows.length) list.append(...rows); else list.append(el('li', 'act-empty', 'No activity yet'));
   act.append(ah, list);
@@ -2638,7 +3730,7 @@ function paintDetail(doc, retailerId, { onLogSpend, onFavorite } = {}) {
   info.id = 'detail-info';
   info.setAttribute('aria-labelledby', 'info-h');
   const ih = el('h2', 'section-h', 'Card info'); ih.id = 'info-h';
-  const ilist = el('div', 'glass group');
+  const ilist = el('div', 'group solid-group');
   for (const c of [...cards].sort((a, b) => labels.get(a.id).localeCompare(labels.get(b.id), undefined, { numeric: true }))) {
     const row = el('div', 'info-row');
     const head = el('div', 'info-head');
@@ -2653,6 +3745,7 @@ function paintDetail(doc, retailerId, { onLogSpend, onFavorite } = {}) {
       head.append(btn);
     } else head.append(el('span', 'info-none', 'No card details stored'));
     row.append(head);
+    if (onDeleteCard) makeSwipe(row, { label: `Delete ${labels.get(c.id)}`, onDelete: () => onDeleteCard(c.id) });
     ilist.append(row);
   }
   info.append(ih, ilist, el('p', 'foot-note', 'Numbers and PINs live only inside your encrypted document. They hide again after 30 seconds.'));
@@ -2678,6 +3771,11 @@ function closeDetail() {
 // "Card X emptied. Take remaining $Y from Card Z?" (next-smallest pre-selected, changeable) — and only
 // when the whole amount is covered does it commit, as ONE spend (one YNAB shift) with the confirmed
 // draws. Cancelling a confirm logs nothing. The ledger re-validates every draw.
+// Arc 2b: the sheet wears the retailer's brand (core/stack.sheetPalette — contrast-checked accent, dim
+// and surface tint for the current theme) with the brand logo top-right, and the page underneath is
+// locked while it is open (dom.openSheet).
+
+
 
 
 
@@ -2796,6 +3894,15 @@ function wire() {
   $('spend-sheet').addEventListener('click', (e) => { if (e.target === $('spend-sheet')) closeSpendSheet(); });
 }
 
+const currentTheme = () => document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+// The brand palette rides on the sheet as CSS variables: everything inside that uses --accent,
+// --accent-ink, --ink-2 or --sheet-bg is rebranded; nothing outside the sheet changes.
+function brandSheet(d, retailer) {
+  const p = sheetPalette(retailer, currentTheme());
+  for (const [k, v] of [['--accent', p.accent], ['--accent-ink', p.onAccent], ['--ink-2', p.dim], ['--sheet-bg', p.tint], ['--brand', p.brand]]) d.style.setProperty(k, v);
+  d.classList.add('is-branded');
+}
+
 // onCommit({ retailerId, amount, date, draws }) → Promise<boolean> (true = saved).
 function openSpendSheet(doc, retailerId, onCommit) {
   wire();
@@ -2808,23 +3915,30 @@ function openSpendSheet(doc, retailerId, onCommit) {
   sel.value = cards.length ? cards[0].id : '';
   $('spend-using').hidden = cards.length < 2;
   $('spend-retailer').textContent = r.name;
+  brandSheet($('spend-sheet'), r);
+  $('spend-logo').replaceChildren(logoTile(r, 'sm'));
   $('spend-amt').value = '';
   $('spend-date').value = todayISO();
   showStep('form');
   update();
-  $('spend-sheet').showModal();
+  openSheet($('spend-sheet'));
   $('spend-amt').focus();
 }
 
 
 /* ---- src/ui/addcard.js ---- */
 // src/ui/addcard.js — Add Card (spec §8b) + Bulk Capture carousel (§8c, no OCR — W12).
-// One form with a quantity: a live preview card (+ ×N badge), a retailer typeahead on Brandfetch's
-// FREE Brand Search API (≥ 2 chars, ~250ms debounce, results cached per query in memory; stale
-// responses ignored), the stored brand DOMAIN (logos are always the CDN URL built from it), a
-// suggested category (remembered → industry if present → keyword map → Other), Favorite, and the
-// optional number/PIN/where/notes (number + PIN hidden when quantity > 1, with running totals).
-// Never the keyed Brand API. A bulk save routes straight into the capture carousel.
+// One form with a quantity: a live preview card (+ ×N badge), a retailer typeahead, the stored brand
+// DOMAIN (logos are always the CDN URL built from it), a suggested category (remembered → catalog →
+// industry if present → keyword map → Other), Favorite, and the optional number/PIN/where/notes
+// (number + PIN hidden when quantity > 1, with running totals). A bulk save routes straight into the
+// capture carousel.
+// Typeahead (Arc 2b): the curated catalog (core/retailers.js) answers instantly as the top block (max
+// 5); Brandfetch's FREE Brand Search is only a fallback block under a quiet "Other brands" divider
+// (≥ 2 chars, ~250ms debounce, results cached per query in memory, stale responses ignored, filtered:
+// one per domain, no catalog domains, no foreign brands unless asked, max 3) and is skipped entirely
+// once the catalog fills its block for a ≥ 4-char query. Never the keyed Brand API.
+
 
 
 
@@ -2834,6 +3948,7 @@ function openSpendSheet(doc, retailerId, onCommit) {
 
 
 const SEARCH_DEBOUNCE_MS = 250;
+const GHOST_COLOR = '#4A4D63';
 const searchCache = new Map(); // query → rows (memory only; never stored)
 const add = { doc: null, brand: null, qty: 1, catTouched: false, results: [], active: -1, seq: 0, timer: null, onSave: null };
 
@@ -2850,7 +3965,7 @@ async function searchBrands(q) {
   if (!res.ok) throw new Error(`brand search ${res.status}`);
   const rows = (await res.json() || [])
     .filter((r) => r && r.domain && r.name)
-    .slice(0, 6)
+    .slice(0, 10)
     .map((r) => ({ name: String(r.name), domain: String(r.domain).toLowerCase(), industry: r.industry || (Array.isArray(r.industries) && r.industries[0] && (r.industries[0].name || r.industries[0])) || '' }));
   searchCache.set(key, rows);
   return rows;
@@ -2887,21 +4002,28 @@ function renderAdd() {
   cap.classList.remove('is-error');
   if ($('add-face').value.trim() && !okFace) { cap.textContent = 'Face value must be an amount like 50.00'; cap.classList.add('is-error'); }
   else if ($('add-paid').value.trim() && !okPaid) { cap.textContent = 'You paid must be an amount like 42.50'; cap.classList.add('is-error'); }
-  else if (okFace && okPaid) cap.textContent = v.paid > v.face ? `You paid more than face value (${savingLabel(v.paid, v.face).replace('Saving ', 'saving ')})` : savingLabel(v.paid, v.face);
+  // Eye P1 (Arc 2): "Saving X%" showed twice (preview badge + caption). The badge carries the %; the
+  // caption carries the money — and, for several cards, the running totals (visible without scrolling).
+  else if (okFace && okPaid && v.paid > v.face) cap.textContent = `You paid more than face value (${savingLabel(v.paid, v.face).replace('Saving ', 'saving ')})`;
+  else if (okFace && okPaid && add.qty > 1) cap.textContent = `Creating ${add.qty} cards · ${formatCents(v.face * add.qty)} total face · ${formatCents(v.paid * add.qty)} total paid`;
+  else if (okFace && okPaid) cap.textContent = `${formatCents(v.face - v.paid)} off ${formatCents(v.face)} face value`;
+  else if (add.qty > 1) cap.textContent = `Creating ${add.qty} cards — enter the face value and what you paid for each.`;
   else cap.textContent = 'Required: retailer, face value and what you paid.';
-  // quantity: number + PIN only for a single card; totals for many
+  // quantity: number + PIN only for a single card
   const many = add.qty > 1;
   $('add-number-row').hidden = many; $('add-pin-row').hidden = many;
   $('add-qty').textContent = String(add.qty);
   $('add-qty-dec').disabled = add.qty <= 1; $('add-qty-inc').disabled = add.qty >= MAX_QTY;
-  const tot = $('add-totals');
-  tot.hidden = !many;
-  tot.textContent = many ? `Creating ${add.qty} cards · ${formatCents((okFace ? v.face : 0) * add.qty)} total face · ${formatCents((okPaid ? v.paid : 0) * add.qty)} total paid` : '';
-  // live preview card
+  // live preview card — Eye P1 (Arc 2): it no longer morphs per keystroke ("STA", olive tint, $0.00):
+  // a neutral ghost card stays until a brand is picked (or known) or the amounts are entered
   const face = okFace ? v.face : 0, paid = okPaid ? v.paid : 0;
   const known = findRetailer(add.doc, { name: v.name, brandDomain: add.brand && add.brand.domain });
-  const retailer = { id: 'preview', name: v.name || 'Retailer', brandDomain: add.brand ? add.brand.domain : known && known.brandDomain, brandColor: known && known.brandColor, favorite: v.favorite };
+  const ready = !!add.brand || !!known || (okFace && !!v.name);
+  const retailer = ready
+    ? { id: 'preview', name: v.name || 'Retailer', brandDomain: add.brand ? add.brand.domain : known && known.brandDomain, brandColor: (known && known.brandColor) || (add.brand && add.brand.brandColor), favorite: v.favorite }
+    : { id: 'preview', name: 'New gift card', brandColor: GHOST_COLOR };
   const preview = cardFace({ retailer, balance: face * add.qty, owed: paid * add.qty, saving: okFace && okPaid ? savingLabel(paid, face) : '', cardCount: add.qty, zero: false }, { tag: 'div' });
+  preview.classList.toggle('is-ghost', !ready);
   $('add-preview-card').replaceChildren(preview);
   const badge = $('add-qty-badge');
   badge.hidden = !many; badge.textContent = `×${add.qty}`;
@@ -2913,25 +4035,42 @@ function closeSuggest() {
   $('add-retailer').removeAttribute('aria-activedescendant');
   add.results = []; add.active = -1;
 }
-function showSuggest(rows) {
+function suggestOption(r, i) {
+  const opt = el('div', 'suggest-row');
+  opt.id = `add-opt-${i}`; opt.setAttribute('role', 'option'); opt.setAttribute('aria-selected', 'false');
+  opt.dataset.source = r.source;
+  const logo = el('span', 'gc-logo gc-logo-sm');
+  const url = logoUrl(r.domain, brandfetchClient());
+  if (url) { const img = new Image(); img.alt = ''; img.width = img.height = 32; img.referrerPolicy = 'strict-origin-when-cross-origin'; img.src = url; logo.append(img); }
+  const txt = el('span', 'suggest-txt');
+  txt.append(el('span', 'suggest-name', r.name), el('span', 'suggest-dom', r.domain));
+  opt.append(logo, txt);
+  opt.addEventListener('mousedown', (e) => e.preventDefault()); // keep focus in the input
+  opt.addEventListener('click', () => pickBrand(i));
+  return opt;
+}
+// Two blocks: the catalog on top, Brand Search below an "Other brands" divider.
+function showSuggest(catalogRows, otherRows = []) {
   const list = $('add-suggest');
-  add.results = rows; add.active = -1;
-  if (!rows.length) { closeSuggest(); return; }
-  list.replaceChildren(...rows.map((r, i) => {
-    const li = el('li', 'suggest-row');
-    li.id = `add-opt-${i}`; li.setAttribute('role', 'option'); li.setAttribute('aria-selected', 'false');
-    const logo = el('span', 'gc-logo gc-logo-sm');
-    const url = logoUrl(r.domain, brandfetchClient());
-    if (url) { const img = new Image(); img.alt = ''; img.width = img.height = 32; img.referrerPolicy = 'strict-origin-when-cross-origin'; img.src = url; logo.append(img); }
-    const txt = el('span', 'suggest-txt');
-    txt.append(el('span', 'suggest-name', r.name), el('span', 'suggest-dom', r.domain));
-    li.append(logo, txt);
-    li.addEventListener('mousedown', (e) => e.preventDefault()); // keep focus in the input
-    li.addEventListener('click', () => pickBrand(i));
-    return li;
-  }));
+  const keep = add.active >= 0 && add.active < catalogRows.length ? add.active : -1;
+  add.results = [...catalogRows, ...otherRows]; add.active = -1;
+  if (!add.results.length) { closeSuggest(); return; }
+  const blocks = [];
+  if (catalogRows.length) {
+    const g = el('div', 'suggest-group'); g.setAttribute('role', 'group'); g.setAttribute('aria-label', 'Brands');
+    g.append(...catalogRows.map((r, i) => suggestOption(r, i)));
+    blocks.push(g);
+  }
+  if (otherRows.length) {
+    const g = el('div', 'suggest-group suggest-other'); g.setAttribute('role', 'group'); g.setAttribute('aria-label', 'Other brands');
+    const div = el('div', 'suggest-divider', 'Other brands'); div.setAttribute('aria-hidden', 'true');
+    g.append(div, ...otherRows.map((r, i) => suggestOption(r, catalogRows.length + i)));
+    blocks.push(g);
+  }
+  list.replaceChildren(...blocks);
   list.hidden = false;
   $('add-retailer').setAttribute('aria-expanded', 'true');
+  if (keep >= 0) setActive(keep);
 }
 function setActive(i) {
   const opts = $('add-suggest').querySelectorAll('[role=option]');
@@ -2956,11 +4095,18 @@ function onRetailerInput() {
   refreshCategory(); renderAdd();
   clearTimeout(add.timer);
   const q = $('add-retailer').value.trim();
-  if (q.length < 2 || !brandfetchClient()) { closeSuggest(); return; }
   const seq = ++add.seq;
+  if (normName(q).length < 2) { closeSuggest(); return; }
+  const catalogRows = searchCatalog(q, CATALOG_MAX).map((b) => ({ name: b.name, domain: b.domain, category: b.category, brandColor: b.brandColor, source: 'catalog' }));
+  showSuggest(catalogRows);
+  if (!needsFallback(q, catalogRows.length) || !brandfetchClient()) return;
   add.timer = setTimeout(async () => {
-    try { const rows = await searchBrands(q); if (seq === add.seq) showSuggest(rows); }
-    catch (_) { if (seq === add.seq) closeSuggest(); } // search is a nicety: a free-typed retailer always works
+    try {
+      const rows = await searchBrands(q);
+      if (seq !== add.seq) return;
+      const others = filterFallback(rows, q, catalogRows.map((r) => r.domain)).map((r) => ({ ...r, source: 'brandfetch' }));
+      if (others.length) showSuggest(catalogRows, others);
+    } catch (_) { /* search is a nicety: the catalog block (or a free-typed retailer) always works */ }
   }, SEARCH_DEBOUNCE_MS);
 }
 function onRetailerKey(e) {
@@ -2977,7 +4123,7 @@ async function onAddSubmit(e) {
   if ($('add-save').disabled) return;
   const v = addValues();
   $('add-save').disabled = true;
-  const retailer = add.brand ? { name: v.name, brandDomain: add.brand.domain } : { name: v.name };
+  const retailer = add.brand ? { name: v.name, brandDomain: add.brand.domain, ...(add.brand.brandColor ? { brandColor: add.brand.brandColor } : {}) } : { name: v.name };
   const ok = await add.onSave(retailer, { face: v.face, paid: v.paid, qty: v.qty, category: v.category, favorite: v.favorite,
     ...(v.qty === 1 ? { number: v.number, pin: v.pin } : {}), where: v.where, notes: v.notes });
   $('add-save').disabled = false;
@@ -3008,7 +4154,7 @@ function openAddSheet(doc, onSave) {
   sel.replaceChildren(...(doc.categories || ['Other']).map((c) => { const o = el('option', null, c); o.value = c; return o; }));
   closeSuggest();
   refreshCategory(); renderAdd();
-  $('add-sheet').showModal();
+  openSheet($('add-sheet'));
   $('add-retailer').focus();
 }
 function closeAddSheets() {
@@ -3061,7 +4207,7 @@ function openCapture(doc, retailerId, cardIds, { onSet, onDone }) {
   }
   Object.assign(cap, { doc, retailerId, cardIds, i: 0, onSet, onDone, saved: 0 });
   paintCapture();
-  $('capture-sheet').showModal();
+  openSheet($('capture-sheet'));
   $('capture-number').focus();
 }
 function updateCaptureDoc(doc) { cap.doc = doc; }
@@ -3084,12 +4230,15 @@ function updateCaptureDoc(doc) { cap.doc = doc; }
 
 
 
+
+
+
 const PAGE = 'cardsharp.html';
 const THEME_KEY = 'cardsharp:theme';
 const TABS = ['cards', 'reports', 'settings'];
 // state doubles as the commitChange context: { doc, version, salt, demo, client, syncId, passphrase }.
 // The live creds sit here only while unlocked (writes need them); lockDown drops them with the doc.
-const state = { doc: null, version: null, salt: null, tab: 'cards', demo: false, client: null, syncId: null, passphrase: null, detailId: null, stackScroll: 0 };
+const state = { doc: null, version: null, salt: null, tab: 'cards', demo: false, client: null, syncId: null, passphrase: null, detailId: null, stackScroll: 0, query: '' };
 
 function isDemo() {
   const p = new URLSearchParams(location.search);
@@ -3102,9 +4251,13 @@ function reveal() {
   // enable UI transitions only after the first settled frame (see base.css body.ready)
   requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.add('ready')));
 }
-// ?demo=empty paints the empty v1 document (the "No cards yet" state); ?demo=1 the bundled fixture.
+// ?demo=empty paints the empty v1 document (the "No cards yet" state); ?demo=1 the bundled fixture;
+// ?demo=1&cards=N a generated N-card document (scroll / Lighthouse / search checks).
 function loadDemoDoc() {
-  if (new URLSearchParams(location.search).get('demo') === 'empty') return emptyDoc();
+  const p = new URLSearchParams(location.search);
+  if (p.get('demo') === 'empty') return emptyDoc();
+  const n = Number(p.get('cards'));
+  if (Number.isInteger(n) && n > 0 && n <= 500) return bigDemoDoc(n);
   const el = $('demo-fixture'); try { return el ? JSON.parse(el.textContent) : null; } catch (_) { return null; }
 }
 
@@ -3139,7 +4292,9 @@ function initOverflow() {
 
 // ---- chrome: scroll-edge fade + large-title wordmark collapse (Eye P1s, Arc 2 slice 1) ----
 function initChrome() {
-  const onScroll = () => document.body.classList.toggle('scrolled', window.scrollY > 4);
+  // while a sheet pins the body (dom.lockScroll) scrollY reads 0 — keep the bar's glass as it was
+  // (Eye P0, Arc 2b: "Private Wing" collided with the page under an open sheet)
+  const onScroll = () => { if (document.body.style.position === 'fixed') return; document.body.classList.toggle('scrolled', window.scrollY > 4); };
   addEventListener('scroll', onScroll, { passive: true });
   onScroll();
   if (typeof IntersectionObserver !== 'function') return;
@@ -3149,6 +4304,20 @@ function initChrome() {
     document.body.classList.toggle('title-shown', shown.size > 0);
   }, { rootMargin: '-56px 0px 0px 0px' });
   for (const t of document.querySelectorAll('.page-title')) io.observe(t);
+}
+
+// ---- home search + section jump row (Arc 2b): filters as you type (synchronous, no debounce) ----
+function initSearch() {
+  const input = $('card-search'), clear = $('card-search-clear');
+  const set = (v) => { state.query = v; paint(); };
+  input.addEventListener('input', () => set(input.value));
+  input.addEventListener('keydown', (e) => { if (e.key === 'Escape' && input.value) { e.preventDefault(); input.value = ''; set(''); } });
+  clear.addEventListener('click', () => { input.value = ''; set(''); input.focus(); });
+  let queued = false;
+  addEventListener('scroll', () => {
+    if (queued) return; queued = true;
+    requestAnimationFrame(() => { queued = false; if (!$('jump-row').hidden) markCurrentSection($('jump-row')); });
+  }, { passive: true });
 }
 
 // ---- tabs (WAI-ARIA tabs: roving tabindex, arrows/Home/End) ----
@@ -3201,16 +4370,18 @@ function transition(swap, named) {
     for (const n of document.querySelectorAll('.gcard[style*="view-transition-name"]')) n.style.viewTransitionName = '';
   });
 }
-function detailHandlers() { return { onLogSpend: openLogSpend, onFavorite: toggleFavorite }; }
+function detailHandlers() { return { onLogSpend: openLogSpend, onFavorite: toggleFavorite, onRecategorise: recategorise, onDeleteSpend: deleteSpend, onDeleteCard: deleteCard }; }
 function showDetailView(id) {
   const fromCard = document.querySelector(`#stack .gcard[data-retailer="${CSS.escape(id)}"]`);
   const first = !state.detailId;
   if (first) state.stackScroll = window.scrollY;
+  closeSpendSheet(); closeConfirm(); // a route to another card never leaves the last card's sheet open
   const swap = () => {
     if (!paintDetail(state.doc, id, detailHandlers())) { leaveDetail(); paint(); location.replace('#cards'); return; }
     state.detailId = id;
     document.body.classList.add('in-detail');
     $('detail').hidden = false; $('stack').hidden = true; $('cards-empty').hidden = true;
+    $('cards-tools').hidden = true; $('jump-row').hidden = true; $('search-empty').hidden = true;
     window.scrollTo(0, 0);
     if (first) { const t = $('detail-title'); if (t) t.focus({ preventScroll: true }); }
   };
@@ -3219,6 +4390,8 @@ function showDetailView(id) {
 function leaveDetail() {
   const id = state.detailId;
   closeSpendSheet();
+  closeConfirm();
+  closeSwipes();
   closeDetail();
   state.detailId = null;
   document.body.classList.remove('in-detail');
@@ -3247,13 +4420,19 @@ function route() {
 }
 
 // ---- writes: every change goes through commitChange (demo: memory; live: sealed + persistDoc) ----
+function errorText(e) {
+  return e && e.code === 'synced' ? e.message // "Already sent to YNAB — reverse it instead"
+    : e && e.code === 'undoStale' ? 'Your cards changed since — there is nothing to undo.'
+    : e && e.code === 'replay' ? 'That can’t be removed without leaving a card below $0 — nothing was changed.'
+    : null;
+}
 async function apply(change) {
   try { const res = await commitChange(state, change); paint(); return res; }
   catch (e) {
-    toast(e && e.code === 'noRow' ? 'No Cardsharp document yet — run the first-row bootstrap first.'
+    toast(errorText(e) || (e && e.code === 'noRow' ? 'No Cardsharp document yet — run the first-row bootstrap first.'
       : e && e.code === 'insufficientBalance' ? 'That’s more than these cards hold — nothing was logged.'
       : e && e.name === 'ConflictError' ? 'Another device changed your cards at the same moment — reload and try again.'
-        : 'Couldn’t save — check your connection and try again.');
+        : 'Couldn’t save — check your connection and try again.'));
     return null;
   }
 }
@@ -3261,6 +4440,49 @@ async function toggleFavorite(retailerId, favorite) {
   const res = await apply((doc) => setFavoriteMut(doc, retailerId, favorite));
   if (res) toast(favorite ? 'Added to Favorites' : 'Removed from Favorites');
 }
+async function recategorise(retailerId, category) {
+  const res = await apply((doc) => setRetailerCategoryMut(doc, retailerId, category));
+  if (res) toast(`Moved to ${category}`);
+}
+
+// ---- deletes (Arc 2b): preview the impact → confirm → replayed delete → 6-second Undo ----
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+async function deleteWithUndo(change, message) {
+  const before = state.doc;
+  const res = await apply(change);
+  if (!res) return;
+  const after = state.doc;
+  toast(message, 6000, { label: 'Undo', onClick: async () => { if (await apply((doc) => undoMut(doc, before, after))) toast('Restored'); } });
+}
+async function deleteSpend(spendId) {
+  let p;
+  try { p = deleteSpendMut(state.doc, spendId); } catch (e) { toast(errorText(e) || 'That entry can’t be removed.'); return; }
+  const r = state.doc.retailers.find((x) => x.id === p.retailerId);
+  const kind = p.type === 'refund' ? 'refund' : p.type === 'spend' ? 'spend' : 'entry';
+  const shown = formatCents(Math.abs(p.amount));
+  const more = [
+    p.alsoRemoved.length ? `Also removes ${plural(p.alsoRemoved.length, 'later spend', 'later spends')} the cards can no longer cover.` : '',
+    p.replanned.length ? `Re-plans ${plural(p.replanned.length, 'spend', 'spends')} across your ${r.name} cards.` : '',
+  ].filter(Boolean).join(' ');
+  const ok = await confirmSheet({ title: `Delete ${kind}?`, message: `Removes ${shown} ${kind} · ${r.name} balance → ${formatCents(retailerBalance(p.doc, p.retailerId))}`, more, action: `Delete ${kind}` });
+  if (ok) await deleteWithUndo((doc) => deleteSpendMut(doc, spendId), `Deleted ${shown} ${kind}`);
+}
+async function deleteCard(cardId) {
+  let p;
+  try { p = deleteCardMut(state.doc, cardId); } catch (e) { toast(errorText(e) || 'That card can’t be removed.'); return; }
+  const r = state.doc.retailers.find((x) => x.id === p.retailerId);
+  const card = state.doc.cards.find((c) => c.id === cardId);
+  const label = cardLabels(state.doc, p.retailerId).get(cardId);
+  const head = `Removes ${label} (${formatCents(cardBalance(state.doc, card))})`;
+  const message = p.retailerRemoved ? `${head} · ${r.name} leaves your cards` : `${head} · ${r.name} balance → ${formatCents(retailerBalance(p.doc, p.retailerId))}`;
+  const more = [
+    p.removed.length ? `Also removes ${plural(p.removed.length, 'spend', 'spends')} drawn from this card.` : '',
+    p.replanned.length ? `Moves ${plural(p.replanned.length, 'split spend', 'split spends')} onto your other ${r.name} cards.` : '',
+  ].filter(Boolean).join(' ');
+  const ok = await confirmSheet({ title: 'Delete card?', message, more, action: 'Delete card' });
+  if (ok) await deleteWithUndo((doc) => deleteCardMut(doc, cardId), `Deleted ${label}`);
+}
+
 // Add Card (+ in the top bar on Cards). Single → toast, back to the stack. Bulk → the capture
 // carousel; each Next that carries a number/PIN is its own sealed write.
 function openAdd() {
@@ -3313,12 +4535,23 @@ function paint() {
   const doc = state.doc;
   const cards = (doc && doc.cards) || [];
   const t = totals(doc);
-  if (doc) paintStack(doc, $('stack'));
+  const q = state.query.trim();
+  const groups = doc ? paintStack(doc, $('stack'), q) : [];
+  const tools = !!doc && cards.length > 0 && !state.detailId;
+  $('cards-tools').hidden = !tools;
+  $('jump-row').hidden = !tools || !!q || groups.length < 2;
+  $('panel-cards').classList.toggle('has-jump', tools && !$('jump-row').hidden);
+  if (tools && !$('jump-row').hidden) paintJumpRow($('jump-row'), groups);
+  $('card-search-clear').hidden = !state.query;
+  const none = tools && !!q && groups.length === 0;
+  $('search-empty').hidden = !none;
+  $('search-empty').textContent = none ? `No cards match ‘${q}’` : '';
   $('owed-total').textContent = formatCents(t.owed);
   $('total-balance').textContent = formatCents(t.balance);
   $('saved-total').textContent = formatCents(t.saved);
   $('cards-empty').hidden = !doc || cards.length > 0 || !!state.detailId;
   $('stack').hidden = !doc || cards.length === 0 || !!state.detailId;
+  if (!$('jump-row').hidden) markCurrentSection($('jump-row')); // after the stack is visible (layout is real)
   $('add-btn').hidden = !doc || state.tab !== 'cards';
   if (doc && state.detailId && !paintDetail(doc, state.detailId, detailHandlers())) location.replace('#cards');
   $('card-count').textContent = `${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`;
@@ -3349,6 +4582,7 @@ function lockDown() {
   state.doc = null; state.version = null; state.salt = null; state.client = null; state.syncId = null; state.passphrase = null;
   closeSpendSheet();
   closeAddSheets();
+  closeConfirm();
   $('add-btn').hidden = true;
   if (state.detailId) leaveDetail();
   hideSecrets();
@@ -3389,6 +4623,7 @@ function boot() {
   initOverflow();
   $('add-btn').addEventListener('click', () => { if (state.doc) openAdd(); });
   initChrome();
+  initSearch();
   initTabs();
   document.addEventListener('visibilitychange', () => { if (document.hidden) hideSecrets(); });
 
