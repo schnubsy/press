@@ -1061,7 +1061,10 @@
   function withSave(p){ sync("busy","Saving…"); return p.then(function(r){ if(!r.ok) throw 0; saveLS(); flash(true); }).catch(function(){ flash(false); }); }
 
   // ---------- render helpers ----------
-  function pct(d){ var p=(d.pct_off!=null)?d.pct_off:(d.extras&&d.extras.effective_pct); return p==null?null:Math.round(p); }
+  // Post-verify Slice 1: the badge + sort read the JUDGED number first — extras.effective_pct (computed
+  // from face/price in code) — and fall back to the pct_off column only when the row was never judged
+  // with one. A stale model pct_off (Krispy Kreme @ Costco 75% vs a real 25%) can never win again.
+  function pct(d){ var e=d.extras||{}; var p=(Object.prototype.hasOwnProperty.call(e,"effective_pct"))?e.effective_pct:d.pct_off; return p==null?null:Math.round(p); }
   function fmtDate(s){ if(!s) return ""; var t=new Date(s); return isNaN(t)?"":t.toLocaleDateString(undefined,{month:"short",day:"numeric"}); }
   function normBrand(s){ return String(s==null?"":s).toLowerCase().replace(/['’ʼ`]/g,"").replace(/[^a-z0-9]+/g," ").trim(); }
 
@@ -1740,7 +1743,7 @@
       +'</ul></div>';
   }
   // Enhancements Slice 7 — metrics from the permanent savings log (press_tasks category='savings', D1)
-  // + the 30-day deals. Stat tiles (dataviz: label · value, ink tokens, no color-only meaning).
+  // (every savings tile + the rate) + the 30-day deals (alerts sent, too-good flags). Stat tiles (dataviz: label · value, ink tokens, no color-only meaning).
   function ctMonthKey(iso){
     try{ return new Intl.DateTimeFormat("en-CA",{timeZone:"America/Chicago",year:"numeric",month:"2-digit"}).format(new Date(iso)); }catch(e){ return String(iso||"").slice(0,7); }
   }
@@ -1755,11 +1758,13 @@
     var floor=nowMs-30*864e5;
     var in30=deals.filter(function(d){ return dealTime(d)>=floor; });
     var alerts30=in30.filter(function(d){ return d.status==="alerted"||(d.extras&&d.extras.alert); }).length;
-    var hits30=in30.filter(function(d){ return d.verdict==="hit"; });
-    var hitBought=hits30.filter(function(d){ return d.status==="bought"; }).length;
     var flagged=in30.filter(function(d){ return d.extras&&d.extras.suspicious; }).length;
+    // Post-verify Slice 2 (E2): the rate reads the SAME savings log as the tiles — bought over every
+    // Bought/Skip decision — so "Cards bought" and the rate can never disagree (the old rate read the
+    // 30-day press_deals statuses while the tiles read the log: $0 / 0 bought beside "11%").
+    var decided=bought.length+skipped.length;
     return { total:total, month:thisMonth, bought:bought.length, skipped:skipped.length, alerts30:alerts30,
-      rate:hits30.length?Math.round(100*hitBought/hits30.length):null, hits30:hits30.length, flagged:flagged,
+      rate:decided?Math.round(100*bought.length/decided):null, decided:decided, flagged:flagged,
       backlog:backlogState(state.raw, nowMs) };
   }
   var BACKLOG_WORD={green:"OK",amber:"Slow",red:"Stuck"};
@@ -1773,7 +1778,7 @@
       +tile("bought","Cards bought",String(m.bought))
       +tile("skipped","Skipped",String(m.skipped))
       +tile("alerts","Alerts sent (30 d)",String(m.alerts30))
-      +tile("rate","Hit-to-bought rate",m.rate==null?"—":m.rate+"%",m.hits30?m.hits30+" hit"+(m.hits30===1?"":"s")+" in 30 d":"no hits in 30 d")
+      +tile("rate","Hit-to-bought rate",m.rate==null?"—":m.rate+"%",m.decided?m.bought+" of "+m.decided+" decided":"nothing decided yet")
       +tile("flagged","Too-good flags (30 d)",String(m.flagged),"60%+ off — double-check")
       +'<div class="tile" id="m-backlog"><div class="tlabel">Judge backlog</div><div class="tvalue"><span aria-hidden="true">'+BACKLOG_ICON[m.backlog.level]+'</span> '+m.backlog.n+'</div><div class="tnote">'+esc(BACKLOG_WORD[m.backlog.level])+(m.backlog.n?" · oldest "+ageLabel(m.backlog.oldestMin):"")+'</div></div>'
       +'</div></div>';
