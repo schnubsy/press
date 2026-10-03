@@ -4,14 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="dark light">
-  <meta name="theme-color" content="#0B0B1C">
+  <meta name="theme-color" content="#0B0B1C" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F2F3F8" media="(prefers-color-scheme: light)">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="Cardsharp — gift card balances, what each spend really costs, and YNAB kept honest.">
   <title>Cardsharp</title>
   <meta name="page-title" content="Cardsharp">
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxMjEzMkEiLz48cmVjdCB4PSI5IiB5PSIxNyIgd2lkdGg9IjQ2IiBoZWlnaHQ9IjMwIiByeD0iNSIgZmlsbD0iIzJFQzVFOCIvPjxyZWN0IHg9IjkiIHk9IjI0IiB3aWR0aD0iNDYiIGhlaWdodD0iNiIgZmlsbD0iIzEyMTMyQSIvPjxyZWN0IHg9IjE1IiB5PSIzNiIgd2lkdGg9IjEyIiBoZWlnaHQ9IjUiIHJ4PSIxLjUiIGZpbGw9IiNGNEY2RkIiLz48L3N2Zz4=">
-  <meta name="build" content="src-cce1b00fa041">
+  <meta name="build" content="src-85a5179e0efe">
+  <meta name="brandfetch-client" content="1idiEFKfEWGXeRo3uBi">
   <style>
 /* styles/tokens.css */
 /* tokens.css — Cardsharp design tokens. Dark is the default (the mockups' night wallpaper);
@@ -44,6 +46,13 @@
   --glass-hi: rgba(255, 255, 255, 0.22);
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   --blur: blur(22px) saturate(170%);
+  --bar-fade: rgba(11, 11, 28, 0.78);
+  --ghost-edge: rgba(255, 255, 255, 0.22);
+  --warn-ink: #FBBF24;
+  --err-ink: #FCA5A5;
+  --sheet-bg: #181826; /* opaque: WebKit let the page ghost through a translucent top-layer sheet (Eye P0, Arc 2) */
+  --ok-ink: #34D399;
+  --low-bg: rgba(251, 191, 36, 0.14);
 
   --r-lg: 22px;
   --r-md: 16px;
@@ -65,13 +74,20 @@
     --ink: #15161F;
     --ink-2: #3A3D4E;
     --ink-3: #555A6E;
-    --accent: #0A7C95;
+    --accent: #086F87;
     --accent-ink: #FFFFFF;
     --glass: rgba(255, 255, 255, 0.62);
     --glass-strong: rgba(255, 255, 255, 0.86);
     --glass-edge: rgba(20, 20, 40, 0.10);
     --glass-hi: rgba(255, 255, 255, 0.9);
     --shadow: 0 10px 30px rgba(30, 30, 60, 0.12);
+    --bar-fade: rgba(242, 243, 248, 0.80);
+    --ghost-edge: rgba(20, 20, 40, 0.18);
+    --warn-ink: #8A5A00;
+    --err-ink: #B42318;
+    --sheet-bg: #F8F8FB;
+    --ok-ink: #0B7A4B;
+    --low-bg: rgba(251, 191, 36, 0.22);
     color-scheme: light;
   }
 }
@@ -86,13 +102,20 @@
   --ink: #15161F;
   --ink-2: #3A3D4E;
   --ink-3: #555A6E;
-  --accent: #0A7C95;
+  --accent: #086F87;
   --accent-ink: #FFFFFF;
   --glass: rgba(255, 255, 255, 0.62);
   --glass-strong: rgba(255, 255, 255, 0.86);
   --glass-edge: rgba(20, 20, 40, 0.10);
   --glass-hi: rgba(255, 255, 255, 0.9);
   --shadow: 0 10px 30px rgba(30, 30, 60, 0.12);
+  --bar-fade: rgba(242, 243, 248, 0.80);
+  --ghost-edge: rgba(20, 20, 40, 0.18);
+  --warn-ink: #8A5A00;
+  --err-ink: #B42318;
+  --sheet-bg: #F8F8FB;
+  --ok-ink: #0B7A4B;
+  --low-bg: rgba(251, 191, 36, 0.22);
   color-scheme: light;
 }
 
@@ -130,27 +153,45 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   box-shadow: var(--shadow), inset 0 1px 0 var(--glass-hi);
 }
 
-/* ---- top bar (no page header on Cards: the stack is the hero) ---- */
+/* ---- top bar (no page header on Cards: the stack is the hero) ----
+   Full-bleed sticky bar; the content column is centred with padding so the glass fade spans the
+   viewport. `1fr auto 1fr` keeps the wordmark optically centred whatever sits either side. The
+   fade + blur appear only once the page scrolls (body.scrolled), so content never slides under
+   bare chrome. The wordmark collapses while a large page title is on screen (body.title-shown). */
 #topbar {
   position: sticky; top: 0; z-index: 20;
-  display: flex; align-items: center; gap: 10px;
-  max-width: 560px; margin: 0 auto;
-  padding: calc(env(safe-area-inset-top) + 10px) var(--gutter) 8px;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px;
+  padding: calc(env(safe-area-inset-top) + 6px) max(var(--gutter), calc((100% - 560px) / 2 + var(--gutter))) 6px;
 }
-.back { color: var(--ink-2); text-decoration: none; font-size: 15px; }
+#topbar::before {
+  content: ''; position: absolute; inset: 0 0 -18px; z-index: -1; pointer-events: none;
+  background: linear-gradient(to bottom, var(--bar-fade) 0%, var(--bar-fade) 62%, transparent 100%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent); mask-image: linear-gradient(to bottom, #000 70%, transparent);
+  opacity: 0;
+}
+body.scrolled #topbar::before { opacity: 1; }
+.back {
+  justify-self: start; display: inline-flex; align-items: center; min-height: 44px; padding-right: 6px;
+  color: var(--ink-2); text-decoration: none; font-size: 15px;
+}
 .back:hover { color: var(--ink); }
-.wordmark { font-weight: 700; letter-spacing: -0.01em; font-size: 17px; margin-left: auto; margin-right: auto; }
+.brand { display: grid; justify-items: center; gap: 2px; }
+.wordmark { font-weight: 700; letter-spacing: -0.01em; font-size: 17px; line-height: 1.2; }
+.brand .pill { padding: 0 7px; line-height: 16px; letter-spacing: 0.04em; } /* the Demo marker sits under the wordmark so the side columns stay balanced */
+body.title-shown .wordmark { opacity: 0; visibility: hidden; }
+.bar-actions { justify-self: end; display: flex; align-items: center; gap: 8px; }
 .pill { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-pill); background: var(--glass); border: 0.5px solid var(--glass-edge); color: var(--ink-2); }
 .overflow { position: relative; }
 .glass-btn {
-  width: 40px; height: 40px; border-radius: 20px;
+  width: 44px; height: 44px; border-radius: 22px;
   display: grid; place-items: center;
   background: var(--glass); border: 0.5px solid var(--glass-edge);
   -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
 }
 .glass-btn svg { width: 22px; height: 22px; fill: currentColor; stroke: none; }
 .menu {
-  position: absolute; right: 0; top: 48px; min-width: 190px; padding: 6px;
+  position: absolute; right: 0; top: 52px; min-width: 190px; padding: 6px;
   border-radius: var(--r-md); background: var(--glass-strong); display: grid;
 }
 .menu[hidden] { display: none; }
@@ -166,23 +207,218 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .empty { display: grid; justify-items: center; text-align: center; padding: 40px 8px 0; gap: 10px; }
 .ghost-card {
   width: min(100%, 340px); aspect-ratio: 1.586 / 1; border-radius: 18px;
-  border: 1.5px dashed var(--glass-edge); background: var(--glass);
+  border: 1.5px dashed var(--ghost-edge); background: var(--glass);
   position: relative; margin-bottom: 18px;
 }
 .ghost-chip { position: absolute; left: 22px; top: 26px; width: 42px; height: 30px; border-radius: 6px; background: var(--glass-hi); opacity: 0.6; }
 .ghost-line { position: absolute; left: 22px; bottom: 44px; height: 10px; width: 55%; border-radius: 5px; background: var(--glass-edge); }
 .ghost-line.short { bottom: 24px; width: 30%; }
 .empty-title { font-size: 22px; font-weight: 700; }
-.empty-sub { color: var(--ink-2); max-width: 30ch; font-size: 15px; }
+.empty-sub { color: var(--ink-2); max-width: 30ch; font-size: 15px; text-wrap: balance; }
 
-/* Cards · interim retailer list (Arc 2 replaces it with the card stack) */
-.retailer-list { list-style: none; margin-top: 12px; }
-.retailer-list li { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 14px 16px; }
-.retailer-list li + li { border-top: 1px solid var(--glass-edge); }
-.retailer-list .r-name { font-weight: 600; }
-.retailer-list .r-bal { font-variant-numeric: tabular-nums; text-align: right; }
-.retailer-list .r-save, .retailer-list .r-cards { color: var(--ink-3); font-size: 13px; }
-.retailer-list .r-save { text-align: right; }
+/* ---- Cards · the stack (spec §5) ----
+   Groups fan their cards with a ~76px peek: each later card is pulled up over the one before it
+   (margin = peek − card height, card height = 100cqi ÷ 1.586), so only the front card of a group
+   shows in full. Focus/hover raise a card above its neighbours. */
+.stack { display: grid; gap: 22px; padding-top: 4px; }
+html:has(#panel-cards:not([hidden]) .stack:not([hidden])) { scroll-snap-type: y proximity; }
+.stack-group { container-type: inline-size; scroll-snap-align: start; scroll-margin-top: 72px; }
+.stack-pill {
+  display: block; width: max-content; margin: 0 auto 10px; padding: 6px 14px;
+  border-radius: var(--r-pill); background: var(--glass); border: 0.5px solid var(--glass-edge);
+  -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+  font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2);
+}
+.stack-pile { display: grid; }
+.stack-pile > .gcard + .gcard { margin-top: calc(76px - 100cqi / 1.586); }
+/* peeking cards show only their top strip (name + badge): no logo/balance bleed-through (§5) */
+.stack-pile > .gcard:not(:last-child) :is(.gc-mid, .gc-bottom) { visibility: hidden; }
+
+.gcard {
+  position: relative; display: flex; flex-direction: column; overflow: hidden;
+  width: 100%; aspect-ratio: 1.586 / 1; padding: 14px 18px 16px; border-radius: 18px;
+  color: #fff; text-decoration: none;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, transparent 38%, transparent 66%, rgba(255, 255, 255, 0.05) 100%),
+    radial-gradient(circle at 82% 0%, rgba(255, 255, 255, 0.13) 0%, transparent 50%),
+    linear-gradient(135deg, var(--c1, #33364A) 0%, var(--c2, #15161F) 100%);
+  border: 0.5px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.22), 0 10px 30px rgba(0, 0, 0, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+.gcard:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; z-index: 3; }
+.gcard:hover { z-index: 2; }
+.gcard.is-zero { filter: grayscale(0.85) brightness(0.78); }
+.gc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; min-height: 26px; }
+.gc-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gc-star { letter-spacing: 0; }
+.gc-badge {
+  flex: none; padding: 4px 10px; border-radius: var(--r-pill); font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
+  background: rgba(0, 0, 0, 0.28); border: 0.5px solid rgba(255, 255, 255, 0.28);
+}
+.gc-mid { flex: 1; display: grid; place-items: center; }
+.gc-logo { display: grid; place-items: center; border-radius: 16px; background: #fff; overflow: hidden; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); }
+.gc-logo-lg { width: 64px; height: 64px; }
+.gc-logo-sm { width: 32px; height: 32px; border-radius: 9px; }
+.gc-logo img { width: 100%; height: 100%; object-fit: contain; }
+.gc-logo.is-mono { background: rgba(0, 0, 0, 0.24); border: 0.5px solid rgba(255, 255, 255, 0.3); box-shadow: none; }
+.gc-mono { font-weight: 800; letter-spacing: -0.02em; font-size: 24px; color: #fff; }
+.gc-logo-sm .gc-mono { font-size: 12px; }
+.gc-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
+.gc-pips { display: grid; gap: 3px; margin-bottom: 4px; }
+.gc-pips i { display: block; height: 3px; width: 28px; border-radius: 2px; background: rgba(255, 255, 255, 0.75); }
+.gc-pips i:nth-child(2) { width: 22px; opacity: 0.7; }
+.gc-pips i:nth-child(3) { width: 16px; opacity: 0.45; }
+.gc-bal { margin-left: auto; display: grid; justify-items: end; line-height: 1; }
+.gc-bal small { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.92; margin-bottom: 4px; }
+.gc-amt { font-family: var(--font-num); font-size: 26px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+
+/* ---- Card detail (spec §6) ---- */
+.detail { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+.detail > * { min-width: 0; } /* the sub-card scroller must scroll, not widen the page */
+.detail-nav { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; }
+.detail-back { color: var(--ink); }
+.detail-back svg, .detail-fav svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; }
+.detail-fav[aria-pressed="true"] { color: var(--warn); }
+.detail-fav[aria-pressed="true"] svg { fill: currentColor; }
+.detail-title { text-align: center; font-size: 17px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.detail-title:focus { outline: none; }
+.detail-hero { view-transition-name: hero; }
+.section-h { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-2); margin: 0 4px 8px; }
+.subcard-row { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 8px; scroll-snap-type: x mandatory; }
+.subcard {
+  flex: 0 0 auto; width: 138px; aspect-ratio: 1.586 / 1; scroll-snap-align: start;
+  display: grid; align-content: space-between; text-align: left; padding: 10px 12px; border-radius: 14px;
+  background: var(--glass); border: 0.5px solid var(--glass-edge); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+}
+.subcard[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
+.sc-label { font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.sc-bal { font-family: var(--font-num); font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.sc-note { font-size: 12px; color: var(--ink-2); }
+.subcard.is-low .sc-note { color: var(--warn-ink); font-weight: 700; }
+.subcard.is-low { background: var(--low-bg); }
+.subcard.is-empty .sc-bal { color: var(--ink-2); }
+.log-spend-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; border-radius: var(--r-pill);
+  font-size: 17px; font-weight: 700; color: var(--accent-ink); background: var(--accent);
+  box-shadow: 0 8px 24px rgba(46, 197, 232, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.log-spend-btn svg { width: 20px; height: 20px; stroke-width: 2.4; }
+.log-spend-btn:disabled { background: var(--glass); color: var(--ink-2); box-shadow: none; cursor: default; }
+.detail-more summary { list-style: none; cursor: pointer; padding: 13px 16px; font-weight: 600; display: flex; justify-content: space-between; min-height: 44px; }
+.detail-more summary::-webkit-details-marker { display: none; }
+.detail-more summary::after { content: '›'; color: var(--ink-2); transform: rotate(0deg); }
+.detail-more[open] summary::after { transform: rotate(90deg); }
+.detail-more dl { border-top: 1px solid var(--glass-edge); }
+.act-list { list-style: none; }
+.act-row, .act-empty { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; }
+.act-row + .act-row { border-top: 1px solid var(--glass-edge); }
+.act-what { display: grid; }
+.act-title { font-weight: 600; font-size: 15px; }
+.act-date, .act-empty { color: var(--ink-2); font-size: 13px; }
+.act-amt { font-variant-numeric: tabular-nums; font-weight: 600; }
+.act-amt.is-credit { color: var(--ok-ink); }
+.info-row { padding: 6px 16px; }
+.info-row + .info-row { border-top: 1px solid var(--glass-edge); }
+.info-head { display: flex; justify-content: space-between; align-items: center; min-height: 44px; }
+.info-label { font-weight: 600; }
+.info-none { color: var(--ink-2); font-size: 13px; }
+.reveal-btn { min-height: 44px; padding: 0 14px; border-radius: var(--r-pill); color: var(--accent); font-weight: 700; }
+.info-secret { display: grid; gap: 8px; padding: 2px 0 10px; }
+.secret-val {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: baseline; gap: 10px; min-height: 44px; padding: 10px 12px;
+  border-radius: 12px; background: var(--glass); border: 0.5px solid var(--glass-edge); text-align: left;
+}
+.secret-label { font-size: 12px; color: var(--ink-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.secret-text { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 17px; letter-spacing: 0.06em; }
+.secret-hint { font-size: 12px; color: var(--ink-2); }
+
+/* ---- bottom sheets (Log Spend §8; Add Card §8b reuses them) ---- */
+dialog.sheet {
+  position: fixed; inset: auto 0 0 0; margin: 0 auto; width: min(100%, 560px); max-width: 100%; max-height: 94dvh;
+  padding: 0; border: 0.5px solid var(--glass-edge); border-bottom: 0; border-radius: 28px 28px 0 0; color: var(--ink);
+  background: var(--sheet-bg); /* solid, no backdrop-filter — see tokens --sheet-bg */
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.35); overflow-y: auto; overscroll-behavior: contain;
+}
+dialog.sheet::backdrop { background: rgba(0, 0, 0, 0.5); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.sheet-body { display: grid; gap: 14px; padding: 10px var(--gutter) calc(env(safe-area-inset-bottom) + 20px); }
+.sheet-body::before { content: ''; justify-self: center; width: 38px; height: 5px; border-radius: 3px; background: var(--glass-edge); margin-bottom: 2px; }
+.sheet-head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 44px; }
+.sheet-title { font-size: 17px; font-weight: 700; text-align: center; }
+.sheet-link { justify-self: start; min-height: 44px; padding: 0 4px; color: var(--accent); font-size: 17px; }
+.sheet-link.end { justify-self: end; font-weight: 700; }
+.sheet-link:disabled { color: var(--ink-2); cursor: default; }
+.sheet-sub { text-align: center; color: var(--ink-2); font-weight: 600; margin-top: -8px; }
+.sheet-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 50px; padding: 4px 16px; }
+.sheet-row label { font-weight: 600; flex: none; }
+.sheet-row select, .sheet-row input {
+  min-width: 0; min-height: 44px; font: inherit; color: var(--ink); background: transparent; border: 0; text-align: right; text-align-last: right;
+}
+.sheet-row select:focus-visible, .sheet-row input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+.amount { display: flex; justify-content: center; align-items: baseline; gap: 4px; padding: 8px 0 0; }
+.amount-cur { font-family: var(--font-num); font-size: 40px; font-weight: 300; color: var(--ink-2); }
+.amount-in {
+  width: 6.5ch; font-family: var(--font-num); font-size: 64px; font-weight: 200; letter-spacing: -0.03em; text-align: left;
+  color: var(--ink); background: transparent; border: 0; caret-color: var(--accent); font-variant-numeric: tabular-nums;
+}
+.amount-in::placeholder { color: var(--ink-3); }
+.amount-in:focus-visible { outline: none; }
+.amount-after { text-align: center; color: var(--ink-2); min-height: 1.4em; font-size: 15px; }
+.amount-after.is-error { color: var(--err-ink); font-weight: 600; }
+.confirm-q { font-size: 19px; font-weight: 600; text-align: center; padding: 10px 4px; text-wrap: balance; }
+.confirm-q:focus { outline: none; }
+
+/* ---- Add Card (§8b) + Bulk Capture (§8c) ---- */
+dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dvh - max(env(safe-area-inset-top), 24px)); max-height: none; }
+.add-btn svg { fill: none; stroke: currentColor; stroke-width: 2.2; }
+.add-preview { position: relative; width: min(100%, 300px); justify-self: center; }
+.add-preview .gcard { pointer-events: none; }
+.qty-badge {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%); padding: 3px 12px; border-radius: var(--r-pill);
+  background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 14px; box-shadow: var(--shadow);
+}
+.field { display: grid; gap: 6px; position: relative; }
+.field > label { font-weight: 600; margin: 0 4px; }
+.field > input {
+  min-height: 50px; padding: 0 16px; font: inherit; font-size: 17px; color: var(--ink); border-radius: var(--r-md);
+  background: var(--glass); border: 0.5px solid var(--glass-edge);
+}
+.field > input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.suggest { list-style: none; position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + 6px); padding: 6px; border-radius: var(--r-md); background: var(--sheet-bg); max-height: 300px; overflow-y: auto; }
+.suggest-row { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 10px; border-radius: 12px; cursor: pointer; }
+.suggest-row[aria-selected="true"], .suggest-row:hover { background: var(--glass); }
+.suggest-row .gc-logo-sm { background: #fff; flex: none; }
+.suggest-txt { display: grid; }
+.suggest-name { font-weight: 600; }
+.suggest-dom { font-size: 13px; color: var(--ink-2); }
+.add-caption { text-align: center; color: var(--ink-2); font-size: 15px; margin-top: -4px; }
+.add-caption.is-error { color: var(--err-ink); font-weight: 600; }
+.hint { color: var(--ink-2); font-weight: 400; }
+.stepper { display: flex; align-items: center; gap: 4px; }
+.stepper button { width: 44px; height: 44px; border-radius: 22px; font-size: 22px; background: var(--glass); border: 0.5px solid var(--glass-edge); }
+.stepper button:disabled { opacity: 0.45; cursor: default; }
+.stepper output { min-width: 2.5ch; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.switch { appearance: none; -webkit-appearance: none; width: 51px; height: 31px; border-radius: 16px; background: var(--glass-edge); position: relative; cursor: pointer; flex: none; min-height: 0 !important; }
+.switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25); }
+.switch:checked { background: var(--accent); }
+.switch:checked::after { left: 22px; }
+.switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.dots { display: flex; justify-content: center; gap: 8px; }
+.dots i { width: 8px; height: 8px; border-radius: 4px; background: var(--glass-edge); }
+.dots i.done { background: var(--ink-2); }
+.dots i.on { background: var(--accent); width: 22px; }
+.capture-actions { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+.btn-ghost { min-height: 56px; border-radius: var(--r-pill); background: var(--glass); border: 0.5px solid var(--glass-edge); font-weight: 700; font-size: 17px; }
+
+/* ---- toast (one polite live region) ---- */
+.toast {
+  position: fixed; z-index: 60; left: 50%; bottom: calc(env(safe-area-inset-bottom) + var(--tabbar-h) + 28px);
+  transform: translate(-50%, 12px); opacity: 0; pointer-events: none;
+  max-width: calc(100% - 2 * var(--gutter)); padding: 10px 18px; border-radius: var(--r-pill);
+  background: var(--glass-strong); border: 0.5px solid var(--glass-edge); box-shadow: var(--shadow);
+  -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); font-weight: 600; font-size: 15px;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
 .load-msg { text-align: center; color: var(--ink-2); padding: 48px 12px 0; }
 
 /* Reports widgets */
@@ -208,11 +444,14 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   bottom: calc(env(safe-area-inset-bottom) + 12px);
   width: min(calc(100% - 2 * var(--gutter)), 360px); height: var(--tabbar-h);
   border-radius: var(--r-pill); padding: 6px;
+  /* stronger glass than panels: cards scroll under the bar, and the selected label must keep AA
+     contrast whatever passes beneath it */
+  background: var(--glass-strong);
 }
 .tabs { height: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .tab {
   display: grid; justify-items: center; align-content: center; gap: 2px;
-  border-radius: var(--r-pill); color: var(--ink-2); font-size: 11px; font-weight: 600;
+  border-radius: var(--r-pill); color: var(--ink-2); font-size: 12px; font-weight: 600;
 }
 .tab svg { width: 24px; height: 24px; }
 .tab[aria-selected="true"] { color: var(--accent); background: var(--glass); }
@@ -221,6 +460,16 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
    paints selected on the first frame instead of animating away from the static Cards default. */
 @media (prefers-reduced-motion: no-preference) {
   body.ready .tab, body.ready .menu button { transition: background-color 160ms ease, color 160ms ease; }
+  body.ready #topbar::before, body.ready .wordmark { transition: opacity 200ms ease, visibility 200ms; }
+  /* spring-feel lift: an overshooting curve, never on reduced motion */
+  body.ready .gcard { transition: transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 240ms ease; }
+  .gcard:hover { transform: translateY(-8px); }
+  .gcard:active { transform: translateY(-3px) scale(0.99); transition-duration: 120ms; }
+  body.ready .toast { transition: opacity 200ms ease, transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+  ::view-transition-group(hero) { animation-duration: 380ms; animation-timing-function: cubic-bezier(0.2, 0.9, 0.25, 1.15); }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
 }
 
 </style>
@@ -229,15 +478,22 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   <div class="wallpaper" aria-hidden="true"></div>
   <header id="topbar">
     <a class="back" href="index.html?view=personal">&larr; Private Wing</a>
-    <span class="wordmark">Cardsharp</span>
-    <span id="demo-pill" class="pill" hidden>Demo</span>
-    <div id="overflow" class="overflow">
-      <button id="overflow-btn" class="glass-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="overflow-menu" aria-label="Menu">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+    <span class="brand">
+      <span class="wordmark" aria-hidden="true">Cardsharp</span>
+      <span id="demo-pill" class="pill" hidden>Demo</span>
+    </span>
+    <div class="bar-actions">
+      <button id="add-btn" class="glass-btn add-btn" type="button" aria-label="Add gift card" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
-      <div id="overflow-menu" class="glass menu" role="menu" hidden>
-        <button id="theme-toggle" type="button" role="menuitem">Toggle theme</button>
-        <button id="signout" type="button" role="menuitem" hidden>Lock</button>
+      <div id="overflow" class="overflow">
+        <button id="overflow-btn" class="glass-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="overflow-menu" aria-label="Menu">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+        </button>
+        <div id="overflow-menu" class="glass menu" role="menu" hidden>
+          <button id="theme-toggle" type="button" role="menuitem">Toggle theme</button>
+          <button id="signout" type="button" role="menuitem" hidden>Lock</button>
+        </div>
       </div>
     </div>
   </header>
@@ -255,7 +511,8 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
         <p class="empty-sub">Your gift cards will stack here, grouped by category, with what each one really costs.</p>
       </div>
       <p id="load-msg" class="load-msg" role="status" hidden></p>
-      <ul id="cards-list" class="glass group retailer-list" aria-label="Retailers" hidden></ul>
+      <div id="stack" class="stack" hidden></div>
+      <div id="detail" class="detail" hidden></div>
     </section>
 
     <section id="panel-reports" class="panel" role="tabpanel" aria-labelledby="tab-reports" tabindex="-1" hidden>
@@ -290,7 +547,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   </main>
 
   <nav id="tabbar" class="glass" aria-label="Sections">
-    <div id="tablist" class="tabs" role="tablist" aria-label="Sections">
+    <div id="tablist" class="tabs" role="tablist">
     <button id="tab-cards" class="tab" type="button" role="tab" aria-selected="true" aria-controls="panel-cards">
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2.5"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       <span>Cards</span>
@@ -306,25 +563,436 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
     </div>
   </nav>
 
+  <dialog id="spend-sheet" class="sheet" aria-labelledby="spend-title">
+    <form id="spend-form" class="sheet-body" novalidate>
+      <div class="sheet-head">
+        <button id="spend-cancel" class="sheet-link" type="button">Cancel</button>
+        <h2 id="spend-title" class="sheet-title">Log Spend</h2>
+        <span class="sheet-head-pad" aria-hidden="true"></span>
+      </div>
+      <p class="sheet-sub" id="spend-retailer"></p>
+      <div id="spend-using" class="glass group sheet-row">
+        <label for="spend-card">Using</label>
+        <select id="spend-card"></select>
+      </div>
+      <div class="amount">
+        <span class="amount-cur" aria-hidden="true">$</span>
+        <label for="spend-amt" class="vh">Amount</label>
+        <input id="spend-amt" class="amount-in" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" placeholder="0.00" aria-describedby="spend-after">
+      </div>
+      <p id="spend-after" class="amount-after" aria-live="polite"></p>
+      <div class="glass group sheet-row">
+        <label for="spend-date">Date</label>
+        <input id="spend-date" type="date">
+      </div>
+      <button id="spend-go" class="log-spend-btn" type="submit">Log Spend</button>
+    </form>
+    <div id="spend-confirm" class="sheet-body" hidden>
+      <div class="sheet-head">
+        <button id="spend-back" class="sheet-link" type="button">Back</button>
+        <h2 class="sheet-title">Split across cards</h2>
+        <span class="sheet-head-pad" aria-hidden="true"></span>
+      </div>
+      <p id="spend-confirm-q" class="confirm-q" tabindex="-1"></p>
+      <div class="glass group sheet-row">
+        <label for="spend-next">Next card</label>
+        <select id="spend-next"></select>
+      </div>
+      <button id="spend-take" class="log-spend-btn" type="button">Take</button>
+    </div>
+  </dialog>
+
+  <dialog id="add-sheet" class="sheet sheet-tall" aria-labelledby="add-title">
+    <form id="add-form" class="sheet-body" novalidate autocomplete="off">
+      <div class="sheet-head">
+        <button id="add-cancel" class="sheet-link" type="button">Cancel</button>
+        <h2 id="add-title" class="sheet-title">Add Gift Card</h2>
+        <button id="add-save" class="sheet-link end" type="submit" disabled>Save</button>
+      </div>
+      <div class="add-preview" aria-hidden="true">
+        <div id="add-preview-card"></div>
+        <span id="add-qty-badge" class="qty-badge" hidden></span>
+      </div>
+      <div class="field combo">
+        <label for="add-retailer">Retailer</label>
+        <input id="add-retailer" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="add-suggest" autocapitalize="words" spellcheck="false" placeholder="Search brands — e.g. Starbucks" required>
+        <ul id="add-suggest" class="suggest glass" role="listbox" aria-label="Brand suggestions" hidden></ul>
+      </div>
+      <div class="glass group">
+        <div class="sheet-row"><label for="add-face">Face value</label><input id="add-face" type="text" inputmode="decimal" placeholder="$0.00" required></div>
+        <div class="sheet-row"><label for="add-paid">You paid</label><input id="add-paid" type="text" inputmode="decimal" placeholder="$0.00" required></div>
+        <div class="sheet-row"><span id="add-qty-label">Quantity</span>
+          <div class="stepper" role="group" aria-labelledby="add-qty-label">
+            <button id="add-qty-dec" type="button" aria-label="Fewer cards">−</button>
+            <output id="add-qty" aria-live="polite">1</output>
+            <button id="add-qty-inc" type="button" aria-label="More cards">+</button>
+          </div>
+        </div>
+      </div>
+      <p id="add-caption" class="add-caption" aria-live="polite"></p>
+      <div class="glass group">
+        <div class="sheet-row"><label for="add-category">Category <span id="add-cat-hint" class="hint"></span></label><select id="add-category"></select></div>
+        <div class="sheet-row"><label for="add-fav">Favorite</label><input id="add-fav" class="switch" type="checkbox"></div>
+      </div>
+      <div class="glass group">
+        <div class="sheet-row" id="add-number-row"><label for="add-number">Card number</label><input id="add-number" type="text" inputmode="numeric" placeholder="Optional"></div>
+        <div class="sheet-row" id="add-pin-row"><label for="add-pin">PIN</label><input id="add-pin" type="text" inputmode="numeric" placeholder="Optional"></div>
+        <div class="sheet-row"><label for="add-where">Where bought</label><input id="add-where" type="text" placeholder="Optional"></div>
+        <div class="sheet-row"><label for="add-notes">Notes</label><input id="add-notes" type="text" placeholder="Optional"></div>
+      </div>
+      <p id="add-totals" class="add-caption" hidden></p>
+      <p class="foot-note">Card numbers and PINs live only inside your encrypted document.</p>
+    </form>
+  </dialog>
+
+  <dialog id="capture-sheet" class="sheet sheet-tall" aria-labelledby="capture-title">
+    <form id="capture-form" class="sheet-body" novalidate autocomplete="off">
+      <div class="sheet-head">
+        <button id="capture-skipall" class="sheet-link" type="button">Skip all</button>
+        <h2 id="capture-title" class="sheet-title">Add Card Details</h2>
+        <button id="capture-done" class="sheet-link end" type="button">Done</button>
+      </div>
+      <div class="dots" id="capture-dots" aria-hidden="true"></div>
+      <p id="capture-progress" class="sheet-sub" aria-live="polite"></p>
+      <div id="capture-card" class="add-preview" aria-hidden="true"></div>
+      <div class="glass group">
+        <div class="sheet-row"><label for="capture-number">Card number</label><input id="capture-number" type="text" inputmode="numeric" placeholder="Tap to enter"></div>
+        <div class="sheet-row"><label for="capture-pin">PIN</label><input id="capture-pin" type="text" inputmode="numeric" placeholder="Tap to enter"></div>
+      </div>
+      <div class="capture-actions">
+        <button id="capture-skip" class="btn-ghost" type="button">Skip</button>
+        <button id="capture-next" class="log-spend-btn" type="submit">Next</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
   <script type="application/json" id="demo-fixture">{
-  "v": 1,
-  "retailers": [],
-  "cards": [],
-  "entries": [],
-  "categories": ["Restaurant", "Retail", "Other"],
-  "brandMemory": {},
-  "queue": [],
-  "settings": {
-    "ynab": {
-      "budget": "Family Budget",
-      "account": "HSBC Checking",
-      "payee": "xfer",
-      "giftCardsCategory": "Gift cards",
-      "categoryMap": { "Restaurant": "Spending" },
-      "postingEnabled": false
-    },
-    "staleMonths": 6
+ "v": 1,
+ "retailers": [
+  {
+   "id": "demo-1",
+   "name": "Starbucks",
+   "category": "Restaurant",
+   "favorite": true,
+   "brandDomain": "starbucks.com",
+   "brandColor": "#00704A"
+  },
+  {
+   "id": "demo-6",
+   "name": "The Cheesecake Factory",
+   "category": "Restaurant",
+   "favorite": false,
+   "brandDomain": "thecheesecakefactory.com",
+   "brandColor": "#5B3A1E"
+  },
+  {
+   "id": "demo-9",
+   "name": "Target",
+   "category": "Retail",
+   "favorite": false,
+   "brandDomain": "target.com",
+   "brandColor": "#CC0000"
+  },
+  {
+   "id": "demo-14",
+   "name": "The Home Depot",
+   "category": "Retail",
+   "favorite": false,
+   "brandDomain": "homedepot.com",
+   "brandColor": "#F96302"
+  },
+  {
+   "id": "demo-19",
+   "name": "Apple",
+   "category": "Retail",
+   "favorite": false,
+   "brandDomain": "apple.com",
+   "brandColor": "#1D1D1F"
+  },
+  {
+   "id": "demo-21",
+   "name": "DoorDash",
+   "category": "Restaurant",
+   "favorite": false,
+   "brandDomain": "doordash.com",
+   "brandColor": "#FF3008"
+  },
+  {
+   "id": "demo-27",
+   "name": "AMC Theatres",
+   "category": "Other",
+   "favorite": false,
+   "brandDomain": "amctheatres.com",
+   "brandColor": "#A50034"
+  },
+  {
+   "id": "demo-30",
+   "name": "Chipotle",
+   "category": "Restaurant",
+   "favorite": false,
+   "brandDomain": "chipotle.com",
+   "brandColor": "#A81612"
   }
+ ],
+ "cards": [
+  {
+   "id": "demo-2",
+   "retailerId": "demo-1",
+   "face": 10000,
+   "paid": 0,
+   "purchaseDate": "2026-06-01",
+   "number": "6066 0000 1111 4821",
+   "pin": "7310",
+   "where": "Gift from Sam"
+  },
+  {
+   "id": "demo-3",
+   "retailerId": "demo-1",
+   "face": 10000,
+   "paid": 7500,
+   "purchaseDate": "2026-07-12",
+   "number": "6066 0000 2222 9034",
+   "pin": "1182"
+  },
+  {
+   "id": "demo-4",
+   "retailerId": "demo-1",
+   "face": 10000,
+   "paid": 7000,
+   "purchaseDate": "2026-08-20"
+  },
+  {
+   "id": "demo-7",
+   "retailerId": "demo-6",
+   "face": 30000,
+   "paid": 23000,
+   "purchaseDate": "2025-11-28",
+   "number": "7777 0412 5531 2266",
+   "pin": "0419"
+  },
+  {
+   "id": "demo-8",
+   "retailerId": "demo-6",
+   "face": 26197,
+   "paid": 20228,
+   "purchaseDate": "2025-12-20"
+  },
+  {
+   "id": "demo-10",
+   "retailerId": "demo-9",
+   "face": 5000,
+   "paid": 4500,
+   "purchaseDate": "2026-05-03"
+  },
+  {
+   "id": "demo-11",
+   "retailerId": "demo-9",
+   "face": 5000,
+   "paid": 4500,
+   "purchaseDate": "2026-05-03"
+  },
+  {
+   "id": "demo-12",
+   "retailerId": "demo-9",
+   "face": 5000,
+   "paid": 4500,
+   "purchaseDate": "2026-05-03"
+  },
+  {
+   "id": "demo-15",
+   "retailerId": "demo-14",
+   "face": 10000,
+   "paid": 9000,
+   "purchaseDate": "2026-04-18",
+   "where": "Costco"
+  },
+  {
+   "id": "demo-16",
+   "retailerId": "demo-14",
+   "face": 10000,
+   "paid": 9000,
+   "purchaseDate": "2026-04-18",
+   "where": "Costco"
+  },
+  {
+   "id": "demo-17",
+   "retailerId": "demo-14",
+   "face": 10000,
+   "paid": 9000,
+   "purchaseDate": "2026-04-18",
+   "where": "Costco"
+  },
+  {
+   "id": "demo-18",
+   "retailerId": "demo-14",
+   "face": 10000,
+   "paid": 9000,
+   "purchaseDate": "2026-04-18",
+   "where": "Costco"
+  },
+  {
+   "id": "demo-20",
+   "retailerId": "demo-19",
+   "face": 10000,
+   "paid": 9500,
+   "purchaseDate": "2026-03-30",
+   "number": "9000 1234 5678 0042",
+   "pin": "5520"
+  },
+  {
+   "id": "demo-22",
+   "retailerId": "demo-21",
+   "face": 2500,
+   "paid": 2125,
+   "purchaseDate": "2026-08-01",
+   "where": "Costco"
+  },
+  {
+   "id": "demo-23",
+   "retailerId": "demo-21",
+   "face": 2500,
+   "paid": 2125,
+   "purchaseDate": "2026-08-01",
+   "where": "Costco"
+  },
+  {
+   "id": "demo-24",
+   "retailerId": "demo-21",
+   "face": 2500,
+   "paid": 2125,
+   "purchaseDate": "2026-08-01",
+   "where": "Costco"
+  },
+  {
+   "id": "demo-25",
+   "retailerId": "demo-21",
+   "face": 2500,
+   "paid": 2125,
+   "purchaseDate": "2026-08-01",
+   "where": "Costco"
+  },
+  {
+   "id": "demo-28",
+   "retailerId": "demo-27",
+   "face": 2500,
+   "paid": 2000,
+   "purchaseDate": "2026-07-04"
+  },
+  {
+   "id": "demo-29",
+   "retailerId": "demo-27",
+   "face": 2500,
+   "paid": 2000,
+   "purchaseDate": "2026-07-04"
+  },
+  {
+   "id": "demo-31",
+   "retailerId": "demo-30",
+   "face": 2500,
+   "paid": 2000,
+   "purchaseDate": "2026-02-11"
+  }
+ ],
+ "entries": [
+  {
+   "id": "demo-5:0",
+   "spendId": "demo-5",
+   "cardId": "demo-2",
+   "type": "spend",
+   "amount": -1000,
+   "date": "2026-09-14",
+   "ynabShift": 483,
+   "ynabSyncStatus": "dry-run"
+  },
+  {
+   "id": "demo-mig-cf:0",
+   "spendId": "demo-mig-cf",
+   "cardId": "demo-8",
+   "type": "migration",
+   "amount": -26197,
+   "date": "2026-09-28",
+   "ynabShift": 25055
+  },
+  {
+   "id": "demo-mig-cf:1",
+   "spendId": "demo-mig-cf",
+   "cardId": "demo-7",
+   "type": "migration",
+   "amount": -6342,
+   "date": "2026-09-28",
+   "ynabShift": 0
+  },
+  {
+   "id": "demo-13:0",
+   "spendId": "demo-13",
+   "cardId": "demo-10",
+   "type": "spend",
+   "amount": -4100,
+   "date": "2026-09-02",
+   "ynabShift": 3690,
+   "ynabSyncStatus": "dry-run"
+  },
+  {
+   "id": "demo-26:0",
+   "spendId": "demo-26",
+   "cardId": "demo-22",
+   "type": "spend",
+   "amount": -2500,
+   "date": "2026-09-20",
+   "ynabShift": 2677,
+   "ynabSyncStatus": "dry-run"
+  },
+  {
+   "id": "demo-26:1",
+   "spendId": "demo-26",
+   "cardId": "demo-23",
+   "type": "spend",
+   "amount": -650,
+   "date": "2026-09-20",
+   "ynabShift": 0
+  },
+  {
+   "id": "demo-32:0",
+   "spendId": "demo-32",
+   "cardId": "demo-31",
+   "type": "spend",
+   "amount": -2500,
+   "date": "2026-09-25",
+   "ynabShift": 2000,
+   "ynabSyncStatus": "dry-run"
+  }
+ ],
+ "categories": [
+  "Restaurant",
+  "Retail",
+  "Other"
+ ],
+ "brandMemory": {
+  "starbucks.com": "Restaurant",
+  "thecheesecakefactory.com": "Restaurant",
+  "target.com": "Retail",
+  "homedepot.com": "Retail",
+  "apple.com": "Retail",
+  "doordash.com": "Restaurant",
+  "amctheatres.com": "Other",
+  "chipotle.com": "Restaurant"
+ },
+ "queue": [],
+ "settings": {
+  "ynab": {
+   "budget": "Family Budget",
+   "account": "HSBC Checking",
+   "payee": "xfer",
+   "giftCardsCategory": "Gift cards",
+   "categoryMap": {
+    "Restaurant": "Spending"
+   },
+   "postingEnabled": false
+  },
+  "staleMonths": 6
+ }
 }</script>
   <script type="module">
 
@@ -1088,18 +1756,42 @@ function retailerCardStates(doc, retailerId) {
   return cardsOf(doc, retailerId).map((c) => ({ id: c.id, balance: cardBalance(doc, c), purchaseDate: c.purchaseDate }));
 }
 
+// Explicit draws (the Log Spend sheet's confirmed cascade, where the user may pick each next card):
+// each draw is a positive amount on a distinct card of THIS retailer, within that card's balance,
+// and the draws sum to the spend. Throws on anything else — the ledger never trusts the UI.
+function checkDraws(doc, retailerId, amount, draws) {
+  const states = new Map(retailerCardStates(doc, retailerId).map((c) => [c.id, c]));
+  const seen = new Set();
+  let sum = 0;
+  for (const d of draws) {
+    const c = states.get(d.cardId);
+    if (!c) throw new Error(`logSpend: card ${d.cardId} is not a card of retailer ${retailerId}`);
+    if (seen.has(d.cardId)) throw new Error(`logSpend: card ${d.cardId} drawn twice`);
+    seen.add(d.cardId);
+    assertCents(d.amount, 'draw.amount');
+    if (d.amount <= 0 || d.amount > c.balance) throw new RangeError(`logSpend: draw ${d.amount} outside card ${d.cardId}'s balance ${c.balance}`);
+    sum += d.amount;
+  }
+  if (sum !== amount) throw new RangeError(`logSpend: draws sum ${sum} != spend ${amount}`);
+  return draws;
+}
+
 // logSpend — plan the draw across the retailer's cards and return a NEW doc with one LedgerEntry per
 // drained card and ONE shift for the whole spend. spend: { id, retailerId, amount (>0 cents), date,
-// firstCardId?, note? }. Throws InsufficientBalanceError (code 'insufficientBalance').
+// firstCardId?, draws?, note?, ynabSyncStatus? }. Throws InsufficientBalanceError (code
+// 'insufficientBalance'). The shift (and the sync status) ride on the first entry only.
 function logSpend(doc, spend) {
   const amount = assertCents(spend.amount, 'spend.amount');
   const balBefore = retailerBalance(doc, spend.retailerId);
   const owedBefore = retailerOwed(doc, spend.retailerId);
-  const draws = plan(amount, retailerCardStates(doc, spend.retailerId), { firstCardId: spend.firstCardId });
+  const draws = spend.draws
+    ? checkDraws(doc, spend.retailerId, amount, spend.draws)
+    : plan(amount, retailerCardStates(doc, spend.retailerId), { firstCardId: spend.firstCardId });
   const ynabShift = shift(owedBefore, balBefore, balBefore - amount);
   const entries = draws.map((d, i) => ({
     id: `${spend.id}:${i}`, spendId: spend.id, cardId: d.cardId, type: 'spend',
     amount: -d.amount, date: spend.date, ynabShift: i === 0 ? ynabShift : 0,
+    ...(i === 0 && spend.ynabSyncStatus ? { ynabSyncStatus: spend.ynabSyncStatus } : {}),
     ...(spend.note ? { note: spend.note } : {}),
   }));
   return { doc: { ...doc, entries: [...(doc.entries || []), ...entries] }, entries, shift: ynabShift };
@@ -1361,6 +2053,1020 @@ async function persistDoc({ client, syncId, passphrase, doc, version, salt, reba
 }
 
 
+/* ---- src/core/mutations.js ---- */
+// src/core/mutations.js — every write to the Cardsharp document (Arc 2). Pure doc → doc functions
+// plus commitChange, the one path a change takes to the cloud: apply → seal → persistDoc (optimistic
+// version, ONE conflict retry that re-applies the same change onto the remote doc).
+//
+// Names carry a `Mut` suffix because build.js concatenates every module into one scope and the
+// ledger already owns `logSpend`. Money is integer cents throughout; the K3 maths and the
+// one-shift-per-spend rule are the ledger's (logSpendMut delegates to ledger.logSpend).
+// Card numbers and PINs only ever live inside the document — never logged, never thrown in a message.
+
+
+
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const MAX_QTY = 50;
+
+class NoRowError extends Error {
+  constructor() {
+    super('No Cardsharp document exists yet — run the first-row bootstrap (tools/init-doc.mjs) before adding cards.');
+    this.name = 'NoRowError'; this.code = 'noRow';
+  }
+}
+
+// Ids are random UUIDs, but REPLAYABLE: a conflict retry re-runs the same change and must mint the
+// same ids, so the rebased doc is the same change, not a near-duplicate.
+function replayableIds(gen = () => crypto.randomUUID()) {
+  const minted = [];
+  let i = 0;
+  const next = () => { if (i === minted.length) minted.push(gen()); return minted[i++]; };
+  next.reset = () => { i = 0; };
+  return next;
+}
+
+function todayISO(now = new Date()) {
+  const p = (n) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`;
+}
+
+function normDomain(d) { return d ? String(d).trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '') : ''; }
+function clean(s) { const t = s == null ? '' : String(s).trim(); return t || undefined; }
+
+// Find the retailer a new card belongs to: explicit id → same brand domain → same name (case-blind).
+function findRetailer(doc, { id, name, brandDomain } = {}) {
+  const rs = doc.retailers || [];
+  if (id) return rs.find((r) => r.id === id) || null;
+  const dom = normDomain(brandDomain);
+  if (dom) { const hit = rs.find((r) => normDomain(r.brandDomain) === dom); if (hit) return hit; }
+  const n = String(name || '').trim().toLowerCase();
+  return n ? rs.find((r) => String(r.name).trim().toLowerCase() === n) || null : null;
+}
+
+// rememberCategory — the user's category choice for a brand (K7 step 1, highest priority next time).
+function rememberCategoryMut(doc, brandDomain, category) {
+  const dom = normDomain(brandDomain);
+  if (!dom || !clean(category)) return { doc };
+  return { doc: { ...doc, brandMemory: { ...(doc.brandMemory || {}), [dom]: clean(category) } } };
+}
+
+// addCards — N identical cards under one retailer (created if new). fields: { face, paid, qty, date,
+// category, favorite, number?, pin?, where?, notes? }. number/PIN are per card, so only qty 1 takes them.
+function addCardsMut(doc, retailer, fields, { newId = replayableIds() } = {}) {
+  const face = assertCents(fields.face, 'face'), paid = assertCents(fields.paid, 'paid');
+  if (face <= 0) throw new RangeError('face value must be more than $0.00');
+  if (paid < 0) throw new RangeError('paid cannot be negative');
+  const qty = fields.qty == null ? 1 : fields.qty;
+  if (!Number.isSafeInteger(qty) || qty < 1 || qty > MAX_QTY) throw new RangeError(`quantity must be 1–${MAX_QTY}`);
+  const date = fields.date || todayISO();
+  if (!DATE_RE.test(date)) throw new TypeError('date must be YYYY-MM-DD');
+  const name = clean(retailer && retailer.name);
+  const existing = findRetailer(doc, retailer || {});
+  if (!existing && !name) throw new TypeError('retailer name is required');
+  const category = clean(fields.category) || (existing && existing.category) || 'Other';
+
+  let retailers = doc.retailers || [];
+  let r;
+  if (existing) {
+    r = { ...existing, category, ...(fields.favorite != null ? { favorite: !!fields.favorite } : {}) };
+    if (!r.brandDomain && retailer.brandDomain) r.brandDomain = normDomain(retailer.brandDomain);
+    retailers = retailers.map((x) => (x.id === r.id ? r : x));
+  } else {
+    r = { id: newId(), name, category, favorite: !!fields.favorite };
+    if (retailer.brandDomain) r.brandDomain = normDomain(retailer.brandDomain);
+    if (retailer.brandColor) r.brandColor = retailer.brandColor;
+    retailers = [...retailers, r];
+  }
+  const cards = [];
+  for (let i = 0; i < qty; i++) {
+    const c = { id: newId(), retailerId: r.id, face, paid, purchaseDate: date };
+    if (qty === 1) {
+      for (const k of ['number', 'pin']) { const v = clean(fields[k]); if (v) c[k] = v; }
+    }
+    for (const k of ['where', 'notes']) { const v = clean(fields[k]); if (v) c[k] = v; }
+    cards.push(c);
+  }
+  const categories = (doc.categories || []).includes(category) ? doc.categories : [...(doc.categories || []), category];
+  let next = { ...doc, retailers, categories, cards: [...(doc.cards || []), ...cards] };
+  if (r.brandDomain) next = rememberCategoryMut(next, r.brandDomain, category).doc;
+  return { doc: next, retailerId: r.id, cardIds: cards.map((c) => c.id) };
+}
+
+// logSpend — one spend on a retailer: one LedgerEntry per drawn card, ONE YNAB shift (K3) on the
+// first. draws (optional) = the sheet's confirmed cascade; omitted → the ledger plans smallest-first.
+// YNAB posting is OFF until cutover (W6), so every spend is recorded as a dry-run.
+function logSpendMut(doc, retailerId, amount, date, draws, { newId = replayableIds() } = {}) {
+  if (!(doc.retailers || []).some((r) => r.id === retailerId)) throw new Error(`unknown retailer ${retailerId}`);
+  if (!DATE_RE.test(String(date))) throw new TypeError('date must be YYYY-MM-DD');
+  assertCents(amount, 'amount');
+  if (amount <= 0) throw new RangeError('spend must be more than $0.00');
+  const posting = !!(doc.settings && doc.settings.ynab && doc.settings.ynab.postingEnabled);
+  const res = logSpend(doc, {
+    id: newId(), retailerId, amount, date,
+    ...(draws && draws.length ? { draws } : {}),
+    ynabSyncStatus: posting ? 'pending' : 'dry-run',
+  });
+  return { doc: res.doc, entries: res.entries, shift: res.shift };
+}
+
+function setFavoriteMut(doc, retailerId, favorite) {
+  if (!(doc.retailers || []).some((r) => r.id === retailerId)) throw new Error(`unknown retailer ${retailerId}`);
+  return { doc: { ...doc, retailers: doc.retailers.map((r) => (r.id === retailerId ? { ...r, favorite: !!favorite } : r)) } };
+}
+
+// Bulk capture: set (or skip) one card's number + PIN after a bulk save.
+function setCardDetailsMut(doc, cardId, { number, pin } = {}) {
+  if (!(doc.cards || []).some((c) => c.id === cardId)) throw new Error('unknown card');
+  return {
+    doc: {
+      ...doc,
+      cards: doc.cards.map((c) => {
+        if (c.id !== cardId) return c;
+        const n = { ...c };
+        const num = clean(number), p = clean(pin);
+        if (num) n.number = num; if (p) n.pin = p;
+        return n;
+      }),
+    },
+  };
+}
+
+// commitChange — the ONE write path. ctx: { doc, version, salt, demo, client, syncId, passphrase }.
+// change(doc, newId) → { doc, ...result }. Demo: in memory only. Live: refuses when no row exists
+// (NoRowError — the bootstrap creates the row, never a stray first write), then persistDoc with a
+// rebase that replays the SAME change (same ids) onto the remote doc. Updates ctx in place.
+async function commitChange(ctx, change) {
+  const newId = replayableIds();
+  const res = change(ctx.doc, newId);
+  if (ctx.demo) { ctx.doc = res.doc; return res; }
+  if (ctx.version == null) throw new NoRowError();
+  let written = res.doc, out = res;
+  const saved = await persistDoc({
+    client: ctx.client, syncId: ctx.syncId, passphrase: ctx.passphrase,
+    doc: res.doc, version: ctx.version, salt: ctx.salt,
+    rebase: (remote) => { newId.reset(); out = change(remote, newId); written = out.doc; return written; },
+  });
+  ctx.doc = written; ctx.version = saved.version; ctx.salt = saved.salt;
+  return out;
+}
+
+
+/* ---- src/core/stack.js ---- */
+// src/core/stack.js — what the Cards stack shows, as pure data (spec §5). Unit-tested; the UI only
+// paints it. Order: ★ Favorites → each category (the doc's category order) → A–Z within a group;
+// retailers with no balance left sink into a final "Used up" group, dimmed. Balances, owed and
+// "Saving X%" are per RETAILER (the stack's unit); card counts drive the multi-card pips.
+
+
+const FAVORITES = '★ Favorites';
+const USED_UP = 'Used up';
+
+function retailerSummary(doc, r) {
+  const cards = cardsOf(doc, r.id);
+  const balance = retailerBalance(doc, r.id), owed = retailerOwed(doc, r.id);
+  return {
+    retailer: r, balance, owed,
+    saving: savingLabel(owed, balance),
+    cardCount: cards.length,
+    liveCards: cards.filter((c) => cardBalance(doc, c) > 0).length,
+    zero: balance <= 0,
+  };
+}
+
+const byName = (a, b) => String(a.retailer.name).localeCompare(String(b.retailer.name), undefined, { sensitivity: 'base' });
+
+// → [{ key, label, items: [retailerSummary…] }], empty groups dropped.
+function stackGroups(doc) {
+  const all = (doc.retailers || []).map((r) => retailerSummary(doc, r)).filter((s) => s.cardCount > 0);
+  const live = all.filter((s) => !s.zero), zero = all.filter((s) => s.zero).sort(byName);
+  const groups = [{ key: 'favorites', label: FAVORITES, items: live.filter((s) => s.retailer.favorite).sort(byName) }];
+  const rest = live.filter((s) => !s.retailer.favorite);
+  const cats = [...(doc.categories || [])];
+  for (const s of rest) if (!cats.includes(s.retailer.category || 'Other')) cats.push(s.retailer.category || 'Other');
+  for (const c of cats) groups.push({ key: `cat:${c}`, label: c, items: rest.filter((s) => (s.retailer.category || 'Other') === c).sort(byName) });
+  groups.push({ key: 'used-up', label: USED_UP, items: zero });
+  return groups.filter((g) => g.items.length > 0);
+}
+
+// ---- colour: every card face carries white text, so its base colour is darkened until white
+// clears WCAG AA (4.5:1) — brand colours like DoorDash red or Home Depot orange would not. ----
+function hexToRgb(hex) {
+  const m = String(hex || '').trim().match(/^#?([0-9a-f]{6})$/i);
+  if (!m) return null;
+  const n = parseInt(m[1], 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+const toHex = (rgb) => '#' + rgb.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('').toUpperCase();
+function luminance([r, g, b]) {
+  const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+function contrastWithWhite(hex) { const rgb = hexToRgb(hex); return rgb ? 1.05 / (luminance(rgb) + 0.05) : 0; }
+
+function darkenForWhite(hex, min = 4.6) {
+  let rgb = hexToRgb(hex);
+  if (!rgb) return null;
+  for (let i = 0; i < 40 && 1.05 / (luminance(rgb) + 0.05) < min; i++) rgb = rgb.map((v) => v * 0.92);
+  return toHex(rgb);
+}
+
+// Deterministic fallback colour from the retailer name (FNV-1a → hue), already AA-dark.
+function nameColor(name) {
+  let h = 0x811c9dc5;
+  for (const ch of String(name || '?')) { h ^= ch.codePointAt(0); h = Math.imul(h, 0x01000193) >>> 0; }
+  const hue = h % 360, s = 0.55, l = 0.36;
+  const k = (n) => (n + hue / 30) % 12, a = s * Math.min(l, 1 - l);
+  const f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return darkenForWhite(toHex([f(0) * 255, f(8) * 255, f(4) * 255]));
+}
+
+// → { from, to } for the card's 135° gradient: AA-safe base → a deeper shade of it.
+function cardColors(retailer) {
+  const base = darkenForWhite(retailer && retailer.brandColor) || nameColor(retailer && retailer.name);
+  const deep = toHex(hexToRgb(base).map((v) => v * 0.55));
+  return { from: base, to: deep };
+}
+
+function monogram(name) {
+  const words = String(name || '?').replace(/^the\s+/i, '').split(/[\s&-]+/).filter(Boolean);
+  return (words.length > 1 ? words[0][0] + words[1][0] : (words[0] || '?').slice(0, 2)).toUpperCase();
+}
+
+// Brandfetch Logo CDN (free tier): always built from the STORED domain — search-result image URLs
+// expire after 24h and are never stored. No client id → no URL (the monogram shows).
+function logoUrl(domain, clientId) {
+  const d = String(domain || '').trim().toLowerCase();
+  if (!d || !clientId || !/^[a-z0-9.-]+\.[a-z]{2,}$/.test(d)) return null;
+  return `https://cdn.brandfetch.io/${d}?c=${encodeURIComponent(clientId)}`;
+}
+
+
+/* ---- src/core/category.js ---- */
+// src/core/category.js — the suggested category for a brand (spec §8b, K7), WITHOUT the keyed Brand
+// API: 1. the user's remembered choice for this domain (doc.brandMemory) → 2. an industry string, only
+// if a search result happens to carry one → 3. a keyword / known-chain map over the name + domain →
+// 4. Other. A suggestion is only ever one of the doc's own categories.
+
+const RESTAURANT_CHAINS = ['starbucks', 'mcdonalds', 'chipotle', 'doordash', 'ubereats', 'grubhub', 'panera', 'dunkin',
+  'subway', 'cheesecakefactory', 'olivegarden', 'kfc', 'tacobell', 'chickfila', 'wendys', 'dominos', 'pizzahut', 'shakeshack',
+  'innout', 'fiveguys', 'outback', 'applebees', 'chilis', 'dennys', 'ihop', 'sweetgreen', 'timhortons', 'krispykreme', 'buffalowildwings'];
+const RETAIL_CHAINS = ['target', 'walmart', 'amazon', 'apple', 'bestbuy', 'homedepot', 'lowes', 'costco', 'macys', 'nordstrom',
+  'sephora', 'ulta', 'ikea', 'nike', 'gap', 'oldnavy', 'kohls', 'tjmaxx', 'marshalls', 'wholefoods', 'kroger', 'safeway',
+  'walgreens', 'cvs', 'barnesandnoble', 'rei', 'wayfair', 'etsy', 'ebay', 'adidas', 'lululemon', 'zara', 'hm', 'bathandbodyworks'];
+const RESTAURANT_WORDS = ['coffee', 'cafe', 'café', 'pizza', 'burger', 'grill', 'kitchen', 'restaurant', 'bistro', 'bakery', 'taco',
+  'sushi', 'diner', 'eats', 'food', 'steakhouse', 'bbq', 'donut', 'doughnut', 'tea', 'bar', 'pub', 'brewing', 'chicken', 'wings'];
+const RETAIL_WORDS = ['store', 'shop', 'mart', 'market', 'outlet', 'depot', 'apparel', 'boutique', 'fashion', 'clothing',
+  'electronics', 'books', 'hardware', 'pharmacy', 'supermarket', 'grocery', 'beauty', 'home'];
+
+// short names (kfc, rei, gap, hm…) must match exactly; longer ones may lead a longer name/domain
+const chainHit = (k, list) => list.some((c) => k === c || (c.length > 4 && k.startsWith(c)));
+const squash = (s) => String(s || '').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]/g, '');
+const words = (s) => String(s || '').toLowerCase().split(/[^a-zé]+/).filter(Boolean);
+
+function industryCategory(industry) {
+  const s = String(industry || '').toLowerCase();
+  if (!s) return null;
+  if (/(food|restaurant|beverage|dining|coffee|catering)/.test(s)) return 'Restaurant';
+  if (/(retail|shopping|apparel|fashion|electronics|consumer goods|grocery|e-?commerce)/.test(s)) return 'Retail';
+  return null;
+}
+
+function keywordCategory(name, domain) {
+  const base = squash(String(domain || '').replace(/\.[a-z.]+$/i, '')) || squash(name);
+  const n = squash(String(name || '').replace(/^the\s+/i, ''));
+  for (const k of [base, base.replace(/^the/, ''), n]) {
+    if (!k) continue;
+    if (chainHit(k, RESTAURANT_CHAINS)) return 'Restaurant';
+    if (chainHit(k, RETAIL_CHAINS)) return 'Retail';
+  }
+  const w = [...words(name), ...words(String(domain || '').replace(/\.[a-z.]+$/i, ''))];
+  if (w.some((x) => RESTAURANT_WORDS.includes(x))) return 'Restaurant';
+  if (w.some((x) => RETAIL_WORDS.includes(x))) return 'Retail';
+  return null;
+}
+
+// → { category, source: 'remembered' | 'industry' | 'keyword' | 'default' }
+function suggestCategory(doc, { name, domain, industry } = {}) {
+  const cats = (doc && doc.categories) || ['Restaurant', 'Retail', 'Other'];
+  const ok = (c) => (c && cats.includes(c) ? c : null);
+  const dom = String(domain || '').trim().toLowerCase().replace(/^www\./, '');
+  const remembered = dom && doc && doc.brandMemory ? ok(doc.brandMemory[dom]) : null;
+  if (remembered) return { category: remembered, source: 'remembered' };
+  const ind = ok(industryCategory(industry));
+  if (ind) return { category: ind, source: 'industry' };
+  const kw = ok(keywordCategory(name, dom));
+  if (kw) return { category: kw, source: 'keyword' };
+  return { category: cats.includes('Other') ? 'Other' : cats[cats.length - 1], source: 'default' };
+}
+
+
+/* ---- src/ui/dom.js ---- */
+// src/ui/dom.js — the two DOM helpers every UI module shares (one scope after the build).
+function $(id) { return document.getElementById(id); }
+function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+
+// One polite live region for every confirmation ("Logged $12.50", "Copied"). Re-announces repeats.
+let toastTimer = null;
+function toast(msg, ms = 2600) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = '';
+  clearTimeout(toastTimer);
+  requestAnimationFrame(() => { t.textContent = msg; t.classList.add('show'); });
+  toastTimer = setTimeout(() => { t.classList.remove('show'); }, ms);
+}
+
+
+/* ---- src/ui/cards.js ---- */
+// src/ui/cards.js — the Cards stack (spec §5, mockup home v2) and the card face it is built from.
+// Wallet interaction, Cash App faces: CR80 1.586:1 cards fanned vertically in their group with a
+// ~76px peek; each later card covers the one above, so only the group's front card shows in full.
+// Card numbers and PINs are never rendered here.
+
+
+
+
+function brandfetchClient() {
+  const m = document.querySelector('meta[name="brandfetch-client"]');
+  return m ? m.content : '';
+}
+
+// The logo tile: Brandfetch CDN image from the stored domain; any failure (no client id, blocked,
+// 404, offline) swaps in the monogram, so a card face is never empty.
+function logoTile(retailer, size = 'lg') {
+  const tile = el('span', `gc-logo gc-logo-${size}`);
+  const mono = () => { tile.replaceChildren(el('span', 'gc-mono', monogram(retailer.name))); tile.classList.add('is-mono'); };
+  const url = logoUrl(retailer.brandDomain, brandfetchClient());
+  if (!url) { mono(); return tile; }
+  const img = new Image();
+  img.alt = ''; img.decoding = 'async'; img.loading = size === 'lg' ? 'eager' : 'lazy';
+  img.referrerPolicy = 'strict-origin-when-cross-origin'; // the CDN requires the Referer (W11)
+  img.width = img.height = size === 'lg' ? 64 : 32;
+  img.addEventListener('error', mono, { once: true });
+  img.src = url;
+  tile.append(img);
+  return tile;
+}
+
+// One card face. s = a stack summary (core/stack.retailerSummary). opts.tag: 'a' (stack) | 'div' (hero).
+function cardFace(s, opts = {}) {
+  const r = s.retailer;
+  const card = el(opts.tag || 'a', 'gcard');
+  const { from, to } = cardColors(r);
+  card.style.setProperty('--c1', from); card.style.setProperty('--c2', to);
+  if (s.zero) card.classList.add('is-zero');
+  card.dataset.retailer = r.id;
+  if (card.tagName === 'A') {
+    card.href = `#card/${encodeURIComponent(r.id)}`;
+    card.setAttribute('aria-label', `${r.name}, ${formatCents(s.balance)}${s.saving ? `, ${s.saving}` : ', used up'}${s.cardCount > 1 ? `, ${s.cardCount} cards` : ''}`);
+  }
+  const name = el('span', 'gc-name', r.name);
+  if (r.favorite) name.prepend(el('span', 'gc-star', '★ '));
+  const top = el('span', 'gc-top');
+  top.append(name);
+  if (s.zero || s.saving) top.append(el('span', 'gc-badge', s.zero ? 'Used up' : s.saving));
+  const mid = el('span', 'gc-mid');
+  mid.append(logoTile(r, 'lg'));
+  const bottom = el('span', 'gc-bottom');
+  if (s.cardCount > 1) {
+    const pips = el('span', 'gc-pips');
+    pips.setAttribute('aria-hidden', 'true');
+    for (let i = 0; i < Math.min(3, s.cardCount); i++) pips.append(el('i'));
+    bottom.append(pips);
+  }
+  const bal = el('span', 'gc-bal');
+  bal.append(el('small', null, opts.balanceLabel || 'Balance'), el('span', 'gc-amt', formatCents(s.balance)));
+  bottom.append(bal);
+  card.append(top, mid, bottom);
+  return card;
+}
+
+function paintStack(doc, root) {
+  root.replaceChildren();
+  for (const g of stackGroups(doc)) {
+    const sec = el('section', 'stack-group');
+    sec.dataset.group = g.key;
+    const id = `grp-${g.key.replace(/[^a-z0-9]+/gi, '-')}`;
+    const pill = el('h2', 'stack-pill', g.label);
+    pill.id = id;
+    sec.setAttribute('aria-labelledby', id);
+    const pile = el('div', 'stack-pile');
+    for (const s of g.items) pile.append(cardFace(s));
+    sec.append(pill, pile);
+    root.append(sec);
+  }
+}
+
+
+/* ---- src/ui/detail.js ---- */
+// src/ui/detail.js — card detail (spec §6, mockup card-detail). Route `#card/<retailerId>`.
+// Hero = the retailer card (total balance + Saving %), sub-cards smallest-first (tap → filter the
+// activity to that card), the Log Spend button, a Details disclosure, the activity list and Card
+// info: numbers + PINs revealed on tap, tap-to-copy, hidden again after 30s and whenever the view
+// is left, the tab changes, the page hides or the vault locks. Nothing secret is ever logged.
+
+
+
+
+
+
+
+const REVEAL_MS = 30_000;
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const detailState = { retailerId: null, filterCardId: null, revealTimer: null };
+
+function fmtDate(iso, withYear) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+  if (!m) return String(iso || '');
+  return `${MONTHS[Number(m[2]) - 1]} ${Number(m[3])}${withYear ? `, ${m[1]}` : ''}`;
+}
+const monthYear = (iso) => { const m = /^(\d{4})-(\d{2})/.exec(String(iso || '')); return m ? `${MONTHS[Number(m[2]) - 1]} ${m[1]}` : ''; };
+const lastFour = (num) => { const d = String(num || '').replace(/\D/g, ''); return d.length >= 4 ? d.slice(-4) : null; };
+
+// "Card · 4821" from the stored number; else "Card N" by purchase order.
+function cardLabels(doc, retailerId) {
+  const cards = [...cardsOf(doc, retailerId)].sort((a, b) => String(a.purchaseDate).localeCompare(String(b.purchaseDate)) || String(a.id).localeCompare(String(b.id)));
+  const out = new Map();
+  cards.forEach((c, i) => { const l4 = lastFour(c.number); out.set(c.id, l4 ? `Card · ${l4}` : `Card ${i + 1}`); });
+  return out;
+}
+// "Almost done": still has money, but at most a fifth of its face value.
+const almostDone = (bal, face) => bal > 0 && bal * 5 <= face;
+
+function hideSecrets() {
+  clearTimeout(detailState.revealTimer); detailState.revealTimer = null;
+  const info = $('detail-info');
+  if (!info) return;
+  for (const row of info.querySelectorAll('.info-secret')) row.remove();
+  for (const b of info.querySelectorAll('.reveal-btn')) { b.hidden = false; b.setAttribute('aria-expanded', 'false'); }
+}
+
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); toast('Copied'); } catch (_) { toast('Couldn’t copy — select it instead'); }
+}
+
+function revealSecrets(card, row, btn) {
+  hideSecrets();
+  btn.hidden = true; btn.setAttribute('aria-expanded', 'true');
+  const box = el('div', 'info-secret');
+  box.id = `secret-${card.id}`;
+  for (const [label, value] of [['Number', card.number], ['PIN', card.pin]]) {
+    if (!value) continue;
+    const b = el('button', 'secret-val');
+    b.type = 'button';
+    b.append(el('span', 'secret-label', label), el('span', 'secret-text', value), el('span', 'secret-hint', 'Tap to copy'));
+    b.addEventListener('click', () => copy(value));
+    box.append(b);
+  }
+  row.append(box);
+  detailState.revealTimer = setTimeout(hideSecrets, REVEAL_MS);
+}
+
+function activityRows(doc, retailerId, labels) {
+  const ids = new Set(cardsOf(doc, retailerId).map((c) => c.id));
+  const rows = (doc.entries || []).filter((e) => ids.has(e.cardId) && (!detailState.filterCardId || e.cardId === detailState.filterCardId));
+  rows.sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.id).localeCompare(String(a.id)));
+  return rows.map((e) => {
+    const li = el('li', `act-row act-${e.type}`);
+    const kind = e.type === 'refund' ? 'Refund' : e.type === 'migration' ? 'Imported' : e.type === 'spend' ? 'Spend' : 'Adjustment';
+    const left = el('span', 'act-what');
+    left.append(el('span', 'act-title', `${kind} · ${labels.get(e.cardId) || 'Card'}`), el('span', 'act-date', fmtDate(e.date, true)));
+    const amt = el('span', `act-amt${e.amount > 0 ? ' is-credit' : ''}`, `${e.amount > 0 ? '+' : ''}${formatCents(e.amount)}`);
+    li.append(left, amt);
+    return li;
+  });
+}
+
+// Paint the detail for retailerId into #detail. Returns false when the retailer no longer exists.
+function paintDetail(doc, retailerId, { onLogSpend, onFavorite } = {}) {
+  const r = (doc.retailers || []).find((x) => x.id === retailerId);
+  if (!r) return false;
+  if (detailState.retailerId !== retailerId) { detailState.filterCardId = null; hideSecrets(); }
+  detailState.retailerId = retailerId;
+  const s = retailerSummary(doc, r);
+  const cards = cardsOf(doc, retailerId);
+  if (detailState.filterCardId && !cards.some((c) => c.id === detailState.filterCardId)) detailState.filterCardId = null;
+  const labels = cardLabels(doc, retailerId);
+  const root = $('detail');
+  root.replaceChildren();
+
+  // nav: back · title · ⋯ (favorite)
+  const nav = el('div', 'detail-nav');
+  const back = el('a', 'detail-back glass-btn');
+  back.href = '#cards'; back.setAttribute('aria-label', 'Back to cards');
+  back.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19"/></svg>';
+  const title = el('h1', 'detail-title', r.name);
+  title.id = 'detail-title'; title.tabIndex = -1;
+  const fav = el('button', 'glass-btn detail-fav');
+  fav.type = 'button';
+  fav.setAttribute('aria-pressed', String(!!r.favorite));
+  fav.setAttribute('aria-label', r.favorite ? 'Remove from Favorites' : 'Add to Favorites');
+  fav.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 3.5 14.6 9 20.5 9.6 16 13.6 17.3 19.5 12 16.5 6.7 19.5 8 13.6 3.5 9.6 9.4 9"/></svg>';
+  fav.addEventListener('click', () => onFavorite && onFavorite(retailerId, !r.favorite));
+  nav.append(back, title, fav);
+
+  // hero
+  const hero = cardFace(s, { tag: 'div', balanceLabel: 'Total balance' });
+  hero.classList.add('detail-hero');
+  hero.setAttribute('role', 'img');
+  hero.setAttribute('aria-label', `${r.name} — total balance ${formatCents(s.balance)}${s.saving ? `, ${s.saving}` : ', used up'}`);
+
+  const parts = [nav, hero];
+
+  // sub-cards (only with 2+ cards), smallest balance first
+  if (cards.length > 1) {
+    const sec = el('section', 'subcards');
+    sec.setAttribute('aria-labelledby', 'subcards-h');
+    const h = el('h2', 'section-h', `Cards · ${cards.length}`); h.id = 'subcards-h';
+    const row = el('div', 'subcard-row');
+    const states = cards.map((c) => ({ c, id: c.id, balance: cardBalance(doc, c), purchaseDate: c.purchaseDate })).sort(byDrawOrder);
+    for (const st of states) {
+      const b = el('button', 'subcard');
+      b.type = 'button';
+      b.dataset.card = st.id;
+      const on = detailState.filterCardId === st.id;
+      b.setAttribute('aria-pressed', String(on));
+      const low = almostDone(st.balance, st.c.face);
+      if (low) b.classList.add('is-low');
+      if (st.balance === 0) b.classList.add('is-empty');
+      b.append(el('span', 'sc-label', labels.get(st.id)), el('span', 'sc-bal', formatCents(st.balance)),
+        el('span', 'sc-note', st.balance === 0 ? 'Empty' : low ? 'Almost done' : `Bought ${monthYear(st.c.purchaseDate)}`));
+      b.addEventListener('click', () => { detailState.filterCardId = on ? null : st.id; paintDetail(doc, retailerId, { onLogSpend, onFavorite }); const again = root.querySelector(`.subcard[data-card="${st.id}"]`); if (again) again.focus(); });
+      row.append(b);
+    }
+    sec.append(h, row);
+    parts.push(sec);
+  }
+
+  // Log Spend
+  const log = el('button', 'log-spend-btn');
+  log.type = 'button'; log.id = 'log-spend-btn';
+  log.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+  log.append(el('span', null, s.zero ? 'Nothing left to spend' : 'Log Spend'));
+  log.disabled = s.zero;
+  log.addEventListener('click', () => onLogSpend && onLogSpend(retailerId));
+  parts.push(log);
+
+  // Details disclosure
+  const det = el('details', 'glass group detail-more');
+  const sum = el('summary', null, 'Details');
+  const dl = el('dl');
+  const face = cards.reduce((t, c) => t + c.face, 0), paid = cards.reduce((t, c) => t + c.paid, 0);
+  const notes = [...new Set(cards.map((c) => c.notes).filter(Boolean))].join(' · ');
+  for (const [k, v] of [['Original balance', formatCents(face)], ['Total paid', formatCents(paid)], ['Total saved', formatCents(face - paid)],
+    ['Cards', String(cards.length)], ['Category', r.category || 'Other'], ['Notes', notes || '—']]) {
+    const row = el('div', 'row'); row.append(el('dt', null, k), el('dd', null, v)); dl.append(row);
+  }
+  det.append(sum, dl);
+  parts.push(det);
+
+  // Activity
+  const act = el('section', 'activity');
+  act.setAttribute('aria-labelledby', 'activity-h');
+  const ah = el('h2', 'section-h', detailState.filterCardId ? `Activity · ${labels.get(detailState.filterCardId)}` : 'Activity');
+  ah.id = 'activity-h';
+  const rows = activityRows(doc, retailerId, labels);
+  const list = el('ul', 'glass group act-list');
+  list.id = 'activity';
+  if (rows.length) list.append(...rows); else list.append(el('li', 'act-empty', 'No activity yet'));
+  act.append(ah, list);
+  parts.push(act);
+
+  // Card info
+  const info = el('section', 'card-info');
+  info.id = 'detail-info';
+  info.setAttribute('aria-labelledby', 'info-h');
+  const ih = el('h2', 'section-h', 'Card info'); ih.id = 'info-h';
+  const ilist = el('div', 'glass group');
+  for (const c of [...cards].sort((a, b) => labels.get(a.id).localeCompare(labels.get(b.id), undefined, { numeric: true }))) {
+    const row = el('div', 'info-row');
+    const head = el('div', 'info-head');
+    head.append(el('span', 'info-label', labels.get(c.id)));
+    if (c.number || c.pin) {
+      const btn = el('button', 'reveal-btn', 'Reveal');
+      btn.type = 'button';
+      btn.setAttribute('aria-expanded', 'false');
+      btn.setAttribute('aria-controls', `secret-${c.id}`);
+      btn.setAttribute('aria-label', `Reveal number and PIN for ${labels.get(c.id)}`);
+      btn.addEventListener('click', () => revealSecrets(c, row, btn));
+      head.append(btn);
+    } else head.append(el('span', 'info-none', 'No card details stored'));
+    row.append(head);
+    ilist.append(row);
+  }
+  info.append(ih, ilist, el('p', 'foot-note', 'Numbers and PINs live only inside your encrypted document. They hide again after 30 seconds.'));
+  parts.push(info);
+
+  root.append(...parts);
+  return true;
+}
+
+function closeDetail() {
+  hideSecrets();
+  detailState.retailerId = null; detailState.filterCardId = null;
+  const root = $('detail');
+  if (root) root.replaceChildren();
+}
+
+
+/* ---- src/ui/logspend.js ---- */
+// src/ui/logspend.js — the Log Spend sheet (spec §8, mockup log-spend). A modal bottom sheet: the
+// amount dominates (inputmode=decimal → the decimal keypad), "Using" auto-picks the LOWEST-balance
+// card, "After: $X remaining" is the retailer total, the date defaults to today.
+// Auto-split: a spend larger than the chosen card drains it, then asks per further card —
+// "Card X emptied. Take remaining $Y from Card Z?" (next-smallest pre-selected, changeable) — and only
+// when the whole amount is covered does it commit, as ONE spend (one YNAB shift) with the confirmed
+// draws. Cancelling a confirm logs nothing. The ledger re-validates every draw.
+
+
+
+
+
+
+
+const sheet = { retailerId: null, doc: null, labels: null, onCommit: null, draws: [], left: 0, amount: 0, date: '' };
+
+function liveCards(doc, retailerId) {
+  return cardsOf(doc, retailerId).map((c) => ({ id: c.id, balance: cardBalance(doc, c), purchaseDate: c.purchaseDate }))
+    .filter((c) => c.balance > 0).sort(byDrawOrder);
+}
+function parseAmount(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return null;
+  try { const c = toCents(s); return c > 0 ? c : null; } catch (_) { return null; }
+}
+const optionText = (label, bal) => `${label} · ${formatCents(bal)}`;
+
+// Recompute the preview / validity line from the current inputs.
+function update() {
+  const { doc, retailerId } = sheet;
+  const total = retailerBalance(doc, retailerId);
+  const amount = parseAmount($('spend-amt').value);
+  const cards = liveCards(doc, retailerId);
+  const chosen = cards.find((c) => c.id === $('spend-card').value) || cards[0];
+  const msg = $('spend-after'), go = $('spend-go');
+  msg.classList.remove('is-error');
+  if ($('spend-amt').value.trim() && amount === null) { msg.textContent = 'Enter an amount like 12.50'; msg.classList.add('is-error'); go.disabled = true; return; }
+  if (amount === null) { msg.textContent = `After: ${formatCents(total)} remaining`; go.disabled = true; return; }
+  if (amount > total) {
+    msg.textContent = `Only ${formatCents(total)} left across your ${sheet.retailerName} cards`;
+    msg.classList.add('is-error'); go.disabled = true; return;
+  }
+  const split = chosen && amount > chosen.balance ? ' · splits across cards' : '';
+  msg.textContent = `After: ${formatCents(total - amount)} remaining${split}`;
+  go.disabled = false;
+}
+
+function showStep(which) {
+  $('spend-form').hidden = which !== 'form';
+  $('spend-confirm').hidden = which !== 'confirm';
+}
+
+// Ask for the next card of the cascade (spec §8 auto-split steps 3–5).
+function askNext() {
+  const { doc, retailerId, labels } = sheet;
+  const used = new Set(sheet.draws.map((d) => d.cardId));
+  const rest = liveCards(doc, retailerId).filter((c) => !used.has(c.id));
+  const last = sheet.draws[sheet.draws.length - 1];
+  const pick = $('spend-next');
+  pick.replaceChildren(...rest.map((c) => { const o = el('option', null, optionText(labels.get(c.id), c.balance)); o.value = c.id; return o; }));
+  const paint = () => {
+    const c = rest.find((x) => x.id === pick.value) || rest[0];
+    // say exactly what the button will do: the whole remainder only when this card covers it
+    const take = Math.min(sheet.left, c.balance), short = sheet.left - take;
+    $('spend-confirm-q').textContent = short === 0
+      ? `${labels.get(last.cardId)} emptied. Take remaining ${formatCents(sheet.left)} from ${labels.get(c.id)} (${formatCents(c.balance)})?`
+      : `${labels.get(last.cardId)} emptied. Take ${formatCents(take)} from ${labels.get(c.id)} (${formatCents(c.balance)})? ${formatCents(short)} still to cover.`;
+    $('spend-take').textContent = `Take ${formatCents(take)}`;
+  };
+  pick.onchange = paint;
+  paint();
+  showStep('confirm');
+  $('spend-confirm-q').focus();
+}
+
+async function finish() {
+  $('spend-go').disabled = true; $('spend-take').disabled = true;
+  const ok = await sheet.onCommit({ retailerId: sheet.retailerId, amount: sheet.amount, date: sheet.date, draws: sheet.draws });
+  $('spend-take').disabled = false;
+  if (ok) { closeSpendSheet(); if (navigator.vibrate) navigator.vibrate(12); }
+  else { showStep('form'); update(); }
+}
+
+function onSubmit(e) {
+  e.preventDefault();
+  update();
+  if ($('spend-go').disabled) return;
+  const cards = liveCards(sheet.doc, sheet.retailerId);
+  const first = cards.find((c) => c.id === $('spend-card').value) || cards[0];
+  sheet.amount = parseAmount($('spend-amt').value);
+  sheet.date = $('spend-date').value || todayISO();
+  const take = Math.min(sheet.amount, first.balance);
+  sheet.draws = [{ cardId: first.id, amount: take }];
+  sheet.left = sheet.amount - take;
+  if (sheet.left === 0) finish(); else askNext();
+}
+
+function onTake() {
+  const cards = liveCards(sheet.doc, sheet.retailerId);
+  const c = cards.find((x) => x.id === $('spend-next').value);
+  if (!c) return;
+  const take = Math.min(sheet.left, c.balance);
+  sheet.draws.push({ cardId: c.id, amount: take });
+  sheet.left -= take;
+  if (sheet.left === 0) finish(); else askNext();
+}
+
+function closeSpendSheet() {
+  const d = $('spend-sheet');
+  if (d && d.open) d.close();
+}
+
+let wired = false;
+function wire() {
+  if (wired) return; wired = true;
+  $('spend-form').addEventListener('submit', onSubmit);
+  $('spend-amt').addEventListener('input', update);
+  $('spend-card').addEventListener('change', update);
+  $('spend-cancel').addEventListener('click', closeSpendSheet);
+  $('spend-take').addEventListener('click', onTake);
+  $('spend-back').addEventListener('click', () => { sheet.draws = []; showStep('form'); update(); $('spend-amt').focus(); });
+  // a click on the dimmed backdrop (outside the sheet box) dismisses, like a native sheet
+  $('spend-sheet').addEventListener('click', (e) => { if (e.target === $('spend-sheet')) closeSpendSheet(); });
+}
+
+// onCommit({ retailerId, amount, date, draws }) → Promise<boolean> (true = saved).
+function openSpendSheet(doc, retailerId, onCommit) {
+  wire();
+  const r = (doc.retailers || []).find((x) => x.id === retailerId);
+  if (!r) return;
+  Object.assign(sheet, { doc, retailerId, retailerName: r.name, labels: cardLabels(doc, retailerId), onCommit, draws: [], left: 0 });
+  const cards = liveCards(doc, retailerId);
+  const sel = $('spend-card');
+  sel.replaceChildren(...cards.map((c) => { const o = el('option', null, optionText(sheet.labels.get(c.id), c.balance)); o.value = c.id; return o; }));
+  sel.value = cards.length ? cards[0].id : '';
+  $('spend-using').hidden = cards.length < 2;
+  $('spend-retailer').textContent = r.name;
+  $('spend-amt').value = '';
+  $('spend-date').value = todayISO();
+  showStep('form');
+  update();
+  $('spend-sheet').showModal();
+  $('spend-amt').focus();
+}
+
+
+/* ---- src/ui/addcard.js ---- */
+// src/ui/addcard.js — Add Card (spec §8b) + Bulk Capture carousel (§8c, no OCR — W12).
+// One form with a quantity: a live preview card (+ ×N badge), a retailer typeahead on Brandfetch's
+// FREE Brand Search API (≥ 2 chars, ~250ms debounce, results cached per query in memory; stale
+// responses ignored), the stored brand DOMAIN (logos are always the CDN URL built from it), a
+// suggested category (remembered → industry if present → keyword map → Other), Favorite, and the
+// optional number/PIN/where/notes (number + PIN hidden when quantity > 1, with running totals).
+// Never the keyed Brand API. A bulk save routes straight into the capture carousel.
+
+
+
+
+
+
+
+
+const SEARCH_DEBOUNCE_MS = 250;
+const searchCache = new Map(); // query → rows (memory only; never stored)
+const add = { doc: null, brand: null, qty: 1, catTouched: false, results: [], active: -1, seq: 0, timer: null, onSave: null };
+
+function brandSearchUrl(query, clientId) {
+  return `https://api.brandfetch.io/v2/search/${encodeURIComponent(query)}?c=${encodeURIComponent(clientId)}`;
+}
+
+async function searchBrands(q) {
+  const key = q.trim().toLowerCase();
+  if (searchCache.has(key)) return searchCache.get(key);
+  const client = brandfetchClient();
+  if (!client) return [];
+  const res = await fetch(brandSearchUrl(key, client), { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new Error(`brand search ${res.status}`);
+  const rows = (await res.json() || [])
+    .filter((r) => r && r.domain && r.name)
+    .slice(0, 6)
+    .map((r) => ({ name: String(r.name), domain: String(r.domain).toLowerCase(), industry: r.industry || (Array.isArray(r.industries) && r.industries[0] && (r.industries[0].name || r.industries[0])) || '' }));
+  searchCache.set(key, rows);
+  return rows;
+}
+
+const parseMoney = (v) => { const s = String(v || '').trim(); if (!s) return null; try { const c = toCents(s); return c >= 0 ? c : null; } catch (_) { return null; } };
+
+function addValues() {
+  const name = $('add-retailer').value.trim();
+  return {
+    name, face: parseMoney($('add-face').value), paid: parseMoney($('add-paid').value), qty: add.qty,
+    category: $('add-category').value, favorite: $('add-fav').checked,
+    number: $('add-number').value, pin: $('add-pin').value, where: $('add-where').value, notes: $('add-notes').value,
+  };
+}
+
+function refreshCategory() {
+  if (add.catTouched) return;
+  const v = addValues();
+  const existing = findRetailer(add.doc, { name: v.name, brandDomain: add.brand && add.brand.domain });
+  let cat, src;
+  if (existing && existing.category) { cat = existing.category; src = 'existing'; }
+  else ({ category: cat, source: src } = suggestCategory(add.doc, { name: v.name, domain: add.brand && add.brand.domain, industry: add.brand && add.brand.industry }));
+  $('add-category').value = cat;
+  $('add-cat-hint').textContent = v.name && src !== 'default' ? '· suggested' : '';
+}
+
+function renderAdd() {
+  const v = addValues();
+  const okName = !!v.name, okFace = v.face !== null && v.face > 0, okPaid = v.paid !== null;
+  $('add-save').disabled = !(okName && okFace && okPaid);
+  // caption: Saving X% · or what is wrong
+  const cap = $('add-caption');
+  cap.classList.remove('is-error');
+  if ($('add-face').value.trim() && !okFace) { cap.textContent = 'Face value must be an amount like 50.00'; cap.classList.add('is-error'); }
+  else if ($('add-paid').value.trim() && !okPaid) { cap.textContent = 'You paid must be an amount like 42.50'; cap.classList.add('is-error'); }
+  else if (okFace && okPaid) cap.textContent = v.paid > v.face ? `You paid more than face value (${savingLabel(v.paid, v.face).replace('Saving ', 'saving ')})` : savingLabel(v.paid, v.face);
+  else cap.textContent = 'Required: retailer, face value and what you paid.';
+  // quantity: number + PIN only for a single card; totals for many
+  const many = add.qty > 1;
+  $('add-number-row').hidden = many; $('add-pin-row').hidden = many;
+  $('add-qty').textContent = String(add.qty);
+  $('add-qty-dec').disabled = add.qty <= 1; $('add-qty-inc').disabled = add.qty >= MAX_QTY;
+  const tot = $('add-totals');
+  tot.hidden = !many;
+  tot.textContent = many ? `Creating ${add.qty} cards · ${formatCents((okFace ? v.face : 0) * add.qty)} total face · ${formatCents((okPaid ? v.paid : 0) * add.qty)} total paid` : '';
+  // live preview card
+  const face = okFace ? v.face : 0, paid = okPaid ? v.paid : 0;
+  const known = findRetailer(add.doc, { name: v.name, brandDomain: add.brand && add.brand.domain });
+  const retailer = { id: 'preview', name: v.name || 'Retailer', brandDomain: add.brand ? add.brand.domain : known && known.brandDomain, brandColor: known && known.brandColor, favorite: v.favorite };
+  const preview = cardFace({ retailer, balance: face * add.qty, owed: paid * add.qty, saving: okFace && okPaid ? savingLabel(paid, face) : '', cardCount: add.qty, zero: false }, { tag: 'div' });
+  $('add-preview-card').replaceChildren(preview);
+  const badge = $('add-qty-badge');
+  badge.hidden = !many; badge.textContent = `×${add.qty}`;
+}
+
+function closeSuggest() {
+  $('add-suggest').hidden = true; $('add-suggest').replaceChildren();
+  $('add-retailer').setAttribute('aria-expanded', 'false');
+  $('add-retailer').removeAttribute('aria-activedescendant');
+  add.results = []; add.active = -1;
+}
+function showSuggest(rows) {
+  const list = $('add-suggest');
+  add.results = rows; add.active = -1;
+  if (!rows.length) { closeSuggest(); return; }
+  list.replaceChildren(...rows.map((r, i) => {
+    const li = el('li', 'suggest-row');
+    li.id = `add-opt-${i}`; li.setAttribute('role', 'option'); li.setAttribute('aria-selected', 'false');
+    const logo = el('span', 'gc-logo gc-logo-sm');
+    const url = logoUrl(r.domain, brandfetchClient());
+    if (url) { const img = new Image(); img.alt = ''; img.width = img.height = 32; img.referrerPolicy = 'strict-origin-when-cross-origin'; img.src = url; logo.append(img); }
+    const txt = el('span', 'suggest-txt');
+    txt.append(el('span', 'suggest-name', r.name), el('span', 'suggest-dom', r.domain));
+    li.append(logo, txt);
+    li.addEventListener('mousedown', (e) => e.preventDefault()); // keep focus in the input
+    li.addEventListener('click', () => pickBrand(i));
+    return li;
+  }));
+  list.hidden = false;
+  $('add-retailer').setAttribute('aria-expanded', 'true');
+}
+function setActive(i) {
+  const opts = $('add-suggest').querySelectorAll('[role=option]');
+  if (!opts.length) return;
+  add.active = (i + opts.length) % opts.length;
+  opts.forEach((o, j) => o.setAttribute('aria-selected', String(j === add.active)));
+  $('add-retailer').setAttribute('aria-activedescendant', opts[add.active].id);
+  opts[add.active].scrollIntoView({ block: 'nearest' });
+}
+function pickBrand(i) {
+  const r = add.results[i];
+  if (!r) return;
+  add.brand = r;
+  $('add-retailer').value = r.name;
+  closeSuggest();
+  refreshCategory(); renderAdd();
+  $('add-face').focus();
+}
+
+function onRetailerInput() {
+  add.brand = null; // typing again un-picks the brand (a free-typed name is fine: monogram logo)
+  refreshCategory(); renderAdd();
+  clearTimeout(add.timer);
+  const q = $('add-retailer').value.trim();
+  if (q.length < 2 || !brandfetchClient()) { closeSuggest(); return; }
+  const seq = ++add.seq;
+  add.timer = setTimeout(async () => {
+    try { const rows = await searchBrands(q); if (seq === add.seq) showSuggest(rows); }
+    catch (_) { if (seq === add.seq) closeSuggest(); } // search is a nicety: a free-typed retailer always works
+  }, SEARCH_DEBOUNCE_MS);
+}
+function onRetailerKey(e) {
+  const open = !$('add-suggest').hidden;
+  if (e.key === 'ArrowDown' && open) { e.preventDefault(); setActive(add.active + 1); }
+  else if (e.key === 'ArrowUp' && open) { e.preventDefault(); setActive(add.active - 1); }
+  else if (e.key === 'Enter' && open && add.active >= 0) { e.preventDefault(); pickBrand(add.active); }
+  else if (e.key === 'Escape' && open) { e.preventDefault(); e.stopPropagation(); closeSuggest(); }
+}
+
+async function onAddSubmit(e) {
+  e.preventDefault();
+  renderAdd();
+  if ($('add-save').disabled) return;
+  const v = addValues();
+  $('add-save').disabled = true;
+  const retailer = add.brand ? { name: v.name, brandDomain: add.brand.domain } : { name: v.name };
+  const ok = await add.onSave(retailer, { face: v.face, paid: v.paid, qty: v.qty, category: v.category, favorite: v.favorite,
+    ...(v.qty === 1 ? { number: v.number, pin: v.pin } : {}), where: v.where, notes: v.notes });
+  $('add-save').disabled = false;
+  if (ok) $('add-sheet').close();
+}
+
+let addWired = false;
+function wireAdd() {
+  if (addWired) return; addWired = true;
+  $('add-form').addEventListener('submit', onAddSubmit);
+  $('add-cancel').addEventListener('click', () => $('add-sheet').close());
+  $('add-retailer').addEventListener('input', onRetailerInput);
+  $('add-retailer').addEventListener('keydown', onRetailerKey);
+  $('add-retailer').addEventListener('blur', () => setTimeout(closeSuggest, 120));
+  for (const id of ['add-face', 'add-paid', 'add-fav', 'add-number', 'add-pin']) $(id).addEventListener('input', renderAdd);
+  $('add-category').addEventListener('change', () => { add.catTouched = true; $('add-cat-hint').textContent = ''; renderAdd(); });
+  $('add-qty-dec').addEventListener('click', () => { add.qty = Math.max(1, add.qty - 1); renderAdd(); });
+  $('add-qty-inc').addEventListener('click', () => { add.qty = Math.min(MAX_QTY, add.qty + 1); renderAdd(); });
+  $('add-sheet').addEventListener('click', (e) => { if (e.target === $('add-sheet')) $('add-sheet').close(); });
+}
+
+// onSave(retailer, fields) → Promise<boolean>.
+function openAddSheet(doc, onSave) {
+  wireAdd();
+  Object.assign(add, { doc, brand: null, qty: 1, catTouched: false, onSave });
+  $('add-form').reset();
+  const sel = $('add-category');
+  sel.replaceChildren(...(doc.categories || ['Other']).map((c) => { const o = el('option', null, c); o.value = c; return o; }));
+  closeSuggest();
+  refreshCategory(); renderAdd();
+  $('add-sheet').showModal();
+  $('add-retailer').focus();
+}
+function closeAddSheets() {
+  for (const id of ['add-sheet', 'capture-sheet']) { const d = $(id); if (d && d.open) d.close(); }
+}
+
+// ---- Bulk Capture carousel (§8c): Card N of M, number + PIN per card; Skip / Next / Skip all / Done ----
+const cap = { doc: null, retailerId: null, cardIds: [], i: 0, onSet: null, onDone: null, saved: 0 };
+
+function paintCapture() {
+  const n = cap.cardIds.length;
+  $('capture-progress').textContent = `Card ${cap.i + 1} of ${n}`;
+  $('capture-dots').replaceChildren(...cap.cardIds.map((_, j) => el('i', j < cap.i ? 'done' : j === cap.i ? 'on' : '')));
+  const r = cap.doc.retailers.find((x) => x.id === cap.retailerId);
+  const card = cap.doc.cards.find((c) => c.id === cap.cardIds[cap.i]);
+  $('capture-card').replaceChildren(cardFace({ retailer: r, balance: card.face, owed: card.paid, saving: `${formatCents(card.paid)} paid`, cardCount: 1, zero: false }, { tag: 'div' }));
+  $('capture-number').value = ''; $('capture-pin').value = '';
+  $('capture-next').textContent = cap.i === n - 1 ? 'Save & finish' : 'Next';
+  $('capture-number').focus();
+}
+async function advance(save) {
+  const num = $('capture-number').value.trim(), pin = $('capture-pin').value.trim();
+  if (save && (num || pin)) {
+    const ok = await cap.onSet(cap.cardIds[cap.i], { number: num, pin });
+    if (!ok) return;
+    cap.saved++;
+  }
+  if (cap.i >= cap.cardIds.length - 1) { finishCapture(); return; }
+  cap.i++; paintCapture();
+}
+function finishCapture() {
+  const d = $('capture-sheet');
+  if (d.open) d.close();
+  if (cap.onDone) { const f = cap.onDone; cap.onDone = null; f(cap.saved); }
+}
+
+let capWired = false;
+function openCapture(doc, retailerId, cardIds, { onSet, onDone }) {
+  if (!capWired) {
+    capWired = true;
+    $('capture-form').addEventListener('submit', (e) => { e.preventDefault(); advance(true); });
+    $('capture-skip').addEventListener('click', () => advance(false));
+    $('capture-skipall').addEventListener('click', finishCapture);
+    $('capture-done').addEventListener('click', async () => {
+      const num = $('capture-number').value.trim(), pin = $('capture-pin').value.trim();
+      if ((num || pin) && await cap.onSet(cap.cardIds[cap.i], { number: num, pin })) cap.saved++;
+      finishCapture();
+    });
+    $('capture-sheet').addEventListener('close', () => { if (cap.onDone) finishCapture(); });
+  }
+  Object.assign(cap, { doc, retailerId, cardIds, i: 0, onSet, onDone, saved: 0 });
+  paintCapture();
+  $('capture-sheet').showModal();
+  $('capture-number').focus();
+}
+function updateCaptureDoc(doc) { cap.doc = doc; }
+
+
 /* ---- src/ui/app.js ---- */
 // src/ui/app.js — boot + the three-tab shell (Cards · Reports · Settings). Browser only; e2e-tested.
 // Demo mode (?demo=1, or localhost without ?demo=0) paints the bundled #demo-fixture and never
@@ -1372,24 +3078,35 @@ async function persistDoc({ client, syncId, passphrase, doc, version, salt, reba
 
 
 
+
+
+
+
+
+
 const PAGE = 'cardsharp.html';
 const THEME_KEY = 'cardsharp:theme';
 const TABS = ['cards', 'reports', 'settings'];
-const state = { doc: null, version: null, tab: 'cards', demo: false };
+// state doubles as the commitChange context: { doc, version, salt, demo, client, syncId, passphrase }.
+// The live creds sit here only while unlocked (writes need them); lockDown drops them with the doc.
+const state = { doc: null, version: null, salt: null, tab: 'cards', demo: false, client: null, syncId: null, passphrase: null, detailId: null, stackScroll: 0 };
 
 function isDemo() {
   const p = new URLSearchParams(location.search);
-  if (p.get('demo') === '1') return true;
+  if (p.get('demo') === '1' || p.get('demo') === 'empty') return true;
   if (p.get('demo') === '0') return false; // explicit override: exercise the live path on localhost
   return ['localhost', '127.0.0.1', '::1'].includes(location.hostname);
 }
-function $(id) { return document.getElementById(id); }
 function reveal() {
   document.body.classList.remove('preboot');
   // enable UI transitions only after the first settled frame (see base.css body.ready)
   requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.add('ready')));
 }
-function loadDemoDoc() { const el = $('demo-fixture'); try { return el ? JSON.parse(el.textContent) : null; } catch (_) { return null; } }
+// ?demo=empty paints the empty v1 document (the "No cards yet" state); ?demo=1 the bundled fixture.
+function loadDemoDoc() {
+  if (new URLSearchParams(location.search).get('demo') === 'empty') return emptyDoc();
+  const el = $('demo-fixture'); try { return el ? JSON.parse(el.textContent) : null; } catch (_) { return null; }
+}
 
 // ---- theme: follows the OS unless pinned; the pin is a per-device convenience only ----
 function initTheme() {
@@ -1420,9 +3137,24 @@ function initOverflow() {
   menu.addEventListener('click', () => close());
 }
 
+// ---- chrome: scroll-edge fade + large-title wordmark collapse (Eye P1s, Arc 2 slice 1) ----
+function initChrome() {
+  const onScroll = () => document.body.classList.toggle('scrolled', window.scrollY > 4);
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+  if (typeof IntersectionObserver !== 'function') return;
+  const shown = new Set();
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) { if (e.isIntersecting) shown.add(e.target); else shown.delete(e.target); }
+    document.body.classList.toggle('title-shown', shown.size > 0);
+  }, { rootMargin: '-56px 0px 0px 0px' });
+  for (const t of document.querySelectorAll('.page-title')) io.observe(t);
+}
+
 // ---- tabs (WAI-ARIA tabs: roving tabindex, arrows/Home/End) ----
-function selectTab(name, focus) {
+function selectTab(name, focus, keepHash) {
   if (!TABS.includes(name)) return;
+  if (state.detailId) leaveDetail();
   state.tab = name;
   for (const t of TABS) {
     const on = t === name;
@@ -1431,8 +3163,9 @@ function selectTab(name, focus) {
     tab.tabIndex = on ? 0 : -1;
     panel.hidden = !on;
   }
+  $('add-btn').hidden = name !== 'cards' || !state.doc;
   if (focus) $(`tab-${name}`).focus();
-  try { history.replaceState(null, '', `#${name}`); } catch (_) { /* ok */ }
+  if (!keepHash) { try { history.replaceState(null, '', `#${name}`); } catch (_) { /* ok */ } }
   window.scrollTo(0, 0);
 }
 function initTabs() {
@@ -1443,8 +3176,116 @@ function initTabs() {
     if (next === undefined) return;
     e.preventDefault(); selectTab(TABS[next], true);
   });
-  const fromHash = location.hash.slice(1);
-  selectTab(TABS.includes(fromHash) ? fromHash : 'cards', false);
+  addEventListener('hashchange', route);
+  route();
+}
+
+// ---- routing: #cards | #reports | #settings | #card/<retailerId> (the detail, inside Cards) ----
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+// View Transitions "rise" (the tapped card becomes the hero) where supported; a plain swap otherwise.
+function transition(swap, named) {
+  const body = document.body;
+  // one transition at a time: a route change mid-flight just swaps (no overlapping/aborted transitions)
+  const can = typeof document.startViewTransition === 'function' && !reducedMotion() && body.classList.contains('ready') && !body.classList.contains('vt-running');
+  if (!can) { swap(); return; }
+  if (named) named.style.viewTransitionName = 'hero';
+  body.classList.add('vt-running');
+  const vt = document.startViewTransition(swap);
+  vt.ready.catch(() => { /* skipped — the swap still ran */ });
+  // Watchdog: WebKit can leave a transition unsettled, and its ::view-transition overlay then eats
+  // every tap. Anything still running after 1.2s (the animation is 380ms) is skipped.
+  const dog = setTimeout(() => { try { vt.skipTransition(); } catch (_) { /* ok */ } body.classList.remove('vt-running'); }, 1200);
+  vt.finished.catch(() => {}).finally(() => {
+    clearTimeout(dog);
+    body.classList.remove('vt-running');
+    for (const n of document.querySelectorAll('.gcard[style*="view-transition-name"]')) n.style.viewTransitionName = '';
+  });
+}
+function detailHandlers() { return { onLogSpend: openLogSpend, onFavorite: toggleFavorite }; }
+function showDetailView(id) {
+  const fromCard = document.querySelector(`#stack .gcard[data-retailer="${CSS.escape(id)}"]`);
+  const first = !state.detailId;
+  if (first) state.stackScroll = window.scrollY;
+  const swap = () => {
+    if (!paintDetail(state.doc, id, detailHandlers())) { leaveDetail(); paint(); location.replace('#cards'); return; }
+    state.detailId = id;
+    document.body.classList.add('in-detail');
+    $('detail').hidden = false; $('stack').hidden = true; $('cards-empty').hidden = true;
+    window.scrollTo(0, 0);
+    if (first) { const t = $('detail-title'); if (t) t.focus({ preventScroll: true }); }
+  };
+  transition(swap, first ? fromCard : null);
+}
+function leaveDetail() {
+  const id = state.detailId;
+  closeSpendSheet();
+  closeDetail();
+  state.detailId = null;
+  document.body.classList.remove('in-detail');
+  $('detail').hidden = true;
+  return id;
+}
+function route() {
+  const h = decodeURIComponent(location.hash.slice(1));
+  if (h.startsWith('card/')) {
+    if (state.tab !== 'cards') selectTab('cards', false, true);
+    if (state.doc) showDetailView(h.slice(5));
+    return;
+  }
+  const target = TABS.includes(h) ? h : 'cards';
+  if (!state.detailId) { selectTab(target, false); return; }
+  const id = state.detailId;
+  transition(() => {
+    leaveDetail();
+    selectTab(target, false);
+    paint();
+    if (target !== 'cards') return;
+    window.scrollTo(0, state.stackScroll || 0);
+    const card = document.querySelector(`#stack .gcard[data-retailer="${CSS.escape(id)}"]`);
+    if (card) { card.style.viewTransitionName = 'hero'; card.focus({ preventScroll: true }); }
+  }, null);
+}
+
+// ---- writes: every change goes through commitChange (demo: memory; live: sealed + persistDoc) ----
+async function apply(change) {
+  try { const res = await commitChange(state, change); paint(); return res; }
+  catch (e) {
+    toast(e && e.code === 'noRow' ? 'No Cardsharp document yet — run the first-row bootstrap first.'
+      : e && e.code === 'insufficientBalance' ? 'That’s more than these cards hold — nothing was logged.'
+      : e && e.name === 'ConflictError' ? 'Another device changed your cards at the same moment — reload and try again.'
+        : 'Couldn’t save — check your connection and try again.');
+    return null;
+  }
+}
+async function toggleFavorite(retailerId, favorite) {
+  const res = await apply((doc) => setFavoriteMut(doc, retailerId, favorite));
+  if (res) toast(favorite ? 'Added to Favorites' : 'Removed from Favorites');
+}
+// Add Card (+ in the top bar on Cards). Single → toast, back to the stack. Bulk → the capture
+// carousel; each Next that carries a number/PIN is its own sealed write.
+function openAdd() {
+  openAddSheet(state.doc, async (retailer, fields) => {
+    const res = await apply((doc, newId) => addCardsMut(doc, retailer, fields, { newId }));
+    if (!res) return false;
+    if (state.detailId) location.hash = 'cards';
+    const name = retailer.name, n = res.cardIds.length;
+    if (n === 1) { toast(`Added ${name} card`); return true; }
+    setTimeout(() => openCapture(state.doc, res.retailerId, res.cardIds, {
+      onSet: async (cardId, details) => { const ok = !!(await apply((doc) => setCardDetailsMut(doc, cardId, details))); updateCaptureDoc(state.doc); return ok; },
+      onDone: (withDetails) => toast(`Added ${n} ${name} cards${withDetails ? ` · ${withDetails} with details` : ''}`),
+    }), 0);
+    return true;
+  });
+}
+
+function openLogSpend(retailerId) {
+  openSpendSheet(state.doc, retailerId, async ({ amount, date, draws }) => {
+    const res = await apply((doc, newId) => logSpendMut(doc, retailerId, amount, date, draws, { newId }));
+    if (!res) return false;
+    const n = res.entries.length;
+    toast(n > 1 ? `Logged ${formatCents(amount)} across ${n} cards` : `Logged ${formatCents(amount)}`);
+    return true;
+  });
 }
 
 // ---- paint ----
@@ -1461,22 +3302,6 @@ function totals(doc) {
   return out;
 }
 
-function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
-
-// Interim Cards view: one row per retailer (name · balance · Saving X% · card count), A–Z.
-// Card numbers and PINs are never rendered here.
-function paintRetailers(doc) {
-  const list = $('cards-list');
-  list.replaceChildren();
-  const rows = [...(doc.retailers || [])].sort((a, b) => String(a.name).localeCompare(String(b.name)));
-  for (const r of rows) {
-    const bal = retailerBalance(doc, r.id), owed = retailerOwed(doc, r.id), n = cardsOf(doc, r.id).length;
-    const li = el('li');
-    li.append(el('span', 'r-name', r.name), el('span', 'r-bal', formatCents(bal)),
-      el('span', 'r-cards', `${n} ${n === 1 ? 'card' : 'cards'}`), el('span', 'r-save', savingLabel(owed, bal)));
-    list.append(li);
-  }
-}
 
 function showMessage(text) {
   const m = $('load-msg');
@@ -1488,12 +3313,14 @@ function paint() {
   const doc = state.doc;
   const cards = (doc && doc.cards) || [];
   const t = totals(doc);
-  if (doc) paintRetailers(doc);
+  if (doc) paintStack(doc, $('stack'));
   $('owed-total').textContent = formatCents(t.owed);
   $('total-balance').textContent = formatCents(t.balance);
   $('saved-total').textContent = formatCents(t.saved);
-  $('cards-empty').hidden = !doc || cards.length > 0;
-  $('cards-list').hidden = !doc || cards.length === 0;
+  $('cards-empty').hidden = !doc || cards.length > 0 || !!state.detailId;
+  $('stack').hidden = !doc || cards.length === 0 || !!state.detailId;
+  $('add-btn').hidden = !doc || state.tab !== 'cards';
+  if (doc && state.detailId && !paintDetail(doc, state.detailId, detailHandlers())) location.replace('#cards');
   $('card-count').textContent = `${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`;
 
   const s = (doc && doc.settings) || {};
@@ -1518,30 +3345,39 @@ function wireLock() {
   $('signout').addEventListener('click', () => { try { if (globalThis.PressVault) PressVault.lock(); } catch (_) { /* ok */ } });
 }
 function lockDown() {
-  state.doc = null; state.version = null;   // drop the decrypted document from memory
-  $('cards-list').replaceChildren();
+  // drop the decrypted document AND the creds from memory
+  state.doc = null; state.version = null; state.salt = null; state.client = null; state.syncId = null; state.passphrase = null;
+  closeSpendSheet();
+  closeAddSheets();
+  $('add-btn').hidden = true;
+  if (state.detailId) leaveDetail();
+  hideSecrets();
+  $('stack').replaceChildren();
   showMessage('');
   setSignedOutView(true);
 }
 
-// hydrate — after a successful unlock: load the sealed row, decrypt IN MEMORY, paint. The creds
-// live only in this call; nothing is persisted. No row yet ⇒ an empty v1 document (nothing is
-// written until the first real change — Arc 1 never writes).
+// hydrate — after a successful unlock: load the sealed row, decrypt IN MEMORY, paint. The creds stay
+// in memory (state) only while unlocked, because writes need them; nothing is persisted. No row ⇒ an
+// empty v1 document that refuses writes (commitChange → NoRowError) until the bootstrap creates it.
 async function hydrate(creds) {
   setSignedOutView(false);
   state.doc = null;
   paint();
   showMessage('Opening your cards…');
   try {
-    const row = await makeClient({}).load(creds.syncId);
-    if (!row) { state.doc = emptyDoc(); state.version = null; }
+    state.client = makeClient({});
+    const row = await state.client.load(creds.syncId);
+    if (!row) { state.doc = emptyDoc(); state.version = null; state.salt = null; }
     else {
       const doc = await openDoc(row.doc, creds.passphrase);
       if (!doc) { showMessage('Your Cardsharp data could not be opened with the stored key. Reconnect Cardsharp in the Private Wing.'); return; }
-      state.doc = doc; state.version = row.version;
+      state.doc = doc; state.version = row.version; state.salt = row.doc.salt;
     }
+    state.syncId = creds.syncId; state.passphrase = creds.passphrase;
     showMessage('');
     paint();
+    route();
   } catch (_) {
     showMessage('Could not reach your Cardsharp data. Check your connection, then reload.');
   }
@@ -1551,13 +3387,19 @@ function boot() {
   initTheme();
   $('theme-toggle').addEventListener('click', toggleTheme);
   initOverflow();
+  $('add-btn').addEventListener('click', () => { if (state.doc) openAdd(); });
+  initChrome();
   initTabs();
+  document.addEventListener('visibilitychange', () => { if (document.hidden) hideSecrets(); });
 
   if (isDemo()) {
     state.demo = true;
     state.doc = loadDemoDoc();
     $('demo-pill').hidden = false;
+    // demo only: a read-only snapshot for the e2e ledger invariants (never in live mode — no secrets)
+    window.cardsharpDemo = { doc: () => JSON.parse(JSON.stringify(state.doc)) };
     paint();
+    route();
     reveal();
     return;
   }
