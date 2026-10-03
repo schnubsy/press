@@ -158,6 +158,13 @@ entry; its tier in `spaces.json` (repo-owned; release scripts READ, never write)
 a **family** page, a `press_access_apps` row + ≥1 active `press_access_grants` row seeded
 BEFORE the gate ships (a gated page with no grant locks everyone out).
 
+**DB grants RULE (Data API grants — from 2026-10-30):** every migration that creates a table in `public` GRANTS in
+the same file — Supabase stops auto-granting Data API access to NEW `public` tables on that date (existing
+tables keep theirs). `grant select, insert, update, delete on public.<t> to authenticated, service_role;`
+always; `grant select on public.<t> to anon;` ONLY when the page is genuinely public (omit anon otherwise).
+RLS still decides which rows; the grant only opens the door. A service-role-only table (e.g. a deny-all
+`*_capture_*` or a views-only base table) grants `service_role` alone and says so in a comment.
+
 **What the marquee OWES a tenant:** the canonical gate modules in `press/src`; the shell; and
 the shared DB shapes (`press_<shape>`, every row keyed by a `page` column = filename stem):
 - `press_state` — simple checkboxes. Cols `page`, `item_id`, `checked` bool, `updated_at`;
