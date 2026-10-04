@@ -150,8 +150,12 @@ test('Cardsharp connects only after its press_cardsharp row decrypts; a wrong pa
   await t.locator('.tw-pass').fill(CS_PASS);
   await t.locator('.tw-verify').click();
   await expect(t.locator('.tw-tool-msg')).toContainText('Connected');
+  // cardsharp security audit (S1): sealed into the vault + this tab's memory; the persisted session holds a redacted stub
   kr = await page.evaluate(() => window.PressVault.loadSession().keyring.apps['cardsharp.html']);
-  expect(kr).toEqual({ sync_id: CS_SYNC, pass: CS_PASS });
+  expect(kr).toEqual({ sync_id: '', pass: '', redacted: true });
+  expect(await page.evaluate(() => window.PressVault.memCreds('cardsharp.html'))).toEqual({ sync_id: CS_SYNC, pass: CS_PASS });
+  expect(await page.evaluate(() => localStorage.getItem('press:vault:v1'))).not.toContain(CS_PASS);
+  await expect(t.locator('.tw-tool-msg')).toContainText('Connected');
   expect(state.csGets).toBeGreaterThanOrEqual(2);
 });
 

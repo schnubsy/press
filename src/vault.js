@@ -14,9 +14,15 @@
  *
  * Session rationale: today each personal app persists its own passphrase in
  * localStorage INDEFINITELY (e.g. `fsa:pass`). This module keeps the decrypted
- * keyring in ONE place — `press:vault:v1` — that EXPIRES (8h TTL) and is revocable,
- * which is strictly stronger than the status quo and is what lets "open any personal
+ * keyring in ONE place — `press:vault:v1` — that EXPIRES (7 days, fixed from unlock) and is
+ * revocable, which is strictly stronger than the status quo and is what lets "open any personal
  * app in a new tab" work without re-prompting.
+ *
+ * MEMORY_ONLY (cardsharp security audit 2026-10-04, S1): an app whose data is instantly spendable money
+ * (Cardsharp: gift-card numbers + PINs) never has its {sync_id, pass} in localStorage — the persisted
+ * session carries a REDACTED stub for it; the full keyring lives only in this tab's memory (`_mem`) after a
+ * passkey unlock in this tab. A Connect / add-device re-seal restores redacted entries from the decrypted
+ * vault row, so redaction never erases a credential from the vault. Cost: one passkey tap per Cardsharp tab.
  * ========================================================================== */
 (function (root) {
   'use strict';
@@ -50,6 +56,44 @@
   // reseal (updateKeyring) can re-seal the row WITHOUT another passkey tap. Never persisted; a
   // CryptoKey created with extractable:false cannot be read out even from here. Cleared on lock().
   var _live = null; // { key: CryptoKey, vaultId: string }
+
+  // MEMORY_ONLY apps (see the header): redacted in the persisted session, full only in this tab's `_mem`.
+  var MEMORY_ONLY = ['cardsharp.html'];
+  var _mem = null; // this tab's FULL keyring (after a passkey unlock here); never persisted; cleared by lock()
+  function cloneKeyring(k) { return JSON.parse(JSON.stringify(k || {})); }
+  function redact(k0) {
+    var k = cloneKeyring(k0);
+    if (k.apps) MEMORY_ONLY.forEach(function (p) {
+      var v = k.apps[p];
+      if (v && (v.sync_id || v.pass)) k.apps[p] = { sync_id: '', pass: '', redacted: true };
+    });
+    return k;
+  }
+  function needsRedact(k) {
+    return !!(k && k.apps && MEMORY_ONLY.some(function (p) { var v = k.apps[p]; return v && !v.redacted && (v.sync_id || v.pass); }));
+  }
+  // A keyring about to be re-sealed: every redacted stub gets its real entry back from `full` (the decrypted row);
+  // a stub the caller has since filled (Connect assigns new creds onto it) just loses its flag.
+  function restoreRedacted(k0, full) {
+    var k = cloneKeyring(k0);
+    if (k.apps) MEMORY_ONLY.forEach(function (p) {
+      var v = k.apps[p];
+      if (v && v.redacted && !v.sync_id && !v.pass) {
+        var f = full && full.apps && full.apps[p];
+        if (f && !f.redacted) k.apps[p] = f; else delete k.apps[p];
+      } else if (v && v.redacted) delete v.redacted;
+    });
+    return k;
+  }
+  // this tab's credentials for a MEMORY_ONLY page — only while the persisted session still exists (a lock or
+  // expiry anywhere drops them here too)
+  function memCreds(page) {
+    if (!loadSession()) { _mem = null; return null; }
+    var v = _mem && _mem.apps && _mem.apps[page];
+    return (v && !v.redacted && v.sync_id) ? v : null;
+  }
+  // the fullest keyring this tab can see: `_mem` after an unlock here, else the (redacted) session's
+  function fullKeyring() { var sess = loadSession(); if (!sess) { _mem = null; return null; } return _mem || sess.keyring; }
 
   // --- byte helpers (Node + browser) -----------------------------------------
   function asBytes(x) {
@@ -157,13 +201,14 @@
     };
   };
 
-  // --- session (localStorage, 8h TTL) ----------------------------------------
+  // --- session (localStorage, 7-day TTL; MEMORY_ONLY entries redacted) ------------------
   function store() { return (typeof globalThis.localStorage !== 'undefined') ? globalThis.localStorage : null; }
 
   function saveSession(keyring, vaultId) {
     var s = store(); if (!s) return null;
     var now = Date.now();
-    var sess = { keyring: keyring, unlockedAt: now, expiresAt: now + TTL_MS, vaultId: vaultId };
+    _mem = cloneKeyring(keyring);
+    var sess = { keyring: redact(keyring), unlockedAt: now, expiresAt: now + TTL_MS, vaultId: vaultId };
     try {
       s.setItem(SESSION_KEY, JSON.stringify(sess));
       s.setItem(ENROLLED_FLAG, '1');
@@ -178,11 +223,15 @@
         if (sess) s.removeItem(SESSION_KEY); // drop an expired session
         return null;
       }
+      if (needsRedact(sess.keyring)) { // a session written before redaction (or by an older page): scrub it in place
+        sess.keyring = redact(sess.keyring);
+        try { s.setItem(SESSION_KEY, JSON.stringify(sess)); } catch (e) {}
+      }
       return sess;
     } catch (e) { return null; }
   }
   function lock() {
-    _live = null; // drop the cached key so a locked space cannot reseal
+    _live = null; _mem = null; // drop the cached key (a locked space cannot reseal) and this tab's full keyring
     var s = store(); if (!s) return;
     try { s.removeItem(SESSION_KEY); } catch (e) {}
     // Nudge other open tabs to drop the session too. A same-tab write to localStorage
@@ -391,6 +440,9 @@
       key = await deriveKey(prf, ub64(record.salt));
       _live = { key: key, vaultId: vaultId };
     }
+    var current = await openKeyring(record, key);
+    if (!current) throw new Error('Could not open the personal space with this passkey.');
+    newKeyring = restoreRedacted(newKeyring, current); // never seal a redacted stub over a real credential
     var sealed = await sealKeyring(newKeyring, key); sealed.salt = record.salt; // reuse the row's salt
     var ok = await putRow(vaultId, sealed, record.label || null);
     if (!ok) throw new Error('Could not save to the vault.');
@@ -404,7 +456,8 @@
     opts = opts || {};
     var sess = loadSession();
     if (!sess || !sess.keyring) throw new Error('Unlock the personal space before adding a device.');
-    return enrol({ label: opts.label || 'added-device', keyring: sess.keyring });
+    var full = _mem || (await unlock()).keyring; // the session copy is redacted — carry the real entries
+    return enrol({ label: opts.label || 'added-device', keyring: restoreRedacted(sess.keyring, full) });
   }
 
   async function revoke(vaultId) {
@@ -427,6 +480,8 @@
     prfResult: prfResult,
     // session
     saveSession: saveSession, loadSession: loadSession, lock: lock, everEnrolled: everEnrolled,
+    // MEMORY_ONLY redaction (cardsharp S1)
+    MEMORY_ONLY: MEMORY_ONLY, memCreds: memCreds, fullKeyring: fullKeyring, redact: redact, restoreRedacted: restoreRedacted,
     // webauthn + rest
     enrol: enrol, unlock: unlock, addPasskey: addPasskey, revoke: revoke, fetchRow: fetchRow,
     updateKeyring: updateKeyring,
