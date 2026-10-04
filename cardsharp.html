@@ -12,8 +12,8 @@
   <title>Cardsharp</title>
   <meta name="page-title" content="Cardsharp">
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxMjEzMkEiLz48cmVjdCB4PSI5IiB5PSIxNyIgd2lkdGg9IjQ2IiBoZWlnaHQ9IjMwIiByeD0iNSIgZmlsbD0iIzJFQzVFOCIvPjxyZWN0IHg9IjkiIHk9IjI0IiB3aWR0aD0iNDYiIGhlaWdodD0iNiIgZmlsbD0iIzEyMTMyQSIvPjxyZWN0IHg9IjE1IiB5PSIzNiIgd2lkdGg9IjEyIiBoZWlnaHQ9IjUiIHJ4PSIxLjUiIGZpbGw9IiNGNEY2RkIiLz48L3N2Zz4=">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-hLZ6QmuM+32vH1KE5s3BsN2B2YHbse6J8AxKHfRiymU='; style-src 'unsafe-inline'; img-src data: https://cdn.brandfetch.io; connect-src https://eepjhpyziczrxvirczio.supabase.co https://api.brandfetch.io; base-uri 'none'; form-action 'none'; object-src 'none'">
-  <meta name="build" content="src-56ad42b071a8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-3VJpfyS/zLJJZwxOQxJTAS3mXsOMYmFQWR4+63fuuFU='; style-src 'unsafe-inline'; img-src data: https://cdn.brandfetch.io; connect-src https://eepjhpyziczrxvirczio.supabase.co https://api.brandfetch.io; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="build" content="src-fc44e2ee86e9">
   <meta name="brandfetch-client" content="1idiEFKfEWGXeRo3uBi">
   <link rel="preconnect" href="https://cdn.brandfetch.io" crossorigin>
   <style>
@@ -1655,6 +1655,12 @@ const SYNC_ID_RE=/^[0-9a-f]{32}$/;
 class ConflictError extends Error{
 constructor(msg){super(msg||'version conflict');this.name='ConflictError';}
 }
+class InsertClosedError extends Error{
+constructor(status){
+super(`first-row insert refused (${status}): press_cardsharp no longer accepts inserts — the row already exists and bootstrap is closed; connect with the existing sync id instead`);
+this.name='InsertClosedError';this.code='insertClosed';this.status=status;
+}
+}
 function makeClient(opts={}){
 const rest=opts.rest||CARDSHARP_REST;
 const key=opts.key||CARDSHARP_PUBLISHABLE;
@@ -1684,6 +1690,7 @@ const now=new Date().toISOString();
 if(currentVersion==null){
 const res=await fetchImpl(table,{method:'POST',headers:h,body:JSON.stringify({sync_id:syncId,doc:envelope,version:0,updated_at:now})});
 if(res.status===409)throw new ConflictError('a row already exists for this sync id');
+if(res.status===401||res.status===403)throw new InsertClosedError(res.status);
 if(!res.ok)throw new Error(`insert failed: ${res.status}`);
 const rows=await res.json();
 if(!Array.isArray(rows)||rows.length===0)throw new Error('insert returned no row (RLS?)');
