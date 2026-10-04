@@ -578,14 +578,83 @@
   // --- the gate singleton ------------------------------------------------------
   var current = null; // { page, onUnlock, onLock, el, wired }
 
-  // A MEMORY_ONLY page (cardsharp) is released only from this tab's in-memory keyring (one passkey tap per tab);
-  // every other page from the persisted session, as before. A redacted stub is never a credential.
+  // A MEMORY_ONLY page (cardsharp) is released from this tab's memory: the keyring of a passkey unlock here, or
+  // what this tab unsealed (below). Every other page from the persisted session, as before. A redacted stub is never
+  // a credential. Both memory copies live only while a session exists (a lock or expiry anywhere drops them).
   function credsFor(page) {
     var m = V.memCreds ? V.memCreds(page) : null;
     if (m && m.sync_id && m.pass) return { syncId: m.sync_id, passphrase: m.pass };
+    if (_un && _un.page === page) { if (V.loadSession()) return _un.creds; _un = null; }
     var sess = V.loadSession();
     var v = sess && sess.keyring && sess.keyring.apps && sess.keyring.apps[page];
     return (v && !v.redacted && v.sync_id && v.pass) ? { syncId: v.sync_id, passphrase: v.pass } : null;
+  }
+
+  // --- SEALED 7-day unlock, MEMORY_ONLY pages (cardsharp Arc 7 slice 6) ---
+  // After a passkey unlock the page's {sync_id, pass} are AES-GCM sealed under a fresh NON-EXTRACTABLE key kept in
+  // IndexedDB (`press:vault:seal`); the ciphertext rides INSIDE the session (`press:vault:v1`.seal), AAD-bound to its
+  // unlockedAt/expiresAt/vaultId, so any lock (the wing's only removes the session), expiry or new session kills it
+  // atomically; an orphaned key is deleted when a gate next sees it. Reloads unseal, no prompt. No IndexedDB → memory only.
+  var SEAL_DB = 'press:vault:seal', _un = null, _sealing = 0, _timer = null;
+  function sealable(page) { try { return V.MEMORY_ONLY.indexOf(page) >= 0 && !!root.indexedDB; } catch (e) { return false; } }
+  function idb(mode, fn) {
+    return new Promise(function (ok, no) {
+      var o = root.indexedDB.open(SEAL_DB, 1);
+      o.onupgradeneeded = function () { o.result.createObjectStore('keys'); };
+      o.onerror = o.onblocked = function () { no(o.error); };
+      o.onsuccess = function () {
+        var db = o.result, t = db.transaction('keys', mode), r = fn(t.objectStore('keys'));
+        t.oncomplete = function () { db.close(); ok(r.result); };
+        t.onerror = t.onabort = function () { db.close(); no(t.error); };
+      };
+    });
+  }
+  function aad(page, s) { return new TextEncoder().encode(JSON.stringify([page, s.unlockedAt, s.expiresAt, s.vaultId || ''])); }
+  function sealOf(page) { var s = V.loadSession(), x = s && s.seal && s.seal[page]; return (x && x.at === s.unlockedAt && x.exp === s.expiresAt) ? x : null; }
+  function dropKey(page) { if (sealable(page)) idb('readwrite', function (st) { return st.delete(page); }).catch(function () {}); }
+  async function seal(page, creds) {
+    var s = V.loadSession(), c = crypto.subtle;
+    var key = await c.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    var iv = V.randomBytes(12);
+    var ct = await c.encrypt({ name: 'AES-GCM', iv: iv, additionalData: aad(page, s) }, key,
+      new TextEncoder().encode(JSON.stringify([creds.syncId, creds.passphrase])));
+    await idb('readwrite', function (st) { return st.put({ key: key, at: s.unlockedAt }, page); });
+    var cur = V.loadSession();
+    if (!cur) return dropKey(page); // locked meanwhile: no key left behind
+    if (cur.unlockedAt !== s.unlockedAt) return true; // a new session meanwhile → seal again
+    cur.seal = cur.seal || {};
+    cur.seal[page] = { ct: V.b64(ct), iv: V.b64(iv), at: cur.unlockedAt, exp: cur.expiresAt };
+    localStorage.setItem(V.SESSION_KEY, JSON.stringify(cur));
+  }
+  function maybeSeal(page, creds) {
+    if (!sealable(page) || _sealing || sealOf(page)) return;
+    _sealing = 1;
+    seal(page, creds).catch(function () {}).then(function (again) { _sealing = 0; if (again) maybeSeal(page, creds); });
+  }
+  async function unseal(page) {
+    try {
+      var s = V.loadSession(), x = sealOf(page);
+      var rec = await idb('readonly', function (st) { return st.get(page); });
+      if (!rec || rec.at !== x.at) return null;
+      var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: V.ub64(x.iv), additionalData: aad(page, s) }, rec.key, V.ub64(x.ct));
+      var a = JSON.parse(new TextDecoder().decode(pt));
+      return (a[0] && a[1]) ? { syncId: a[0], passphrase: a[1] } : null;
+    } catch (e) { return null; } // wrong/missing key, tampered or rebound blob — fail closed (the gate shows)
+  }
+  // re-check this page against the session: still unlocked → (re)seal + re-arm the expiry timer; else lock it
+  function check() {
+    if (!current) return;
+    var page = current.page, creds = credsFor(page);
+    clearTimeout(_timer);
+    if (creds) { // other tenants: unchanged (no seal, no timer)
+      var s = V.MEMORY_ONLY.indexOf(page) >= 0 && V.loadSession();
+      if (s) { maybeSeal(page, creds); _timer = setTimeout(check, Math.max(0, s.expiresAt - Date.now()) + 50); }
+      return;
+    }
+    if (!sealOf(page)) dropKey(page);
+    if (document.getElementById('press-gate')) return; // gate already up
+    try { if (current.onLock) current.onLock(); } catch (e) {}
+    render();
   }
 
   function removeGate() {
@@ -615,7 +684,7 @@
       btn.disabled = true; msg.className = 'pg-msg'; msg.textContent = 'Waiting for your passkey…';
       V.unlock().then(function () {
         var creds = credsFor(current.page);
-        if (creds) { removeGate(); current.onUnlock(creds); return; }
+        if (creds) { removeGate(); current.onUnlock(creds); check(); return; }
         // The passkey OPENED the vault, but this tool has no stored credentials yet — a DISTINCT
         // state from a failed unlock (the space DID open). Point at the wing's Connect step; never
         // conflate this with "could not open the personal space".
@@ -639,11 +708,7 @@
     current.wired = true;
     root.addEventListener('storage', function (ev) {
       if (ev && ev.key && ev.key !== V.SESSION_KEY) return; // ignore unrelated keys
-      if (!current) return;
-      if (credsFor(current.page)) return;                   // still unlocked — nothing to do
-      if (document.getElementById('press-gate')) return;    // gate already up
-      try { if (current.onLock) current.onLock(); } catch (e) {}
-      render();
+      check(); // still unlocked → reseal if needed; else the gate
     });
   }
 
@@ -656,8 +721,17 @@
     opts = opts || {};
     current = { page: opts.page, onUnlock: opts.onUnlock || function () {}, onLock: opts.onLock || null, wired: false };
     wireLockWatch();
-    var creds = credsFor(current.page);
-    if (creds) { current.onUnlock(creds); return { gated: false }; }
+    var me = current, page = me.page, creds = credsFor(page);
+    if (creds) { me.onUnlock(creds); check(); return { gated: false }; }
+    if (sealable(page) && sealOf(page)) { // a sealed unlock: no prompt, no gate flash
+      unseal(page).then(function (c) {
+        if (current !== me) return;
+        if (c && V.loadSession()) { _un = { page: page, creds: c }; me.onUnlock(c); check(); }
+        else if (!document.getElementById('press-gate')) render(); // unseal failed → the gate, as before
+      });
+      return { gated: false, pending: true };
+    }
+    dropKey(page);
     render();
     return { gated: true };
   }
@@ -665,7 +739,7 @@
   root.PressGate = {
     guard: guard,
     // exposed for tests / callers
-    credsFor: credsFor, friendlyErr: friendlyErr, MARQUEE: MARQUEE,
+    credsFor: credsFor, friendlyErr: friendlyErr, MARQUEE: MARQUEE, SEAL_DB: SEAL_DB, seal: seal, unseal: unseal,
     render: render, removeGate: removeGate
   };
 })(globalThis);

@@ -1,0 +1,57 @@
+cardsharp Arc 7 slice 6 — SEALED 7-day unlock for MEMORY_ONLY pages (press side)            2026-10-04
+branch arc/cardsharp-seal (press worktree /Users/mark/Documents/code/press-wt-seal) — NOT pushed, NOT merged
+
+WHY
+  Arc 6 (S1) made cardsharp.html MEMORY_ONLY: its {sync_id, pass} live only in the tab's `_mem`, so EVERY page
+  load (reload, wing-and-back, a new tab, Safari reloading a backgrounded tab, home-screen relaunch) asked for the
+  passkey again. Mark's decision (2026-10-04): one unlock lasts the fixed 7-day session, SEALED — never plaintext.
+
+DESIGN (src/gate.js gate region only — src/vault.js, index.html and the inlined vault region are untouched;
+        `node tools/inline-vault.mjs --check` in sync)
+  - After a passkey unlock that yields creds for a MEMORY_ONLY page (and whenever a tab holding them sees a
+    session without a matching seal), the gate generates a fresh NON-EXTRACTABLE AES-GCM-256 CryptoKey
+    (crypto.subtle.generateKey, extractable:false) and stores the CryptoKey OBJECT in IndexedDB
+    db `press:vault:seal`, store `keys`, key = page → { key, at: unlockedAt }.
+  - The creds are AES-GCM encrypted (fresh 12-byte IV) with AAD = [page, unlockedAt, expiresAt, vaultId] and the
+    ciphertext is stored INSIDE the vault session: press:vault:v1 .seal[page] = { ct, iv, at, exp }.
+    Why inside the session (not a separate localStorage key): the wing's "Lock now" (PressVault.lock in index.html)
+    only removes press:vault:v1 — so Lock now from the wing, another tab or the app, expiry (loadSession drops the
+    expired session) and any new session (saveSession rewrites the object) delete/invalidate the ciphertext
+    ATOMICALLY with no change to vault.js / index.html. The IDB key alone is useless; it is deleted whenever a
+    gate next checks (storage watcher, expiry timer, boot with no matching seal).
+  - guard(): credsFor() null but a seal whose at/exp match the live session → async unseal (IDB key + AAD check)
+    → this tab's memory (`_un`) → onUnlock(creds) with no prompt. The gate is NOT rendered during the async
+    window; it renders only if unseal fails (fail closed: wrong/missing key, tampered blob, stretched expiry).
+  - check(): the storage watcher now (re)seals a still-unlocked MEMORY_ONLY tab and arms an expiry timer at
+    expiresAt, so 7 days + 1 min re-gates an OPEN tab too; otherwise it locks exactly as before.
+  - Other tenants unchanged: no seal, no IDB, no timer (MEMORY_ONLY list only). No IndexedDB (private mode,
+    blocked storage) → memory only, exactly as Arc 6.
+
+TESTS
+  node: test/gate-seal.test.mjs (9) — seal shape + same 7-day expiry + non-extractable key (exportKey rejects) +
+        no plaintext; unseal on a fresh page; new session invalidates; tampered expiry (AAD) / swapped key fail
+        closed; lock + expiry; guard async no-gate unlock then lock; stale key removed; no-IDB fallback; fsa.html
+        unchanged.  npm test: 91 pass / 0 fail (was 82).
+  Playwright: test/sealed-unlock.spec.mjs (9; Chromium + 1 WebKit) — one unlock → reload, the REAL wing and back,
+        a 2nd tab, tab switches, 10 min idle (page.clock): passkey assertions counted = 1; 7d+1min → gate in-tab
+        and on reload, seal + key gone; wing "Lock now" (real #lockBtn) → every app tab re-gates, key deleted;
+        app lock → every tab; new wing unlock invalidates the old seal and an open tab reseals onto a wing re-save
+        (3 prompts total: never on reload); localStorage+IDB dump has no plaintext sync id / pass, key
+        {type:secret, extractable:false, AES-GCM, exportable:false}; fsa.html writes no seal; no IndexedDB → a
+        reload asks again; WebKit: IDB-held key survives a reload, unseals, lock deletes it.
+        npx playwright test: 68 passed (was 59). --repeat-each=4 on the new spec: 36/36.
+  tenants-check: 46 pass / 5 fail — all 5 are T3 vendored-gate DRIFT, expected until each tenant re-vendors:
+        cardsharp (re-vendored on its arc/pocket-feel slice-6 commit, lands at merge), fsa, giving, card-scout
+        (re-vendor at the close, before publish), retirement (already drifted on main before this change).
+
+HASHES
+  src/gate.js  git hash-object 07d88508ccebd9be097425d8e49999e3944df02e   (main: afe0371fc9c337270cfc002bf78271ab21d1975f)
+               sha256 f9d392a50bb03c0ae34b5d0f3ae184b4ee737fb8ecf7a59e3d1bbda88324ac96   39743 bytes (+4681)
+
+RESIDUAL RISKS
+  - Same-origin script (XSS on schnubsy.github.io) can still unseal while a session is live — non-extractable
+    only stops the key being exported/copied off the device; it is the documented trade for "no re-prompt".
+  - After a wing "Lock now" with NO cardsharp tab open, the IDB key lingers (ciphertext already gone with the
+    session, so it decrypts nothing) until the next cardsharp load deletes it.
+  - A wing re-save/re-unlock while no cardsharp tab is open drops the seal → one more passkey tap next time.
+  - Virtual authenticator = happy path only; Mark's real-device (1Password / iOS Safari) check stays manual.
