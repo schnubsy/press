@@ -329,7 +329,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v4.11.0</span>
+    <span class="nav-badge">v4.11.1</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -1159,7 +1159,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
             <p>Either press lane may be <b class="ink">DB-backed</b>: a published page can persist live, shared state to a dedicated database that exists purely as the backing store for press pages, shared with no other project. This <b class="ink">supersedes the earlier "press pages are static" framing</b> — they have carried state since the first checklist page shipped. It runs on a free tier, which means <b class="ink">no managed backups</b>; periodic dumps are the only mitigation, and the standing rule to move to a paid tier before any real client data still stands.</p>
             <p><b class="ink">Access is header-gated and allow-listed by tier — and a page's tier is decided before it is built.</b> Public pages sit on an explicit allow-list; private-wing rows sit behind a capability header; family-wing rows behind per-page grants — so a URL holder can never read another page's private rows, and nothing is bolted on afterwards. The <b class="ink">tenant&harr;marquee contract</b> — what a tenant owes, what the marquee owes, and the release-script rules — lives once in the press repo's spec, and the audit's <b class="ink">Marquee-tenants</b> check enforces it.</p>
             <p><b class="ink">Schema convention — <code>press_&lt;shape&gt;</code>, page-keyed.</b> Tables are shared across pages and named for their <i>shape</i>, with every row keyed by a <code>page</code> column whose value is the filename stem — never a table per page, never one universal mega-schema. Reuse an existing shape; mint a new one only when nothing fits. Two are registered: <code>press_state</code> for simple checkboxes, and <code>press_tasks</code> for rich task rows, which carries an <code>extras</code> JSON column so page-specific fields cause no schema churn. Wiring is a REST call plus a <code>localStorage</code> mirror and a small sync-status pill — the cloud is the source of truth, the mirror gives instant paint and offline tolerance.</p>
-            <p><b class="ink">Claude Code owns the database work end to end.</b> Schema changes and function deploys run from <b class="ink">Claude Code</b> through its writable database connector, inside the work order — you confirm the connector's own pop-up, and Cowork verifies afterwards. Data movement and field-for-field verification belong there too: Code has real network egress and can run a scripted copy-and-verify, whereas a chat executes one query at a time and cannot stream rows between projects. Hand-building bulk inserts from a chat risks corrupting the very data being preserved — one such run caught a multi-byte character corruption that only a scripted verify would have surfaced.</p>
+            <p><b class="ink">Both surfaces are full database operators.</b> Schema changes, SQL and function deploys run directly through the writable database connector from <b class="ink">either Claude Code or Cowork</b> — Code inside its work order with no stop, Cowork directly when it is driving. One temporary exception: SQL that trips the database's destructive-change confirmation (drop, delete, truncate) is auto-cancelled in Cowork by a known client bug, so only that step goes to Claude Code, where you confirm the pop-up; the exception retires when the bug is fixed. Secrets stay with you or Cowork. Bulk data movement and field-for-field verification belong there too: Code has real network egress and can run a scripted copy-and-verify, whereas a chat executes one query at a time and cannot stream rows between projects. Hand-building bulk inserts from a chat risks corrupting the very data being preserved — one such run caught a multi-byte character corruption that only a scripted verify would have surfaced.</p>
           </div>
         </details>
       </div>
@@ -1638,7 +1638,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <footer>
   <div class="footer-in">
     <div>The Council · a private prospectus · generated from PERSONAS.md + skills</div>
-    <div class="mono">council v4.11.0 · last updated 2026-10-03</div>
+    <div class="mono">council v4.11.1 · last updated 2026-10-03</div>
   </div>
 </footer>
 
