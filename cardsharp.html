@@ -12,7 +12,7 @@
   <title>Cardsharp</title>
   <meta name="page-title" content="Cardsharp">
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxMjEzMkEiLz48cmVjdCB4PSI5IiB5PSIxNyIgd2lkdGg9IjQ2IiBoZWlnaHQ9IjMwIiByeD0iNSIgZmlsbD0iIzJFQzVFOCIvPjxyZWN0IHg9IjkiIHk9IjI0IiB3aWR0aD0iNDYiIGhlaWdodD0iNiIgZmlsbD0iIzEyMTMyQSIvPjxyZWN0IHg9IjE1IiB5PSIzNiIgd2lkdGg9IjEyIiBoZWlnaHQ9IjUiIHJ4PSIxLjUiIGZpbGw9IiNGNEY2RkIiLz48L3N2Zz4=">
-  <meta name="build" content="src-decc9f336899">
+  <meta name="build" content="src-98e54bd01eef">
   <meta name="brandfetch-client" content="1idiEFKfEWGXeRo3uBi">
   <style>
 /* styles/tokens.css */
@@ -188,9 +188,9 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   content: ''; position: absolute; inset: 0 0 -8px; z-index: -1; pointer-events: none;
   /* Eye P1 (Arc 2): the scrolled bar let rows ("Notes", section headers) show through and collide with
      "Private Wing" — now a near-opaque strong glass that only fades in its last few pixels */
-  background: linear-gradient(to bottom, var(--bar-solid) 0%, var(--bar-solid) 84%, transparent 100%);
+  background: linear-gradient(to bottom, var(--bar-solid) calc(100% - 8px), transparent);
   -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
-  -webkit-mask-image: linear-gradient(to bottom, #000 84%, transparent); mask-image: linear-gradient(to bottom, #000 84%, transparent);
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 8px), transparent); mask-image: linear-gradient(#000 calc(100% - 8px), transparent); /* solid to the bar edge: no seam */
   opacity: 0;
 }
 body.scrolled #topbar::before { opacity: 1; }
@@ -522,8 +522,8 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
 .toast {
   position: fixed; z-index: 60; left: 50%; bottom: calc(env(safe-area-inset-bottom) + var(--tabbar-h) + 28px);
   transform: translate(-50%, 12px); opacity: 0; pointer-events: none;
-  max-width: calc(100% - 2 * var(--gutter)); padding: 10px 18px; border-radius: var(--r-pill);
-  background: var(--glass-strong); border: 0.5px solid var(--glass-edge); box-shadow: var(--shadow);
+  width: max-content; max-width: calc(100% - 2 * var(--gutter)); padding: 10px 18px; border-radius: var(--r-pill);
+  background: var(--sheet-bg); /* solid: a translucent pill let card text read through it (Eye P0, Arc 4) */ border: 0.5px solid var(--glass-edge); box-shadow: var(--shadow);
   -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); font-weight: 600; font-size: 15px;
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
@@ -555,11 +555,11 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
 .ra-scroll { max-height: min(560px, calc(100dvh - 230px - env(safe-area-inset-bottom))); /* Eye P0: ends above the tab bar */ overflow-y: auto; overscroll-behavior: contain; border-radius: var(--r-md); background: var(--sheet-bg); }
 .ra-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .ra-head { position: sticky; top: 0; z-index: 2; background: var(--sheet-bg); border-bottom: 1px solid var(--glass-edge); }
-.ra-row { display: grid; grid-template-columns: 104px minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.ra-row { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: center; gap: 10px; }
 .ra-hrow { padding: 10px 16px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
 .ra-body .ra-row { padding: 10px 16px; cursor: pointer; }
 .ra-body .ra-row + .ra-row { border-top: 1px solid var(--glass-edge); }
-.ra-row.swipe > .swipe-face { display: grid; grid-template-columns: 104px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px 16px; background: var(--sheet-bg); }
+.ra-row.swipe > .swipe-face { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px 16px; background: var(--sheet-bg); }
 .ra-body .ra-date { color: var(--ink-2); font-size: 14px; font-variant-numeric: tabular-nums; }
 .ra-brand-in { display: grid; min-width: 0; }
 .ra-link { color: var(--ink); font-weight: 600; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -589,7 +589,7 @@ dialog.sheet-tall { top: max(env(safe-area-inset-top), 24px); height: calc(100dv
    Account — Sign out as a full-width row button (live mode only). */
 .row-control { align-items: center; padding-top: 9px; padding-bottom: 9px; }
 .segmented { display: inline-grid; grid-auto-flow: column; gap: 2px; padding: 2px; border-radius: 10px; background: var(--glass); border: 0.5px solid var(--glass-edge); }
-.segmented label { position: relative; display: grid; place-items: center; min-width: 76px; min-height: 32px; border-radius: 8px; font-size: 15px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+.segmented label { position: relative; display: grid; place-items: center; min-width: 66px; min-height: 32px; border-radius: 8px; font-size: 15px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
 .segmented input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
 .segmented label:has(input:checked) { background: var(--accent); color: var(--accent-ink); }
 .segmented label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -646,7 +646,7 @@ body.ready .cards-tools.is-revealing { animation: search-drop 220ms cubic-bezier
   display: flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 4px 0 10px; border-radius: 11px;
   background: var(--glass); border: 0.5px solid var(--glass-edge);
 }
-.search-field:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.search-field:focus-within { outline: 2px solid var(--accent); outline-offset: -2px; }
 .search-field > svg { width: 16px; height: 16px; flex: none; color: var(--ink-2); }
 .search-field input {
   flex: 1; min-width: 0; min-height: 36px; font: inherit; font-size: 16px; /* 16px: no iOS focus zoom */
@@ -662,7 +662,7 @@ body.ready .cards-tools.is-revealing { animation: search-drop 220ms cubic-bezier
 /* the search icon is the desktop affordance (no pull gesture without touch) */
 @media (hover: none), (pointer: coarse) { .search-btn { display: none !important; } }
 .jump-row {
-  position: sticky; top: calc(env(safe-area-inset-top) + 58px); z-index: 7;
+  position: sticky; top: calc(env(safe-area-inset-top) + 56px); z-index: 7; /* flush under the bar: no seam */
   display: flex; flex-wrap: nowrap; justify-content: space-evenly; align-items: center; row-gap: 6px;
   min-height: 40px; margin: 0 calc(-1 * var(--gutter)) 10px; padding: 4px 0;
   background: var(--bar-solid); -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
@@ -676,7 +676,7 @@ body.ready .cards-tools.is-revealing { animation: search-drop 220ms cubic-bezier
 }
 .jump-chip[aria-current="true"] { color: var(--accent-ink); background: var(--accent); border-color: transparent; }
 .jump-star { letter-spacing: 0; }
-#panel-cards.has-jump .stack-head { top: calc(env(safe-area-inset-top) + 58px + var(--jump-h, 48px)); }
+#panel-cards.has-jump .stack-head { top: calc(env(safe-area-inset-top) + 56px + var(--jump-h, 48px)); }
 .search-empty { text-align: center; color: var(--ink-2); font-size: 16px; padding: 36px 12px 8px; }
 
 /* Eye P1 (Arc 2): on a wide desktop the 560px column floated in empty wallpaper. From 900px the app
@@ -690,6 +690,48 @@ body.ready .cards-tools.is-revealing { animation: search-drop 220ms cubic-bezier
     box-shadow: 0 0 80px rgba(0, 0, 0, 0.18);
   }
 }
+
+/* ---- Settings › Import from Notion (Arc 4) ---- */
+.imp-status { margin: 0; color: var(--ink-2); font-size: 14px; }
+.imp-sum { margin: 0; font-weight: 600; }
+.imp-totals { margin: -8px 0 0; color: var(--ink-2); font-size: 14px; font-variant-numeric: tabular-nums; }
+.imp-list { list-style: none; margin: 0; padding: 0; overflow: auto; min-height: 0; border-radius: var(--r-md); background: var(--glass); border: 0.5px solid var(--glass-edge); }
+.imp-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 10px 12px; }
+.imp-row + .imp-row { border-top: 1px solid var(--glass-edge); }
+.imp-row.is-skip { opacity: 0.6; }
+.imp-who, .imp-nums { display: grid; gap: 2px; min-width: 0; }
+.imp-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.imp-sub, .imp-owed { color: var(--ink-2); font-size: 13px; }
+.imp-warn { color: var(--ink-2); font-size: 12px; }
+.imp-nums { text-align: right; font-variant-numeric: tabular-nums; }
+.imp-mark { font-weight: 700; color: var(--ok-ink); }
+.imp-row.is-bad .imp-mark { color: var(--err-ink); }
+.imp-block { margin: 0; color: var(--err-ink); font-weight: 600; }
+
+/* the list scrolls inside the sheet so Import stays in reach with Notion's ~70 rows */
+dialog#import-sheet { overflow: hidden; }
+#import-sheet .sheet-body { height: 100%; box-sizing: border-box; grid-template-rows: auto auto auto minmax(0, 1fr) auto auto; }
+/* Arc 3 Eye P1s (notion slice 8) */
+.lock-glyph, .split-chev { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
+.posting-btn.is-locked, #spend-split { display: inline-flex; align-items: center; gap: 6px; }
+@media (max-width: 599px) { .ynab-settings .posting-row dd { flex-direction: column; align-items: flex-end; gap: 8px; } }
+.detail-hero .hero-owed { position: absolute; z-index: 1; right: 18px; top: 50px; display: grid; justify-items: end; line-height: 1; }
+.hero-owed small { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+.hero-owed-amt { font: 700 17px var(--font-num); font-variant-numeric: tabular-nums; }
+.detail .subcard-row { margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter); }
+#spend-sheet .split-drains { grid-template-columns: minmax(0, 1fr) auto auto; column-gap: 16px; justify-items: stretch; justify-self: center; width: min(100%, 320px); }
+#spend-sheet .split-drains li { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; justify-items: end; white-space: nowrap; }
+#spend-sheet .dr-card { justify-self: start; }
+.shift-preview { text-align: center; color: var(--ink-2); font-size: 14px; font-weight: 600; min-height: 1.4em; margin-top: -4px; }
+.ra-yr { display: block; font-size: 12px; color: var(--ink-2); }
+/* the W6 cutover sheet (Arc 4) */
+.cut-msg { margin: 0; color: var(--ink-2); font-size: 15px; }
+.cut-check { display: flex; gap: 10px; align-items: flex-start; font-size: 16px; font-weight: 600; }
+.cut-check input { width: 22px; height: 22px; flex: none; margin: 1px 0 0; accent-color: var(--accent); }
+.cut-word-label { font-size: 14px; color: var(--ink-2); margin-bottom: -8px; }
+.cut-word { min-height: 48px; padding: 0 14px; border-radius: var(--r-md); border: 1px solid var(--glass-edge); background: var(--glass); color: var(--ink); font: 700 18px var(--font-num); letter-spacing: 0.12em; }
+.confirm-warn { margin: 0; color: var(--err-ink); font-weight: 700; font-size: 16px; }
+.confirm-list { margin: -6px 0 0; justify-self: stretch; padding: 8px 12px 8px 30px; max-height: 30vh; overflow: auto; text-align: left; font-size: 15px; font-variant-numeric: tabular-nums; border-radius: var(--r-md); background: var(--glass); border: 0.5px solid var(--glass-edge); }
 
 </style>
 </head>
@@ -761,6 +803,12 @@ body.ready .cards-tools.is-revealing { animation: search-drop 220ms cubic-bezier
         <div class="row"><dt>Categories</dt><dd id="set-categories">—</dd></div>
         <div class="row"><dt>Stale retailer after</dt><dd id="set-stale">—</dd></div>
       </dl>
+      <h2 class="group-title">Import</h2>
+      <div class="glass group">
+        <button id="import-btn" class="row row-btn" type="button" aria-describedby="import-status">Import from Notion</button>
+        <p id="import-status" class="row imp-status">Not imported yet</p>
+        <input id="import-file" type="file" accept="application/json,.json" hidden>
+      </div>
       <h2 class="group-title">YNAB</h2>
       <div id="ynab-settings" class="glass group ynab-settings"></div>
       <h2 class="group-title">Appearance</h2>
@@ -768,6 +816,7 @@ body.ready .cards-tools.is-revealing { animation: search-drop 220ms cubic-bezier
         <div class="row row-control">
           <span id="theme-label">Theme</span>
           <div class="segmented" role="radiogroup" aria-labelledby="theme-label">
+            <label><input type="radio" name="theme" value="system"><span>System</span></label>
             <label><input type="radio" name="theme" value="light"><span>Light</span></label>
             <label><input type="radio" name="theme" value="dark"><span>Dark</span></label>
           </div>
@@ -820,6 +869,7 @@ body.ready .cards-tools.is-revealing { animation: search-drop 220ms cubic-bezier
       </div>
       <p id="spend-after" class="amount-after" aria-live="polite"></p>
       <ul id="spend-drains" class="split-drains" aria-label="How the split drains your cards" hidden></ul>
+      <p id="spend-shift" class="shift-preview"></p>
       <div class="glass group sheet-row">
         <label for="spend-date">Date</label>
         <input id="spend-date" type="date">
@@ -904,6 +954,37 @@ body.ready .cards-tools.is-revealing { animation: search-drop 220ms cubic-bezier
     </form>
   </dialog>
 
+  <dialog id="import-sheet" class="sheet sheet-tall" aria-labelledby="import-title" aria-describedby="import-sum">
+    <div class="sheet-body">
+      <div class="sheet-head">
+        <button id="import-cancel" class="sheet-link" type="button">Cancel</button>
+        <h2 id="import-title" class="sheet-title">Import from Notion</h2>
+        <span class="sheet-head-pad" aria-hidden="true"></span>
+      </div>
+      <p id="import-sum" class="imp-sum"></p>
+      <p id="import-totals" class="imp-totals"></p>
+      <ul id="import-list" class="imp-list" aria-label="Retailers in the snapshot" tabindex="0"></ul>
+      <p id="import-block" class="imp-block" hidden></p>
+      <button id="import-go" class="log-spend-btn" type="button" disabled>Import</button>
+    </div>
+  </dialog>
+
+  <dialog id="cutover-sheet" class="sheet" aria-labelledby="cutover-title" aria-describedby="cutover-msg">
+    <form id="cutover-form" class="sheet-body" method="dialog">
+      <div class="sheet-head">
+        <button id="cutover-cancel" class="sheet-link" type="button">Cancel</button>
+        <h2 id="cutover-title" class="sheet-title">Turn on YNAB posting?</h2>
+        <span class="sheet-head-pad" aria-hidden="true"></span>
+      </div>
+      <p id="cutover-msg" class="cut-msg"></p>
+      <label class="cut-check"><input id="cut-notion" type="checkbox"> I’ve stopped logging spends in Notion</label>
+      <label class="cut-check"><input id="cut-pipedream" type="checkbox"> I’ve turned off the Pipedream Notion→YNAB workflow</label>
+      <label class="cut-word-label" for="cut-word">Type CUTOVER to confirm</label>
+      <input id="cut-word" class="cut-word" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <button id="cutover-go" class="log-spend-btn" type="submit" disabled>Turn on posting</button>
+    </form>
+  </dialog>
+
   <dialog id="confirm-sheet" class="sheet" aria-labelledby="confirm-title" aria-describedby="confirm-msg">
     <div class="sheet-body">
       <div class="sheet-head">
@@ -912,6 +993,8 @@ body.ready .cards-tools.is-revealing { animation: search-drop 220ms cubic-bezier
         <span class="sheet-head-pad" aria-hidden="true"></span>
       </div>
       <p id="confirm-msg" class="confirm-q"></p>
+      <p id="confirm-warn" class="confirm-warn" hidden></p>
+      <ul id="confirm-list" class="confirm-list" aria-labelledby="confirm-warn" tabindex="0" hidden></ul>
       <p id="confirm-more" class="confirm-more" hidden></p>
       <p id="confirm-undo" class="confirm-undo">You can undo for 6 seconds.</p>
       <button id="confirm-go" class="danger-btn" type="button">Delete</button>
@@ -1897,15 +1980,12 @@ body.ready .cards-tools.is-revealing { animation: search-drop 220ms cubic-bezier
 
 
 /* ---- src/core/money.js ---- */
-// src/core/money.js — money is INTEGER CENTS, always (spec K3). No float ever touches a stored or
-// computed amount; floats appear only in display-only ratios.
 
 function assertCents(n, what = 'amount') {
   if (!Number.isSafeInteger(n)) throw new TypeError(`${what} must be integer cents, got ${n}`);
   return n;
 }
 
-// "12.34", "$1,234.5", "-3", 12 (dollars) → cents. Parsed as a string, never via float maths.
 function toCents(input) {
   const s = String(input).trim().replace(/[$,\s]/g, '');
   const m = s.match(/^([-+]?)(\d*)(?:\.(\d{0,2}))?$/);
@@ -1914,7 +1994,6 @@ function toCents(input) {
   return m[1] === '-' ? -cents : cents;
 }
 
-// cents → "$1,234.56" (negative → "−$1,234.56", a true minus sign).
 function formatCents(cents) {
   assertCents(cents);
   const neg = cents < 0, a = Math.abs(cents);
@@ -1922,7 +2001,6 @@ function formatCents(cents) {
   return `${neg ? '−' : ''}$${dollars}.${String(a % 100).padStart(2, '0')}`;
 }
 
-// round(a × b ÷ c), half away from zero, exact (BigInt — no 2^53 overflow on the product).
 function mulDivRound(a, b, c) {
   assertCents(a, 'a'); assertCents(b, 'b'); assertCents(c, 'c');
   if (c === 0) throw new RangeError('mulDivRound: divide by zero');
@@ -1935,9 +2013,6 @@ function mulDivRound(a, b, c) {
 
 
 /* ---- src/core/planner.js ---- */
-// src/core/planner.js — which cards a spend draws from (spec §8). Smallest balance first (tie → the
-// older purchase date, then id), cascading across cards until the amount is covered. A caller-chosen
-// first card is drained first, then the cascade continues smallest-first.
 
 class InsufficientBalanceError extends Error {
   constructor(amount, available) {
@@ -1954,8 +2029,6 @@ function byDrawOrder(a, b) {
     || String(a.id).localeCompare(String(b.id));
 }
 
-// plan(amount, cards[, { firstCardId }]) → [{ cardId, amount }], amounts in cents, Σ == amount.
-// cards: [{ id, balance, purchaseDate }]. Throws InsufficientBalanceError when Σ balance < amount.
 function plan(amount, cards, { firstCardId } = {}) {
   if (!Number.isSafeInteger(amount) || amount <= 0) throw new RangeError(`plan: amount must be positive integer cents, got ${amount}`);
   const live = cards.filter((c) => c.balance > 0).sort(byDrawOrder);
@@ -1976,16 +2049,6 @@ function plan(amount, cards, { firstCardId } = {}) {
 
 
 /* ---- src/core/ledger.js ---- */
-// src/core/ledger.js — the Cardsharp maths (spec §7, K1–K3). Pure functions over the document.
-//
-// TWO GRANULARITIES, NEVER CONFLATED:
-//  - per CARD: balance = face + Σ LedgerEntry.amount on that card (spend negative). Derived, never stored.
-//  - per RETAILER: owed = Σ card.paid − Σ LedgerEntry.ynabShift; rate = owed ÷ balance (display only);
-//    "Saving X%" = (1 − rate) × 100. The shift for a spend is the PAID portion: spend × rate (K1),
-//    computed in integer cents as owedBefore − round(owedBefore × balAfter ÷ balBefore) (K3).
-// The rate is invariant under spend — validated against Notion; do not "fix" it.
-// One YNAB shift per spend: an auto-split spend writes one LedgerEntry per drained card, and the
-// whole shift rides on the first of them (the others carry ynabShift 0).
 
 
 
@@ -2011,10 +2074,8 @@ function retailerOwed(doc, retailerId) {
   return paid - shifted;
 }
 
-// Display-only ratio (float). null when the retailer has no balance left.
 function rate(owed, balance) { return balance > 0 ? owed / balance : null; }
 
-// "Saving X%" to 2 dp, computed in integer basis points: round((bal − owed) × 10000 ÷ bal).
 function savingBasisPoints(owed, balance) {
   if (balance <= 0) return null;
   return mulDivRound(balance - owed, 10000, balance);
@@ -2026,9 +2087,6 @@ function savingLabel(owed, balance) {
   return `Saving ${neg ? '−' : ''}${Math.floor(a / 100)}.${String(a % 100).padStart(2, '0')}%`;
 }
 
-// K3: the shift that moves owed from owedBefore to round(owedBefore × balAfter ÷ balBefore).
-// balAfter 0 ⇒ the whole remaining owed (owed ends at exactly 0). A refund (balAfter > balBefore)
-// yields a negative shift, putting owed back. An empty retailer (balBefore 0) has no rate: shift 0.
 function shift(owedBefore, balBefore, balAfter) {
   assertCents(owedBefore, 'owedBefore'); assertCents(balBefore, 'balBefore'); assertCents(balAfter, 'balAfter');
   if (balAfter < 0) throw new RangeError('shift: balance cannot go negative');
@@ -2041,9 +2099,6 @@ function retailerCardStates(doc, retailerId) {
   return cardsOf(doc, retailerId).map((c) => ({ id: c.id, balance: cardBalance(doc, c), purchaseDate: c.purchaseDate }));
 }
 
-// Explicit draws (the Log Spend sheet's confirmed cascade, where the user may pick each next card):
-// each draw is a positive amount on a distinct card of THIS retailer, within that card's balance,
-// and the draws sum to the spend. Throws on anything else — the ledger never trusts the UI.
 function checkDraws(doc, retailerId, amount, draws) {
   const states = new Map(retailerCardStates(doc, retailerId).map((c) => [c.id, c]));
   const seen = new Set();
@@ -2061,10 +2116,6 @@ function checkDraws(doc, retailerId, amount, draws) {
   return draws;
 }
 
-// logSpend — plan the draw across the retailer's cards and return a NEW doc with one LedgerEntry per
-// drained card and ONE shift for the whole spend. spend: { id, retailerId, amount (>0 cents), date,
-// firstCardId?, draws?, note?, ynabSyncStatus? }. Throws InsufficientBalanceError (code
-// 'insufficientBalance'). The shift (and the sync status) ride on the first entry only.
 function logSpend(doc, spend) {
   const amount = assertCents(spend.amount, 'spend.amount');
   const balBefore = retailerBalance(doc, spend.retailerId);
@@ -2082,7 +2133,6 @@ function logSpend(doc, spend) {
   return { doc: { ...doc, entries: [...(doc.entries || []), ...entries] }, entries, shift: ynabShift };
 }
 
-// logRefund — money back onto one card; the shift is negative (owed rises in proportion).
 function logRefund(doc, refund) {
   const amount = assertCents(refund.amount, 'refund.amount');
   if (amount <= 0) throw new RangeError('refund amount must be positive cents');
@@ -2097,15 +2147,6 @@ function logRefund(doc, refund) {
 
 
 /* ---- src/core/crypto.js ---- */
-// src/core/crypto.js — client-side encryption for the Cardsharp document.
-// Envelope copied from fsa-claims (byte-matched to giving-tracker and press_fsa): the whole document
-// is encrypted IN THE BROWSER before it reaches press_cardsharp in the `press` Supabase project and decrypted only
-// in the browser. The server stores CIPHERTEXT ONLY; the passphrase never leaves the device.
-//
-// Scheme: AES-256-GCM (fails closed on wrong key / tamper — decrypt throws before any plaintext)
-// with a key derived by PBKDF2-HMAC-SHA-256 >= 310,000 iters, a per-document 128-bit salt and a
-// per-write 96-bit IV. kdf_iters is stored so the count can be raised without breaking old blobs.
-// Pure, node-testable (WebCrypto is in Node 20+ and every browser); btoa/atob for base64.
 
 const KDF_ITERS = 310000;
 const SALT_BYTES = 16;
@@ -2131,7 +2172,6 @@ function b64ToBytes(b64) {
   return a;
 }
 
-// unguessable 128-bit sync id (a secret capability, NOT a name)
 function newSyncId() {
   const b = randomBytes(16); let hex = '';
   for (let i = 0; i < b.length; i++) hex += (b[i] + 0x100).toString(16).slice(1);
@@ -2150,7 +2190,6 @@ async function deriveKey(passphrase, saltBytes, iters) {
   );
 }
 
-// Encrypt an object -> { ciphertext, iv, salt, kdf_iters } (base64 / int).
 async function encryptDoc(docObj, passphrase, opts) {
   opts = opts || {};
   if (passphrase == null || String(passphrase) === '') throw new Error('passphrase required');
@@ -2163,7 +2202,6 @@ async function encryptDoc(docObj, passphrase, opts) {
   return { ciphertext: bytesToB64(new Uint8Array(ct)), iv: bytesToB64(iv), salt: bytesToB64(salt), kdf_iters: iters };
 }
 
-// Decrypt { ciphertext, iv, salt, kdf_iters } -> object, or null. FAILS CLOSED.
 async function decryptDoc(record, passphrase) {
   try {
     if (!record || record.ciphertext == null || record.iv == null || record.salt == null) return null;
@@ -2181,10 +2219,6 @@ const CONSTS = { KDF_ITERS, SALT_BYTES, IV_BYTES, KEY_BITS };
 
 
 /* ---- src/core/doc.js ---- */
-// src/core/doc.js — the Cardsharp document (schema v1) and its sealed envelope.
-// The whole document — retailers, cards (incl. card numbers + PINs), LedgerEntries, settings — is
-// encrypted in the browser. Only the { ciphertext, iv, salt, kdf_iters } envelope ever leaves it;
-// isEnvelope/assertEnvelope are the tripwire that makes sending plaintext impossible (cloud.save).
 
 
 const DOC_VERSION = 1;
@@ -2214,7 +2248,6 @@ function emptyDoc() {
   };
 }
 
-// Structural check of a decrypted (or about-to-be-sealed) document. Throws on a bad shape.
 function validateDoc(doc) {
   const bad = (m) => { throw new TypeError(`invalid Cardsharp doc: ${m}`); };
   if (!doc || typeof doc !== 'object' || Array.isArray(doc)) bad('not an object');
@@ -2228,8 +2261,6 @@ function validateDoc(doc) {
   return doc;
 }
 
-// True only for a well-formed envelope: exactly the four envelope keys, base64 strings, an integer
-// KDF count. Mirrors (and is stricter than) press_cardsharp's CHECK constraint.
 function isEnvelope(x) {
   if (!x || typeof x !== 'object' || Array.isArray(x)) return false;
   const keys = Object.keys(x).sort();
@@ -2242,13 +2273,11 @@ function assertEnvelope(x) {
   return x;
 }
 
-// doc → envelope. Keeps the document's salt across writes when given one.
 async function sealDoc(doc, passphrase, { salt } = {}) {
   validateDoc(doc);
   return assertEnvelope(await encryptDoc(doc, passphrase, salt ? { salt } : {}));
 }
 
-// envelope → doc, or null (wrong passphrase / tamper / unreadable shape). Fails closed.
 async function openDoc(envelope, passphrase) {
   if (!isEnvelope(envelope)) return null;
   const doc = await decryptDoc(envelope, passphrase);
@@ -2258,10 +2287,6 @@ async function openDoc(envelope, passphrase) {
 
 
 /* ---- src/core/cloud.js ---- */
-// src/core/cloud.js — PostgREST client for press_cardsharp (modelled on fsa-claims' press_fsa client).
-// Injected fetch (opts.fetchImpl) so it is node-testable offline. Sends ONLY sealed envelopes: save()
-// asserts the envelope shape before any request is built. RLS gates every row on the secret
-// x-plan-id header = sync_id. The publishable key is the only key in the built page (press convention).
 
 
 const CARDSHARP_REST = 'https://eepjhpyziczrxvirczio.supabase.co/rest/v1';
@@ -2285,7 +2310,6 @@ function makeClient(opts = {}) {
     return { apikey: key, Authorization: `Bearer ${key}`, 'x-plan-id': syncId, 'Content-Type': 'application/json', ...(extra || {}) };
   }
 
-  // → { doc: envelope, version } or null when no row exists for this sync id.
   async function load(syncId) {
     const res = await fetchImpl(`${table}?sync_id=eq.${syncId}&select=doc,version`, { method: 'GET', headers: headers(syncId) });
     if (!res.ok) throw new Error(`load failed: ${res.status}`);
@@ -2293,8 +2317,6 @@ function makeClient(opts = {}) {
     return (Array.isArray(rows) && rows[0]) ? { doc: rows[0].doc, version: rows[0].version } : null;
   }
 
-  // currentVersion null → first INSERT (a plain insert: an existing row is a conflict, never
-  // silently overwritten); otherwise an optimistic PATCH on version. Returns the new version.
   async function save(syncId, envelope, currentVersion) {
     assertEnvelope(envelope);
     const h = headers(syncId, { Prefer: 'return=representation' });
@@ -2318,9 +2340,6 @@ function makeClient(opts = {}) {
   return { load, save, rest, key };
 }
 
-// Seal + save with ONE conflict retry. On ConflictError: reload the row, open it, let
-// rebase(remoteDoc) produce the document to write (default: the local doc wins), and save once
-// at the remote version. A second conflict propagates. Returns { version, salt }.
 async function persistDoc({ client, syncId, passphrase, doc, version, salt, rebase }) {
   const env = await sealDoc(doc, passphrase, { salt });
   try {
@@ -2339,22 +2358,6 @@ async function persistDoc({ client, syncId, passphrase, doc, version, salt, reba
 
 
 /* ---- src/core/ynabq.js ---- */
-// src/core/ynabq.js — the YNAB queue (Arc 3 slice 7), as pure data over the document. K4: the queue lives
-// in the encrypted doc (doc.queue), keyed by the spend's entry key; every post/reverse carries a deterministic
-// import_id (computed by the cardsharp-ynab function from that key), so a retry can never double-post.
-//
-// One queue entry per spend ({spendId}:post) and, if a POSTED spend is later deleted, one reversal
-// ({spendId}:reverse). Status:
-//   dry-run        posting is OFF (W6) — shown, never sent. Dry-run entries stay dry-run after cutover: those
-//                  spends reached YNAB through Notion/Pipedream already.
-//   needs-mapping  posting is ON but the retailer's category (or the account / Gift cards category) has no
-//                  YNAB mapping yet — logged anyway (YNAB never blocks logging); posts once mapped.
-//   pending        ready to send (nextAt = earliest attempt).
-//   failed         the last attempt failed; retryable → backoff, else paused (token rejected → reconnect).
-//   posted         YNAB has it (txId, importId, and the exact fields posted — a reversal mirrors them).
-//   skipped        a $0 shift — nothing to move in YNAB.
-// The ledger's entries carry ynabSyncStatus 'dry-run' | 'pending' | 'posted' on a spend's first entry; only
-// 'posted' freezes a spend's shift through a delete replay (Mark, 2026-10-03: "freeze posted").
 
 const BACKOFF_BASE_MS = 30_000, BACKOFF_MAX_MS = 60 * 60_000;
 const UNDO_GRACE_MS = 7_000; // a reversal waits out the 6-second Undo before it is sent
@@ -2368,7 +2371,6 @@ function retailerOfCard(doc, cardId) {
   const card = (doc.cards || []).find((c) => c.id === cardId);
   return card ? (doc.retailers || []).find((r) => r.id === card.retailerId) : null;
 }
-// The YNAB ids a post for this app category needs, or null when anything is unmapped.
 function mappingFor(doc, category) {
   const y = ynabSettings(doc), ids = y.ids || {};
   const from = (ids.categories || {})[category || 'Other'];
@@ -2382,7 +2384,6 @@ function statusForNew(doc, retailer) {
 const queueOf = (doc) => doc.queue || [];
 const queueEntry = (doc, spendId, kind = 'post') => queueOf(doc).find((q) => q.key === `${spendId}:${kind}`) || null;
 
-// the first entry of a spend group carries its shift and its sync status
 function spendHead(doc, spendId) {
   return (doc.entries || []).find((e) => (e.spendId || e.id) === spendId) || null;
 }
@@ -2393,8 +2394,6 @@ function addPostEntry(doc, spendId, retailer, now = 0) {
   return { ...doc, queue: [...queueOf(doc).filter((x) => x.key !== q.key), q] };
 }
 
-// After a delete replay: drop the post entries of every removed spend; a removed spend that was POSTED gets
-// a reversal of exactly what was posted (it waits out the Undo window first).
 function queueAfterRemoval(doc, removedSpendIds, before, now = 0) {
   const gone = new Set(removedSpendIds);
   let queue = queueOf(doc).filter((q) => !(q.kind === 'post' && gone.has(q.spendId)));
@@ -2409,7 +2408,6 @@ function queueAfterRemoval(doc, removedSpendIds, before, now = 0) {
   return { doc: { ...doc, queue }, reversals };
 }
 
-// The request body the cardsharp-ynab function takes for a due entry, or { skip } / { unmapped }.
 function requestFor(doc, q) {
   const y = ynabSettings(doc);
   if (q.kind === 'reverse') return { body: { action: 'reverse', entryKey: q.spendId, budgetName: y.budget || 'Family Budget', ...q.sent } };
@@ -2428,7 +2426,6 @@ function dueEntries(doc, now) {
   return queueOf(doc).filter((q) => (q.status === 'pending' || (q.status === 'failed' && !q.paused)) && (q.nextAt || 0) <= now);
 }
 
-// Apply a function result to one queue entry (and, for a post, stamp the ledger 'posted').
 function queueResultMut(doc, key, result, now = 0) {
   const q = queueOf(doc).find((x) => x.key === key);
   if (!q) return { doc };
@@ -2446,7 +2443,6 @@ function queueResultMut(doc, key, result, now = 0) {
   return { doc: { ...doc, entries, queue: queueOf(doc).map((x) => (x.key === key ? next : x)) } };
 }
 
-// Settings › YNAB: names (display) + ids (posting). Mapping changes re-check needs-mapping entries.
 function setYnabSettingsMut(doc, patch) {
   const y = ynabSettings(doc);
   const ids = { ...(y.ids || {}), ...(patch.ids || {}), categories: { ...((y.ids || {}).categories || {}), ...((patch.ids || {}).categories || {}) } };
@@ -2460,19 +2456,31 @@ function setYnabSettingsMut(doc, patch) {
   return { doc: next };
 }
 
-// The W6 cutover switch. Turning ON never sends the dry-run history (it reached YNAB via Notion/Pipedream).
-function setPostingMut(doc, on) {
-  return { doc: { ...doc, settings: { ...doc.settings, ynab: { ...ynabSettings(doc), postingEnabled: !!on } } } };
+function cutoverBlockers(doc, { connected = false } = {}) {
+  const ids = ynabSettings(doc).ids || {}, out = [];
+  const imp = doc.importInfo;
+  if (!imp) out.push({ code: 'noImport', text: 'Import from Notion first (Settings › Import), so Cardsharp starts from Notion’s balances.' });
+  else if (!imp.allMatched) out.push({ code: 'importMismatch', text: 'The Notion import didn’t match Notion to the cent — re-import first.' });
+  if (!connected) out.push({ code: 'notConnected', text: 'Connect YNAB first — the cardsharp-ynab function isn’t reachable.' });
+  if (!ids.accountId || !ids.giftCategoryId) out.push({ code: 'noAccount', text: 'Pick the YNAB account and the Gift cards category first.' });
+  const unmapped = (doc.categories || []).filter((c) => !(ids.categories || {})[c]);
+  if (unmapped.length) out.push({ code: 'unmapped', text: `Map every category to a YNAB category first: ${unmapped.join(', ')}.` });
+  return out;
+}
+const CUTOVER_WORD = 'CUTOVER';
+
+function setPostingMut(doc, on, { now = Date.now() } = {}) {
+  const y = ynabSettings(doc);
+  const cutoverAt = y.cutoverAt || (on ? new Date(now).toISOString() : undefined);
+  return { doc: { ...doc, settings: { ...doc.settings, ynab: { ...y, postingEnabled: !!on, ...(cutoverAt ? { cutoverAt } : {}) } } } };
 }
 
-// What Settings / Reports show.
 function queueSummary(doc) {
   const out = { 'dry-run': 0, pending: 0, failed: 0, 'needs-mapping': 0, posted: 0, paused: false };
   for (const q of queueOf(doc)) { out[q.status] = (out[q.status] || 0) + 1; if (q.paused) out.paused = true; }
   out.active = out.pending + out.failed + out['needs-mapping'];
   return out;
 }
-// badge for a spend row: the reversal wins over the post
 function badgeFor(doc, spendId) {
   const rev = queueEntry(doc, spendId, 'reverse'), post = queueEntry(doc, spendId, 'post');
   const q = rev && rev.status !== 'posted' ? rev : post;
@@ -2482,14 +2490,6 @@ function badgeFor(doc, spendId) {
 
 
 /* ---- src/core/mutations.js ---- */
-// src/core/mutations.js — every write to the Cardsharp document (Arc 2). Pure doc → doc functions
-// plus commitChange, the one path a change takes to the cloud: apply → seal → persistDoc (optimistic
-// version, ONE conflict retry that re-applies the same change onto the remote doc).
-//
-// Names carry a `Mut` suffix because build.js concatenates every module into one scope and the
-// ledger already owns `logSpend`. Money is integer cents throughout; the K3 maths and the
-// one-shift-per-spend rule are the ledger's (logSpendMut delegates to ledger.logSpend).
-// Card numbers and PINs only ever live inside the document — never logged, never thrown in a message.
 
 
 
@@ -2505,8 +2505,6 @@ class NoRowError extends Error {
   }
 }
 
-// Ids are random UUIDs, but REPLAYABLE: a conflict retry re-runs the same change and must mint the
-// same ids, so the rebased doc is the same change, not a near-duplicate.
 function replayableIds(gen = () => crypto.randomUUID()) {
   const minted = [];
   let i = 0;
@@ -2523,7 +2521,6 @@ function todayISO(now = new Date()) {
 function normDomain(d) { return d ? String(d).trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '') : ''; }
 function clean(s) { const t = s == null ? '' : String(s).trim(); return t || undefined; }
 
-// Find the retailer a new card belongs to: explicit id → same brand domain → same name (case-blind).
 function findRetailer(doc, { id, name, brandDomain } = {}) {
   const rs = doc.retailers || [];
   if (id) return rs.find((r) => r.id === id) || null;
@@ -2533,15 +2530,12 @@ function findRetailer(doc, { id, name, brandDomain } = {}) {
   return n ? rs.find((r) => String(r.name).trim().toLowerCase() === n) || null : null;
 }
 
-// rememberCategory — the user's category choice for a brand (K7 step 1, highest priority next time).
 function rememberCategoryMut(doc, brandDomain, category) {
   const dom = normDomain(brandDomain);
   if (!dom || !clean(category)) return { doc };
   return { doc: { ...doc, brandMemory: { ...(doc.brandMemory || {}), [dom]: clean(category) } } };
 }
 
-// addCards — N identical cards under one retailer (created if new). fields: { face, paid, qty, date,
-// category, favorite, number?, pin?, where?, notes? }. number/PIN are per card, so only qty 1 takes them.
 function addCardsMut(doc, retailer, fields, { newId = replayableIds() } = {}) {
   const face = assertCents(fields.face, 'face'), paid = assertCents(fields.paid, 'paid');
   if (face <= 0) throw new RangeError('face value must be more than $0.00');
@@ -2582,11 +2576,6 @@ function addCardsMut(doc, retailer, fields, { newId = replayableIds() } = {}) {
   return { doc: next, retailerId: r.id, cardIds: cards.map((c) => c.id) };
 }
 
-// logSpend — one spend on a retailer: one LedgerEntry per drawn card, ONE YNAB shift (K3) on the
-// first. draws (optional) = the sheet's confirmed cascade; omitted → the ledger plans smallest-first.
-// YNAB posting is OFF until cutover (W6), so every spend is recorded as a dry-run. Arc 3: every spend also
-// gets its queue entry ({spendId}:post — dry-run / pending / needs-mapping, core/ynabq). Logging never waits
-// on YNAB: the queue is flushed after the write, in the background.
 function logSpendMut(doc, retailerId, amount, date, draws, { newId = replayableIds(), now = Date.now() } = {}) {
   const retailer = (doc.retailers || []).find((r) => r.id === retailerId);
   if (!retailer) throw new Error(`unknown retailer ${retailerId}`);
@@ -2607,7 +2596,6 @@ function setFavoriteMut(doc, retailerId, favorite) {
   return { doc: { ...doc, retailers: doc.retailers.map((r) => (r.id === retailerId ? { ...r, favorite: !!favorite } : r)) } };
 }
 
-// Bulk capture: set (or skip) one card's number + PIN after a bulk save.
 function setCardDetailsMut(doc, cardId, { number, pin } = {}) {
   if (!(doc.cards || []).some((c) => c.id === cardId)) throw new Error('unknown card');
   return {
@@ -2624,15 +2612,6 @@ function setCardDetailsMut(doc, cardId, { number, pin } = {}) {
   };
 }
 
-// ---- Arc 2b: deletes REPLAY, never patch ----------------------------------------------------------
-// Removing a spend or a card rebuilds that retailer's entries in date order (ties: the order they were
-// logged) through the ledger engine, so every later K3 shift is recomputed and balances, owed, rate and
-// "Saving %" equal a document that never had the removed item — to the cent. Spends keep their draws;
-// a spend that drew from a deleted card is re-planned smallest-first across the remaining cards (or
-// removed if they can't cover it, or if it drew ONLY from that card). Refunds recompute their shift.
-// Imported history (migration / adjustment) keeps its stored amounts and shift.
-// Arc 3 (Mark: "freeze posted"): a spend already POSTED to YNAB keeps its posted shift through the replay
-// (its draws may re-plan); if it is removed, the caller queues a reversal of exactly what was posted.
 
 class SyncedEntryError extends Error {
   constructor() { super('Already sent to YNAB — reverse it instead'); this.name = 'SyncedEntryError'; this.code = 'synced'; }
@@ -2647,8 +2626,6 @@ class UndoStaleError extends Error {
 const groupStatus = (entries) => (entries.find((e) => e.ynabSyncStatus) || {}).ynabSyncStatus;
 const sameEntries = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-// replayRetailer(doc, retailerId, { dropSpendIds, dropCardIds }) → { doc, removed, replanned }.
-// removed: [{ spendId, type, amount }] (amount = cents drawn, positive) · replanned: [spendId].
 function replayRetailer(doc, retailerId, { dropSpendIds = [], dropCardIds = [] } = {}) {
   const dropS = new Set(dropSpendIds), dropC = new Set(dropCardIds);
   const cardIds = new Set(cardsOf(doc, retailerId).map((c) => c.id));
@@ -2703,7 +2680,6 @@ function replayRetailer(doc, retailerId, { dropSpendIds = [], dropCardIds = [] }
     if (next) { out.set(g.key, next); if (didReplan) replanned.push(g.key); }
     else removed.push({ spendId: g.key, type: g.type, amount: drawn });
   }
-  // entries go back where they were (a spend's group sits at its first entry's position)
   const emitted = new Set(), entries = [];
   for (const e of all) {
     if (!cardIds.has(e.cardId)) { entries.push(e); continue; }
@@ -2723,8 +2699,6 @@ function retailerOfSpend(doc, spendId) {
   return { retailerId: card.retailerId, group };
 }
 
-// deleteSpend — removes the spend (all of its draws) and replays the retailer's later entries. A removed
-// spend that was POSTED queues a reversal (Arc 3); its post entry goes either way.
 function deleteSpendMut(doc, spendId, { now = Date.now() } = {}) {
   const { retailerId, group } = retailerOfSpend(doc, spendId);
   const res = replayRetailer(doc, retailerId, { dropSpendIds: [spendId] });
@@ -2735,7 +2709,6 @@ function deleteSpendMut(doc, spendId, { now = Date.now() } = {}) {
   };
 }
 
-// deleteCard — removes the card and its entries (replayed as above); the retailer goes with its last card.
 function deleteCardMut(doc, cardId, { now = Date.now() } = {}) {
   const card = (doc.cards || []).find((c) => c.id === cardId);
   if (!card) throw new Error('unknown card');
@@ -2748,7 +2721,6 @@ function deleteCardMut(doc, cardId, { now = Date.now() } = {}) {
   return { doc: next, retailerId, removed: res.removed, replanned: res.replanned, retailerRemoved, reversals: q.reversals };
 }
 
-// setRetailerCategory — moves the BRAND (cards hang off the retailer) and remembers it for the domain.
 function setRetailerCategoryMut(doc, retailerId, category) {
   const r = (doc.retailers || []).find((x) => x.id === retailerId);
   if (!r) throw new Error(`unknown retailer ${retailerId}`);
@@ -2758,17 +2730,11 @@ function setRetailerCategoryMut(doc, retailerId, category) {
   return { doc: next };
 }
 
-// undo — put back the document as it was before a change, but only if nothing else has changed it
-// since (the doc must still be exactly what that change wrote); never clobbers another device's write.
 function undoMut(doc, snapshot, expected) {
   if (JSON.stringify(doc) !== JSON.stringify(expected)) throw new UndoStaleError();
   return { doc: snapshot };
 }
 
-// commitChange — the ONE write path. ctx: { doc, version, salt, demo, client, syncId, passphrase }.
-// change(doc, newId) → { doc, ...result }. Demo: in memory only. Live: refuses when no row exists
-// (NoRowError — the bootstrap creates the row, never a stray first write), then persistDoc with a
-// rebase that replays the SAME change (same ids) onto the remote doc. Updates ctx in place.
 async function commitChange(ctx, change) {
   const newId = replayableIds();
   const res = change(ctx.doc, newId);
@@ -2786,17 +2752,8 @@ async function commitChange(ctx, change) {
 
 
 /* ---- src/core/retailers.js ---- */
-// src/core/retailers.js — the curated catalog of US brands that sell gift cards (Arc 2b slice 1) and
-// the Add Card search over it. Mark typed "McDon" and Brandfetch's free Brand Search answered "McDon
-// Group", "Gibson McDonald", "McDonald's Philippines": the catalog answers first (instant, offline,
-// with the right category), and Brand Search only fills in below it, filtered.
-//
-// One row per brand: "Name|domain|category|aliases (comma-separated)|brandColor". Category letters:
-// R Restaurant · T Retail · O Other. A row's position is its popularity rank (earlier = more popular),
-// which breaks ties between equally strong matches. Domains are what the logo CDN is built from.
 
 const CATALOG_ROWS = [
-  // ---- the most-bought gift cards, roughly in order ----
   'Amazon|amazon.com|T|amazon.com,amzn|#FF9900',
   'Starbucks|starbucks.com|R||#00704A',
   'Target|target.com|T||#CC0000',
@@ -2837,7 +2794,6 @@ const CATALOG_ROWS = [
   "Applebee's|applebees.com|R|applebees|#C8102E",
   'Outback Steakhouse|outback.com|R|outback|#8C1D18',
   'Instacart|instacart.com|T||#0AAD0A',
-  // ---- restaurants, coffee, delivery ----
   'Burger King|bk.com|R|bk|#D62300',
   'Subway|subway.com|R||#008C15',
   'Pizza Hut|pizzahut.com|R||#EE3124',
@@ -2921,7 +2877,6 @@ const CATALOG_ROWS = [
   'On The Border|ontheborder.com|R||#8B1A1A',
   "Landry's|landrysinc.com|R|landrys|#1F3A5F",
   'Pei Wei|peiwei.com|R||#C8102E',
-  // ---- retail: big-box, grocery, pharmacy ----
   "Sam's Club|samsclub.com|T|sams club|#0067A0",
   "BJ's Wholesale Club|bjs.com|T|bjs wholesale|#D50032",
   'Kroger|kroger.com|T||#0F4C81',
@@ -2945,7 +2900,6 @@ const CATALOG_ROWS = [
   'Dollar General|dollargeneral.com|T||#FFC800',
   'Dollar Tree|dollartree.com|T||#00843D',
   'Five Below|fivebelow.com|T||#0072CE',
-  // ---- department stores, off-price ----
   'Nordstrom Rack|nordstromrack.com|T||#1F1F1F',
   "Kohl's|kohls.com|T|kohls|#859CBA",
   'JCPenney|jcpenney.com|T|jc penney,penneys|#E31837',
@@ -2961,7 +2915,6 @@ const CATALOG_ROWS = [
   'Ross Dress for Less|rossstores.com|T|ross|#0057A8',
   'Burlington|burlington.com|T|burlington coat factory|#C8102E',
   'QVC|qvc.com|T||#1F1F1F',
-  // ---- apparel, shoes, sporting goods ----
   'Old Navy|oldnavy.com|T||#003B71',
   'Gap|gap.com|T||#002868',
   'Banana Republic|bananarepublic.com|T||#1F1F1F',
@@ -3019,7 +2972,6 @@ const CATALOG_ROWS = [
   'Coach|coach.com|T||#1F1F1F',
   'Kate Spade|katespade.com|T||#1F1F1F',
   'Michael Kors|michaelkors.com|T||#1F1F1F',
-  // ---- beauty, jewelry, gifts ----
   'Bath & Body Works|bathandbodyworks.com|T|bath and body works,bbw|#1F3A93',
   'MAC Cosmetics|maccosmetics.com|T|mac|#000000',
   'Lush|lush.com|T||#1F1F1F',
@@ -3037,7 +2989,6 @@ const CATALOG_ROWS = [
   'Edible Arrangements|ediblearrangements.com|T|edible|#C8102E',
   'Shutterfly|shutterfly.com|T||#F58220',
   'Build-A-Bear Workshop|buildabear.com|T|build a bear|#C8102E',
-  // ---- home, hardware, hobby, books, office, pets, auto ----
   'IKEA|ikea.com|T||#0058A3',
   'Wayfair|wayfair.com|T||#7B189F',
   'Pottery Barn|potterybarn.com|T||#1F1F1F',
@@ -3067,7 +3018,6 @@ const CATALOG_ROWS = [
   'Advance Auto Parts|advanceautoparts.com|T|advance auto|#C8102E',
   "O'Reilly Auto Parts|oreillyauto.com|T|oreilly|#00843D",
   'Big Lots|biglots.com|T||#F58220',
-  // ---- online, electronics ----
   'eBay|ebay.com|T||#E53238',
   'Etsy|etsy.com|T||#F1641E',
   'Newegg|newegg.com|T||#F7A600',
@@ -3075,7 +3025,6 @@ const CATALOG_ROWS = [
   'Bose|bose.com|T||#1F1F1F',
   'Samsung|samsung.com|T||#1428A0',
   'Dell|dell.com|T||#007DB8',
-  // ---- travel, hotels, rideshare ----
   'Lyft|lyft.com|O||#FF00BF',
   'American Airlines|aa.com|O|american|#0078D2',
   'United Airlines|united.com|O|united|#002244',
@@ -3099,7 +3048,6 @@ const CATALOG_ROWS = [
   'Norwegian Cruise Line|ncl.com|O|norwegian,ncl|#1F3A5F',
   'Amtrak|amtrak.com|O||#00537E',
   'Greyhound|greyhound.com|O||#0057A8',
-  // ---- entertainment, streaming, gaming ----
   'Regal|regmovies.com|O|regal cinemas|#C8102E',
   'Cinemark|cinemark.com|O||#C8102E',
   'Fandango|fandango.com|O||#F15A24',
@@ -3125,7 +3073,6 @@ const CATALOG_ROWS = [
   'Ticketmaster|ticketmaster.com|O||#026CDF',
   'StubHub|stubhub.com|O|stub hub|#3F1D74',
   'Live Nation|livenation.com|O||#C8102E',
-  // ---- services, fuel, prepaid ----
   'Massage Envy|massageenvy.com|O||#5C2D91',
   'Great Clips|greatclips.com|O||#C8102E',
   'Shell|shell.com|O||#DD1D21',
@@ -3145,8 +3092,6 @@ const CATALOG_ROWS = [
 
 const CATEGORY = { R: 'Restaurant', T: 'Retail', O: 'Other' };
 
-// normalise: lower-case, diacritics off, apostrophes dropped ("McDonald's" → "mcdonalds"), "&" → "and",
-// every other non-alphanumeric run → one space.
 function normName(s) {
   return String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '')
     .replace(/['’`.]/g, '').replace(/&/g, ' and ').replace(/\+/g, ' plus ').replace(/[^a-z0-9]+/g, ' ').trim();
@@ -3166,7 +3111,6 @@ function catalogByDomain(domain) {
   return (d && BY_DOMAIN.get(d)) || null;
 }
 
-// Levenshtein distance, early-out above 1 (we only ever ask "within one edit?").
 function within1(a, b) {
   if (Math.abs(a.length - b.length) > 1) return false;
   let i = 0, j = 0, edits = 0;
@@ -3178,7 +3122,6 @@ function within1(a, b) {
   return edits + (a.length - i) + (b.length - j) <= 1;
 }
 
-// Match strength of query q against one brand: 0 prefix · 1 word-prefix · 2 fuzzy (≤1 edit, same first letter) · null none.
 function strength(q, brand) {
   const qs = sqz(q);
   let best = null;
@@ -3196,7 +3139,6 @@ function strength(q, brand) {
   return best;
 }
 
-// searchCatalog(query, limit) → catalog rows, strongest match first, then by popularity rank.
 function searchCatalog(query, limit = 5) {
   const q = normName(query);
   if (!q) return [];
@@ -3208,13 +3150,11 @@ function searchCatalog(query, limit = 5) {
 
 const CATALOG_MAX = 5;
 const FALLBACK_MAX = 3;
-// Brand Search is a fallback only: skipped once the catalog fills its block for a ≥4-char query.
 function needsFallback(query, catalogCount) {
   const q = normName(query);
   return q.length >= 2 && !(catalogCount >= CATALOG_MAX && q.length >= 4);
 }
 
-// Generic or US-friendly two-letter TLDs that do NOT mark a foreign brand.
 const OK_CC_TLDS = new Set(['us', 'co', 'io', 'ai', 'tv', 'me', 'gg', 'fm', 'ly', 'to', 'so', 'sh', 'app']);
 const COUNTRIES = ['philippines', 'canada', 'uk', 'united kingdom', 'england', 'ireland', 'india', 'australia', 'new zealand',
   'mexico', 'japan', 'china', 'korea', 'germany', 'deutschland', 'france', 'italy', 'italia', 'spain', 'espana', 'brazil', 'brasil',
@@ -3223,9 +3163,6 @@ const COUNTRIES = ['philippines', 'canada', 'uk', 'united kingdom', 'england', '
   'norway', 'denmark', 'finland', 'poland', 'portugal', 'greece', 'austria', 'switzerland', 'russia', 'ukraine', 'hong kong', 'taiwan'];
 const namesCountry = (s) => { const n = ' ' + normName(s) + ' '; return COUNTRIES.some((c) => n.includes(` ${c} `)); };
 
-// filterFallback(rows, query, shownDomains) → Brand Search rows worth showing under "Other brands":
-// one per domain, none already in the catalog (or already shown), no foreign brand unless the query
-// names a country, at most FALLBACK_MAX.
 function filterFallback(rows, query, shownDomains = []) {
   const allowForeign = namesCountry(query);
   const seen = new Set(shownDomains.map((d) => String(d).toLowerCase()));
@@ -3246,10 +3183,6 @@ function filterFallback(rows, query, shownDomains = []) {
 
 
 /* ---- src/core/stack.js ---- */
-// src/core/stack.js — what the Cards stack shows, as pure data (spec §5). Unit-tested; the UI only
-// paints it. Order: ★ Favorites → each category (the doc's category order) → A–Z within a group;
-// retailers with no balance left sink into a final "Used up" group, dimmed. Balances, owed and
-// "Saving X%" are per RETAILER (the stack's unit); card counts drive the multi-card pips.
 
 
 
@@ -3270,11 +3203,6 @@ function retailerSummary(doc, r) {
 
 const byName = (a, b) => String(a.retailer.name).localeCompare(String(b.retailer.name), undefined, { sensitivity: 'base' });
 
-// Home search: does retailer r match the query? (Arc 3 slice 1 — Mark: "S" showed Apple, via its alias
-// "app store".) The brand NAME matches by word-prefix at any length ("the" optional, spaces optional);
-// a catalog ALIAS only when the query is ≥ 3 chars and the alias STARTS with it; the CATEGORY only for a
-// ≥ 3-char query that starts one of its words ("rest" → Restaurant). Apostrophes/case/diacritics are
-// ignored. A query of 2–4 digits matches a card's last 4 — card numbers are never rendered by this.
 const ALIAS_MIN = 3, CATEGORY_MIN = 3;
 function retailerMatches(doc, r, query) {
   const q = normName(query);
@@ -3290,7 +3218,6 @@ function retailerMatches(doc, r, query) {
   return q.length >= CATEGORY_MIN && (' ' + normName(r.category || 'Other')).includes(' ' + q);
 }
 
-// → [{ key, label, items: [retailerSummary…] }], empty groups dropped. opts.query filters (home search).
 function stackGroups(doc, { query = '' } = {}) {
   const all = (doc.retailers || []).filter((r) => retailerMatches(doc, r, query))
     .map((r) => retailerSummary(doc, r)).filter((s) => s.cardCount > 0);
@@ -3304,8 +3231,6 @@ function stackGroups(doc, { query = '' } = {}) {
   return groups.filter((g) => g.items.length > 0);
 }
 
-// ---- colour: every card face carries white text, so its base colour is darkened until white
-// clears WCAG AA (4.5:1) — brand colours like DoorDash red or Home Depot orange would not. ----
 function hexToRgb(hex) {
   const m = String(hex || '').trim().match(/^#?([0-9a-f]{6})$/i);
   if (!m) return null;
@@ -3326,7 +3251,6 @@ function darkenForWhite(hex, min = 4.6) {
   return toHex(rgb);
 }
 
-// Deterministic fallback colour from the retailer name (FNV-1a → hue), already AA-dark.
 function nameColor(name) {
   let h = 0x811c9dc5;
   for (const ch of String(name || '?')) { h ^= ch.codePointAt(0); h = Math.imul(h, 0x01000193) >>> 0; }
@@ -3336,19 +3260,12 @@ function nameColor(name) {
   return darkenForWhite(toHex([f(0) * 255, f(8) * 255, f(4) * 255]));
 }
 
-// → { from, to } for the card's 135° gradient: AA-safe base → a deeper shade of it.
 function cardColors(retailer) {
   const base = darkenForWhite(retailer && retailer.brandColor) || nameColor(retailer && retailer.name);
   const deep = toHex(hexToRgb(base).map((v) => v * 0.55));
   return { from: base, to: deep };
 }
 
-// ---- branded sheets (Arc 2b): the Log Spend sheet takes its palette from the retailer's brand colour
-// (the same source as the card face). Every pair is contrast-checked against BOTH the plain sheet and
-// the tinted surface: accent (button / focus ring / chevron / links) ≥ 4.5:1 — stricter than the 3:1 a
-// control needs, so it is also safe as link text — on-accent text ≥ 4.5:1, dim (secondary text) ≥ 4.5:1.
-// A brand colour that fails has its LIGHTNESS shifted (hue and saturation kept) until it passes; it never
-// falls back to grey. Pure + unit-tested for every demo brand and the edge colours.
 const SHEET_BG = { dark: '#181826', light: '#F8F8FB' };   // tokens --sheet-bg
 const SHEET_INK = { dark: '#F4F6FB', light: '#15161F' };  // tokens --ink
 const ON_DARK_INK = '#0B0B14';
@@ -3370,7 +3287,6 @@ function hslToHex(h, s, l) {
   return toHex([f(0) * 255, f(8) * 255, f(4) * 255]);
 }
 function mix(a, b, t) { const x = hexToRgb(a), y = hexToRgb(b); return toHex(x.map((v, i) => v * t + y[i] * (1 - t))); }
-// the lightness nearest to l0 (same hue + saturation) for which ok(hex) holds
 function nearestLightness(h, s, l0, ok) {
   for (let step = 0; step <= 100; step++) {
     for (const l of step ? [l0 + step / 100, l0 - step / 100] : [l0]) {
@@ -3398,8 +3314,6 @@ function monogram(name) {
   return (words.length > 1 ? words[0][0] + words[1][0] : (words[0] || '?').slice(0, 2)).toUpperCase();
 }
 
-// Brandfetch Logo CDN (free tier): always built from the STORED domain — search-result image URLs
-// expire after 24h and are never stored. No client id → no URL (the monogram shows).
 function logoUrl(domain, clientId) {
   const d = String(domain || '').trim().toLowerCase();
   if (!d || !clientId || !/^[a-z0-9.-]+\.[a-z]{2,}$/.test(d)) return null;
@@ -3408,11 +3322,6 @@ function logoUrl(domain, clientId) {
 
 
 /* ---- src/core/category.js ---- */
-// src/core/category.js — the suggested category for a brand (spec §8b, K7), WITHOUT the keyed Brand
-// API: 1. the user's remembered choice for this domain (doc.brandMemory) → 2. the curated catalog's
-// category for this domain (core/retailers.js) → 3. an industry string, only if a search result
-// happens to carry one → 4. a keyword / known-chain map over the name + domain → 5. Other.
-// A suggestion is only ever one of the doc's own categories.
 
 
 const RESTAURANT_CHAINS = ['starbucks', 'mcdonalds', 'chipotle', 'doordash', 'ubereats', 'grubhub', 'panera', 'dunkin',
@@ -3426,7 +3335,6 @@ const RESTAURANT_WORDS = ['coffee', 'cafe', 'café', 'pizza', 'burger', 'grill',
 const RETAIL_WORDS = ['store', 'shop', 'mart', 'market', 'outlet', 'depot', 'apparel', 'boutique', 'fashion', 'clothing',
   'electronics', 'books', 'hardware', 'pharmacy', 'supermarket', 'grocery', 'beauty', 'home'];
 
-// short names (kfc, rei, gap, hm…) must match exactly; longer ones may lead a longer name/domain
 const chainHit = (k, list) => list.some((c) => k === c || (c.length > 4 && k.startsWith(c)));
 const squash = (s) => String(s || '').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]/g, '');
 const words = (s) => String(s || '').toLowerCase().split(/[^a-zé]+/).filter(Boolean);
@@ -3453,7 +3361,6 @@ function keywordCategory(name, domain) {
   return null;
 }
 
-// → { category, source: 'remembered' | 'catalog' | 'industry' | 'keyword' | 'default' }
 function suggestCategory(doc, { name, domain, industry } = {}) {
   const cats = (doc && doc.categories) || ['Restaurant', 'Retail', 'Other'];
   const ok = (c) => (c && cats.includes(c) ? c : null);
@@ -3472,9 +3379,6 @@ function suggestCategory(doc, { name, domain, industry } = {}) {
 
 
 /* ---- src/core/demo.js ---- */
-// src/core/demo.js — `?demo=1&cards=N` (demo mode only): a deterministic N-card document for the
-// scroll / Lighthouse / search checks (Arc 2b). Built THROUGH the real mutations from the curated
-// catalog, so it is always a state the app itself could have produced. Never used in live mode.
 
 
 
@@ -3503,14 +3407,13 @@ function bigDemoDoc(n = 100) {
 
 
 /* ---- src/core/activity.js ---- */
-// src/core/activity.js — Reports › All activity (Arc 3), as pure data. One row per EVENT, newest first:
-//  - a spend is ONE row however many cards it drained (its LedgerEntries share a spendId; the per-card
-//    split stays on the brand's detail screen) — a deduction, amount = Σ entry amounts (negative);
-//  - refunds / adjustments / imported history keep their sign (one row per spendId group);
-//  - every card is a "Card added" row: +face on its purchase date.
-// Ties on a date: the later-logged event first (spends logged after a card bought the same day sit above it).
-// Card numbers and PINs are never read here.
 
+
+function shortDate(iso, currentYear = new Date().getFullYear()) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+  if (!m) return { day: String(iso || ''), year: '' };
+  return { day: `${'JanFebMarAprMayJunJulAugSepOctNovDec'.substr((m[2] - 1) * 3, 3)} ${Number(m[3])}`, year: Number(m[1]) === currentYear ? '' : m[1] };
+}
 
 const ACTIVITY_KINDS = { spend: 'Spend', refund: 'Refund', migration: 'Imported', adjustment: 'Adjustment', card: 'Card added' };
 
@@ -3539,13 +3442,179 @@ function activityLog(doc) {
 }
 
 
+/* ---- src/core/notion-import.js ---- */
+
+
+
+
+
+class ImportRefusedError extends Error {
+  constructor(code, msg) { super(msg); this.name = 'ImportRefusedError'; this.code = code; }
+}
+const IMPORT_CATEGORIES = ['Restaurant', 'Retail', 'Other'];
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+const BRAND_BY_KEY = new Map();
+for (const b of CATALOG) for (const k of b.keys) if (!BRAND_BY_KEY.has(k)) BRAND_BY_KEY.set(k, b);
+function importBrand(name) {
+  const n = normName(String(name || '').replace(/\s*\([^)]*\)\s*$/, ''));
+  return BRAND_BY_KEY.get(n) || BRAND_BY_KEY.get(n.replace(/^the /, '')) || null;
+}
+
+function validateSnapshot(snap) {
+  const bad = (m) => { throw new ImportRefusedError('badSnapshot', `not a Notion snapshot: ${m}`); };
+  if (!snap || typeof snap !== 'object' || snap.schema !== 1) bad('schema 1 expected');
+  if (!Array.isArray(snap.retailers)) bad('retailers missing');
+  const int = (v) => Number.isSafeInteger(v);
+  for (const r of snap.retailers) {
+    if (!r || typeof r !== 'object') bad('a retailer row is empty');
+    if (!Array.isArray(r.cards) || !r.notion || !int(r.totalSpendCents) || !int(r.ynabChargesCents) || !int(r.notion.remainingBalanceCents) || !int(r.notion.remainingYnabCents)) bad(`retailer ${r.name}: bad amounts`);
+    for (const c of r.cards) if (!int(c.faceCents) || !int(c.paidCents) || c.faceCents < 0 || c.paidCents < 0) bad(`retailer ${r.name}: bad card amounts`);
+  }
+  return snap;
+}
+
+const importLast4 = (num) => { const d = String(num || '').replace(/\D/g, ''); return d ? d.slice(-4) : ''; };
+const carryKey = (name, face, paid, date) => `${normName(name)}|${face}|${paid}|${date}`;
+
+function carryFrom(doc) {
+  const rById = new Map((doc.retailers || []).map((r) => [r.id, r]));
+  const cards = new Map(), prefs = new Map();
+  for (const r of doc.retailers || []) prefs.set(normName(r.name), { favorite: !!r.favorite, category: r.category });
+  for (const c of doc.cards || []) {
+    const details = {};
+    for (const k of ['number', 'pin', 'where', 'notes']) if (c[k]) details[k] = c[k];
+    if (!Object.keys(details).length) continue;
+    const r = rById.get(c.retailerId);
+    const key = carryKey(r ? r.name : '', c.face, c.paid, c.purchaseDate);
+    if (!cards.has(key)) cards.set(key, []);
+    cards.get(key).push({ details, retailer: r ? r.name : '—', face: c.face, last4: importLast4(c.number) });
+  }
+  return { cards, prefs };
+}
+
+function buildImport(doc, snap, newId) {
+  const migDate = ISO_DAY.test(String(snap.takenAt).slice(0, 10)) ? String(snap.takenAt).slice(0, 10) : '1970-01-01';
+  const carry = carryFrom(doc);
+  let carried = 0;
+  const out = { ...doc, retailers: [], cards: [], entries: [], queue: [] };
+  const categories = [...(doc.categories || [])];
+  const brandMemory = { ...(doc.brandMemory || {}) };
+  const rows = [];
+  for (const sr of snap.retailers) {
+    const name = String(sr.name || '').trim();
+    if (!name) { // a blank Notion row: nothing to import — unless it holds money, which can't be placed
+      const empty = !sr.cards.some((c) => c.faceCents > 0) && sr.notion.remainingBalanceCents === 0 && sr.notion.remainingYnabCents === 0;
+      rows.push({ notionId: sr.notionId, name: '(unnamed Notion row)', category: 'Other', brandDomain: null, cards: 0, skippedCards: sr.cards.length, notion: { balance: sr.notion.remainingBalanceCents, owed: sr.notion.remainingYnabCents }, balance: 0, owed: 0, created: false, blank: true, match: empty, warnings: empty ? [] : ['A Notion retailer row with no name holds cards or money — name it in Notion and re-snapshot'] });
+      continue;
+    }
+    const brand = importBrand(name);
+    const pref = carry.prefs.get(normName(name));
+    const category = (pref && pref.category) || (IMPORT_CATEGORIES.includes(sr.category) ? sr.category : 'Other');
+    if (!categories.includes(category)) categories.push(category);
+    const warnings = [];
+    const live = sr.cards.filter((c) => c.faceCents > 0);
+    const skipped = sr.cards.length - live.length;
+    const row = { notionId: sr.notionId, name, category, brandDomain: brand ? brand.domain : null, cards: live.length, skippedCards: skipped,
+      notion: { balance: sr.notion.remainingBalanceCents, owed: sr.notion.remainingYnabCents }, warnings };
+    if (!live.length) {
+      row.balance = 0; row.owed = 0; row.created = false;
+      row.match = sr.notion.remainingBalanceCents === 0 && sr.notion.remainingYnabCents === 0;
+      if (!row.match) warnings.push('Notion shows a balance or owed but has no cards to hold it');
+      rows.push(row); continue;
+    }
+    const r = { id: newId(), name, category, favorite: !!(pref && pref.favorite), ...(sr.notionId ? { notionId: sr.notionId } : {}) };
+    if (brand) { r.brandDomain = brand.domain; if (brand.brandColor) r.brandColor = brand.brandColor; brandMemory[brand.domain] = category; }
+    else warnings.push('Unknown brand — monogram logo (pick the brand in Add Card later)');
+    out.retailers.push(r);
+    for (const sc of live) {
+      const date = ISO_DAY.test(String(sc.date)) ? sc.date : (sr.firstSpendDate || migDate);
+      const card = { id: newId(), retailerId: r.id, face: sc.faceCents, paid: sc.paidCents, purchaseDate: date, ...(sc.notionId ? { notionId: sc.notionId } : {}) };
+      const hit = carry.cards.get(carryKey(name, card.face, card.paid, card.purchaseDate));
+      if (hit && hit.length) { Object.assign(card, hit.shift().details); carried++; }
+      out.cards.push(card);
+      if (sr.firstSpendDate && date > sr.firstSpendDate) warnings.push(`A card is dated ${date}, after the first spend (${sr.firstSpendDate})`);
+    }
+    const paid = live.reduce((t, c) => t + c.paidCents, 0);
+    const ynabShift = paid - sr.notion.remainingYnabCents;
+    const drift = ynabShift - sr.ynabChargesCents, slack = Math.ceil((sr.subCentValues || 0) / 2);
+    if (Math.abs(drift) > slack) { row.refused = true; warnings.push(`Owed doesn't add up: Notion's Remaining YNAB is ${drift < 0 ? '+' : '−'}${Math.abs(drift)}¢ off Σ paid − ynab charges — more than rounding`); }
+    else if (drift) warnings.push(`Rounding: YNAB shift ${drift > 0 ? '+' : ''}${drift}¢ vs Notion's ynab charges (Notion keeps sub-cent amounts) so owed matches Notion`);
+    if (sr.totalSpendCents > 0 || ynabShift !== 0) {
+      const spendId = newId();
+      const states = cardsOf(out, r.id).map((c) => ({ id: c.id, balance: c.face, purchaseDate: c.purchaseDate }));
+      let draws;
+      try { draws = sr.totalSpendCents > 0 ? plan(sr.totalSpendCents, states) : [{ cardId: states[0].id, amount: 0 }]; }
+      catch (e) { if (e.code !== 'insufficientBalance') throw e; draws = null; warnings.push('Notion total spend is more than these cards ever held'); }
+      if (draws) {
+        draws.forEach((d, i) => out.entries.push({ id: `${spendId}:${i}`, spendId, cardId: d.cardId, type: 'migration', amount: d.amount ? -d.amount : 0, date: migDate, ynabShift: i === 0 ? ynabShift : 0 }));
+      } else { row.refused = true; }
+    }
+    row.created = true;
+    row.balance = retailerBalance(out, r.id);
+    row.owed = retailerOwed(out, r.id);
+    row.match = !row.refused && row.balance === row.notion.balance && row.owed === row.notion.owed;
+    if (row.notion.balance === 0 && row.notion.owed !== 0) warnings.push(`Residual owed ${row.notion.owed}¢ on a zero balance (as in Notion)`);
+    rows.push(row);
+  }
+  const uncarried = [];
+  for (const list of carry.cards.values()) for (const u of list) uncarried.push({ retailer: u.retailer, face: u.face, last4: u.last4, hasPin: !!u.details.pin });
+  out.categories = categories;
+  out.brandMemory = brandMemory;
+  return { doc: out, rows, carried, uncarried };
+}
+
+function importRefusal(doc) {
+  const y = (doc.settings && doc.settings.ynab) || {};
+  if (y.cutoverAt) return 'Import is closed: cutover happened on ' + String(y.cutoverAt).slice(0, 10) + ' — Cardsharp is the source of truth now.';
+  return null;
+}
+
+function previewImport(doc, snap) {
+  validateSnapshot(snap);
+  let n = 0;
+  const built = buildImport(doc, snap, () => `preview-${++n}`);
+  const t = { retailers: built.rows.length, created: 0, cards: 0, balance: 0, owed: 0, notionBalance: 0, notionOwed: 0, matched: 0, skippedCards: 0 };
+  for (const r of built.rows) {
+    t.created += r.created ? 1 : 0; t.cards += r.cards; t.skippedCards += r.skippedCards;
+    t.balance += r.balance; t.owed += r.owed; t.notionBalance += r.notion.balance; t.notionOwed += r.notion.owed;
+    t.matched += r.match ? 1 : 0;
+  }
+  const hasData = (doc.cards || []).length > 0 || (doc.retailers || []).length > 0;
+  const spendGroups = new Set((doc.entries || []).map((e) => e.spendId || e.id)).size;
+  return {
+    takenAt: snap.takenAt, rows: built.rows, totals: t,
+    ok: t.matched === t.retailers && !importRefusal(doc),
+    refusal: importRefusal(doc),
+    replace: hasData ? { retailers: (doc.retailers || []).length, cards: (doc.cards || []).length, entries: spendGroups, carried: built.carried, uncarried: built.uncarried } : null,
+  };
+}
+
+function importMut(doc, snap, { newId = replayableIds(), now = 0 } = {}) {
+  const refusal = importRefusal(doc);
+  if (refusal) throw new ImportRefusedError('cutover', refusal);
+  const preview = previewImport(doc, snap);
+  if (!preview.ok) throw new ImportRefusedError('mismatch', `${preview.totals.retailers - preview.totals.matched} retailer(s) don't match Notion — nothing was imported`);
+  const built = buildImport(doc, snap, newId);
+  const next = {
+    ...built.doc,
+    importInfo: { source: 'notion', takenAt: snap.takenAt, importedAt: now, retailers: preview.totals.created, cards: preview.totals.cards, allMatched: true },
+  };
+  return { doc: next, preview };
+}
+
+
+/* ---- src/core/theme.js ---- */
+const THEME_CHOICES = ['system', 'light', 'dark'];
+const DEFAULT_THEME = 'system';
+const themeChoice = (stored) => (THEME_CHOICES.includes(stored) ? stored : DEFAULT_THEME);
+const themePin = (choice) => (choice === 'system' ? null : choice); // null = follow the OS
+
+
 /* ---- src/ui/dom.js ---- */
-// src/ui/dom.js — the two DOM helpers every UI module shares (one scope after the build).
 function $(id) { return document.getElementById(id); }
 function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
 
-// One polite live region for every confirmation ("Logged $12.50", "Copied"). Re-announces repeats.
-// action { label, onClick } adds a button (the 6-second Undo after a delete); it dismisses the toast.
 let toastTimer = null;
 function toast(msg, ms = 2600, action = null) {
   const t = document.getElementById('toast');
@@ -3566,10 +3635,6 @@ function toast(msg, ms = 2600, action = null) {
   toastTimer = setTimeout(() => { t.classList.remove('show', 'has-action'); }, ms);
 }
 
-// ---- sheets lock the page underneath (Arc 2b) ----
-// iOS-Safari-safe: the body is pinned with position:fixed at -scrollY (overflow:hidden alone does not
-// stop iOS rubber-banding the page behind a sheet), and the scroll position is restored on close.
-// Counted, so a sheet opened from another sheet keeps the lock until the last one closes.
 let lockDepth = 0, lockedY = 0;
 function lockScroll() {
   if (lockDepth++ > 0) return;
@@ -3585,7 +3650,6 @@ function unlockScroll() {
   document.documentElement.classList.remove('scroll-locked');
   window.scrollTo(0, lockedY);
 }
-// openSheet(dialog) — showModal + lock the page until this dialog closes.
 function openSheet(d) {
   if (d.open) return;
   d.showModal();
@@ -3595,10 +3659,6 @@ function openSheet(d) {
 
 
 /* ---- src/ui/swipe.js ---- */
-// src/ui/swipe.js — swipe-left-to-delete rows (Arc 2b). The row's content slides left over a tray
-// holding a real "Delete" button. Swipe is the touch gesture (pointer events, so a mouse drag works
-// too); the button is ALWAYS in the tab order and the accessibility tree — focusing it opens the row,
-// so keyboard and screen-reader users reach the same action (axe 0). Vertical drags scroll the page.
 
 
 const TRAY_W = 88;
@@ -3614,7 +3674,6 @@ function setOpen(row, on) {
 }
 function closeSwipes() { if (openRow) setOpen(openRow, false); }
 
-// makeSwipe(row, { label, onDelete }) — wraps row's current children in a sliding face + a tray.
 function makeSwipe(row, { label, onDelete }) {
   const face = el('div', 'swipe-face');
   face.append(...row.childNodes);
@@ -3656,24 +3715,19 @@ function makeSwipe(row, { label, onDelete }) {
   };
   face.addEventListener('pointerup', end);
   face.addEventListener('pointercancel', end);
-  // a tap on an open row's face closes it (and swallows that tap)
   face.addEventListener('click', (e) => { if (row.classList.contains('is-open')) { e.preventDefault(); e.stopPropagation(); setOpen(row, false); } }, true);
   return row;
 }
 
 
 /* ---- src/ui/confirm.js ---- */
-// src/ui/confirm.js — the one confirm sheet for destructive actions (Arc 2b deletes). It states the
-// impact in plain words ("Removes $12.50 spend · Starbucks balance → $277.50") before anything changes.
-// confirmSheet({ title, message, more, action }) → Promise<boolean> (true = confirmed).
 
 
 let pending = null;
 function settle(v) { const f = pending; pending = null; const d = $('confirm-sheet'); if (d.open) d.close(); if (f) f(v); }
 
 let confirmWired = false;
-// undoHint: the "You can undo for 6 seconds." caption (deletes); danger: the red action button.
-function confirmSheet({ title, message, more = '', action = 'Delete', undoHint = true, danger = true }) {
+function confirmSheet({ title, message, more = '', action = 'Delete', undoHint = true, danger = true, warn = '', list = [] }) {
   if (!confirmWired) {
     confirmWired = true;
     $('confirm-cancel').addEventListener('click', () => settle(false));
@@ -3686,6 +3740,10 @@ function confirmSheet({ title, message, more = '', action = 'Delete', undoHint =
   $('confirm-msg').textContent = message;
   $('confirm-more').textContent = more;
   $('confirm-more').hidden = !more;
+  $('confirm-warn').textContent = warn;
+  $('confirm-warn').hidden = !warn;
+  $('confirm-list').replaceChildren(...list.map((t) => el('li', null, t)));
+  $('confirm-list').hidden = !list.length;
   $('confirm-go').textContent = action;
   $('confirm-undo').hidden = !undoHint;
   $('confirm-go').classList.toggle('is-calm', !danger);
@@ -3699,18 +3757,10 @@ function closeConfirm() { if (pending || $('confirm-sheet').open) settle(false);
 
 
 /* ---- src/ui/cards.js ---- */
-// src/ui/cards.js — the Cards stack (spec §5, mockup home v2) and the card face it is built from.
-// Wallet interaction, Cash App faces: CR80 1.586:1 cards fanned vertically in their group with a
-// 52px peek (Arc 2b: tighter); each later card covers the one above, so only the group's front card
-// shows in full. Plain native scroll — no snap, no scroll-jacking.
-// Card numbers and PINs are never rendered here.
 
 
 
 
-// In-page route links carry the full same-document URL (path + query + #route), not a bare "#…":
-// clicking still only changes the hash, and axe never mistakes an offscreen card (e.g. under a
-// scroll-locked sheet) for a skip link with no target.
 function routeHref(route) { return `${location.pathname}${location.search}#${route}`; }
 
 function brandfetchClient() {
@@ -3718,11 +3768,8 @@ function brandfetchClient() {
   return m ? m.content : '';
 }
 
-// The logo tile: Brandfetch CDN image from the stored domain; any failure (no client id, blocked,
-// 404, offline) swaps in the monogram, so a card face is never empty.
 function logoTile(retailer, size = 'lg') {
   const tile = el('span', `gc-logo gc-logo-${size}`);
-  // Eye P1 (Arc 2b): the Add Card ghost showed "NG" initials — a neutral gift glyph until a brand is picked
   if (retailer.glyph === 'gift') {
     tile.classList.add('is-glyph');
     tile.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><rect x="5" y="12" width="14" height="8.5" rx="1"/><line x1="12" y1="8" x2="12" y2="20.5"/><path d="M12 8c-1.5-3.5-5.5-4-5.5-1.5S10 8 12 8zM12 8c1.5-3.5 5.5-4 5.5-1.5S14 8 12 8z"/></svg>';
@@ -3741,7 +3788,6 @@ function logoTile(retailer, size = 'lg') {
   return tile;
 }
 
-// One card face. s = a stack summary (core/stack.retailerSummary). opts.tag: 'a' (stack) | 'div' (hero).
 function cardFace(s, opts = {}) {
   const r = s.retailer;
   const card = el(opts.tag || 'a', 'gcard');
@@ -3777,8 +3823,6 @@ function cardFace(s, opts = {}) {
 const prefersReducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const toTop = () => window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
 
-// Each group: a sticky section header (title + a quiet "↑" back to the top) over its fanned pile.
-// query (home search) filters the stack; returns the painted groups (the jump row is built from them).
 function paintStack(doc, root, query = '') {
   root.replaceChildren();
   const groups = stackGroups(doc, { query });
@@ -3804,8 +3848,6 @@ function paintStack(doc, root, query = '') {
   return groups;
 }
 
-// ---- section jump row (Arc 2b): one quiet chip per section; tap → smooth-scroll the section header
-// to the top (under the sticky chrome); the chip of the section under the chrome is highlighted. ----
 const stickyTop = () => {
   const bar = document.getElementById('topbar'), row = document.getElementById('jump-row');
   return (bar ? bar.getBoundingClientRect().bottom : 0) + (row && !row.hidden ? row.getBoundingClientRect().height : 0);
@@ -3816,9 +3858,6 @@ function jumpTo(key) {
   const y = sec.getBoundingClientRect().top + window.scrollY - stickyTop();
   window.scrollTo({ top: Math.max(0, Math.round(y)), behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
 }
-// Auto-size (Arc 3): the largest chip size at which the whole set fits on one line with at least
-// JUMP_MIN_GAP between chips and at the edges; justify-content: space-evenly then makes every gap equal,
-// edge to edge. Smaller than the smallest size → wrap. Publishes the row height for the sticky headers.
 const JUMP_SIZES = [[12, 8], [11.5, 7], [11, 6]]; // Arc 2b was 14px / 13px // [font px, side padding px]
 const JUMP_MIN_GAP = 6;
 function fitJumpRow(row) {
@@ -3849,7 +3888,6 @@ function paintJumpRow(row, groups) {
   fitJumpRow(row);
   markCurrentSection(row);
 }
-// The current section = the last one whose top has reached the sticky chrome.
 function markCurrentSection(row) {
   const line = stickyTop() + 2;
   let cur = null;
@@ -3868,13 +3906,6 @@ function markCurrentSection(row) {
 
 
 /* ---- src/ui/detail.js ---- */
-// src/ui/detail.js — card detail (spec §6, mockup card-detail). Route `#card/<retailerId>`.
-// Hero = the retailer card (total balance + Saving %), sub-cards highest balance first with the $0
-// cards dimmed at the right (Arc 2b; tap → filter the activity to that card), the Log Spend button,
-// a Details disclosure (avg saving %, a category picker that moves the whole brand), the activity
-// list and Card info: numbers + PINs revealed on tap, tap-to-copy, hidden again after 30s and whenever
-// the view is left, the tab changes, the page hides or the vault locks. Nothing secret is ever logged.
-// Activity rows and card rows swipe left to Delete (a real, focusable button in the tray).
 
 
 
@@ -3896,20 +3927,17 @@ function fmtDate(iso, withYear) {
 const monthYear = (iso) => { const m = /^(\d{4})-(\d{2})/.exec(String(iso || '')); return m ? `${MONTHS[Number(m[2]) - 1]} ${m[1]}` : ''; };
 const lastFour = (num) => { const d = String(num || '').replace(/\D/g, ''); return d.length >= 4 ? d.slice(-4) : null; };
 
-// "Card · 4821" from the stored number; else "Card N" by purchase order.
 function cardLabels(doc, retailerId) {
   const cards = [...cardsOf(doc, retailerId)].sort((a, b) => String(a.purchaseDate).localeCompare(String(b.purchaseDate)) || String(a.id).localeCompare(String(b.id)));
   const out = new Map();
   cards.forEach((c, i) => { const l4 = lastFour(c.number); out.set(c.id, l4 ? `Card · ${l4}` : `Card ${i + 1}`); });
   return out;
 }
-// "23.2%" — Σsaved ÷ Σface to 1 dp, in integer tenths of a percent (no float rounding surprises).
 function avgSavingPct(saved, face) {
   if (face <= 0) return '0.0%';
   const t = Math.round(saved * 1000 / face);
   return `${Math.floor(t / 10)}.${Math.abs(t % 10)}%`;
 }
-// "Almost done": still has money, but at most a fifth of its face value.
 const almostDone = (bal, face) => bal > 0 && bal * 5 <= face;
 
 function hideSecrets() {
@@ -3960,7 +3988,6 @@ function activityRows(doc, retailerId, labels, onDeleteSpend) {
   });
 }
 
-// Paint the detail for retailerId into #detail. Returns false when the retailer no longer exists.
 function paintDetail(doc, retailerId, handlers = {}) {
   const { onLogSpend, onFavorite, onRecategorise, onDeleteSpend, onDeleteCard } = handlers;
   const r = (doc.retailers || []).find((x) => x.id === retailerId);
@@ -3974,7 +4001,6 @@ function paintDetail(doc, retailerId, handlers = {}) {
   const root = $('detail');
   root.replaceChildren();
 
-  // nav: back · title · ⋯ (favorite)
   const nav = el('div', 'detail-nav');
   const back = el('a', 'detail-back glass-btn');
   back.href = routeHref('cards'); back.setAttribute('aria-label', 'Back to cards');
@@ -3989,15 +4015,17 @@ function paintDetail(doc, retailerId, handlers = {}) {
   fav.addEventListener('click', () => onFavorite && onFavorite(retailerId, !r.favorite));
   nav.append(back, title, fav);
 
-  // hero
   const hero = cardFace(s, { tag: 'div', balanceLabel: 'Total balance' });
   hero.classList.add('detail-hero');
   hero.setAttribute('role', 'img');
-  hero.setAttribute('aria-label', `${r.name} — total balance ${formatCents(s.balance)}${s.saving ? `, ${s.saving}` : ', used up'}`);
+  hero.setAttribute('aria-label', `${r.name} — total balance ${formatCents(s.balance)}${s.saving ? `, ${s.saving}` : ', used up'}, owed to YNAB ${formatCents(s.owed)}`);
+  const owed = el('span', 'hero-owed');
+  owed.id = 'detail-owed';
+  owed.append(el('small', null, 'Owed to YNAB'), el('span', 'hero-owed-amt', formatCents(s.owed)));
+  hero.append(owed);
 
   const parts = [nav, hero];
 
-  // sub-cards (only with 2+ cards): highest balance first; the $0 cards sit at the right, dimmed
   if (cards.length > 1) {
     const sec = el('section', 'subcards');
     sec.setAttribute('aria-labelledby', 'subcards-h');
@@ -4024,7 +4052,6 @@ function paintDetail(doc, retailerId, handlers = {}) {
     parts.push(sec);
   }
 
-  // Log Spend
   const log = el('button', 'log-spend-btn');
   log.type = 'button'; log.id = 'log-spend-btn';
   log.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
@@ -4033,7 +4060,6 @@ function paintDetail(doc, retailerId, handlers = {}) {
   log.addEventListener('click', () => onLogSpend && onLogSpend(retailerId));
   parts.push(log);
 
-  // Details disclosure
   const det = el('details', 'glass group detail-more');
   const sum = el('summary', null, 'Details');
   const dl = el('dl');
@@ -4043,7 +4069,6 @@ function paintDetail(doc, retailerId, handlers = {}) {
   row('Original balance', formatCents(face));
   row('Total paid', formatCents(paid));
   row('Owed to YNAB', formatCents(s.owed)).classList.add('owed-row'); // per RETAILER: paid − Σ shifts (K2)
-  // "(avg 23.2%) Saved $X" — avg = Σsaved ÷ Σface over the retailer's cards (1 dp, integer maths)
   const saved = el('dd', 'saved-dd');
   saved.append(el('span', 'avg-pct', `(avg ${avgSavingPct(face - paid, face)})`), document.createTextNode(` Saved ${formatCents(face - paid)}`));
   row('Total saved', saved).classList.add('saved-row');
@@ -4061,7 +4086,6 @@ function paintDetail(doc, retailerId, handlers = {}) {
   det.append(sum, dl);
   parts.push(det);
 
-  // Activity
   const act = el('section', 'activity');
   act.setAttribute('aria-labelledby', 'activity-h');
   const ah = el('h2', 'section-h', detailState.filterCardId ? `Activity · ${labels.get(detailState.filterCardId)}` : 'Activity');
@@ -4073,7 +4097,6 @@ function paintDetail(doc, retailerId, handlers = {}) {
   act.append(ah, list);
   parts.push(act);
 
-  // Card info
   const info = el('section', 'card-info');
   info.id = 'detail-info';
   info.setAttribute('aria-labelledby', 'info-h');
@@ -4082,7 +4105,6 @@ function paintDetail(doc, retailerId, handlers = {}) {
   for (const c of [...cards].sort((a, b) => labels.get(a.id).localeCompare(labels.get(b.id), undefined, { numeric: true }))) {
     const row = el('div', 'info-row');
     const head = el('div', 'info-head');
-    // Eye P1 (Arc 2b): a swiped row kept no identity — it reads "Card 3 · $100.00", "No details" beneath
     const label = el('span', 'info-label', `${labels.get(c.id)} · ${formatCents(cardBalance(doc, c))}`);
     if (!c.number && !c.pin) label.append(el('span', 'info-sub', 'No details'));
     head.append(label);
@@ -4115,16 +4137,6 @@ function closeDetail() {
 
 
 /* ---- src/ui/logspend.js ---- */
-// src/ui/logspend.js — the Log Spend sheet (spec §8, mockup log-spend). A modal bottom sheet: the
-// amount dominates (inputmode=decimal → the decimal keypad), "Using" auto-picks the LOWEST-balance
-// card, "After: $X remaining" is the retailer total, the date defaults to today.
-// Auto-split: a spend larger than the chosen card drains it, then asks per further card —
-// "Card X emptied. Take remaining $Y from Card Z?" (next-smallest pre-selected, changeable) — and only
-// when the whole amount is covered does it commit, as ONE spend (one YNAB shift) with the confirmed
-// draws. Cancelling a confirm logs nothing. The ledger re-validates every draw.
-// Arc 2b: the sheet wears the retailer's brand (core/stack.sheetPalette — contrast-checked accent, dim
-// and surface tint for the current theme) with the brand logo top-right, and the page underneath is
-// locked while it is open (dom.openSheet).
 
 
 
@@ -4147,14 +4159,11 @@ function parseAmount(raw) {
 }
 const optionText = (label, bal) => `${label} · ${formatCents(bal)}`;
 
-// Size the amount input to its content (ch, tabular digits) so "$ + amount" stays centred as one unit.
 function sizeAmount() {
   const i = $('spend-amt');
   const n = Math.min(8, Math.max(2, (i.value || i.placeholder || '').length));
   i.style.width = `${n + 0.6}ch`;
 }
-// Eye P1 (Arc 2b): while the amount exceeds the picked card, "Using" reads "Auto-split · N cards" and the
-// drains (the same smallest-first plan the cascade will propose) list under After.
 function showSplit(draws) {
   const using = $('spend-using'), list = $('spend-drains');
   const on = !!draws && draws.length > 1;
@@ -4164,11 +4173,24 @@ function showSplit(draws) {
   list.hidden = !on;
   if (!on) { list.replaceChildren(); return; }
   $('spend-split').textContent = `Auto-split · ${draws.length} cards`;
+  $('spend-split').insertAdjacentHTML('beforeend', '<svg class="split-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
   const bal = new Map(liveCards(sheet.doc, sheet.retailerId).map((c) => [c.id, c.balance]));
-  list.replaceChildren(...draws.map((d) => el('li', null, `${sheet.labels.get(d.cardId)}: ${formatCents(bal.get(d.cardId))} → ${formatCents(bal.get(d.cardId) - d.amount)}`)));
+  list.replaceChildren(...draws.map((d) => {
+    const li = el('li'), card = el('span', 'dr-card', sheet.labels.get(d.cardId));
+    card.append(el('span', 'vh', ': '));
+    li.append(card, el('span', null, `${formatCents(bal.get(d.cardId))} `), el('span', null, `→ ${formatCents(bal.get(d.cardId) - d.amount)}`));
+    return li;
+  }));
 }
 
-// Recompute the preview / validity line from the current inputs.
+function showShift(amount) {
+  const p = $('spend-shift'), { doc, retailerId } = sheet;
+  p.textContent = '';
+  if (amount === null) return;
+  const bal = retailerBalance(doc, retailerId), s = shift(retailerOwed(doc, retailerId), bal, bal - amount);
+  p.textContent = s > 0 ? `YNAB shift ${formatCents(s)} → ${doc.settings.ynab.giftCardsCategory || 'Gift cards'}` : 'No YNAB shift — nothing owed';
+}
+
 function update() {
   sizeAmount();
   const { doc, retailerId } = sheet;
@@ -4179,6 +4201,7 @@ function update() {
   const msg = $('spend-after'), go = $('spend-go');
   msg.classList.remove('is-error');
   showSplit(null);
+  showShift(null);
   if ($('spend-amt').value.trim() && amount === null) { msg.textContent = 'Enter an amount like 12.50'; msg.classList.add('is-error'); go.disabled = true; return; }
   if (amount === null) { msg.textContent = `After: ${formatCents(total)} remaining`; go.disabled = true; return; }
   if (amount > total) {
@@ -4188,6 +4211,7 @@ function update() {
   const splits = chosen && amount > chosen.balance;
   msg.textContent = `After: ${formatCents(total - amount)} remaining`;
   if (splits) showSplit(plan(amount, cards, { firstCardId: chosen.id }));
+  showShift(amount);
   go.disabled = false;
 }
 
@@ -4196,7 +4220,6 @@ function showStep(which) {
   $('spend-confirm').hidden = which !== 'confirm';
 }
 
-// Ask for the next card of the cascade (spec §8 auto-split steps 3–5).
 function askNext() {
   const { doc, retailerId, labels } = sheet;
   const used = new Set(sheet.draws.map((d) => d.cardId));
@@ -4206,7 +4229,6 @@ function askNext() {
   pick.replaceChildren(...rest.map((c) => { const o = el('option', null, optionText(labels.get(c.id), c.balance)); o.value = c.id; return o; }));
   const paint = () => {
     const c = rest.find((x) => x.id === pick.value) || rest[0];
-    // say exactly what the button will do: the whole remainder only when this card covers it
     const take = Math.min(sheet.left, c.balance), short = sheet.left - take;
     $('spend-confirm-q').textContent = short === 0
       ? `${labels.get(last.cardId)} emptied. Take remaining ${formatCents(sheet.left)} from ${labels.get(c.id)} (${formatCents(c.balance)})?`
@@ -4265,20 +4287,16 @@ function wire() {
   $('spend-cancel').addEventListener('click', closeSpendSheet);
   $('spend-take').addEventListener('click', onTake);
   $('spend-back').addEventListener('click', () => { sheet.draws = []; showStep('form'); update(); $('spend-amt').focus(); });
-  // a click on the dimmed backdrop (outside the sheet box) dismisses, like a native sheet
   $('spend-sheet').addEventListener('click', (e) => { if (e.target === $('spend-sheet')) closeSpendSheet(); });
 }
 
 const currentTheme = () => document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-// The brand palette rides on the sheet as CSS variables: everything inside that uses --accent,
-// --accent-ink, --ink-2 or --sheet-bg is rebranded; nothing outside the sheet changes.
 function brandSheet(d, retailer) {
   const p = sheetPalette(retailer, currentTheme());
   for (const [k, v] of [['--accent', p.accent], ['--accent-ink', p.onAccent], ['--ink-2', p.dim], ['--sheet-bg', p.tint], ['--brand', p.brand]]) d.style.setProperty(k, v);
   d.classList.add('is-branded');
 }
 
-// onCommit({ retailerId, amount, date, draws }) → Promise<boolean> (true = saved).
 function openSpendSheet(doc, retailerId, onCommit) {
   wire();
   const r = (doc.retailers || []).find((x) => x.id === retailerId);
@@ -4302,20 +4320,6 @@ function openSpendSheet(doc, retailerId, onCommit) {
 
 
 /* ---- src/ui/addcard.js ---- */
-// src/ui/addcard.js — Add Card (spec §8b) + Bulk Capture carousel (§8c, no OCR — W12).
-// One form with a quantity: a live preview card (+ ×N badge), a retailer typeahead, the stored brand
-// DOMAIN (logos are always the CDN URL built from it), a suggested category (remembered → catalog →
-// industry if present → keyword map → Other), Favorite, and the optional number/PIN/where/notes
-// (number + PIN hidden when quantity > 1, with running totals). A bulk save routes straight into the
-// capture carousel.
-// Typeahead (Arc 2b): the curated catalog (core/retailers.js) answers instantly as the top block (max
-// 5); Brandfetch's FREE Brand Search is only a fallback block under a quiet "Other brands" divider
-// (≥ 2 chars, ~250ms debounce, results cached per query in memory, stale responses ignored, filtered:
-// one per domain, no catalog domains, no foreign brands unless asked, max 3) and is skipped entirely
-// once the catalog fills its block for a ≥ 4-char query. Never the keyed Brand API.
-// Arc 3 slice 1 (Mark): when the catalog HAS a match, Brand Search does not run on its own — a quiet
-// "Search more brands" row (a real option: tap, or arrow + Enter) runs it on demand. No catalog match →
-// the fallback runs as before.
 
 
 
@@ -4375,25 +4379,19 @@ function renderAdd() {
   const v = addValues();
   const okName = !!v.name, okFace = v.face !== null && v.face > 0, okPaid = v.paid !== null;
   $('add-save').disabled = !(okName && okFace && okPaid);
-  // caption: Saving X% · or what is wrong
   const cap = $('add-caption');
   cap.classList.remove('is-error');
   if ($('add-face').value.trim() && !okFace) { cap.textContent = 'Face value must be an amount like 50.00'; cap.classList.add('is-error'); }
   else if ($('add-paid').value.trim() && !okPaid) { cap.textContent = 'You paid must be an amount like 42.50'; cap.classList.add('is-error'); }
-  // Eye P1 (Arc 2): "Saving X%" showed twice (preview badge + caption). The badge carries the %; the
-  // caption carries the money — and, for several cards, the running totals (visible without scrolling).
   else if (okFace && okPaid && v.paid > v.face) cap.textContent = `You paid more than face value (${savingLabel(v.paid, v.face).replace('Saving ', 'saving ')})`;
   else if (okFace && okPaid && add.qty > 1) cap.textContent = `Creating ${add.qty} cards · ${formatCents(v.face * add.qty)} total face · ${formatCents(v.paid * add.qty)} total paid`;
   else if (okFace && okPaid) cap.textContent = `${formatCents(v.face - v.paid)} off ${formatCents(v.face)} face value`;
   else if (add.qty > 1) cap.textContent = `Creating ${add.qty} cards — enter the face value and what you paid for each.`;
   else cap.textContent = 'Required: retailer, face value and what you paid.';
-  // quantity: number + PIN only for a single card
   const many = add.qty > 1;
   $('add-number-row').hidden = many; $('add-pin-row').hidden = many;
   $('add-qty').textContent = String(add.qty);
   $('add-qty-dec').disabled = add.qty <= 1; $('add-qty-inc').disabled = add.qty >= MAX_QTY;
-  // live preview card — Eye P1 (Arc 2): it no longer morphs per keystroke ("STA", olive tint, $0.00):
-  // a neutral ghost card stays until a brand is picked (or known) or the amounts are entered
   const face = okFace ? v.face : 0, paid = okPaid ? v.paid : 0;
   const known = findRetailer(add.doc, { name: v.name, brandDomain: add.brand && add.brand.domain });
   const ready = !!add.brand || !!known || (okFace && !!v.name);
@@ -4427,8 +4425,6 @@ function suggestOption(r, i) {
   opt.addEventListener('click', () => pickBrand(i));
   return opt;
 }
-// Two blocks: the catalog on top, Brand Search below an "Other brands" divider — or, while Brand Search
-// has not run, a "Search more brands" row under the catalog block.
 const MORE = { source: 'more', name: 'Search more brands' };
 function moreOption(i) {
   const opt = el('div', 'suggest-row suggest-more');
@@ -4489,7 +4485,6 @@ function pickBrand(i) {
   $('add-face').focus();
 }
 
-// Brand Search for the current query; stale answers (the user typed on) are dropped.
 function runFallback(q, seq, catalogRows, { onDemand = false } = {}) {
   return (async () => {
     try {
@@ -4518,7 +4513,6 @@ function onRetailerInput() {
   if (normName(q).length < 2) { closeSuggest(); return; }
   const catalogRows = searchCatalog(q, CATALOG_MAX).map((b) => ({ name: b.name, domain: b.domain, category: b.category, brandColor: b.brandColor, source: 'catalog' }));
   const canSearch = needsFallback(q, catalogRows.length) && !!brandfetchClient();
-  // a catalog match → no automatic Brand Search; offer it as a row instead
   showSuggest(catalogRows, [], { more: canSearch && catalogRows.length > 0 });
   if (!canSearch || catalogRows.length) return;
   add.timer = setTimeout(() => runFallback(q, seq, catalogRows), SEARCH_DEBOUNCE_MS);
@@ -4551,7 +4545,6 @@ function wireAdd() {
   $('add-cancel').addEventListener('click', () => $('add-sheet').close());
   $('add-retailer').addEventListener('input', onRetailerInput);
   $('add-retailer').addEventListener('keydown', onRetailerKey);
-  // close on blur — unless focus came back to the field meanwhile (a stale timer must not shut fresh rows)
   $('add-retailer').addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== $('add-retailer')) closeSuggest(); }, 120));
   for (const id of ['add-face', 'add-paid', 'add-fav', 'add-number', 'add-pin']) $(id).addEventListener('input', renderAdd);
   $('add-category').addEventListener('change', () => { add.catTouched = true; $('add-cat-hint').textContent = ''; renderAdd(); });
@@ -4560,7 +4553,6 @@ function wireAdd() {
   $('add-sheet').addEventListener('click', (e) => { if (e.target === $('add-sheet')) $('add-sheet').close(); });
 }
 
-// onSave(retailer, fields) → Promise<boolean>.
 function openAddSheet(doc, onSave) {
   wireAdd();
   Object.assign(add, { doc, brand: null, qty: 1, catTouched: false, onSave });
@@ -4576,7 +4568,6 @@ function closeAddSheets() {
   for (const id of ['add-sheet', 'capture-sheet']) { const d = $(id); if (d && d.open) d.close(); }
 }
 
-// ---- Bulk Capture carousel (§8c): Card N of M, number + PIN per card; Skip / Next / Skip all / Done ----
 const cap = { doc: null, retailerId: null, cardIds: [], i: 0, onSet: null, onDone: null, saved: 0 };
 
 function paintCapture() {
@@ -4629,12 +4620,6 @@ function updateCaptureDoc(doc) { cap.doc = doc; }
 
 
 /* ---- src/ui/reports.js ---- */
-// src/ui/reports.js — Reports › All activity (Arc 3 slice 4): every event newest first — Date · Brand ·
-// Amount — in its own scroll area with a sticky header row. Spends are deductions (−$X), added cards are
-// increases (+$face, "Card added"), refunds/adjustments keep their sign; one row per spend. Tap a row →
-// that brand's detail. Swipe left (or focus the tray's Delete) → the same confirm + replay + 6s Undo as the
-// detail screen: a spend row deletes the spend, a "Card added" row deletes that card (and its spends).
-// ARIA table (role=table/row/cell): a real <table> can't host the swipe tray.
 
 
 
@@ -4645,7 +4630,6 @@ function updateCaptureDoc(doc) { cap.doc = doc; }
 
 const cell = (cls, child) => { const c = el('div', `ra-cell ${cls}`); c.setAttribute('role', 'cell'); if (child != null) c.append(child); return c; };
 
-// handlers: { onDeleteSpend(spendId), onDeleteCard(cardId) }
 function paintActivity(doc, root, handlers = {}) {
   const rows = doc ? activityLog(doc) : [];
   root.replaceChildren();
@@ -4673,8 +4657,9 @@ function paintActivity(doc, root, handlers = {}) {
     if (badge) kindTxt.append(el('span', 'sync-badge', badge));
     const brand = el('span', 'ra-brand-in'); brand.append(link, kindTxt);
     const amt = el('span', `ra-amt-in${r.amount > 0 ? ' is-credit' : ''}`, `${r.amount > 0 ? '+' : ''}${formatCents(r.amount)}`);
-    row.append(cell('ra-date', fmtDate(r.date, true)), cell('ra-brand', brand), cell('ra-amt', amt));
-    // the whole row is a tap target for the brand detail (the link is the keyboard path)
+    const d = shortDate(r.date), date = el('span', 'ra-day', d.day);
+    if (d.year) date.append(' ', el('span', 'ra-yr', d.year));
+    row.append(cell('ra-date', date), cell('ra-brand', brand), cell('ra-amt', amt));
     row.addEventListener('click', (e) => { if (e.target.closest('a, button')) return; location.hash = `card/${encodeURIComponent(r.retailerId)}`; });
     const del = r.kind === 'card' ? handlers.onDeleteCard && (() => handlers.onDeleteCard(r.cardId))
       : handlers.onDeleteSpend && (() => handlers.onDeleteSpend(r.spendId));
@@ -4693,18 +4678,6 @@ function paintActivity(doc, root, handlers = {}) {
 
 
 /* ---- src/ui/ynab.js ---- */
-// src/ui/ynab.js — YNAB in the app (Arc 3 slice 7): the cardsharp-ynab client, the background queue flush,
-// and Settings › YNAB. Browser → Edge Function only (W4): the YNAB token never reaches the page; the call is
-// gated by the x-plan-id the passkey unlock released.
-//  - Settings › YNAB (under Cards): account, payee, Gift cards category and a per-app-category → YNAB
-//    category mapping, filled from the function's `config`. Not reachable (not deployed yet, offline, demo)
-//    → "Connect after deploy" with the current values. Names are matched once to ids when config loads.
-//  - Posting is OFF (W6) and the switch is locked behind an explicit cutover confirm. This arc never flips
-//    it: the confirm is reachable only with the test-only `?demo=1&ynabtest=1` flag.
-//  - Flush: due queue entries go one at a time (post / reverse); results are committed back into the doc;
-//    retries back off; "token rejected" pauses the queue and Settings says "Reconnect required".
-//    Logging NEVER waits on any of this.
-
 
 
 
@@ -4712,8 +4685,6 @@ const YNAB_FN = 'https://eepjhpyziczrxvirczio.supabase.co/functions/v1/cardsharp
 const W6_TEXT = 'Turn this on only at cutover — after you’ve stopped logging gift card spends in Notion. Pipedream still posts every Notion spend to YNAB; with both on, each spend would post twice.';
 const yn = { ctx: null, flushing: false, again: false, timer: null, config: null, configState: 'idle' };
 
-// ctx: { doc() → current doc, commit(change) → Promise (quiet: no toasts), planId() → string, enabled() → may
-// call the function, cutoverAllowed() → may turn posting on, demo: bool }
 function initYnab(ctx) {
   yn.ctx = ctx;
   addEventListener('online', () => flushQueue());
@@ -4733,7 +4704,6 @@ async function callFn(body) {
   }
 }
 
-// ---- the queue flush: one entry at a time; never concurrent; reschedules itself for the next due entry ----
 async function flushQueue() {
   const ctx = yn.ctx;
   if (!ctx || !ctx.enabled() || !ctx.doc()) return;
@@ -4768,7 +4738,6 @@ function scheduleNext() {
   yn.timer = setTimeout(flushQueue, Math.max(250, Math.min(...next) - Date.now()));
 }
 
-// ---- Settings › YNAB ----
 async function loadConfig(force = false) {
   const ctx = yn.ctx;
   if (!ctx || !ctx.doc()) return;
@@ -4782,7 +4751,6 @@ async function loadConfig(force = false) {
   await resolveIds();
   paintYnabSettings();
 }
-// match the W5 names in Settings to YNAB ids, once (account, payee, Gift cards, each mapped category)
 async function resolveIds() {
   const doc = yn.ctx.doc(), y = (doc.settings && doc.settings.ynab) || {}, ids = y.ids || {}, c = yn.config;
   const byName = (list, name) => (list.find((x) => x.name === name) || {}).id;
@@ -4827,30 +4795,33 @@ function paintYnabSettings() {
   const ok = yn.configState === 'ok' && yn.config;
   const save = (patch, msg) => ctx.commit((d) => setYnabSettingsMut(d, patch)).then(() => { toast(msg); paintYnabSettings(); flushQueue(); });
   const rows = [];
-  // connection
   const conn = sum.paused || yn.configState === 'rejected' ? 'Reconnect required'
     : ok ? `Connected · ${yn.config.budget.name}` : yn.configState === 'loading' ? 'Checking…' : 'Connect after deploy';
   const c = row('Connection', conn, 'set-connection');
   c.classList.add('ynab-conn', ok ? 'is-ok' : 'is-off');
   rows.push(c);
-  // posting (W6: OFF, locked behind the cutover confirm)
   const post = el('span', 'posting-val');
   post.append(el('span', null, y.postingEnabled ? 'On' : 'Off · dry-run'));
   const pb = el('button', 'posting-btn', y.postingEnabled ? 'Turn off' : 'Turn on at cutover…');
   pb.type = 'button'; pb.id = 'posting-btn';
-  const locked = !y.postingEnabled && !ctx.cutoverAllowed();
+  const blockers = y.postingEnabled ? [] : cutoverBlockers(doc, { connected: !!ok });
+  const locked = blockers.length > 0;
   pb.disabled = locked;
-  if (locked) pb.setAttribute('aria-describedby', 'posting-lock');
+  if (locked) { // + a padlock (notion slice 8)
+    pb.setAttribute('aria-describedby', 'posting-lock');
+    pb.classList.add('is-locked');
+    pb.insertAdjacentHTML('afterbegin', '<svg class="lock-glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5v-3a4 4 0 0 1 8 0v3"/></svg>');
+  }
   pb.addEventListener('click', async () => {
     if (y.postingEnabled) { await ctx.commit((d) => setPostingMut(d, false)); toast('YNAB posting off — dry-run'); paintYnabSettings(); return; }
-    const yes = await confirmSheet({ title: 'Turn on YNAB posting?', message: W6_TEXT, action: 'Turn on posting', undoHint: false, danger: false });
-    if (!yes) return;
-    await ctx.commit((d) => setPostingMut(d, true));
+    if (!(await openCutover())) return;
+    await ctx.commit((d) => setPostingMut(d, true, { now: Date.now() }));
     toast('YNAB posting on');
     paintYnabSettings();
     flushQueue();
   });
   const pr = row('Posting', post);
+  pr.classList.add('posting-row');
   post.id = 'set-posting';
   pr.querySelector('dd').append(pb);
   rows.push(pr);
@@ -4867,7 +4838,6 @@ function paintYnabSettings() {
   }
   const dl = el('dl', 'ynab-rows');
   dl.append(...rows);
-  // per app category → the YNAB category a spend's shift moves FROM
   const map = el('dl', 'ynab-rows ynab-map');
   map.setAttribute('aria-label', 'Category mapping');
   for (const app of doc.categories || []) {
@@ -4880,8 +4850,9 @@ function paintYnabSettings() {
   }
   const q = el('p', 'ynab-queue', queueText(doc, sum));
   q.id = 'ynab-queue';
-  const lock = el('p', 'foot-note ynab-note', locked ? 'Posting stays off until cutover (W6): Cardsharp shows what it would post, and sends nothing.' : '');
+  const lock = el('p', 'foot-note ynab-note', locked ? `Posting stays off until cutover (W6). ${blockers[0].text}` : '');
   lock.id = 'posting-lock';
+  if (locked) lock.dataset.reason = blockers[0].code;
   root.replaceChildren(dl, el('h3', 'ynab-sub', 'Category mapping'), map, q, lock);
   root.dataset.state = yn.configState;
 }
@@ -4901,12 +4872,110 @@ function syncPill(doc) {
 }
 const configState = () => yn.configState;
 
+let cutPending = null, cutWired = false;
+const cutoverReady = () => $('cut-notion').checked && $('cut-pipedream').checked && $('cut-word').value.trim() === CUTOVER_WORD;
+function settleCut(v) { const f = cutPending; cutPending = null; if ($('cutover-sheet').open) $('cutover-sheet').close(); if (f) f(v); }
+function openCutover() {
+  if (!cutWired) {
+    cutWired = true;
+    const sync = () => { $('cutover-go').disabled = !cutoverReady(); };
+    for (const id of ['cut-notion', 'cut-pipedream', 'cut-word']) $(id).addEventListener('input', sync);
+    $('cutover-cancel').addEventListener('click', () => settleCut(false));
+    $('cutover-form').addEventListener('submit', (e) => { e.preventDefault(); if (cutoverReady()) settleCut(true); });
+    $('cutover-sheet').addEventListener('close', () => settleCut(false));
+  }
+  if (cutPending) settleCut(false);
+  $('cutover-msg').textContent = W6_TEXT;
+  $('cut-notion').checked = false; $('cut-pipedream').checked = false; $('cut-word').value = '';
+  $('cutover-go').disabled = true;
+  return new Promise((resolve) => { cutPending = resolve; openSheet($('cutover-sheet')); $('cut-notion').focus(); });
+}
+
+
+/* ---- src/ui/import.js ---- */
+
+
+
+
+
+
+let impCtx = null, impSnap = null;
+const impDate = (iso) => { const d = new Date(iso); return isNaN(d) ? '—' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
+const impPlural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+function initImport(ctx) {
+  impCtx = ctx;
+  const file = $('import-file');
+  $('import-btn').addEventListener('click', () => { file.value = ''; file.click(); });
+  file.addEventListener('change', async () => {
+    const f = file.files && file.files[0];
+    if (!f) return;
+    try { impSnap = JSON.parse(await f.text()); showImport(); }
+    catch (e) { impSnap = null; toast(e && e.code === 'badSnapshot' ? e.message : 'That file isn’t a Notion snapshot (import/notion-snapshot.json).'); }
+  });
+  $('import-cancel').addEventListener('click', () => $('import-sheet').close());
+  $('import-go').addEventListener('click', runImport);
+}
+
+function paintImportStatus(doc) {
+  const i = doc && doc.importInfo;
+  $('import-status').textContent = i ? `Imported ${impPlural(i.retailers, 'retailer')} · ${impPlural(i.cards, 'card')} · snapshot ${impDate(i.takenAt)}` : 'Not imported yet';
+}
+
+function showImport() {
+  const p = previewImport(impCtx.doc(), impSnap); // throws badSnapshot → caught by the picker
+  const t = p.totals;
+  $('import-sum').textContent = `Snapshot taken ${impDate(p.takenAt)} · ${t.matched}/${t.retailers} match Notion`;
+  $('import-totals').textContent = `Balance ${formatCents(t.balance)} · Owed to YNAB ${formatCents(t.owed)} · ${impPlural(t.cards, 'card')}`;
+  const list = $('import-list');
+  list.replaceChildren(...p.rows.map((r) => {
+    const li = el('li', `imp-row${r.match ? '' : ' is-bad'}${r.created ? '' : ' is-skip'}`);
+    const who = el('div', 'imp-who');
+    who.append(el('span', 'imp-name', r.name), el('span', 'imp-sub', r.created ? impPlural(r.cards, 'card') : 'Not imported — nothing to hold'));
+    for (const w of r.warnings) who.append(el('span', 'imp-warn', w));
+    const nums = el('div', 'imp-nums');
+    nums.append(el('span', '', formatCents(r.balance)), el('span', 'imp-owed', `owed ${formatCents(r.owed)}`));
+    const mark = el('span', 'imp-mark', r.match ? '✓' : '✗');
+    mark.setAttribute('aria-label', r.match ? 'matches Notion' : `doesn’t match Notion (${formatCents(r.notion.balance)} · owed ${formatCents(r.notion.owed)})`);
+    li.append(logoTile({ name: r.name, brandDomain: r.brandDomain }, 'sm'), who, nums, mark);
+    return li;
+  }));
+  const go = $('import-go');
+  go.disabled = !p.ok;
+  go.textContent = p.ok ? `Import ${impPlural(t.created, 'retailer')}` : 'Import';
+  $('import-block').hidden = p.ok;
+  $('import-block').textContent = p.refusal || (p.ok ? '' : `${impPlural(t.retailers - t.matched, 'retailer')} ${t.retailers - t.matched === 1 ? 'doesn’t' : 'don’t'} match Notion — fix it in Notion, re-snapshot, then import.`);
+  openSheet($('import-sheet'));
+}
+
+async function runImport() {
+  const p = previewImport(impCtx.doc(), impSnap);
+  if (!p.ok) return;
+  if (p.replace) {
+    const r = p.replace;
+    const secret = r.uncarried.filter((u) => u.last4 || u.hasPin), notesOnly = r.uncarried.length - secret.length;
+    const lost = secret.map((u) => `${u.retailer} ${formatCents(u.face)}${u.last4 ? ` ••••${u.last4}` : ''}${u.hasPin ? ' + PIN' : ''}`);
+    const ok = await confirmSheet({
+      title: 'Replace your cards?',
+      message: `Discards the ${impPlural(r.retailers, 'retailer')}, ${impPlural(r.cards, 'card')} and ${impPlural(r.entries, 'entry', 'entries')} in Cardsharp now.`,
+      warn: lost.length ? `${impPlural(lost.length, 'card’s number/PIN', 'cards’ numbers/PINs')} will be lost:` : '',
+      list: lost,
+      more: `Carries over: number/PIN on ${impPlural(r.carried, 'card')}, favorites and categories.${notesOnly ? ` Where/notes on ${impPlural(notesOnly, 'other card')} are not carried.` : ''}`,
+      action: 'Replace', undoHint: false,
+    });
+    if (!ok) return;
+  }
+  const res = await impCtx.apply((doc, newId) => importMut(doc, impSnap, { newId, now: Date.now() }));
+  if (!res) return;
+  if ($('import-sheet').open) $('import-sheet').close();
+  toast(`Imported ${impPlural(res.preview.totals.created, 'retailer')} · ${impPlural(res.preview.totals.cards, 'card')}`);
+  impCtx.done();
+}
+
 
 /* ---- src/ui/app.js ---- */
-// src/ui/app.js — boot + the three-tab shell (Cards · Reports · Settings). Browser only; e2e-tested.
-// Demo mode (?demo=1, or localhost without ?demo=0) paints the bundled #demo-fixture and never
-// touches the network. Live mode is passkey-or-nothing: PressGate.guard releases this page's
-// {syncId, passphrase} from the private-wing vault session; there is no passphrase field anywhere.
+
+
 
 
 
@@ -4927,8 +4996,6 @@ const configState = () => yn.configState;
 const PAGE = 'cardsharp.html';
 const THEME_KEY = 'cardsharp:theme';
 const TABS = ['cards', 'reports', 'settings'];
-// state doubles as the commitChange context: { doc, version, salt, demo, client, syncId, passphrase }.
-// The live creds sit here only while unlocked (writes need them); lockDown drops them with the doc.
 const state = { doc: null, version: null, salt: null, tab: 'cards', demo: false, client: null, syncId: null, passphrase: null, detailId: null, stackScroll: 0, query: '', searchOpen: false, ynabTest: false };
 
 function isDemo() {
@@ -4939,11 +5006,8 @@ function isDemo() {
 }
 function reveal() {
   document.body.classList.remove('preboot');
-  // enable UI transitions only after the first settled frame (see base.css body.ready)
   requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.add('ready')));
 }
-// ?demo=empty paints the empty v1 document (the "No cards yet" state); ?demo=1 the bundled fixture;
-// ?demo=1&cards=N a generated N-card document (scroll / Lighthouse / search checks).
 function loadDemoDoc() {
   const p = new URLSearchParams(location.search);
   if (p.get('demo') === 'empty') return emptyDoc();
@@ -4952,35 +5016,26 @@ function loadDemoDoc() {
   const el = $('demo-fixture'); try { return el ? JSON.parse(el.textContent) : null; } catch (_) { return null; }
 }
 
-// ---- theme: follows the OS until the person picks one in Settings › Appearance (Arc 3; the old "…" menu
-// toggle is gone). The pick is a per-device convenience (localStorage), never synced. ----
-const osTheme = () => (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-function pinnedTheme() {
-  try { const t = localStorage.getItem(THEME_KEY); return t === 'light' || t === 'dark' ? t : null; } catch (_) { return null; } // storage blocked — follow the OS
+function storedTheme() {
+  try { return themeChoice(localStorage.getItem(THEME_KEY)); } catch (_) { return DEFAULT_THEME; }
 }
-function syncThemeSwitch() {
-  const cur = document.documentElement.dataset.theme || osTheme();
-  for (const r of document.querySelectorAll('input[name="theme"]')) r.checked = r.value === cur;
+function applyTheme(choice) {
+  const pin = themePin(choice);
+  if (pin) document.documentElement.dataset.theme = pin; else delete document.documentElement.dataset.theme;
+  for (const r of document.querySelectorAll('input[name="theme"]')) r.checked = r.value === choice;
 }
 function initTheme() {
-  const pinned = pinnedTheme();
-  if (pinned) document.documentElement.dataset.theme = pinned;
   for (const r of document.querySelectorAll('input[name="theme"]')) {
     r.addEventListener('change', () => {
       if (!r.checked) return;
-      document.documentElement.dataset.theme = r.value;
+      applyTheme(r.value);
       try { localStorage.setItem(THEME_KEY, r.value); } catch (_) { /* ok — this session only */ }
     });
   }
-  // not picked yet → keep following the OS as it changes
-  matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => { if (!pinnedTheme()) syncThemeSwitch(); });
-  syncThemeSwitch();
+  applyTheme(storedTheme());
 }
 
-// ---- chrome: scroll-edge fade + large-title wordmark collapse (Eye P1s, Arc 2 slice 1) ----
 function initChrome() {
-  // while a sheet pins the body (dom.lockScroll) scrollY reads 0 — keep the bar's glass as it was
-  // (Eye P0, Arc 2b: "Private Wing" collided with the page under an open sheet)
   const onScroll = () => { if (document.body.style.position === 'fixed') return; document.body.classList.toggle('scrolled', window.scrollY > 4); };
   addEventListener('scroll', onScroll, { passive: true });
   onScroll();
@@ -4993,29 +5048,37 @@ function initChrome() {
   for (const t of document.querySelectorAll('.page-title')) io.observe(t);
 }
 
-// ---- home search + section jump row (Arc 2b): filters as you type (synchronous, no debounce) ----
-// Arc 3 (Mark): the search field is hidden until asked for — pull down at the top of the stack
-// (iOS-style, PULL_PX threshold; touch, touch-type pointer events, or iOS rubber-band overscroll), or on
-// desktop the top-bar search icon / the "/" key. Once empty, unfocused and scrolled past, it hides again.
 const PULL_PX = 60;
+const HIDE_IDLE_MS = 200;
 const cardsHome = () => state.tab === 'cards' && !state.detailId && !!state.doc && ((state.doc.cards || []).length > 0);
+function paintSearchChrome() {
+  const tools = !!state.doc && ((state.doc.cards || []).length > 0) && !state.detailId;
+  $('cards-tools').hidden = !tools || !state.searchOpen;
+  $('search-btn').hidden = !tools || state.tab !== 'cards' || state.searchOpen;
+  $('search-btn').setAttribute('aria-expanded', String(tools && state.searchOpen));
+  return tools;
+}
 function showSearch(focus) {
   if (!cardsHome()) return;
-  const was = state.searchOpen;
-  state.searchOpen = true;
-  paint();
-  const tools = $('cards-tools');
-  if (!was) { tools.classList.remove('is-revealing'); void tools.offsetWidth; tools.classList.add('is-revealing'); }
+  if (!state.searchOpen) {
+    state.searchOpen = true;
+    paintSearchChrome();
+    const tools = $('cards-tools');
+    tools.classList.remove('is-revealing'); void tools.offsetWidth; tools.classList.add('is-revealing');
+  }
   if (focus) $('card-search').focus();
 }
 function hideSearch() {
   if (!state.searchOpen) return;
-  const tools = $('cards-tools');
-  const h = tools.hidden ? 0 : tools.getBoundingClientRect().height + 8;
-  const away = tools.getBoundingClientRect().bottom < 0;
+  const ref = [...document.querySelectorAll('#stack .gcard')].find((c) => c.getBoundingClientRect().bottom > 0);
+  const top = ref ? ref.getBoundingClientRect().top : 0;
+  const root = document.documentElement.style;
+  root.overflowAnchor = 'none';
   state.searchOpen = false;
-  paint();
-  if (away && h) window.scrollBy(0, -h); // keep the cards under the finger where they were
+  paintSearchChrome();
+  const d = ref ? ref.getBoundingClientRect().top - top : 0;
+  if (Math.abs(d) >= 0.5) window.scrollBy(0, d);
+  requestAnimationFrame(() => { root.overflowAnchor = ''; });
 }
 function initSearch() {
   const input = $('card-search'), clear = $('card-search-clear');
@@ -5032,36 +5095,47 @@ function initSearch() {
     e.preventDefault();
     showSearch(true);
   });
-  // pull-down: a downward drag that starts while the page is at the very top
-  let startY = null;
-  const begin = (y) => { startY = window.scrollY <= 0 && cardsHome() && !state.searchOpen ? y : null; };
-  const move = (y) => { if (startY !== null && y - startY >= PULL_PX) { startY = null; showSearch(false); } };
-  const end = () => { startY = null; };
+  let pull = null; // { y0, src } while a pull that began at the top is in progress
+  const begin = (y, src) => { pull = window.scrollY <= 0 && cardsHome() && !state.searchOpen ? { y0: y, src } : null; };
+  const pulled = () => { pull = null; showSearch(false); };
+  const move = (y, src) => { if (pull && pull.src === src && window.scrollY <= 0 && y - pull.y0 >= PULL_PX) pulled(); };
+  const end = (src) => { if (pull && pull.src === src) pull = null; };
+  let touchDown = false, ptrDown = false, fingerAt = 0;
+  const FINGER_STALE_MS = 3000;
+  const fingerDown = () => (touchDown || ptrDown) && performance.now() - fingerAt < FINGER_STALE_MS;
   const stack = $('panel-cards');
-  stack.addEventListener('touchstart', (e) => begin(e.touches[0].clientY), { passive: true });
-  stack.addEventListener('touchmove', (e) => move(e.touches[0].clientY), { passive: true });
-  stack.addEventListener('touchend', end, { passive: true });
-  stack.addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') begin(e.clientY); });
-  stack.addEventListener('pointermove', (e) => { if (e.pointerType === 'touch') move(e.clientY); });
-  for (const t of ['pointerup', 'pointercancel']) stack.addEventListener(t, end);
+  stack.addEventListener('touchstart', (e) => { touchDown = true; fingerAt = performance.now(); begin(e.touches[0].clientY, 'touch'); }, { passive: true });
+  stack.addEventListener('touchmove', (e) => { fingerAt = performance.now(); move(e.touches[0].clientY, 'touch'); }, { passive: true });
+  for (const t of ['touchend', 'touchcancel']) addEventListener(t, (e) => { touchDown = e.touches.length > 0; if (!touchDown) end('touch'); }, { passive: true });
+  stack.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'touch') return;
+    ptrDown = true; fingerAt = performance.now();
+    if (!pull || pull.src !== 'touch') begin(e.clientY, 'pointer');
+  });
+  stack.addEventListener('pointermove', (e) => { if (e.pointerType === 'touch') { fingerAt = performance.now(); move(e.clientY, 'pointer'); } });
+  for (const t of ['pointerup', 'pointercancel']) addEventListener(t, (e) => { if (e.pointerType === 'touch') { ptrDown = false; end('pointer'); } });
+  let idle = 0;
+  const tryHide = () => {
+    const tools = $('cards-tools');
+    if (!state.searchOpen || state.query || document.activeElement === input || tools.hidden || tools.getBoundingClientRect().bottom >= 0) return;
+    if (fingerDown()) { idle = setTimeout(tryHide, HIDE_IDLE_MS); return; }
+    hideSearch();
+  };
   let queued = false;
   addEventListener('scroll', () => {
-    if (window.scrollY < -PULL_PX / 2 && cardsHome()) showSearch(false); // iOS rubber-band overscroll at the top
+    if (pull && window.scrollY < -PULL_PX / 2 && cardsHome()) pulled();
+    if (state.searchOpen) { clearTimeout(idle); idle = setTimeout(tryHide, HIDE_IDLE_MS); }
     if (queued) return; queued = true;
     requestAnimationFrame(() => {
       queued = false;
       if (!$('jump-row').hidden) markCurrentSection($('jump-row'));
-      const tools = $('cards-tools');
-      if (state.searchOpen && !state.query && document.activeElement !== input && !tools.hidden && tools.getBoundingClientRect().bottom < 0) hideSearch();
     });
   }, { passive: true });
-  addEventListener('resize', () => fitJumpRow($('jump-row')));
-  // a jump with the search open and empty: put the field away FIRST, so the jump lands on the right header
-  // (hiding it mid-scroll would shift the page under the smooth scroll)
+  let fitW = innerWidth;
+  addEventListener('resize', () => { if (innerWidth !== fitW) { fitW = innerWidth; fitJumpRow($('jump-row')); } });
   $('jump-row').addEventListener('click', () => { if (state.searchOpen && !state.query) hideSearch(); }, true);
 }
 
-// ---- tabs (WAI-ARIA tabs: roving tabindex, arrows/Home/End) ----
 function selectTab(name, focus, keepHash) {
   if (!TABS.includes(name)) return;
   if (state.detailId) leaveDetail();
@@ -5093,20 +5167,15 @@ function initTabs() {
   route();
 }
 
-// ---- routing: #cards | #reports | #settings | #card/<retailerId> (the detail, inside Cards) ----
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-// View Transitions "rise" (the tapped card becomes the hero) where supported; a plain swap otherwise.
 function transition(swap, named) {
   const body = document.body;
-  // one transition at a time: a route change mid-flight just swaps (no overlapping/aborted transitions)
   const can = typeof document.startViewTransition === 'function' && !reducedMotion() && body.classList.contains('ready') && !body.classList.contains('vt-running');
   if (!can) { swap(); return; }
   if (named) named.style.viewTransitionName = 'hero';
   body.classList.add('vt-running');
   const vt = document.startViewTransition(swap);
   vt.ready.catch(() => { /* skipped — the swap still ran */ });
-  // Watchdog: WebKit can leave a transition unsettled, and its ::view-transition overlay then eats
-  // every tap. Anything still running after 1.2s (the animation is 380ms) is skipped.
   const dog = setTimeout(() => { try { vt.skipTransition(); } catch (_) { /* ok */ } body.classList.remove('vt-running'); }, 1200);
   vt.finished.catch(() => {}).finally(() => {
     clearTimeout(dog);
@@ -5164,15 +5233,13 @@ function route() {
   }, null);
 }
 
-// ---- writes: every change goes through commitChange (demo: memory; live: sealed + persistDoc) ----
 function errorText(e) {
   return e && e.code === 'synced' ? e.message // "Already sent to YNAB — reverse it instead"
     : e && e.code === 'undoStale' ? 'Your cards changed since — there is nothing to undo.'
     : e && e.code === 'replay' ? 'That can’t be removed without leaving a card below $0 — nothing was changed.'
+    : e && (e.code === 'cutover' || e.code === 'mismatch' || e.code === 'badSnapshot') ? e.message // Import from Notion
     : null;
 }
-// ?demo=1&ynabtest=1 (TEST ONLY): the demo doc survives a reload (sessionStorage) so e2e can prove the
-// queue never double-posts across reloads; the mocked cardsharp-ynab function is the only network.
 const TEST_DOC_KEY = 'cardsharp:ynabtest-doc';
 function persistTestDoc() { if (state.ynabTest) { try { sessionStorage.setItem(TEST_DOC_KEY, JSON.stringify(state.doc)); } catch (_) { /* ok */ } } }
 async function apply(change) {
@@ -5194,7 +5261,6 @@ async function recategorise(retailerId, category) {
   if (res) toast(`Moved to ${category}`);
 }
 
-// ---- deletes (Arc 2b): preview the impact → confirm → replayed delete → 6-second Undo ----
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 async function deleteWithUndo(change, message) {
   const before = state.doc;
@@ -5235,8 +5301,6 @@ async function deleteCard(cardId) {
   if (ok) await deleteWithUndo((doc) => deleteCardMut(doc, cardId, { now }), `Deleted ${label}`);
 }
 
-// Add Card (+ in the top bar on Cards). Single → toast, back to the stack. Bulk → the capture
-// carousel; each Next that carries a number/PIN is its own sealed write.
 function openAdd() {
   openAddSheet(state.doc, async (retailer, fields) => {
     const res = await apply((doc, newId) => addCardsMut(doc, retailer, fields, { newId }));
@@ -5262,8 +5326,6 @@ function openLogSpend(retailerId) {
   });
 }
 
-// ---- paint ----
-// Portfolio totals: Σ over retailers of the per-retailer figures (never a per-card owed).
 function totals(doc) {
   const out = { balance: 0, owed: 0, saved: 0 };
   if (!doc) return out;
@@ -5271,7 +5333,6 @@ function totals(doc) {
     out.balance += retailerBalance(doc, r.id);
     out.owed += retailerOwed(doc, r.id);
   }
-  // realised saving: face value spent minus the paid portion shifted back (spend − shift)
   for (const e of doc.entries || []) if (e.type === 'spend' || e.type === 'refund') out.saved += -e.amount - (e.ynabShift || 0);
   return out;
 }
@@ -5289,10 +5350,7 @@ function paint() {
   const t = totals(doc);
   const q = state.query.trim();
   const groups = doc ? paintStack(doc, $('stack'), q) : [];
-  const tools = !!doc && cards.length > 0 && !state.detailId;
-  $('cards-tools').hidden = !tools || !state.searchOpen;
-  $('search-btn').hidden = !tools || state.tab !== 'cards' || state.searchOpen;
-  $('search-btn').setAttribute('aria-expanded', String(tools && state.searchOpen));
+  const tools = paintSearchChrome();
   $('jump-row').hidden = !tools || !!q || groups.length < 2;
   $('panel-cards').classList.toggle('has-jump', tools && !$('jump-row').hidden);
   if (tools && !$('jump-row').hidden) paintJumpRow($('jump-row'), groups);
@@ -5314,13 +5372,13 @@ function paint() {
   const s = (doc && doc.settings) || {};
   $('ynab-pill').textContent = doc ? syncPill(doc) : '';
   paintYnabSettings();
+  paintImportStatus(doc);
   $('set-categories').textContent = ((doc && doc.categories) || []).join(' · ') || '—';
   $('set-stale').textContent = s.staleMonths ? `${s.staleMonths} months` : '—';
   const build = document.querySelector('meta[name="build"]');
   $('build-note').textContent = `Cardsharp · build ${build ? build.content : 'dev'}${state.demo ? ' · demo data' : ''}`;
 }
 
-// ---- live-mode chrome ----
 function setSignedOutView(on) {
   $('app').hidden = on;
   $('tabbar').hidden = on;
@@ -5330,7 +5388,6 @@ function wireLock() {
   $('signout').addEventListener('click', () => { try { if (globalThis.PressVault) PressVault.lock(); } catch (_) { /* ok */ } });
 }
 function lockDown() {
-  // drop the decrypted document AND the creds from memory
   state.doc = null; state.version = null; state.salt = null; state.client = null; state.syncId = null; state.passphrase = null;
   closeSpendSheet();
   closeAddSheets();
@@ -5343,9 +5400,6 @@ function lockDown() {
   setSignedOutView(true);
 }
 
-// hydrate — after a successful unlock: load the sealed row, decrypt IN MEMORY, paint. The creds stay
-// in memory (state) only while unlocked, because writes need them; nothing is persisted. No row ⇒ an
-// empty v1 document that refuses writes (commitChange → NoRowError) until the bootstrap creates it.
 async function hydrate(creds) {
   setSignedOutView(false);
   state.doc = null;
@@ -5377,12 +5431,11 @@ function boot() {
   initSearch();
   initYnab({
     doc: () => state.doc,
-    // background writes are quiet: a failed queue update just retries on the next flush
     commit: async (change) => { try { await commitChange(state, change); persistTestDoc(); paint(); } catch (_) { /* next flush */ } },
     planId: () => (state.demo ? '0'.repeat(32) : state.syncId),
     enabled: () => (state.demo ? state.ynabTest : !!state.syncId), // demo never touches the network (except the test flag)
-    cutoverAllowed: () => state.ynabTest, // W6: this arc never turns posting on outside the test flag
   });
+  initImport({ doc: () => state.doc, apply, done: () => { location.hash = '#cards'; } });
   initTabs();
   document.addEventListener('visibilitychange', () => { if (document.hidden) hideSecrets(); });
 
@@ -5390,9 +5443,9 @@ function boot() {
     state.demo = true;
     state.ynabTest = new URLSearchParams(location.search).get('ynabtest') === '1';
     state.doc = loadDemoDoc();
+    if (state.ynabTest) state.doc = { ...state.doc, importInfo: { source: 'test', takenAt: '2026-10-03T12:00:00.000Z', importedAt: 0, retailers: 8, cards: 20, allMatched: true } };
     if (state.ynabTest) { try { const kept = sessionStorage.getItem(TEST_DOC_KEY); if (kept) state.doc = JSON.parse(kept); } catch (_) { /* ok */ } }
     $('demo-pill').hidden = false;
-    // demo only: a read-only snapshot for the e2e ledger invariants (never in live mode — no secrets)
     window.cardsharpDemo = { doc: () => JSON.parse(JSON.stringify(state.doc)) };
     paint();
     route();
