@@ -351,3 +351,54 @@ test('REGRESSION: enrol falls through to prfViaGet when CREATE yields an unusabl
     globalThis.fetch = savedFetch;
   }
 });
+
+// ---- cardsharp security audit 2026-10-04 (S1): MEMORY_ONLY apps never persist their creds ----
+const CS = 'cardsharp.html';
+const fullKr = () => ({ v: 1, apps: { 'fsa.html': { sync_id: 'f'.repeat(32), pass: 'fsa-pass' }, [CS]: { sync_id: 'c'.repeat(32), pass: 'cs-secret-pass' } } });
+
+test('S1: saveSession persists cardsharp as a redacted stub; this tab keeps the full creds in memory only', () => {
+  V.saveSession(fullKr(), 'v-s1');
+  const raw = globalThis.localStorage.getItem(V.SESSION_KEY);
+  assert.equal(raw.includes('cs-secret-pass'), false, 'cardsharp pass never in localStorage');
+  assert.equal(raw.includes('c'.repeat(32)), false, 'cardsharp sync id never in localStorage');
+  assert.ok(raw.includes('fsa-pass'), 'other tenants unchanged');
+  assert.deepEqual(JSON.parse(raw).keyring.apps[CS], { sync_id: '', pass: '', redacted: true });
+  assert.deepEqual(V.memCreds(CS), { sync_id: 'c'.repeat(32), pass: 'cs-secret-pass' });
+  assert.equal(V.memCreds('fsa.html').sync_id, 'f'.repeat(32));
+  assert.equal(V.fullKeyring().apps[CS].pass, 'cs-secret-pass');
+});
+
+test('S1: a pre-redaction (plaintext) session is scrubbed in place on the next read', () => {
+  const now = Date.now();
+  globalThis.localStorage.setItem(V.SESSION_KEY, JSON.stringify({ keyring: fullKr(), unlockedAt: now, expiresAt: now + 60_000, vaultId: 'v-old' }));
+  const sess = V.loadSession();
+  assert.equal(sess.keyring.apps[CS].redacted, true);
+  assert.equal(globalThis.localStorage.getItem(V.SESSION_KEY).includes('cs-secret-pass'), false, 'rewritten without the secret');
+  assert.equal(sess.expiresAt, now + 60_000, 'expiry untouched (fixed from unlock)');
+});
+
+test('S1: lock() (or a vanished session) drops the in-memory creds', () => {
+  V.saveSession(fullKr(), 'v-lock');
+  V.lock();
+  assert.equal(V.memCreds(CS), null);
+  V.saveSession(fullKr(), 'v-lock2');
+  globalThis.localStorage.removeItem(V.SESSION_KEY); // another tab locked
+  assert.equal(V.memCreds(CS), null);
+  assert.equal(V.fullKeyring(), null);
+});
+
+test('S1: restoreRedacted puts the real entry back from the decrypted row; a filled stub just loses its flag', () => {
+  const redacted = V.redact(fullKr());
+  assert.deepEqual(V.restoreRedacted(redacted, fullKr()).apps[CS], fullKr().apps[CS]);
+  const reconnected = V.redact(fullKr()); Object.assign(reconnected.apps[CS], { sync_id: 'd'.repeat(32), pass: 'new' });
+  assert.deepEqual(V.restoreRedacted(reconnected, fullKr()).apps[CS], { sync_id: 'd'.repeat(32), pass: 'new' });
+  assert.equal(CS in V.restoreRedacted(redacted, { apps: {} }).apps, false, 'nothing to restore → no empty stub sealed');
+});
+
+test('S1: sealing never writes a redacted stub over the vault row (updateKeyring restores before sealing)', async () => {
+  const key = await V.deriveKey(PRF_A, SALT1);
+  const row = await V.sealKeyring(fullKr(), key);
+  const opened = await V.openKeyring(row, key);
+  const toSeal = V.restoreRedacted(V.redact(opened), opened);
+  assert.deepEqual(toSeal, fullKr());
+});
