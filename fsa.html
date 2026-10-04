@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#14161A">
   <title>FSA Claims</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMTQxNjFBIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJBMkYzNiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIyIDQ5LjMyIEEyMCAyMCAwIDAgMSAxNC42OCAyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDBBM0UwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIzMiIgeTE9IjMyIiB4Mj0iNDAiIHkyPSIxOC4xNCIgc3Ryb2tlPSIjRTZFOUVEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
-  <meta name="build" content="2026-09-22T17:52:31.430Z 97046d7">
+  <meta name="build" content="2026-10-04T00:41:25.338Z 97f70c1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="manifest" href="fsa-assets/manifest.webmanifest">
@@ -264,9 +264,9 @@ select {
   #gauge-scale .scale-label:not(.end) { display: none; }
 }
 
-/* the four-figure mono readout — a segmented bar means nothing to a screen reader or in sunlight */
+/* the five-figure mono readout — a segmented bar means nothing to a screen reader or in sunlight */
 #gauge-readout {
-  display: grid; grid-template-columns: repeat(4, 1fr); margin-top: var(--s2);
+  display: grid; grid-template-columns: repeat(5, 1fr); margin-top: var(--s2);
   border: 1px solid var(--hairline);
 }
 #gauge-readout .g-fig { padding: var(--s2); border-left: 1px solid var(--hairline); display: flex; flex-direction: column; gap: 4px; }
@@ -276,10 +276,12 @@ select {
 #gauge-readout .g-fig-v { font-size: 22px; color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; }
 #gauge-readout .g-fig-paid .g-fig-v { color: var(--accent); }
 #gauge-readout .g-fig-denied .g-fig-v { color: var(--danger); }   /* label stays dim — the ⚠ glyph + word carry it */
-@media (max-width: 640px) {
+#gauge-readout .g-fig-v { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 820px) {
   #gauge-readout { grid-template-columns: repeat(2, 1fr); }
   #gauge-readout .g-fig:nth-child(3) { border-left: 0; }
-  #gauge-readout .g-fig:nth-child(3), #gauge-readout .g-fig:nth-child(4) { border-top: 1px solid var(--hairline); }
+  #gauge-readout .g-fig:nth-child(n+3) { border-top: 1px solid var(--hairline); }
+  #gauge-readout .g-fig:nth-child(5) { border-left: 0; grid-column: 1 / -1; }
 }
 
 /* styles/table.css */
@@ -801,7 +803,7 @@ select {
 
   var SESSION_KEY = 'press:vault:v1';
   var ENROLLED_FLAG = 'press:vault:enrolled';
-  var TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
+  var TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days, fixed from unlock
 
   // In-memory ONLY: the NON-EXTRACTABLE AES key derived at unlock/enrol, cached so a follow-on
   // reseal (updateKeyring) can re-seal the row WITHOUT another passkey tap. Never persisted; a
@@ -1416,21 +1418,31 @@ function submittedTotal(doc, year) {
 function deniedTotal(doc, year) {
   return sumWhere(yearClaims(doc, year), (c) => ADJUDICATED.includes(c.status), deniedAmount);
 }
-// Pending = submitted and still awaiting Fidelity's decision (status 'pending'); in flight, not yet
-// paid. Zero in the reconciled 2026 data (everything is adjudicated) — the gauge's hatched segment.
+// Mirrors scripts/lib/queue.mjs computeTotals (the CLI) — see docs/lessons.md [fsa].
+// A claim's NET = claimed − denied (Fidelity hides partial denials on "paid" rows).
+function netAmount(c) { return claimedAmount(c) - deniedAmount(c); }
+// Pending = in flight at Fidelity: status 'submitted' (or the legacy 'pending'), net of denials.
+// Pending claims do NOT reduce Remaining — only Available.
+const IN_FLIGHT = ['submitted', 'pending'];
 function pendingTotal(doc, year) {
-  return sumWhere(yearClaims(doc, year), (c) => c.status === 'pending', claimedAmount);
+  return sumWhere(yearClaims(doc, year), (c) => IN_FLIGHT.includes(c.status), netAmount);
 }
-// Paid = what Fidelity actually reimbursed = submitted - denied - pending (denied dollars return to
-// the pool; pending dollars are still in flight). With no pending claims this is submitted - denied.
-function paidTotal(doc, year) { return round2(submittedTotal(doc, year) - deniedTotal(doc, year) - pendingTotal(doc, year)); }
-// Available balance = election - PAID (NOT election - submitted): denied amounts are still claimable.
-function available(doc, year) { return round2(Math.max(0, election(doc, year) - paidTotal(doc, year))); }
+// Paid = only claims Fidelity has PAID (status 'paid'), net of partial denials.
+function paidTotal(doc, year) {
+  return sumWhere(yearClaims(doc, year), (c) => c.status === 'paid', netAmount);
+}
+// Remaining = election − PAID (never election − submitted): denied dollars return to the pool and
+// pending dollars are not yet reimbursed. The gauge headline.
+function remaining(doc, year) { return round2(Math.max(0, election(doc, year) - paidTotal(doc, year))); }
+// Available = election − paid − pending — Fidelity's "Available Balance", what a new claim can draw.
+function available(doc, year) {
+  return round2(Math.max(0, election(doc, year) - paidTotal(doc, year) - pendingTotal(doc, year)));
+}
 // Kept for callers/tests that predate the paid/denied split: election - submitted (ignores denial).
 function unclaimed(doc, year) {
   return round2(Math.max(0, election(doc, year) - submittedTotal(doc, year)));
 }
-function remainingToReimburse(doc, year) { return available(doc, year); }
+function remainingToReimburse(doc, year) { return remaining(doc, year); }
 function waitingOnDocuments(doc, year) {
   return sumWhere(yearClaims(doc, year), (c) => ['waiting', 'needs-receipt', 'gathered'].includes(c.status) && (Number(c.amount) || 0) > 0);
 }
@@ -1681,11 +1693,11 @@ function yearState(doc, year, today) {
   const isJanuary = yd ? yd.getUTCMonth() === 0 : false;
   const e = election(doc, year);
   const paid = paidTotal(doc, year);
-  const avail = available(doc, year);
+  const rem = remaining(doc, year);
   const incur = daysToIncur(doc, year, today);
   if (!claims.length && paid === 0) return 'setup';      // empty year
   if (isJanuary && paid < 0.005) return 'setup';         // January, before anything is reimbursed
-  if (e > 0 && avail <= 0.005) return 'done';
+  if (e > 0 && rem <= 0.005) return 'done';     // election fully PAID back
   if (incur != null && incur <= 45) return 'year-end';
   return 'active';
 }
@@ -2099,10 +2111,12 @@ function gaugeModel(doc, year, today) {
   const den = deniedTotal(doc, year);
   const pend = pendingTotal(doc, year);
   const paid = paidTotal(doc, year);
-  const avail = available(doc, year);
+  const rem = remaining(doc, year);              // election − paid (the headline)
+  const avail = available(doc, year);            // election − paid − pending (Fidelity's Available Balance)
   const unc = unclaimed(doc, year);
   // Four segments partitioning [0, election]: paid (fill) · pending (hatched) · denied (outlined) ·
-  // empty (the flex remainder). still-yours (available = election − paid) = pending + denied + empty.
+  // empty (the flex remainder). Remaining (election − paid) = pending + denied + empty;
+  // Available (election − paid − pending) = denied + empty.
   const clampPct = (v) => e > 0 ? Math.max(0, Math.min(100, (v / e) * 100)) : 0;
   const pct = clampPct(paid);                    // fill = PAID (denied returns to the pool)
   const pctPending = clampPct(pend);
@@ -2112,12 +2126,12 @@ function gaugeModel(doc, year, today) {
   const dl = confirmed ? daysToRunOut(doc, year, today) : daysToIncur(doc, year, today);
   const tail = dl == null ? 'no deadline set' : confirmed ? `${dl} days left` : `${dl} days left to incur`;
   // DONE state (slice 4): the election is fully recovered — a quiet, not celebratory, line.
-  const done = e > 0 && avail <= 0.005 && paid > 0;
-  const caption = done ? `${money(paid)} recovered · nothing owed` : `${money(avail)} still yours`;
-  const sentence = done ? caption : `${money(avail)} still yours · ${tail}`;
+  const done = e > 0 && rem <= 0.005 && paid > 0;
+  const caption = done ? `${money(paid)} recovered · nothing owed` : `${money(rem)} remaining · ${money(avail)} available`;
+  const sentence = done ? caption : `${caption} · ${tail}`;
   const color = dl == null ? 'dim' : dl <= 7 ? 'danger' : dl <= 30 ? 'warn' : 'dim';
   return {
-    election: e, submitted: sub, unclaimed: unc, denied: den, pending: pend, paid, available: avail,
+    election: e, submitted: sub, unclaimed: unc, denied: den, pending: pend, paid, remaining: rem, available: avail,
     pct, pctPending, pctDenied, daysLeft: dl, confirmed, caption, sentence, tail, color, ticks: gaugeTicks(e),
   };
 }
@@ -2161,16 +2175,17 @@ function renderGauge(doc, year, today) {
   note.hidden = m.confirmed || m.daysLeft == null;
   if (!note.hidden) note.textContent = 'run-out date unconfirmed';
 
-  // Visible mono readout of all four figures (slice 5) — a segmented bar means nothing in sunlight.
+  // Visible mono readout of all five figures (slice 5) — a segmented bar means nothing in sunlight.
   if (readout) {
     readout.append(
       readoutCell('paid', 'Paid', money(m.paid)),
       readoutCell('pending', 'Pending', money(m.pending)),
       readoutCell('denied', 'Denied', money(m.denied), '⚠'),
-      readoutCell('avail', 'Still yours', money(m.available)),
+      readoutCell('remaining', 'Remaining', money(m.remaining)),
+      readoutCell('avail', 'Available', money(m.available)),
     );
     readout.setAttribute('aria-label',
-      `Paid ${money(m.paid)}, pending ${money(m.pending)}, denied ${money(m.denied)}, still yours ${money(m.available)}.`);
+      `Paid ${money(m.paid)}, pending ${money(m.pending)}, denied ${money(m.denied)}, remaining ${money(m.remaining)}, available ${money(m.available)}.`);
   }
 
   for (const t of m.ticks) {
