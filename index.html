@@ -1511,10 +1511,23 @@ const SB_KEY='sb_publishable__iv3bI7xDAsOdHUlXzbVZQ_2yyFS4uX';
 const PREST=SB_URL+'/rest/v1/press_portal';
 const PHEAD={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
 const PKEY='press:portal:v1';
-let PSTATE={order:[],archived:[]};
-function pNorm(s){ return {order:Array.isArray(s&&s.order)?s.order:[], archived:Array.isArray(s&&s.archived)?s.archived:[]}; }
+/* cardsharp Arc 10 slice 11 — ONE order key per scope. The public keys (order/archived) are
+   unchanged; the wings add orderPersonal / orderFamily alongside (missing keys normalise to []).
+   A wing key only ever ORDERS the cards spaces.json already puts in that wing — it never adds
+   or removes a page (the split stays repo-owned, never press_portal). Wings have no archive. */
+const ORDER_KEY={public:'order', personal:'orderPersonal', family:'orderFamily'};
+const pArr = v=>Array.isArray(v)?v:[];
+let PSTATE=pNorm(null);
+function pNorm(s){ return {order:pArr(s&&s.order), archived:pArr(s&&s.archived),
+  orderPersonal:pArr(s&&s.orderPersonal), orderFamily:pArr(s&&s.orderFamily)}; }
 function pLocalSave(){ try{ localStorage.setItem(PKEY, JSON.stringify(PSTATE)); }catch(e){} }
-function pLocalLoad(){ try{ PSTATE=pNorm(JSON.parse(localStorage.getItem(PKEY)||'null')); }catch(e){ PSTATE={order:[],archived:[]}; } }
+function pLocalLoad(){ try{ PSTATE=pNorm(JSON.parse(localStorage.getItem(PKEY)||'null')); }catch(e){ PSTATE=pNorm(null); } }
+// a wing's cards: the user's saved order first (only files the wing already shows), then the
+// rest in spaces.json order. Never adds a page, never drops one.
+function wingOrdered(files, scope){
+  const saved = PSTATE[ORDER_KEY[scope]].filter((f,i,a)=>files.includes(f) && a.indexOf(f)===i);
+  return [...saved, ...files.filter(f=>!saved.includes(f))];
+}
 async function pCloudLoad(){
   const r=await fetch(PREST+'?page=eq.marquee&select=state',{headers:PHEAD});
   if(!r.ok)throw new Error('SB '+r.status);
@@ -1536,6 +1549,12 @@ const sync=document.createElement('div');
 sync.style.cssText='position:fixed;bottom:16px;right:16px;z-index:99;font:500 12px/1 "Space Mono",monospace;'
   +'padding:8px 12px;border-radius:999px;background:#0f6e63;color:#fff;opacity:0;transition:.3s;box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none';
 document.body.appendChild(sync);
+// polite live region for keyboard reorder announcements (visually hidden)
+const live=document.createElement('div');
+live.setAttribute('aria-live','polite'); live.setAttribute('role','status'); live.id='twLive';
+live.style.cssText='position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0';
+document.body.appendChild(live);
+function announce(msg){ live.textContent=''; setTimeout(()=>{ live.textContent=msg; }, 30); }
 let pillTimer;
 function flash(msg,color){ sync.textContent=msg; sync.style.background=color||'#0f6e63'; sync.style.opacity='1';
   clearTimeout(pillTimer); pillTimer=setTimeout(()=>{sync.style.opacity='0';},1600); }
@@ -1606,9 +1625,9 @@ function paintMarquee(root, files, man, physArchiveCount, stale){
     `<h2 class="tw-title">${COPY_TITLE}</h2>`+
     `<div class="tw-dek">${COPY_DEK}</div>`+
     wings + cards + archiveCardHTML(archiveCount) +
-    `<div class="tw-hint">hold a card to lift it · drop on the archive to tuck it away</div>`+
+    `<div class="tw-hint">hold a card to lift it · drop on the archive to tuck it away · Alt+↑/↓ to reorder</div>`+
     `<div class="tw-auto">↻ auto-listed from the repository root</div>`;
-  wireDrag(root);
+  wireDrag(root, {scope:'public', archive:true});
 }
 
 /* ══ R3.3 — LONG-PRESS drag (mouse + touch, pointer events) ═════════════════
@@ -1618,12 +1637,36 @@ function paintMarquee(root, files, man, physArchiveCount, stale){
    the drop slot; scroll is blocked via a non-passive touchmove listener.
    R3.5 FIX: anchors start a NATIVE link-drag on mouse move, which hijacked the
    pointer stream and froze the ghost — blocked via draggable="false" +
-   dragstart preventDefault + -webkit-user-drag:none. */
+   dragstart preventDefault + -webkit-user-drag:none.
+   cardsharp Arc 10 slice 11: ONE code path for the public marquee AND both wings.
+   opts.scope ('public'|'personal'|'family') picks the press_portal order key; opts.archive
+   enables the drop-on-archive target (public only — the wings have none); opts.onOrder(list)
+   overrides persistence. Keyboard: focus a card, Alt+↑/↓ moves it (polite announcement). */
 const HOLD_MS=400, SLOP=10;
-function wireDrag(root){
+function wireDrag(root, opts){
+  opts = opts || {};
+  const scope = ORDER_KEY[opts.scope] ? opts.scope : 'public';
+  const useArchive = scope==='public' && opts.archive!==false;
+  const saveOrder = opts.onOrder || (list=>{ PSTATE[ORDER_KEY[scope]] = list; pLocalSave(); pCloudSave(); });
   const grid = root;
+  const listCards = ()=>Array.from(grid.querySelectorAll('.tw-card'));
+  const fileList = ()=>listCards().map(c=>c.dataset.file);
   root.querySelectorAll('.tw-card').forEach(card=>{
     let suppressClick=false;
+    card.setAttribute('aria-keyshortcuts','Alt+ArrowUp Alt+ArrowDown');
+    card.addEventListener('keydown', e=>{
+      if(!e.altKey || (e.key!=='ArrowUp' && e.key!=='ArrowDown')) return;
+      e.preventDefault();
+      const cards = listCards(), i = cards.indexOf(card), n = cards.length;
+      const name = (card.querySelector('h3')||card).textContent.replace(/\s+/g,' ').trim();
+      const j = e.key==='ArrowUp' ? i-1 : i+1;
+      if(j<0 || j>=n){ announce(`${name} is already ${j<0?'first':'last'}`); return; }
+      if(j<i) grid.insertBefore(card, cards[j]);
+      else grid.insertBefore(card, cards[j].nextElementSibling);
+      card.focus();
+      announce(`${name} moved to position ${j+1} of ${n}`);
+      saveOrder(fileList());
+    });
     card.addEventListener('dragstart', e=>e.preventDefault());
     card.addEventListener('click', e=>{
       if(suppressClick){ e.preventDefault(); e.stopPropagation(); suppressClick=false; }
@@ -1633,7 +1676,7 @@ function wireDrag(root){
     });
     card.addEventListener('pointerdown', e=>{
       if(typeof e.button==='number' && e.button!==0) return;
-      const arch = document.getElementById('archTarget');
+      const arch = useArchive ? document.getElementById('archTarget') : null;
       const sx=e.clientX, sy=e.clientY;
       let dragActive=false, overArch=false, moved=false, ghost=null, dx=0, dy=0;
       card.classList.add('pressing');
@@ -1704,8 +1747,7 @@ function wireDrag(root){
           if(top) top.textContent = grid.querySelectorAll('.tw-card').length+' showing · '+COPY_FLAVOR;
           flash('Moved to the archive');
         } else if(moved){
-          PSTATE.order = Array.from(grid.querySelectorAll('.tw-card')).map(c=>c.dataset.file);
-          pLocalSave(); pCloudSave();
+          saveOrder(fileList());
         }
       };
       const onCancel = ()=>{ const wasDrag=dragActive; teardown(); if(wasDrag) finishDrag(); };
@@ -2097,13 +2139,14 @@ function paintPersonal(root, man){
   const top=`<div class="tw-top"><span>behind the <b>passkey</b></span><span>personal tools</span></div>`;
   const st=vaultState();
   if(st.sess){
-    const cards=(SPACES.personal||[]).map(f=>cardHTML(f, man, false)).join('');
+    const cards=wingOrdered(SPACES.personal||[], 'personal').map(f=>cardHTML(f, man, false)).join('');
+    const hint=cards?`<div class="tw-hint">hold a card to lift it · Alt+↑/↓ to reorder</div>`:'';
     root.innerHTML = back+top+`<h2 class="tw-title">The Private Wing</h2>`+
       `<div class="tw-dek">Unlocked · ${clockUntil(st.sess.expiresAt)}. Open any tool — no more prompts until you lock or it expires.</div>`+
       `<div class="tw-secbar"><span class="tw-mini" id="lockBtn">⏻ Lock now</span>`+
       `<span class="tw-mini" id="devBtn">⚙ Devices</span>`+
       `<span class="tw-mini" id="kitBtn">🖨 Recovery kit</span></div>`+
-      cards +
+      cards + hint +
       renderConnect() +
       `<div class="tw-devices" id="devWrap" hidden><h4>Enrolled passkeys</h4><div id="devList"></div>`+
       `<div style="margin-top:14px"><span class="tw-mini" id="addBtn">＋ Add this device</span></div>`+
@@ -2120,6 +2163,7 @@ function paintPersonal(root, man){
       catch(e){ console.error('[private-wing] addPasskey failed:', e); m.style.color='var(--tw-rose)'; m.textContent=friendlyErr(e); }
     });
     wireConnect(root, man);
+    wireDrag(root, {scope:'personal', archive:false});
   } else {
     // DEFECT 2 fix: "Use your passkey" is ALWAYS the primary action (a discoverable get() works on
     // any device with the synced passkey), regardless of this device's local enrolled flag. "Set up
@@ -2159,7 +2203,8 @@ async function renderPersonal(root){
     `<div class="tw-top"><span>behind the <b>passkey</b></span><span>personal tools</span></div>`+
     `<h2 class="tw-title">The Private Wing</h2><div class="tw-skel"></div>`;
   let man=null;
-  try{ const res=await Promise.all([loadManifest(''), loadSpaces()]); man=res[0]; SPACES=normSpaces(res[1]); }
+  pLocalLoad();   // the wing's card order rides the same press_portal state as the marquee
+  try{ const res=await Promise.all([loadManifest(''), loadSpaces(), pCloudLoad().catch(()=>{})]); man=res[0]; SPACES=normSpaces(res[1]); }
   catch(e){ SPACES=normSpaces(null); }
   paintPersonal(root, man);
 }
@@ -2185,16 +2230,20 @@ async function renderFamily(root){
   try{ who = await window.FamilyGate.requireSession(); }
   catch(e){ return; }                 // gate stays up; nothing behind it renders
   if(!who) return;
-  const fam=(SPACES.family||[]);
+  pLocalLoad();   // order state loads only once the door is open
+  await pCloudLoad().catch(()=>{});
+  const fam=wingOrdered(SPACES.family||[], 'family');
   const cards=fam.map(f=>cardHTML(f, man, false)).join('');
+  const hint=`<div class="tw-hint">hold a card to lift it · Alt+↑/↓ to reorder</div>`;
   const secbar=`<div class="tw-secbar"><span class="tw-mini" id="famLogout">⎋ Log out</span></div>`;
   const dek=`<div class="tw-dek">Signed in as ${esc(who.email)}. Open any tool — no more prompts. Everyone here shares the same data; there are no roles.</div>`;
   const body = cards
-    ? dek+secbar+cards
+    ? dek+secbar+cards+hint
     : `<div class="tw-dek">Signed in as ${esc(who.email)}.</div>`+secbar+`<div class="tw-empty"><h3>No family tools yet</h3><p>Pages added to the family wing appear here.</p></div>`;
   root.innerHTML = back+top+`<h2 class="tw-title">The Family Wing</h2>`+body;
   const lo=document.getElementById('famLogout');
   if(lo) lo.addEventListener('click', async ()=>{ try{ await window.FamilyGate.signOut(); }catch(e){} renderFamily(root); });
+  if(cards) wireDrag(root, {scope:'family', archive:false});
 }
 
 const params = new URLSearchParams(location.search);
