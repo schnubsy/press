@@ -15,7 +15,7 @@
 <style>
   :root{
     --bg:#f6f7f9; --card:#ffffff; --ink:#161a22; --muted:#5b6470; --line:#e3e6ea;
-    --accentA:#149b6b; --accentB:#b07d2a; --hit:#0f7a4d; --near:#8a6d1f; --danger:#b3261e;
+    --accentA:#149b6b; --link:#0b6b47; --accentB:#b07d2a; --hit:#0f7a4d; --near:#8a6d1f; --danger:#b3261e;
     --chip:#eef1f4; --shadow:0 1px 2px rgba(16,20,30,.06),0 2px 8px rgba(16,20,30,.05);
     --band:rgba(20,155,107,.08); /* Slice 5: subtle accent band behind each section heading */
     /* Slice 6 (Eye P0): badge PILL text must clear WCAG 4.5:1 on its pale tint in light mode — the
@@ -33,7 +33,7 @@
       --band:rgba(79,195,138,.12); /* Slice 5: accent band, dark token */
       /* Slice 6: in dark mode the tint is dark, so the BRIGHT accent text is the high-contrast choice. */
       --badge-hit-fg:#4fc38a; --badge-near-fg:#e0bd8f;
-      --accentA:#4fc38a; --accentB:#e0bd8f; --hit:#4fc38a; --near:#e0bd8f;
+      --accentA:#4fc38a; --link:#5fd39a; --accentB:#e0bd8f; --hit:#4fc38a; --near:#e0bd8f;
     }
   }
   *{box-sizing:border-box}
@@ -80,7 +80,7 @@
      phone they wrap to 2 across so the category word stays legible (Eye P0), and a lone last item
      flex-grows to fill the row so the grid still spans the column edge-to-edge on odd counts. */
   .qchip{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;min-height:40px;
-    text-decoration:none;font-size:13px;font-weight:600;color:var(--accentA);
+    text-decoration:none;font-size:13px;font-weight:600;color:var(--link);
     background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:8px 10px}
   @media (max-width:480px){ .qchip{flex:1 1 calc(50% - 4px)} } /* 2-across on the phone — full labels fit */
   .qchip:hover{border-color:var(--accentA)}
@@ -96,7 +96,28 @@
   .grouphead:first-child{margin-top:8px}
   .grouphead h2{font-size:24px;font-weight:800;letter-spacing:-.015em;margin:0;flex:1;min-width:0}
   .grouphead .gcount{display:inline-block;font-size:14px;font-weight:600;color:var(--muted);background:var(--chip);border-radius:999px;padding:1px 9px;margin-left:6px;vertical-align:middle}
-  .grouphead .toplink{font-size:13px;font-weight:600;color:var(--accentA);text-decoration:none;flex:0 0 auto}
+  /* Inbox arc Slice 5: the Processed section is a collapsible heading (button inside the h2). */
+  .proc-toggle{all:unset;cursor:pointer;display:flex;align-items:baseline;gap:6px;width:100%;min-height:44px;font:inherit;color:inherit}
+  .proc-toggle:focus-visible{outline:2px solid var(--accentA);outline-offset:3px;border-radius:8px}
+  .proc-toggle .caret{margin-left:auto;font-size:16px;color:var(--muted);transition:transform .15s}
+  .proc-toggle[aria-expanded="true"] .caret{transform:rotate(180deg)}
+  /* Inbox arc Slice 6: the "Bad" sheet (in-page dialog — never a browser prompt) + reason chip + backlog. */
+  .sheet-backdrop{position:fixed;inset:0;background:rgba(10,14,20,.45);display:flex;align-items:flex-end;justify-content:center;z-index:60;padding:0}
+  .sheet-backdrop[hidden]{display:none}
+  .sheet{background:var(--card);color:var(--ink);width:100%;max-width:640px;border-radius:16px 16px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.18)}
+  @media (min-width:700px){ .sheet-backdrop{align-items:center} .sheet{border-radius:16px} }
+  .sheet h3{margin:0 0 4px;font-size:18px}
+  .sheet .field{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+  .sheet label{font-size:13px;font-weight:700;color:var(--muted)}
+  .sheet select,.sheet textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);padding:10px;font:inherit;font-size:16px}
+  .sheet .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+  .reasonchip{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:rgba(179,38,30,.12);color:var(--danger)}
+  .badlist{list-style:none;margin:6px 0 0;padding:0}
+  .badlist li{padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+  .badlist li:first-child{border-top:0}
+  .badlist .meta{font-size:12px;color:var(--muted)}
+  .badgroup h4{margin:10px 0 2px;font-size:14px}
+  .grouphead .toplink{font-size:13px;font-weight:600;color:var(--link);text-decoration:none;flex:0 0 auto}
   /* rules search */
   .searchbar{display:flex;gap:8px;position:sticky;top:var(--stick);z-index:5;
     background:var(--bg);padding:8px 0 6px}
@@ -143,11 +164,18 @@
   .btn{min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:600;cursor:pointer}
   .btn.primary{background:linear-gradient(135deg,var(--accentA),var(--accentB));color:#fff;border-color:transparent}
   .btn.small{min-height:40px;padding:0 14px;font-size:14px}
-  a.deal{color:var(--accentA);text-decoration:none;font-weight:600}
+  a.deal{color:var(--link);text-decoration:none;font-weight:600}
   a.deal:focus-visible,button:focus-visible,.sw:focus-visible,input:focus-visible{outline:3px solid var(--accentB);outline-offset:2px}
   .field{display:flex;align-items:center;gap:10px;margin:8px 0}
   .field label{flex:1}
-  input[type=time],input[type=text],select{min-height:38px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);padding:0 10px;font-size:15px}
+  input[type=time],input[type=text],select{min-height:38px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);padding:0 10px;font-size:16px}
+  /* Inbox arc Slice 7: iOS zooms into any field under 16px and the page stays zoomed, drifting sideways.
+     Every field is ≥16px; nothing may be wider than the screen. User zoom stays allowed (viewport meta). */
+  input,select,textarea{font-size:16px;max-width:100%}
+  html,body{overflow-x:hidden}
+  @supports (overflow:clip){ html,body{overflow-x:clip} } /* clip: no scroll container, so sticky keeps working */
+  img,svg,video,table,pre{max-width:100%}
+  main,section,.card,.feedbar,.ftoolbar,.fsearch,.addrow,.searchbar,.row{min-width:0;max-width:100%}
   .empty{color:var(--muted);text-align:center;padding:26px 10px}
   .addrow{display:flex;gap:8px;margin-top:6px}
   .addrow input{flex:1}
@@ -184,14 +212,14 @@
   .fitem:hover,.fitem:focus-visible{background:var(--chip)}
   .fitem .fcheck{width:18px;flex:0 0 auto;text-align:center;color:var(--accentA)}
   .fitem .fcount{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
-  .fitem[aria-checked="true"]{color:var(--accentA)}
+  .fitem[aria-checked="true"]{color:var(--link)}
   .fitem.zero{opacity:.45}
   .fpop .fdone{margin-top:4px;width:100%;min-height:40px;border-radius:8px;border:1px solid var(--line);
     background:var(--card);color:var(--ink);font-weight:600;cursor:pointer}
   /* status line under the toolbar */
   .fstatus{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);margin-top:6px;min-height:20px}
   .fstatus .fgrow{flex:1;min-width:0}
-  .fstatus a{color:var(--accentA);text-decoration:none;font-weight:600;cursor:pointer}
+  .fstatus a{color:var(--link);text-decoration:none;font-weight:600;cursor:pointer}
   /* generic removable chips (Rules tab: blocked stores + sale-watch terms) */
   .chiprow{display:flex;gap:8px;flex-wrap:wrap}
   .fchip{flex:0 0 auto;font-size:13px;font-weight:600;color:var(--ink);background:var(--chip);border:1px solid var(--line);
@@ -205,6 +233,16 @@
   /* Slice 4d: sale-watch rows show a per-term status line + last match, one per line. */
   .watchrow{padding:10px 0;border-top:1px solid var(--line)} .watchrow:first-child{border-top:none;padding-top:2px}
   .watchrow .fchip{align-self:flex-start;flex:0 0 auto}
+  /* Inbox arc Slice 10 — long-press drag to reorder Sale Watch (ported from the marquee's R3.3 wireDrag). */
+  .watchrow{-webkit-touch-callout:none;border-radius:10px;transition:transform .12s}
+  .watchrow:focus-visible{outline:3px solid var(--accentB);outline-offset:2px}
+  .watchrow.pressing{transform:scale(.985);background:var(--chip)}
+  .watchrow.dragging{opacity:.35;border:2px dashed var(--accentA);background:transparent;transform:none}
+  .watchrow.dragging>*{visibility:hidden}
+  .watch-ghost{position:fixed;left:0;top:0;z-index:999;pointer-events:none;margin:0;opacity:.96;background:var(--card);
+    border-radius:12px;padding:10px 12px;box-shadow:0 18px 50px rgba(10,14,20,.35),0 0 0 1px var(--accentA);will-change:transform}
+  body.watch-sorting{cursor:grabbing;-webkit-user-select:none;user-select:none}
+  body.watch-sorting .watchrow{transition:none}
   /* Slice 2 (pushover arc): sale-watch add row — a divider, then [term][compact Min % stepper][Watch]
      on one line; the stepper matches the compact rule-card stepper (44px hit area, ~32px visible via a
      6px transparent inset). On a phone the term takes the full first row; stepper + Watch share row 2. */
@@ -273,7 +311,7 @@
   .wterm{all:unset;cursor:text;border-bottom:1px dashed var(--line);font:inherit;color:inherit;min-height:24px}
   .wterm:hover{border-bottom-color:var(--muted)}
   .wterm:focus-visible{outline:2px solid var(--accentA);outline-offset:2px;border-radius:4px}
-  .wedit{font:inherit;font-weight:700;width:100%;max-width:340px;padding:6px 8px;border:1px solid var(--accentA);border-radius:8px;background:var(--card);color:var(--ink)}
+  .wedit{font:inherit;font-size:16px;font-weight:700;width:100%;max-width:340px;padding:6px 8px;border:1px solid var(--accentA);border-radius:8px;background:var(--card);color:var(--ink)}
   /* Enhancements Slice 6 — swipe-to-delete track behind each feed card. */
   .swipe{position:relative;margin-bottom:10px;border-radius:14px}
   .swipe .card.deal{position:relative;margin-bottom:0;transition:transform .18s ease;touch-action:pan-y}
@@ -905,14 +943,83 @@
   // --- the gate singleton ------------------------------------------------------
   var current = null; // { page, onUnlock, onLock, el, wired }
 
-  // A MEMORY_ONLY page (cardsharp) is released only from this tab's in-memory keyring (one passkey tap per tab);
-  // every other page from the persisted session, as before. A redacted stub is never a credential.
+  // A MEMORY_ONLY page (cardsharp) is released from this tab's memory: the keyring of a passkey unlock here, or
+  // what this tab unsealed (below). Every other page from the persisted session, as before. A redacted stub is never
+  // a credential. Both memory copies live only while a session exists (a lock or expiry anywhere drops them).
   function credsFor(page) {
     var m = V.memCreds ? V.memCreds(page) : null;
     if (m && m.sync_id && m.pass) return { syncId: m.sync_id, passphrase: m.pass };
+    if (_un && _un.page === page) { if (V.loadSession()) return _un.creds; _un = null; }
     var sess = V.loadSession();
     var v = sess && sess.keyring && sess.keyring.apps && sess.keyring.apps[page];
     return (v && !v.redacted && v.sync_id && v.pass) ? { syncId: v.sync_id, passphrase: v.pass } : null;
+  }
+
+  // --- SEALED 7-day unlock, MEMORY_ONLY pages (cardsharp Arc 7 slice 6) ---
+  // After a passkey unlock the page's {sync_id, pass} are AES-GCM sealed under a fresh NON-EXTRACTABLE key kept in
+  // IndexedDB (`press:vault:seal`); the ciphertext rides INSIDE the session (`press:vault:v1`.seal), AAD-bound to its
+  // unlockedAt/expiresAt/vaultId, so any lock (the wing's only removes the session), expiry or new session kills it
+  // atomically; an orphaned key is deleted when a gate next sees it. Reloads unseal, no prompt. No IndexedDB → memory only.
+  var SEAL_DB = 'press:vault:seal', _un = null, _sealing = 0, _timer = null;
+  function sealable(page) { try { return V.MEMORY_ONLY.indexOf(page) >= 0 && !!root.indexedDB; } catch (e) { return false; } }
+  function idb(mode, fn) {
+    return new Promise(function (ok, no) {
+      var o = root.indexedDB.open(SEAL_DB, 1);
+      o.onupgradeneeded = function () { o.result.createObjectStore('keys'); };
+      o.onerror = o.onblocked = function () { no(o.error); };
+      o.onsuccess = function () {
+        var db = o.result, t = db.transaction('keys', mode), r = fn(t.objectStore('keys'));
+        t.oncomplete = function () { db.close(); ok(r.result); };
+        t.onerror = t.onabort = function () { db.close(); no(t.error); };
+      };
+    });
+  }
+  function aad(page, s) { return new TextEncoder().encode(JSON.stringify([page, s.unlockedAt, s.expiresAt, s.vaultId || ''])); }
+  function sealOf(page) { var s = V.loadSession(), x = s && s.seal && s.seal[page]; return (x && x.at === s.unlockedAt && x.exp === s.expiresAt) ? x : null; }
+  function dropKey(page) { if (sealable(page)) idb('readwrite', function (st) { return st.delete(page); }).catch(function () {}); }
+  async function seal(page, creds) {
+    var s = V.loadSession(), c = crypto.subtle;
+    var key = await c.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    var iv = V.randomBytes(12);
+    var ct = await c.encrypt({ name: 'AES-GCM', iv: iv, additionalData: aad(page, s) }, key,
+      new TextEncoder().encode(JSON.stringify([creds.syncId, creds.passphrase])));
+    await idb('readwrite', function (st) { return st.put({ key: key, at: s.unlockedAt }, page); });
+    var cur = V.loadSession();
+    if (!cur) return dropKey(page); // locked meanwhile: no key left behind
+    if (cur.unlockedAt !== s.unlockedAt) return true; // a new session meanwhile → seal again
+    cur.seal = cur.seal || {};
+    cur.seal[page] = { ct: V.b64(ct), iv: V.b64(iv), at: cur.unlockedAt, exp: cur.expiresAt };
+    localStorage.setItem(V.SESSION_KEY, JSON.stringify(cur));
+  }
+  function maybeSeal(page, creds) {
+    if (!sealable(page) || _sealing || sealOf(page)) return;
+    _sealing = 1;
+    seal(page, creds).catch(function () {}).then(function (again) { _sealing = 0; if (again) maybeSeal(page, creds); });
+  }
+  async function unseal(page) {
+    try {
+      var s = V.loadSession(), x = sealOf(page);
+      var rec = await idb('readonly', function (st) { return st.get(page); });
+      if (!rec || rec.at !== x.at) return null;
+      var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: V.ub64(x.iv), additionalData: aad(page, s) }, rec.key, V.ub64(x.ct));
+      var a = JSON.parse(new TextDecoder().decode(pt));
+      return (a[0] && a[1]) ? { syncId: a[0], passphrase: a[1] } : null;
+    } catch (e) { return null; } // wrong/missing key, tampered or rebound blob — fail closed (the gate shows)
+  }
+  // re-check this page against the session: still unlocked → (re)seal + re-arm the expiry timer; else lock it
+  function check() {
+    if (!current) return;
+    var page = current.page, creds = credsFor(page);
+    clearTimeout(_timer);
+    if (creds) { // other tenants: unchanged (no seal, no timer)
+      var s = V.MEMORY_ONLY.indexOf(page) >= 0 && V.loadSession();
+      if (s) { maybeSeal(page, creds); _timer = setTimeout(check, Math.max(0, s.expiresAt - Date.now()) + 50); }
+      return;
+    }
+    if (!sealOf(page)) dropKey(page);
+    if (document.getElementById('press-gate')) return; // gate already up
+    try { if (current.onLock) current.onLock(); } catch (e) {}
+    render();
   }
 
   function removeGate() {
@@ -942,7 +1049,7 @@
       btn.disabled = true; msg.className = 'pg-msg'; msg.textContent = 'Waiting for your passkey…';
       V.unlock().then(function () {
         var creds = credsFor(current.page);
-        if (creds) { removeGate(); current.onUnlock(creds); return; }
+        if (creds) { removeGate(); current.onUnlock(creds); check(); return; }
         // The passkey OPENED the vault, but this tool has no stored credentials yet — a DISTINCT
         // state from a failed unlock (the space DID open). Point at the wing's Connect step; never
         // conflate this with "could not open the personal space".
@@ -966,11 +1073,7 @@
     current.wired = true;
     root.addEventListener('storage', function (ev) {
       if (ev && ev.key && ev.key !== V.SESSION_KEY) return; // ignore unrelated keys
-      if (!current) return;
-      if (credsFor(current.page)) return;                   // still unlocked — nothing to do
-      if (document.getElementById('press-gate')) return;    // gate already up
-      try { if (current.onLock) current.onLock(); } catch (e) {}
-      render();
+      check(); // still unlocked → reseal if needed; else the gate
     });
   }
 
@@ -983,8 +1086,17 @@
     opts = opts || {};
     current = { page: opts.page, onUnlock: opts.onUnlock || function () {}, onLock: opts.onLock || null, wired: false };
     wireLockWatch();
-    var creds = credsFor(current.page);
-    if (creds) { current.onUnlock(creds); return { gated: false }; }
+    var me = current, page = me.page, creds = credsFor(page);
+    if (creds) { me.onUnlock(creds); check(); return { gated: false }; }
+    if (sealable(page) && sealOf(page)) { // a sealed unlock: no prompt, no gate flash
+      unseal(page).then(function (c) {
+        if (current !== me) return;
+        if (c && V.loadSession()) { _un = { page: page, creds: c }; me.onUnlock(c); check(); }
+        else if (!document.getElementById('press-gate')) render(); // unseal failed → the gate, as before
+      });
+      return { gated: false, pending: true };
+    }
+    dropKey(page);
     render();
     return { gated: true };
   }
@@ -992,7 +1104,7 @@
   root.PressGate = {
     guard: guard,
     // exposed for tests / callers
-    credsFor: credsFor, friendlyErr: friendlyErr, MARQUEE: MARQUEE,
+    credsFor: credsFor, friendlyErr: friendlyErr, MARQUEE: MARQUEE, SEAL_DB: SEAL_DB, seal: seal, unseal: unseal,
     render: render, removeGate: removeGate
   };
 })(globalThis);
@@ -1071,7 +1183,7 @@
       api("press_tasks?page=eq."+PAGE+"&category=eq.rule&select=item_id,title,status,extras&order=title"),
       api("press_tasks?page=eq."+PAGE+"&category=eq.settings&select=item_id,extras"),
       api("press_state?page=eq."+PAGE+"&select=item_id,checked,updated_at"),
-      api("press_tasks?page=eq."+PAGE+"&category=eq.watch&select=item_id,title,status,extras&order=title"),
+      api("press_tasks?page=eq."+PAGE+"&category=eq.watch&select=item_id,title,status,extras,position,created_at&order=position.asc.nullslast,created_at.asc"),
       api("press_tasks?page=eq."+PAGE+"&category=eq.health&select=item_id,extras")
     ];
     if(sid){
@@ -1082,6 +1194,8 @@
       q.push(api("press_deals?page=eq."+PAGE+"&status=eq.raw&select=item_id,created_at,updated_at"));
       // Savings log (enhancements Slice 6, D1): one row per Bought/Skip, kept forever.
       q.push(api("press_tasks?page=eq."+PAGE+"&category=eq.savings&select=item_id,title,status,extras,updated_at"));
+      // Inbox arc Slice 6: the Bad backlog (press_tasks category='bad', kept forever like the savings log).
+      q.push(api("press_tasks?page=eq."+PAGE+"&category=eq.bad&select=item_id,title,status,extras,updated_at"));
     }
     return Promise.all(q).then(function(rs){
       return Promise.all(rs.map(function(r){ if(!r.ok) throw new Error("http "+r.status); return r.json(); }));
@@ -1099,6 +1213,7 @@
       state.deals = sid ? (d[6]||[]) : [];
       state.raw = sid ? (d[7]||[]) : [];
       state.savings = sid ? (d[8]||[]) : [];
+      state.bad = sid ? (d[9]||[]) : [];
       saveLS(); renderAll();
       if(sid) sync("ok","Synced"); else sync("locked","Locked");
     }).catch(function(e){
@@ -1182,8 +1297,23 @@
     if(!state.feedSeenAt) return true;
     return dealTime(d) > new Date(state.feedSeenAt).getTime();
   }
-  // Unseen = new hit/near rows to care about (the only rows the feed loads).
-  function unseenDeals(){ return (state.deals||[]).filter(function(d){ return isUnseen(d); }); }
+  // Inbox arc Slice 2: the feed shows deals that MEET the rules — hits, plus an unpriced near (a rule
+  // match whose price we couldn't read). A true near-miss (DoorDash 15% vs a 20% rule) never renders; it
+  // only rides the daily digest email (gated by the Alerts-page digest + channel toggles). Mark's own
+  // decisions (bought / skip / bad) stay visible whatever the verdict.
+  function meetsRules(d){ return d.verdict==="hit" || (d.verdict==="near" && !!(d.extras&&d.extras.unpriced)); }
+  function isDecided(d){ return d.status==="bought"||d.status==="skip"||d.status==="bad"; }
+  function shownDeals(){ return (state.deals||[]).filter(function(d){ return meetsRules(d)||isDecided(d); }); }
+  // Inbox arc Slice 5: the INBOX is what still needs a decision; PROCESSED holds Mark's decisions
+  // (bought / skip / bad), newest decision first (extras.status_at, stamped on every status change).
+  function inboxDeals(){ return shownDeals().filter(function(d){ return !isDecided(d); }); }
+  function statusTime(d){ var t=new Date((d.extras&&d.extras.status_at)||d.created_at||0).getTime(); return isNaN(t)?0:t; }
+  function processedDeals(){ return shownDeals().filter(isDecided).sort(function(a,b){ return statusTime(b)-statusTime(a); }); }
+  var PROC_LS="card-scout:processed-open"; // per-viewer convenience only (try/catch — storage may be blocked)
+  function procOpen(){ try{ return localStorage.getItem(PROC_LS)==="1"; }catch(e){ return false; } }
+  function setProcOpen(v){ try{ localStorage.setItem(PROC_LS, v?"1":"0"); }catch(e){} }
+  // Unseen = new INBOX rows (a decided or hidden near-miss row never badges).
+  function unseenDeals(){ return inboxDeals().filter(function(d){ return isUnseen(d); }); }
   function relTime(iso){
     if(!iso) return "";
     var t=new Date(iso).getTime(); if(isNaN(t)) return "";
@@ -1200,10 +1330,16 @@
     var id=(d.extras&&(d.extras.brand_rule_id||d.extras.rule_id))||null;
     var r=id?find(state.rules,id):null; return r?denomLabel(r.extras):null;
   }
+  // Inbox arc Slice 6: why Mark flagged a deal Bad (the sheet's dropdown; the agent auto-flags price_missing).
+  var BAD_REASONS=[["below_rule","Below my rule"],["wrong_brand","Wrong brand/product"],["price_missing","Price missing/wrong"],
+    ["blocked_retailer","Blocked/wrong retailer"],["expired","Expired/sold out"],["duplicate","Duplicate"],["other","Other"]];
+  function badReasonLabel(v){ for(var i=0;i<BAD_REASONS.length;i++) if(BAD_REASONS[i][0]===v) return BAD_REASONS[i][1]; return "Other"; }
   function nearReason(d){
     var e=d.extras||{};
     if(d.verdict==="near"){
       if(e.below_min_denom){ var dl=ruleMinDenomLabel(d); return "Below your "+((dl&&dl!=="Any")?dl:"$25")+" minimum"; }
+      // Inbox arc Slice 4: a price-unknown deal the agent pushed is also on the Bad backlog automatically.
+      if(e.unpriced && e.auto_bad) return "Price unknown · flagged Bad";
       if(e.unpriced) return e.watch_term ? "Needs a look — discount unknown" : "Needs a look — no price";
       if(e.suspicious) return "Unusually high — double-check";
       return "Just missed your target"; // Slice 2: no "Hit"/"Near" copy on the Feed
@@ -1211,8 +1347,8 @@
     return "";
   }
   function dealCard(d){
-    var p=pct(d); var isHit=d.verdict==="hit"; var bought=d.status==="bought", skip=d.status==="skip";
-    var isNew=isUnseen(d); var rt=relTime(d.created_at);
+    var p=pct(d); var isHit=d.verdict==="hit"; var bought=d.status==="bought", skip=d.status==="skip", isBad=d.status==="bad";
+    var isNew=!isDecided(d)&&isUnseen(d); var rt=relTime(d.created_at); // a processed card is never NEW
     // Slice 1: the SHOP is a secondary label ("· at Sam's Club"), never the bucket.
     var retailer=d.extras&&d.extras.retailer;
     var covers=d.extras&&d.extras.container_for; // Slice 5: "covers Total Wine"
@@ -1223,7 +1359,8 @@
     var pl=priceLine(d); if(pl) parts.push(pl);
     if(retailer) parts.push('at '+esc(retailer));
     if(covers&&covers.length) parts.push('covers '+esc(covers.slice(0,3).join(", ")));
-    if(reason) parts.push(esc(reason));
+    if(reason&&d.status!=="bad") parts.push(esc(reason));
+    if(d.status==="bad") parts.push('<span class="reasonchip">Bad · '+esc(badReasonLabel(d.extras&&d.extras.bad_reason))+'</span>');
     if(d.source) parts.push(esc(String(d.source).replace(/^src-/,"")));
     if(rt) parts.push(esc(rt));
     if(d.expiry) parts.push('exp '+esc(d.expiry));
@@ -1250,7 +1387,8 @@
       +(d.url?'<a class="deal" href="'+esc(d.url)+'" target="_blank" rel="noopener">Open deal &rarr;</a>':'<span class="sub">no link</span>')
       +'<span class="grow"></span>'
       +'<button class="btn small'+(bought?" primary":"")+'" data-buy="'+esc(d.item_id)+'" aria-pressed="'+bought+'">Bought</button> '
-      +'<button class="btn small'+(skip?" primary":"")+'" data-skip="'+esc(d.item_id)+'" aria-pressed="'+skip+'">Skip</button>'
+      +'<button class="btn small'+(skip?" primary":"")+'" data-skip="'+esc(d.item_id)+'" aria-pressed="'+skip+'">Skip</button> '
+      +'<button class="btn small'+(isBad?" primary":"")+'" data-bad="'+esc(d.item_id)+'" aria-pressed="'+isBad+'" aria-label="Bad — '+label+' deal">Bad</button>'
       +'</div></div></div>';
   }
   function lockedPanel(){
@@ -1279,7 +1417,7 @@
   // option shows how many rows it WOULD add. Unknown groups fall back to "other".
   function typeCounts(){
     var c={restaurant:0,retail:0,retailer:0,other:0};
-    (state.deals||[]).forEach(function(d){
+    inboxDeals().forEach(function(d){
       if(!withinWindow(d)||!matchesBrand(d)) return;
       var g=dealGroup(d); if(c[g]==null) g="other"; c[g]++;
     });
@@ -1287,7 +1425,7 @@
   }
   function feedFiltered(){
     var on=typesOnList();
-    return (state.deals||[]).filter(function(d){
+    return inboxDeals().filter(function(d){
       if(!withinWindow(d)) return false;
       if(on.length && on.indexOf(dealGroup(d))<0) return false;
       if(!matchesBrand(d)) return false;
@@ -1387,7 +1525,7 @@
     var host=el("feed");
     if(state.locked){ host.innerHTML=lockedPanel(); return; }
     // planId is set but the feed is genuinely empty (and config loaded) — the honest empty state.
-    if(!(state.deals&&state.deals.length)){
+    if(!shownDeals().length){
       host.innerHTML='<div class="empty">No deals in the last 30 days yet.<br>The agent alerts you the moment one beats your rules.</div>';
       return;
     }
@@ -1398,19 +1536,24 @@
   }
   function renderFeedList(){
     var listEl=el("feed-list"); if(!listEl) return;
+    // Inbox arc Slice 5: ONE flat inbox, newest first by default (Mark's call — the card-type headings are
+    // gone from the inbox; the Type filter + Sort still apply), then the collapsible Processed section.
     var deals=sortFeed(feedFiltered());
-    if(!deals.length){ listEl.innerHTML='<div class="empty">No deals match these filters.</div>'; return; }
-    var buckets={}; FEED_GROUPS.forEach(function(g){buckets[g[0]]=[];});
-    deals.forEach(function(d){ var g=dealGroup(d); if(!buckets[g]) g="other"; buckets[g].push(d); });
-    var groups=[];
-    FEED_GROUPS.forEach(function(g){ var l=buckets[g[0]]; if(l.length) groups.push({slug:g[0],label:g[1],count:l.length,list:l}); });
-    // KEEP the Feed group headings; the feed no longer carries its own quick-nav row (Slice 1).
-    var html="";
-    groups.forEach(function(g){
-      html+=groupHead("feed",g.slug,g.label,g.count);
-      g.list.forEach(function(d){ html+=dealCard(d); });
-    });
+    var html='<div class="grouphead" id="grp-feed-inbox"><h2>Inbox<span class="gcount">'+deals.length+'</span></h2></div>';
+    if(deals.length) deals.forEach(function(d){ html+=dealCard(d); });
+    else html+='<div class="empty">'+(inboxDeals().length?"No deals match these filters.":"Inbox clear — nothing waiting for you.")+'</div>';
+    var proc=processedDeals(), open=procOpen();
+    html+='<div class="grouphead proc-head" id="grp-feed-processed"><h2><button class="proc-toggle" id="proc-toggle" type="button" aria-expanded="'+open+'" aria-controls="proc-list">'
+      +'Processed<span class="gcount">'+proc.length+'</span><span class="caret" aria-hidden="true">▾</span></button></h2></div>'
+      +'<div id="proc-list"'+(open?'':' hidden')+'>'
+      +(proc.length?proc.map(dealCard).join(""):'<div class="empty">Nothing processed yet — Bought, Skip and Bad land here.</div>')+'</div>';
     listEl.innerHTML=html;
+  }
+  function toggleProcessed(btn){
+    var open=btn.getAttribute("aria-expanded")!=="true";
+    btn.setAttribute("aria-expanded",String(open));
+    var l=el("proc-list"); if(l) l.hidden=!open;
+    setProcOpen(open);
   }
   // The tab badge counts UNSEEN deals; it clears only when Mark looks (markFeedSeen), never on a timer.
   function renderFeedBadge(){
@@ -1508,21 +1651,23 @@
     var t=new Date(iso||0).getTime(); if(isNaN(t)||!iso) return false;
     return (Date.now()-t) <= (CADENCE_WINDOW[cadence]||24*3600e3);
   }
-  // EXACTLY three states — no "unknown", no green for a source nothing checks.
-  //   coming: not wired yet (coming_soon / !lane_ready) → toggle forced OFF.
-  //   stale : wired but blocked / errored / overdue / NEVER checked → not green.
-  //   live  : wired, healthy, and checked within its cadence.
+  // FOUR honest states — no "unknown", no green for a source nothing has checked.
+  //   coming  : not wired yet (coming_soon / !lane_ready) → toggle forced OFF.
+  //   awaiting: wired, never checked yet (inbox arc Slice 8 — a new browser-lane source before its first
+  //             real run) → neutral "Awaiting first run", never Live. Only a real tick sets last_checked.
+  //   stale   : wired but blocked / errored / overdue → not green.
+  //   live    : wired, healthy, and checked within its cadence.
   function sourceState(s){
     var x=s.extras||{};
     if(x.coming_soon===true || x.lane_ready===false) return "coming";
     if(x.blocked===true || x.health==="error") return "stale";
-    if(!x.last_checked) return "stale"; // never checked → never green
+    if(!x.last_checked) return "awaiting"; // never checked → never green
     return withinCadence(x.last_checked,x.cadence) ? "live" : "stale";
   }
   function sourceCard(s){
     var x=s.extras||{}; var on=s.status==="on"; var st=sourceState(s);
     var dot=st==="live"?"ok":(st==="stale"?"err":"");
-    var label=st==="live"?"Live":(st==="stale"?"Stale":"Coming soon");
+    var label=st==="live"?"Live":(st==="stale"?"Stale":(st==="awaiting"?"Awaiting first run":"Coming soon"));
     var lbcls=st==="live"?" hit":(st==="stale"?" warn":"");
     var checked=x.last_checked?("checked "+relTime(x.last_checked)):"Not yet checked";
     var laneStr=[x.lane||"",x.cadence||""].filter(Boolean).join(" · ")+(x.bookmark?" · bookmark":"");
@@ -1550,8 +1695,9 @@
     // a small honest tally so Mark can see coverage at a glance.
     var all=state.sources, live=all.filter(function(s){return sourceState(s)==="live";}).length,
         coming=all.filter(function(s){return sourceState(s)==="coming";}).length,
-        stale=all.filter(function(s){return sourceState(s)==="stale";}).length;
-    var tally='<div class="card summary"><p><strong>'+live+'</strong> live · <strong>'+stale+'</strong> stale · <strong>'+coming+'</strong> coming soon. '
+        stale=all.filter(function(s){return sourceState(s)==="stale";}).length,
+        awaiting=all.filter(function(s){return sourceState(s)==="awaiting";}).length;
+    var tally='<div class="card summary"><p><strong>'+live+'</strong> live · '+(awaiting?'<strong>'+awaiting+'</strong> awaiting first run · ':'')+'<strong>'+stale+'</strong> stale · <strong>'+coming+'</strong> coming soon. '
       +'A source only shows <em>Live</em> when something actually checked it within its schedule.</p></div>';
     var html=tally+quickNav("sources",groups);
     groups.forEach(function(g){
@@ -1664,7 +1810,8 @@
       +'<div class="grouphead"><h2>Sale watch</h2></div>'
       +'<div class="card">'
         +'<div class="sub">Get alerted when a term is on sale — not just gift cards. One search per term, up to 10.</div>'
-        +'<div id="watchlist" style="margin-top:8px"></div>'
+        +'<div id="watchlist" role="list" aria-label="Sale watches — long-press or Alt+Arrow keys to reorder" style="margin-top:8px"></div>'
+        +'<div id="watch-live" class="vh" role="status" aria-live="polite"></div>'
         // Slice 2 (pushover arc): the add row is ONE line under a divider — [term][compact Min % off
         // stepper][Watch]. On a phone the term takes the full first row and the stepper + Watch share
         // row 2. The divider stops the add-row stepper reading as a duplicate of the last watch row's.
@@ -1681,7 +1828,16 @@
     renderWatchList();
   }
   // The sale-watch terms (press_tasks category='watch') as removable chips + an add row (cap 10).
-  function watchTerms(){ return state.watch||[]; }
+  // Inbox arc Slice 10: Mark's own order — press_tasks.position first, then created_at for rows never
+  // positioned (and title as a last tie-break). The DB is the source of truth (read back on every load).
+  function watchPos(w){ var n=Number(w&&w.position); return (w&&w.position!=null&&isFinite(n))?n:Infinity; }
+  function watchTerms(){
+    return (state.watch||[]).slice().sort(function(a,b){
+      var pa=watchPos(a), pb=watchPos(b); if(pa!==pb) return pa<pb?-1:1;
+      var ca=new Date(a.created_at||0).getTime()||0, cb=new Date(b.created_at||0).getTime()||0; if(ca!==cb) return ca-cb;
+      return String(a.title||"").localeCompare(String(b.title||""));
+    });
+  }
   // Slice 4d: watch status from the row's extras (stamped by the tick). Eye P1/P2 (truth-up Slice 4):
   // never-checked reads "Not yet checked" (not "last never"); and the "0 matches in 30 days" clause is
   // dropped when there are none, because the line below already shows "No matches yet" (no redundancy).
@@ -1713,7 +1869,7 @@
       var match=e.last_match_url
         ? '<div class="sub"><a class="deal" href="'+esc(e.last_match_url)+'" target="_blank" rel="noopener">Last match: '+esc(e.last_match_title||"view")+' &rarr;</a></div>'
         : '<div class="sub">No matches yet</div>';
-      return '<div class="watchrow"><div class="row">'
+      return '<div class="watchrow" role="listitem" tabindex="0" data-wid="'+esc(w.item_id)+'" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown" aria-label="'+esc(w.title)+' — sale watch"><div class="row">'
         +'<div class="grow"><div class="title"><button class="wterm" data-editwatch="'+esc(w.item_id)+'" aria-label="Edit watch term '+esc(w.title)+'">'+esc(w.title)+'</button></div>'
         +'<div class="sub">'+watchStatusLine(w)+'</div>'
         +match
@@ -1722,6 +1878,89 @@
         +'<button class="fchip" data-unwatch="'+esc(w.item_id)+'" aria-label="Remove watch '+esc(w.title)+'">✕</button>'
         +'</div></div>';
     }).join("");
+    wireWatchDrag(host);
+  }
+  // Inbox arc Slice 10 — the marquee's long-press drag (press/index.html wireDrag, R3.3), ported: hold ~400ms
+  // to lift (a move >10px first = a scroll, never a drag); a ghost follows the pointer while the row in the
+  // list becomes a dashed placeholder; drop reorders. Alt+↑/↓ moves a focused row with a polite announcement.
+  // Links/inputs are never hijacked: native dragstart is blocked, fields never start a press, and the click a
+  // drag would fire is swallowed. Only rows whose position changed are written (press_tasks.position, sync_id
+  // column via api()).
+  var WATCH_HOLD_MS=400, WATCH_SLOP=10;
+  function watchAnnounce(msg){ var l=el("watch-live"); if(!l) return; l.textContent=""; setTimeout(function(){ l.textContent=msg; },30); }
+  function saveWatchOrder(host){
+    var ids=[].slice.call(host.querySelectorAll(".watchrow")).map(function(r){ return r.getAttribute("data-wid"); });
+    var writes=[];
+    ids.forEach(function(id,i){
+      var w=find(state.watch,id); if(!w) return;
+      if(Number(w.position)===i && w.position!=null) return; // unchanged → no write
+      w.position=i;
+      writes.push(patchTask(id,{position:i,updated_at:new Date().toISOString()}));
+    });
+    if(writes.length) withSave(Promise.all(writes).then(function(rs){ return {ok:rs.every(function(r){ return r&&r.ok; })}; }));
+  }
+  function wireWatchDrag(host){
+    var rows=function(){ return [].slice.call(host.querySelectorAll(".watchrow")); };
+    rows().forEach(function(row){
+      var suppressClick=false;
+      row.querySelectorAll("a,button,img").forEach(function(x){ x.setAttribute("draggable","false"); });
+      row.addEventListener("dragstart", function(e){ e.preventDefault(); });
+      row.addEventListener("keydown", function(e){
+        if(e.target!==row || !e.altKey || (e.key!=="ArrowUp"&&e.key!=="ArrowDown")) return;
+        e.preventDefault();
+        var all=rows(), i=all.indexOf(row), n=all.length, j=e.key==="ArrowUp"?i-1:i+1;
+        var name=(find(state.watch,row.getAttribute("data-wid"))||{}).title||"Watch";
+        if(j<0||j>=n){ watchAnnounce(name+" is already "+(j<0?"first":"last")); return; }
+        if(j<i) host.insertBefore(row,all[j]); else host.insertBefore(row,all[j].nextElementSibling);
+        row.focus();
+        watchAnnounce(name+" moved to position "+(j+1)+" of "+n);
+        saveWatchOrder(host);
+      });
+      row.addEventListener("click", function(e){ if(suppressClick){ e.preventDefault(); e.stopPropagation(); suppressClick=false; } }, true);
+      row.addEventListener("contextmenu", function(e){ if(row.classList.contains("pressing")||row.classList.contains("dragging")) e.preventDefault(); });
+      row.addEventListener("pointerdown", function(e){
+        if(typeof e.button==="number"&&e.button!==0) return;
+        if(e.target.closest&&e.target.closest("input,textarea,select")) return; // fields are never hijacked
+        var sx=e.clientX, sy=e.clientY, active=false, moved=false, ghost=null, dx=0, dy=0;
+        row.classList.add("pressing");
+        var blockScroll=function(ev){ if(active) ev.preventDefault(); };
+        document.addEventListener("touchmove",blockScroll,{passive:false});
+        var timer=setTimeout(function(){
+          active=true; suppressClick=true;
+          var r=row.getBoundingClientRect(); dx=sx-r.left; dy=sy-r.top;
+          ghost=row.cloneNode(true); ghost.removeAttribute("id"); ghost.classList.remove("pressing","dragging"); ghost.classList.add("watch-ghost");
+          ghost.setAttribute("aria-hidden","true"); ghost.style.width=r.width+"px";
+          ghost.style.transform="translate("+r.left+"px,"+r.top+"px) rotate(1.5deg)";
+          document.body.appendChild(ghost);
+          row.classList.remove("pressing"); row.classList.add("dragging"); document.body.classList.add("watch-sorting");
+          try{ row.setPointerCapture(e.pointerId); }catch(_){}
+        }, WATCH_HOLD_MS);
+        function teardown(){
+          clearTimeout(timer); row.classList.remove("pressing");
+          window.removeEventListener("pointermove",onMove); window.removeEventListener("pointerup",onUp);
+          window.removeEventListener("pointercancel",onCancel); document.removeEventListener("touchmove",blockScroll);
+        }
+        function finish(){ if(ghost) ghost.remove(); row.classList.remove("dragging"); document.body.classList.remove("watch-sorting"); }
+        function onMove(ev){
+          if(!active){ if(Math.hypot(ev.clientX-sx,ev.clientY-sy)>WATCH_SLOP) teardown(); return; } // a scroll / normal tap
+          moved=true;
+          var x=ev.clientX, y=ev.clientY;
+          ghost.style.transform="translate("+(x-dx)+"px,"+(y-dy)+"px) rotate(1.5deg)";
+          var others=rows().filter(function(c){ return c!==row; });
+          for(var k=0;k<others.length;k++){ var rr=others[k].getBoundingClientRect();
+            if(y<rr.top+rr.height/2){ if(row.nextElementSibling!==others[k]) host.insertBefore(row,others[k]); return; } }
+          if(others.length){ var last=others[others.length-1]; if(last.nextElementSibling!==row) host.insertBefore(row,last.nextElementSibling); }
+        }
+        function onUp(){
+          var was=active; teardown(); if(!was) return; // plain tap → the click proceeds
+          finish();
+          if(moved){ saveWatchOrder(host); var w=find(state.watch,row.getAttribute("data-wid"));
+            watchAnnounce((w&&w.title||"Watch")+" moved to position "+(rows().indexOf(row)+1)+" of "+rows().length); }
+        }
+        function onCancel(){ var was=active; teardown(); if(was) finish(); }
+        window.addEventListener("pointermove",onMove); window.addEventListener("pointerup",onUp); window.addEventListener("pointercancel",onCancel);
+      });
+    });
   }
   // The retailer blocklist (settings.extras.retailer_blocklist) as removable chips + an add row.
   function blocklist(){ var b=state.settings&&state.settings.retailer_blocklist; return Array.isArray(b)?b:[]; }
@@ -1893,7 +2132,7 @@
       return '<div class="card"><div class="row"><div class="grow"><div class="title">'+label+'</div><div class="sub">'+desc+'</div></div>'
         +'<button class="sw" role="switch" aria-checked="'+(t[id]===true)+'" aria-pressed="'+(t[id]===true)+'" aria-label="'+label+'" data-toggle="'+id+'"></button></div></div>';
     }
-    var groups=[{slug:"channels",label:"Channels",count:2},{slug:"howoften",label:"How often",count:2},{slug:"timing",label:"Timing",count:4}];
+    var groups=[{slug:"channels",label:"Channels",count:2},{slug:"howoften",label:"How often",count:2},{slug:"timing",label:"Timing",count:4},{slug:"bad",label:"Bad backlog",count:(state.bad||[]).length}];
     var html=metricsCard()+alertsSummary();
     html+=quickNav("alerts",groups);
     html+=groupHead("alerts","channels","Channels",2);
@@ -1926,6 +2165,8 @@
       +'<div class="field"><label for="dt">Digest time</label><input type="time" id="dt" value="'+esc(s.digest_time||"07:30")+'" data-set="digest_time"></div>'
       +'<div class="field"><label for="md">Alert mode</label><select id="md" data-set="mode"><option value="instant"'+((s.mode||"instant")==="instant"?" selected":"")+'>Instant</option><option value="digest"'+(s.mode==="digest"?" selected":"")+'>Digest only</option></select></div>'
       +'</div>';
+    html+=groupHead("alerts","bad","Bad backlog",(state.bad||[]).length);
+    html+=badBacklogCard();
     host.innerHTML=html;
   }
 
@@ -1955,6 +2196,7 @@
     if(b.id==="feed-search-close"){ closeFeedSearch(); return; }
     if(b.id==="feed-clear"){ clearFeedFilters(); return; }
     if(b.id==="feed-markseen"){ markFeedSeen(); return; }
+    if(b.id==="proc-toggle"){ toggleProcessed(b); return; }
     // source toggle — a "Coming soon" source is forced off and cannot be enabled (Slice 9).
     var sid=b.getAttribute("data-src");
     if(sid){ var s=find(state.sources,sid); if(!s||sourceState(s)==="coming") return; var on=s.status!=="on"; s.status=on?"on":"off"; setSwitch(b,on); withSave(patchTask(sid,{status:s.status,updated_at:new Date().toISOString()})); return; }
@@ -1977,7 +2219,12 @@
     if(dd){ closeOverflowMenus(); deleteDeal(dd); return; }
     // bought / skip
     var buy=b.getAttribute("data-buy"), skip=b.getAttribute("data-skip");
-    if(buy||skip){ markDeal(buy||skip, buy?"bought":"skip", b); return; }
+    if(buy||skip){ markDeal(buy||skip, buy?"bought":"skip"); return; }
+    // Inbox arc Slice 6: Bad opens the in-page sheet; tapping an active Bad is undo (no sheet).
+    var badId=b.getAttribute("data-bad");
+    if(badId){ var bd=find(state.deals,badId); if(bd&&bd.status==="bad") markDeal(badId,"bad"); else openBadSheet(badId,b); return; }
+    if(b.id==="bad-cancel"){ closeBadSheet(); return; }
+    if(b.id==="bad-save"){ saveBadSheet(); return; }
     // add brand
     if(b.id==="addbrand"){ addBrand(); return; }
     // blocked stores (Slice 3)
@@ -2189,19 +2436,112 @@
     if(userStatus) e.user_status=userStatus; else delete e.user_status;
     return e;
   }
-  function markDeal(id,status,btn){
-    var d=find(state.deals,id); var was=d.status===status;
-    var next=was?(d.extras&&d.extras.alert?"alerted":"judged"):status;
-    d.status=next; d.extras=dealExtras(d, was?null:status);
-    // reflect on both buttons in the card
-    var card=btn.closest(".card");
-    card.querySelectorAll("[data-buy],[data-skip]").forEach(function(x){ x.classList.remove("primary"); x.setAttribute("aria-pressed","false"); });
-    if(!was){ btn.classList.add("primary"); btn.setAttribute("aria-pressed","true"); }
-    withSave(Promise.all([
-      patchDeal(id,{status:d.status,extras:d.extras,updated_at:new Date().toISOString()}),
-      writeSavings(d, was?null:status)
-    ]).then(function(rs){ return {ok:rs.every(function(r){ return r&&r.ok; })}; }));
+  // Inbox arc Slice 5 — every status change stamps extras.status_at (Processed order) and extras.prev_status
+  // (where undo returns to: judged / alerted). Tapping the ACTIVE button again is undo: the row goes back to
+  // the inbox and its log row (savings or bad) is removed. Switching Bought↔Skip replaces the ONE savings row
+  // (same sv- id); switching to/from Bad swaps the savings row for the bad-backlog row — never two of either.
+  function markDeal(id,status,bad){
+    var d=find(state.deals,id); if(!d) return;
+    var cur=d.status, e=Object.assign({}, d.extras||{});
+    var undo=(cur===status);
+    var base=isDecided({status:cur}) ? (e.prev_status||(e.alert?"alerted":"judged")) : cur;
+    if(undo){
+      d.status=base; delete e.user_status; delete e.prev_status; delete e.status_at; delete e.bad_reason;
+    } else {
+      d.status=status; e.user_status=status; e.prev_status=base; e.status_at=new Date().toISOString();
+      if(status==="bad"&&bad) e.bad_reason=bad.reason; else delete e.bad_reason;
+    }
+    d.extras=e;
+    var writes=[patchDeal(id,{status:d.status,extras:d.extras,updated_at:new Date().toISOString()})];
+    if(!undo&&(status==="bought"||status==="skip")) writes.push(writeSavings(d,status));
+    else if(cur==="bought"||cur==="skip") writes.push(writeSavings(d,null));
+    if(!undo&&status==="bad") writes.push(writeBad(d,bad||{}));
+    else if(cur==="bad") writes.push(writeBad(d,null));
+    withSave(Promise.all(writes).then(function(rs){ return {ok:rs.every(function(r){ return r&&r.ok; })}; }));
+    renderFeedList(); syncFilterUI(); renderFeedBadge();
     if(typeof renderAlerts==="function"&&el("alerts")) renderAlerts();
+  }
+  // Inbox arc Slice 6 — the Bad-backlog row (press_tasks category='bad', item_id 'bad-'+deal id, kept forever
+  // like the savings log, sync_id column via api()). Same shape the agent writes for an auto price-unknown flag.
+  // writeBad(d,null) removes it (undo / switch away from Bad).
+  function badRowFor(d,bad){
+    var at=new Date().toISOString(), x=d.extras||{};
+    return {page:PAGE,item_id:"bad-"+d.item_id,title:String(d.brand||x.watch_term||"Gift card").slice(0,200),status:"bad",category:"bad",position:999,
+      extras:{reason:bad.reason||"other",note:String(bad.note||"").slice(0,500),brand:d.brand||null,source:d.source||null,retailer:x.retailer||null,
+        url:d.url||null,title:d.title?String(d.title).slice(0,200):null,pct:pct(d),price:d.price!=null?d.price:null,face:d.face_value!=null?d.face_value:null,
+        verdict:d.verdict||null,auto:false,deal_item_id:d.item_id,at:at},updated_at:at};
+  }
+  function writeBad(d,bad){
+    state.bad=(state.bad||[]).filter(function(x){ return x.item_id!=="bad-"+d.item_id; });
+    if(bad){
+      var row=badRowFor(d,bad); state.bad.push(row);
+      return api("press_tasks?on_conflict=page,item_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(row)});
+    }
+    return api("press_tasks?page=eq."+PAGE+"&item_id=eq."+encodeURIComponent("bad-"+d.item_id),{method:"DELETE",headers:{Prefer:"return=minimal"}});
+  }
+  // Inbox arc Slice 6 — the "Bad" sheet: reason dropdown + free-text note; Save / Cancel. A focus-trapped
+  // in-page dialog (Esc = Cancel), never a browser prompt. Cancel leaves the deal untouched.
+  var badSheetFor=null, badSheetOpener=null;
+  function ensureBadSheet(){
+    var sh=el("bad-sheet"); if(sh) return sh;
+    sh=document.createElement("div"); sh.className="sheet-backdrop"; sh.id="bad-sheet"; sh.hidden=true;
+    sh.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="bad-title" aria-describedby="bad-desc">'
+      +'<h3 id="bad-title">Flag as Bad</h3><div class="sub" id="bad-desc">It moves to Processed and onto the Bad backlog for review.</div>'
+      +'<div class="field"><label for="bad-reason">What was wrong?</label><select id="bad-reason">'
+      +BAD_REASONS.map(function(r){ return '<option value="'+r[0]+'">'+esc(r[1])+'</option>'; }).join("")+'</select></div>'
+      +'<div class="field"><label for="bad-note">Note (optional)</label><textarea id="bad-note" rows="3" maxlength="500"></textarea></div>'
+      +'<div class="actions"><button class="btn" type="button" id="bad-cancel">Cancel</button><button class="btn primary" type="button" id="bad-save">Save</button></div></div>';
+    document.body.appendChild(sh);
+    sh.addEventListener("click", function(ev){ if(ev.target===sh) closeBadSheet(); });
+    sh.addEventListener("keydown", function(ev){
+      if(ev.key==="Escape"){ ev.preventDefault(); closeBadSheet(); return; }
+      if(ev.key!=="Tab") return;
+      var f=[].slice.call(sh.querySelectorAll("select,textarea,button")); var i=f.indexOf(document.activeElement);
+      if(ev.shiftKey&&i<=0){ f[f.length-1].focus(); ev.preventDefault(); }
+      else if(!ev.shiftKey&&i===f.length-1){ f[0].focus(); ev.preventDefault(); }
+    });
+    return sh;
+  }
+  function openBadSheet(id,opener){
+    var d=find(state.deals,id); if(!d) return;
+    var sh=ensureBadSheet(); badSheetFor=id; badSheetOpener=opener||null;
+    el("bad-title").textContent="Flag as Bad — "+(d.brand||"Gift card");
+    // an auto-flagged price-unknown row pre-selects the agent's reason
+    el("bad-reason").value=(d.extras&&d.extras.unpriced)?"price_missing":"below_rule";
+    el("bad-note").value="";
+    sh.hidden=false; el("bad-reason").focus();
+  }
+  function closeBadSheet(){
+    var sh=el("bad-sheet"); if(sh) sh.hidden=true;
+    var id=badSheetFor; badSheetFor=null;
+    var back=id&&document.querySelector('[data-bad="'+id+'"]'); if(back&&back.offsetParent) back.focus();
+    else if(badSheetOpener&&badSheetOpener.isConnected) badSheetOpener.focus();
+  }
+  function saveBadSheet(){
+    var id=badSheetFor; if(!id) return closeBadSheet();
+    var reason=el("bad-reason").value, note=(el("bad-note").value||"").trim();
+    var sh=el("bad-sheet"); if(sh) sh.hidden=true; badSheetFor=null;
+    markDeal(id,"bad",{reason:reason,note:note});
+    var t=el("proc-toggle"); if(t) t.focus();
+  }
+  // Inbox arc Slice 6 — the Bad backlog on Alerts: count + list grouped by reason, newest first. Cowork reads
+  // the same rows by SQL (press_tasks category='bad').
+  function badBacklogCard(){
+    var rows=(state.bad||[]).slice().sort(function(a,b){ return new Date((b.extras&&b.extras.at)||b.updated_at||0)-new Date((a.extras&&a.extras.at)||a.updated_at||0); });
+    if(!rows.length) return '<div class="card" id="bad-backlog"><div class="sub">Nothing flagged Bad yet. Tap <strong>Bad</strong> on a deal that fails your expectations — it lands here for review.</div></div>';
+    var html='<div class="card" id="bad-backlog"><div class="sub">'+rows.length+' flagged — newest first, grouped by reason.</div>';
+    BAD_REASONS.forEach(function(r){
+      var list=rows.filter(function(x){ return ((x.extras&&x.extras.reason)||"other")===r[0]; }); if(!list.length) return;
+      html+='<div class="badgroup" data-reason="'+r[0]+'"><h4>'+esc(r[1])+' <span class="gcount">'+list.length+'</span></h4><ul class="badlist">';
+      list.forEach(function(x){ var e=x.extras||{};
+        html+='<li><strong>'+esc(x.title||"Gift card")+'</strong>'+(e.auto?' <span class="badge">auto</span>':"")
+          +(e.title?'<div class="meta">'+esc(e.title)+'</div>':"")
+          +(e.note?'<div>'+esc(e.note)+'</div>':"")
+          +'<div class="meta">'+esc([e.retailer?"at "+e.retailer:"",e.source?String(e.source).replace(/^src-/,""):"",e.at?fmtDate(e.at):""].filter(Boolean).join(" · "))
+          +(e.url?' · <a href="'+esc(e.url)+'" target="_blank" rel="noopener">open</a>':"")+'</div></li>'; });
+      html+='</ul></div>';
+    });
+    return html+'</div>';
   }
   // Enhancements Slice 6 (D2) — Delete = hide for good: status 'deleted' (+ extras.user_status so a re-run
   // never resurrects it). Never shown, never re-alerted; the 30-day prune clears it.
@@ -2213,9 +2553,12 @@
     withSave(patchDeal(id,{status:"deleted",extras:d.extras,updated_at:new Date().toISOString()}));
   }
   // Slice 2: a rule whose brand normalizes to the same key (apostrophes deleted) as `name`, or null.
+  // Inbox arc Slice 1: compared on the COMPACT key (spaces dropped) so "KrispyKreme" / "Chick fil A" /
+  // "Game-Pass" are duplicates of "Krispy Kreme" / "Chick-fil-A" / "Game Pass" — same rule as the judge.
+  function compactBrand(s){ return normBrand(s).replace(/ /g,""); }
   function findRuleByBrand(name){
-    var nb=normBrand(name); if(!nb) return null;
-    for(var i=0;i<state.rules.length;i++){ if(normBrand(state.rules[i].title)===nb) return state.rules[i]; }
+    var nb=compactBrand(name); if(!nb) return null;
+    for(var i=0;i<state.rules.length;i++){ if(compactBrand(state.rules[i].title)===nb) return state.rules[i]; }
     return null;
   }
   function addBrand(){
@@ -2286,8 +2629,12 @@
     var inp=el("newwatch"); var term=(inp&&inp.value||"").trim(); if(!term) return;
     if(watchTerms().length>=10) return; // cap so a tick can't fan out unboundedly
     var slug="watch-"+term.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
-    if(find(state.watch,slug)){ if(inp) inp.value=""; return; }
-    var row={page:PAGE,item_id:slug,title:term,status:"on",category:"watch",position:999,extras:{min_pct:newWatchMin,note:""},updated_at:new Date().toISOString()};
+    // Inbox arc Slice 1: a term that differs only in spacing/hyphens/apostrophes is the same watch.
+    var dup=watchTerms().some(function(w){ return compactBrand(w.title)===compactBrand(term); });
+    if(dup||find(state.watch,slug)){ if(inp) inp.value=""; return; }
+    // Inbox arc Slice 10: a new term goes to the BOTTOM of Mark's order (one past the last position).
+    var maxPos=-1; watchTerms().forEach(function(w){ var p=watchPos(w); if(p!==Infinity&&p>maxPos) maxPos=p; });
+    var row={page:PAGE,item_id:slug,title:term,status:"on",category:"watch",position:maxPos+1,extras:{min_pct:newWatchMin,note:""},created_at:new Date().toISOString(),updated_at:new Date().toISOString()};
     state.watch.push(row); if(inp) inp.value=""; newWatchMin=0; renderWatchList();
     var nm=el("newwatchmin"); if(nm) nm.textContent=pctMinLabel(newWatchMin);
     withSave(api("press_tasks?on_conflict=page,item_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(row)}));
