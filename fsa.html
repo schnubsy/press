@@ -3,416 +3,658 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="color-scheme" content="dark light">
-  <meta name="theme-color" content="#14161A">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#EEF0EB" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#131916" media="(prefers-color-scheme: dark)">
   <title>FSA Claims</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMTQxNjFBIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJBMkYzNiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIyIDQ5LjMyIEEyMCAyMCAwIDAgMSAxNC42OCAyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDBBM0UwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIzMiIgeTE9IjMyIiB4Mj0iNDAiIHkyPSIxOC4xNCIgc3Ryb2tlPSIjRTZFOUVEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
-  <meta name="build" content="2026-10-04T18:42:39.184Z e25c63f">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <meta name="build" content="2026-10-09T05:24:35.371Z d80caa2">
+  <link rel="preload" as="font" type="font/woff2" href="fsa-assets/fonts/nunito-sans-latin.woff2" crossorigin>
   <link rel="manifest" href="fsa-assets/manifest.webmanifest">
   <link rel="apple-touch-icon" href="fsa-assets/apple-touch-icon.png">
   <style>
 /* styles/fonts.css */
-/* fonts.css — inlined @font-face (parse-time known so font-display:optional prevents any post-paint reflow/CLS).
-   Font FILES are fetched from fonts.gstatic.com; regenerated from the Google Fonts css2 endpoint (display=optional).
-   If Google bumps a font version and a URL 404s, the fallback renders (no CLS) — re-fetch to refresh. */
-/* latin-ext */
+/* fonts.css — Riverstone type, SELF-HOSTED (no runtime CDN). Inlined @font-face so the faces are
+   parse-time known and font-display:optional never reflows after first paint (CLS 0).
+   Files: src/fonts/*.woff2 → dist/fsa-assets/fonts/ (build.js). Latin-subset variable woff2 fetched
+   once at dev time from Google Fonts (Literata opsz 7–72 wght 500–600; Nunito Sans opsz 6–12 wght 400–700).
+   Optical sizing is automatic (font-optical-sizing: auto). */
 @font-face {
-  font-family: 'Azeret Mono';
+  font-family: 'Literata';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 500 600;
   font-display: optional;
-  src: url(https://fonts.gstatic.com/s/azeretmono/v21/3XFuErsiyJsY9O_Gepph-HHvZfn23vRKV0U.woff2) format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-/* latin */
-@font-face {
-  font-family: 'Azeret Mono';
-  font-style: normal;
-  font-weight: 400;
-  font-display: optional;
-  src: url(https://fonts.gstatic.com/s/azeretmono/v21/3XFuErsiyJsY9O_Gepph-HHhZfn23vRK.woff2) format('woff2');
+  src: url(./fsa-assets/fonts/literata-latin.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
-/* latin-ext */
 @font-face {
-  font-family: 'Azeret Mono';
+  font-family: 'Nunito Sans';
   font-style: normal;
-  font-weight: 500;
+  font-weight: 400 700;
   font-display: optional;
-  src: url(https://fonts.gstatic.com/s/azeretmono/v21/3XFuErsiyJsY9O_Gepph-HHvZfn23vRKV0U.woff2) format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-/* latin */
-@font-face {
-  font-family: 'Azeret Mono';
-  font-style: normal;
-  font-weight: 500;
-  font-display: optional;
-  src: url(https://fonts.gstatic.com/s/azeretmono/v21/3XFuErsiyJsY9O_Gepph-HHhZfn23vRK.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-/* vietnamese */
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 400;
-  font-display: optional;
-  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb54C_k3HqUtEw.woff2) format('woff2');
-  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
-}
-/* latin-ext */
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 400;
-  font-display: optional;
-  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb94C_k3HqUtEw.woff2) format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-/* latin */
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 400;
-  font-display: optional;
-  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-/* vietnamese */
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 500;
-  font-display: optional;
-  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb54C_k3HqUtEw.woff2) format('woff2');
-  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
-}
-/* latin-ext */
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 500;
-  font-display: optional;
-  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb94C_k3HqUtEw.woff2) format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-/* latin */
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 500;
-  font-display: optional;
-  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-/* vietnamese */
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 600;
-  font-display: optional;
-  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb54C_k3HqUtEw.woff2) format('woff2');
-  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
-}
-/* latin-ext */
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 600;
-  font-display: optional;
-  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb94C_k3HqUtEw.woff2) format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-/* latin */
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 600;
-  font-display: optional;
-  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU.woff2) format('woff2');
+  src: url(./fsa-assets/fonts/nunito-sans-latin.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 /* styles/tokens.css */
-/* tokens.css — Apparatus Gauge palette + type + grid. Exact hexes only; no others anywhere. */
-:root, [data-theme="dark"] {
-  --base:#14161A; --surface:#1C2026; --ink:#E6E9ED; --dim:#8C949E; --hairline:#2A2F36;
-  --accent:#00A3E0; --warn:#E0A400; --danger:#E0483A; --neutral:#6C7684; --neutral-deep:#383F48;
-  --font-display:'Space Grotesk', system-ui, sans-serif;
-  --font-mono:'Azeret Mono', ui-monospace, monospace;
-  --s1:8px; --s2:16px; --s3:24px; --s4:32px; --s5:40px; --s6:48px;
+/* tokens.css — Riverstone (Calm / Organic Calm-tech). Drop-in replacement for src/styles/tokens.css.
+   Light is primary; dark via [data-theme="dark"] or the OS preference when no explicit theme is set.
+   Legacy names (--base, --surface, --ink, --dim, --hairline, --accent, --warn, --danger, --neutral,
+   --neutral-deep, --font-display, --font-mono, --s1..--s6) are kept so existing CSS keeps compiling;
+   new component CSS should use the semantic names below. Exact hexes only. */
+
+:root {
+  /* ---- type ---- */
+  --font-heading: 'Literata', Georgia, 'Times New Roman', serif;
+  --font-body: 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-figure: 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; /* always with tabular-nums */
+  --font-display: var(--font-body);   /* legacy: base.css sets body + wordmark with this */
+  --font-mono: var(--font-figure);    /* legacy: .mono / table numerics now render as tabular sans */
+
+  --text-xs: 0.75rem;    /* 12px  labels, meta */
+  --text-sm: 0.8125rem;  /* 13px  secondary */
+  --text-base: 0.9375rem;/* 15px  body */
+  --text-md: 1.0625rem;  /* 17px  card titles (body face, 700) */
+  --text-lg: 1.3125rem;  /* 21px  section headings (heading face) */
+  --text-xl: 1.5rem;     /* 24px  next-claim amount */
+  --text-2xl: 1.875rem;  /* 30px  hero sentence (desktop) */
+  --text-2xl-phone: 1.375rem; /* 22px hero sentence (<560px) */
+  --fig-readout: 1.375rem;    /* 22px readout values, 700 */
+  --leading-tight: 1.2; --leading-body: 1.45; --leading-hero: 1.25;
+  --weight-regular: 400; --weight-semibold: 600; --weight-bold: 700;
+  --tracking-heading: -0.005em;
+
+  /* ---- spacing (4px base; legacy 8px steps preserved) ---- */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px; --sp-12: 48px;
+  --s1: 8px; --s2: 16px; --s3: 24px; --s4: 32px; --s5: 40px; --s6: 48px;
+  --card-pad: 22px; --card-pad-phone: 18px; --stack-gap: 14px; --section-gap: 34px;
+
+  /* ---- shape ---- */
+  --radius-card: 20px; --radius-hero: 28px; --radius-button: 14px; --radius-input: 10px;
+  --radius-thumb: 12px; --radius-pill: 999px; --radius-gauge: 999px;
+  --border-width: 0px;
+  --denial-edge: 4px;
+  --tap-min: 44px;
+
+  /* ---- gauge ---- */
+  --gauge-height: 18px; --gauge-gap: 4px; --gauge-tick: 0px;
+
+  /* ---- motion ---- */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms; --dur-base: 200ms; --dur-slow: 600ms;
+
+  /* ---- colour: LIGHT (primary) ---- */
+  color-scheme: light;
+  --stone-50: #F7F8F5; --stone-100: #EEF0EB; --stone-200: #E1E6DF; --stone-300: #D3D9D1; --stone-400: #A9B3AC;
+  --stone-500: #7D8981; --stone-600: #56625B; --stone-700: #3E4943; --stone-800: #2B3530; --stone-900: #1B231F; --stone-950: #131916;
+  --moss-50: #EEF4F0; --moss-100: #D6E6DC; --moss-200: #B1CFBD; --moss-300: #8FC2A5; --moss-400: #6A9F82;
+  --moss-500: #4F7D63; --moss-600: #3F6B55; --moss-700: #335745; --moss-800: #284536; --moss-900: #1C3126;
+
+  --bg: #EEF0EB;            /* stone page */
+  --surface: #FAFBF8;       /* card */
+  --surface-sunk: #E1E6DF;  /* gauge track, thumbnails, open segment */
+  --input-bg: #EEF0EB;
+  --ink: #24302A;           /* 12.9:1 on surface */
+  --ink-dim: #56625B;       /* 6.0:1 on surface */
+  --line: #D3D9D1;          /* dividers inside cards only */
+  --primary: #3F6B55;       /* moss: 6.2:1 on surface, white on it 6.0:1 */
+  --primary-hover: #335745;
+  --primary-active: #284536;
+  --on-primary: #FFFFFF;
+  --primary-tint: rgba(63, 107, 85, 0.13);
+  --primary-tint-hover: rgba(63, 107, 85, 0.20);
+  --paid: #4F7D63;          /* text 5.0:1 */
+  --pending: #66808F;       /* slate mist; fill only */
+  --denied: #9E3D3D;        /* brick rose: 7.3:1 */
+  --denied-tint: rgba(158, 61, 61, 0.12);
+  --denied-fill: #D9C9C4;   /* gauge: denied returned to pool */
+  --warn: #7F5B12;          /* 5.6:1 */
+  --warn-tint: rgba(127, 91, 18, 0.13);
+  --open: #E1E6DF;
+  --focus-ring: #3F6B55;
+  --shadow-card: 0 1px 2px rgba(36, 48, 42, 0.06), 0 10px 28px -14px rgba(36, 48, 42, 0.22);
+  --shadow-raised: 0 2px 4px rgba(36, 48, 42, 0.08), 0 16px 36px -16px rgba(36, 48, 42, 0.28);
+  --scrim: rgba(19, 25, 22, 0.40);
+
+  /* receipts statuses (dot colour; label text always --ink) */
+  --status-unclaimed: #7F5B12; --status-eob: #66808F; --status-ready: #3F6B55; --status-claimed: #56625B;
+
+  /* legacy aliases */
+  --base: var(--bg); --hairline: var(--line); --dim: var(--ink-dim); --accent: var(--primary);
+  --danger: var(--denied); --neutral: var(--pending); --neutral-deep: var(--stone-600);
 }
-[data-theme="light"] {
-  --base:#ECEDEF; --surface:#FFFFFF; --ink:#14161A; --dim:#5A6068; --hairline:#D8DBDF;
-  --accent:#0273A8; --warn:#92650A; --danger:#B03626;
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #131916; --surface: #1B231F; --surface-sunk: #27322C; --input-bg: #131916;
+  --ink: #E5ECE7; --ink-dim: #A0ADA5; --line: #33403A;
+  --primary: #8FC2A5; --primary-hover: #A6D1B8; --primary-active: #7FB597; --on-primary: #0F1A14;
+  --primary-tint: rgba(143, 194, 165, 0.16); --primary-tint-hover: rgba(143, 194, 165, 0.24);
+  --paid: #7FB597; --pending: #7D93A1; --denied: #E58C82; --denied-tint: rgba(229, 140, 130, 0.14);
+  --denied-fill: #4A3431; --warn: #D9B36A; --warn-tint: rgba(217, 179, 106, 0.14); --open: #27322C;
+  --focus-ring: #8FC2A5;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.30), 0 10px 28px -14px rgba(0, 0, 0, 0.55);
+  --shadow-raised: 0 2px 4px rgba(0, 0, 0, 0.35), 0 16px 36px -16px rgba(0, 0, 0, 0.65);
+  --scrim: rgba(0, 0, 0, 0.55);
+  --status-unclaimed: #D9B36A; --status-eob: #7D93A1; --status-ready: #8FC2A5; --status-claimed: #A0ADA5;
 }
-@media (prefers-color-scheme: light) {
+
+@media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --base:#ECEDEF; --surface:#FFFFFF; --ink:#14161A; --dim:#5A6068; --hairline:#D8DBDF;
-    --accent:#0273A8; --warn:#92650A; --danger:#B03626;
+    color-scheme: dark;
+    --bg: #131916; --surface: #1B231F; --surface-sunk: #27322C; --input-bg: #131916;
+    --ink: #E5ECE7; --ink-dim: #A0ADA5; --line: #33403A;
+    --primary: #8FC2A5; --primary-hover: #A6D1B8; --primary-active: #7FB597; --on-primary: #0F1A14;
+    --primary-tint: rgba(143, 194, 165, 0.16); --primary-tint-hover: rgba(143, 194, 165, 0.24);
+    --paid: #7FB597; --pending: #7D93A1; --denied: #E58C82; --denied-tint: rgba(229, 140, 130, 0.14);
+    --denied-fill: #4A3431; --warn: #D9B36A; --warn-tint: rgba(217, 179, 106, 0.14); --open: #27322C;
+    --focus-ring: #8FC2A5;
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.30), 0 10px 28px -14px rgba(0, 0, 0, 0.55);
+    --shadow-raised: 0 2px 4px rgba(0, 0, 0, 0.35), 0 16px 36px -16px rgba(0, 0, 0, 0.65);
+    --scrim: rgba(0, 0, 0, 0.55);
+    --status-unclaimed: #D9B36A; --status-eob: #7D93A1; --status-ready: #8FC2A5; --status-claimed: #A0ADA5;
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; }
+}
+
 /* styles/base.css */
-/* base.css — movement discipline: flat planes, hairlines, no radius/shadow/gradient, 8px grid. */
-* { border-radius: 0; box-sizing: border-box; }
+/* base.css — Riverstone (Organic / Calm-tech): stone page, raised surfaces, soft two-layer shadows,
+   rounded 10–28px, no borders on boxes. Radii/shadows come ONLY from tokens (build test enforces). */
+* { box-sizing: border-box; }
 /* The `hidden` attribute must win over component display rules (e.g. #readout is display:grid) —
    the signed-out view and the inbox toggle rely on it to actually hide sections. */
 [hidden] { display: none !important; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; background: var(--bg); }
 body {
   margin: 0;
-  background: var(--base);
+  background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-display);
-  font-size: 15px;
-  line-height: 1.4;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
 }
-.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-.dim { color: var(--dim); }
+.mono { font-family: var(--font-figure); font-variant-numeric: tabular-nums; }
+.dim { color: var(--ink-dim); }
 .vh {
   position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
-main { max-width: 960px; margin: 0 auto; padding: 0 var(--s2) var(--s6); }
-body.preboot main { visibility: hidden; }  /* revealed after first full render — one paint, no layout shift */
-a, button, select { font-family: inherit; }
-button {
-  background: var(--surface); color: var(--ink); border: 1px solid var(--hairline);
-  padding: var(--s1); cursor: pointer; transition: border-color 120ms;
+/* Inline SVG icons: 24px grid, 1.7 stroke, round caps/joins, currentColor, 1.1em next to text. */
+.ic {
+  width: 1.1em; height: 1.1em; flex: none; vertical-align: -0.2em;
+  fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
 }
-button:hover { border-color: var(--accent); }
-:focus-visible { outline: 1px solid var(--accent); outline-offset: 1px; }
+main { max-width: 960px; margin: 0 auto; padding: 0 28px var(--sp-12); }
+@media (max-width: 560px) { main { padding: 0 var(--sp-4) var(--sp-12); } }
+body.preboot main { visibility: hidden; }  /* revealed after first full render — one paint, no layout shift */
+a, button, select, input { font-family: inherit; }
+a { color: var(--primary); }
+
+/* Buttons: soft (secondary) by default; .btn-primary / first actions are solid moss. */
+button {
+  background: var(--primary-tint); color: var(--primary); border: 0;
+  border-radius: var(--radius-button); min-height: var(--tap-min); padding: 11px 18px;
+  font-size: 15px; font-weight: var(--weight-semibold); line-height: 1.2; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+/* Colour transitions live on :hover only, so a theme switch repaints instantly (never mid-fade). */
+button:hover { background: var(--primary-tint-hover); transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+button:active { background: var(--primary-tint-hover); transform: translateY(1px); }
+button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+.btn-primary { background: var(--primary); color: var(--on-primary); }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-primary:active { background: var(--primary-active); }
+:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 select {
-  background: var(--surface); color: var(--ink); border: 1px solid var(--hairline);
-  padding: 4px var(--s1); font-family: var(--font-mono);
+  background: var(--input-bg); color: var(--ink); border: 0; border-radius: var(--radius-input);
+  min-height: var(--tap-min); padding: 9px 12px; font-size: 15px;
 }
 
 #topbar {
-  display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap;
-  max-width: 960px; margin: 0 auto; padding: var(--s2);
-  border-bottom: 1px solid var(--hairline);
+  display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap;
+  max-width: 960px; margin: 0 auto; padding: var(--sp-4) 28px var(--sp-2);
 }
+@media (max-width: 560px) { #topbar { padding: var(--sp-3) var(--sp-4) var(--sp-2); gap: var(--sp-2); } }
 /* back chip to the marquee's Private Wing (mirrors card-scout) — always in the app chrome, not just the gate */
-.tw-back { display:inline-flex; align-items:center; gap:4px; font-size:13px; font-weight:600; color:var(--dim); text-decoration:none; padding:6px 10px 6px 4px; }
-.tw-back:hover { color:var(--ink); }
-.wordmark { font-family: var(--font-display); font-weight: 600; font-size: 20px; letter-spacing: .04em; }
-#asof { font-size: 12px; }
+.tw-back {
+  display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-sm); font-weight: 600;
+  color: var(--ink-dim); text-decoration: none; padding: 6px 10px 6px 4px; min-height: var(--tap-min);
+  border-radius: var(--radius-button);
+}
+.tw-back:hover { color: var(--ink); transition: color var(--dur-fast) var(--ease-out); }
+.wordmark { font-family: var(--font-heading); font-weight: 600; font-size: 22px; line-height: 1; }
+#asof { font-size: var(--text-xs); }
 #theme-toggle { margin-left: auto; line-height: 1; }
-.pill-sync { font-size: 11px; border: 1px solid var(--hairline); padding: 2px 6px; color: var(--dim); }
+.pill-sync {
+  font-size: var(--text-xs); font-weight: 600; padding: 2px 9px; color: var(--ink-dim);
+  background: var(--surface-sunk); border-radius: var(--radius-pill);
+}
 
 .section-h {
-  font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim);
-  font-weight: 600; margin: var(--s3) 0 var(--s1);
+  font-family: var(--font-heading); font-weight: 600; font-size: var(--text-lg);
+  line-height: var(--leading-tight); text-transform: none; letter-spacing: var(--tracking-heading);
+  color: var(--ink); margin: var(--section-gap) 0 var(--sp-3);
 }
 
-/* inbox (review queue) — flat editable cards, hairline-separated (slice 4) */
-#inbox-list .inbox-item { border-top: 1px solid var(--hairline); padding: var(--s2) 0; }
-#inbox-list .inbox-item:first-child { border-top: 0; }
-.inbox-meta { font-size: 11px; margin: 0 0 var(--s1); }
-.inbox-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--s1) var(--s2); }
-.inbox-field { display: flex; flex-direction: column; gap: 2px; }
-.inbox-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
-.inbox-form input { background: var(--surface); color: var(--ink); border: 1px solid var(--hairline); padding: 4px var(--s1); font-size: 13px; }
-.inbox-actions { display: flex; flex-wrap: wrap; gap: var(--s1); margin-top: var(--s2); }
-.inbox-error { color: var(--ink); font-size: 12px; margin: var(--s1) 0 0; border-left: 2px solid var(--danger); padding-left: var(--s1); }
+/* inbox (review queue) — one raised card per item */
+#inbox-list { display: flex; flex-direction: column; gap: var(--stack-gap); }
+#inbox-list .inbox-item {
+  background: var(--surface); border: 0; border-radius: var(--radius-card); box-shadow: var(--shadow-card);
+  padding: var(--card-pad);
+}
+.inbox-meta { font-size: var(--text-sm); margin: 0 0 var(--sp-3); display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.inbox-agent { font-weight: 600; color: var(--ink); }
+.conf-bar {
+  display: inline-block; width: 46px; height: 6px; background: var(--surface-sunk);
+  border-radius: var(--radius-pill); overflow: hidden; vertical-align: middle;
+}
+.conf-fill { display: block; height: 100%; background: var(--paid); border-radius: var(--radius-pill); }
+.inbox-form { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--sp-2) var(--sp-3); }
+@media (max-width: 760px) { .inbox-form { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.inbox-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.inbox-label { font-size: var(--text-xs); font-weight: 600; color: var(--ink-dim); }
+.inbox-form input {
+  background: var(--input-bg); color: var(--ink); border: 0; border-radius: var(--radius-input);
+  min-height: var(--tap-min); padding: 9px 12px; font-size: 15px; width: 100%; min-width: 0;
+}
+.inbox-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-4); }
+.inbox-error {
+  color: var(--denied); font-size: var(--text-xs); margin: var(--sp-2) 0 0; padding: var(--sp-2) var(--sp-3);
+  background: var(--denied-tint); border-radius: var(--radius-input);
+}
 
 /* (arc/passkey-only: the sync-id + passphrase unlock panel and its styles were removed —
    the private-wing passkey gate is the single unlock surface now.) */
-#signout { line-height: 1; font-size: 12px; }
+#signout { line-height: 1; }
 
 /* agent control (slice 5) */
-#agents { display: inline-flex; align-items: center; gap: var(--s1); }
-.agent-badge { font-size: 11px; color: var(--dim); }
+#agents { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.agent-badge { font-size: var(--text-xs); color: var(--ink-dim); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
 
 /* styles/gauge.css */
-/* gauge.css — the hero. One flat bar, four segments: paid (fill) · pending (hatched) · denied
-   (outlined) · empty (available). Below it, a mono readout of all four figures. */
-#gauge { margin-top: var(--s3); }
+/* gauge.css — Riverstone gauge: four rounded segments separated by 4px gaps (paid · pending ·
+   denied-back-in-the-pool · open), a dot legend + caption underneath, and a five-card readout. */
+#gauge { margin-top: var(--section-gap); }
 #gauge-bar {
-  position: relative; display: flex; height: 48px; width: 100%;
-  border: 1px solid var(--hairline); background: var(--surface); overflow: hidden;
+  position: relative; display: flex; gap: var(--gauge-gap); height: var(--gauge-height); width: 100%;
+  border: 0; background: transparent; overflow: visible;
 }
-#gauge-fill { background: var(--accent); height: 100%; width: 0; }
-/* Animate the fill only when motion is welcome (slice 5). */
-@media (prefers-reduced-motion: no-preference) {
-  #gauge-fill, #gauge-pending, #gauge-denied { transition: width 600ms ease; }
-}
-/* pending — in flight, awaiting Fidelity's decision: a muted neutral fill (flat, no gradient). */
-#gauge-pending { height: 100%; width: 0; background: var(--neutral); }
-/* denied — returns to the pool: an OUTLINED box (not filled), tappable to jump to the cards. */
+#gauge-bar > div:not(#gauge-ticks), #gauge-denied { border-radius: var(--radius-gauge); }
+#gauge-fill { background: var(--paid); height: 100%; width: 0; flex: 0 1 auto; }
+/* pending — in flight, awaiting Fidelity's decision: slate mist, flat. */
+#gauge-pending { height: 100%; width: 0; flex: 0 1 auto; background: var(--pending); }
+/* denied — returned to the pool: a soft rose segment, still a <button> that jumps to the denial cards. */
 #gauge-denied {
-  height: 100%; width: 0; padding: 0; background: transparent;
-  border: 1px solid var(--danger); box-sizing: border-box; cursor: pointer; min-width: 0;
+  height: 100%; width: 0; flex: 0 1 auto; padding: 0; min-height: 0; min-width: 0;
+  background: var(--denied-fill); border: 0; cursor: pointer;
 }
-#gauge-denied:hover { background: var(--surface); }
-#gauge-unfilled { position: relative; flex: 1 1 auto; height: 100%; display: flex; align-items: center; justify-content: flex-end; }
-#gauge-label { font-size: 13px; padding: 0 var(--s1); color: var(--ink); font-variant-numeric: tabular-nums; }
-#gauge-ticks { position: absolute; inset: 0; pointer-events: none; }
-#gauge-note { font-size: 11px; margin: 4px 0 0; color: var(--ink); }
+#gauge-denied:hover { background: var(--denied-fill); filter: brightness(0.94); }
+#gauge-unfilled { flex: 1 1 auto; height: 100%; background: var(--open); min-width: 0; }
+/* Zero-width segments must not leave a stray 4px gap (gauge.js toggles .is-zero). */
+#gauge-fill.is-zero, #gauge-pending.is-zero { display: none; }
+/* Animate widths only when motion is welcome (slice 5). */
+@media (prefers-reduced-motion: no-preference) {
+  #gauge-fill, #gauge-pending, #gauge-denied { transition: width var(--dur-slow) var(--ease-out); }
+}
+/* $100 tick marks are dropped in Riverstone — the readout carries the exact figures. */
+#gauge-ticks { display: none; }
 
-/* gauge tick marks + scale labels */
-#gauge-ticks .tick { position: absolute; bottom: 0; width: 1px; height: 25%; background: var(--hairline); }
-#gauge-ticks .tick.major { height: 55%; }
-#gauge-scale { position: relative; height: 16px; margin-top: 2px; }
-#gauge-scale .scale-label { position: absolute; top: 0; transform: translateX(-50%); font-size: 11px; color: var(--dim); white-space: nowrap; }
+#gauge-scale { position: relative; height: 18px; margin-top: 6px; }
+#gauge-scale .scale-label {
+  position: absolute; top: 0; transform: translateX(-50%); font-size: var(--text-xs); color: var(--ink-dim);
+  white-space: nowrap; font-variant-numeric: tabular-nums;
+}
 #gauge-scale .scale-label.end { transform: translateX(-100%); }
 /* Narrow screens: the readout carries the numbers, so drop the crowded interior scale labels. */
 @media (max-width: 560px) {
   #gauge-scale .scale-label:not(.end) { display: none; }
 }
 
-/* the five-figure mono readout — a segmented bar means nothing to a screen reader or in sunlight */
-#gauge-readout {
-  display: grid; grid-template-columns: repeat(5, 1fr); margin-top: var(--s2);
-  border: 1px solid var(--hairline);
+.gauge-under {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+  gap: var(--sp-2) var(--sp-4); margin-top: var(--sp-2);
 }
-#gauge-readout .g-fig { padding: var(--s2); border-left: 1px solid var(--hairline); display: flex; flex-direction: column; gap: 4px; }
-#gauge-readout .g-fig:first-child { border-left: 0; }
-#gauge-readout .g-fig-l { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); font-weight: 600; }
-/* bold + 22px makes these "large text" (WCAG 3:1), which the fixed palette needs for accent/danger. */
-#gauge-readout .g-fig-v { font-size: 22px; color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; }
-#gauge-readout .g-fig-paid .g-fig-v { color: var(--accent); }
-#gauge-readout .g-fig-denied .g-fig-v { color: var(--danger); }   /* label stays dim — the ⚠ glyph + word carry it */
-#gauge-readout .g-fig-v { min-width: 0; overflow-wrap: anywhere; }
+.gauge-legend {
+  list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px var(--sp-4);
+  font-size: var(--text-sm); color: var(--ink-dim);
+}
+.gauge-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.lg-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.lg-paid { background: var(--paid); }
+.lg-pending { background: var(--pending); }
+.lg-denied { background: var(--denied-fill); }
+.lg-open { background: var(--open); border: 1px solid var(--line); }
+#gauge-label { font-size: var(--text-sm); font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+#gauge-note { font-size: var(--text-xs); margin: var(--sp-2) 0 0; color: var(--ink-dim); }
+
+/* the five-figure readout — five small raised cards */
+#gauge-readout {
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin-top: var(--sp-5);
+  border: 0;
+}
+#gauge-readout .g-fig {
+  background: var(--surface); border-radius: var(--radius-card); box-shadow: var(--shadow-card);
+  padding: var(--sp-4); display: flex; flex-direction: column; gap: 6px; min-width: 0;
+}
+#gauge-readout .g-fig-l {
+  font-size: var(--text-xs); font-weight: 600; text-transform: none; letter-spacing: 0;
+  color: var(--ink-dim); display: inline-flex; align-items: center; gap: 4px;
+}
+#gauge-readout .g-fig-v {
+  font-family: var(--font-figure); font-size: var(--fig-readout); line-height: 1.1; color: var(--ink);
+  font-weight: 700; font-variant-numeric: tabular-nums; min-width: 0; overflow-wrap: anywhere;
+}
+#gauge-readout .g-fig-paid .g-fig-v { color: var(--paid); }
+#gauge-readout .g-fig-denied .g-fig-v { color: var(--denied); }
+#gauge-readout .g-fig-denied .g-fig-l .ic { color: var(--denied); }
+.readout-foot { font-size: var(--text-xs); margin: var(--sp-3) 0 0; }
 @media (max-width: 820px) {
-  #gauge-readout { grid-template-columns: repeat(2, 1fr); }
-  #gauge-readout .g-fig:nth-child(3) { border-left: 0; }
-  #gauge-readout .g-fig:nth-child(n+3) { border-top: 1px solid var(--hairline); }
-  #gauge-readout .g-fig:nth-child(5) { border-left: 0; grid-column: 1 / -1; }
+  #gauge-readout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #gauge-readout .g-fig:nth-child(5) { grid-column: 1 / -1; }
 }
 
 /* styles/table.css */
-/* table.css — chips + claims table. Flat, hairline-ruled, radius 0. (Refined in slice 3.) */
-#chips { display: flex; flex-wrap: wrap; gap: var(--s1); margin: var(--s3) 0 var(--s2); }
-.chip { background: transparent; border: 1px solid var(--hairline); color: var(--dim); padding: 4px var(--s1); font-size: 13px; }
-.chip[aria-selected="true"] { border-color: var(--accent); color: var(--ink); }
+/* table.css — Riverstone chips + claims table: pill chips, sentence-case headers, tabular figures,
+   status pills (dot + word on a 15% tint). Hairlines only inside the table. */
+#chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-5) 0 var(--sp-3); }
+.chip {
+  background: var(--surface-sunk); color: var(--ink); border: 0; border-radius: var(--radius-pill);
+  min-height: 36px; padding: 6px 14px; font-size: var(--text-sm); font-weight: 600;
+}
+.chip:hover { background: var(--line); }
+.chip[aria-selected="true"] { background: var(--ink); color: var(--bg); }
 
 #claims-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-#claims-table th, #claims-table td { text-align: left; padding: var(--s1); border-bottom: 1px solid var(--hairline); vertical-align: top; }
-#claims-table th { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); font-weight: 600; cursor: pointer; }
+#claims-table th, #claims-table td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+#claims-table th {
+  font-size: var(--text-xs); text-transform: none; letter-spacing: 0; color: var(--ink-dim);
+  font-weight: 600; cursor: pointer;
+}
 #claims-table td.num, #claims-table th.num { text-align: right; }
-.col-amount, .col-claimed, .col-date, .col-docs { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-.tag { font-size: 11px; color: var(--warn); background: var(--surface); padding: 0 4px; }
-.note-line { font-size: 11px; color: var(--dim); display: block; }
-.status { font-size: 12px; border: 1px solid var(--hairline); padding: 1px 6px; background: var(--surface); }
-.status.submitted { border-color: var(--neutral-deep); color: var(--ink); }
-.status.candidate { border-color: var(--accent); color: var(--accent); }
-.status.waiting, .status.needs-receipt { border-color: var(--warn); color: var(--warn); }
-.status.denied { border-color: var(--danger); color: var(--danger); }
-.status.skipped { border-color: var(--dim); color: var(--dim); }
-.status.parked { border-color: var(--dim); color: var(--dim); margin-left: 4px; }
+.col-amount, .col-claimed, .col-date, .col-docs { font-family: var(--font-figure); font-variant-numeric: tabular-nums; }
+.col-amount { font-weight: 700; }
+.tag {
+  display: inline-block; font-size: var(--text-xs); font-weight: 600; color: var(--warn); background: var(--warn-tint);
+  border-radius: var(--radius-pill); padding: 1px 8px; margin-left: 6px;
+}
+.note-line { font-size: var(--text-xs); color: var(--ink-dim); display: block; }
+
+/* status pills: dot in the status colour + the word in --ink on a 15% tint */
+.status {
+  --st: var(--ink-dim);
+  display: inline-flex; align-items: center; gap: 6px; border-radius: var(--radius-pill);
+  padding: 3px 9px 3px 7px; font-size: var(--text-xs); font-weight: 600; color: var(--ink); line-height: 1.3;
+  background: color-mix(in srgb, var(--st) 15%, transparent); border: 0;
+}
+.status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--st); flex: none; }
+.status.submitted, .status.pending { --st: var(--pending); }
+.status.candidate, .status.picked, .status.gathered { --st: var(--primary); }
+.status.waiting, .status.needs-receipt { --st: var(--warn); }
+.status.denied, .status.rejected { --st: var(--denied); }
+.status.paid { --st: var(--paid); }
+.status.skipped, .status.parked { --st: var(--ink-dim); }
+.status.parked { margin-left: 4px; }
 /* Below 768px an 8-column table can't hold its shape — restack each row as a card (slice 5). */
 @media (max-width: 767px) {
   #claims-table thead { display: none; }  /* each cell self-labels via data-label; no header row needed */
   #claims-table, #claims-table tbody, #claims-table tr, #claims-table td { display: block; width: auto; }
-  #claims-table tr { border: 1px solid var(--hairline); margin-bottom: var(--s2); padding: var(--s1) var(--s2); }
-  #claims-table td { border-bottom: 0; padding: 4px 0; display: flex; justify-content: space-between; gap: var(--s2); text-align: right; }
-  #claims-table td.col-provider { flex-direction: column; align-items: flex-start; text-align: left; }
+  #claims-table tbody { display: flex; flex-direction: column; gap: var(--stack-gap); }
+  #claims-table tr {
+    background: var(--surface); border: 0; border-radius: var(--radius-card); box-shadow: var(--shadow-card);
+    padding: var(--sp-3) var(--card-pad-phone);
+  }
+  #claims-table td { border-bottom: 0; padding: 4px 0; display: flex; justify-content: space-between; gap: var(--sp-4); text-align: right; }
+  #claims-table td.col-provider { flex-direction: column; align-items: flex-start; text-align: left; font-weight: 700; }
+  #claims-table td.col-provider .note-line, #claims-table td.col-provider .tag { font-weight: 600; }
   #claims-table td.num { text-align: right; }
   #claims-table td::before {
-    content: attr(data-label); color: var(--dim); font-size: 11px; text-transform: uppercase;
-    letter-spacing: .06em; font-weight: 600; font-family: var(--font-display); text-align: left;
+    content: attr(data-label); color: var(--ink-dim); font-size: var(--text-xs); text-transform: none;
+    letter-spacing: 0; font-weight: 600; font-family: var(--font-body); text-align: left;
   }
   #claims-table td.col-provider::before { margin-bottom: 2px; }
-  #claims-table td.col-date { border-bottom: 1px solid var(--hairline); padding-bottom: var(--s1); margin-bottom: 4px; }
-  #claims-table tr.small-summary { padding: 0; border: 0; }
+  #claims-table td.col-date { border-bottom: 1px solid var(--line); padding-bottom: var(--sp-2); margin-bottom: 4px; }
+  #claims-table tr.small-summary { padding: 0; border: 0; background: transparent; box-shadow: none; }
   #claims-table tr.small-summary td { display: block; }
   #claims-table tr.small-summary td::before { content: none; }
   .small-toggle { min-height: 44px; }
   /* 44px tap targets on touch */
   .chip, .blocked-action, .strip-confirm, #overflow-btn, #disclosure > summary,
-  .nextclaim-checklist > summary { min-height: 44px; display: inline-flex; align-items: center; }
+  .nextclaim-checklist > summary { min-height: 44px; }
 }
 
 /* styles/chase.css */
-/* chase.css — the reshape (arc/chase-list). Flat instrument geometry, hairlines, 8px grid, cyan
-   accent, danger for denied/alarm, warn for aging. No radius/shadow/gradient beyond functional hatch. */
+/* chase.css — Riverstone surfaces for the chase list: hero panel, deadline row, raised cards, pills.
+   No borders on cards; separation is surface + soft shadow. Hairlines only INSIDE a card. */
 
 /* --- header: year control, agent alert, overflow menu --- */
-#year-static { font-size: 13px; letter-spacing: .04em; }
-.agent-alert { font-size: 12px; color: var(--danger); border: 1px solid var(--danger); background: var(--surface); padding: 2px 6px; }
-.overflow { margin-left: auto; position: relative; }
-#overflow-btn { line-height: 1; font-size: 18px; padding: 2px 8px; }
-#overflow-menu {
-  position: absolute; right: 0; top: calc(100% + 4px); z-index: 20;
-  background: var(--surface); border: 1px solid var(--hairline); min-width: 12rem;
-  display: flex; flex-direction: column;
+#year-static { font-size: var(--text-sm); font-weight: 600; }
+.agent-alert {
+  font-size: var(--text-xs); font-weight: 700; color: var(--denied); background: var(--denied-tint);
+  border-radius: var(--radius-pill); min-height: 0; padding: 4px 10px;
 }
-#overflow-menu > * { border: 0; border-top: 1px solid var(--hairline); text-align: left; padding: var(--s1) var(--s2); background: var(--surface); }
-#overflow-menu > *:first-child { border-top: 0; }
-#overflow-menu #agents { display: flex; gap: var(--s1); align-items: center; flex-wrap: wrap; }
+.overflow { margin-left: auto; position: relative; }
+#overflow-btn { line-height: 1; font-size: 20px; padding: 0; width: var(--tap-min); min-height: var(--tap-min); background: transparent; color: var(--ink-dim); }
+#overflow-btn:hover { background: var(--primary-tint); color: var(--ink); }
+#overflow-menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 20;
+  background: var(--surface); border-radius: var(--radius-button); box-shadow: var(--shadow-raised);
+  min-width: 14rem; padding: 6px; display: flex; flex-direction: column; gap: 2px;
+}
+#overflow-menu > * {
+  border: 0; text-align: left; justify-content: flex-start; padding: 10px 12px; background: transparent;
+  color: var(--ink); font-weight: 600; border-radius: var(--radius-input);
+}
+#overflow-menu > button:hover { background: var(--primary-tint); }
+#overflow-menu #agents { display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap; }
 #topbar #theme-toggle { margin-left: 0; }
 
-/* --- deadline strip: a thin full-width mono rule --- */
-#deadline { border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); padding: var(--s1) 0; margin-top: var(--s2); }
-/* 18px/700 = large text, so the amber/alarm escalation colours clear WCAG 3:1 on the fixed palette. */
-#deadline-primary { margin: 0; font-size: 18px; letter-spacing: .03em; font-weight: 700; }
-#deadline-secondary { margin: 4px 0 0; font-size: 12px; color: var(--dim); }
-.strip-confirm { font-size: 11px; padding: 1px 6px; margin-left: 6px; text-transform: uppercase; letter-spacing: .05em; vertical-align: middle; }
+/* --- hero: the plain sentence + stones, with the deadline row beneath --- */
+.hero {
+  margin-top: var(--sp-4); background: var(--surface); border-radius: var(--radius-hero);
+  box-shadow: var(--shadow-card); padding: 28px;
+  display: grid; grid-template-columns: minmax(0, 1fr) 130px; grid-template-areas: "sentence stones" "deadline stones";
+  column-gap: var(--sp-6); row-gap: var(--sp-4); align-items: center;
+}
+#hero-sentence {
+  grid-area: sentence; margin: 0; font-family: var(--font-heading); font-weight: 500;
+  font-size: var(--text-2xl); line-height: var(--leading-hero); letter-spacing: var(--tracking-heading); color: var(--ink);
+}
+#hero-sentence b { color: var(--primary); font-weight: 600; font-variant-numeric: tabular-nums; }
+.stones { grid-area: stones; width: 130px; height: auto; display: block; justify-self: end; }
+.stones .stone-open { fill: var(--surface-sunk); }
+.stones .stone-pending { fill: var(--pending); }
+.stones .stone-paid { fill: var(--paid); }
+.stones .stone-top { fill: var(--primary); opacity: .55; }
+@media (max-width: 560px) {
+  .hero { padding: 20px; grid-template-columns: minmax(0, 1fr) 64px; grid-template-areas: "sentence stones" "deadline deadline"; column-gap: var(--sp-3); }
+  #hero-sentence { font-size: var(--text-2xl-phone); }
+  .stones { width: 64px; align-self: start; }
+}
+
+/* --- deadline row (inside the hero) --- */
+#deadline { grid-area: deadline; border: 0; padding: 0; margin: 0; }
+#deadline-primary {
+  margin: 0; font-size: 16px; font-weight: 700; letter-spacing: 0; color: var(--ink);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-variant-numeric: tabular-nums;
+}
+#deadline-secondary { margin: 6px 0 0; font-size: 14px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+.strip-pill {
+  display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-xs); font-weight: 700;
+  color: var(--warn); background: var(--warn-tint); border-radius: var(--radius-pill); padding: 3px 10px 3px 8px;
+}
+.strip-confirm {
+  font-size: var(--text-sm); font-weight: 600; min-height: 34px; padding: 6px 12px;
+  border-radius: var(--radius-button); text-transform: none; letter-spacing: 0;
+}
+
+/* --- shared card surface --- */
+.blocked-card, #nextclaim-card, .setup-card, #questions-list {
+  background: var(--surface); border: 0; border-radius: var(--radius-card); box-shadow: var(--shadow-card);
+  padding: var(--card-pad);
+}
+@media (max-width: 560px) {
+  .blocked-card, #nextclaim-card, .setup-card, #questions-list, #inbox-list .inbox-item { padding: var(--card-pad-phone); }
+}
 
 /* --- blocked cards: the centrepiece, keyed by person --- */
-#blocked { margin-top: var(--s3); }
-#blocked-list { display: flex; flex-direction: column; gap: var(--s2); }
-.blocked-card { border: 1px solid var(--hairline); border-left: 3px solid var(--neutral-deep); padding: var(--s2); background: var(--surface); }
-.blocked-card.is-denial { border-left-color: var(--danger); }
-.blocked-top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); }
-.blocked-who { font-size: 17px; font-weight: 600; }
-.blocked-amt { font-size: 17px; font-variant-numeric: tabular-nums; }
-.blocked-meta { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s2); margin-top: 4px; align-items: baseline; }
-.blocked-prov { font-size: 12px; }
-/* age is the emphasis — carried by weight/size + a glyph, not colour (the fixed palette can't render
-   small red/amber text at AA on the card surface). */
-.blocked-age { font-size: 15px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
-.blocked-flag { font-size: 12px; letter-spacing: .03em; color: var(--ink); border: 1px solid var(--danger); padding: 0 6px; }
-.blocked-need { margin: var(--s1) 0 0; font-size: 14px; }
-.blocked-notice { margin: 2px 0 0; font-size: 11px; overflow-wrap: anywhere; }
-.blocked-escalate { margin: var(--s1) 0 0; font-size: 12px; color: var(--ink); font-weight: 600; }
-.blocked-actions { margin-top: var(--s2); display: flex; gap: var(--s1); flex-wrap: wrap; }
-.blocked-action {
-  display: inline-block; font-size: 13px; padding: var(--s1) var(--s2);
-  border: 1px solid var(--accent); color: var(--accent); text-decoration: none; background: var(--surface);
+#blocked { margin-top: 0; }
+#blocked-list { display: flex; flex-direction: column; gap: var(--stack-gap); }
+.blocked-card.is-denial { box-shadow: var(--shadow-card), inset var(--denial-edge) 0 0 var(--denied); }
+.blocked-top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-4); }
+.blocked-who { font-size: var(--text-md); font-weight: 700; line-height: var(--leading-tight); }
+.blocked-amt { font-family: var(--font-figure); font-size: var(--text-md); font-weight: 700; font-variant-numeric: tabular-nums; }
+.blocked-meta { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-3); margin-top: 6px; align-items: center; }
+.blocked-prov { font-size: var(--text-sm); }
+/* age is the emphasis — carried by weight + an icon (clock → alert when stale) + the word. */
+.blocked-age {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 700;
+  color: var(--ink); font-variant-numeric: tabular-nums;
 }
-.blocked-action:hover { color: var(--ink); border-color: var(--ink); }
-.danger { color: var(--danger); } .warn { color: var(--warn); }
+.blocked-age.is-stale .ic { color: var(--denied); }
+.blocked-age.is-aging .ic { color: var(--warn); }
+.blocked-flag {
+  display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-xs); font-weight: 700;
+  color: var(--denied); background: var(--denied-tint); border: 0; border-radius: var(--radius-pill);
+  padding: 3px 10px 3px 8px; text-transform: capitalize;
+}
+.blocked-need { margin: var(--sp-3) 0 0; font-size: var(--text-base); }
+.blocked-notice { margin: 4px 0 0; font-size: var(--text-xs); overflow-wrap: anywhere; }
+.blocked-escalate { margin: var(--sp-2) 0 0; font-size: var(--text-sm); color: var(--ink); font-weight: 600; }
+.blocked-actions { margin-top: var(--sp-4); display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+/* first action = primary (solid moss); .is-soft = secondary tint */
+.blocked-action {
+  display: inline-flex; align-items: center; gap: 6px; min-height: var(--tap-min); padding: 11px 18px;
+  font-size: 15px; font-weight: 600; line-height: 1.2; text-decoration: none;
+  background: var(--primary); color: var(--on-primary); border: 0; border-radius: var(--radius-button);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.blocked-action:hover { background: var(--primary-hover); color: var(--on-primary); transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+.blocked-action:active { background: var(--primary-active); transform: translateY(1px); }
+.blocked-action.is-soft { background: var(--primary-tint); color: var(--primary); }
+.blocked-action.is-soft:hover { background: var(--primary-tint-hover); color: var(--primary); }
+.danger { color: var(--denied); } .warn { color: var(--warn); }
 
 /* --- next claim: exactly one card, the primary action --- */
-#nextclaim { margin-top: var(--s3); }
-#nextclaim-card { border: 1px solid var(--accent); padding: var(--s2); background: var(--surface); }
-#nextclaim-card.is-empty { border-color: var(--hairline); }
-.nextclaim-top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); }
-.nextclaim-prov { font-size: 17px; font-weight: 600; }
-.nextclaim-amt { font-size: 19px; color: var(--accent); font-variant-numeric: tabular-nums; }
-.nextclaim-date { margin: 2px 0 0; font-size: 12px; }
-.nextclaim-none { margin: 0; font-size: 14px; }
-.nextclaim-checklist { margin-top: var(--s2); }
-.nextclaim-checklist > summary { cursor: pointer; font-size: 13px; border: 1px solid var(--accent); color: var(--accent); padding: var(--s1) var(--s2); display: inline-block; }
-.nextclaim-checklist[open] > summary { margin-bottom: var(--s1); }
-.checklist { list-style: none; padding: 0; margin: var(--s1) 0; display: flex; flex-direction: column; gap: 4px; }
-.checklist li { font-size: 13px; }
-.checklist li.done { color: var(--dim); }
+#nextclaim { margin-top: 0; }
+.nextclaim-top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-4); }
+.nextclaim-prov { font-size: var(--text-md); font-weight: 700; }
+.nextclaim-amt { font-family: var(--font-figure); font-size: var(--text-xl); font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; }
+.nextclaim-date { margin: 4px 0 0; font-size: var(--text-sm); }
+.nextclaim-none { margin: 0; font-size: var(--text-base); }
+#nextclaim-card.is-empty p + p { margin-bottom: 0; }
+.nextclaim-checklist { margin-top: var(--sp-4); }
+.nextclaim-checklist > summary {
+  cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 6px;
+  min-height: var(--tap-min); padding: 11px 18px; font-size: 15px; font-weight: 600;
+  background: var(--primary); color: var(--on-primary); border-radius: var(--radius-button);
+}
+.nextclaim-checklist > summary::-webkit-details-marker { display: none; }
+.nextclaim-checklist > summary:hover { background: var(--primary-hover); transition: background-color var(--dur-fast) var(--ease-out); }
+.nextclaim-checklist[open] > summary { margin-bottom: var(--sp-2); }
+.checklist { list-style: none; padding: 0; margin: var(--sp-2) 0 var(--sp-3); display: flex; flex-direction: column; gap: 6px; }
+.checklist li { font-size: var(--text-sm); display: flex; align-items: center; gap: 6px; overflow-wrap: anywhere; }
+.checklist li .ic { color: var(--paid); }
+.checklist li.done { color: var(--ink-dim); }
 
 /* --- setup + open questions --- */
-#setup, #questions { margin-top: var(--s3); }
-#setup-list { display: flex; flex-direction: column; gap: var(--s2); }
-.setup-card { border: 1px solid var(--hairline); padding: var(--s2); background: var(--surface); }
-.setup-prov { font-weight: 600; margin-bottom: var(--s1); }
-#questions-list { list-style: none; padding: 0; margin: 0; }
-.question { display: flex; justify-content: space-between; gap: var(--s2); padding: var(--s1) 0; border-bottom: 1px solid var(--hairline); align-items: baseline; }
+#setup, #questions { margin-top: 0; }
+#setup-list { display: flex; flex-direction: column; gap: var(--stack-gap); }
+.setup-prov { font-weight: 700; font-size: var(--text-md); margin-bottom: var(--sp-2); }
+#questions-list { list-style: none; margin: 0; padding-top: 6px; padding-bottom: 6px; }
+.question {
+  display: flex; justify-content: space-between; gap: var(--sp-4); padding: 12px 0;
+  border-bottom: 1px solid var(--line); align-items: baseline;
+}
+.question:last-child { border-bottom: 0; }
 .question-text { font-size: 14px; }
-.question-age { font-size: 12px; white-space: nowrap; }
+.question-age { font-size: var(--text-xs); white-space: nowrap; }
 
 /* --- disclosure (all charges) --- */
-#claims { margin-top: var(--s3); }
-#disclosure > summary { cursor: pointer; font-size: 13px; padding: var(--s1) 0; border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); font-variant-numeric: tabular-nums; letter-spacing: .03em; list-style: none; }
+#claims { margin-top: var(--section-gap); }
+#disclosure > summary {
+  cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px;
+  font-size: var(--text-base); font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums;
+  padding: 12px 18px; min-height: var(--tap-min); background: var(--surface); border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
 #disclosure > summary::-webkit-details-marker { display: none; }
-#disclosure > summary::before { content: '▸ '; color: var(--dim); }
-#disclosure[open] > summary::before { content: '▾ '; }
-.small-summary td { padding: var(--s1); }
-.small-toggle { font-size: 12px; color: var(--dim); border: 1px dashed var(--hairline); background: transparent; padding: 4px var(--s1); width: 100%; text-align: left; font-variant-numeric: tabular-nums; }
-.small-toggle:hover { border-color: var(--accent); color: var(--ink); }
+.disc-chev { color: var(--ink-dim); transition: transform var(--dur-base) var(--ease-out); }
+#disclosure[open] > summary .disc-chev { transform: rotate(90deg); }
+.small-summary td { padding: var(--sp-2); }
+.small-toggle {
+  font-size: var(--text-sm); width: 100%; justify-content: flex-start; text-align: left;
+  font-variant-numeric: tabular-nums; min-height: 40px;
+}
+
+/* styles/receipts.css */
+/* receipts.css — the Receipts panel (Riverstone). Thumbnails are PLACEHOLDERS: the app stores
+   filenames only, never an image, blob or base64. Status classes match the data:
+   .receipt-status.{new,waiting-eob,ready,claimed}, each a dot + word (colour is never the only carrier). */
+#receipts .section-h { font-variant-numeric: tabular-nums; }
+.receipt-group { margin-top: var(--sp-4); }
+.receipt-group-h {
+  font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+  color: var(--ink-dim); margin: 0 0 var(--sp-2);
+}
+details.receipt-group > summary.receipt-group-h {
+  display: inline-flex; align-items: center; gap: var(--sp-2); min-height: var(--tap-min);
+  cursor: pointer; list-style: none; border-radius: var(--radius-input);
+}
+details.receipt-group > summary.receipt-group-h::-webkit-details-marker { display: none; }
+details.receipt-group > summary .ic { transition: transform var(--dur-base) var(--ease-out); }
+details.receipt-group[open] > summary .ic { transform: rotate(90deg); }
+
+.receipt-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--stack-gap); }
+.receipt-card {
+  display: flex; gap: var(--sp-3); align-items: center;
+  background: var(--surface); border-radius: var(--radius-card); box-shadow: var(--shadow-card);
+  padding: var(--sp-3) var(--sp-4);
+}
+.receipt-thumb {
+  flex: none; width: 44px; aspect-ratio: 3 / 4; display: grid; place-items: center;
+  background: var(--surface-sunk); color: var(--ink-dim); border-radius: var(--radius-thumb);
+}
+.receipt-thumb .ic { width: 20px; height: 20px; }
+.receipt-body { min-width: 0; flex: 1; display: grid; gap: 2px; }
+.receipt-top { display: flex; justify-content: space-between; gap: var(--sp-2); align-items: baseline; }
+.receipt-prov { font-weight: var(--weight-bold); font-size: var(--text-base); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.receipt-amt { font-family: var(--font-figure); font-variant-numeric: tabular-nums; font-weight: var(--weight-bold); font-size: var(--text-md); }
+.receipt-meta { display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap; font-size: var(--text-xs); color: var(--ink-dim); }
+.receipt-file { font-size: var(--text-xs); color: var(--ink-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.receipt-status {
+  --st: var(--ink-dim);
+  display: inline-flex; align-items: center; gap: 6px; border-radius: var(--radius-pill);
+  padding: 3px 9px 3px 7px; font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--ink);
+  background: color-mix(in srgb, var(--st) 15%, transparent);
+}
+.receipt-status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--st); }
+.receipt-status.new { --st: var(--status-unclaimed); }
+.receipt-status.waiting-eob { --st: var(--status-eob); }
+.receipt-status.ready { --st: var(--status-ready); }
+.receipt-status.claimed { --st: var(--status-claimed); }
+
+/* desktop: a 5-column card grid (thumb on top, 3:4) */
+@media (min-width: 768px) {
+  .receipt-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .receipt-card { flex-direction: column; align-items: stretch; padding: var(--sp-3); }
+  .receipt-thumb { width: 100%; }
+  .receipt-thumb .ic { width: 28px; height: 28px; }
+  .receipt-top { flex-direction: column; gap: 2px; }
+  .receipt-prov { font-size: var(--text-sm); }
+}
+@media (max-width: 560px) {
+  .receipt-card { padding: var(--sp-3); }
+}
 
 /* styles/print.css */
 /* print.css — light tokens forced; chrome hidden; table intact. (Expanded in slice 3.) */
@@ -442,7 +684,7 @@ select {
 </head>
 <body class="preboot">
   <header id="topbar">
-    <a class="tw-back" href="index.html?view=personal">&larr; Private Wing</a>
+    <a class="tw-back" href="index.html?view=personal"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 6l-6 6 6 6"/></svg>Private Wing</a>
     <span class="wordmark">FSA</span>
     <span id="year-static" class="mono dim" aria-label="Plan year"></span>
     <label class="vh" for="year">Plan year</label>
@@ -451,7 +693,7 @@ select {
     <span id="syncpill" class="mono pill-sync" hidden></span>
     <button id="agent-alert" class="agent-alert" type="button" hidden></button>
     <div id="overflow" class="overflow">
-      <button id="overflow-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Menu">⋯</button>
+      <button id="overflow-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Menu"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3.2"/></svg></button>
       <div id="overflow-menu" role="menu" hidden>
         <button id="theme-toggle" type="button" role="menuitem">Toggle theme</button>
         <span id="agents" role="menuitem"></span>
@@ -465,11 +707,17 @@ select {
   </header>
 
   <main>
-    <!-- 2 · DEADLINE STRIP — submission run-out is the primary clock; incur-by the secondary. -->
-    <section id="deadline" aria-label="Deadlines" hidden>
-      <p id="deadline-primary" class="mono"></p>
-      <p id="deadline-secondary" class="mono dim"></p>
-    </section>
+    <!-- 1 · HERO — one plain sentence (whole-dollar Available + days), then the deadline strip.
+         The stacked stones echo the gauge (open · pending · paid · primary); decorative only. -->
+    <div id="hero" class="hero" hidden>
+      <p id="hero-sentence"></p>
+      <svg class="stones" viewBox="0 0 120 92" aria-hidden="true" focusable="false"><ellipse class="stone-open" cx="60" cy="78" rx="52" ry="12"/><ellipse class="stone-pending" cx="60" cy="56" rx="36" ry="13"/><ellipse class="stone-paid" cx="60" cy="35" rx="22" ry="10.5"/><ellipse class="stone-top" cx="60" cy="18" rx="10" ry="6.5"/></svg>
+      <!-- 2 · DEADLINE STRIP — submission run-out is the primary clock; incur-by the secondary. -->
+      <section id="deadline" aria-label="Deadlines" hidden>
+        <p id="deadline-primary"></p>
+        <p id="deadline-secondary" class="dim"></p>
+      </section>
+    </div>
 
     <!-- 3 · GAUGE — four segments: paid (fill) · pending (hatched) · denied (outlined) · empty. -->
     <section id="gauge" aria-label="Reimbursement gauge">
@@ -477,11 +725,21 @@ select {
         <div id="gauge-fill"></div>
         <div id="gauge-pending"></div>
         <button id="gauge-denied" type="button" aria-label="Jump to denied claims" hidden></button>
-        <div id="gauge-unfilled"><span id="gauge-label" class="mono"></span></div>
+        <div id="gauge-unfilled"></div>
         <div id="gauge-ticks" aria-hidden="true"></div>
       </div>
       <div id="gauge-scale" aria-hidden="true"></div>
+      <div class="gauge-under">
+        <ul class="gauge-legend" aria-hidden="true">
+          <li><span class="lg-dot lg-paid"></span>Paid</li>
+          <li><span class="lg-dot lg-pending"></span>Pending</li>
+          <li><span class="lg-dot lg-denied"></span>Denied, back in the pool</li>
+          <li><span class="lg-dot lg-open"></span>Open</li>
+        </ul>
+        <span id="gauge-label"></span>
+      </div>
       <div id="gauge-readout" aria-label="Reimbursement figures"></div>
+      <p class="readout-foot dim">Remaining is election minus paid. Available also subtracts pending.</p>
       <p id="gauge-note" class="dim" hidden></p>
       <p id="gauge-sr" class="vh"></p>
     </section>
@@ -505,6 +763,12 @@ select {
       <div id="nextclaim-card"></div>
     </section>
 
+    <!-- 5b · RECEIPTS — the ScannerPro receipt log (filenames only; placeholder thumbnails). -->
+    <section id="receipts" aria-labelledby="receipts-h" hidden>
+      <h2 class="section-h" id="receipts-h">Receipts</h2>
+      <div id="receipts-list"></div>
+    </section>
+
     <!-- OPEN QUESTIONS — each with an age. -->
     <section id="questions" aria-label="Open questions" hidden>
       <h2 class="section-h" id="questions-h">Open questions</h2>
@@ -520,7 +784,7 @@ select {
     <!-- 7 · DISCLOSURE — all charges, collapsed by default, amount desc, <$75 folded. -->
     <section id="claims" aria-label="All charges">
       <details id="disclosure">
-        <summary id="disclosure-summary" class="mono">All charges</summary>
+        <summary id="disclosure-summary"><svg class="ic disc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>All charges</summary>
         <div id="chips" role="tablist" aria-label="Filter claims"></div>
         <table id="claims-table">
           <caption class="vh">Claims for the selected plan year</caption>
@@ -673,6 +937,14 @@ select {
           "id": "2026-0019", "ynab_id": "d19", "date": "2026-03-03", "payee": "Example Refund", "account": "Checking",
           "amount": -40, "provider": "Example Refund", "type": "Medical Services", "person": "T",
           "eligibility": "eligible", "status": "skipped", "documents": [], "notes": ["refund"] }
+      ],
+      "receipts": [
+        { "id": "r-2026-0001", "file": "2026-09-30 - Lakeside Physio receipt.pdf", "nasFile": "lakeside20260930.pdf", "provider": "Lakeside Physio", "date": "2026-09-30", "amount": 48.2, "patient": "", "readAt": "2026-10-01T09:05:00Z", "status": "new", "claimId": null, "note": "" },
+        { "id": "r-2026-0002", "file": "2026-09-18 - Summit Surgery receipt.pdf", "nasFile": "summit20260918.pdf", "provider": "Summit Surgery", "date": "2026-09-18", "amount": 120, "patient": "", "readAt": "2026-10-01T09:05:00Z", "status": "waiting-eob", "claimId": null, "note": "" },
+        { "id": "r-2026-0003", "file": "2026-09-02 - Riverside Gyn receipt.pdf", "nasFile": "gyn20260902.pdf", "provider": "Riverside Gyn", "date": "2026-09-02", "amount": 89, "patient": "", "readAt": "2026-10-01T09:05:00Z", "status": "ready", "claimId": null, "note": "" },
+        { "id": "r-2026-0004", "file": "2026-08-21 - Bright Dental receipt.pdf", "nasFile": "dental20260821.pdf", "provider": "Bright Dental", "date": "2026-08-21", "amount": 65.2, "patient": "", "readAt": "2026-09-01T09:05:00Z", "status": "ready", "claimId": null, "note": "" },
+        { "id": "r-2026-0005", "file": "2026-07-14 - Example Dental receipt.pdf", "nasFile": "dental20260714.pdf", "provider": "Example Dental", "date": "2026-07-14", "amount": 250, "patient": "", "readAt": "2026-08-01T09:05:00Z", "status": "claimed", "claimId": "2026-0002", "note": "" },
+        { "id": "r-2026-0006", "file": "2026-07-20 - Library card.pdf", "nasFile": null, "provider": "", "date": "2026-07-20", "amount": 0, "patient": "", "readAt": "2026-08-01T09:05:00Z", "status": "ignored", "claimId": null, "note": "" }
       ]
     }
   },
@@ -1312,14 +1584,83 @@ select {
   // --- the gate singleton ------------------------------------------------------
   var current = null; // { page, onUnlock, onLock, el, wired }
 
-  // A MEMORY_ONLY page (cardsharp) is released only from this tab's in-memory keyring (one passkey tap per tab);
-  // every other page from the persisted session, as before. A redacted stub is never a credential.
+  // A MEMORY_ONLY page (cardsharp) is released from this tab's memory: the keyring of a passkey unlock here, or
+  // what this tab unsealed (below). Every other page from the persisted session, as before. A redacted stub is never
+  // a credential. Both memory copies live only while a session exists (a lock or expiry anywhere drops them).
   function credsFor(page) {
     var m = V.memCreds ? V.memCreds(page) : null;
     if (m && m.sync_id && m.pass) return { syncId: m.sync_id, passphrase: m.pass };
+    if (_un && _un.page === page) { if (V.loadSession()) return _un.creds; _un = null; }
     var sess = V.loadSession();
     var v = sess && sess.keyring && sess.keyring.apps && sess.keyring.apps[page];
     return (v && !v.redacted && v.sync_id && v.pass) ? { syncId: v.sync_id, passphrase: v.pass } : null;
+  }
+
+  // --- SEALED 7-day unlock, MEMORY_ONLY pages (cardsharp Arc 7 slice 6) ---
+  // After a passkey unlock the page's {sync_id, pass} are AES-GCM sealed under a fresh NON-EXTRACTABLE key kept in
+  // IndexedDB (`press:vault:seal`); the ciphertext rides INSIDE the session (`press:vault:v1`.seal), AAD-bound to its
+  // unlockedAt/expiresAt/vaultId, so any lock (the wing's only removes the session), expiry or new session kills it
+  // atomically; an orphaned key is deleted when a gate next sees it. Reloads unseal, no prompt. No IndexedDB → memory only.
+  var SEAL_DB = 'press:vault:seal', _un = null, _sealing = 0, _timer = null;
+  function sealable(page) { try { return V.MEMORY_ONLY.indexOf(page) >= 0 && !!root.indexedDB; } catch (e) { return false; } }
+  function idb(mode, fn) {
+    return new Promise(function (ok, no) {
+      var o = root.indexedDB.open(SEAL_DB, 1);
+      o.onupgradeneeded = function () { o.result.createObjectStore('keys'); };
+      o.onerror = o.onblocked = function () { no(o.error); };
+      o.onsuccess = function () {
+        var db = o.result, t = db.transaction('keys', mode), r = fn(t.objectStore('keys'));
+        t.oncomplete = function () { db.close(); ok(r.result); };
+        t.onerror = t.onabort = function () { db.close(); no(t.error); };
+      };
+    });
+  }
+  function aad(page, s) { return new TextEncoder().encode(JSON.stringify([page, s.unlockedAt, s.expiresAt, s.vaultId || ''])); }
+  function sealOf(page) { var s = V.loadSession(), x = s && s.seal && s.seal[page]; return (x && x.at === s.unlockedAt && x.exp === s.expiresAt) ? x : null; }
+  function dropKey(page) { if (sealable(page)) idb('readwrite', function (st) { return st.delete(page); }).catch(function () {}); }
+  async function seal(page, creds) {
+    var s = V.loadSession(), c = crypto.subtle;
+    var key = await c.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    var iv = V.randomBytes(12);
+    var ct = await c.encrypt({ name: 'AES-GCM', iv: iv, additionalData: aad(page, s) }, key,
+      new TextEncoder().encode(JSON.stringify([creds.syncId, creds.passphrase])));
+    await idb('readwrite', function (st) { return st.put({ key: key, at: s.unlockedAt }, page); });
+    var cur = V.loadSession();
+    if (!cur) return dropKey(page); // locked meanwhile: no key left behind
+    if (cur.unlockedAt !== s.unlockedAt) return true; // a new session meanwhile → seal again
+    cur.seal = cur.seal || {};
+    cur.seal[page] = { ct: V.b64(ct), iv: V.b64(iv), at: cur.unlockedAt, exp: cur.expiresAt };
+    localStorage.setItem(V.SESSION_KEY, JSON.stringify(cur));
+  }
+  function maybeSeal(page, creds) {
+    if (!sealable(page) || _sealing || sealOf(page)) return;
+    _sealing = 1;
+    seal(page, creds).catch(function () {}).then(function (again) { _sealing = 0; if (again) maybeSeal(page, creds); });
+  }
+  async function unseal(page) {
+    try {
+      var s = V.loadSession(), x = sealOf(page);
+      var rec = await idb('readonly', function (st) { return st.get(page); });
+      if (!rec || rec.at !== x.at) return null;
+      var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: V.ub64(x.iv), additionalData: aad(page, s) }, rec.key, V.ub64(x.ct));
+      var a = JSON.parse(new TextDecoder().decode(pt));
+      return (a[0] && a[1]) ? { syncId: a[0], passphrase: a[1] } : null;
+    } catch (e) { return null; } // wrong/missing key, tampered or rebound blob — fail closed (the gate shows)
+  }
+  // re-check this page against the session: still unlocked → (re)seal + re-arm the expiry timer; else lock it
+  function check() {
+    if (!current) return;
+    var page = current.page, creds = credsFor(page);
+    clearTimeout(_timer);
+    if (creds) { // other tenants: unchanged (no seal, no timer)
+      var s = V.MEMORY_ONLY.indexOf(page) >= 0 && V.loadSession();
+      if (s) { maybeSeal(page, creds); _timer = setTimeout(check, Math.max(0, s.expiresAt - Date.now()) + 50); }
+      return;
+    }
+    if (!sealOf(page)) dropKey(page);
+    if (document.getElementById('press-gate')) return; // gate already up
+    try { if (current.onLock) current.onLock(); } catch (e) {}
+    render();
   }
 
   function removeGate() {
@@ -1349,7 +1690,7 @@ select {
       btn.disabled = true; msg.className = 'pg-msg'; msg.textContent = 'Waiting for your passkey…';
       V.unlock().then(function () {
         var creds = credsFor(current.page);
-        if (creds) { removeGate(); current.onUnlock(creds); return; }
+        if (creds) { removeGate(); current.onUnlock(creds); check(); return; }
         // The passkey OPENED the vault, but this tool has no stored credentials yet — a DISTINCT
         // state from a failed unlock (the space DID open). Point at the wing's Connect step; never
         // conflate this with "could not open the personal space".
@@ -1373,11 +1714,7 @@ select {
     current.wired = true;
     root.addEventListener('storage', function (ev) {
       if (ev && ev.key && ev.key !== V.SESSION_KEY) return; // ignore unrelated keys
-      if (!current) return;
-      if (credsFor(current.page)) return;                   // still unlocked — nothing to do
-      if (document.getElementById('press-gate')) return;    // gate already up
-      try { if (current.onLock) current.onLock(); } catch (e) {}
-      render();
+      check(); // still unlocked → reseal if needed; else the gate
     });
   }
 
@@ -1390,8 +1727,17 @@ select {
     opts = opts || {};
     current = { page: opts.page, onUnlock: opts.onUnlock || function () {}, onLock: opts.onLock || null, wired: false };
     wireLockWatch();
-    var creds = credsFor(current.page);
-    if (creds) { current.onUnlock(creds); return { gated: false }; }
+    var me = current, page = me.page, creds = credsFor(page);
+    if (creds) { me.onUnlock(creds); check(); return { gated: false }; }
+    if (sealable(page) && sealOf(page)) { // a sealed unlock: no prompt, no gate flash
+      unseal(page).then(function (c) {
+        if (current !== me) return;
+        if (c && V.loadSession()) { _un = { page: page, creds: c }; me.onUnlock(c); check(); }
+        else if (!document.getElementById('press-gate')) render(); // unseal failed → the gate, as before
+      });
+      return { gated: false, pending: true };
+    }
+    dropKey(page);
     render();
     return { gated: true };
   }
@@ -1399,7 +1745,7 @@ select {
   root.PressGate = {
     guard: guard,
     // exposed for tests / callers
-    credsFor: credsFor, friendlyErr: friendlyErr, MARQUEE: MARQUEE,
+    credsFor: credsFor, friendlyErr: friendlyErr, MARQUEE: MARQUEE, SEAL_DB: SEAL_DB, seal: seal, unseal: unseal,
     render: render, removeGate: removeGate
   };
 })(globalThis);
@@ -1577,6 +1923,29 @@ function docFromLedger(ledger, opts = {}) {
     capture: opts.capture || { private_jwk: null, public_jwk: null },
     inbox: { pending: [] },
   };
+}
+
+// ---- receipts (ScannerPro log; filenames only) — mirrors scripts/lib/receipts.mjs unclaimedSummary ----
+const RECEIPT_OPEN_STATUSES = ['new', 'waiting-eob', 'ready'];
+function yearReceipts(doc, year) { return yearData(doc, year).receipts || []; }
+// "Not yet claimed" = new + waiting-eob + ready (ignored is never counted, claimed is done).
+function receiptsUnclaimed(doc, year) {
+  const open = yearReceipts(doc, year).filter((r) => RECEIPT_OPEN_STATUSES.includes(r.status));
+  return { count: open.length, total: round2(open.reduce((a, r) => a + (Number(r.amount) || 0), 0)) };
+}
+// The Receipts panel's groups, in display order. Ignored receipts are never shown. Newest first.
+const RECEIPT_GROUPS = [
+  { key: 'new', label: 'New' },
+  { key: 'waiting-eob', label: 'Waiting for EOB' },
+  { key: 'ready', label: 'Ready to file' },
+  { key: 'claimed', label: 'Claimed' },
+];
+function receiptGroups(doc, year) {
+  const all = yearReceipts(doc, year);
+  return RECEIPT_GROUPS.map((g) => ({
+    ...g,
+    items: all.filter((r) => r.status === g.key).sort((a, b) => String(b.date || '').localeCompare(String(a.date || ''))),
+  }));
 }
 
 
@@ -2085,7 +2454,8 @@ function migrateCredsOffDisk() {
 
 
 /* ---- src/ui/theme.js ---- */
-// src/ui/theme.js — dark-primary theme toggle, persisted to localStorage['fsa:theme']. Browser only.
+// src/ui/theme.js — Riverstone is LIGHT-primary. Dark only when saved as 'dark' or when the OS
+// prefers dark and nothing is saved. Persisted to localStorage['fsa:theme']. Browser only.
 const KEY = 'fsa:theme';
 function initTheme() {
   try {
@@ -2096,14 +2466,42 @@ function initTheme() {
 function currentTheme() {
   const attr = document.documentElement.dataset.theme;
   if (attr) return attr;
-  try { if (window.matchMedia('(prefers-color-scheme: light)').matches) return 'light'; } catch (_) { /* ok */ }
-  return 'dark';
+  try { if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark'; } catch (_) { /* ok */ }
+  return 'light';
 }
 function toggleTheme() {
   const next = currentTheme() === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
   try { localStorage.setItem(KEY, next); } catch (_) { /* ok */ }
   return next;
+}
+
+
+/* ---- src/ui/icons.js ---- */
+// src/ui/icons.js — Riverstone icon set: inline SVG, 24px grid, 1.7 stroke, round caps/joins,
+// currentColor, no fills, aria-hidden, 1.1em (sized by the .ic rule in base.css). No icon font, no emoji.
+// Built from markup via <template> so no namespace URL string lands in the page. Browser only at call time.
+const ICON_PATHS = {
+  back: '<path d="M15 6l-6 6 6 6"/>',
+  chevron: '<path d="M9 6l6 6-6 6"/>',
+  more: '<path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3.2"/>',
+  alert: '<path d="M12 3.5 2.5 20.5h19L12 3.5z"/><path d="M12 10v4.5M12 17.5v.01"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  doc: '<path d="M6.5 3h8l4 4v14h-12z"/><path d="M9.5 12h6M9.5 16h4"/>',
+  check: '<path d="M5 12.5l4 4 10-10"/>',
+  receipt: '<path d="M6 3h12v18l-2.5-1.5L13 21l-2-1.5L9 21l-3-1.5z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+};
+
+function iconMarkup(name, extraClass) {
+  const cls = 'ic' + (extraClass ? ' ' + extraClass : '');
+  return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"`
+    + ` stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${ICON_PATHS[name] || ''}</svg>`;
+}
+
+function svgIcon(name, extraClass) {
+  const t = document.createElement('template');
+  t.innerHTML = iconMarkup(name, extraClass);
+  return t.content.firstChild;
 }
 
 
@@ -2151,6 +2549,7 @@ function renderYearControl(doc, year, onChange) {
 
 
 
+
 function tickLabel(v) { return money(v).replace(/\.00$/, ''); }
 
 // Tick marks: minor every $100, major every $500 (labelled). Positions as % of the election scale.
@@ -2195,11 +2594,12 @@ function gaugeModel(doc, year, today) {
   };
 }
 
-// One readout cell — label above, tabular-nums figure below, plus a glyph so denied is never
-// colour-only (slice 5). Returns the cell element.
-function readoutCell(kind, label, value, glyph) {
+// One readout cell — label above, tabular-nums figure below, plus an alert icon so denied is never
+// colour-only (slice 5; Riverstone inline SVG). Returns the cell element.
+function readoutCell(kind, label, value, icon) {
   const cell = document.createElement('div'); cell.className = `g-fig g-fig-${kind}`;
-  const l = document.createElement('span'); l.className = 'g-fig-l'; l.textContent = glyph ? `${glyph} ${label}` : label;
+  const l = document.createElement('span'); l.className = 'g-fig-l';
+  if (icon) l.append(svgIcon(icon), label); else l.textContent = label;
   const v = document.createElement('span'); v.className = 'g-fig-v mono'; v.textContent = value;
   cell.append(l, v); return cell;
 }
@@ -2224,9 +2624,12 @@ function renderGauge(doc, year, today) {
   }
 
   const m = gaugeModel(doc, year, today);
-  fill.style.width = m.pct.toFixed(2) + '%';
-  if (pendingEl) pendingEl.style.width = m.pctPending.toFixed(2) + '%';
-  if (deniedEl) { deniedEl.style.width = m.pctDenied.toFixed(2) + '%'; deniedEl.hidden = m.pctDenied <= 0; } // no empty focusable control
+  fill.style.width = m.pct.toFixed(2) + '%'; fill.classList.toggle('is-zero', m.pct <= 0);
+  if (pendingEl) { pendingEl.style.width = m.pctPending.toFixed(2) + '%'; pendingEl.classList.toggle('is-zero', m.pctPending <= 0); }
+  if (deniedEl) {
+    deniedEl.style.width = m.pctDenied.toFixed(2) + '%'; deniedEl.hidden = m.pctDenied <= 0; // no empty focusable control
+    deniedEl.setAttribute('aria-label', `Denied ${money(m.denied)}, returned to pool. Show denials`);
+  }
   label.textContent = m.caption;
   sr.textContent = `Reimbursement gauge: ${money(m.paid)} paid of ${money(m.election)} (${m.pct.toFixed(0)}%)`
     + (m.pending > 0 ? `, ${money(m.pending)} pending` : '') + (m.denied > 0 ? `, ${money(m.denied)} denied` : '')
@@ -2239,7 +2642,7 @@ function renderGauge(doc, year, today) {
     readout.append(
       readoutCell('paid', 'Paid', money(m.paid)),
       readoutCell('pending', 'Pending', money(m.pending)),
-      readoutCell('denied', 'Denied', money(m.denied), '⚠'),
+      readoutCell('denied', 'Denied', money(m.denied), 'alert'),
       readoutCell('remaining', 'Remaining', money(m.remaining)),
       readoutCell('avail', 'Available', money(m.available)),
     );
@@ -2267,16 +2670,64 @@ function renderGauge(doc, year, today) {
 
 
 /* ---- src/ui/strip.js ---- */
-// src/ui/strip.js — the deadline strip (slice 3/4). A thin full-width mono rule. The submission
-// run-out is the PRIMARY clock; the incur-by date is the secondary (certain) line. Escalates by
-// TEXT as well as colour — amber under 60 days, alarm under 21. The run-out is Mark's recollection
-// (not published by Fidelity) so it renders UNCONFIRMED until he confirms it.
+// src/ui/strip.js — the hero sentence + the deadline strip (Riverstone). The hero answers the visit's
+// question in one plain sentence (whole-dollar AVAILABLE + days); the strip below it keeps the exact
+// clocks. The submission run-out is the PRIMARY clock; the incur-by date is the secondary (certain)
+// line. Escalates by TEXT as well as colour — amber under 60 days, alarm under 21. The run-out is
+// Mark's recollection (not published by Fidelity) so it renders UNCONFIRMED until he confirms it.
+
+
 
 
 
 function urgencyWord(level) { return level === 'alarm' ? 'DUE SOON' : level === 'warn' ? 'CLOSING' : ''; }
 
+// "$1,930" — the hero rounds DOWN to the whole dollar (never overstates what is left); the readout
+// below carries the exact cents.
+function heroDollars(n) { return '$' + Math.floor(Math.max(0, Number(n) || 0)).toLocaleString('en-US'); }
+
+// The hero's day count is the same clock the strip shows: the run-out when set, else incur-by.
+function heroModel(doc, year, today) {
+  const s = deadlineStrip(doc, year, today);
+  const amount = heroDollars(available(doc, year));
+  const days = s.runOutDays != null ? s.runOutDays : s.incurDays;
+  if (s.runOutDays != null && s.runOutDays < 0) return { closed: true, amount, days, year: String(year) };
+  return { closed: false, amount, days: days != null && days >= 0 ? days : null, year: String(year) };
+}
+
+function renderHeroSentence(doc, year, today) {
+  const hero = document.getElementById('hero');
+  const p = document.getElementById('hero-sentence');
+  if (!hero || !p) return;
+  p.textContent = '';
+  if (!doc) { hero.hidden = true; return; }
+  hero.hidden = false;
+  const m = heroModel(doc, year, today);
+  const b = document.createElement('b'); b.textContent = m.amount;
+  if (m.closed) {
+    p.append(`Claims closed for ${m.year}. `, b, ' was left unclaimed.');
+  } else if (m.days != null) {
+    p.append('You have ', b, ` left to claim, and ${pluralDays(m.days)} to spend it.`);
+  } else {
+    p.append('You have ', b, ' left to claim.');
+  }
+}
+
+function stripPill(text) {
+  const pill = document.createElement('span'); pill.className = 'strip-pill';
+  pill.append(svgIcon('alert'), text);
+  return pill;
+}
+
+function stripButton(text, onConfirm) {
+  const btn = document.createElement('button');
+  btn.type = 'button'; btn.className = 'strip-confirm'; btn.textContent = text;
+  btn.addEventListener('click', onConfirm);
+  return btn;
+}
+
 function renderDeadlineStrip(doc, year, today, onConfirm) {
+  renderHeroSentence(doc, year, today);
   const section = document.getElementById('deadline');
   const primary = document.getElementById('deadline-primary');
   const secondary = document.getElementById('deadline-secondary');
@@ -2285,32 +2736,24 @@ function renderDeadlineStrip(doc, year, today, onConfirm) {
   const s = deadlineStrip(doc, year, today);
   section.hidden = !(s.runOutDate || s.incurDate);
 
-  // Primary: the submission deadline. Unconfirmed → "SUBMIT BY 31 MAR 2027 · UNCONFIRMED [confirm]".
+  // Primary: the submission deadline. Unconfirmed → "SUBMIT BY 31 MAR 2027 [⚠ UNCONFIRMED] [confirm]".
   primary.textContent = '';
   const color = s.color[s.confirmed ? s.runOutLevel : 'ok'] || 'dim';
-  primary.style.color = `var(--${color})`;
+  primary.style.color = color === 'dim' ? '' : `var(--${color})`;
   if (s.runOutDate) {
     const days = s.runOutDays;
     const urg = s.confirmed ? urgencyWord(s.runOutLevel) : '';
     const parts = [`SUBMIT BY ${shortDate(s.runOutDate)}`];
     if (days != null && s.confirmed) parts.push(`${pluralDays(days)} left`);
     if (urg) parts.push(urg);
-    if (!s.confirmed) parts.push('UNCONFIRMED');
-    primary.append(document.createTextNode(parts.join(' · ') + ' '));
-    if (!s.confirmed && typeof onConfirm === 'function') {
-      const btn = document.createElement('button');
-      btn.type = 'button'; btn.className = 'strip-confirm'; btn.textContent = 'confirm';
-      btn.addEventListener('click', onConfirm);
-      primary.appendChild(btn);
-    }
+    const lead = document.createElement('span'); lead.className = 'strip-when'; lead.textContent = parts.join(' · ');
+    primary.append(lead);
+    if (!s.confirmed) primary.append(' ', stripPill('UNCONFIRMED'));
+    if (!s.confirmed && typeof onConfirm === 'function') primary.append(' ', stripButton('confirm', onConfirm));
   } else {
-    primary.textContent = 'SUBMISSION DEADLINE NOT SET';
-    if (typeof onConfirm === 'function') {
-      const btn = document.createElement('button');
-      btn.type = 'button'; btn.className = 'strip-confirm'; btn.textContent = 'set date';
-      btn.addEventListener('click', onConfirm);
-      primary.append(' ', btn);
-    }
+    const lead = document.createElement('span'); lead.className = 'strip-when'; lead.textContent = 'SUBMISSION DEADLINE NOT SET';
+    primary.append(lead);
+    if (typeof onConfirm === 'function') primary.append(' ', stripButton('set date', onConfirm));
   }
 
   // Secondary: the certain incur-by date.
@@ -2330,6 +2773,7 @@ function renderDeadlineStrip(doc, year, today, onConfirm) {
 // src/ui/blocked.js — the centrepiece. Stacked full-width cards keyed by PERSON, so one chase clears
 // several rows. Age in days is the emphasis; the card's TEXT escalates at 14 and 30 days (not colour
 // alone). Denials are flagged with the Fidelity reason in English and the notice-PDF path on the NAS.
+
 
 
 
@@ -2363,14 +2807,17 @@ function renderBlocked(doc, year, today, deps) {
     const meta = elB('div', 'blocked-meta');
     if (c.provider && c.provider !== c.who) meta.appendChild(elB('span', 'blocked-prov dim', c.provider));
     if (c.ageDays != null) {
-      // Escalation shows in the glyph + word, not colour alone (fixed palette can't pass AA in red here).
-      const mark = c.tier.level === 'stale' ? '⚠ ' : c.tier.level === 'aging' ? '↑ ' : '';
-      meta.appendChild(elB('span', 'blocked-age mono', `${mark}${pluralDays(c.ageDays)} waiting`));
+      // Escalation shows in the icon + word, not colour alone: a clock while it ages, an alert once stale.
+      const age = elB('span', 'blocked-age mono' + (c.tier.level ? ` is-${c.tier.level}` : ''));
+      age.append(svgIcon(c.tier.level === 'stale' ? 'alert' : 'clock'), `${pluralDays(c.ageDays)} waiting`);
+      meta.appendChild(age);
     } else {
       // Blocking date unknown — show the state, never an invented day count (age from service date was the bug).
-      meta.appendChild(elB('span', 'blocked-age mono dim', 'waiting'));
+      const age = elB('span', 'blocked-age mono dim');
+      age.append(svgIcon('clock'), 'waiting');
+      meta.appendChild(age);
     }
-    if (c.denied) meta.appendChild(elB('span', 'blocked-flag mono', '⚠ denied'));
+    if (c.denied) { const flag = elB('span', 'blocked-flag'); flag.append(svgIcon('alert'), 'denied'); meta.appendChild(flag); }
     card.appendChild(meta);
 
     // What's needed — one line. For a denial, the Fidelity code in English.
@@ -2406,6 +2853,7 @@ function renderBlocked(doc, year, today, deps) {
 
 
 
+
 function elN(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 
 function renderNextClaim(doc, year, today) {
@@ -2437,15 +2885,77 @@ function renderNextClaim(doc, year, today) {
   const ul = elN('ul', 'checklist');
   const docs = (c.documents || c.docs || []).map((d) => String(d).split('/').pop());
   if (docs.length) {
-    for (const d of docs) { const li = elN('li', 'mono', `✓ ${d}`); ul.appendChild(li); }
+    for (const d of docs) { const li = elN('li', 'mono'); li.append(svgIcon('check'), d); ul.appendChild(li); }
   } else {
     ul.appendChild(elN('li', 'dim', 'No documents recorded on this claim.'));
   }
   details.appendChild(ul);
-  const link = elN('a', 'blocked-action', 'Open Fidelity NetBenefits');
+  const link = elN('a', 'blocked-action is-soft', 'Open Fidelity NetBenefits');
   link.href = FIDELITY_URL; link.target = '_blank'; link.rel = 'noopener noreferrer';
   details.appendChild(link);
   box.appendChild(details);
+}
+
+
+/* ---- src/ui/receipts.js ---- */
+// src/ui/receipts.js — the Receipts panel: the ScannerPro receipt log from the encrypted document.
+// Groups New / Waiting for EOB / Ready to file / Claimed (Claimed collapsed). Each row is provider ·
+// date · amount · filename beside a PLACEHOLDER thumbnail — the app stores filenames only, never an
+// image, blob or base64. No capture/upload control: receipts arrive via ScannerPro + the monthly run.
+
+
+
+
+function elR(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+function receiptRow(r, label) {
+  const li = elR('li', 'receipt-card');
+  li.dataset.receiptId = r.id || '';
+  const thumb = elR('span', 'receipt-thumb');
+  thumb.setAttribute('aria-hidden', 'true');
+  thumb.appendChild(svgIcon('receipt'));
+  const body = elR('div', 'receipt-body');
+  const top = elR('div', 'receipt-top');
+  top.append(elR('span', 'receipt-prov', r.provider || '—'), elR('span', 'receipt-amt mono', money(r.amount)));
+  const meta = elR('div', 'receipt-meta');
+  const pill = elR('span', `receipt-status ${r.status}`, label);
+  meta.append(elR('span', 'receipt-date mono', ymd(r.date)), pill);
+  body.append(top, meta, elR('span', 'receipt-file mono', r.nasFile || r.file || ''));
+  li.append(thumb, body);
+  return li;
+}
+
+function renderReceipts(doc, year) {
+  const sec = document.getElementById('receipts');
+  const h = document.getElementById('receipts-h');
+  const list = document.getElementById('receipts-list');
+  if (!sec || !h || !list) return;
+  list.innerHTML = '';
+  const groups = doc ? receiptGroups(doc, year) : [];
+  const shown = groups.reduce((n, g) => n + g.items.length, 0);
+  sec.hidden = !doc || shown === 0;
+  if (sec.hidden) return;
+  const s = receiptsUnclaimed(doc, year);
+  h.textContent = `Receipts — ${s.count} not yet claimed · ${money(s.total)}`;
+  for (const g of groups) {
+    if (!g.items.length) continue;
+    const ul = elR('ul', 'receipt-grid');
+    ul.setAttribute('aria-label', g.label);
+    for (const r of g.items) ul.appendChild(receiptRow(r, g.label));
+    if (g.key === 'claimed') {
+      const det = elR('details', 'receipt-group is-claimed');
+      det.dataset.group = g.key;
+      const sum = elR('summary', 'receipt-group-h');
+      sum.append(svgIcon('chevron'), `${g.label} · ${g.items.length}`);
+      det.append(sum, ul);
+      list.appendChild(det);
+    } else {
+      const grp = elR('div', 'receipt-group');
+      grp.dataset.group = g.key;
+      grp.append(elR('h3', 'receipt-group-h', `${g.label} · ${g.items.length}`), ul);
+      list.appendChild(grp);
+    }
+  }
 }
 
 
@@ -2506,6 +3016,7 @@ function renderQuestions(doc, year, today) {
 // src/ui/inbox.js — the review-queue inbox UI. Fetches sealed pending rows, unseals them in the
 // browser into doc.inbox.pending (dedupe by id, document-save-first), and lets Mark
 // approve / edit / reject / merge each captured item into a claim. Filenames only — never a file/PDF.
+
 
 
 
@@ -2591,7 +3102,17 @@ function renderInbox(state, deps) {
   for (const draft of pending) {
     const card = document.createElement('div'); card.className = 'inbox-item'; card.dataset.id = draft.id;
     const meta = document.createElement('p'); meta.className = 'dim mono inbox-meta';
-    meta.textContent = `${draft.agent || 'agent'} · ${ymd(draft.captured_at)} · confidence ${draft.confidence != null ? Math.round(draft.confidence * 100) + '%' : '—'}`;
+    const who = document.createElement('span'); who.className = 'inbox-agent'; who.textContent = draft.agent || 'agent';
+    meta.append(who, ` · ${ymd(draft.captured_at)} · `);
+    if (draft.confidence != null) {
+      const pct = Math.max(0, Math.min(100, Math.round(draft.confidence * 100)));
+      const bar = document.createElement('span'); bar.className = 'conf-bar'; bar.setAttribute('aria-hidden', 'true');
+      const fillC = document.createElement('span'); fillC.className = 'conf-fill'; fillC.style.width = pct + '%';
+      bar.appendChild(fillC);
+      meta.append(bar, `confidence ${pct}%`);
+    } else {
+      meta.append('confidence —');
+    }
     card.appendChild(meta);
 
     const form = document.createElement('div'); form.className = 'inbox-form';
@@ -2617,6 +3138,8 @@ function renderInbox(state, deps) {
       await deps.decide(draft.id, 'rejected');
       deps.refresh();
     });
+    approveBtn.classList.add('btn-primary'); approveBtn.prepend(svgIcon('check'));
+    rejectBtn.classList.add('btn-soft');
     actions.append(approveBtn, rejectBtn);
     const target = doc ? findMergeTarget(doc, draft) : null;
     if (target) {
@@ -2860,6 +3383,8 @@ function initAgents(state, deps) {
 
 
 
+
+
 const state = { doc: null, year: null, filter: 'all', sort: { key: 'amount', dir: 'desc' }, foldThreshold: 75, expandSmall: false, deps: null, _version: null, _envelope: null };
 
 function isDemo() {
@@ -2875,7 +3400,7 @@ function reveal() { try { document.body.classList.remove('preboot'); } catch (_)
 
 // Every dashboard section is meaningless with no document loaded — hide them (and the year control)
 // while signed out so the reader sees ONLY the unlock panel.
-const DASH_SECTIONS = ['deadline', 'gauge', 'blocked', 'setup', 'nextclaim', 'questions', 'inbox', 'claims'];
+const DASH_SECTIONS = ['hero', 'deadline', 'gauge', 'blocked', 'setup', 'nextclaim', 'receipts', 'questions', 'inbox', 'claims'];
 function setSignedOutView(on) {
   for (const id of DASH_SECTIONS) { const el = document.getElementById(id); if (el) el.hidden = on; }
   const sel = document.getElementById('year'); if (sel) sel.hidden = on;
@@ -3037,6 +3562,7 @@ function render() {
   if (setupShown) { const b = document.getElementById('blocked'); if (b) b.hidden = true; } // setup takes the centre in January
 
   renderNextClaim(state.doc, state.year, t);
+  renderReceipts(state.doc, state.year);
   renderQuestions(state.doc, state.year, t);
   renderDisclosure();
   renderTable(state, state.doc ? yearClaims(state.doc, state.year) : []);
@@ -3045,9 +3571,12 @@ function render() {
 function renderDisclosure() {
   const sum = document.getElementById('disclosure-summary');
   if (!sum) return;
-  if (!state.doc) { sum.textContent = 'All charges'; return; }
+  // A rotating chevron (inline SVG, CSS-turned when [open]) replaces the old text arrows.
+  sum.textContent = '';
+  sum.appendChild(svgIcon('chevron', 'disc-chev'));
+  if (!state.doc) { sum.append('All charges'); return; }
   const s = allChargesSummary(state.doc, state.year, state.foldThreshold);
-  sum.textContent = `All charges · ${s.count} · ${money(s.total)}`;
+  sum.append(`All charges · ${s.count} · ${money(s.total)}`);
 }
 
 function prevYearOf(doc, year) {
