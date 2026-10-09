@@ -91,13 +91,17 @@
   /* consistent section heading — full-width rule above, count, and a Top link */
   /* Slice 5: a subtle full-width accent band behind each heading; 48px gap from the previous section.
      scroll-margin-top is unchanged so every jump still lands the heading below the sticky stack. */
-  .grouphead{display:flex;align-items:baseline;gap:10px;background:var(--band);border-radius:12px;
+  .grouphead{display:flex;align-items:center;gap:10px;background:var(--band);border-radius:12px;
     padding:10px 14px;margin:48px 0 14px;scroll-margin-top:calc(var(--stick) + var(--stick2) + 16px)}
   .grouphead:first-child{margin-top:8px}
   .grouphead h2{font-size:24px;font-weight:800;letter-spacing:-.015em;margin:0;flex:1;min-width:0}
   .grouphead .gcount{display:inline-block;font-size:14px;font-weight:600;color:var(--muted);background:var(--chip);border-radius:999px;padding:1px 9px;margin-left:6px;vertical-align:middle}
-  /* Inbox arc Slice 5: the Processed section is a collapsible heading (button inside the h2). */
-  .proc-toggle{all:unset;cursor:pointer;display:flex;align-items:baseline;gap:6px;width:100%;min-height:44px;font:inherit;color:inherit}
+  /* Inbox arc Slice 5: the Processed section is a collapsible heading (button inside the h2).
+     Multi-brand arc Slice 4: the bar is EXACTLY as tall as every other .grouphead — the ≥44px tap target is an
+     absolutely-positioned ::before hit area spanning the bar, so it never grows the bar; content centred. */
+  .proc-toggle{all:unset;cursor:pointer;display:flex;align-items:center;gap:6px;width:100%;font:inherit;color:inherit;position:relative}
+  .proc-toggle::before{content:"";position:absolute;left:-14px;right:-14px;top:50%;height:48px;transform:translateY(-50%)}
+  .proc-toggle .gcount{margin-left:0}
   .proc-toggle:focus-visible{outline:2px solid var(--accentA);outline-offset:3px;border-radius:8px}
   .proc-toggle .caret{margin-left:auto;font-size:16px;color:var(--muted);transition:transform .15s}
   .proc-toggle[aria-expanded="true"] .caret{transform:rotate(180deg)}
@@ -1301,7 +1305,8 @@
   // match whose price we couldn't read). A true near-miss (DoorDash 15% vs a 20% rule) never renders; it
   // only rides the daily digest email (gated by the Alerts-page digest + channel toggles). Mark's own
   // decisions (bought / skip / bad) stay visible whatever the verdict.
-  function meetsRules(d){ return d.verdict==="hit" || (d.verdict==="near" && !!(d.extras&&d.extras.unpriced)); }
+  // Multi-brand card arc: a One4all / Happy card whose brands couldn't be read (brands_unknown) is shown too.
+  function meetsRules(d){ var e=d.extras||{}; return d.verdict==="hit" || (d.verdict==="near" && !!(e.unpriced||e.brands_unknown)); }
   function isDecided(d){ return d.status==="bought"||d.status==="skip"||d.status==="bad"; }
   function shownDeals(){ return (state.deals||[]).filter(function(d){ return meetsRules(d)||isDecided(d); }); }
   // Inbox arc Slice 5: the INBOX is what still needs a decision; PROCESSED holds Mark's decisions
@@ -1332,12 +1337,14 @@
   }
   // Inbox arc Slice 6: why Mark flagged a deal Bad (the sheet's dropdown; the agent auto-flags price_missing).
   var BAD_REASONS=[["below_rule","Below my rule"],["wrong_brand","Wrong brand/product"],["price_missing","Price missing/wrong"],
-    ["blocked_retailer","Blocked/wrong retailer"],["expired","Expired/sold out"],["duplicate","Duplicate"],["other","Other"]];
+    ["brands_unknown","Couldn't read brands"],    ["blocked_retailer","Blocked/wrong retailer"],["expired","Expired/sold out"],["duplicate","Duplicate"],["other","Other"]];
   function badReasonLabel(v){ for(var i=0;i<BAD_REASONS.length;i++) if(BAD_REASONS[i][0]===v) return BAD_REASONS[i][1]; return "Other"; }
   function nearReason(d){
     var e=d.extras||{};
     if(d.verdict==="near"){
       if(e.below_min_denom){ var dl=ruleMinDenomLabel(d); return "Below your "+((dl&&dl!=="Any")?dl:"$25")+" minimum"; }
+      // Multi-brand card arc: a multi-brand card whose brands couldn't be read — pushed + auto-flagged like Price unknown.
+      if(e.brands_unknown) return e.auto_bad ? "Brands unknown · flagged Bad" : "Brands unknown — check the card";
       // Inbox arc Slice 4: a price-unknown deal the agent pushed is also on the Bad backlog automatically.
       if(e.unpriced && e.auto_bad) return "Price unknown · flagged Bad";
       if(e.unpriced) return e.watch_term ? "Needs a look — discount unknown" : "Needs a look — no price";
@@ -1345,6 +1352,11 @@
       return "Just missed your target"; // Slice 2: no "Hit"/"Near" copy on the Feed
     }
     return "";
+  }
+  // Multi-brand card arc: container_for holds normalized rule keys ("total wine") — show the rule's own title.
+  function coverLabel(k){
+    var rs=state.rules||[]; for(var i=0;i<rs.length;i++){ if(rs[i]&&normBrand(rs[i].title)===k) return rs[i].title; }
+    return String(k).replace(/\b[a-z]/g,function(c){ return c.toUpperCase(); });
   }
   function dealCard(d){
     var p=pct(d); var isHit=d.verdict==="hit"; var bought=d.status==="bought", skip=d.status==="skip", isBad=d.status==="bad";
@@ -1358,7 +1370,7 @@
     var parts=[];
     var pl=priceLine(d); if(pl) parts.push(pl);
     if(retailer) parts.push('at '+esc(retailer));
-    if(covers&&covers.length) parts.push('covers '+esc(covers.slice(0,3).join(", ")));
+    if(covers&&covers.length) parts.push('covers '+esc(covers.slice(0,3).map(coverLabel).join(", "))+(covers.length>3?' +'+(covers.length-3):''));
     if(reason&&d.status!=="bad") parts.push(esc(reason));
     if(d.status==="bad") parts.push('<span class="reasonchip">Bad · '+esc(badReasonLabel(d.extras&&d.extras.bad_reason))+'</span>');
     if(d.source) parts.push(esc(String(d.source).replace(/^src-/,"")));
@@ -2507,7 +2519,8 @@
     var sh=ensureBadSheet(); badSheetFor=id; badSheetOpener=opener||null;
     el("bad-title").textContent="Flag as Bad — "+(d.brand||"Gift card");
     // an auto-flagged price-unknown row pre-selects the agent's reason
-    el("bad-reason").value=(d.extras&&d.extras.unpriced)?"price_missing":"below_rule";
+    var ex=d.extras||{};
+    el("bad-reason").value=ex.brands_unknown?"brands_unknown":(ex.unpriced?"price_missing":"below_rule");
     el("bad-note").value="";
     sh.hidden=false; el("bad-reason").focus();
   }
