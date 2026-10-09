@@ -132,25 +132,19 @@
   @media (prefers-reduced-motion: reduce){ .yr,.yr .datamark{transition:none} }
   @media (max-width:430px){ .stage{height:66px} }
 
-  .hero { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:26px 24px; margin-bottom:16px; }
-  .hero .lab { color:var(--muted); font-size:0.85rem; letter-spacing:0.03em; text-transform:uppercase; }
-  .hero .fig { font-family:var(--serif); font-size:3.2rem; font-weight:600; letter-spacing:-0.02em;
-    line-height:1.05; margin:6px 0 2px; }
-  .hero .sub { color:var(--muted); font-size:0.9rem; }
-  .stats { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
-  .stat { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
-  .stat .lab { color:var(--muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em; }
-  .stat .val { font-family:var(--mono); font-size:1.5rem; font-weight:600; margin-top:4px; }
-  .stat.ded .val { color:var(--ledger); }
-  .stat .note { color:var(--muted); font-size:0.74rem; margin-top:4px; }
-  /* top line (S1/§1r): Given + Estimated tax savings, equal weight, side by side */
-  .topline { display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:stretch; margin-bottom:16px; }
-  .topline .hero { margin-bottom:0; height:100%; }
-  .topline #savings { display:flex; }
-  .topline #savings > .savings { flex:1; width:100%; margin-bottom:0; display:flex;
-    flex-direction:column; justify-content:center; padding:24px 24px; }
-  /* placed AFTER the .topline base rule so it wins by source order at narrow widths (S1/§1r) */
-  @media (max-width:560px) { .topline { grid-template-columns:1fr; } }
+  /* Totals (v0.14): 2×2 on every width, four equal cards — title + number only. */
+  .totals { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+  .totals .hero, .totals .stat, .totals #savings > .savings { background:var(--surface); border:1px solid var(--line);
+    border-radius:14px; padding:16px 18px; margin:0; min-width:0; }
+  .totals #savings { display:flex; min-width:0; }
+  .totals #savings > .savings { flex:1; width:100%; }
+  .totals .hero, .totals .stat, .totals #savings > .savings { display:flex; flex-direction:column; justify-content:space-between; }
+  .totals .lab { color:var(--muted); font-size:0.74rem; text-transform:uppercase; letter-spacing:0.02em; line-height:1.3; }
+  .totals .fig, .totals .val, .totals .savings .fig { font-family:var(--serif); font-size:clamp(1.35rem, 6vw, 2.1rem); font-weight:600;
+    letter-spacing:-0.01em; line-height:1.15; margin-top:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .totals .stat.ded .val, .totals .savings .fig { color:var(--ledger); }
+  .totals .savings.prompt { cursor:pointer; }
+  .totals .savings.prompt .fig { color:var(--ink); font-family:var(--sans); font-size:1.05rem; }
 
   .section-h { display:flex; align-items:baseline; justify-content:space-between; margin:6px 4px 8px; }
   .section-h h2 { font-family:var(--serif); font-size:1.1rem; margin:0; font-weight:600; }
@@ -495,6 +489,15 @@
   .savings .adv { color:var(--muted); font-size:0.74rem; margin-top:8px; font-style:italic; }
   .savings.prompt .fig { color:var(--ink); font-size:1.05rem; font-family:var(--sans); font-weight:600; }
   /* saved-tax-profile confirmation: a brief highlight on the savings card (slice 0) */
+  /* foreign-currency cash gifts (v0.14) */
+  .fxrow { background:var(--surface); border:1px dashed var(--line); border-radius:12px; padding:10px 12px; margin:2px 0 12px; }
+  .fxrow .fxhead { font-size:0.9rem; }
+  .fxrow .fxrate { display:flex; align-items:center; gap:8px; margin-top:8px; }
+  .fxrow .fxrate label { color:var(--muted); font-size:0.78rem; white-space:nowrap; }
+  .fxrow .fxrate .txt { max-width:9em; }
+  .row .amt.fx { white-space:nowrap; }
+  .row .amt.fx .usdest { color:var(--muted); font-size:0.82em; font-weight:400; }
+  @media (max-width:480px) { .row .amt.fx { display:flex; flex-direction:column; align-items:flex-end; line-height:1.2; } .row .amt.fx .usdest { font-size:0.74em; } }
   .savings.flash { animation:cardflash 1.6s ease; }
   @keyframes cardflash { 0%,100%{ box-shadow:0 0 0 0 rgba(0,0,0,0); border-color:var(--line); }
     25%{ box-shadow:0 0 0 3px var(--ember); border-color:var(--ember); } }
@@ -643,31 +646,23 @@
       </div>
     </div>
 
-    <!-- Top line (S1/§1r): two equal-weight boxes side by side — Given + Estimated tax savings;
-         they stack to one column at 390px. #savings is filled by renderSavings (prompt / figure /
-         flash states all preserved). -->
-    <div class="topline">
+    <!-- Totals (v0.14): ONE 2×2 grid on every width — row 1 Given to charities · Donations logged,
+         row 2 Deductible this year · Est. tax savings. Title + number only (no sub-text). Both SPEC §2A
+         headline numbers (Given + Deductible) are still always shown. #savings is filled by renderSavings. -->
+    <div class="totals">
       <div class="hero">
-        <div class="lab">Given to charities this year</div>
+        <div class="lab">Given to charities</div>
         <div id="heroFig" class="fig">$0</div>
-        <div class="sub" id="heroSub">Direct gifts + grants from your donor-advised fund.</div>
       </div>
-      <div id="savings"></div>
-    </div>
-
-    <!-- Second row: Donations logged (white count) LEFT, Deductible (green currency) RIGHT (S5/§1aj —
-         swapped; presentation only, both headline numbers still always shown, SPEC §2A unchanged). -->
-    <div class="stats">
       <div class="stat">
         <div class="lab">Donations logged</div>
         <div id="cntVal" class="val">0</div>
-        <div class="note" id="lastCharityNote">Log sheet defaults to your last charity.</div>
       </div>
       <div class="stat ded">
         <div class="lab">Deductible this year</div>
         <div id="dedVal" class="val">$0</div>
-        <div class="note">Direct gifts + contributions <em>into</em> your DAF. Grants out are excluded.</div>
       </div>
+      <div id="savings"></div>
     </div>
 
     <div id="breakdown" class="breakdown"></div>
@@ -1454,14 +1449,83 @@
   // --- the gate singleton ------------------------------------------------------
   var current = null; // { page, onUnlock, onLock, el, wired }
 
-  // A MEMORY_ONLY page (cardsharp) is released only from this tab's in-memory keyring (one passkey tap per tab);
-  // every other page from the persisted session, as before. A redacted stub is never a credential.
+  // A MEMORY_ONLY page (cardsharp) is released from this tab's memory: the keyring of a passkey unlock here, or
+  // what this tab unsealed (below). Every other page from the persisted session, as before. A redacted stub is never
+  // a credential. Both memory copies live only while a session exists (a lock or expiry anywhere drops them).
   function credsFor(page) {
     var m = V.memCreds ? V.memCreds(page) : null;
     if (m && m.sync_id && m.pass) return { syncId: m.sync_id, passphrase: m.pass };
+    if (_un && _un.page === page) { if (V.loadSession()) return _un.creds; _un = null; }
     var sess = V.loadSession();
     var v = sess && sess.keyring && sess.keyring.apps && sess.keyring.apps[page];
     return (v && !v.redacted && v.sync_id && v.pass) ? { syncId: v.sync_id, passphrase: v.pass } : null;
+  }
+
+  // --- SEALED 7-day unlock, MEMORY_ONLY pages (cardsharp Arc 7 slice 6) ---
+  // After a passkey unlock the page's {sync_id, pass} are AES-GCM sealed under a fresh NON-EXTRACTABLE key kept in
+  // IndexedDB (`press:vault:seal`); the ciphertext rides INSIDE the session (`press:vault:v1`.seal), AAD-bound to its
+  // unlockedAt/expiresAt/vaultId, so any lock (the wing's only removes the session), expiry or new session kills it
+  // atomically; an orphaned key is deleted when a gate next sees it. Reloads unseal, no prompt. No IndexedDB → memory only.
+  var SEAL_DB = 'press:vault:seal', _un = null, _sealing = 0, _timer = null;
+  function sealable(page) { try { return V.MEMORY_ONLY.indexOf(page) >= 0 && !!root.indexedDB; } catch (e) { return false; } }
+  function idb(mode, fn) {
+    return new Promise(function (ok, no) {
+      var o = root.indexedDB.open(SEAL_DB, 1);
+      o.onupgradeneeded = function () { o.result.createObjectStore('keys'); };
+      o.onerror = o.onblocked = function () { no(o.error); };
+      o.onsuccess = function () {
+        var db = o.result, t = db.transaction('keys', mode), r = fn(t.objectStore('keys'));
+        t.oncomplete = function () { db.close(); ok(r.result); };
+        t.onerror = t.onabort = function () { db.close(); no(t.error); };
+      };
+    });
+  }
+  function aad(page, s) { return new TextEncoder().encode(JSON.stringify([page, s.unlockedAt, s.expiresAt, s.vaultId || ''])); }
+  function sealOf(page) { var s = V.loadSession(), x = s && s.seal && s.seal[page]; return (x && x.at === s.unlockedAt && x.exp === s.expiresAt) ? x : null; }
+  function dropKey(page) { if (sealable(page)) idb('readwrite', function (st) { return st.delete(page); }).catch(function () {}); }
+  async function seal(page, creds) {
+    var s = V.loadSession(), c = crypto.subtle;
+    var key = await c.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    var iv = V.randomBytes(12);
+    var ct = await c.encrypt({ name: 'AES-GCM', iv: iv, additionalData: aad(page, s) }, key,
+      new TextEncoder().encode(JSON.stringify([creds.syncId, creds.passphrase])));
+    await idb('readwrite', function (st) { return st.put({ key: key, at: s.unlockedAt }, page); });
+    var cur = V.loadSession();
+    if (!cur) return dropKey(page); // locked meanwhile: no key left behind
+    if (cur.unlockedAt !== s.unlockedAt) return true; // a new session meanwhile → seal again
+    cur.seal = cur.seal || {};
+    cur.seal[page] = { ct: V.b64(ct), iv: V.b64(iv), at: cur.unlockedAt, exp: cur.expiresAt };
+    localStorage.setItem(V.SESSION_KEY, JSON.stringify(cur));
+  }
+  function maybeSeal(page, creds) {
+    if (!sealable(page) || _sealing || sealOf(page)) return;
+    _sealing = 1;
+    seal(page, creds).catch(function () {}).then(function (again) { _sealing = 0; if (again) maybeSeal(page, creds); });
+  }
+  async function unseal(page) {
+    try {
+      var s = V.loadSession(), x = sealOf(page);
+      var rec = await idb('readonly', function (st) { return st.get(page); });
+      if (!rec || rec.at !== x.at) return null;
+      var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: V.ub64(x.iv), additionalData: aad(page, s) }, rec.key, V.ub64(x.ct));
+      var a = JSON.parse(new TextDecoder().decode(pt));
+      return (a[0] && a[1]) ? { syncId: a[0], passphrase: a[1] } : null;
+    } catch (e) { return null; } // wrong/missing key, tampered or rebound blob — fail closed (the gate shows)
+  }
+  // re-check this page against the session: still unlocked → (re)seal + re-arm the expiry timer; else lock it
+  function check() {
+    if (!current) return;
+    var page = current.page, creds = credsFor(page);
+    clearTimeout(_timer);
+    if (creds) { // other tenants: unchanged (no seal, no timer)
+      var s = V.MEMORY_ONLY.indexOf(page) >= 0 && V.loadSession();
+      if (s) { maybeSeal(page, creds); _timer = setTimeout(check, Math.max(0, s.expiresAt - Date.now()) + 50); }
+      return;
+    }
+    if (!sealOf(page)) dropKey(page);
+    if (document.getElementById('press-gate')) return; // gate already up
+    try { if (current.onLock) current.onLock(); } catch (e) {}
+    render();
   }
 
   function removeGate() {
@@ -1491,7 +1555,7 @@
       btn.disabled = true; msg.className = 'pg-msg'; msg.textContent = 'Waiting for your passkey…';
       V.unlock().then(function () {
         var creds = credsFor(current.page);
-        if (creds) { removeGate(); current.onUnlock(creds); return; }
+        if (creds) { removeGate(); current.onUnlock(creds); check(); return; }
         // The passkey OPENED the vault, but this tool has no stored credentials yet — a DISTINCT
         // state from a failed unlock (the space DID open). Point at the wing's Connect step; never
         // conflate this with "could not open the personal space".
@@ -1515,11 +1579,7 @@
     current.wired = true;
     root.addEventListener('storage', function (ev) {
       if (ev && ev.key && ev.key !== V.SESSION_KEY) return; // ignore unrelated keys
-      if (!current) return;
-      if (credsFor(current.page)) return;                   // still unlocked — nothing to do
-      if (document.getElementById('press-gate')) return;    // gate already up
-      try { if (current.onLock) current.onLock(); } catch (e) {}
-      render();
+      check(); // still unlocked → reseal if needed; else the gate
     });
   }
 
@@ -1532,8 +1592,17 @@
     opts = opts || {};
     current = { page: opts.page, onUnlock: opts.onUnlock || function () {}, onLock: opts.onLock || null, wired: false };
     wireLockWatch();
-    var creds = credsFor(current.page);
-    if (creds) { current.onUnlock(creds); return { gated: false }; }
+    var me = current, page = me.page, creds = credsFor(page);
+    if (creds) { me.onUnlock(creds); check(); return { gated: false }; }
+    if (sealable(page) && sealOf(page)) { // a sealed unlock: no prompt, no gate flash
+      unseal(page).then(function (c) {
+        if (current !== me) return;
+        if (c && V.loadSession()) { _un = { page: page, creds: c }; me.onUnlock(c); check(); }
+        else if (!document.getElementById('press-gate')) render(); // unseal failed → the gate, as before
+      });
+      return { gated: false, pending: true };
+    }
+    dropKey(page);
     render();
     return { gated: true };
   }
@@ -1541,7 +1610,7 @@
   root.PressGate = {
     guard: guard,
     // exposed for tests / callers
-    credsFor: credsFor, friendlyErr: friendlyErr, MARQUEE: MARQUEE,
+    credsFor: credsFor, friendlyErr: friendlyErr, MARQUEE: MARQUEE, SEAL_DB: SEAL_DB, seal: seal, unseal: unseal,
     render: render, removeGate: removeGate
   };
 })(globalThis);
@@ -1727,7 +1796,7 @@ module.exports = {
 window.__def("src/core/dafgroup.js", function(module, exports, require){
 'use strict';
 /* =============================================================================
- * src/core/dafgroup.js — the automatic "Donations made via DAF" group (v0.6/S3).
+ * src/core/dafgroup.js — the automatic "Donations made out of DAF" group (v0.6/S3).
  *
  * DISPLAY-ONLY. This partitions a year's rows so the list can fold loose DAF grants
  * into ONE collapsed, expandable row. It NEVER mutates the document: no series row is
@@ -1767,6 +1836,88 @@ module.exports = {
   isLooseGrant: isLooseGrant,
   looseGrants: looseGrants,
   groupTotal: groupTotal,
+};
+
+});
+
+/* ---- src/core/fx.js ---- */
+window.__def("src/core/fx.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * fx.js — foreign-currency gifts (v0.14). A gift paid in another currency
+ * (e.g. £100 on JustGiving to a UK charity) is LOGGED, never dropped:
+ *   - it keeps the amount + currency actually paid (amount_orig, currency);
+ *   - it carries an ESTIMATED USD value (amount = amount_orig × fx_rate) so it
+ *     counts in "Given to charities" and the giving history;
+ *   - it is NEVER deductible (a foreign charity is not deductible on a US return),
+ *     so it lands in the non-deductible section and every tax total skips it.
+ * The rate is the ECB reference rate for the payment date (Frankfurter API —
+ * only the date + currency code are sent, never any giving data), fetched once
+ * when the gift is saved and FROZEN on the gift; it can be overridden by hand.
+ * Pure + node-testable (no network here; the shell does the fetch).
+ * ========================================================================== */
+
+// Currencies offered on the cash form. USD first (the default, a normal US gift).
+var CURRENCIES = [
+  { code: 'USD', symbol: '$',  name: 'US dollar' },
+  { code: 'GBP', symbol: '£',  name: 'British pound' },
+  { code: 'EUR', symbol: '€',  name: 'Euro' },
+  { code: 'CAD', symbol: 'C$', name: 'Canadian dollar' },
+  { code: 'AUD', symbol: 'A$', name: 'Australian dollar' },
+  { code: 'NZD', symbol: 'NZ$', name: 'New Zealand dollar' },
+  { code: 'CHF', symbol: 'CHF ', name: 'Swiss franc' },
+  { code: 'ZAR', symbol: 'R',  name: 'South African rand' },
+];
+var FOREIGN_REASON = 'Foreign charity — not deductible on a US return';
+var FX_SOURCE = 'ECB reference rate (frankfurter.dev)';
+var FX_API = 'https://api.frankfurter.dev/v1/';
+
+function currencyOf(code) {
+  code = String(code || 'USD').toUpperCase();
+  for (var i = 0; i < CURRENCIES.length; i++) if (CURRENCIES[i].code === code) return CURRENCIES[i];
+  return { code: code, symbol: code + ' ', name: code };
+}
+function isForeign(d) {
+  return !!(d && d.currency && String(d.currency).toUpperCase() !== 'USD');
+}
+function round2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
+
+// The Frankfurter URL for one currency on one date (YYYY-MM-DD). Weekends/holidays return the
+// previous business day's rate — the response's own `date` says which day was used.
+function rateUrl(code, date) {
+  var d = /^\d{4}-\d{2}-\d{2}$/.test(String(date || '')) ? String(date) : 'latest';
+  return FX_API + d + '?base=' + encodeURIComponent(String(code).toUpperCase()) + '&symbols=USD';
+}
+// Parse a Frankfurter response → { rate, date } (USD per 1 unit), or null when unusable.
+function parseRate(json) {
+  if (!json || !json.rates) return null;
+  var r = Number(json.rates.USD);
+  if (!(r > 0) || !isFinite(r)) return null;
+  return { rate: r, date: json.date || null };
+}
+// Estimated USD for an original amount at a rate (2 dp).
+function usdEstimate(amountOrig, rate) {
+  var a = Number(amountOrig), r = Number(rate);
+  if (!(a > 0) || !(r > 0)) return 0;
+  return round2(a * r);
+}
+// "£100.00" — the amount actually paid, in its own currency.
+function formatOrig(amount, code) {
+  var c = currencyOf(code);
+  var n = Number(amount) || 0;
+  return c.symbol + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+// "£100.00 (≈ $132.25)" — the list / export label for a foreign gift.
+function formatForeign(d) {
+  if (!isForeign(d)) return null;
+  var usd = '$' + (Number(d.amount) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return formatOrig(d.amount_orig, d.currency) + ' (≈ ' + usd + ')';
+}
+
+module.exports = {
+  CURRENCIES: CURRENCIES, FOREIGN_REASON: FOREIGN_REASON, FX_SOURCE: FX_SOURCE, FX_API: FX_API,
+  currencyOf: currencyOf, isForeign: isForeign, rateUrl: rateUrl, parseRate: parseRate,
+  usdEstimate: usdEstimate, formatOrig: formatOrig, formatForeign: formatForeign,
 };
 
 });
@@ -2109,6 +2260,8 @@ var FIDELITY = {
   source: 'seed',
 };
 
+var fx = require('./fx.js');   // foreign-currency gifts (v0.14)
+
 var DONATION_TYPES = ['money', 'items', 'stock', 'mileage', 'daf_grant'];
 
 // Item condition — "good used condition or better" is required for a deduction (SPEC §1.5);
@@ -2438,6 +2591,23 @@ function normalizeDonation(doc, d) {
   } else {
     d.items = null;
     d.amount = round2(d.amount);
+  }
+
+  // Foreign-currency cash gift (v0.14): keep what was actually paid (amount_orig + currency) and
+  // derive the ESTIMATED USD amount from the frozen rate — every total keeps reading d.amount (USD).
+  // A foreign gift is never deductible (foreign charity) → non-deductible section, out of tax totals.
+  if (d.type === 'money' && fx.isForeign(d)) {
+    d.currency = String(d.currency).toUpperCase();
+    var orig = Number(d.amount_orig), rate = Number(d.fx_rate);
+    if (!(orig > 0)) throw new Error('enter the amount paid in ' + d.currency);
+    if (!(rate > 0)) throw new Error('need a ' + d.currency + '→USD rate for this gift');
+    d.amount_orig = round2(orig);
+    d.fx_rate = rate;
+    d.amount = fx.usdEstimate(orig, rate);
+    d.deductible = false;
+    if (d.excluded_reason == null || String(d.excluded_reason).trim() === '') d.excluded_reason = fx.FOREIGN_REASON;
+  } else if (d.currency != null || d.amount_orig != null || d.fx_rate != null) {
+    d.currency = null; d.amount_orig = null; d.fx_rate = null; d.fx_date = null; d.fx_source = null;
   }
 
   // INVARIANT 1: a DAF grant is never deductible and never itself a contribution.
@@ -2792,7 +2962,7 @@ window.__def("src/core/receiptgroups.js", function(module, exports, require){
  *
  * It operates on the UI "entries" produced by toEntries (a single donation, a
  * recurring/ad-hoc series group, or the automatic display-only "Donations made
- * via DAF" group) and splits them into two ordered buckets WITHOUT dropping,
+ * out of DAF" group) and splits them into two ordered buckets WITHOUT dropping,
  * duplicating, or reordering within a bucket — so it changes only the visual
  * order, never any total, chart series or export value (same invariant as §1p).
  * Pure + node-testable.
@@ -4902,6 +5072,7 @@ window.__def("src/export/history.js", function(module, exports, require){
  * ========================================================================== */
 
 var model = require('../core/model.js');
+var fx = require('../core/fx.js');
 
 var GIVING_NOTE =
   'This is a record of what you gave to whom — NOT a tax document. Contributions ' +
@@ -4910,9 +5081,9 @@ var GIVING_NOTE =
 
 function round2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
 
-// Human-facing label; a grant out of the DAF is shown as "via DAF".
+// Human-facing label; a grant out of the DAF is shown as "out of DAF".
 function typeLabel(d) {
-  if (d.type === 'daf_grant') return 'via DAF';
+  if (d.type === 'daf_grant') return 'out of DAF';
   var map = { money: 'Cash', items: 'Items', stock: 'Stock', mileage: 'Mileage' };
   return map[d.type] || String(d.type || '');
 }
@@ -5006,7 +5177,7 @@ function buildHistoryHtml(doc, year) {
         '<tr>' +
         '<td class="date">' + escHtml(d.date || '') + '</td>' +
         '<td class="type">' + typeCell + '</td>' +
-        '<td class="amt">' + escHtml(fmtMoney(d.amount)) + '</td>' +
+        '<td class="amt">' + escHtml(fx.isForeign(d) ? fx.formatForeign(d) : fmtMoney(d.amount)) + '</td>' +
         '</tr>';
     }).join('');
     return '' +
@@ -5067,7 +5238,7 @@ sections + empty +
 function buildHistoryCsv(doc, year) {
   var donations = givingDonations(doc, year).slice().sort(byDate);
   var lines = [];
-  lines.push(['date', 'charity', 'ein', 'type', 'via_daf', 'amount', 'notes', 'excluded_from_tax', 'excluded_reason'].map(csvField).join(','));
+  lines.push(['date', 'charity', 'ein', 'type', 'out_of_daf', 'amount', 'notes', 'excluded_from_tax', 'excluded_reason', 'currency_paid', 'amount_paid', 'fx_rate_usd'].map(csvField).join(','));
   for (var i = 0; i < donations.length; i++) {
     var d = donations[i];
     var c = d.charity_id ? model.charityById(doc, d.charity_id) : null;
@@ -5082,6 +5253,9 @@ function buildHistoryCsv(doc, year) {
       d.notes || '',
       excl ? 'yes' : 'no',
       excl ? (d.excluded_reason || '') : '',
+      fx.isForeign(d) ? d.currency : 'USD',
+      fx.isForeign(d) ? round2(d.amount_orig).toFixed(2) : round2(d.amount).toFixed(2),
+      fx.isForeign(d) ? String(d.fx_rate) : '',
     ];
     lines.push(row.map(csvField).join(','));
   }
@@ -7192,6 +7366,7 @@ window.GT = {
   rekey:  window.__require('src/sync/rekey.js'),
   seal:   window.__require('src/sync/seal.js'),
   model:  window.__require('src/core/model.js'),
+  fx:     window.__require('src/core/fx.js'),
   logform: window.__require('src/core/logform.js'),
   inbox:  window.__require('src/core/inbox.js'),
   series: window.__require('src/core/series.js'),
@@ -7233,7 +7408,7 @@ window.GT.exp = {
 <script>
 (function(){
   'use strict';
-  var GT = window.GT, M = GT.model, C = GT.client, X = GT.crypto, P = GT.propublica, V = GT.valueguide, T = GT.tax, S = GT.saver, RK = GT.rekey;
+  var GT = window.GT, FX = GT.fx, M = GT.model, C = GT.client, X = GT.crypto, P = GT.propublica, V = GT.valueguide, T = GT.tax, S = GT.saver, RK = GT.rekey;
   var Q = GT.queue, RV = GT.review, SEAL = GT.seal, F = GT.files, LF = GT.logform, IB = GT.inbox, SER = GT.series, HB = GT.heartbeat, PH = GT.photoitems, CH = GT.charts, MG = GT.mediagate, DG = GT.dafgroup, PF = GT.prefill, TG = GT.totalgiving, RG = GT.receiptgroups;
   var LS = window.localStorage;
   var DOC_KEY = 'giving_doc_v1';
@@ -7448,16 +7623,16 @@ window.GT.exp = {
   function fillYears(){ initYearDial(); }   // render() hook — first call wires the dial, later calls re-lay it
 
   function typeLabel(d){
-    if(d.type==='daf_grant') return 'Grant via DAF';
+    if(d.type==='daf_grant') return 'Grant out of DAF';
     if(d.daf_contribution===true) return 'Into DAF · stock';
-    if(d.type==='money') return 'Cash';
+    if(d.type==='money') return FX.isForeign(d) ? ('Cash · '+d.currency) : 'Cash';
     if(d.type==='items') return 'Items' + (Array.isArray(d.items)&&d.items.length?(' · '+d.items.length+' line'+(d.items.length>1?'s':'')):'');
     if(d.type==='stock') return 'Stock';
     if(d.type==='mileage') return 'Mileage';
     return d.type;
   }
   function donBadge(d){
-    if(d.type==='daf_grant') return '<span class="badge via">via DAF · not deductible</span>';
+    if(d.type==='daf_grant') return '<span class="badge via">out of DAF · not deductible</span>';
     if(d.daf_contribution===true) return '<span class="badge into">Into DAF</span>';
     if(d.deductible===false) return '<span class="badge excl">not deductible</span>';   // manual exclude (S4)
     return '';
@@ -7473,10 +7648,6 @@ window.GT.exp = {
     $('dedVal').textContent  = money(t.deductibleThisYear);
     $('cntVal').textContent  = String(t.donationCount);
 
-    var lastC = state.doc.settings && state.doc.settings.lastCharityId
-      ? M.charityById(state.doc, state.doc.settings.lastCharityId) : null;
-    $('lastCharityNote').textContent = lastC ? ('Log sheet defaults to: '+lastC.name)
-      : 'Log sheet defaults to your last charity.';
 
     renderBreakdown(t);
     renderFlags();
@@ -7493,34 +7664,28 @@ window.GT.exp = {
     var prof=taxProfileFor(state.year);
     if(!prof || !(Number(prof.agi)>0)){
       var el=document.createElement('div'); el.className='savings prompt';
-      // §1ar: the prompt figure must stay ONE line at 390px in every engine (Chromium wrapped the
-      // old 41-char string). Keep the fig short; the call-to-action detail lives in .sub (which may
-      // wrap freely — the harness only asserts .fig is one line).
-      el.innerHTML='<div class="lab">Estimated tax savings</div>'
-        + '<div class="fig">Add your tax profile</div>'
-        + '<div class="sub">Estimate your '+state.year+' savings — filing status, AGI, itemize/standard.</div>';
-      var b=document.createElement('button'); b.className='btn sm ghost'; b.style.marginTop='10px';
-      b.textContent='Set tax profile'; b.addEventListener('click', openSettings); el.appendChild(b);
+      el.setAttribute('role','button'); el.tabIndex=0; el.title='Set your tax profile to estimate savings';
+      el.innerHTML='<div class="lab">Est. tax savings</div><div class="fig">Set tax profile →</div>';
+      el.addEventListener('click', openSettings);
+      el.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openSettings(); } });
       box.appendChild(el); return;
     }
     var r=T.estimateSavings(prof, state.doc, state.year);
     var el2=document.createElement('div'); el2.className='savings';
-    el2.innerHTML='<div class="lab">Estimated tax savings · '+state.year+'</div>'
-      + '<div class="fig">'+money(r.savings)+'</div>'
-      + '<div class="sub">On '+money(r.deductible)+' deductible at '+Math.round(r.rate*100)+'% '
-      + '('+(r.itemizing?'itemizing':'standard deduction')+'). Limited by '+esc(r.limitedBy)+'.</div>'
-      + '<div class="adv">Estimate for planning only — not tax advice. DAF grants are excluded.</div>';
+    el2.title='On '+money(r.deductible)+' deductible at '+Math.round(r.rate*100)+'% ('+(r.itemizing?'itemizing':'standard deduction')+'). Planning estimate only — not tax advice.';
+    el2.innerHTML='<div class="lab">Est. tax savings</div>'
+      + '<div class="fig">'+money(r.savings)+'</div>';
     box.appendChild(el2);
   }
 
   function renderBreakdown(t){
     var b=t.breakdown, cells=[
       ['Cash', b.cash], ['Items', b.items], ['Into DAF', b.intoDaf],
-      ['Stock', b.stock], ['Mileage', b.mileage], ['via DAF', b.viaDaf],
+      ['Stock', b.stock], ['Mileage', b.mileage], ['Out of DAF', b.viaDaf],
     ];
     var box=$('breakdown'); box.innerHTML='';
     cells.forEach(function(c){
-      var el=document.createElement('div'); el.className='bd'+(c[0]==='via DAF'?' viadaf':'');
+      var el=document.createElement('div'); el.className='bd'+(c[0]==='Out of DAF'?' viadaf':'');
       el.innerHTML='<div class="k">'+c[0]+'</div><div class="v">'+money(c[1])+'</div>';
       box.appendChild(el);
     });
@@ -7561,6 +7726,7 @@ window.GT.exp = {
     // it carries a clear "amount needed" badge instead of money($0). Filled by the Fidelity import.
     var amt=document.createElement('span');
     if(M.amountNeeded(d)){ amt.className='amt needed'; amt.textContent='amount needed'; amt.title='No dollar amount yet — import your Fidelity Giving Account history to fill it.'; }
+    else if(FX.isForeign(d)){ amt.className='amt fx'; amt.innerHTML=esc(FX.formatOrig(d.amount_orig, d.currency))+' <span class="usdest">(≈ '+money(d.amount)+')</span>'; amt.title='Paid '+FX.formatForeign(d)+' — USD estimated at '+d.fx_rate+' ('+(d.fx_source||'')+')'; }
     else { amt.className='amt'; amt.textContent=money(d.amount); }
     amtwrap.appendChild(amt);
     el.appendChild(left); el.appendChild(who); el.appendChild(amtwrap);
@@ -7643,7 +7809,7 @@ window.GT.exp = {
     var selKey='ser:'+seriesId, selected=!!state.selected[selKey];
     var row=document.createElement('div'); row.className='row seriesrow'+(selected?' selected':'');
     var exp=makeExpandIcon('↻');   // leading gutter: recurring glyph + chevron
-    var badge= ser.type==='daf_grant' ? '<span class="badge via">via DAF</span>' : '';
+    var badge= ser.type==='daf_grant' ? '<span class="badge via">out of DAF</span>' : '';
     var who=groupWho(esc(c?c.name:'—')+badge, esc(seriesSubtitle(ser, gifts.length)));
     var amtwrap=document.createElement('span'); amtwrap.className='amtbtn';
     var amt=document.createElement('span'); amt.className='amt'; amt.textContent=money(total);
@@ -7673,7 +7839,7 @@ window.GT.exp = {
   }
 
   // Group a year's donations into entries: a series (one row), the automatic display-only
-  // "Donations made via DAF" group (S3/§1p — loose grants only, when groupDaf), or a single
+  // "Donations made out of DAF" group (S3/§1p — loose grants only, when groupDaf), or a single
   // donation. The DAF group is virtual: it is NEVER written to doc.series and sets no series_id.
   function toEntries(rows, groupDaf){
     var map={}, entries=[], daf=null;
@@ -7714,7 +7880,7 @@ window.GT.exp = {
       part.nondeductible.forEach(function(e){ appendOneEntry(card, e); });
     }
   }
-  // The automatic "Donations made via DAF" group (S3/§1p): ONE collapsed, expandable row for all
+  // The automatic "Donations made out of DAF" group (S3/§1p): ONE collapsed, expandable row for all
   // loose grants in the year. Display-only — its total is Σ countsForGiving grants (never a
   // Deductible figure), and each member stays its own donation. Expanded members respect the S2
   // date sort and the S1 subrow indentation. No toggle, no persisted state.
@@ -7722,11 +7888,11 @@ window.GT.exp = {
     var total=DG.groupTotal(state.doc, gifts);
     // S1/§1z: the group heading is the most prominent number in the block, and grants OUT are
     // never deductible (SPEC §2A) — so the row carries `nondeduct` (greys the total, matching its
-    // child grant rows) and the SAME "via DAF · not deductible" pill the grant rows show. Numbers
+    // child grant rows) and the SAME "out of DAF · not deductible" pill the grant rows show. Numbers
     // are unchanged; presentation only.
     var row=document.createElement('div'); row.className='row seriesrow nondeduct';
     var exp=makeExpandIcon('◈');   // leading gutter: via-DAF glyph + chevron; the group is not selectable
-    var who=groupWho('Donations made via DAF<span class="badge via">via DAF · not deductible</span>',
+    var who=groupWho('Donations made out of DAF<span class="badge via">out of DAF · not deductible</span>',
       gifts.length+' grant'+(gifts.length>1?'s':'')+' out');
     var amtwrap=document.createElement('span'); amtwrap.className='amtbtn';
     var amt=document.createElement('span'); amt.className='amt'; amt.textContent=money(total);
@@ -7889,7 +8055,7 @@ window.GT.exp = {
       });
     } else {
       var card=document.createElement('div'); card.className='receipt';
-      appendEntries(card, rows, true);           // by-date: fold loose grants into the auto "Donations made via DAF" group (S3)
+      appendEntries(card, rows, true);           // by-date: fold loose grants into the auto "Donations made out of DAF" group (S3)
       box.appendChild(card);
     }
   }
@@ -7952,7 +8118,7 @@ window.GT.exp = {
   }
   // A plain, UI-side label for the table's Type column (mirrors typeLabel's words, no per-row detail).
   function tgTypeLabel(t){
-    return t==='daf_grant' ? 'Grant via DAF' : t==='money' ? 'Cash' : t==='items' ? 'Items'
+    return t==='daf_grant' ? 'Grant out of DAF' : t==='money' ? 'Cash' : t==='items' ? 'Items'
       : t==='stock' ? 'Stock' : t==='mileage' ? 'Mileage' : t;
   }
   // Jump from a table row (or a delete-refusal blocker) straight to editing that donation: close any
@@ -8652,7 +8818,7 @@ window.GT.exp = {
   var LOG_TABS = [
     { key:'money', label:'Money' }, { key:'items', label:'Items' },
     { key:'stock', label:'Stock' }, { key:'mileage', label:'Mileage' },
-    { key:'into_daf', label:'Into DAF' }, { key:'grant', label:'Grant via DAF' },
+    { key:'into_daf', label:'Into DAF' }, { key:'grant', label:'Grant out of DAF' },
   ];
   function today(){ return new Date().toISOString().slice(0,10); }
   function logKeyFor(d){
@@ -8776,7 +8942,9 @@ window.GT.exp = {
     if(key==='money'){
       html += '<div class="field"><label>Charity</label>'+charitySelectHtml(selId)+'</div>'
         + '<div class="grid2"><div class="field"><label>Date</label><input type="date" class="txt" id="fDate" value="'+dt+'"></div>'
-        + '<div class="field"><label>Amount ($)</label><input type="number" class="txt" id="fAmount" inputmode="decimal" step="0.01" min="0" value="'+(d.amount||'')+'"></div></div>'
+        + '<div class="field"><label>Currency</label>'+currencySelectHtml(d.currency)+'</div></div>'
+        + '<div class="field"><label>Amount</label><input type="number" class="txt" id="fAmount" inputmode="decimal" step="0.01" min="0" value="'+((FX.isForeign(d)?d.amount_orig:d.amount)||'')+'"></div>'
+        + '<div id="fxRow" class="fxrow" hidden></div>'
         + '<label class="chk"><input type="checkbox" id="fAck"'+(d.acknowledgment_received?' checked':'')+'> Written acknowledgment received</label>'
         + '<div class="field" style="margin-top:12px;"><label>Notes</label><textarea id="fNotes">'+esc(notes)+'</textarea></div>';
     } else if(key==='items'){
@@ -8843,6 +9011,7 @@ window.GT.exp = {
       $('fMiles').addEventListener('input', mt); $('fPark').addEventListener('input', mt); mt();
     }
     appendExcludeSection(f, key);
+    if(key==='money') wireFx(d);
     if(key!=='items') appendAttachSection(f);   // items renders its combined Receipts+Photos section under the date (S5)
     // "Make this recurring" — only when editing an existing cash gift / DAF grant not yet in a series (S6)
     if(state.log.editingId && (key==='money'||key==='grant')){
@@ -9340,6 +9509,85 @@ window.GT.exp = {
   }
 
   // Read the exclude-from-tax controls (present only for money/items/stock/mileage). {} otherwise.
+  // ---- foreign-currency cash gifts (v0.14) ----
+  // A non-USD gift is logged in the currency paid, with an ESTIMATED USD value from the ECB rate on
+  // the payment date (Frankfurter — only date + currency are sent). The rate is fetched when the
+  // currency or date changes, shown for checking, editable, and frozen on the gift when saved.
+  // Foreign charity ⇒ not deductible: the exclude box is ticked for you (reason pre-filled).
+  function currencySelectHtml(cur){
+    cur=String(cur||'USD').toUpperCase();
+    return '<select id="fCurrency" class="cursel" aria-label="Currency">'
+      + FX.CURRENCIES.map(function(c){ return '<option value="'+c.code+'"'+(c.code===cur?' selected':'')+'>'+c.code+'</option>'; }).join('')
+      + '</select>';
+  }
+  var fxSeq=0;
+  function wireFx(d){
+    var sel=$('fCurrency'); if(!sel) return;
+    state.log.fx = FX.isForeign(d) ? { code:d.currency, rate:d.fx_rate, date:d.fx_date||null, source:d.fx_source||FX.FX_SOURCE, forDate:d.date, status:'ok' } : null;
+    sel.addEventListener('change', onFxChange);
+    $('fDate').addEventListener('change', onFxChange);
+    $('fAmount').addEventListener('input', renderFxRow);
+    if(FX.isForeign(d)){ renderFxRow(); setForeignExclude(true); }
+  }
+  function onFxChange(){
+    var code=$('fCurrency').value, dt=$('fDate').value;
+    if(code==='USD'){ state.log.fx=null; renderFxRow(); setForeignExclude(false); return; }
+    setForeignExclude(true);
+    var cur=state.log.fx;
+    if(cur && cur.code===code && cur.forDate===dt && cur.status==='ok'){ renderFxRow(); return; }
+    fetchFxRate(code, dt);
+  }
+  async function fetchFxRate(code, dt){
+    var seq=++fxSeq;
+    state.log.fx={ code:code, rate:null, date:null, source:FX.FX_SOURCE, forDate:dt, status:'loading' };
+    renderFxRow();
+    try{
+      var res=await fetch(FX.rateUrl(code, dt));
+      if(!res.ok) throw new Error('http '+res.status);
+      var r=FX.parseRate(await res.json());
+      if(!r) throw new Error('no rate');
+      if(seq!==fxSeq || !state.log) return;
+      state.log.fx={ code:code, rate:r.rate, date:r.date, source:FX.FX_SOURCE, forDate:dt, status:'ok' };
+    } catch(e){
+      if(seq!==fxSeq || !state.log) return;
+      state.log.fx={ code:code, rate:null, date:null, source:'manual', forDate:dt, status:'error' };
+    }
+    renderFxRow();
+  }
+  function renderFxRow(){
+    var row=$('fxRow'); if(!row) return;
+    var fx=state.log&&state.log.fx;
+    if(!fx){ row.hidden=true; row.innerHTML=''; return; }
+    row.hidden=false;
+    var amt=parseFloat($('fAmount').value)||0, c=FX.currencyOf(fx.code);
+    var head = fx.status==='loading' ? 'Looking up the '+fx.code+' rate for '+(fx.forDate||'today')+'…'
+      : fx.status==='error' ? 'Couldn’t fetch a rate — type one in.'
+      : '≈ <strong>'+(amt>0?('$'+FX.usdEstimate(amt, fx.rate).toFixed(2)):'—')+'</strong> estimated USD'
+        + (fx.source==='manual' ? ' · your rate' : ' · ECB rate'+(fx.date?(' on '+esc(fx.date)):''));
+    row.innerHTML='<div class="fxhead">'+head+'</div>'
+      + '<div class="fxrate"><label for="fFxRate">USD per '+esc(c.symbol.trim())+'1</label>'
+      + '<input type="number" class="txt" id="fFxRate" inputmode="decimal" step="0.0001" min="0" value="'+(fx.rate||'')+'"></div>'
+      + '<p class="ghint">Logged in '+esc(fx.code)+' and counted in “Given to charities” at the estimated USD. A foreign charity isn’t deductible on a US return, so it sits in the non-deductible section.</p>';
+    $('fFxRate').addEventListener('change', function(){
+      var v=parseFloat(this.value);
+      if(v>0){ fx.rate=v; fx.source='manual'; fx.date=null; fx.status='ok'; renderFxRow(); }
+    });
+  }
+  function setForeignExclude(on){
+    var cb=$('fExclude'), row=$('fExcludeRow'), rs=$('fExcludeReason');
+    if(!cb) return;
+    var wasForeignReason = rs && (rs.value===FX.FOREIGN_REASON || !rs.value);
+    if(on){ cb.checked=true; if(row) row.style.display=''; if(rs && !rs.value) rs.value=FX.FOREIGN_REASON; }
+    else if(wasForeignReason){ cb.checked=false; if(row) row.style.display='none'; if(rs && rs.value===FX.FOREIGN_REASON) rs.value=''; }
+  }
+  function fxFields(){
+    var sel=$('fCurrency'); if(!sel) return null;
+    var code=sel.value;
+    if(code==='USD') return { currency:'USD', amount_orig:null, fx_rate:null, fx_date:null, fx_source:null };
+    var fx=state.log.fx;
+    if(!fx || fx.code!==code || !(fx.rate>0)) return { error: fx&&fx.status==='loading' ? 'Still looking up the exchange rate — try again in a second.' : 'Enter the '+code+'→USD rate.' };
+    return { currency:code, fx_rate:fx.rate, fx_date:fx.date||$('fDate').value, fx_source:fx.source };
+  }
   function excludeFields(){
     if(!$('fExclude')) return {};
     var ex=$('fExclude').checked;
@@ -9356,6 +9604,9 @@ window.GT.exp = {
       var cid=$('fCharity').value, amt=parseFloat($('fAmount').value);
       if(!cid){ toast('Pick a charity.', true); return; } if(!(amt>0)){ toast('Enter an amount.', true); return; }
       payload={ type:'money', charity_id:cid, amount:amt, date:dt, notes:notes, daf_contribution:false, acknowledgment_received:$('fAck').checked };
+      var fxf=fxFields();
+      if(fxf && fxf.error){ toast(fxf.error, true); return; }
+      if(fxf){ Object.assign(payload, fxf); if(fxf.currency!=='USD'){ payload.amount_orig=amt; payload.amount=FX.usdEstimate(amt, fxf.fx_rate); } }
     } else if(key==='items'){
       var cidi=$('fCharity').value;
       if(!cidi){ toast('Pick a charity.', true); return; }
@@ -9897,7 +10148,7 @@ window.GT.exp = {
 
   function sourceIcon(src){ return src==='ynab'?'🏦':src==='import'?'📄':'✉️'; }
   function draftBadge(d){
-    if(d.type==='daf_grant') return '<span class="qbadge via">via DAF · not deductible</span>';
+    if(d.type==='daf_grant') return '<span class="qbadge via">out of DAF · not deductible</span>';
     if(d.daf_contribution) return '<span class="qbadge into">Into DAF</span>';
     if(d.type==='items') return '<span class="qbadge cash">Items</span>';
     return '<span class="qbadge cash">Cash</span>';
