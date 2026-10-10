@@ -10,6 +10,9 @@
   --ink:#eef4f2; --mut:#a7bcb7; --faint:#93a8a4;
   --line:#213033; --line2:#2b3d40;
   --ac:#7bc0ac; --ac-soft:#a6d9c8; --ac2:#e0bd8f; --ac2-soft:#efd3a8;
+  /* Issue #6 F10 — section 4 "children's gift accounts": a soft violet not reused by any
+     other section (distinct from --c-uk's lavender UK-pension tone below). */
+  --ac-kids:#8d85d6;
   --good:#8fd3bd; --warn:#e6c675; --bad:#e0705f; --bad-soft:#f0a094;
   --r:16px; --r2:12px; --pill:999px; --shadow:0 10px 34px rgba(0,0,0,.34);
   --ease:cubic-bezier(.4,.5,.2,1); --t:.18s;
@@ -53,12 +56,24 @@ html.rd-cloudload .wrap>*:not(#cloudLoading):not(.pagehead){display:none!importa
 .lch-cloud{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:10px 0 4px}
 .lch-cloud:empty{display:none}
 .lch-cloud-msg{font-size:12.5px;color:var(--mut)}
-.plan-notice{background:rgba(217,160,106,.12);border:1px solid var(--bad-soft);border-radius:var(--r);
+/* Issue #6 F12 — neutral/info tone: border colour only, no amber/coral fill (it's about data
+   freshness, not a plan problem) — the Re-import button stays the one accent on the card. */
+.plan-notice{background:transparent;border:1px solid var(--line2);border-radius:var(--r);
   padding:12px 16px;margin-bottom:14px}
 .plan-notice .pn-body{display:flex;align-items:flex-start;gap:12px}
-.plan-notice .pn-ico{font-size:18px;line-height:1.2;color:var(--bad-soft);flex:none}
+.plan-notice .pn-ico{font-size:18px;line-height:1.2;color:var(--faint);flex:none}
 .plan-notice .pn-txt{flex:1;min-width:0;font-size:12px;line-height:1.4}
+.plan-notice .pn-details{margin-top:4px}
+.plan-notice .pn-details>summary{font-size:11.5px;color:var(--faint);cursor:pointer}
+.plan-notice .pn-details p{margin:6px 0 0;color:var(--mut)}
 .plan-notice .pn-btns{display:flex;align-items:flex-start;gap:6px;flex:none}
+/* Issue #5 F4 — at phone width the row (message + button + ✕) squeezed into a narrow column
+   and towered above the headline figures; stack it full-width instead. */
+@media (max-width:600px){
+  .plan-notice .pn-body{flex-direction:column;align-items:stretch}
+  .plan-notice .pn-btns{width:100%}
+  .plan-notice .btn{width:100%}
+}
 .lch-item.stale{border-color:var(--bad-soft);flex-wrap:wrap}
 .lch-stale{width:100%;order:3;font-size:10.5px;color:var(--bad-soft);margin-top:4px}
 .gauge-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -84,7 +99,8 @@ html.rd-cloudload .wrap>*:not(#cloudLoading):not(.pagehead){display:none!importa
 .status-chip:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .callouts{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .callouts:empty{display:none}
-.callout{font-size:12.5px;line-height:1.45;padding:9px 12px;border-radius:var(--r2);border:1px solid #5a4a24;background:#332a17;color:var(--warn)}
+.callout{font-size:12.5px;line-height:1.45;padding:9px 12px;border-radius:var(--r2);border:1px solid #5a4a24;background:#332a17;color:var(--warn);
+  scroll-margin-top:12px} /* Issue #5 F2 — no sticky page header exists to measure, so this is a small landing buffer for the #warn-N anchor jump */
 .callout.flash{box-shadow:0 0 0 2px var(--warn)}
 /* family-plan slice 7 (D11) — a large, NUMBERED section header between every row; each card's
    own title moved up into it (no duplicate titles). Numbers are CSS counters, so a section
@@ -110,7 +126,11 @@ html.rd-cloudload .wrap>*:not(#cloudLoading):not(.pagehead){display:none!importa
 .kids-legend i.floor{height:0;border-top:2px solid var(--bad-soft);border-radius:0;vertical-align:3px}
 .kids-rec{border:1px solid var(--line2);border-radius:var(--r2);padding:12px 14px;margin-top:12px;background:#0e181a80}
 .kids-rec h3{font-size:14px;margin-bottom:6px}
-.kids-rec ol{margin:4px 0 8px 18px;font-size:13px;color:var(--mut);line-height:1.5}
+/* Issue #6 F9 — the list was indented ~60px further than the heading (18px margin PLUS the
+   default <ol> padding); align it to the heading's left edge instead. */
+.kids-rec ol{margin:4px 0 8px 0;padding-left:1.25em;font-size:13px;color:var(--mut);line-height:1.5}
+.kids-rec-tag{font-size:11px;font-weight:650;color:var(--ac);background:rgba(123,192,172,.14);
+  padding:2px 8px;border-radius:var(--pill);margin-left:8px;vertical-align:middle;white-space:nowrap}
 .kids-flags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .kids-chip{font-size:12.5px;padding:6px 11px;border-radius:999px;border:1px solid #5a4a24;background:#332a17;color:var(--warn)}
 .kids-chip.info{border-color:var(--line2);background:none;color:var(--mut)}
@@ -600,8 +620,14 @@ thead th{position:sticky;top:0;background:var(--sf3)}
 
 /* =========================== MOBILE (Part G) =========================== */
 @media (max-width:820px){
-  html,body{overflow-x:hidden;max-width:100%}
-  .wrap{padding:10px 12px 90px}
+  html,body{overflow-x:hidden;max-width:100%;
+    /* Issue #5 F3 — one source of truth for the controller-sheet's peek height (was a 52px
+       magic number repeated at the sheet transform, the handle height and the FAB offset);
+       --sheet-peek-h is now that one place. No <main> element exists in this shell — .wrap
+       is the equivalent top-level content container, so the padding-bottom fix below targets
+       .wrap instead of a literal "main" selector. */
+    --sheet-peek-h:52px}
+  .wrap{padding:10px 12px calc(var(--sheet-peek-h,72px) + env(safe-area-inset-bottom))}
   .banner{grid-template-columns:1fr;padding:16px;gap:14px}
   .flags{align-items:stretch;min-width:0}                 /* Phase 4.2 — flags stretch, not ragged */
   .status-chip{white-space:normal;justify-content:center}  /* slice 7 — the chip wraps on a phone */
@@ -654,9 +680,9 @@ thead th{position:sticky;top:0;background:var(--sf3)}
   #ctrlSheet{display:block;position:fixed;left:0;right:0;bottom:0;z-index:1100;
     background:linear-gradient(180deg,#18262980,#0e1416);border-top:1px solid var(--line2);
     border-radius:16px 16px 0 0;box-shadow:0 -12px 40px rgba(0,0,0,.5);
-    transform:translateY(calc(100% - 52px));transition:transform .4s var(--ease);max-height:82vh;display:flex;flex-direction:column}
+    transform:translateY(calc(100% - var(--sheet-peek-h,52px)));transition:transform .4s var(--ease);max-height:82vh;display:flex;flex-direction:column}
   #ctrlSheet.expanded{transform:translateY(0)}
-  .cs-handle{height:52px;min-height:52px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;
+  .cs-handle{height:var(--sheet-peek-h,52px);min-height:var(--sheet-peek-h,52px);display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;
     font-size:14px;color:var(--ink);font-weight:600;touch-action:none;user-select:none}
   .cs-handle::before{content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);width:40px;height:4px;border-radius:4px;background:var(--line2)}
   .cs-handle{position:relative}
@@ -664,9 +690,12 @@ thead th{position:sticky;top:0;background:var(--sf3)}
   .cs-body .card.ctrl{display:flex;box-shadow:none;margin:0}
 
   /* Sterling: NOT a draggable box on mobile — a full-screen sheet from the FAB */
-  /* Phase 4.3 — lift the FAB clear of the 52px controller-sheet handle (52 + 16 gap)
-     so their bounding boxes never intersect while the sheet is peeking. */
-  #sterlingFab{display:grid;bottom:68px}
+  /* Phase 4.3 / Issue #5 F3 — lift the FAB clear of the controller-sheet handle so their
+     bounding boxes never intersect while the sheet is peeking (was a hardcoded 68px). */
+  #sterlingFab{display:grid;bottom:calc(var(--sheet-peek-h,52px) + 12px)}
+  /* Issue #5 F3 — the "Apply the recommendation" button must land fully visible above the
+     peeking sheet when its section is deep-linked/scrolled to, not partly hidden behind it. */
+  #kidsApply{scroll-margin-bottom:calc(var(--sheet-peek-h,72px) + env(safe-area-inset-bottom))}
   #sterling{display:none}
   #sterling.sheet{display:flex;inset:0;top:0;left:0;width:100%;max-width:100%;height:100%;max-height:100%;
     border-radius:0;transform:none!important;z-index:2000;transition:transform .32s var(--ease)}
@@ -1114,9 +1143,15 @@ html:not(.rd-ready) .wrap{visibility:hidden;animation:rdReveal 0s 3s forwards}
  *
  * Session rationale: today each personal app persists its own passphrase in
  * localStorage INDEFINITELY (e.g. `fsa:pass`). This module keeps the decrypted
- * keyring in ONE place — `press:vault:v1` — that EXPIRES (8h TTL) and is revocable,
- * which is strictly stronger than the status quo and is what lets "open any personal
+ * keyring in ONE place — `press:vault:v1` — that EXPIRES (7 days, fixed from unlock) and is
+ * revocable, which is strictly stronger than the status quo and is what lets "open any personal
  * app in a new tab" work without re-prompting.
+ *
+ * MEMORY_ONLY (cardsharp security audit 2026-10-04, S1): an app whose data is instantly spendable money
+ * (Cardsharp: gift-card numbers + PINs) never has its {sync_id, pass} in localStorage — the persisted
+ * session carries a REDACTED stub for it; the full keyring lives only in this tab's memory (`_mem`) after a
+ * passkey unlock in this tab. A Connect / add-device re-seal restores redacted entries from the decrypted
+ * vault row, so redaction never erases a credential from the vault. Cost: one passkey tap per Cardsharp tab.
  * ========================================================================== */
 (function (root) {
   'use strict';
@@ -1150,6 +1185,44 @@ html:not(.rd-ready) .wrap{visibility:hidden;animation:rdReveal 0s 3s forwards}
   // reseal (updateKeyring) can re-seal the row WITHOUT another passkey tap. Never persisted; a
   // CryptoKey created with extractable:false cannot be read out even from here. Cleared on lock().
   var _live = null; // { key: CryptoKey, vaultId: string }
+
+  // MEMORY_ONLY apps (see the header): redacted in the persisted session, full only in this tab's `_mem`.
+  var MEMORY_ONLY = ['cardsharp.html'];
+  var _mem = null; // this tab's FULL keyring (after a passkey unlock here); never persisted; cleared by lock()
+  function cloneKeyring(k) { return JSON.parse(JSON.stringify(k || {})); }
+  function redact(k0) {
+    var k = cloneKeyring(k0);
+    if (k.apps) MEMORY_ONLY.forEach(function (p) {
+      var v = k.apps[p];
+      if (v && (v.sync_id || v.pass)) k.apps[p] = { sync_id: '', pass: '', redacted: true };
+    });
+    return k;
+  }
+  function needsRedact(k) {
+    return !!(k && k.apps && MEMORY_ONLY.some(function (p) { var v = k.apps[p]; return v && !v.redacted && (v.sync_id || v.pass); }));
+  }
+  // A keyring about to be re-sealed: every redacted stub gets its real entry back from `full` (the decrypted row);
+  // a stub the caller has since filled (Connect assigns new creds onto it) just loses its flag.
+  function restoreRedacted(k0, full) {
+    var k = cloneKeyring(k0);
+    if (k.apps) MEMORY_ONLY.forEach(function (p) {
+      var v = k.apps[p];
+      if (v && v.redacted && !v.sync_id && !v.pass) {
+        var f = full && full.apps && full.apps[p];
+        if (f && !f.redacted) k.apps[p] = f; else delete k.apps[p];
+      } else if (v && v.redacted) delete v.redacted;
+    });
+    return k;
+  }
+  // this tab's credentials for a MEMORY_ONLY page — only while the persisted session still exists (a lock or
+  // expiry anywhere drops them here too)
+  function memCreds(page) {
+    if (!loadSession()) { _mem = null; return null; }
+    var v = _mem && _mem.apps && _mem.apps[page];
+    return (v && !v.redacted && v.sync_id) ? v : null;
+  }
+  // the fullest keyring this tab can see: `_mem` after an unlock here, else the (redacted) session's
+  function fullKeyring() { var sess = loadSession(); if (!sess) { _mem = null; return null; } return _mem || sess.keyring; }
 
   // --- byte helpers (Node + browser) -----------------------------------------
   function asBytes(x) {
@@ -1257,13 +1330,14 @@ html:not(.rd-ready) .wrap{visibility:hidden;animation:rdReveal 0s 3s forwards}
     };
   };
 
-  // --- session (localStorage, 8h TTL) ----------------------------------------
+  // --- session (localStorage, 7-day TTL; MEMORY_ONLY entries redacted) ------------------
   function store() { return (typeof globalThis.localStorage !== 'undefined') ? globalThis.localStorage : null; }
 
   function saveSession(keyring, vaultId) {
     var s = store(); if (!s) return null;
     var now = Date.now();
-    var sess = { keyring: keyring, unlockedAt: now, expiresAt: now + TTL_MS, vaultId: vaultId };
+    _mem = cloneKeyring(keyring);
+    var sess = { keyring: redact(keyring), unlockedAt: now, expiresAt: now + TTL_MS, vaultId: vaultId };
     try {
       s.setItem(SESSION_KEY, JSON.stringify(sess));
       s.setItem(ENROLLED_FLAG, '1');
@@ -1278,11 +1352,15 @@ html:not(.rd-ready) .wrap{visibility:hidden;animation:rdReveal 0s 3s forwards}
         if (sess) s.removeItem(SESSION_KEY); // drop an expired session
         return null;
       }
+      if (needsRedact(sess.keyring)) { // a session written before redaction (or by an older page): scrub it in place
+        sess.keyring = redact(sess.keyring);
+        try { s.setItem(SESSION_KEY, JSON.stringify(sess)); } catch (e) {}
+      }
       return sess;
     } catch (e) { return null; }
   }
   function lock() {
-    _live = null; // drop the cached key so a locked space cannot reseal
+    _live = null; _mem = null; // drop the cached key (a locked space cannot reseal) and this tab's full keyring
     var s = store(); if (!s) return;
     try { s.removeItem(SESSION_KEY); } catch (e) {}
     // Nudge other open tabs to drop the session too. A same-tab write to localStorage
@@ -1491,6 +1569,9 @@ html:not(.rd-ready) .wrap{visibility:hidden;animation:rdReveal 0s 3s forwards}
       key = await deriveKey(prf, ub64(record.salt));
       _live = { key: key, vaultId: vaultId };
     }
+    var current = await openKeyring(record, key);
+    if (!current) throw new Error('Could not open the personal space with this passkey.');
+    newKeyring = restoreRedacted(newKeyring, current); // never seal a redacted stub over a real credential
     var sealed = await sealKeyring(newKeyring, key); sealed.salt = record.salt; // reuse the row's salt
     var ok = await putRow(vaultId, sealed, record.label || null);
     if (!ok) throw new Error('Could not save to the vault.');
@@ -1504,7 +1585,8 @@ html:not(.rd-ready) .wrap{visibility:hidden;animation:rdReveal 0s 3s forwards}
     opts = opts || {};
     var sess = loadSession();
     if (!sess || !sess.keyring) throw new Error('Unlock the personal space before adding a device.');
-    return enrol({ label: opts.label || 'added-device', keyring: sess.keyring });
+    var full = _mem || (await unlock()).keyring; // the session copy is redacted — carry the real entries
+    return enrol({ label: opts.label || 'added-device', keyring: restoreRedacted(sess.keyring, full) });
   }
 
   async function revoke(vaultId) {
@@ -1527,6 +1609,8 @@ html:not(.rd-ready) .wrap{visibility:hidden;animation:rdReveal 0s 3s forwards}
     prfResult: prfResult,
     // session
     saveSession: saveSession, loadSession: loadSession, lock: lock, everEnrolled: everEnrolled,
+    // MEMORY_ONLY redaction (cardsharp S1)
+    MEMORY_ONLY: MEMORY_ONLY, memCreds: memCreds, fullKeyring: fullKeyring, redact: redact, restoreRedacted: restoreRedacted,
     // webauthn + rest
     enrol: enrol, unlock: unlock, addPasskey: addPasskey, revoke: revoke, fetchRow: fetchRow,
     updateKeyring: updateKeyring,
@@ -1598,10 +1682,83 @@ html:not(.rd-ready) .wrap{visibility:hidden;animation:rdReveal 0s 3s forwards}
   // --- the gate singleton ------------------------------------------------------
   var current = null; // { page, onUnlock, onLock, el, wired }
 
+  // A MEMORY_ONLY page (cardsharp) is released from this tab's memory: the keyring of a passkey unlock here, or
+  // what this tab unsealed (below). Every other page from the persisted session, as before. A redacted stub is never
+  // a credential. Both memory copies live only while a session exists (a lock or expiry anywhere drops them).
   function credsFor(page) {
+    var m = V.memCreds ? V.memCreds(page) : null;
+    if (m && m.sync_id && m.pass) return { syncId: m.sync_id, passphrase: m.pass };
+    if (_un && _un.page === page) { if (V.loadSession()) return _un.creds; _un = null; }
     var sess = V.loadSession();
     var v = sess && sess.keyring && sess.keyring.apps && sess.keyring.apps[page];
-    return (v && v.sync_id && v.pass) ? { syncId: v.sync_id, passphrase: v.pass } : null;
+    return (v && !v.redacted && v.sync_id && v.pass) ? { syncId: v.sync_id, passphrase: v.pass } : null;
+  }
+
+  // --- SEALED 7-day unlock, MEMORY_ONLY pages (cardsharp Arc 7 slice 6) ---
+  // After a passkey unlock the page's {sync_id, pass} are AES-GCM sealed under a fresh NON-EXTRACTABLE key kept in
+  // IndexedDB (`press:vault:seal`); the ciphertext rides INSIDE the session (`press:vault:v1`.seal), AAD-bound to its
+  // unlockedAt/expiresAt/vaultId, so any lock (the wing's only removes the session), expiry or new session kills it
+  // atomically; an orphaned key is deleted when a gate next sees it. Reloads unseal, no prompt. No IndexedDB → memory only.
+  var SEAL_DB = 'press:vault:seal', _un = null, _sealing = 0, _timer = null;
+  function sealable(page) { try { return V.MEMORY_ONLY.indexOf(page) >= 0 && !!root.indexedDB; } catch (e) { return false; } }
+  function idb(mode, fn) {
+    return new Promise(function (ok, no) {
+      var o = root.indexedDB.open(SEAL_DB, 1);
+      o.onupgradeneeded = function () { o.result.createObjectStore('keys'); };
+      o.onerror = o.onblocked = function () { no(o.error); };
+      o.onsuccess = function () {
+        var db = o.result, t = db.transaction('keys', mode), r = fn(t.objectStore('keys'));
+        t.oncomplete = function () { db.close(); ok(r.result); };
+        t.onerror = t.onabort = function () { db.close(); no(t.error); };
+      };
+    });
+  }
+  function aad(page, s) { return new TextEncoder().encode(JSON.stringify([page, s.unlockedAt, s.expiresAt, s.vaultId || ''])); }
+  function sealOf(page) { var s = V.loadSession(), x = s && s.seal && s.seal[page]; return (x && x.at === s.unlockedAt && x.exp === s.expiresAt) ? x : null; }
+  function dropKey(page) { if (sealable(page)) idb('readwrite', function (st) { return st.delete(page); }).catch(function () {}); }
+  async function seal(page, creds) {
+    var s = V.loadSession(), c = crypto.subtle;
+    var key = await c.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    var iv = V.randomBytes(12);
+    var ct = await c.encrypt({ name: 'AES-GCM', iv: iv, additionalData: aad(page, s) }, key,
+      new TextEncoder().encode(JSON.stringify([creds.syncId, creds.passphrase])));
+    await idb('readwrite', function (st) { return st.put({ key: key, at: s.unlockedAt }, page); });
+    var cur = V.loadSession();
+    if (!cur) return dropKey(page); // locked meanwhile: no key left behind
+    if (cur.unlockedAt !== s.unlockedAt) return true; // a new session meanwhile → seal again
+    cur.seal = cur.seal || {};
+    cur.seal[page] = { ct: V.b64(ct), iv: V.b64(iv), at: cur.unlockedAt, exp: cur.expiresAt };
+    localStorage.setItem(V.SESSION_KEY, JSON.stringify(cur));
+  }
+  function maybeSeal(page, creds) {
+    if (!sealable(page) || _sealing || sealOf(page)) return;
+    _sealing = 1;
+    seal(page, creds).catch(function () {}).then(function (again) { _sealing = 0; if (again) maybeSeal(page, creds); });
+  }
+  async function unseal(page) {
+    try {
+      var s = V.loadSession(), x = sealOf(page);
+      var rec = await idb('readonly', function (st) { return st.get(page); });
+      if (!rec || rec.at !== x.at) return null;
+      var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: V.ub64(x.iv), additionalData: aad(page, s) }, rec.key, V.ub64(x.ct));
+      var a = JSON.parse(new TextDecoder().decode(pt));
+      return (a[0] && a[1]) ? { syncId: a[0], passphrase: a[1] } : null;
+    } catch (e) { return null; } // wrong/missing key, tampered or rebound blob — fail closed (the gate shows)
+  }
+  // re-check this page against the session: still unlocked → (re)seal + re-arm the expiry timer; else lock it
+  function check() {
+    if (!current) return;
+    var page = current.page, creds = credsFor(page);
+    clearTimeout(_timer);
+    if (creds) { // other tenants: unchanged (no seal, no timer)
+      var s = V.MEMORY_ONLY.indexOf(page) >= 0 && V.loadSession();
+      if (s) { maybeSeal(page, creds); _timer = setTimeout(check, Math.max(0, s.expiresAt - Date.now()) + 50); }
+      return;
+    }
+    if (!sealOf(page)) dropKey(page);
+    if (document.getElementById('press-gate')) return; // gate already up
+    try { if (current.onLock) current.onLock(); } catch (e) {}
+    render();
   }
 
   function removeGate() {
@@ -1631,7 +1788,7 @@ html:not(.rd-ready) .wrap{visibility:hidden;animation:rdReveal 0s 3s forwards}
       btn.disabled = true; msg.className = 'pg-msg'; msg.textContent = 'Waiting for your passkey…';
       V.unlock().then(function () {
         var creds = credsFor(current.page);
-        if (creds) { removeGate(); current.onUnlock(creds); return; }
+        if (creds) { removeGate(); current.onUnlock(creds); check(); return; }
         // The passkey OPENED the vault, but this tool has no stored credentials yet — a DISTINCT
         // state from a failed unlock (the space DID open). Point at the wing's Connect step; never
         // conflate this with "could not open the personal space".
@@ -1655,11 +1812,7 @@ html:not(.rd-ready) .wrap{visibility:hidden;animation:rdReveal 0s 3s forwards}
     current.wired = true;
     root.addEventListener('storage', function (ev) {
       if (ev && ev.key && ev.key !== V.SESSION_KEY) return; // ignore unrelated keys
-      if (!current) return;
-      if (credsFor(current.page)) return;                   // still unlocked — nothing to do
-      if (document.getElementById('press-gate')) return;    // gate already up
-      try { if (current.onLock) current.onLock(); } catch (e) {}
-      render();
+      check(); // still unlocked → reseal if needed; else the gate
     });
   }
 
@@ -1672,8 +1825,17 @@ html:not(.rd-ready) .wrap{visibility:hidden;animation:rdReveal 0s 3s forwards}
     opts = opts || {};
     current = { page: opts.page, onUnlock: opts.onUnlock || function () {}, onLock: opts.onLock || null, wired: false };
     wireLockWatch();
-    var creds = credsFor(current.page);
-    if (creds) { current.onUnlock(creds); return { gated: false }; }
+    var me = current, page = me.page, creds = credsFor(page);
+    if (creds) { me.onUnlock(creds); check(); return { gated: false }; }
+    if (sealable(page) && sealOf(page)) { // a sealed unlock: no prompt, no gate flash
+      unseal(page).then(function (c) {
+        if (current !== me) return;
+        if (c && V.loadSession()) { _un = { page: page, creds: c }; me.onUnlock(c); check(); }
+        else if (!document.getElementById('press-gate')) render(); // unseal failed → the gate, as before
+      });
+      return { gated: false, pending: true };
+    }
+    dropKey(page);
     render();
     return { gated: true };
   }
@@ -1681,7 +1843,7 @@ html:not(.rd-ready) .wrap{visibility:hidden;animation:rdReveal 0s 3s forwards}
   root.PressGate = {
     guard: guard,
     // exposed for tests / callers
-    credsFor: credsFor, friendlyErr: friendlyErr, MARQUEE: MARQUEE,
+    credsFor: credsFor, friendlyErr: friendlyErr, MARQUEE: MARQUEE, SEAL_DB: SEAL_DB, seal: seal, unseal: unseal,
     render: render, removeGate: removeGate
   };
 })(globalThis);
@@ -2398,6 +2560,7 @@ const salaryMod = require('../income/salary.js'); // self-registers + exposes en
 const ssMod = require('../income/social-security.js'); // self-registers + exposes the spousal report / factor notes
 const uksp = require('../income/uk-state-pension.js'); // self-registers + exposes the Class-3 consistency warning + class3 outflow
 require('../assets/dc-pot.js'); // foreign DC pots (from the provider statements) as typed buckets
+const vestingEquity = require('../income/vesting-equity.js'); // snag train 2026-10 (#4) — self-registers employer equity vesting (ordinary income)
 const strategy = require('../tax/strategy.js');
 const stress = require('../sim/stress.js');
 const { afterTaxLegacy } = require('../tax/inheritance.js');
@@ -2760,7 +2923,7 @@ function buildModelCore(F, IN) {
     }
 
     const inRetire = Y >= retireYear, preRetire = Y < retireYear;
-    let income = { pension: 0, apf: 0, salary: 0, salaryP1: 0, salaryP2: 0, ssP1: 0, ssP2: 0, ukP1: 0, ukP2: 0, lg: 0, portfolio: 0 };
+    let income = { pension: 0, apf: 0, salary: 0, salaryP1: 0, salaryP2: 0, ssP1: 0, ssP2: 0, ukP1: 0, ukP2: 0, lg: 0, portfolio: 0, vestOrdinary: 0 };
     let ssGross = 0, tax = 0, spending = 0, conv = 0, rmd = 0, shortfall = 0, penalty = 0, needCash = 0;
     let wd = { cash: 0, taxable: 0, lg: 0, pretax: 0, roth: 0, tiny: 0 };
     let decisions = [], taxBreak = null, qcd = 0, harvest = 0, irmaaCost = 0, surplusReinvested = 0, rmdGross = 0, oneoff = 0;
@@ -2912,7 +3075,7 @@ function buildModelCore(F, IN) {
       else if (b.wdKey === 'tiny') { const usd = (bal[b.key] || 0) * usdRate(b.currency, IN.fx, aud); if (b.currency === 'AUD') balUSD.anz += usd; else balUSD.aviva += usd; }
     }
     const totalBal = balUSD.cash + balUSD.taxable + balUSD.pretax + balUSD.roth + balUSD.lg + balUSD.aviva + balUSD.anz;
-    const incTotal = income.pension + income.apf + income.salary + income.ssP1 + income.ssP2 + income.ukP1 + income.ukP2 + income.lg + income.portfolio;
+    const incTotal = income.pension + income.apf + income.salary + income.ssP1 + income.ssP2 + income.ukP1 + income.ukP2 + income.lg + income.portfolio + (income.vestOrdinary || 0);
     const drawTotal = inRetire ? (wd.cash + wd.taxable + wd.lg + wd.pretax + wd.roth + wd.tiny) : 0;
 
     // House equity (net-worth display only — not a drawable bucket unless downsized).
@@ -3130,6 +3293,11 @@ module.exports = {
   givingEntries: givingMod.givingEntries, givingForYear: givingMod.givingForYear,
   givingInactiveReason: givingMod.entryInactiveReason, validateGiving: givingMod.validateGiving,
   givingExamples: givingMod.EXAMPLES, givingExampleEntry: givingMod.exampleEntry,
+  // snag train 2026-10 (#4) — employer equity vesting (engine capability; no dedicated
+  // settings-UI editor yet — see ARC.md slice 1 report for the stated scope exclusion):
+  vestingSources: vestingEquity.vestingSources, vestGrossForYear: vestingEquity.vestGrossForYear,
+  vestingInactiveReason: vestingEquity.entryInactiveReason, validateVesting: vestingEquity.validateVesting,
+  vestingExamples: vestingEquity.EXAMPLES, vestingExampleSource: vestingEquity.exampleSource,
   // WO12 — spending waves (UI editor + smile preset):
   spendingPhases: spendingMod.spendingPhases,
   validateSpendingPhases: spendingMod.validatePhases, spendingPhaseInactiveReason: spendingMod.phaseInactiveReason,
@@ -4463,13 +4631,18 @@ function estateTax(estateNominal, lifetimeExcessNominal, Y, inflation) {
 function recommendation(F, IN) {
   const kids = childrenOf(F);
   if (!kids.length) return null;
+  // Issue #5 F6 — plain-language wording: show the dollar figure the engine already
+  // computes instead of making the reader do the "2 × the exclusion" math themselves,
+  // and spell out WHY leaving Roth/taxable at death is tax-free (the step-up), rather
+  // than naming the mechanism ("steps up") with no explanation.
+  const ae2x = 2 * annualExclusion(BASE_YEAR, IN.inflation);
   return { preset: 'steady', annualPerChildReal: DEFAULTS.steadyReal, targetConversionBracket: Math.min(IN.targetConversionBracket || 0.22, IN.childrenMarginalRate || 0.22),
     steps: ['Keep your own floor first (' + Math.round(floorReal(F) / 1000) + 'k in today’s $ under the bad-decade stress).',
       'Aim Roth conversions at the children’s expected tax rate.',
-      'Give up to 2 × the annual exclusion per child each year from surplus — into each child’s Roth IRA first.',
+      'Give up to $' + ae2x.toLocaleString('en-US') + ' per child each year (2 × the annual gift-tax exclusion) — into each child’s Roth IRA first.',
       'Use a 529 or pay tuition directly while they are in school.',
       'Help at milestones (first home, first baby).',
-      'Leave Roth and taxable money — taxable steps up at death.'] };
+      'Leave Roth and taxable accounts to pass at death: taxable holdings are then valued fresh, so the gains are never taxed.'] };
 }
 
 module.exports = {
@@ -5548,6 +5721,158 @@ registerIncome({
 });
 
 module.exports = { entitlementFraction, monthlyEntitlement, class3Warnings, class3AccumGBP, class3RetireGBP };
+
+});
+
+/* ---- src/income/vesting-equity.js ---- */
+window.__def("src/income/vesting-equity.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/income/vesting-equity.js (snag train 2026-10, Issue #4) — employer equity
+ * (e.g. Performance Shares) VESTING as an INFLOW source type.
+ *
+ * Until now every typed source modelled an outflow (oneoffs.js/giving.js) or a
+ * retirement-date rollover (db-pension.js lump sums); nothing modelled ordinary
+ * income arriving from a SCHEDULE of future vest events. This closes that gap
+ * (source-ledger audit, Decision D6: "the shares are modelled only if an
+ * existing type supports them. None does, so this issue tracks the gap").
+ *
+ * SCHEMA — a `vesting_equity` typed source:
+ *   { id, type:'vesting_equity', owner, label, enabled,
+ *     schedule: [ { year, amount:{value,src,confidence} } ],   // TODAY'S $, one row per vest
+ *     tax: 'ordinary', destination: 'taxable' }
+ * Only `tax:'ordinary'` / `destination:'taxable'` are implemented (the issue's
+ * proposed shape, verbatim); any other value is accepted (facts.js/migrate.js
+ * are permissive on source `type`/fields by design) but has no effect — flagged,
+ * not silently wrong, by `validateVesting`.
+ *
+ * EACH VEST YEAR (retirement years only — see note below):
+ *   - the schedule's today's-$ amount inflates to nominal (× fac) and is taxed
+ *     as ORDINARY INCOME via the normal federal-tax solve: registered below as
+ *     an income stream (taxClass:'ordinary', field 'vestOrdinary') that joins
+ *     pension/salary/UK-state-pension in strategy.js's `baseOrdinaryStreams` —
+ *     so it moves the bracket, SS taxability, MAGI, NIIT and the 2-year IRMAA
+ *     lookback exactly like any other ordinary stream, with NO separate tax
+ *     path to maintain or drift from.
+ *   - the AFTER-TAX amount is not deposited by a second, separate step: like
+ *     any other income stream, cash surplus not needed for the year's spending
+ *     is already swept into the taxable bucket by the engine's existing
+ *     surplus-reinvestment rule (src/tax/strategy.js, next to `surplusReinvested`).
+ *     What IS new: that deposit is given basis = FMV AT VEST (no embedded gain),
+ *     approximated at the year's own marginal ordinary rate and capped at what
+ *     was actually banked that year — see strategy.js for the basisCredit note.
+ *
+ * PRE-RETIREMENT VEST YEARS: not modelled — the SAME scope boundary as salary
+ * ("this whole plan starts at retirement"; the accumulation phase runs no tax
+ * engine at all, so there is nothing to tax a pre-retirement vest against — see
+ * engine.js's accumulation-years comment). A schedule row dated before the
+ * plan's retirement year never fires; `entryInactiveReason` surfaces why, same
+ * shape as oneoffs.js/giving.js.
+ *
+ * Ships EMPTY (no `vesting_equity` source unless a plan adds one), so it moves
+ * no number on the base plan — the fingerprint oracle proves 82/82 zero diff
+ * (docs/evidence/fp/snag-train-2026-10-slice-1).
+ * ========================================================================== */
+
+const { registerIncome } = require('../core/registry.js');
+const { leafNum, sourcesOf } = require('../core/facts.js');
+
+function vestingSources(F) { return sourcesOf(F, 'vesting_equity'); }
+
+// The nominal vest amount for ONE source in year Y (0 if no schedule row fires,
+// the source is disabled, or Y is before the plan's retirement year).
+function vestForSource(src, Y, fac, retireYear) {
+  if (!src || src.enabled === false) return 0;
+  if (retireYear != null && Y < retireYear) return 0; // see header note
+  const rows = Array.isArray(src.schedule) ? src.schedule : [];
+  let sum = 0;
+  for (const row of rows) {
+    if (!row) continue;
+    const y = Math.round(+row.year);
+    if (!isFinite(y) || y !== Y) continue;
+    const amt = leafNum(row.amount);
+    if (amt > 0) sum += amt * fac;
+  }
+  return sum;
+}
+
+// Total nominal vest income across every vesting_equity source, year Y.
+function vestGrossForYear(F, Y, fac, retireYear) {
+  let sum = 0;
+  for (const src of vestingSources(F)) sum += vestForSource(src, Y, fac, retireYear);
+  return sum;
+}
+
+registerIncome({
+  id: 'vesting_equity',
+  label: 'Employer equity vesting',
+  available: (F) => vestingSources(F).length > 0,
+  streams(ctx) {
+    const { Y, F, IN, fac } = ctx;
+    const retireYear = IN && IN.retireYear != null ? IN.retireYear : Y;
+    const amount = vestGrossForYear(F, Y, fac, retireYear);
+    return amount > 0 ? [{ field: 'vestOrdinary', amount, taxClass: 'ordinary' }] : [];
+  },
+});
+
+// ---- validation + controller helpers (mirror oneoffs.js / giving.js) -------
+function validateVesting(src) {
+  const errs = [];
+  const rows = Array.isArray(src.schedule) ? src.schedule : [];
+  if (!rows.length) errs.push('needs at least one vest row');
+  rows.forEach((row, i) => {
+    if (!row || row.year == null || !isFinite(+row.year)) errs.push('row ' + (i + 1) + ' needs a year');
+    if (row && leafNum(row.amount) < 0) errs.push('row ' + (i + 1) + ' amount cannot be negative');
+  });
+  if (src.tax && src.tax !== 'ordinary') errs.push('tax: only "ordinary" is implemented');
+  if (src.destination && src.destination !== 'taxable') errs.push('destination: only "taxable" is implemented');
+  return errs;
+}
+
+// Why a source contributes nothing across [startY,endY], or null if it fires at
+// least once. Mirrors oneoffs.entryInactiveReason / giving.entryInactiveReason.
+function entryInactiveReason(src, startY, endY, retireYear) {
+  if (!src) return null;
+  if (src.enabled === false) return 'is turned off';
+  const rows = Array.isArray(src.schedule) ? src.schedule : [];
+  if (!rows.length) return 'has no vest rows, so it has no effect';
+  const lo = Math.round(startY), hi = Math.round(endY);
+  let anyInRange = false, anyAtOrAfterRetire = false;
+  for (const row of rows) {
+    if (!row) continue;
+    const y = Math.round(+row.year);
+    if (!isFinite(y) || leafNum(row.amount) <= 0) continue;
+    if (y >= lo && y <= hi) anyInRange = true;
+    if (retireYear == null || y >= retireYear) anyAtOrAfterRetire = true;
+  }
+  if (!anyInRange) return 'never falls inside the plan’s years, so it has no effect';
+  if (!anyAtOrAfterRetire) return 'vests before the retirement year, which this engine does not tax (the accumulation phase runs no tax model) — move it to the retirement year or later';
+  return null;
+}
+
+// Example TEMPLATE for an "Add example" picker (universal, not shipped facts;
+// no personal figures — matches the oneoffs.js/giving.js EXAMPLES convention).
+const EXAMPLES = [
+  { key: 'rsu_3yr', label: 'Employer equity vesting over 3 years', amountTodayPerYear: 53000, years: 3, fromRetire: 0 },
+];
+function exampleSource(ex, retireYear, id) {
+  const schedule = [];
+  for (let i = 0; i < (ex.years || 1); i++) {
+    schedule.push({
+      year: Math.round(retireYear) + (ex.fromRetire || 0) + i,
+      amount: { value: ex.amountTodayPerYear, src: 'I:example template', confidence: 'inferred' },
+    });
+  }
+  return {
+    id: id || ('vesting_' + ex.key + '_' + retireYear), type: 'vesting_equity',
+    owner: 'p1', label: ex.label, schedule, tax: 'ordinary', destination: 'taxable', enabled: true,
+  };
+}
+
+module.exports = {
+  vestingSources, vestForSource, vestGrossForYear,
+  validateVesting, entryInactiveReason, EXAMPLES, exampleSource,
+};
 
 });
 
@@ -7407,7 +7732,7 @@ function planYear(ctx) {
   let basisCredit = ctx.basisCredit || 0;
 
   const baseOrdinaryStreams =
-    income.pension + income.apf + income.salary + income.ukP1 + income.ukP2;
+    income.pension + income.apf + income.salary + income.ukP1 + income.ukP2 + (income.vestOrdinary || 0);
 
   // ---- Charitable giving — ONE source of truth (WO12) ----------------------
   // giving.givingForYear reconciles the simple annual lever and the entry list
@@ -7737,6 +8062,26 @@ function planYear(ctx) {
   let surplusReinvested = 0;
   const surplus = solve.net - needCash;
   if (surplus > 1) { bal.taxable += surplus; surplusReinvested = surplus; }
+
+  // snag train 2026-10 (#4) — a vesting_equity deposit carries basis = FMV AT
+  // VEST (no embedded gain), not the bucket's blended gainFraction. The gross
+  // vest amount is already inside baseOrdinaryStreams above, so it is taxed and
+  // (if not needed for spending) swept into taxable by the surplus rule just
+  // above like any other income stream — nothing further is needed for the
+  // DEPOSIT itself. What's new is the BASIS: approximate the vest's after-tax
+  // share at the year's own marginal ordinary rate (same technique engine.js
+  // uses for family-gift funding — giftOrdinaryRate) and credit it, capped at
+  // what was actually banked this year (surplusReinvested) so a vest that was
+  // fully spent (no deposit) never credits basis for a deposit that never
+  // happened.
+  const vestGross = income.vestOrdinary || 0;
+  if (vestGross > 0 && surplusReinvested > 0) {
+    const bands = brackets.bracketsFor(Y, inflation, filing);
+    let marginalRate = bands[0][1];
+    for (const [edge, rate] of bands) if (tax.ordinaryTaxable >= edge) marginalRate = rate;
+    const vestAfterTaxEst = vestGross * (1 - marginalRate);
+    basisCredit += Math.min(vestAfterTaxEst, surplusReinvested);
+  }
 
   // Name the one-off in the decision log so the "why" panel explains the spike.
   if (oneoffSpend > 1) decisions.push({ rule: 'One-off purchase', action: 'one-off-spend', amount: oneoffSpend,
@@ -9774,11 +10119,16 @@ function buildStory(model, F, IN) {
     if (!(r.oneoff > 0)) continue;
     const firing = ooEntries.filter(e => oneoffsMod.firesInYear(e, r.year));
     const label = firing.map(e => e.label).filter(Boolean).join(', ') || 'Large purchase';
+    // Issue #6 F11 — this figure was ALWAYS nominal regardless of the page's basis toggle
+    // (today's $ vs nominal), so on the default "Today's $" view it read in the wrong unit.
+    // Lead with today's $ (this milestone's own row.infl deflator) and keep nominal alongside
+    // in muted text, rather than picking one basis and hiding the other.
+    const costTodayWithNominal = (v) => { const today = r.infl ? v / r.infl : v; return moneyK(today) + " today's $ (" + moneyK(v) + ' nominal)'; };
     push({ year: r.year, id: 'purchase-' + r.year, kind: 'purchase', salience: 'assets', icon: ICONS.purchase,
       title: label,
       plainText: 'A large one-off purchase this year is paid for from your savings, on top of your usual spending — so this is a heavier year for withdrawals.',
       detail: 'It is funded in the cheapest tax order, and the extra tax it triggers shows up in this year automatically.',
-      figures: figs(modelFig('Cost this year', r.oneoff, perYearNom)) });
+      figures: figs(modelFig('Cost this year', r.oneoff, costTodayWithNominal)) });
   }
 
   // 8.5) Charitable giving (WO12) — only when giving actually happens. A first-gift
@@ -10485,6 +10835,12 @@ function fundedVerdict(fr){
 function renderBanner(){
   const k=MODEL.kpis, v=fundedVerdict(k.fundedRatio), col=v.cls==='good'?'--good':v.cls==='warn'?'--warn':'--bad';
   const el=document.getElementById('banner');
+  // Issue #5 F5 — the headline "Left for the children" figure doesn't include lifetime
+  // gifts, so a reader comparing presets could think gifting cuts what the children get.
+  // Mirrors the SAME guard the "Helping the kids" section uses (MODEL.family only exists
+  // for a non-Classic preset with the family-giving feature active).
+  const famGiven=(RD.familyGifts.presetOf(FACTS,IN)!=='classic'&&MODEL.family)?MODEL.family.givenReal:0;
+  const givenSub=famGiven>0?('<div class="faint" style="font-size:11px;margin-top:1px">+ '+moneyK(famGiven)+" given during your lifetime (today's $)</div>"):'';
   el.innerHTML =
     '<div class="gauge-wrap"><canvas id="gauge" width="212" height="150"></canvas>'
     +'<div class="gauge-cap">Funded ratio · <b>1.0 = fully funded</b> · assets + guaranteed income vs planned spending (discounted at '+pct(k.fundedDiscountRate)+')</div></div>'
@@ -10492,7 +10848,7 @@ function renderBanner(){
     +'<div class="sub">Your plan is funded to <b>'+Math.round(k.fundedRatio*100)+'%</b> of what you want to spend through age '+IN.ageOfDeathP2+'.'
       +(k.firstShortfall?' <b style="color:var(--bad)">Money runs short in '+k.firstShortfall+'.</b>':' No year runs short.')+'</div>'
     +'<div class="highlights">'
-      +hi('Left for the children', moneyK(k.legacyAfterTaxToday), "after the tax they'll owe · today's $")
+      +hi('Left for the children', moneyK(k.legacyAfterTaxToday), "after the tax they'll owe · today's $", givenSub)
       +hi('Guaranteed income', pct(k.avgGuaranteedShare)+' of spend', 'avg · tightest '+k.tightestYear+' at '+pct(k.tightestShare))
       +hi('Lifetime tax saved', CF?moneyK(CF.saved):'—', 'vs doing nothing')
       +hi('Lowest your savings dip', moneyK(k.portfolioFloorToday), 'in '+k.portfolioFloorYear+" · today's $")
@@ -10501,19 +10857,25 @@ function renderBanner(){
   drawGauge(k.fundedRatio, col);
   const chip=document.getElementById('statusChip'); if(chip) chip.addEventListener('click',goToChecks);
 }
-function hi(k,v,s){ return '<div class="hi"><div class="k">'+k+'</div><div class="v">'+v+'</div><div class="faint" style="font-size:11px;margin-top:1px">'+s+'</div></div>'; }
+function hi(k,v,s,extra){ return '<div class="hi"><div class="k">'+k+'</div><div class="v">'+v+'</div><div class="faint" style="font-size:11px;margin-top:1px">'+s+'</div>'+(extra||'')+'</div>'; }
 // family-plan slice 7 (D10) — the banner's ONE status chip. Red when the plan runs short; else
 // the count of things to check (the model's warnings, which now live as journey steps or as
 // call-outs beside their chart); else a quiet all-clear. Clicking jumps to the first of them.
 function statusChip(k){
   const n=(MODEL.warnings||[]).length;
-  if(k.firstShortfall) return '<button class="status-chip bad" id="statusChip" type="button" aria-label="Plan runs short in '+k.firstShortfall+' — show where">⚠ Plan runs short in '+k.firstShortfall+' ▸</button>';
-  if(n) return '<button class="status-chip warn" id="statusChip" type="button" aria-label="'+n+' thing'+(n===1?'':'s')+' to check — show them">⚠ '+n+' thing'+(n===1?'':'s')+' to check ▸</button>';
+  // Issue #5 F2 — the chip is now a LINK with a count: the shortfall headline alone used
+  // to hide that 3 other warnings exist (spread across sections 1/3/6); say how many and
+  // give it a real target (#warn-1 — the first call-out; goToChecks() still does the
+  // smart story-vs-callout routing on click, this href is the no-JS/native fallback).
+  const more=n?(' · '+n+' thing'+(n===1?'':'s')+' to check'):'';
+  if(k.firstShortfall) return '<a class="status-chip bad" id="statusChip" href="#warn-1" aria-label="Plan runs short in '+k.firstShortfall+(n?', '+n+' thing'+(n===1?'':'s')+' to check':'')+' — show where">⚠ Plan runs short in '+k.firstShortfall+more+' ↓</a>';
+  if(n) return '<a class="status-chip warn" id="statusChip" href="#warn-1" aria-label="'+n+' thing'+(n===1?'':'s')+' to check — show them">⚠ '+n+' thing'+(n===1?'':'s')+' to check ↓</a>';
   return '<span class="status-chip ok" id="statusChip">✓ No red flags</span>';
 }
 // Where each warning is shown — the story module is the single source (warningPlacement).
 function placeOf(w){ return STORY.warningPlacement(w, IN.retireYear); }
-function goToChecks(){
+function goToChecks(ev){
+  if(ev&&ev.preventDefault) ev.preventDefault(); // it's an <a href="#warn-1"> now (#5 F2) — smart-route, don't let the browser jump too
   const k=MODEL.kpis;
   if(k.firstShortfall){ const i=storyMs.findIndex(m=>m.id==='shortfall-first'); if(i>=0){ selectStory(i); scrollToEl('storyCard'); return; } }
   const w=(MODEL.warnings||[])[0]; if(!w) return;
@@ -10552,13 +10914,17 @@ function renderKids(){
   }
   const preset=RD.familyGifts.presetOf(FACTS, IN);
   const f=(preset!=='classic' && MODEL.family) ? MODEL.family : kidsClassicView();
-  const d=(v,good)=>{ if(!v||Math.abs(v)<500) return '<div class="d">same as Classic</div>'; const up=v>0; return '<div class="d '+((up===good)?'up':'down')+'">'+(up?'+':'−')+moneyK(Math.abs(v)).replace('−','')+' vs Classic</div>'; };
+  // Issue #6 F8 — same-colour opposite-sign deltas ("−$64k vs Classic" / "+$73k vs Classic",
+  // both red) read as a contradiction. Spell out more/less (+ what, for the tax tile) instead
+  // of relying on the sign: "$64k less than Classic" / "$73k more tax than Classic".
+  const d=(v,good,noun)=>{ if(!v||Math.abs(v)<500) return '<div class="d">same as Classic</div>'; const up=v>0;
+    return '<div class="d '+((up===good)?'up':'down')+'">'+moneyK(Math.abs(v)).replace('−','')+' '+(up?'more':'less')+(noun?' '+noun:'')+' than Classic</div>'; };
   const seg='<div class="seg" id="kidsPreset" role="group" aria-label="How to give">'+FAM_PRESETS.map(p=>'<button type="button" data-fp="'+p[0]+'" aria-pressed="'+(p[0]===preset)+'">'+p[1]+'</button>').join('')+'</div>';
   const safeTxt=(f.stressMinReal==null)?'—':(f.safe?'✓ ':'✗ ')+moneyK(f.stressMinReal);
   const figs='<div class="kids-figs">'
     +'<div class="hi"><div class="k">Given to the children</div><div class="v">'+moneyK(f.givenReal)+'</div><div class="d">'+moneyK(f.givenBefore40Real)+' of it before they turn 40 · today’s $</div></div>'
     +'<div class="hi"><div class="k">Family wealth at the end</div><div class="v">'+moneyK(f.familyWealthReal)+'</div>'+d(f.deltaFamilyWealthReal,true)+'</div>'
-    +'<div class="hi"><div class="k">Taxes across generations</div><div class="v">'+moneyK(f.taxesAcrossGenerationsReal)+'</div>'+d(f.deltaTaxesReal,false)+'</div>'
+    +'<div class="hi"><div class="k">Taxes across generations</div><div class="v">'+moneyK(f.taxesAcrossGenerationsReal)+'</div>'+d(f.deltaTaxesReal,false,'tax')+'</div>'
     +'<div class="hi"><div class="k">Your safety (bad decade)</div><div class="v">'+safeTxt+'</div><div class="d">lowest savings vs your '+moneyK(f.floorReal)+' floor'+(f.scale<1?' · gifts scaled to '+Math.round(f.scale*100)+'%':'')+'</div></div>'
     +'</div>';
   // flags — FORM_709 collapses to one chip (with the year count)
@@ -10568,12 +10934,17 @@ function renderKids(){
   const phDob=((FACTS.family||{}).children||[]).some(c=>RD.isPlaceholderLeaf(c.dob));
   if(phDob) chips.push('<span class="kids-chip">⚠ The children’s birth dates are still placeholders — gift years lean on them.</span>');
   const rec=f.recommendation;
-  const recHtml=rec?'<div class="kids-rec"><h3>Recommended for you</h3><ol>'+rec.steps.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>'
-    +((preset===rec.preset && IN.targetConversionBracket===rec.targetConversionBracket)?'<div class="faint" style="font-size:12.5px">This is the plan you are looking at.</div>'
+  // Issue #6 F9 — the closing line ("This is the plan you are looking at.") was easy to
+  // miss and unclear; replace it with a small teal tag beside the heading naming the
+  // preset that's actually showing.
+  const recMatches=!!(rec && preset===rec.preset && IN.targetConversionBracket===rec.targetConversionBracket);
+  const recLabel=rec?((FAM_PRESETS.find(p=>p[0]===rec.preset)||[])[1]||rec.preset):'';
+  const recHtml=rec?'<div class="kids-rec"><h3>Recommended for you'+(recMatches?' <span class="kids-rec-tag">Showing: '+esc(recLabel)+' ✓</span>':'')+'</h3><ol>'+rec.steps.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>'
+    +(recMatches?''
       :'<button class="btn primary" id="kidsApply" type="button">Apply the recommendation</button> <span class="faint" style="font-size:12px">Nothing changes until you click.</span>')+'</div>':'';
   el.innerHTML='<div class="kids-top">'+seg+'</div>'+figs
     +'<div class="kids-chart"><canvas id="cvKids" role="img" aria-label="Your savings and the children’s gift accounts by year, in today’s dollars"></canvas></div>'
-    +'<div class="kids-legend"><span><i style="background:var(--ac)"></i>Your savings</span><span><i style="background:var(--ac2)"></i>The children’s gift accounts</span>'
+    +'<div class="kids-legend"><span><i style="background:var(--ac)"></i>Your savings</span><span><i style="background:var(--ac-kids)"></i>The children’s gift accounts</span>'
       +(preset!=='classic'?'<span><i class="dash"></i>Your savings with no gifts (Classic)</span>':'')+'<span><i class="floor"></i>Your floor</span></div>'
     +(chips.length?'<div class="kids-flags">'+chips.join('')+'</div>':'')+recHtml
     +'<details class="kids-nm"><summary>What this does not model</summary><ul>'+(f.notModelled||[]).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></details>';
@@ -10581,20 +10952,34 @@ function renderKids(){
   const ap=document.getElementById('kidsApply'); if(ap) ap.addEventListener('click',()=>{ IN.familyPreset=rec.preset; gSet('targetConversionBracket',null,rec.targetConversionBracket); buildControls(); recompute(); });   // band lever via its single writer (gSet)
   drawKidsChart(f);
 }
+// Issue #6 F7 — "nice" axis step (1/2/2.5/5 × 10ⁿ) instead of raw max÷4, which gave
+// uneven, hard-to-read labels (e.g. $967k/$1.9M/$2.9M/$3.9M).
+function niceAxisStep(rough){
+  if(!(rough>0)) return 1;
+  const pow10=Math.pow(10,Math.floor(Math.log10(rough))), frac=rough/pow10;
+  const nice=frac<=1?1:frac<=2?2:frac<=2.5?2.5:frac<=5?5:10;
+  return nice*pow10;
+}
 function drawKidsChart(f){
   const cv=document.getElementById('cvKids'); if(!cv||!cv.parentElement) return;
   const W=Math.max(280, cv.parentElement.clientWidth||600), H=Math.max(180, cv.parentElement.clientHeight||240);
   const ctx=setupCanvas(cv,W,H); const css=n=>(getComputedStyle(document.documentElement).getPropertyValue(n)||'').trim();
   const S=(f.series||[]).filter(x=>isFinite(x.parentsReal)); if(!S.length) return;
   const padL=52, padR=10, padT=10, padB=22, w=W-padL-padR, h=H-padT-padB;
-  const maxV=Math.max(f.floorReal||0, ...S.map(x=>x.parentsReal+(x.kidsReal||0)), ...S.map(x=>x.baselineParentsReal||0))*1.05 || 1;
+  const rawMax=Math.max(f.floorReal||0, ...S.map(x=>x.parentsReal+(x.kidsReal||0)), ...S.map(x=>x.baselineParentsReal||0))*1.05 || 1;
+  const tickStep=niceAxisStep(rawMax/4), maxV=tickStep*Math.ceil(rawMax/tickStep);
   const X=i=>padL+(S.length<2?0:i*w/(S.length-1)), Y=v=>padT+h-(v/maxV)*h;
   ctx.font='11px system-ui,sans-serif'; ctx.fillStyle=css('--faint'); ctx.strokeStyle=css('--line');
-  for(let t=0;t<=4;t++){ const v=maxV*t/4, y=Y(v); ctx.globalAlpha=.6; ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke(); ctx.globalAlpha=1; ctx.fillText(moneyK(v),4,y+4); }
+  for(let v=0;v<=maxV+tickStep*0.001;v+=tickStep){ const y=Y(v); ctx.globalAlpha=.6; ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke(); ctx.globalAlpha=1; ctx.fillText(moneyK(v),4,y+4); }
   S.forEach((x,i)=>{ if(x.year%10===0) ctx.fillText(String(x.year),X(i)-12,H-6); });
   const area=(top,bot,col)=>{ ctx.beginPath(); S.forEach((x,i)=>{ const y=Y(top(x)); i?ctx.lineTo(X(i),y):ctx.moveTo(X(i),y); }); for(let i=S.length-1;i>=0;i--) ctx.lineTo(X(i),Y(bot(S[i]))); ctx.closePath(); ctx.fillStyle=col; ctx.globalAlpha=.55; ctx.fill(); ctx.globalAlpha=1; };
+  // Issue #6 F10 — section 4 needs a hue NOT reused by sections 1/3: --ac/--ac2 (teal/tan)
+  // are the SAME pair "US 401k/Roth" and "US Joint (taxable)" already use there, so the same
+  // colour meant different things in different sections. "Your savings" keeps teal (--ac,
+  // reserved for "your money" everywhere); "children's gift accounts" gets a soft violet
+  // (--ac-kids) distinct from the UK pension purple (--c-uk) too.
   area(x=>x.parentsReal, ()=>0, css('--ac'));
-  area(x=>x.parentsReal+(x.kidsReal||0), x=>x.parentsReal, css('--ac2'));
+  area(x=>x.parentsReal+(x.kidsReal||0), x=>x.parentsReal, css('--ac-kids'));
   if(S.some(x=>x.baselineParentsReal!=null)){ ctx.setLineDash([5,4]); ctx.strokeStyle=css('--mut'); ctx.lineWidth=1.5; ctx.beginPath(); S.forEach((x,i)=>{ const y=Y(x.baselineParentsReal||0); i?ctx.lineTo(X(i),y):ctx.moveTo(X(i),y); }); ctx.stroke(); ctx.setLineDash([]); }
   if(f.floorReal){ ctx.strokeStyle=css('--bad-soft'); ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(padL,Y(f.floorReal)); ctx.lineTo(W-padR,Y(f.floorReal)); ctx.stroke(); }
 }
@@ -10603,8 +10988,10 @@ function drawKidsChart(f){
 // beside the chart they concern (income → row 1, worth → row 3, why → row 5).
 function renderCallouts(){
   const slot={income:'co1',worth:'co2',why:'co3'}; const html={co1:'',co2:'',co3:''};
+  let warnSeq=0; // Issue #5 F2 — each call-out gets a stable "warn-N" id so the top chip's
+                 // #warn-1 anchor (and any future deep link) has a real target to land on.
   (MODEL.warnings||[]).forEach(w=>{ const p=placeOf(w); if(p.where!=='callout') return;
-    html[slot[p.chart]]+='<div class="callout" data-wid="'+esc(w.id)+'" role="note">⚠ '+esc(w.text)+'</div>'; });
+    html[slot[p.chart]]+='<div class="callout" id="warn-'+(++warnSeq)+'" data-wid="'+esc(w.id)+'" role="note">⚠ '+esc(w.text)+'</div>'; });
   Object.keys(html).forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=html[id]; });
 }
 // WO6-B4: the ratio numeral gets the interior of the arc to ITSELF; the
@@ -10777,11 +11164,14 @@ function renderPlanNotice(){
   const p=activePlan();
   if(!planIsStale(p)){ el.hidden=true; el.innerHTML=''; return; }
   el.hidden=false;
+  // Issue #5 F4 — cut to one sentence + a <details> for the rest (was a full paragraph that,
+  // stacked on a phone, towered above the headline figures).
   el.innerHTML='<div class="pn-body"><span class="pn-ico" aria-hidden="true">⟳</span>'
-    +'<div class="pn-txt"><b>This plan in your browser is older than the plan file.</b> '
+    +'<div class="pn-txt"><b>This plan in your browser is older than the plan file.</b>'
+    +'<details class="pn-details"><summary>Details</summary><p>'
     +'The numbers you see were saved earlier; the plan file on disk has since been updated. '
     +'Re-import the plan file to bring this copy up to date. '
-    +'Your saved copy is left exactly as it is until you choose to re-import — nothing here is changed automatically.</div>'
+    +'Your saved copy is left exactly as it is until you choose to re-import — nothing here is changed automatically.</p></details></div>'
     +'<div class="pn-btns"><button class="btn" id="pnImport">Re-import to update</button>'
     +'<button class="icobtn" id="pnDismiss" title="Dismiss" aria-label="Dismiss this notice">✕</button></div></div>';
   const imp=document.getElementById('pnImport'); if(imp) imp.addEventListener('click',()=>{ openLauncher(); });
@@ -11143,7 +11533,9 @@ function controllerNoteText(inp){
   try{
     const t=inp.noteType;
     if(t==='rule55'){ const y=RD.age55Year?RD.age55Year(FACTS):null; return y?('Penalty-free 401(k) access from '+y+' (Rule of 55)'):''; }
-    if(t==='rollover'){ const d=RD.dateAtAge(FACTS,'p1',59.5); return d?('Don’t roll pre-tax to an IRA before '+d+' ('+NM('p1')+' turns 59½)'):''; }
+    // Issue #5 F1 — restore the amber call-out styling + the reason the other two
+    // warnings have (it had regressed to plain muted text with no "why").
+    if(t==='rollover'){ const d=RD.dateAtAge(FACTS,'p1',59.5); return d?('⚠ Don’t roll the 401(k) into an IRA before '+d+'. The Rule of 55 makes it penalty-free only while it stays in the workplace plan.'):''; }
     if(t==='age595'){ const d1=RD.dateAtAge(FACTS,'p1',59.5); const d2=hasP2Now()?RD.dateAtAge(FACTS,'p2',59.5):null;
       // WO24b 9b — name WHOSE 59½ date each is (the note previously listed two bare dates).
       return d1?('Penalty-free Roth from '+d1+' ('+NM('p1')+')'+(d2?(' · '+d2+' ('+NM('p2')+')'):'')):''; }
@@ -11159,7 +11551,12 @@ function controllerNoteText(inp){
   return '';
 }
 function inputHTML(inp){
-  if(inp.kind==='note'){ const tx=controllerNoteText(inp); return tx?'<div class="cinput"><div class="cl-note">'+esc(tx)+'</div></div>':''; }
+  if(inp.kind==='note'){ const tx=controllerNoteText(inp); if(!tx) return '';
+    // Issue #5 F1 — the rollover warning gets the SAME amber call-out class as the other
+    // two 401k-card warnings (rule55 / age595 stay plain .cl-note; this is the only one
+    // that lost its warning styling).
+    if(inp.noteType==='rollover') return '<div class="cinput"><div class="callout" role="note">'+esc(tx)+'</div></div>';
+    return '<div class="cinput"><div class="cl-note">'+esc(tx)+'</div></div>'; }
   let confTag='', ro=inp.readonly?' readonly':'';
   let val;
   if(inp.kind==='fact'){ const lo=RD.leafObjAt(FACTS,inp.path); const c=lo&&lo.confidence; if(c) confTag='<span class="conf '+c+'" title="'+(lo.src||'')+'">'+(c==='placeholder'?'⚠ '+c:c)+'</span>'; val=RD.leaf(lo); }
@@ -11499,7 +11896,8 @@ function renderStory(){
   if(next) next.disabled=storySel>=storyMs.length-1;
   const confChip=(tag)=> tag&&tag!=='model' ? '<span class="conf '+tag+'">'+(tag==='placeholder'?'⚠ placeholder':tag)+'</span>' : '';
   const figHtml=(m.figures||[]).map(f=>'<span class="story-fig">'+esc(f.label)+': <b>'+esc(f.value)+'</b>'+confChip(f.sourceTag)+'</span>').join('');
-  const detailHtml=m.detail?'<details class="story-detail"><summary>A little more</summary><p>'+esc(m.detail)+'</p></details>':'';
+  // Issue #6 F11 — "A little more" had no clear meaning; name what it actually is.
+  const detailHtml=m.detail?'<details class="story-detail"><summary>More about this step</summary><p>'+esc(m.detail)+'</p></details>':'';
   // Phase 4.8 — Sterling hook ONLY when the bridge is live (absent, not broken, on
   // the hosted/public build).
   const askHtml=(stOnline && !window.__PUBLIC_BUILD)
