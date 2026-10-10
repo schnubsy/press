@@ -143,7 +143,7 @@
       "build": "node build-press.mjs",
       "output": "dist/optimo.html",
       "deterministic": true,
-      "note": "launcher card for the optimo PWA, served from the marquee at https://schnubsy.github.io/press/optimo/ (press/optimo/ = optimo dist, mirrored by tools/release.js since optimo migrate-home 2026-10-10; the old /optimo/ Pages site is retired, repo private); build-press.mjs inlines the vendored family gate — deterministic, publish-checks rebuilds + compares. Added by optimo arc 2 slice 6."
+      "note": "launcher card for the optimo PWA, served from the marquee at https://schnubsy.github.io/press/optimo/ (press/optimo/ = optimo dist, mirrored by tools/release.js since optimo migrate-home 2026-10-10; the old /optimo/ Pages site is a redirect tombstone; repo goes private at migrate-home S3, after the chat verifies the marquee); build-press.mjs inlines the vendored family gate — deterministic, publish-checks rebuilds + compares. Added by optimo arc 2 slice 6."
     },
     "cardsharp.html": {
       "repo": "cardsharp",
