@@ -329,7 +329,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v4.11.4</span>
+    <span class="nav-badge">v4.12.0</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -990,7 +990,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
             <div><dt>Signature move</dt><dd>The diagnostic that changes nothing, before the fix that changes one thing</dd></div>
           </dl>
           <div class="p-quote">"First, do no harm."<span class="attr">— his entire operating philosophy</span></div>
-          <div class="trade"><span class="dis">Discipline: owns the sync contract — council changes update PERSONAS.md and the skills, then this guide regenerates in the same arc. Drift is a defect.</span></div>
+          <div class="trade"><span class="dis">Discipline: owns the sync contract — council changes update PERSONAS.md and the skills, then this guide is brought to parity by hand in the same arc. Drift is a defect.</span></div>
         </div>
       </article>
 
@@ -1048,7 +1048,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
           <div class="facet-body">
             <p>Produces a finished, nicely-designed <b class="ink"><code>.pptx</code></b> from the Principal's content, in one of <b class="ink">two input modes</b>: <b class="ink">compose</b> — text descriptions of the slides go in, the Eye authors the deck (pptx skill), Quill consulted on slide narrative — or <b class="ink">beautify</b> — existing slides supplied as either a <code>.pptx</code> on disk <i>or</i> pasted text and screenshots. This is the tool of record for slide decks; render remains the tool for standalone imagery, and the Design round-trip for editable web and UI elements.</p>
             <p><b class="ink">The Eye consults on look, by default.</b> Before building, the Eye offers <b class="ink">two or three quick look-options</b> — a one-line description each, such as Swiss and clean, editorial, or dark-mode executive — and the Principal's pick drives the deck's design tokens. This is the Eye running <b class="ink">LITE</b>, fast look-options rather than a full six-direction scored review. Saying <b class="ink">"skip Eye"</b> bypasses the directions entirely for a clean, professional default. The first-party <b class="ink">pptx skill</b> then builds the file, applying the chosen look, and the result is saved to <code>~/Documents/decks/</code>. Quill's slide discipline carries through (consulted): decision-first order, no padding.</p>
-            <p><b class="ink">Home surface is Cowork</b> — the pptx skill and code execution both live there, and a file-access connector alone cannot generate a <code>.pptx</code>, so a chat-only surface emits the Cowork instruction rather than pretending to build inline. Beautify <b class="ink">always writes a new file</b> and never mutates the source in place, so a bad pass leaves the original untouched and the build can simply be re-issued.</p>
+            <p><b class="ink">Home surface is the chat</b> — the pptx skill and code execution both live there, and a file-access connector alone cannot generate a <code>.pptx</code>, so a session without them says so rather than pretending to build inline. Beautify <b class="ink">always writes a new file</b> and never mutates the source in place, so a bad pass leaves the original untouched and the build can simply be re-issued.</p>
           </div>
         </details>
       </div>
@@ -1160,7 +1160,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
             <p>Either press lane may be <b class="ink">DB-backed</b>: a published page can persist live, shared state to a dedicated database that exists purely as the backing store for press pages, shared with no other project. This <b class="ink">supersedes the earlier "press pages are static" framing</b> — they have carried state since the first checklist page shipped. It runs on a free tier, which means <b class="ink">no managed backups</b>; periodic dumps are the only mitigation, and the standing rule to move to a paid tier before any real client data still stands.</p>
             <p><b class="ink">Access is header-gated and allow-listed by tier — and a page's tier is decided before it is built.</b> Public pages sit on an explicit allow-list; private-wing rows sit behind a capability header; family-wing rows behind per-page grants — so a URL holder can never read another page's private rows, and nothing is bolted on afterwards. The <b class="ink">tenant&harr;marquee contract</b> — what a tenant owes, what the marquee owes, and the release-script rules — lives once in the press repo's spec, and the audit's <b class="ink">Marquee-tenants</b> check enforces it.</p>
             <p><b class="ink">Schema convention — <code>press_&lt;shape&gt;</code>, page-keyed.</b> Tables are shared across pages and named for their <i>shape</i>, with every row keyed by a <code>page</code> column whose value is the filename stem — never a table per page, never one universal mega-schema. Reuse an existing shape; mint a new one only when nothing fits. Two are registered: <code>press_state</code> for simple checkboxes, and <code>press_tasks</code> for rich task rows, which carries an <code>extras</code> JSON column so page-specific fields cause no schema churn. Wiring is a REST call plus a <code>localStorage</code> mirror and a small sync-status pill — the cloud is the source of truth, the mirror gives instant paint and offline tolerance.</p>
-            <p><b class="ink">Both surfaces are full database operators.</b> Schema changes, SQL and function deploys run directly through the writable database connector from <b class="ink">either Claude Code or Cowork</b> — Code inside its work order with no stop, Cowork directly when it is driving. One temporary exception: SQL that trips the database's destructive-change confirmation (drop, delete, truncate) is auto-cancelled in Cowork by a known client bug, so only that step goes to Claude Code, where you confirm the pop-up; the exception retires when the bug is fixed. Secrets stay with you or Cowork. Bulk data movement and field-for-field verification belong there too: Code has real network egress and can run a scripted copy-and-verify, whereas a chat executes one query at a time and cannot stream rows between projects. Hand-building bulk inserts from a chat risks corrupting the very data being preserved — one such run caught a multi-byte character corruption that only a scripted verify would have surfaced.</p>
+            <p><b class="ink">Every session is a full database operator.</b> Schema changes, SQL and function deploys run directly through the writable database connector from <b class="ink">any Claude Code session or the chat</b> — a build session inside its work order with no stop, the chat directly when it is driving. One temporary exception lives in a single place in the Council's rules: SQL that trips the database's destructive-change confirmation (drop, delete, truncate) was seen auto-cancelled by a known client bug, so only that step goes to a Claude Code session where you confirm the pop-up — re-tested in a cloud chat before anyone relies on it, and retired when the bug is fixed. Secrets stay with you or the password manager. Bulk data movement and field-for-field verification belong there too: Code has real network egress and can run a scripted copy-and-verify, whereas a chat executes one query at a time and cannot stream rows between projects. Hand-building bulk inserts from a chat risks corrupting the very data being preserved — one such run caught a multi-byte character corruption that only a scripted verify would have surfaced.</p>
           </div>
         </details>
       </div>
@@ -1175,7 +1175,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
           <div class="facet-body">
             <p><b class="ink">Detect:</b> seven check-groups, each with an exact command.</p>
             <p><b class="ink">Stamps &amp; guide</b> — the five version stamps all match <code>plugin.json</code> (the guide nav badge and footer, and the <code>Version:</code> headers in <code>PERSONAS.md</code> and <code>CAPABILITIES.md</code>); every persona named in a skill exists in <code>PERSONAS.md</code>; every registered instrument has its reference file, a one-line entry in <code>skills/hand/SKILL.md</code>, and a guide card with balanced <code>&lt;div&gt;</code>s; no capability is used but unregistered; the inbox-sync contract is intact in all its homes; and every skill, command, and agent description stays valid.</p>
-            <p><b class="ink">Bundle &amp; propagation</b> — flags a <code>dist/council.plugin</code> older than the newest committed source (so Cowork and web/mobile are stale), and always emits the fresh-chat canary that proves the Desktop reload actually propagated.</p>
+            <p><b class="ink">Bundle &amp; propagation</b> — flags a <code>dist/council.plugin</code> older than the newest committed source (so the chat on Desktop, web and mobile is stale), and always emits the fresh-chat canary that proves the Desktop reload actually propagated.</p>
             <p><b class="ink">Docs currency</b> — the environment <code>MANUAL.md</code> and <code>CHANGELOG.md</code> track the plugin version, <code>manual.html</code> is freshly built, and the published Press copy of this guide has not fallen behind.</p>
             <p><b class="ink">Dead names &amp; paths</b> — sweeps the repo and the dossiers for retired names and paths in live instruction text, leaving dated history byte-preserved.</p>
             <p><b class="ink">Agents</b> — sweeps for an agent gone silent past its cadence, one registered but never once observed running, and a live agent nobody registered, plus a <b class="ink">read-only watch that the container registry stays within its storage quota</b>.</p>
@@ -1186,7 +1186,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <details class="facet">
           <summary><span class="fmk">&#9656;</span>Repair &amp; propagate</summary>
           <div class="facet-body">
-            <p><b class="ink">Repair (automatable):</b> fixes all four stamps to match <code>plugin.json</code> and regenerates this guide from its sources. <b class="ink">Propagate:</b> on a chat surface it <i>emits</i> ready-to-paste Claude Code prompts to commit + push and to rebuild the bundle; run instead as the <code>/council:audit</code> command in Claude Code, those same steps <i>execute</i> directly. Either way you get a manual checklist for the two steps no tool can do — reloading <code>dist/council.plugin</code> in Desktop (the single action that refreshes Cowork and claude.ai web/mobile together) and a fresh-chat cast check to verify. It separates what it fixed itself from what waits on your manual reload. When the published copy is out of sync, propagate also <b class="ink">republishes this guide to the public Press copy</b> (<code>council-guide.html</code>) — lane-aware by size and hash-verified — so the published prospectus never lags the generated one.</p>
+            <p><b class="ink">Repair (automatable):</b> fixes the stamps to match <code>plugin.json</code> and flags any guide card out of parity — the guide is hand-maintained, so parity is restored by hand in the same arc. <b class="ink">Propagate:</b> on a chat surface it <i>emits</i> ready-to-paste Claude Code prompts to commit + push and to rebuild the bundle; run instead as the <code>/council:audit</code> command in Claude Code, those same steps <i>execute</i> directly. Either way you get a manual checklist for the two steps no tool can do — reloading <code>dist/council.plugin</code> in Desktop (the single action that refreshes the chat on Desktop, web and mobile together) and a fresh-chat cast check to verify. It separates what it fixed itself from what waits on your manual reload. When the published copy is out of sync, propagate also <b class="ink">republishes this guide to the public Press copy</b> (<code>council-guide.html</code>) — lane-aware by size and hash-verified — so the published prospectus never lags the generated one.</p>
           </div>
         </details>
         <details class="facet">
@@ -1266,8 +1266,8 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <details class="facet">
           <summary><span class="fmk">&#9656;</span>Full detail — the order contract</summary>
           <div class="facet-body">
-            <p>An <b class="ink">arc-shaped order is the default</b> for any coding work order; a single-slice order is the exception — a one-line fix, or when one slice cannot be specified until the previous slice's output exists. Every emitted order carries the same fixed frame: the repo path and a session branch, the standing-rules block (<b class="ink">plan mode once</b> to gather every decision into a single up-front checkpoint, staging by name, and never moving a worktree mid-order), then the numbered slices — each with scope, files, detail, and explicit done-criteria — run back-to-back, with independent pieces fanned out to parallel sub-agents. The <b class="ink">per-slice discipline loop</b> is the same every time: extend the tests, build and lint clean, run the gauntlet, capture a done-proof artifact, commit the slice, hand off, continue — returning only at arc-complete or a genuine blocker. The <b class="ink">close is automatic</b> once the gates are green: push the branch, open the PR, auto-merge and delete it, <b class="ink">reconcile the main checkout</b> to the merged commit, publish with ship proof, <b class="ink">sweep its own agent worktrees</b>, hand off, and end with a <b class="ink">close-out manifest</b> that gives every required step exactly one outcome — done with its proof, not-applicable, or blocked. The report's last line always hands it to the orchestrator to <b class="ink">verify</b>.</p>
-            <p>The referenced arc file is <b class="ink"><code>ARC.md</code></b> at the project root — one of the three control files alongside <code>CLAUDE.md</code> and <code>HANDOFF.md</code>. It is <b class="ink">append-only</b>: Cowork (the orchestrator) adds dated slices and decisions, the executing agent consumes them, and the handoff routine ticks the completed slices and — once every slice is done — folds the arc into <code>CLAUDE.md</code> and <code>HANDOFF.md</code>, truncating <code>ARC.md</code> at arc-complete unless it still holds unstarted orders.</p>
+            <p>An <b class="ink">arc-shaped order is the default</b> for any coding work order; a single-slice order is the exception — a one-line fix, or when one slice cannot be specified until the previous slice's output exists. Every emitted order carries the same fixed frame: the repo path and a session branch, the standing-rules block (<b class="ink">plan mode once</b> to gather every decision into a single up-front checkpoint, staging by name, and never moving a worktree mid-order), then the numbered slices — each with scope, files, detail, and explicit done-criteria — run back-to-back, with independent pieces fanned out to parallel sub-agents. The <b class="ink">per-slice discipline loop</b> is the same every time: extend the tests, build and lint clean, run the gauntlet, capture a done-proof artifact, commit the slice, hand off, continue — returning only at arc-complete or a genuine blocker. The <b class="ink">close is automatic</b> once the gates are green: push the branch, open the PR, auto-merge and delete it, <b class="ink">reconcile the main checkout</b> to the merged commit, publish with ship proof, <b class="ink">sweep its own agent worktrees</b>, hand off, and end with a <b class="ink">close-out manifest</b> that gives every required step exactly one outcome — done with its proof, not-applicable, or blocked. Before the close, every arc runs an <b class="ink">adversarial code review</b> of its own diff and fixes what it confirms. The report is posted as the pull request's final comment and returned to whoever dispatched it; its last line always hands it to the chat to <b class="ink">verify</b>.</p>
+            <p>The referenced arc file is <b class="ink"><code>ARC.md</code></b> at the project root — one of the three control files alongside <code>CLAUDE.md</code> and <code>HANDOFF.md</code>. It is <b class="ink">append-only</b>: the chat (the orchestrator) adds dated slices and decisions — committed, on a GitHub-home project — the build session on the project's home consumes them, and the handoff routine ticks the completed slices and — once every slice is done — folds the arc into <code>CLAUDE.md</code> and <code>HANDOFF.md</code>, truncating <code>ARC.md</code> at arc-complete unless it still holds unstarted orders.</p>
             <p><b class="ink">Tenant-change arcs.</b> When an app's footprint on the marquee changes, that change rides inside the app's own arc rather than a parallel one, because there is only ever one writer on the marquee at a time. The marquee's shared modules have a single source that apps pull from and never push to, and a published page is never hand-edited — a fix lands in the source and ships through the app's release.</p>
           </div>
         </details>
@@ -1281,7 +1281,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
           <summary><span class="fmk">&#9656;</span>Full detail — kinds, tiers, and the run ledger</summary>
           <div class="facet-body">
             <p>An agent comes in one of <b class="ink">three kinds</b>: an <b class="ink">inlet</b> (an external source — a mailbox, a webhook — POSTs to a secret-guarded endpoint), an <b class="ink">on-demand</b> call (the page itself asks, and gets an answer back with nothing stored), or a <b class="ink">scheduled</b> sweep (a timer fires it). And one of <b class="ink">three privacy tiers</b>: <b class="ink">sealed</b> (the result is a locked box only the owner's device can open — nothing readable is ever kept at rest), <b class="ink">gated</b> (held behind an unguessable key), or <b class="ink">open</b> (a deliberately public, non-sensitive summary). The brief picks one of each before anything is built.</p>
-            <p>Under it all is one shared core — a single forced, schema-checked model call — and a <b class="ink">run ledger</b>: every turn writes exactly one row recording the outcome, the tokens, the cost and the latency, so an agent's health is a query, not a guess. A daily <b class="ink">heartbeat</b> marks an agent <em>dead</em> the moment it falls silent past its expected cadence, and the audit's twelfth, thirteenth and fourteenth checks sweep for silence, for an agent that was registered but whose liveness has never once been recorded, and for a live agent that nobody registered at all. Adding an agent is a fixed ritual — scaffold, provision, wire the app's review inbox, pass the ship-gate, then a live verify — and a failed setup leaves no half-built agent behind.</p>
+            <p>Under it all is one shared core — a single forced, schema-checked model call — and a <b class="ink">run ledger</b>: every turn writes exactly one row recording the outcome, the tokens, the cost and the latency, so an agent's health is a query, not a guess. A daily <b class="ink">heartbeat</b> marks an agent <em>dead</em> the moment it falls silent past its expected cadence, and the audit's agent checks (stale, never-observed, unregistered) sweep for silence, for an agent that was registered but whose liveness has never once been recorded, and for a live agent that nobody registered at all. Adding an agent is a fixed ritual — scaffold, provision, wire the app's review inbox, pass the ship-gate, then a live verify — and a failed setup leaves no half-built agent behind.</p>
             <p><b class="ink">The liveness contract.</b> Every tick reports through <b class="ink">exactly one channel</b>. Even a quiet check-in with no new work writes a ledger row and counts as alive — and if a scheduled agent reports in by posting a heartbeat to a <em>status</em> endpoint rather than the one that calls the model, then that endpoint is what writes the row, because health is read only from the ledger. A liveness signal that lands anywhere else leaves a perfectly healthy agent looking dead. An agent isn't considered shipped until a <b class="ink">real, non-synthetic run</b> has been seen landing in the ledger — a registered entry and a deployed function are not enough.</p>
             <p><b class="ink">Seen at a glance, and told when it matters.</b> Because every agent is registered the moment it ships, it turns up automatically on a plain-English <b class="ink">health page</b> — one big verdict (&ldquo;all agents healthy&rdquo;, or how many need attention) and, per agent, when it last did something, when it&rsquo;s next due, how many runs failed lately, and what it&rsquo;s costing this month — and in a <b class="ink">daily check</b> that emails only when something is actually wrong, naming the agent and the one thing to do. Both read the registry, so a new agent needs no edits to either, and a per-agent tweak to the page or the email is never allowed.</p>
           </div>
@@ -1309,11 +1309,53 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <details class="facet">
           <summary><span class="fmk">&#9656;</span>Full detail — claims, checks, and the fix order</summary>
           <div class="facet-body">
-            <p><b class="ink">Claims, not evidence.</b> Paste the report and Snag breaks it into claims — the commits, the merge, the main copy brought up to date, the test runs, the proof files, any deploy, publish or database change, the live pages, and the steps handed to you. A required step the report never mentions counts as a claim too, and silence is red.</p>
+            <p><b class="ink">Claims, not evidence.</b> The report arrives as the pull request's final comment (or is pasted), and Snag breaks it into claims — the commits, the merge, the main copy brought up to date, the test runs, the proof files, any deploy, publish or database change, the live pages, and the steps handed to you. A required step the report never mentions counts as a claim too, and silence is red.</p>
             <p><b class="ink">Checked independently.</b> Each claim is checked with the strongest tool to hand, never by re-reading the report: the repository history read without touching it, the pull request itself, the live page opened in a browser and walked through, the database rows and migrations, the running cloud revision and its logs, the sent-mail record. Anything no tool can see is marked <b class="ink">inferred</b>, never green. Taking over the screen is allowed only for a short hop — announced first, handed straight back.</p>
             <p><b class="ink">Fewer steps for you, every time.</b> Snag tries each step the report left for you and hands back only what truly needs you — a password or passkey, your money, a physical device, a judgement call — each with a one-line reason, and names the next step to automate. The table and every observation are saved as a dated proof file in the project; any red becomes a fix order in the project's arc file, ready for the next build session.</p>
           </div>
         </details>
+      </div>
+
+      <div class="instr i-hand" id="cap-dispatch">
+        <span class="who">Owner: Forge · consulted Snag + Steward · trigger — "dispatch it" / "run the arc" (in a chat)</span>
+        <h4>Dispatch</h4>
+        <p class="instr-sum">How an arc leaves the conversation. The chat never builds: it plans the arc, commits it to the project's inbox, and hands it to a build session on the project's home — then checks the report when it comes back.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Full detail — two homes, one report-back</summary>
+          <div class="facet-body">
+            <p><b class="ink">Web projects live on GitHub.</b> Dispatch commits the arc to a fresh arc branch and pushes it; that push fires the project's one cloud routine, which clones the repository, runs every slice, closes out through a pull request, and posts its report as the pull request's final comment. <b class="ink">Apple and infrastructure projects live on the Mac</b>, so the hop there is a single phrase that opens a build session on the Mac. Either way the report comes back to the chat, which runs <b class="ink">Verify</b> — and a red finding becomes a fix arc it dispatches directly, with no paste in between.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="instr i-hand" id="cap-secrets">
+        <span class="who">Owner: Steward · trigger — "map the secrets" / "where does this key live"</span>
+        <h4>Secrets</h4>
+        <p class="instr-sum">One source of truth for every key, named copies wherever a runtime reads one, and never a value inside a repository. Steward inventories a project's keys by name, says where each one lives, and prepares the import into the password manager.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Full detail — source of truth and mirrors</summary>
+          <div class="facet-body">
+            <p>The password manager is the <b class="ink">source of truth</b>; everything else is a <b class="ink">mirror</b> that can be rebuilt from it — the cloud build environment (sensitive keys as network secrets, plain settings as variables), the CI secret store, and the hosting platform's own vault. Each project carries a <b class="ink">secrets map</b> that lists names and homes only. The inventory tool writes that map, and writes the import file to a place outside every repository — it refuses to write it anywhere git could pick it up — and its logs only ever show the first and last four characters of a value.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="instr i-hand" id="cap-migrate">
+        <span class="who">Owner: Steward · consulted Forge + Snag · trigger — "migrate [project]" / "run wave [n]"</span>
+        <h4>Migrate</h4>
+        <p class="instr-sum">Moves a project's home to GitHub — or records it as a Mac home — and proves it with a one-line green report before any local folder is retired. The Mac becomes a workbench, never a home.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Full detail — the close-out gate and the green report</summary>
+          <div class="facet-body">
+            <p>Nothing moves until a <b class="ink">close-out gate</b> holds: a clean, pushed tree; every unmerged branch either a pull request or proven already merged; no stray worktrees; the handoff current; defects living as issues; the inbox processed. Then the home line is written, local paths are swept out of the docs, secrets are mapped, the repository is made private (the public portal excepted), a <b class="ink">fresh cloud clone must build and pass the full test gate</b>, scheduled work moves to cloud routines, and the folder is archived to the NAS. Only the one-line green report — main's commit, nothing unmerged, no worktrees, the key count, a green cloud gate, the archive path — clears you to delete the local folder yourself. Retired projects follow the same gate and end archived.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="instr i-hand" id="cap-sweep">
+        <span class="who">Owner: Steward · trigger — "run the sweep" / after a surface-model release</span>
+        <h4>Sweep</h4>
+        <p class="instr-sum">Finds everything outside the repositories that still describes the old way of working — saved memory, each chat project's instructions, the environment manual — and writes the exact replacement text for each, for the chat to apply.</p>
       </div>
 
       <!-- Garrick (Hand lead) -->
@@ -1348,16 +1390,9 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </div>
 
       <div class="instr i-hand" id="cap-remote-kickoff">
-        <span class="who">Owner: Garrick (Hand lead) · trigger — "remote kickoff" / a project idea started away from the Mac / kickoff on a non-Mac surface</span>
+        <span class="who">Owner: Garrick (Hand lead) · trigger — "remote kickoff" / a project idea started away from the Mac</span>
         <h4>Remote Kickoff</h4>
-        <p class="instr-sum">Takes a brand-new project idea as far as it can go <b class="ink">without a Mac</b> — on iPad, phone, or the web — and hands it to the Mac in a single paste. The worth-building check, discovery, research, spec, lite design, and screen mocks all happen where you are; one Return-to-Mac work order then scaffolds the repo and starts the first build arc.</p>
-        <details class="facet">
-          <summary><span class="fmk">&#9656;</span>Full detail — the pre-build arc, anywhere</summary>
-          <div class="facet-body">
-            <p>Runs the whole pre-build arc on whatever surface you have, because the Mac is not here and will not be until the end. In one place: a worth-building check, one batched discovery interview, deep research (findings labelled verified or inferred), a functional and technical spec, <b class="ink">lite design directions</b> under the Eye's diversity rules — material kits, banned defaults, the design register — delivered as Claude Design seed briefs or HTML mocks, per-screen mockups, and every decision logged to a travel dossier. It never reaches for Terminal, a code editor, or the filesystem until the final step.</p>
-            <p>The deliverable is a kickoff <b class="ink">bundle</b> plus a single <b class="ink">Return-to-Mac work order</b> — one paste that, back at the Mac, creates the folder and private repo, copies the bundle in, writes the control files, closes the first arc, registers the project, and starts build slice one, all without asking anything further. It is a skill (<code>/council:remote-kickoff</code>) and a Hand instrument; the Kickoff rite routes to it automatically the moment it detects a non-Mac surface, so you come home to a running build.</p>
-          </div>
-        </details>
+        <p class="instr-sum">Now simply another name for <b class="ink">Kick off</b>. Discovery — the worth-building check, the one batched interview, research, the spec, lite design and screen mocks — runs wherever you are, and the scaffold happens in a cloud build session on a fresh GitHub repository. There is no bundle to carry and nothing to paste back at the Mac.</p>
       </div>
 
       <h3 style="font-size:23px;margin:38px 0 4px">Adding an instrument — the standing process</h3>
@@ -1396,10 +1431,10 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </div>
       <div class="journey-track">
         <div class="journey-stop"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="var(--gold)" stroke-width="2"/><text x="20" y="26" text-anchor="middle" font-size="17" fill="var(--gold)">1</text></svg><b>Idea → Kickoff</b><p class="muted">You say the idea. The Council asks its questions once — and a repo and a spec appear.</p></div>
-        <div class="journey-stop"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="var(--gold)" stroke-width="2"/><text x="20" y="26" text-anchor="middle" font-size="17" fill="var(--gold)">2</text></svg><b>Plan the arc</b><p class="muted">In a Cowork chat you agree the slices in one conversation; the plan is written to <code>ARC.md</code>.</p></div>
-        <div class="journey-stop"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="var(--gold)" stroke-width="2"/><text x="20" y="26" text-anchor="middle" font-size="17" fill="var(--gold)">3</text></svg><b>Build</b><p class="muted">Claude Code runs every slice — building, testing itself (even the iPhone simulator), checking design and speed, fixing what fails.</p></div>
+        <div class="journey-stop"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="var(--gold)" stroke-width="2"/><text x="20" y="26" text-anchor="middle" font-size="17" fill="var(--gold)">2</text></svg><b>Plan the arc</b><p class="muted">In a chat you agree the slices in one conversation; the plan is committed to <code>ARC.md</code> and <b class="ink">dispatched</b> — the chat never builds.</p></div>
+        <div class="journey-stop"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="var(--gold)" stroke-width="2"/><text x="20" y="26" text-anchor="middle" font-size="17" fill="var(--gold)">3</text></svg><b>Build</b><p class="muted">A Claude Code session on the project's home — a cloud clone for web projects, the Mac for Apple builds — runs every slice — building, testing itself (even the iPhone simulator), checking design and speed, fixing what fails.</p></div>
         <div class="journey-stop"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="var(--gold)" stroke-width="2"/><text x="20" y="26" text-anchor="middle" font-size="17" fill="var(--gold)">4</text></svg><b>Ship</b><p class="muted">Tests pass ⇒ the page goes live on the marquee and the code is merged with a PR record. No waiting.</p></div>
-        <div class="journey-stop"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="var(--gold)" stroke-width="2"/><text x="20" y="26" text-anchor="middle" font-size="17" fill="var(--gold)">5</text></svg><b>Handoff</b><p class="muted">Three small files — <code>CLAUDE.md</code>, <code>ARC.md</code>, <code>HANDOFF.md</code> — carry the state; the next conversation reads them and continues. History and lessons are filed away, looked up only when needed.</p></div>
+        <div class="journey-stop"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="var(--gold)" stroke-width="2"/><text x="20" y="26" text-anchor="middle" font-size="17" fill="var(--gold)">5</text></svg><b>Handoff</b><p class="muted">The build session posts its report on the pull request and the chat <b class="ink">verifies</b> it. Three small files — <code>CLAUDE.md</code>, <code>ARC.md</code>, <code>HANDOFF.md</code> — carry the state; the next conversation reads them and continues. History and lessons are filed away, looked up only when needed.</p></div>
       </div>
       <div class="journey-cols">
         <div><h3 style="font-size:18px;margin-bottom:6px">What you do</h3><p class="muted">Say the idea. Answer one batch of questions. Approve one plan. Read the report.</p></div>
@@ -1415,19 +1450,21 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <p class="lede">Two ceremonies bracket every project's life — the <b class="ink">kick off / close out</b> lifecycle pair: <b class="ink">Kick off</b> opens a session, and <b class="ink">Close out</b> (Handoff) closes each arc of work. Between them, the Council's memory system keeps every surface oriented.</p>
       </div>
       <h3 style="font-size:22px;margin-bottom:4px">Kick off — context-aware session open</h3>
-      <p class="muted" style="margin-bottom:6px">Trigger with "kick off," "pick up," "resume the project" (existing project) or "new project," "kickoff," "I have an idea for an app/tool" (new build). Runs anywhere; scaffolds only in Claude Code.</p>
+      <p class="muted" style="margin-bottom:6px">Trigger with "kick off," "pick up," "resume the project" (existing project) or "new project," "kickoff," "I have an idea for an app/tool" (new build). Discovery runs anywhere; slices and the scaffold run only in a build session on the project's home.</p>
       <ol class="steps">
-        <li><b>Which half?</b> — an <b>existing project</b> (root path stated + <code>CLAUDE.md</code>/<code>HANDOFF.md</code>/<code>ARC.md</code> present) is <b>oriented, never re-scaffolded</b>; only a genuinely new idea scaffolds.</li>
+        <li><b>Which half?</b> — an <b>existing project</b> (<code>CLAUDE.md</code>/<code>HANDOFF.md</code>/<code>ARC.md</code> present) is <b>oriented, never re-scaffolded</b>; only a genuinely new idea scaffolds.</li>
+        <li><b>Read the home</b> (existing) — the first line of the stage names where the project lives: a GitHub repository (the default) or the Mac (Apple builds, the Council itself). A session that is not on that home <b>refuses to run slices</b> and dispatches the arc to it instead.</li>
         <li><b>Orient</b> (existing) — read the three control files, read <code>ARC.md</code>'s tail close-out block as the arc inbox (decisions, open questions, next-arc intent), verify repo state, confirm back, then front-load the open decisions before any work order. No tail entry? Orient from <code>HANDOFF.md</code>.</li>
         <li><b>Worth-building check</b> (new) — one honest pass: names tools that already solve it, offers an Ear gut-check if the verdict is murky.</li>
         <li><b>One batched interview</b> (new) — purpose, users, platform, stack, data sensitivity, name, git remote, v0.1 success. Every question up front; zero drip-feeding after.</li>
-        <li><b>Scaffold</b> (new, Claude Code only) — repo under <code>~/Documents/code/&lt;name&gt;</code>, git initialized, control files seeded with the real answers; then first arc-close runs <code>/council:handoff</code>, emits a paste-ready Cowork project-instructions block, and registers the project in MANUAL.md.</li>
+        <li><b>Discovery anywhere</b> (new) — research, a spec, lite design directions and screen mocks, all from whatever device you are on; Apple ideas start <b>web-first</b> and port to Swift once proven.</li>
+        <li><b>Scaffold</b> (new, in a cloud build session) — a private GitHub repository created and cloned, control files seeded with the real answers, the test gate and a per-repo verify skill in place; then first arc-close runs <code>/council:handoff</code>, emits the chat project-instructions block (repo, home, dispatch verb — no local paths), and registers the project in the manual.</li>
       </ol>
-      <div class="modebox"><b>On any other surface</b> a new build returns a single deterministic Claude Code work order instead — nothing half-scaffolded, ever.</div>
+      <div class="modebox"><b>In a chat</b> a new build is dispatched to a cloud build session instead — nothing half-scaffolded, ever, and no paste back to a Mac.</div>
       <h3 style="font-size:22px;margin:30px 0 4px">Close out (Handoff) — closing an arc</h3>
       <p class="muted" style="margin-bottom:6px">The skill: <code>/council:handoff</code> — the "close out" half of the pair.</p>
       <ol class="steps">
-        <li><b>Consumes</b> ARC.md — the arc inbox of decisions, slices, and flagged RULE: entries (Cowork appends, Claude Code consumes).</li>
+        <li><b>Consumes</b> ARC.md — the arc inbox of decisions, slices, and flagged RULE: entries (the chat appends, the build session consumes).</li>
         <li><b>Updates</b> CLAUDE.md's Current stage (durable truth), appends the arc to docs/history.md, promotes lessons to docs/lessons.md, and overwrites HANDOFF.md (last-arc snapshot + exact next steps).</li>
         <li><b>Commits and pushes</b> — the arc is closed; any new chat on any surface orients from the three control files.</li>
       </ol>
@@ -1556,12 +1593,12 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </div>
       <ol class="steps">
         <li><b>Layer one — ambient memory (automatic, lossy).</b> The platform's own memory absorbs new capabilities and rules from conversations on its own. Useful, but summarized and never authoritative — it is a lead, not a record.</li>
-        <li><b>Layer two — the close-out ritual (deterministic).</b> Any chat that births a capability, rule, or structural change ends with the Hand registering it before the chat closes: the annex gets the entry, <code>CAPABILITIES.md</code> gets the instrument, <code>MANUAL.md</code> §11 gets a one-line changelog entry (a separate commit — it's a different repo), and a regeneration of this guide is flagged for the same arc. The ritual, not the memory, is the guarantee.</li>
-        <li><b>Layer three — the Steward Audit (the net).</b> On a monthly cadence or on demand, Steward diffs everything: guide footer vs <code>plugin.json</code>, annex vs the guide's last-updated date, skills vs <code>PERSONAS.md</code>, memory vs the registry, and <code>MANUAL.md</code> vs the plugin version. Anything that slipped both layers above surfaces here as a flagged drift and dies in one regeneration arc.</li>
+        <li><b>Layer two — the close-out ritual (deterministic).</b> Any chat that births a capability, rule, or structural change ends with the Hand registering it before the chat closes: the annex gets the entry, <code>CAPABILITIES.md</code> gets the instrument, <code>MANUAL.md</code> §11 gets a one-line changelog entry (a separate commit — it's a different repo), and a hand update of this guide is flagged for the same arc. The ritual, not the memory, is the guarantee.</li>
+        <li><b>Layer three — the Steward Audit (the net).</b> On a monthly cadence or on demand, Steward diffs everything: guide footer vs <code>plugin.json</code>, annex vs the guide's last-updated date, skills vs <code>PERSONAS.md</code>, memory vs the registry, and <code>MANUAL.md</code> vs the plugin version. Anything that slipped both layers above surfaces here as a flagged drift and dies in one parity arc.</li>
       </ol>
       <ul class="delivers dl-hand" style="margin-top:20px">
         <li><b>Canonical sources</b> — cast in <code>PERSONAS.md</code>, instruments in <code>CAPABILITIES.md</code>, method in each head's <code>skills/*/SKILL.md</code>. This page renders them; it never leads them.</li>
-        <li><b>Two published forms</b> — the full-detail prospectus lives in the private plugin repo; a redacted twin (no local paths, no personal infrastructure) is published to the open web via the Press. Every regeneration updates both, and the redactions are re-applied every time.</li>
+        <li><b>Two published forms</b> — the full-detail prospectus lives in the private plugin repo; a redacted twin (no local paths, no personal infrastructure) is published to the open web via the Press. Every update publishes both, and the redactions are re-applied every time.</li>
         <li><b>Drift detection you can see</b> — the footer below carries the plugin version and last-updated date. If it disagrees with <code>plugin.json</code>, this page has drifted: that is a defect, and a Steward fix.</li>
       </ul>
     </section>
@@ -1577,7 +1614,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       <div class="sect-head">
         <span class="eyebrow">Protocol</span>
         <h2>Engage the Council</h2>
-        <p class="lede">Speak plainly and the right chamber opens. The skills trigger on natural language — "vet this idea," "design this," "spec the build" — or by direct address. Every original invocation still works; the modern forms below are additions, not replacements. All skills reach every surface (Claude Desktop, Claude Code, Cowork, claude.ai web and mobile), including the <code>/council:audit</code> and <code>/council:handoff</code> wrappers — the legacy commands are retired.</p>
+        <p class="lede">Speak plainly and the right chamber opens. The skills trigger on natural language — "vet this idea," "design this," "spec the build" — or by direct address. Every original invocation still works; the modern forms below are additions, not replacements. All skills reach every surface (Claude Code on the Mac or in the cloud, and the Claude app chat on Desktop, web and mobile), including the <code>/council:audit</code> and <code>/council:handoff</code> wrappers — the legacy commands are retired.</p>
       </div>
       <div class="table-scroll">
         <table class="invoke">
@@ -1638,8 +1675,8 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 
 <footer>
   <div class="footer-in">
-    <div>The Council · a private prospectus · generated from PERSONAS.md + skills</div>
-    <div class="mono">council v4.11.4 · last updated 2026-10-09</div>
+    <div>The Council · a private prospectus · hand-maintained to parity with PERSONAS.md + skills</div>
+    <div class="mono">council v4.12.0 · last updated 2026-10-10</div>
   </div>
 </footer>
 
