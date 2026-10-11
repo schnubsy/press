@@ -329,7 +329,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v4.12.1</span>
+    <span class="nav-badge">v4.12.2</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -1266,7 +1266,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <details class="facet">
           <summary><span class="fmk">&#9656;</span>Full detail — the order contract</summary>
           <div class="facet-body">
-            <p>An <b class="ink">arc-shaped order is the default</b> for any coding work order; a single-slice order is the exception — a one-line fix, or when one slice cannot be specified until the previous slice's output exists. Every emitted order carries the same fixed frame: the repo path and a session branch, the standing-rules block (<b class="ink">plan mode once</b> to gather every decision into a single up-front checkpoint, staging by name, and never moving a worktree mid-order), then the numbered slices — each with scope, files, detail, and explicit done-criteria — run back-to-back, with independent pieces fanned out to parallel sub-agents. The <b class="ink">per-slice discipline loop</b> is the same every time: extend the tests, build and lint clean, run the gauntlet, capture a done-proof artifact, commit the slice, hand off, continue — returning only at arc-complete or a genuine blocker. The <b class="ink">close is automatic</b> once the gates are green: push the branch, open the PR, auto-merge and delete it, <b class="ink">reconcile the main checkout</b> to the merged commit, publish with ship proof, <b class="ink">sweep its own agent worktrees</b>, hand off, and end with a <b class="ink">close-out manifest</b> that gives every required step exactly one outcome — done with its proof, not-applicable, or blocked. Before the close, every arc runs an <b class="ink">adversarial code review</b> of its own diff and fixes what it confirms. The report is posted as the pull request's final comment and returned to whoever dispatched it; its last line always hands it to the chat to <b class="ink">verify</b>.</p>
+            <p>An <b class="ink">arc-shaped order is the default</b> for any coding work order; a single-slice order is the exception — a one-line fix, or when one slice cannot be specified until the previous slice's output exists. Every emitted order carries the same fixed frame: the repo path and a session branch, the standing-rules block (<b class="ink">plan mode once</b> to gather every decision into a single up-front checkpoint, staging by name, and never moving a worktree mid-order), then the numbered slices — each with scope, files, detail, and explicit done-criteria — run back-to-back, with independent pieces fanned out to parallel sub-agents. The <b class="ink">per-slice discipline loop</b> is the same every time: extend the tests, build and lint clean, run the gauntlet, capture a done-proof artifact, commit the slice, hand off, continue — returning only at arc-complete or a genuine blocker. The <b class="ink">close is automatic</b> once the gates are green: push the branch, open the PR, pass the <b class="ink">merge gate</b> — every automated check green and a fresh, independent reviewer that never saw the build finding nothing red — then merge it itself (no merge step waits on you), <b class="ink">reconcile the main checkout</b> to the merged commit, publish with ship proof, <b class="ink">sweep its own agent worktrees</b>, hand off, and end with a <b class="ink">close-out manifest</b> that gives every required step exactly one outcome — done with its proof, not-applicable, or blocked. Before the close, every arc runs an <b class="ink">adversarial code review</b> of its own diff and fixes what it confirms. The report is posted as the pull request's final comment and returned to whoever dispatched it; its last line always hands it to the chat to <b class="ink">verify</b>.</p>
             <p>The referenced arc file is <b class="ink"><code>ARC.md</code></b> at the project root — one of the three control files alongside <code>CLAUDE.md</code> and <code>HANDOFF.md</code>. It is <b class="ink">append-only</b>: the chat (the orchestrator) adds dated slices and decisions — committed, on a GitHub-home project — the build session on the project's home consumes them, and the handoff routine ticks the completed slices and — once every slice is done — folds the arc into <code>CLAUDE.md</code> and <code>HANDOFF.md</code>, truncating <code>ARC.md</code> at arc-complete unless it still holds unstarted orders.</p>
             <p><b class="ink">Tenant-change arcs.</b> When an app's footprint on the marquee changes, that change rides inside the app's own arc rather than a parallel one, because there is only ever one writer on the marquee at a time. The marquee's shared modules have a single source that apps pull from and never push to, and a published page is never hand-edited — a fix lands in the source and ships through the app's release.</p>
           </div>
@@ -1305,7 +1305,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       <div class="instr i-hand" id="cap-verify">
         <span class="who">Owner: Snag · consulted Steward · trigger — a pasted build report / "verify this" / "check the build"</span>
         <h4>Verify</h4>
-        <p class="instr-sum">When a build session reports that it is done, Snag checks the report instead of believing it. Every claim — committed, merged, tested, deployed, published, live — is re-observed against the thing itself, and the answer is a red / amber / green table with the few steps that genuinely still need you.</p>
+        <p class="instr-sum">When a build session reports that it is done, Snag checks the report instead of believing it. Every claim — committed, merged, tested, deployed, published, live — is re-observed against the thing itself, and the answer is a red / amber / green table with the few steps that genuinely still need you. It runs after every merge and advises rather than gates — the gate is the build session's own green checks plus its independent reviewer.</p>
         <details class="facet">
           <summary><span class="fmk">&#9656;</span>Full detail — claims, checks, and the fix order</summary>
           <div class="facet-body">
@@ -1324,6 +1324,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
           <summary><span class="fmk">&#9656;</span>Full detail — two homes, one report-back</summary>
           <div class="facet-body">
             <p><b class="ink">Web projects live on GitHub.</b> Dispatch commits the arc to a fresh arc branch, then schedules a one-time cloud build task a couple of minutes out; that task clones the repository, runs every slice, closes out through a pull request, and posts its report as the pull request's final comment — no paste from you, and a phone notification when it ends. <b class="ink">Apple and infrastructure projects live on the Mac</b>, so the hop there is a single phrase you start as a local build session on the Mac — from the desktop, or from your phone through remote control. Either way the report comes back to the chat, which runs <b class="ink">Verify</b> — and a red finding becomes a fix arc it dispatches directly, with no paste in between.</p>
+            <p><b class="ink">One task at a time.</b> Before re-firing a build that looks stuck, the chat proves the first one is idle — its run ended, no fresh commits, no live pull request activity — so two builders never share one branch. <b class="ink">Trust the live product first:</b> what the app itself shows outranks support articles and changelogs, which outrank documentation, and no setting is recommended until it has been seen in place.</p>
           </div>
         </details>
       </div>
@@ -1676,7 +1677,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <footer>
   <div class="footer-in">
     <div>The Council · a private prospectus · hand-maintained to parity with PERSONAS.md + skills</div>
-    <div class="mono">council v4.12.1 · last updated 2026-10-10</div>
+    <div class="mono">council v4.12.2 · last updated 2026-10-11</div>
   </div>
 </footer>
 
