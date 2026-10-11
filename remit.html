@@ -388,7 +388,29 @@ input[aria-invalid=true]{outline:1px solid #f0a393;outline-offset:1px}
 .srow .snote{grid-area:note;min-width:0;margin:4px 0 0;font:400 13px/1.35 var(--sans);color:var(--muted);overflow-wrap:anywhere}
 html.scroll-locked{overscroll-behavior:none}
 .scrim{touch-action:none;overscroll-behavior:contain}
-.sheet,.rsheet{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}</style>
+.sheet,.rsheet{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.erow{grid-template-areas:"grip tick what cur amt del" "grip tick note note sgn del"}
+.sgn{grid-area:sgn;display:none;justify-self:end;align-items:center;justify-content:center;min-height:32px;min-width:44px;
+margin:0 0 6px;padding:0 10px;background:var(--brass-faint);border:1px solid var(--brass-dim);border-radius:6px;
+font:600 14px/1 var(--sans);color:var(--brass);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.sgn:hover{color:var(--ink)}
+.erow:focus-within .sgn,.brow:focus-within .sgn{display:inline-flex}
+.brow .sgn{flex:0 0 auto;margin:0}
+.erow .amt.neg,.brow .amt.neg{color:var(--paid)}
+.erow.paid .amt.neg{color:var(--muted)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;margin:16px 0 0;padding:4px;
+background:var(--panel);border:1px solid var(--brass-faint);border-radius:10px}
+.seg button{min-height:44px;padding:0 12px;border-radius:7px;font:600 17px/1 var(--sans);letter-spacing:.01em;color:var(--muted)}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed=true]{background:var(--brass);color:var(--stage);box-shadow:none}
+.period{gap:10px;margin:14px -18px 0;padding:0 18px 10px}
+.period .years{padding:0 10px 0 0}
+.period .years button{min-height:36px;padding:0 10px;font:700 18px/1 var(--sans);color:var(--brass)}
+.period .years .caret{font-size:13px}
+.period .mgrid{gap:4px;padding:4px 0;margin:0}
+.period .mgrid button{min-width:52px;min-height:36px;padding:0 10px;border:1px solid var(--brass-faint);border-radius:7px;
+font:600 15px/1 var(--sans)}
+.period .mgrid button[aria-current=true]{border-color:var(--brass)}</style>
 </head>
 <body>
 <main class="app" id="remit-root">
@@ -1688,7 +1710,22 @@ var CURSYM = { GBP: '£', USD: 'US$', AUD: 'A$', EUR: '€' };
 var CURNAME = { GBP: 'British pound', USD: 'US dollar', AUD: 'Australian dollar', EUR: 'Euro' };
 function curSym(c) { return CURSYM[c] || c; }
 function symHTML(s) { return String(s == null ? '' : s).replace(/\b(US|A)\$/g, '<span class="cpx">$1</span>$'); }
-function fitAmt(inp) { var n = String(inp.value || inp.placeholder || '').length; inp.style.width = Math.max(6, n + 1.5) + 'ch'; }
+function fitAmt(inp) { var n = String(inp.value || inp.placeholder || '').length; inp.style.width = Math.max(6, n + 1.5) + 'ch'; inp.classList.toggle('neg', /^\s*[-\u2212]/.test(inp.value)); }
+function signBtn() { return '<button type="button" class="sgn" data-sgn aria-label="Make this amount negative or positive">+/−</button>'; }
+function flipSign(inp) {
+var v = String(inp.value || '').trim();
+inp.value = /^[-\u2212]/.test(v) ? v.slice(1) : '-' + v.replace(/^\+/, '');
+inp.dispatchEvent(new Event('input', { bubbles: true }));
+}
+function wireSign(btn, inp) {
+if (!btn || !inp) return;
+btn.addEventListener('pointerdown', (e) => e.preventDefault());
+btn.addEventListener('mousedown', (e) => e.preventDefault());
+btn.addEventListener('click', () => {
+flipSign(inp);
+if (document.activeElement !== inp) { inp.focus(); try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch (e) {} }
+});
+}
 function curPill(cur, homeCur) {
 return '<button type="button" class="curpill' + (cur !== homeCur ? ' off-home' : '') + '" data-curbtn data-cur="' + esc(cur) + '" aria-haspopup="menu" aria-label="Currency: ' + esc(CURNAME[cur] || cur) + ' — change">' + symHTML(esc(curSym(cur))) + '</button>';
 }
@@ -1720,7 +1757,7 @@ btn.setAttribute('aria-expanded', 'true');
 setTimeout(function () { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); }, 0);
 });
 }
-window.RemitCur = { pick: pickCur, sym: curSym, symHTML: symHTML, fitAmt: fitAmt, name: CURNAME };
+window.RemitCur = { pick: pickCur, sym: curSym, symHTML: symHTML, fitAmt: fitAmt, name: CURNAME, signBtn: signBtn, wireSign: wireSign, flipSign: flipSign };
 function confirmDel(btn, name, opts) {
 opts = opts || {};
 return new Promise(function (resolve) {
@@ -1764,6 +1801,7 @@ grip + tick +
 '</span>' +
 curPill(cur, homeCur) +
 '<input class="amt num" data-f="amount" inputmode="decimal" value="' + esc(amt === '' ? '' : amt) + '" placeholder="0.00" aria-label="Amount" autocomplete="off">' +
+signBtn() +
 (isAdd ? '<span class="del" aria-hidden="true"></span>' : '<button type="button" class="del" data-del="' + esc(id) + '" aria-label="Delete ' + esc(desc) + '">×</button>') +
 '</div>';
 }
@@ -2015,6 +2053,7 @@ curBtn.classList.toggle('off-home', next !== homeCur);
 curBtn.setAttribute('aria-label', 'Currency: ' + CURNAME[next] + ' — change');
 } else { await store.updateItem(id, { currency: next }); }
 });
+wireSign(rowEl.querySelector('[data-sgn]'), rowEl.querySelector('[data-f="amount"]'));
 var tickBtn = rowEl.querySelector('[data-tick]');
 if (tickBtn) tickBtn.addEventListener('click', async () => {
 var it = ctrl.itemById(id); if (!it) return;
@@ -2304,6 +2343,7 @@ return '<div class="brow"' + (isAdd ? ' data-add' : ' data-bud="' + esc(b.id) + 
 '</span>' +
 pill(isAdd ? homeCur : b.currency) +
 '<input class="amt num" data-f="amount" inputmode="decimal" value="' + (isAdd ? '' : Number(b.amount).toFixed(2)) + '" placeholder="0.00" aria-label="Amount">' +
+window.RemitCur.signBtn() +
 (isAdd ? '<span class="del"></span>' : '<button type="button" class="del" data-delbud="' + esc(b.id) + '" aria-label="Remove ' + esc(b.label) + '">×</button>') +
 '</div>';
 }
@@ -2323,6 +2363,7 @@ var c = btn.getAttribute('data-cur'); var next = await window.RemitCur.pick(btn)
 btn.setAttribute('data-cur', next); btn.innerHTML = window.RemitCur.symHTML(esc(window.RemitCur.sym(next))); btn.classList.toggle('off-home', next !== homeCur);
 });
 var inp = r.querySelector('.amt'); window.RemitCur.fitAmt(inp);
+window.RemitCur.wireSign(r.querySelector('[data-sgn]'), inp);
 inp.addEventListener('input', () => { window.RemitCur.fitAmt(inp); if (money.parseAmount(inp.value).ok) Remit.ui.amtError(r, inp, null); });
 }
 sheet.querySelectorAll('.brow').forEach(wireRow);
