@@ -18,3 +18,10 @@ Nits — noted, not actioned:
 
 ## Gauntlet after fixes
 `docs/evidence/migrate-home-slice-3-gauntlet.txt` — GREEN (unit 91/0 · inline in sync · tenants-check 50/0 · Playwright 80 passed, 1 skipped WebKit-only, cloud mode).
+
+## Sentry — secrets scan of the arc diff (mandatory step)
+`git diff origin/main...HEAD` added lines (all files, gauntlet logs included) scanned for `sb_secret_`, JWTs (`eyJhbGci…`),
+`service_role` assignments, Postgres DSNs, GitHub/Anthropic/AWS tokens, PEM blocks, Pushover assignments and e-mail addresses:
+**1 hit, benign** — `docs/secrets-map.md` prose naming the forbidden kinds ("Never a `sb_secret_`, service-role key, JWT or DSN").
+No secret values; `docs/secrets-map.md` holds names only. Reviewer pass (above) independently found no leaks. **Sentry GREEN.**
+Dependency audit: N/A (no dependency change in this arc).
