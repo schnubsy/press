@@ -17,12 +17,16 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 
 - **Host**: GitHub Pages at https://schnubsy.github.io/press/
 - **No build step** — static HTML files only
+- **Ship gate:** `bash scripts/gauntlet.sh` via `.claude/skills/verify/SKILL.md` (node --test · inline:check · tenants-check ·
+  Playwright; runs in a cloud clone — Chromium only there, real WebKit on the Mac)
 - **Publish**: via the council press instrument (Lane A hash-verify → commit → push)
 - `pages.json` must be updated whenever a new page is published
 - `agent-health.html` connects to Supabase all-apps views at runtime (client-side JS)
 
 ## Current stage
 
+Home: github:schnubsy/press
+Merge state: PR pending (branch arc/migrate-home)
 Live; **arc/wings-polish COMPLETE (2026-09-24, #16 `17091f6`)** + **T7 follow-up (#17 `166f56b`).**
 Private wing re-locks every **7 days, fixed from unlock**; mobile wing cards one word per line with "N tools";
 perth title "The Runway — Perth"; Family Access = invite + per-person family-app switches (**opt-out grants**,

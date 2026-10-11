@@ -8,8 +8,8 @@
 //   node tools/tenants-check.mjs                 # T1–T4 + T6 + T7 (no build)
 //   node tools/tenants-check.mjs --rebuild       # + T5 rebuild-vs-live for deterministic tenants
 //   node tools/tenants-check.mjs --press <dir>   # override the press root (default: where this lives)
-//   CODE_ROOT=<dir> node tools/tenants-check.mjs   # override the source-repos parent (default ~/Documents/code)
-//   COUNCIL_DIR=<dir> node tools/tenants-check.mjs # override the council repo for T8 (default ~/Documents/Claude/council-hub/council)
+//   CODE_ROOT=<dir> node tools/tenants-check.mjs   # override the source-repos parent (default ~/Documents/code on the Mac; scripts/gauntlet.sh passes the sibling-clone parent)
+//   COUNCIL_DIR=<dir> node tools/tenants-check.mjs # override the council repo for T8 (default = the Mac council-hub checkout; scripts/gauntlet.sh passes ../council when cloned)
 //
 // No dependencies (Node ≥20). The DB checks it cannot reach are EMITTED as SQL, never asserted.
 import { readFileSync, existsSync, statSync } from 'node:fs';
