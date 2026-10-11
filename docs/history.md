@@ -17,6 +17,8 @@ a fresh `--public` rebuild); BACKLOG Eye items → Issues #28–#32; T6 grants l
 flow `kayley.html` compare BLOCKED (flow unreadable from the session). **S3** independent adversarial review: 0 defects,
 5 nits fixed (Mac skips now RED; BSD-grep-safe); sentry GREEN. Visibility untouched (PUBLIC by rule).
 
+Migrate report (2026-10-11): `press: origin/main 76c7b0c (merge PR #27; stamp 33aa45c); 0 unmerged; 0 worktrees; secrets-map 0 keys (+2 Actions secret names); cloud gauntlet GREEN; NAS zip BLOCKED (Mark)` — **not GREEN yet**: NAS zip owed (HANDOFF step 1); flow kayley compare BLOCKED (next press arc). Post-merge gauntlet on main: `docs/evidence/migrate-home-close-gauntlet.txt` GREEN.
+
 ---
 
 ## 2026-09-24 — T7 tool-cfg check (#17)
