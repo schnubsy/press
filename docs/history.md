@@ -4,6 +4,21 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-10-11 — arc/migrate-home (press → GitHub home, PR #27)
+
+First cloud Builder run on press (council v4.12.1 migrate instrument, Wave 1). **S1** §0 gate re-checked in a fresh clone:
+clean; the one orphan branch `claude/perth-phase-2-security-c7a88b` held the `perth_rls_gate` migration mirror — applied live
+since 2026-09-22 but never on main — so it was cherry-picked. `Home: github:schnubsy/press`; path sweep (Mac defaults in
+tenants-check kept and named); `docs/secrets-map.md` (0 `.env` keys, 2 Actions secret names); new `scripts/gauntlet.sh`
+(node --test · inline:check · tenants-check · Playwright) + `.claude/skills/verify/SKILL.md`; cloud mode (`PW_CHROMIUM`)
+because Playwright 1.63 pins a Chromium the image lacks and there is no WebKit — 80/81 specs had failed at launch.
+**S2** CLAUDE.md served pages (+cardsharp, +optimo and its `/press/optimo/` app dir, retirement live blob `77506d01` ==
+a fresh `--public` rebuild); BACKLOG Eye items → Issues #28–#32; T6 grants live (optimo 1 · perth 1 · remit 2).
+flow `kayley.html` compare BLOCKED (flow unreadable from the session). **S3** independent adversarial review: 0 defects,
+5 nits fixed (Mac skips now RED; BSD-grep-safe); sentry GREEN. Visibility untouched (PUBLIC by rule).
+
+---
+
 ## 2026-09-24 — T7 tool-cfg check (#17)
 
 tenants-check gained **T7 `tool-cfg`**: every `spaces.json` personal page with a vault keyring entry must have a

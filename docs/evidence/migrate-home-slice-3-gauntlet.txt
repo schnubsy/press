@@ -1,0 +1,750 @@
+press gauntlet — 2026-10-11T03:23:20Z — HEAD d087a57 — node v22.22.0
+== 1 node --test
+
+> press@1.0.0 test
+> node --test test/vault.test.mjs test/gate-seal.test.mjs test/family-gate.test.mjs test/tenants-check.test.mjs test/page-diff.test.mjs
+
+TAP version 13
+# Subtest: gatedDecision — the fail-closed union
+ok 1 - gatedDecision — the fail-closed union
+  ---
+  duration_ms: 1.365647
+  type: 'test'
+  ...
+# Subtest: sessionFromToken — expires_in seconds and expires_at epoch seconds
+ok 2 - sessionFromToken — expires_in seconds and expires_at epoch seconds
+  ---
+  duration_ms: 0.4321
+  type: 'test'
+  ...
+# Subtest: normSession — rejects malformed, round-trips good
+ok 3 - normSession — rejects malformed, round-trips good
+  ---
+  duration_ms: 1.696195
+  type: 'test'
+  ...
+# Subtest: isExpired — honours the skew
+ok 4 - isExpired — honours the skew
+  ---
+  duration_ms: 0.2151
+  type: 'test'
+  ...
+# Subtest: isGated — spaces.family short-circuits before any apps read
+ok 5 - isGated — spaces.family short-circuits before any apps read
+  ---
+  duration_ms: 0.827433
+  type: 'test'
+  ...
+# Subtest: isGated — not in family: apps 401 fails closed, apps gated:false opens
+ok 6 - isGated — not in family: apps 401 fails closed, apps gated:false opens
+  ---
+  duration_ms: 0.705952
+  type: 'test'
+  ...
+# Subtest: isGated — spaces.json unreadable fails closed
+ok 7 - isGated — spaces.json unreadable fails closed
+  ---
+  duration_ms: 0.300376
+  type: 'test'
+  ...
+# Subtest: verifyCode — structured result carries the status and GoTrue error code
+ok 8 - verifyCode — structured result carries the status and GoTrue error code
+  ---
+  duration_ms: 0.523053
+  type: 'test'
+  ...
+# Subtest: verifyErr — a bad/expired code blames the CODE, never the family list
+ok 9 - verifyErr — a bad/expired code blames the CODE, never the family list
+  ---
+  duration_ms: 0.651542
+  type: 'test'
+  ...
+# Subtest: friendlyAuthErr — the family-list wording stays on the send-code path
+ok 10 - friendlyAuthErr — the family-list wording stays on the send-code path
+  ---
+  duration_ms: 0.507671
+  type: 'test'
+  ...
+# Subtest: isValidCode — accepts any 6–10 digit code, not just 6
+ok 11 - isValidCode — accepts any 6–10 digit code, not just 6
+  ---
+  duration_ms: 0.43299
+  type: 'test'
+  ...
+# Subtest: parseHashParams — reads a fragment, tolerates the leading \# and junk
+ok 12 - parseHashParams — reads a fragment, tolerates the leading \# and junk
+  ---
+  duration_ms: 0.311043
+  type: 'test'
+  ...
+# Subtest: b64urlToJson — decodes a JWT payload segment, null on garbage
+ok 13 - b64urlToJson — decodes a JWT payload segment, null on garbage
+  ---
+  duration_ms: 2.09981
+  type: 'test'
+  ...
+# Subtest: sessionFromHash — a GoTrue token fragment becomes a normal session
+ok 14 - sessionFromHash — a GoTrue token fragment becomes a normal session
+  ---
+  duration_ms: 0.492411
+  type: 'test'
+  ...
+# Subtest: sessionFromHash — expires_in falls back to now + seconds
+ok 15 - sessionFromHash — expires_in falls back to now + seconds
+  ---
+  duration_ms: 0.202836
+  type: 'test'
+  ...
+# Subtest: sessionFromHash — malformed fragments return null (falls through to sign-in)
+ok 16 - sessionFromHash — malformed fragments return null (falls through to sign-in)
+  ---
+  duration_ms: 0.187357
+  type: 'test'
+  ...
+# Subtest: ensureFresh — valid stays, expired refreshes, failed refresh clears
+ok 17 - ensureFresh — valid stays, expired refreshes, failed refresh clears
+  ---
+  duration_ms: 0.854248
+  type: 'test'
+  ...
+# Subtest: seal: ciphertext rides inside the session, bound to its unlockedAt/expiresAt; key is non-extractable
+ok 18 - seal: ciphertext rides inside the session, bound to its unlockedAt/expiresAt; key is non-extractable
+  ---
+  duration_ms: 16.493679
+  type: 'test'
+  ...
+# Subtest: unseal: a fresh page (no memory) gets the creds back
+ok 19 - unseal: a fresh page (no memory) gets the creds back
+  ---
+  duration_ms: 7.063535
+  type: 'test'
+  ...
+# Subtest: a NEW session (new unlockedAt) invalidates an old seal
+ok 20 - a NEW session (new unlockedAt) invalidates an old seal
+  ---
+  duration_ms: 10.309013
+  type: 'test'
+  ...
+# Subtest: tampering fails closed: an extended expiresAt (AAD) or a swapped key → null
+ok 21 - tampering fails closed: an extended expiresAt (AAD) or a swapped key → null
+  ---
+  duration_ms: 13.06716
+  type: 'test'
+  ...
+# Subtest: lock (or expiry) → the ciphertext is gone with the session; unseal null
+ok 22 - lock (or expiry) → the ciphertext is gone with the session; unseal null
+  ---
+  duration_ms: 14.75476
+  type: 'test'
+  ...
+# Subtest: guard: a sealed session releases the page with no gate (async), then a lock brings the gate back
+ok 23 - guard: a sealed session releases the page with no gate (async), then a lock brings the gate back
+  ---
+  duration_ms: 22.087389
+  type: 'test'
+  ...
+# Subtest: guard: a seal from an older session → gate, and the stale key is removed
+ok 24 - guard: a seal from an older session → gate, and the stale key is removed
+  ---
+  duration_ms: 11.541937
+  type: 'test'
+  ...
+# Subtest: no IndexedDB (private mode) → memory only, exactly as before: no seal written, gate on a new page
+ok 25 - no IndexedDB (private mode) → memory only, exactly as before: no seal written, gate on a new page
+  ---
+  duration_ms: 7.023124
+  type: 'test'
+  ...
+# Subtest: other tenants unchanged: fsa.html releases from the session, nothing is sealed, no IDB key
+ok 26 - other tenants unchanged: fsa.html releases from the session, nothing is sealed, no IDB key
+  ---
+  duration_ms: 6.218022
+  type: 'test'
+  ...
+# Subtest: viewports are the train gate pair: 1280×800 + 390×844
+ok 27 - viewports are the train gate pair: 1280×800 + 390×844
+  ---
+  duration_ms: 3.706065
+  type: 'test'
+  ...
+# Subtest: identical renders diff 0%
+ok 28 - identical renders diff 0%
+  ---
+  duration_ms: 14.714019
+  type: 'test'
+  ...
+# Subtest: a painted block is counted as its share of pixels
+ok 29 - a painted block is counted as its share of pixels
+  ---
+  duration_ms: 15.614693
+  type: 'test'
+  ...
+# Subtest: a height change counts: the shorter render is padded white, the extra dark rows differ
+ok 30 - a height change counts: the shorter render is padded white, the extra dark rows differ
+  ---
+  duration_ms: 7.995144
+  type: 'test'
+  ...
+# Subtest: T1 registry PASS — tier matches spaces.json
+ok 31 - T1 registry PASS — tier matches spaces.json
+  ---
+  duration_ms: 94.452768
+  type: 'test'
+  ...
+# Subtest: T1 registry FAIL — tenants tier disagrees with spaces.json
+ok 32 - T1 registry FAIL — tenants tier disagrees with spaces.json
+  ---
+  duration_ms: 88.528874
+  type: 'test'
+  ...
+# Subtest: T1 registry FAIL — page in BOTH personal[] and family[]
+ok 33 - T1 registry FAIL — page in BOTH personal[] and family[]
+  ---
+  duration_ms: 87.021667
+  type: 'test'
+  ...
+# Subtest: T2 source PASS — repo present + git
+ok 34 - T2 source PASS — repo present + git
+  ---
+  duration_ms: 116.394305
+  type: 'test'
+  ...
+# Subtest: T2 source FAIL — repo missing but coupling declared
+ok 35 - T2 source FAIL — repo missing but coupling declared
+  ---
+  duration_ms: 82.000906
+  type: 'test'
+  ...
+# Subtest: T3 gate PASS — vendored byte-identical to canonical
+ok 36 - T3 gate PASS — vendored byte-identical to canonical
+  ---
+  duration_ms: 85.488896
+  type: 'test'
+  ...
+# Subtest: T3 gate FAIL — vendored drift
+ok 37 - T3 gate FAIL — vendored drift
+  ---
+  duration_ms: 87.298209
+  type: 'test'
+  ...
+# Subtest: T3 gate FAIL — vendored MISSING (not SKIP)
+ok 38 - T3 gate FAIL — vendored MISSING (not SKIP)
+  ---
+  duration_ms: 78.600798
+  type: 'test'
+  ...
+# Subtest: T4 release PASS — PRESS_DIR + spaces.json + gate compare, no writes
+ok 39 - T4 release PASS — PRESS_DIR + spaces.json + gate compare, no writes
+  ---
+  duration_ms: 83.987962
+  type: 'test'
+  ...
+# Subtest: T4 release FAIL — missing PRESS_DIR
+ok 40 - T4 release FAIL — missing PRESS_DIR
+  ---
+  duration_ms: 85.163063
+  type: 'test'
+  ...
+# Subtest: T4 release FAIL — writes spaces.json (registry is read-only)
+ok 41 - T4 release FAIL — writes spaces.json (registry is read-only)
+  ---
+  duration_ms: 85.410163
+  type: 'test'
+  ...
+# Subtest: T5 rebuild PASS — deterministic build reproduces the live page
+ok 42 - T5 rebuild PASS — deterministic build reproduces the live page
+  ---
+  duration_ms: 158.940458
+  type: 'test'
+  ...
+# Subtest: T5 rebuild FAIL — deterministic build differs from the live page
+ok 43 - T5 rebuild FAIL — deterministic build differs from the live page
+  ---
+  duration_ms: 170.693879
+  type: 'test'
+  ...
+# Subtest: T6 family-grants EMITTED — SQL printed for family pages
+ok 44 - T6 family-grants EMITTED — SQL printed for family pages
+  ---
+  duration_ms: 111.920308
+  type: 'test'
+  ...
+# Subtest: T7 tool-cfg PASS — every personal data (keyring) page is in TOOL_CFG
+ok 45 - T7 tool-cfg PASS — every personal data (keyring) page is in TOOL_CFG
+  ---
+  duration_ms: 80.822783
+  type: 'test'
+  ...
+# Subtest: T7 tool-cfg FAIL — a personal data page is missing from TOOL_CFG
+ok 46 - T7 tool-cfg FAIL — a personal data page is missing from TOOL_CFG
+  ---
+  duration_ms: 102.126657
+  type: 'test'
+  ...
+# Subtest: T7 tool-cfg — a personal NON-data page (no keyring entry) is exempt, not required in TOOL_CFG
+ok 47 - T7 tool-cfg — a personal NON-data page (no keyring entry) is exempt, not required in TOOL_CFG
+  ---
+  duration_ms: 84.711221
+  type: 'test'
+  ...
+# Subtest: T7 tool-cfg SKIP — no vault.js / index.html to audit
+ok 48 - T7 tool-cfg SKIP — no vault.js / index.html to audit
+  ---
+  duration_ms: 78.548282
+  type: 'test'
+  ...
+# Subtest: clean estate exits 0; a single FAIL flips the exit to 1
+ok 49 - clean estate exits 0; a single FAIL flips the exit to 1
+  ---
+  duration_ms: 116.675416
+  type: 'test'
+  ...
+# Subtest: T8 registry-parity PASS — every tenant page has a snag-registry row with the same repo
+ok 50 - T8 registry-parity PASS — every tenant page has a snag-registry row with the same repo
+  ---
+  duration_ms: 108.982246
+  type: 'test'
+  ...
+# Subtest: T8 registry-parity FAIL — a tenant page with no registry row
+ok 51 - T8 registry-parity FAIL — a tenant page with no registry row
+  ---
+  duration_ms: 96.89944
+  type: 'test'
+  ...
+# Subtest: T8 registry-parity FAIL — registry repo differs from tenants.json
+ok 52 - T8 registry-parity FAIL — registry repo differs from tenants.json
+  ---
+  duration_ms: 82.224026
+  type: 'test'
+  ...
+# Subtest: T8 registry-parity FAIL (not SKIP) — the council registry file is missing
+ok 53 - T8 registry-parity FAIL (not SKIP) — the council registry file is missing
+  ---
+  duration_ms: 87.05098
+  type: 'test'
+  ...
+# Subtest: vaultIdFor is 64-hex and deterministic
+ok 54 - vaultIdFor is 64-hex and deterministic
+  ---
+  duration_ms: 17.95751
+  type: 'test'
+  ...
+# Subtest: different raw credential ids give different vault ids
+ok 55 - different raw credential ids give different vault ids
+  ---
+  duration_ms: 5.58859
+  type: 'test'
+  ...
+# Subtest: round-trip: seal then open with the same key returns the keyring
+ok 56 - round-trip: seal then open with the same key returns the keyring
+  ---
+  duration_ms: 10.77575
+  type: 'test'
+  ...
+# Subtest: the SAME PRF output + salt derives the identical key (the property the design rests on)
+ok 57 - the SAME PRF output + salt derives the identical key (the property the design rests on)
+  ---
+  duration_ms: 15.279554
+  type: 'test'
+  ...
+# Subtest: two different PRF outputs derive different keys (wrong PRF => null)
+ok 58 - two different PRF outputs derive different keys (wrong PRF => null)
+  ---
+  duration_ms: 11.348297
+  type: 'test'
+  ...
+# Subtest: a different salt derives a different key (wrong salt => null)
+ok 59 - a different salt derives a different key (wrong salt => null)
+  ---
+  duration_ms: 2.523487
+  type: 'test'
+  ...
+# Subtest: a flipped ciphertext byte fails closed (GCM auth) => null
+ok 60 - a flipped ciphertext byte fails closed (GCM auth) => null
+  ---
+  duration_ms: 1.830689
+  type: 'test'
+  ...
+# Subtest: a truncated record (missing iv) => null
+ok 61 - a truncated record (missing iv) => null
+  ---
+  duration_ms: 2.038327
+  type: 'test'
+  ...
+# Subtest: a malformed record (garbage ciphertext) => null
+ok 62 - a malformed record (garbage ciphertext) => null
+  ---
+  duration_ms: 4.96584
+  type: 'test'
+  ...
+# Subtest: openKeyring(null) and openKeyring({}) => null (never throws)
+ok 63 - openKeyring(null) and openKeyring({}) => null (never throws)
+  ---
+  duration_ms: 1.682889
+  type: 'test'
+  ...
+# Subtest: session: save then load returns keyring + vaultId within TTL
+ok 64 - session: save then load returns keyring + vaultId within TTL
+  ---
+  duration_ms: 1.071305
+  type: 'test'
+  ...
+# Subtest: arc/wings-polish slice 1: the private-wing TTL is 7 days, fixed from unlock
+ok 65 - arc/wings-polish slice 1: the private-wing TTL is 7 days, fixed from unlock
+  ---
+  duration_ms: 0.279419
+  type: 'test'
+  ...
+# Subtest: arc/wings-polish slice 1: loadSession does NOT slide the expiry on use (fixed from unlock)
+ok 66 - arc/wings-polish slice 1: loadSession does NOT slide the expiry on use (fixed from unlock)
+  ---
+  duration_ms: 1.059936
+  type: 'test'
+  ...
+# Subtest: session: an expired session loads as null and is removed
+ok 67 - session: an expired session loads as null and is removed
+  ---
+  duration_ms: 0.257423
+  type: 'test'
+  ...
+# Subtest: lock() clears the session
+ok 68 - lock() clears the session
+  ---
+  duration_ms: 0.400859
+  type: 'test'
+  ...
+# Subtest: everEnrolled flag is set after a save and survives lock()
+ok 69 - everEnrolled flag is set after a save and survives lock()
+  ---
+  duration_ms: 0.230389
+  type: 'test'
+  ...
+# Subtest: GUARD ON THE GUARD: the sealed record leaks ZERO keyring values; the plaintext has all
+ok 70 - GUARD ON THE GUARD: the sealed record leaks ZERO keyring values; the plaintext has all
+  ---
+  duration_ms: 9.967317
+  type: 'test'
+  ...
+# [private-wing] prf shape [object Object] []
+# [private-wing] prf shape [object Object] [ '0', '1', '2' ]
+# [private-wing] prf shape [object String] string
+# [private-wing] prf shape [object Object] []
+# Subtest: a base64url STRING PRF output derives the SAME key as the equivalent Uint8Array
+ok 71 - a base64url STRING PRF output derives the SAME key as the equivalent Uint8Array
+  ---
+  duration_ms: 6.813007
+  type: 'test'
+  ...
+# Subtest: prfResult normalises a base64url STRING to the SAME bytes as an ArrayBuffer
+ok 72 - prfResult normalises a base64url STRING to the SAME bytes as an ArrayBuffer
+  ---
+  duration_ms: 0.781113
+  type: 'test'
+  ...
+# Subtest: prfResult: a zero-length or missing PRF result is treated as ABSENT (null), not success
+ok 73 - prfResult: a zero-length or missing PRF result is treated as ABSENT (null), not success
+  ---
+  duration_ms: 0.332
+  type: 'test'
+  ...
+# Subtest: prfResult: a wrong-length PRF output is REJECTED with the human message
+ok 74 - prfResult: a wrong-length PRF output is REJECTED with the human message
+  ---
+  duration_ms: 0.913451
+  type: 'test'
+  ...
+# Subtest: asBytes: base64url string decodes to the exact bytes; arbitrary objects still throw
+ok 75 - asBytes: base64url string decodes to the exact bytes; arbitrary objects still throw
+  ---
+  duration_ms: 0.519165
+  type: 'test'
+  ...
+# Subtest: REGRESSION: prfResult returns null (never throws) for every unreadable shape
+ok 76 - REGRESSION: prfResult returns null (never throws) for every unreadable shape
+  ---
+  duration_ms: 1.074256
+  type: 'test'
+  ...
+# Subtest: asBytes recovers a shim that wraps bytes in an object (.buffer view-like AND numeric-keyed)
+ok 77 - asBytes recovers a shim that wraps bytes in an object (.buffer view-like AND numeric-keyed)
+  ---
+  duration_ms: 0.429241
+  type: 'test'
+  ...
+# Subtest: a REAL PRF container of the wrong length is still REJECTED (kept green)
+ok 78 - a REAL PRF container of the wrong length is still REJECTED (kept green)
+  ---
+  duration_ms: 0.333889
+  type: 'test'
+  ...
+# Subtest: dealsVerdict: a 200 with >=1 row is VERIFIED
+ok 79 - dealsVerdict: a 200 with >=1 row is VERIFIED
+  ---
+  duration_ms: 0.200725
+  type: 'test'
+  ...
+# Subtest: dealsVerdict: a 200 with ZERO rows is a WRONG key (the silent-failure trap), NOT success
+ok 80 - dealsVerdict: a 200 with ZERO rows is a WRONG key (the silent-failure trap), NOT success
+  ---
+  duration_ms: 0.224665
+  type: 'test'
+  ...
+# Subtest: dealsVerdict: a non-200 / non-array body is UNREACHABLE or wrong, never verified
+ok 81 - dealsVerdict: a non-200 / non-array body is UNREACHABLE or wrong, never verified
+  ---
+  duration_ms: 0.133685
+  type: 'test'
+  ...
+# Subtest: verifyCardScout: a correct key (200 + a row) => verified; the probe sends x-plan-id and hits press_deals
+ok 82 - verifyCardScout: a correct key (200 + a row) => verified; the probe sends x-plan-id and hits press_deals
+  ---
+  duration_ms: 0.545307
+  type: 'test'
+  ...
+# Subtest: verifyCardScout: 200 with ZERO rows => WRONG (must NOT be read as success)
+ok 83 - verifyCardScout: 200 with ZERO rows => WRONG (must NOT be read as success)
+  ---
+  duration_ms: 0.706465
+  type: 'test'
+  ...
+# Subtest: verifyCardScout: a non-200 response => unreachable (surfaced as a plain retry, never a status code)
+ok 84 - verifyCardScout: a non-200 response => unreachable (surfaced as a plain retry, never a status code)
+  ---
+  duration_ms: 0.201307
+  type: 'test'
+  ...
+# Subtest: verifyCardScout: a thrown fetch or an empty sync id => unreachable, never a crash
+ok 85 - verifyCardScout: a thrown fetch or an empty sync id => unreachable, never a crash
+  ---
+  duration_ms: 0.552331
+  type: 'test'
+  ...
+# Subtest: REGRESSION: enrol falls through to prfViaGet when CREATE yields an unusable value, then succeeds from the assertion
+ok 86 - REGRESSION: enrol falls through to prfViaGet when CREATE yields an unusable value, then succeeds from the assertion
+  ---
+  duration_ms: 26.355469
+  type: 'test'
+  ...
+# Subtest: S1: saveSession persists cardsharp as a redacted stub; this tab keeps the full creds in memory only
+ok 87 - S1: saveSession persists cardsharp as a redacted stub; this tab keeps the full creds in memory only
+  ---
+  duration_ms: 0.638418
+  type: 'test'
+  ...
+# Subtest: S1: a pre-redaction (plaintext) session is scrubbed in place on the next read
+ok 88 - S1: a pre-redaction (plaintext) session is scrubbed in place on the next read
+  ---
+  duration_ms: 0.391403
+  type: 'test'
+  ...
+# Subtest: S1: lock() (or a vanished session) drops the in-memory creds
+ok 89 - S1: lock() (or a vanished session) drops the in-memory creds
+  ---
+  duration_ms: 0.224664
+  type: 'test'
+  ...
+# Subtest: S1: restoreRedacted puts the real entry back from the decrypted row; a filled stub just loses its flag
+ok 90 - S1: restoreRedacted puts the real entry back from the decrypted row; a filled stub just loses its flag
+  ---
+  duration_ms: 0.373782
+  type: 'test'
+  ...
+# Subtest: S1: sealing never writes a redacted stub over the vault row (updateKeyring restores before sealing)
+ok 91 - S1: sealing never writes a redacted stub over the vault row (updateKeyring restores before sealing)
+  ---
+  duration_ms: 3.138996
+  type: 'test'
+  ...
+1..91
+# tests 91
+# suites 0
+# pass 91
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3789.653856
+== 2 inline:check
+inline-vault: index.html is in sync with src/vault.js
+inline-vault: src/gate.js is in sync with src/vault.js
+== 3 tenants-check (CODE_ROOT=/home/claude COUNCIL_DIR=/home/claude/council)
+tenants-check — press root: /home/claude/press
+  source repos: /home/claude
+
+  [PASS] T1 registry          card-scout.html      tier personal
+  [PASS] T2 source            card-scout.html      card-scout present
+  [PASS] T3 gate              card-scout.html      src/vendor/press-gate.js == press/src/gate.js (07d88508)
+  [PASS] T4 release           card-scout.html      PRESS_DIR + spaces.json read + gate compare; no registry writes
+  [PASS] T1 registry          kayley.html          tier public
+  [SKIP] T2 source            kayley.html          press-native (repo: null)
+  [SKIP] T3 gate              kayley.html          no vendored gate
+  [SKIP] T4 release           kayley.html          no release script
+  [PASS] T1 registry          council-guide.html   tier public
+  [SKIP] T2 source            council-guide.html   provenance-only repo "council" not on disk at /root/Documents/Claude/council-hub/council
+  [SKIP] T3 gate              council-guide.html   no vendored gate
+  [SKIP] T4 release           council-guide.html   no release script
+  [PASS] T1 registry          eagle-path.html      tier public
+  [SKIP] T2 source            eagle-path.html      press-native (repo: null)
+  [SKIP] T3 gate              eagle-path.html      no vendored gate
+  [SKIP] T4 release           eagle-path.html      no release script
+  [PASS] T1 registry          halvsies.html        tier public
+  [SKIP] T2 source            halvsies.html        press-native (repo: null)
+  [SKIP] T3 gate              halvsies.html        no vendored gate
+  [SKIP] T4 release           halvsies.html        no release script
+  [PASS] T1 registry          retirement.html      tier personal
+  [PASS] T2 source            retirement.html      retirement present
+  [PASS] T3 gate              retirement.html      src/vendor/press-gate.js == press/src/gate.js (07d88508)
+  [PASS] T4 release           retirement.html      PRESS_DIR + spaces.json read + gate compare; no registry writes
+  [PASS] T1 registry          giving.html          tier personal
+  [PASS] T2 source            giving.html          giving-tracker present
+  [PASS] T3 gate              giving.html          src/vendor/press-gate.js == press/src/gate.js (07d88508)
+  [PASS] T4 release           giving.html          PRESS_DIR + spaces.json read + gate compare; no registry writes
+  [PASS] T1 registry          agent-health.html    tier public
+  [SKIP] T2 source            agent-health.html    press-native (repo: null)
+  [SKIP] T3 gate              agent-health.html    no vendored gate
+  [SKIP] T4 release           agent-health.html    no release script
+  [PASS] T1 registry          fsa.html             tier personal
+  [PASS] T2 source            fsa.html             fsa-claims present
+  [PASS] T3 gate              fsa.html             src/vendor/press-gate.js == press/src/gate.js (07d88508)
+  [PASS] T4 release           fsa.html             PRESS_DIR + spaces.json read + gate compare; no registry writes
+  [PASS] T1 registry          perth.html           tier family
+  [SKIP] T2 source            perth.html           press-native (repo: null)
+  [SKIP] T3 gate              perth.html           no vendored gate
+  [SKIP] T4 release           perth.html           no release script
+  [PASS] T1 registry          access.html          tier personal
+  [SKIP] T2 source            access.html          press-native (repo: null)
+  [SKIP] T3 gate              access.html          no vendored gate
+  [SKIP] T4 release           access.html          no release script
+  [PASS] T1 registry          remit.html           tier family
+  [PASS] T2 source            remit.html           remit present
+  [PASS] T3 gate              remit.html           src/vendor/family-gate.js == press/src/family-gate.js (9eba177d)
+  [PASS] T4 release           remit.html           PRESS_DIR + spaces.json read + gate compare; no registry writes
+  [PASS] T1 registry          optimo.html          tier family
+  [PASS] T2 source            optimo.html          optimo present
+  [PASS] T3 gate              optimo.html          src/vendor/family-gate.js == press/src/family-gate.js (9eba177d)
+  [PASS] T4 release           optimo.html          PRESS_DIR + spaces.json read + gate compare; no registry writes
+  [PASS] T1 registry          cardsharp.html       tier personal
+  [PASS] T2 source            cardsharp.html       cardsharp present
+  [PASS] T3 gate              cardsharp.html       src/vendor/press-gate.js == press/src/gate.js (07d88508)
+  [PASS] T4 release           cardsharp.html       PRESS_DIR + spaces.json read + gate compare; no registry writes
+  [PASS] T7 tool-cfg          (marquee)            4 personal data page(s) all present in TOOL_CFG
+  [PASS] T8 registry-parity   card-scout.html      card-scout → schnubsy/card-scout
+  [PASS] T8 registry-parity   kayley.html          kayley → schnubsy/press
+  [PASS] T8 registry-parity   council-guide.html   council-guide → schnubsy/council
+  [PASS] T8 registry-parity   eagle-path.html      eagle-path → schnubsy/press
+  [PASS] T8 registry-parity   halvsies.html        halvsies → schnubsy/press
+  [PASS] T8 registry-parity   retirement.html      retirement → schnubsy/retirement
+  [PASS] T8 registry-parity   giving.html          giving-tracker → schnubsy/giving-tracker
+  [PASS] T8 registry-parity   agent-health.html    agent-health → schnubsy/press
+  [PASS] T8 registry-parity   fsa.html             fsa-claims → schnubsy/fsa-claims
+  [PASS] T8 registry-parity   perth.html           perth → schnubsy/press
+  [PASS] T8 registry-parity   access.html          access → schnubsy/press
+  [PASS] T8 registry-parity   remit.html           remit → schnubsy/remit
+  [PASS] T8 registry-parity   optimo.html          optimo → schnubsy/optimo
+  [PASS] T8 registry-parity   cardsharp.html       cardsharp → schnubsy/cardsharp
+
+  [EMIT] T6 family-grants     (run via the Supabase MCP; expect >=1 active grant per page)
+        select a.page, count(g.*) filter (where g.active) as active_grants
+        from press_access_apps a
+        left join press_access_grants g on g.page = a.page
+        where a.page in ('remit.html', 'perth.html', 'optimo.html')
+        group by a.page;
+
+tenants-check: 50 pass, 0 fail, 21 skip, 1 emitted
+== 4 playwright
+
+Running 81 tests using 1 worker
+
+  ✓   1 [chromium] › test/access-admin.spec.mjs:92:1 › admin sign-in survives a reload (verifyCode wrapper bug fix) and accepts a 6–10 digit code (1.4s)
+  ✓   2 [chromium] › test/access-admin.spec.mjs:102:1 › People are cards with a switch per family tool, ON by default; the "gate an app" section is gone (1.0s)
+  ✓   3 [chromium] › test/access-admin.spec.mjs:115:1 › adding a person shows their card with every family tool ON (979ms)
+  ✓   4 [chromium] › test/access-admin.spec.mjs:127:1 › opting a person out of a tool writes an active=false grant that persists across a reload (1.3s)
+  ✓   5 [chromium] › test/access.spec.mjs:46:1 › enrolled browser, no session: direct navigation shows the passkey gate, not the admin sign-in (463ms)
+  ✓   6 [chromium] › test/access.spec.mjs:54:1 › enrolled browser WITH a live session: the passkey belt passes, admin sign-in is reached (605ms)
+  ✓   7 [chromium] › test/access.spec.mjs:62:1 › never-enrolled browser: no passkey belt, admin OTP sign-in shows (RLS still enforces admin) (573ms)
+  ✓   8 [chromium] › test/connect.spec.mjs:114:1 › DEFECT 2: locked wing shows "Use your passkey" as the primary action (604ms)
+  ✓   9 [chromium] › test/connect.spec.mjs:121:1 › DEFECT 2: a second device (reachable row, no local flag) adopts via Setup — never creates an empty duplicate row (1.1s)
+  ✓  10 [chromium] › test/connect.spec.mjs:137:1 › Cardsharp connects only after its press_cardsharp row decrypts; a wrong passphrase stores nothing (1.9s)
+  ✓  11 [chromium] › test/connect.spec.mjs:164:1 › every tool connected: the section renders COLLAPSED; Manage expands, collapse clears the rows (1.1s)
+  ✓  12 [chromium] › test/connect.spec.mjs:198:5 › desktop › a NOT-connected app shows its full form, expanded by default (1.1s)
+  ✓  13 [chromium] › test/connect.spec.mjs:209:5 › desktop › a CONNECTED app renders as a quiet collapsed line — fields are NOT in the DOM (1.1s)
+  ✓  14 [chromium] › test/connect.spec.mjs:222:5 › desktop › Reconnect expands the row in place (fields appear, first focused), then re-collapses and clears (1.3s)
+  ✓  15 [chromium] › test/connect.spec.mjs:239:5 › desktop › Card Scout row: sync-id field ONLY (no passphrase input) (1.1s)
+  ✓  16 [chromium] › test/connect.spec.mjs:248:5 › desktop › Card Scout: a WRONG sync id (200 + zero rows) is rejected with the plain-language message; nothing stored (1.5s)
+  ✓  17 [chromium] › test/connect.spec.mjs:260:5 › desktop › Card Scout: a CORRECT sync id connects; keyring holds sync_id + inert gate sentinel pass; row collapses (1.4s)
+  ✓  18 [chromium] › test/connect.spec.mjs:277:5 › desktop › connect fsa: verify against real data, then seal into the keyring; status flips to Connected (1.6s)
+  ✓  19 [chromium] › test/connect.spec.mjs:295:5 › desktop › connect fsa with the WRONG passphrase: distinct message, nothing stored (1.5s)
+  ✓  20 [chromium] › test/connect.spec.mjs:308:5 › desktop › connect fsa with an UNKNOWN sync id: row-not-found message, distinct from a bad passphrase (1.4s)
+  ✓  21 [chromium] › test/connect.spec.mjs:198:5 › iPhone 15 › a NOT-connected app shows its full form, expanded by default (999ms)
+  ✓  22 [chromium] › test/connect.spec.mjs:209:5 › iPhone 15 › a CONNECTED app renders as a quiet collapsed line — fields are NOT in the DOM (1.0s)
+  ✓  23 [chromium] › test/connect.spec.mjs:222:5 › iPhone 15 › Reconnect expands the row in place (fields appear, first focused), then re-collapses and clears (1.2s)
+  ✓  24 [chromium] › test/connect.spec.mjs:239:5 › iPhone 15 › Card Scout row: sync-id field ONLY (no passphrase input) (1.0s)
+  ✓  25 [chromium] › test/connect.spec.mjs:248:5 › iPhone 15 › Card Scout: a WRONG sync id (200 + zero rows) is rejected with the plain-language message; nothing stored (1.2s)
+  ✓  26 [chromium] › test/connect.spec.mjs:260:5 › iPhone 15 › Card Scout: a CORRECT sync id connects; keyring holds sync_id + inert gate sentinel pass; row collapses (1.4s)
+  ✓  27 [chromium] › test/connect.spec.mjs:277:5 › iPhone 15 › connect fsa: verify against real data, then seal into the keyring; status flips to Connected (1.4s)
+  ✓  28 [chromium] › test/connect.spec.mjs:295:5 › iPhone 15 › connect fsa with the WRONG passphrase: distinct message, nothing stored (1.5s)
+  ✓  29 [chromium] › test/connect.spec.mjs:308:5 › iPhone 15 › connect fsa with an UNKNOWN sync id: row-not-found message, distinct from a bad passphrase (1.2s)
+  ✓  30 [chromium] › test/family-gate.spec.mjs:71:1 › a gated page shows the sign-in and hides the app until a granted code is entered (495ms)
+  ✓  31 [chromium] › test/family-gate.spec.mjs:95:1 › a wrong/expired code blames the code, NOT the family list, and the gate stays up (462ms)
+  ✓  32 [chromium] › test/family-gate.spec.mjs:109:1 › an 8-digit code is accepted — the field does not assume 6 (509ms)
+  ✓  33 [chromium] › test/family-gate.spec.mjs:121:1 › a signed-in but UNgranted address is told it lacks access (not let in) (502ms)
+  ✓  34 [chromium] › test/family-gate.spec.mjs:132:1 › zero auth calls happen before the page is known gated (362ms)
+  ✓  35 [chromium] › test/family-lobby.spec.mjs:66:1 › the family door renders from spaces.json alone — count only, zero auth/vault calls (844ms)
+  ✓  36 [chromium] › test/family-lobby.spec.mjs:104:3 › wing squares are edge-aligned with the cards below (desktop) (675ms)
+  ✓  37 [chromium] › test/family-lobby.spec.mjs:104:3 › wing squares are edge-aligned with the cards below (mobile) (667ms)
+  ✓  38 [chromium] › test/family-lobby.spec.mjs:121:1 › opening the family wing gates on a live session — the sign-in shows, no tool leaks, zero auth calls until the user acts (531ms)
+  ✓  39 [chromium] › test/family-lobby.spec.mjs:135:1 › a v1 spaces file (no family key) renders no family door — nothing breaks pre-v2 (653ms)
+  ✓  40 [chromium] › test/marquee.spec.mjs:104:1 › landing shows the two-space marquee and makes ZERO vault calls (not set up) (1.1s)
+  ✓  41 [chromium] › test/marquee.spec.mjs:128:1 › deep link to ?view=family hits the entrance gate, not the tools (no session) (514ms)
+  ✓  42 [chromium] › test/marquee.spec.mjs:138:1 › enrol → 4 cards → lock → unlock → lock (full private-wing flow) (2.3s)
+  ✓  43 [chromium] › test/marquee.spec.mjs:182:1 › enrol works when the PRF result arrives as a base64url STRING (1Password shim) (754ms)
+  ✓  44 [chromium] › test/marquee.spec.mjs:227:1 › enrol falls through to the assertion when the PRF is unusable at CREATE (1Password enabled-only) (741ms)
+  ✓  45 [chromium] › test/marquee.spec.mjs:254:1 › landing screenshots — desktop + mobile (two-space) (1.7s)
+  ✓  46 [chromium] › test/perth-title.spec.mjs:41:1 › pages.json + perth.html carry the renamed title; old title is gone (4ms)
+  ✓  47 [chromium] › test/perth-title.spec.mjs:50:1 › the family-wing directory card shows "The Runway — Perth" (portal surface) (565ms)
+  ✓  48 [chromium] › test/perth-title.spec.mjs:69:1 › access.html titleFor() resolves perth to the new title (same man[page].title source) (394ms)
+  ✓  49 [chromium] › test/recovery-kit.spec.mjs:65:1 › unlocked wing renders the recovery kit — every keyring entry + restore steps, no sentinel (1.4s)
+  ✓  50 [chromium] › test/recovery-kit.spec.mjs:107:1 › locked wing shows NO recovery kit (587ms)
+  ✓  51 [chromium] › test/remit-card.spec.mjs:27:1 › pages.json titles remit.html "Remit" (1ms)
+  ✓  52 [chromium] › test/remit-card.spec.mjs:31:1 › the Family Wing card: kicker "Family Transfers", title "Remit", banknote icon kept (443ms)
+  ✓  53 [chromium] › test/sealed-unlock.spec.mjs:109:1 › one unlock → reload, wing and back, a second tab, tab switches, 10 min idle: never a second prompt (1.6s)
+  ✓  54 [chromium] › test/sealed-unlock.spec.mjs:127:1 › 7 days + 1 minute → the gate returns in-tab and on reload; the seal and its key are gone (588ms)
+  ✓  55 [chromium] › test/sealed-unlock.spec.mjs:136:1 › the wing's "Lock now" → every app tab re-gates; IDB key + ciphertext deleted; reload still gated (1.4s)
+  ✓  56 [chromium] › test/sealed-unlock.spec.mjs:150:1 › the app's own lock → every tab re-gates and the seal is deleted (851ms)
+  ✓  57 [chromium] › test/sealed-unlock.spec.mjs:160:1 › a new session (re-unlocked in the wing) invalidates the old seal; an open app tab reseals onto a wing re-save (2.9s)
+  ✓  58 [chromium] › test/sealed-unlock.spec.mjs:189:1 › localStorage + IndexedDB hold no plaintext sync id / pass; the key is a non-extractable AES-GCM key (593ms)
+  ✓  59 [chromium] › test/sealed-unlock.spec.mjs:201:1 › other tenants unchanged: fsa.html opens from the session and writes no seal (652ms)
+  ✓  60 [chromium] › test/sealed-unlock.spec.mjs:209:1 › no IndexedDB (private mode) → memory only, as before: a reload asks again (555ms)
+  -  61 [chromium] › test/sealed-unlock.spec.mjs:221:1 › WebKit: the IDB-held key survives a reload and unseals with no prompt; a lock deletes it
+  ✓  62 [chromium] › test/ttl-honored.spec.mjs:41:3 › published fsa.html honours a 7-day session expiresAt (reads it, never recomputes to 8h) (472ms)
+  ✓  63 [chromium] › test/ttl-honored.spec.mjs:41:3 › published giving.html honours a 7-day session expiresAt (reads it, never recomputes to 8h) (482ms)
+  ✓  64 [chromium] › test/ttl-honored.spec.mjs:41:3 › published retirement.html honours a 7-day session expiresAt (reads it, never recomputes to 8h) (518ms)
+  ✓  65 [chromium] › test/ttl-honored.spec.mjs:41:3 › published card-scout.html honours a 7-day session expiresAt (reads it, never recomputes to 8h) (304ms)
+  ✓  66 [chromium] › test/wing-cards.spec.mjs:72:1 › iPhone-15: both wing headings render one word per line; locklines are plain counts (877ms)
+  ✓  67 [chromium] › test/wing-cards.spec.mjs:97:1 › iPhone-15 first run (no passkey): private card invites setup, family stays a count (619ms)
+  ✓  68 [chromium] › test/wing-cards.spec.mjs:105:1 › desktop: heading words are inline (layout unchanged); screenshot captured (971ms)
+  ✓  69 [chromium] › test/wing-drag.spec.mjs:40:3 › public: long-press drag reorders and persists across reload (shared store) (2.1s)
+  ✓  70 [chromium] › test/wing-drag.spec.mjs:62:3 › public: Alt+↓ / Alt+↑ keyboard reorder announces and persists (1.4s)
+  ✓  71 [chromium] › test/wing-drag.spec.mjs:40:3 › private: long-press drag reorders and persists across reload (shared store) (2.6s)
+  ✓  72 [chromium] › test/wing-drag.spec.mjs:62:3 › private: Alt+↓ / Alt+↑ keyboard reorder announces and persists (1.3s)
+  ✓  73 [chromium] › test/wing-drag.spec.mjs:40:3 › family: long-press drag reorders and persists across reload (shared store) (2.2s)
+  ✓  74 [chromium] › test/wing-drag.spec.mjs:62:3 › family: Alt+↓ / Alt+↑ keyboard reorder announces and persists (1.2s)
+  ✓  75 [chromium] › test/wing-drag.spec.mjs:86:1 › private: moving >10px before the hold is a scroll intent — no lift, no reorder, no write (1.6s)
+  ✓  76 [chromium] › test/wing-drag.spec.mjs:104:1 › legacy {order, archived} row: public paint unchanged; a wing write keeps both keys intact (1.2s)
+  ✓  77 [chromium] › test/wing-drag.spec.mjs:121:1 › a wing order never adds or drops a page — stale/foreign entries are ignored (563ms)
+  ✓  78 [chromium] › test/wing-drag-iphone.spec.mjs:43:3 › iPhone 15 (chromium) public: touch long-press drag reorders and persists (1.9s)
+  ✓  79 [chromium] › test/wing-drag-iphone.spec.mjs:43:3 › iPhone 15 (chromium) private: touch long-press drag reorders and persists (1.7s)
+  ✓  80 [chromium] › test/wing-drag-iphone.spec.mjs:43:3 › iPhone 15 (chromium) family: touch long-press drag reorders and persists (2.6s)
+  ✓  81 [chromium] › test/wing-drag-iphone.spec.mjs:62:1 › iPhone 15 (chromium) private: a touch that moves before the hold scrolls — no reorder (1.2s)
+
+  1 skipped
+  80 passed (1.5m)
+
+── summary ──
+ℹ️ cloud mode: Chromium only (Chromium 141.0.7390.37 ); WebKit iPhone spec = Chromium emulation
+🟢 1 unit: pass 91 / fail 0
+🟢 2 inline:check in sync
+🟢 3 tenants-check: 50 pass, 0 fail, 21 skip, 1 emitted
+🟢 4 playwright: 1 skipped  80 passed (1.5m) 
+   skip: -  61 [chromium] › test/sealed-unlock.spec.mjs:221:1 › WebKit: the IDB-held key survives a reload and unseals with no prompt; a lock deletes it
+GAUNTLET GREEN — exit 0 — log docs/evidence/migrate-home-slice-3-gauntlet.txt

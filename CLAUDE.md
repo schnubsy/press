@@ -10,26 +10,34 @@ served via GitHub Pages. `index.html` is the portal (KICKERS / ICONS driven by `
 
 Served pages by tier (contract: `docs/spec.md` → Tenants):
 - **Public:** `kayley.html`, `council-guide.html`, `eagle-path.html`, `halvsies.html`, `agent-health.html`
-- **Private wing** (WebAuthn passkey + vault): `fsa.html`, `giving.html`, `retirement.html`, `card-scout.html`, `access.html` (family admin)
-- **Family wing** (email OTP + JWT + per-page grants): `remit.html`, `perth.html`
+- **Private wing** (WebAuthn passkey + vault): `fsa.html`, `giving.html`, `retirement.html`, `card-scout.html`, `cardsharp.html`, `access.html` (family admin)
+- **Family wing** (email OTP + JWT + per-page grants): `remit.html`, `perth.html`, `optimo.html`
+- **optimo** = `optimo.html` (family-wing launcher card) + the `optimo/` app directory (the PWA, served at
+  `/press/optimo/`), both mirrored by optimo's own `tools/release.js` (optimo migrate-home, 2026-10-10, from merge `83cdcc1`).
+- **retirement** (`retirement.html`) — Home `github:schnubsy/retirement`; live = its `--public` build from merge `a0d0b80`
+  (published `b99282b`, 2026-10-10; blob `77506d01` == a fresh rebuild, 2026-10-11).
+- Tier truth is `spaces.json`; tenant metadata `tenants.json`; titles `pages.json`.
 
 ## Stack & how to run
 
 - **Host**: GitHub Pages at https://schnubsy.github.io/press/
 - **No build step** — static HTML files only
+- **Ship gate:** `bash scripts/gauntlet.sh` via `.claude/skills/verify/SKILL.md` (node --test · inline:check · tenants-check ·
+  Playwright; runs in a cloud clone — Chromium only there, real WebKit on the Mac)
 - **Publish**: via the council press instrument (Lane A hash-verify → commit → push)
 - `pages.json` must be updated whenever a new page is published
 - `agent-health.html` connects to Supabase all-apps views at runtime (client-side JS)
 
 ## Current stage
 
-Live; **arc/wings-polish COMPLETE (2026-09-24, #16 `17091f6`)** + **T7 follow-up (#17 `166f56b`).**
-Private wing re-locks every **7 days, fixed from unlock**; mobile wing cards one word per line with "N tools";
-perth title "The Runway — Perth"; Family Access = invite + per-person family-app switches (**opt-out grants**,
-`press_access_has` live-verified); printable **private-wing recovery kit** (no email reset, by design).
-tenants-check **T7 `tool-cfg`**: every personal data page must be in `TOOL_CFG` (Connect your tools + kit).
-Gauntlet: node 69 · Playwright 56 · tenants-check 29/0. The 4 published tenant pages inline 8h until each
-app's own next release (vendored gate already 7d). No press inbox pending.
+Home: github:schnubsy/press
+Merge state: PR pending (branch arc/migrate-home)
+**arc/migrate-home (2026-10-11) — Home moved to GitHub; ran as a cloud Builder.** press stays PUBLIC. New ship gate
+`scripts/gauntlet.sh` + verify skill (cloud mode = Chromium only); cloud gauntlet GREEN (unit 91 · tenants-check 50/0 ·
+Playwright 80 + 1 WebKit-only skip). `docs/secrets-map.md` (0 keys; 2 Actions secret names). Served pages list now
+includes cardsharp + optimo (`optimo/` app dir); applied `perth_rls_gate` mirror carried onto main; BACKLOG → Issues
+#28–#32. **BLOCKED:** flow `kayley.html` compare (flow not in session scope) — flow archive waits on it; NAS zip (Mark).
+Full narrative: `docs/history.md`.
 
 ## Project rules
 

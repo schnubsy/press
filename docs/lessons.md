@@ -315,3 +315,17 @@ editing press; a needed republish is a guarded manual step. apps pull, never pus
 (`press_access_grants.active`), not `press_access_people.active`. A grants audit that stems the page or
 filters on people.active returns empty and reads as a false "gated-but-locked". Verify the schema
 (`information_schema.columns`) before trusting an audit query.
+
+**RULE [press] [cloud] (2026-10-11):** a cloud clone's Playwright must launch the image's Chromium (`PW_CHROMIUM` →
+`launchOptions.executablePath`) — the pinned Playwright's own browser is not installed and cannot be downloaded, and
+WebKit does not exist there. Cloud runs are Chromium-only; real-WebKit checks stay on the Mac, where any Playwright
+skip is RED (`scripts/gauntlet.sh`).
+
+**RULE [press] [supabase] (2026-10-11):** an applied migration's `db/*.sql` mirror lives on main, never only on a side
+branch — the migrate §0 gate found `perth_rls_gate` applied live (2026-09-22) with its file stranded on an un-PR'd
+branch. Cross-check `list_migrations` against `db/` when closing an arc that applied DDL.
+
+**RULE [press] [cloud] (2026-10-11):** a cloud session reads only the repos in its scope; an order that needs another
+repo (e.g. flow for the kayley compare) must have it added at dispatch — otherwise that step is BLOCKED, never fetched
+around the scope.
+
