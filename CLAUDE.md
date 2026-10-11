@@ -10,8 +10,13 @@ served via GitHub Pages. `index.html` is the portal (KICKERS / ICONS driven by `
 
 Served pages by tier (contract: `docs/spec.md` → Tenants):
 - **Public:** `kayley.html`, `council-guide.html`, `eagle-path.html`, `halvsies.html`, `agent-health.html`
-- **Private wing** (WebAuthn passkey + vault): `fsa.html`, `giving.html`, `retirement.html`, `card-scout.html`, `access.html` (family admin)
-- **Family wing** (email OTP + JWT + per-page grants): `remit.html`, `perth.html`
+- **Private wing** (WebAuthn passkey + vault): `fsa.html`, `giving.html`, `retirement.html`, `card-scout.html`, `cardsharp.html`, `access.html` (family admin)
+- **Family wing** (email OTP + JWT + per-page grants): `remit.html`, `perth.html`, `optimo.html`
+- **optimo** = `optimo.html` (family-wing launcher card) + the `optimo/` app directory (the PWA, served at
+  `/press/optimo/`), both mirrored by optimo's own `tools/release.js` (optimo migrate-home, 2026-10-10, from merge `83cdcc1`).
+- **retirement** (`retirement.html`) — Home `github:schnubsy/retirement`; live = its `--public` build from merge `a0d0b80`
+  (published `b99282b`, 2026-10-10; blob `77506d01` == a fresh rebuild, 2026-10-11).
+- Tier truth is `spaces.json`; tenant metadata `tenants.json`; titles `pages.json`.
 
 ## Stack & how to run
 
