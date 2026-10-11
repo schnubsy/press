@@ -55,17 +55,20 @@ else summary+=("🔴 3 $(grep -E '^tenants-check:' "$LOG" | tail -1) — ✗ FAI
 # 4 — Playwright smoke
 say "== 4 playwright"
 if npx playwright test >>"$LOG" 2>&1; then pw=ok; else pw=fail; fi
-pwline="$(grep -E '^\s+[0-9]+ (passed|failed|skipped|flaky)' "$LOG" | tr -s ' ' | tr '\n' ' ')"
-skipped="$(grep -E '^\s+-\s+[0-9]+ ' "$LOG" | sed 's/^ *//' | head -5)"
+pwline="$(grep -E '^[[:space:]]+[0-9]+ (passed|failed|skipped|flaky)' "$LOG" | tr -s ' ' | tr '\n' ' ')"
+skipped="$(grep -E '^[[:space:]]+-[[:space:]]+[0-9]+ ' "$LOG" | sed 's/^ *//' | head -5)"
 if [ "$pw" = ok ]; then summary+=("🟢 4 playwright:${pwline}")
 else summary+=("🔴 4 playwright:${pwline}— ✗ FAILED: playwright"); fail=1; fi
 [ -n "$skipped" ] && while IFS= read -r l; do summary+=("   skip: $l"); done <<< "$skipped"
+# On the Mac (no PW_CHROMIUM) real WebKit must run — a self-skipped test there is a missing engine, not a pass.
+if [ -z "${PW_CHROMIUM:-}" ] && [ -n "$skipped" ]; then summary+=("🔴 4 playwright — ✗ FAILED: skips outside cloud mode (install WebKit)"); fail=1; fi
 
 # Specs rewrite tracked evidence PNGs as a side effect — restore what this run touched, unless asked to keep.
 if [ -z "${KEEP_EVIDENCE:-}" ]; then
-  for f in $(git diff --name-only -- docs/evidence | grep -v "^$LOG$"); do
-    case $'\n'"$dirty_before"$'\n' in *$'\n'"$f"$'\n'*) ;; *) git checkout -- "$f" ;; esac
-  done
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    case $'\n'"$dirty_before"$'\n' in *$'\n'"$f"$'\n'*) summary+=("⚠️ $f was dirty before the run and may have been rewritten by a spec") ;; *) git checkout -- "$f" ;; esac
+  done <<< "$(git diff --name-only -- docs/evidence | grep -v "^$LOG$")"
 fi
 [ -d test-results ] && rm -r test-results
 

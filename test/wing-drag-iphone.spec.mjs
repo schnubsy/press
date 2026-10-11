@@ -40,7 +40,7 @@ const SCOPES = [
 ];
 
 for (const s of SCOPES) {
-  test(`iPhone 15 (WebKit) ${s.name}: touch long-press drag reorders and persists`, async ({ page, context, browserName }) => {
+  test(`iPhone 15 (${ENGINE}) ${s.name}: touch long-press drag reorders and persists`, async ({ page, context, browserName }) => {
     expect(browserName).toBe(ENGINE);
     if (ENGINE === 'webkit') expect(await page.evaluate(() => navigator.vendor), 'real WebKit engine').toBe('Apple Computer, Inc.');
     const st = await harness(context, s.opts);
@@ -59,7 +59,7 @@ for (const s of SCOPES) {
   });
 }
 
-test('iPhone 15 (WebKit) private: a touch that moves before the hold scrolls — no reorder', async ({ page, context }) => {
+test(`iPhone 15 (${ENGINE}) private: a touch that moves before the hold scrolls — no reorder`, async ({ page, context }) => {
   const st = await harness(context, { vault: true });
   await page.goto(base + '/?view=personal');
   await expect(page.locator('.tw-card')).toHaveCount(PERSONAL_FILES.length);
