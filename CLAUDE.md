@@ -32,13 +32,12 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 
 Home: github:schnubsy/press
 Merge state: PR pending (branch arc/migrate-home)
-Live; **arc/wings-polish COMPLETE (2026-09-24, #16 `17091f6`)** + **T7 follow-up (#17 `166f56b`).**
-Private wing re-locks every **7 days, fixed from unlock**; mobile wing cards one word per line with "N tools";
-perth title "The Runway — Perth"; Family Access = invite + per-person family-app switches (**opt-out grants**,
-`press_access_has` live-verified); printable **private-wing recovery kit** (no email reset, by design).
-tenants-check **T7 `tool-cfg`**: every personal data page must be in `TOOL_CFG` (Connect your tools + kit).
-Gauntlet: node 69 · Playwright 56 · tenants-check 29/0. The 4 published tenant pages inline 8h until each
-app's own next release (vendored gate already 7d). No press inbox pending.
+**arc/migrate-home (2026-10-11) — Home moved to GitHub; ran as a cloud Builder.** press stays PUBLIC. New ship gate
+`scripts/gauntlet.sh` + verify skill (cloud mode = Chromium only); cloud gauntlet GREEN (unit 91 · tenants-check 50/0 ·
+Playwright 80 + 1 WebKit-only skip). `docs/secrets-map.md` (0 keys; 2 Actions secret names). Served pages list now
+includes cardsharp + optimo (`optimo/` app dir); applied `perth_rls_gate` mirror carried onto main; BACKLOG → Issues
+#28–#32. **BLOCKED:** flow `kayley.html` compare (flow not in session scope) — flow archive waits on it; NAS zip (Mark).
+Full narrative: `docs/history.md`.
 
 ## Project rules
 

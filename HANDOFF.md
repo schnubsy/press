@@ -1,6 +1,6 @@
 # press — HANDOFF
 
-_Last updated: 2026-09-24 — arc/wings-polish **COMPLETE** (#16) + T7 follow-up (#17). Closed out from Cowork._
+_Last updated: 2026-10-11 — arc/migrate-home (press → GitHub home), cloud Builder, PR #27._
 
 ## Standing rule — publish auto-close (do NOT re-litigate)
 
@@ -8,49 +8,42 @@ An outward-facing publish at the end of a **green arc or hotfix** does NOT need 
 from Mark. When the gauntlet is green, complete the publish (merge/push to `main`, which GitHub Pages serves)
 as part of closing out. (Auto-merge is still never enabled pre-emptively.) Set by Mark 2026-09-18.
 
-## Current state — arc/wings-polish COMPLETE
+## Current state
 
-Five slices, all shipped from `main`:
-- **Slice 1** — private-wing TTL **8h→7 days, fixed from unlock** (press-owned copies; `src/vault.js`→inline).
-- **Slice 2** — lobby wing cards: one word per line ≤480px; plain-count locklines.
-- **Slice 3** — perth title → "The Runway — Perth".
-- **Slice 4** — Family Access **opt-out grants**; `access.html` redesigned; sign-in loop bug fixed;
-  `db/20260924_press_access_optout.sql` applied + live-verified.
-- **Slice 5** — private-wing **printable recovery kit**; no email reset by design.
+- Merge state: PR pending (branch arc/migrate-home)
+- Home: `github:schnubsy/press` — work happens in a cloud clone (`git clone https://github.com/schnubsy/press`); PUBLIC, stays public.
+- Ship gate: `bash scripts/gauntlet.sh` via `.claude/skills/verify/SKILL.md` — cloud GREEN 2026-10-11 (unit 91/0 ·
+  inline in sync · tenants-check 50/0 · Playwright 80 passed + 1 WebKit-only skip).
+- `delete_branch_on_merge` = true (already set). Served pages unchanged by this arc.
 
-Follow-up **#17 (`166f56b`)** — tenants-check **T7 `tool-cfg`**: personal data pages must be in `TOOL_CFG`
-(Connect your tools + recovery kit). Tooling/tests/docs only — no page republish needed.
+## Shipped this arc
+- S1 Home line · path sweep · `docs/secrets-map.md` · gauntlet + verify skill (cloud mode) · `perth_rls_gate` db mirror onto main.
+- S2 CLAUDE.md served pages (+cardsharp, +optimo app dir, retirement live state) · BACKLOG → Issues #28–#32 · T6 grants live.
+- S3 adversarial review (0 defects, 5 nits fixed) · sentry GREEN.
+- Evidence: `docs/evidence/migrate-home-slice-{1,2,3}-*`.
 
-Gauntlet: **69 node + 56 Playwright, 0 skipped; inline:check green; tenants-check 29 pass / 0 fail.**
-
-## Close-out manifest
-
-| Step | Status |
-|---|---|
-| push | DONE — `claude/arc-wings-polish-0e3d69`. |
-| PR | DONE — press #16 (`--base main`), flipped ready. |
-| merge | DONE — #16 `17091f6`; #17 `166f56b`. |
-| reconcile main | DONE — `~/Documents/code/press` main HEAD == merge SHA. |
-| migrations | DONE — `press_access_optout` applied by Cowork + live-verified (`wings-polish-slice-4-live-verify.txt`). |
-| tenant gate re-vendor | DONE — fsa-claims #14, retirement #3, giving-tracker #10, card-scout #15 (all merged; vendored == `9e11ce15`). |
-| deploy | N/A (no build step / no edge fn). |
-| publish | DONE — index.html + perth.html + access.html live 200 and `git hash-object` == GitHub blob (proof in arc report). |
-| inbox cleanup | N/A (ARC.md committed in-branch). |
-| handoff | DONE — CLAUDE stage, history, lessons, this file, ARC all updated. |
-
-## Standing follow-ups (each in that app's OWN arc/release — not this arc)
-The four PUBLISHED tenant pages still inline the 8h TTL constant; each carries the 7-day TTL onto its page
-only when that app next builds + releases (fsa-claims, giving-tracker, retirement, card-scout). Their
-vendored `press-gate.js` is already the 7d canonical, so `node build.js` / release will pick it up. Each
-tenant page already HONOURS a portal-minted 7-day session today (proven in `test/ttl-honored.spec.mjs`).
-
-Note: **card-scout has an uncommitted seeded `ARC.md`** (its own next "fixes arc"; hash `e00a419`) —
-untouched by this arc; card-scout's own session commits it as that arc's first action.
+## Open / blockers
+- **flow `kayley.html` compare — BLOCKED.** schnubsy/flow was not in this session's repo scope (no `add_repo`; clone auth
+  failed). press `kayley.html` blob `347e248` unchanged; flow's per migrate.md §2 = `779b1c4`. flow must NOT be archived
+  until a press arc with flow in scope diffs the two (next steps).
+- **GitHub Actions secrets set-state** unreadable from the cloud (proxy 403 on `actions/secrets`) — see Mark's step 2.
+- **NAS zip** of the Mac press folder — Mark's step 1 (BLOCKED in the cloud).
+- Remote branch `claude/perth-phase-2-security-c7a88b` survives (cloud cannot delete remote branches); its only commit is
+  now on main by patch-id — safe for Mark/the chat to delete.
+- Issues #28–#32 (Eye polish, `page:index`).
 
 ## Exact next steps
-No press inbox pending (ARC.md empty). Next arc: `BACKLOG.md` polish, or remit's `arc/gate-hardening-and-fx`.
-Habit: reprint the recovery kit after adding a private tool or changing a passphrase (kit printed 2026-09-24).
-MAIN CHECKOUT: `~/Documents/code/press`. INBOX FILES: this HANDOFF + `BACKLOG.md`.
+1. Chat: run verify on PR #27 (close-out report is its final comment).
+2. Next press arc — **flow kayley carry-over** (dispatch with BOTH repos in scope):
+   HOME: github:schnubsy/press · BRANCH: arc/flow-kayley
+   S1 — `git clone https://github.com/schnubsy/flow ../flow` (read-only); diff `../flow/kayley.html` vs `kayley.html`; if flow's
+   is newer and correct, bring it in per the press publish rules (pages.json untouched), ship proof (200 + blob == hash-object);
+   record the diff in `docs/evidence/`. Then the chat archives flow (`gh repo archive schnubsy/flow --yes`) per migrate.md §2.
+3. Snag train / polish arc for Issues #28–#32 when Mark wants it.
 
 ## Mark's manual steps
-None. (Council files unchanged; recovery kit already printed.)
+1. NAS zip of the Mac press folder (migrate.md step 7):
+   `test -d ~/Documents/code/press && ditto -c -k --keepParent ~/Documents/code/press "<NAS>/archive/code/press-2026-10-11.zip" && unzip -l "<NAS>/archive/code/press-2026-10-11.zip" | tail -1`
+   — expected: a file count > 0 on the last line. Only then may the Mac folder be deleted (Finder).
+2. Confirm in GitHub → schnubsy/press → Settings → Secrets → Actions that `SUPABASE_PRESS_ANON_KEY` (and optionally
+   `AGENT_HEALTH_HEARTBEAT_URL`) exist — expected: both names listed; the daily Agent health notifier runs green.
