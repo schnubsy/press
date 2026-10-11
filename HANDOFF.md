@@ -10,7 +10,7 @@ as part of closing out. (Auto-merge is still never enabled pre-emptively.) Set b
 
 ## Current state
 
-- Merge state: PR pending (branch arc/migrate-home)
+- Merge state: Merged: PR #27 76c7b0c on 2026-10-11; main checkout on main @ 76c7b0c
 - Home: `github:schnubsy/press` — work happens in a cloud clone (`git clone https://github.com/schnubsy/press`); PUBLIC, stays public.
 - Ship gate: `bash scripts/gauntlet.sh` via `.claude/skills/verify/SKILL.md` — cloud GREEN 2026-10-11 (unit 91/0 ·
   inline in sync · tenants-check 50/0 · Playwright 80 passed + 1 WebKit-only skip).

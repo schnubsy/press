@@ -31,7 +31,7 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: PR pending (branch arc/migrate-home)
+Merge state: Merged: PR #27 76c7b0c on 2026-10-11; main checkout on main @ 76c7b0c
 **arc/migrate-home (2026-10-11) — Home moved to GitHub; ran as a cloud Builder.** press stays PUBLIC. New ship gate
 `scripts/gauntlet.sh` + verify skill (cloud mode = Chromium only); cloud gauntlet GREEN (unit 91 · tenants-check 50/0 ·
 Playwright 80 + 1 WebKit-only skip). `docs/secrets-map.md` (0 keys; 2 Actions secret names). Served pages list now
