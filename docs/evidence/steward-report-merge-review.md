@@ -25,3 +25,12 @@ It ran `node --test test/steward-reports.test.mjs` (10/10) and `test/steward.spe
   - unit 101/0, inline ✓, Playwright 88 + 1 WebKit-only skip.
   - tenants-check: steward rows PASS. Its 21 FAILs are all "tenant repo MISSING at /home/claude/<repo>", because seven tenant repos are outside this cloud session's GitHub scope; it is identical on base and not this PR's.
 - PR CI: none configured on press or council (no `pull_request` workflows).
+
+## Re-review after merging origin/main (PR #35 landed mid-arc) — head `d98c8fd`
+A second fresh-context reviewer read the final PR diff and the conflict resolution in `d98c8fd` (`^2` == origin/main
+`74e1e4a`). Main's LABELS map and glyph registry were kept, with steward added (`tool` glyph and the "Environment Reports /
+Steward" label). Main's test list, docs and HANDOFF carry-items were kept. The steward feature files are unchanged by the merge.
+No conflict markers remain. `npm test` 133/133; card-labels + steward specs 13/13. **VERDICT: no 🔴.**
+Close gauntlet `steward-report-close-gauntlet.txt`:
+- unit 133/0 · inline ✓ · Playwright 110 + 1 WebKit-only skip.
+- tenants-check: steward T1/T8/T9 PASS. Its 21 FAILs are all tenant-repo MISSING (outside this session's scope).
