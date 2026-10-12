@@ -155,6 +155,17 @@
       "output": "dist/index.html",
       "deterministic": true,
       "note": "build id = content hash of the build inputs (src-<sha256 prefix>, no git sha, no timestamp), so a rebuild at any commit with the same sources is byte-identical to cardsharp.html — docs-only commits cannot break T5. Registered 2026-09-28 (cardsharp Arc 1); content-hash id 2026-10-01 (cardsharp PR #2)."
+    },
+    "steward.html": {
+      "repo": null,
+      "tier": "personal",
+      "gate": null,
+      "vendored": null,
+      "release": null,
+      "build": null,
+      "output": null,
+      "deterministic": false,
+      "note": "press-native private-wing page (arc/steward-report, 2026-10-12): the Steward's watch/audit reports. Loads src/gate.js by relative path (like access.html); reads press_steward_reports (service-role-only) through the steward-reports Edge Function, gated on the private wing's Card Scout capability (x-plan-id). No keyring entry of its own (T7-exempt)."
     }
   }
 }

@@ -1374,7 +1374,7 @@ const KICKERS=[[/remit/,'Family Transfers'], // remit FIRST (first-match wins) s
   [/agent-health|health|monitor|status/,'Monitor'],[/halvsies|split|money|budget|spend/,'Money'],[/council/,'Reference'],[/checklist|prep|kayley|eagle/,'Checklist'],
   [/log|notes|journal/,'Notes'],[/guide|how-?to|readme/,'Guide'],
   // Phase 3 — the wing pages get real page-type icons (matched before the generic 'Page' fallback).
-  [/fsa/,'FSA'],[/giving/,'Giving'],[/retirement/,'Retirement'],[/card-scout/,'Cards'],[/cardsharp/,'Gift Cards'],[/perth/,'Perth']];
+  [/fsa/,'FSA'],[/giving/,'Giving'],[/retirement/,'Retirement'],[/card-scout/,'Cards'],[/cardsharp/,'Gift Cards'],[/perth/,'Perth'],[/steward/,'Steward']];
 const kicker=f=>{for(const[re,k]of KICKERS)if(re.test(f))return k;return 'Page';};
 const titleize=f=>f.replace(/\.html$/,'').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -1405,6 +1405,8 @@ const ICONS={
   // Perth — a PLANE (Feather "send" paper-plane): a flight/runway glyph that stays crisp at 26px.
   // (Replaced the hand-drawn Australia, which did not read at row size.)
   'Perth':      '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+  // Steward (steward.html) — a wrench (Feather "tool"): the environment-maintenance reports.
+  'Steward':    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
   // Family Transfers (remit.html) — a banknote (Lucide "banknote"), deliberately distinct from the
   // bare $ dollar-sign used for halvsies' Money. Keyed by the kicker, so it follows the kicker's name.
   'Family Transfers': '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01"/><path d="M18 12h.01"/></svg>'
