@@ -410,7 +410,17 @@ background:var(--panel);border:1px solid var(--brass-faint);border-radius:10px}
 .period .mgrid{gap:4px;padding:4px 0;margin:0}
 .period .mgrid button{min-width:52px;min-height:36px;padding:0 10px;border:1px solid var(--brass-faint);border-radius:7px;
 font:600 15px/1 var(--sans)}
-.period .mgrid button[aria-current=true]{border-color:var(--brass)}</style>
+.period .mgrid button[aria-current=true]{border-color:var(--brass)}
+.erow .amt.neg,.brow .amt.neg{color:#e58b90}
+.erow.paid .amt.neg{color:var(--muted)}
+.hd{padding-bottom:8px}
+.hd .sub{margin-top:5px}
+.tw-back{margin-bottom:0;padding-top:2px;padding-bottom:2px}
+.seg{margin:10px 0 0;padding:3px;gap:3px;border-radius:9px}
+.seg button{min-height:36px;font-size:15px;border-radius:6px}
+.period{margin:8px -18px 0;padding:0 18px 6px}
+.period .years button{min-height:36px;font-size:17px}
+@media(min-width:900px){.period{margin:8px 0 0;padding:0 0 6px}}</style>
 </head>
 <body>
 <main class="app" id="remit-root">
@@ -1063,7 +1073,10 @@ var transfers = ctx.transfers || [];
 var sectionRows = (ctx.sections || []).filter(function (s) { return !s.deleted_at; })
 .sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); });
 var items = (allItems || []).filter(function (it) { return it.period_id === period.id && alive(it); });
-items.sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); });
+items.sort(function (a, b) {
+var na = Number(a.amount) < 0 ? 1 : 0, nb = Number(b.amount) < 0 ? 1 : 0;
+return (na - nb) || ((a.sort_order || 0) - (b.sort_order || 0));
+});
 function group(pred) { return items.filter(pred); }
 var recurring = group(function (it) { return it.bucket === 'recurring'; });
 var extras    = group(function (it) { return it.bucket === 'extras'; });
