@@ -215,3 +215,56 @@ the shared DB shapes (`press_<shape>`, every row keyed by a `page` column = file
 - **Never writes `spaces.json` or `tenants.json`**; never pushes on its own (the arc close does).
 
 **Hotfix rule:** source repo first, then release — never patch `press/<page>.html` by hand.
+
+## Agent Monitor (`agent-health.html`)
+
+Arc marquee-wings-monitor slice 4 (2026-10-12). One page answers, for every agent, AI function, pg_cron job and
+scheduled task behind the marquee apps: *is it working, when did it last do REAL work and what did it produce, is
+anything late or missed, what did it cost this month (and projected), and how do I fix it?*
+
+**Not self-validating.** Status is computed on the server by `press_agent_monitor_public` from real evidence against
+an expected schedule — never from `press_agent_registry.last_ok_at` (council agent-core bumps that on `skipped`
+ticks too) and never by the page. Evidence sources (`press_agent_expect.source`):
+
+| source | real work = | used for |
+|---|---|---|
+| `runs-work` | `press_agent_runs` outcome `ok`/`warn` (never `skipped`) | scheduled agents (card-scout, agent-watch) |
+| `runs-alive` | any non-`dead` run — the pipe is alive | inlets polled on a timer (Gmail Apps Script, fsa-capture, the GH notifier) |
+| `runs-event` | last attempt's outcome; no cadence | on-demand agents that log runs |
+| `cron` | `cron.job_run_details` (`dispatch_only` = an http_post job: "succeeded" only means queued) | pg_cron jobs |
+| `checkin` | `press_agent_checkin()` rows | cloud / Mac / browser scheduled tasks |
+| `none` | — shown honestly as **No data** | AI functions that log nothing yet |
+
+Statuses: `healthy` · `late` (missed its due time + grace) · `failed` (never ran, last attempt failed, or silent
+4× its window) · `no-data` (grey ring — never green) · `off`. Schedules (`sched`, America/Chicago):
+`{"every":min}` · `{"daily":["HH:MM",…]}` · `{"weekly":{"dow":0-6,"at":"HH:MM"}}` · `{"monthly":{"dom":1-28,"at":"HH:MM"}}` · `null` (on demand).
+Expectations start at `registered_at` — a new row is never "late" for a run due before it existed.
+Month cost = CT month-to-date; **projected = MTD + avg(cost of the last 7 complete CT days) × CT days remaining
+(fractional)** (server per agent; `src/agent-monitor.js` `projectMonth` for the page total).
+
+**Alerting.** pg_cron `agent-watch` (every 15 min, Vault-held header secret) → Edge Function `agent-watch` diffs the
+view against `press_agent_watch_state` and sends ONE Pushover push + ONE Gmail email (council `notify.mjs`
+transports) only on a change into late/failed, late→failed, or a recovery to healthy; it notes its own gaps. The GH
+Action `agent-health-notifier` (hourly-ish) is the watcher of the watcher: it fails (GitHub emails) if agent-watch is
+stale > 45 min or saw a problem it could not deliver.
+
+**Fix.** Per-agent `fix_hint` + public-safe `fix_links` for everyone. Retry/Run now appears only when the Family
+Wing session in localStorage (`press:family:v1`) belongs to an admin; Edge Function `agent-fix` re-verifies the JWT
+(GoTrue) and `press_access_is_admin()` as the caller, runs only the row's allowlisted `retry_action`
+(`cron:<job>` → `press_agent_fix_run`, service_role only), rate-limits 1 per agent per 10 min and logs a run row.
+
+### RULE — registering a new agent (every future agent, AI function, job or scheduled task)
+
+1. **One row in `public.press_agent_expect`** (migration in `db/`, mirrored byte-identical): `id`, `app_label` (the
+   marquee app name: Card Scout, Cardsharp, Optimo, FSA Claims Tracker, Giving Tracker, The Council, Marquee …),
+   `label`, `what`, `kind`, `source` (+ `run_app`/`run_agent` or `cron_job`), `sched` + `grace_minutes`, `fix_hint`,
+   `fix_links`, optional `retry_action`. The page, the watcher and the GH check pick it up automatically.
+2. **A scheduled task (cloud / Mac / browser) checks in as its LAST step** via the Supabase connector (`execute_sql`
+   on project `eepjhpyziczrxvirczio`):
+   ```sql
+   select public.press_agent_checkin('<id>', 'ok', '<one line: what it produced>');   -- 'ok' | 'warn' | 'fail'
+   ```
+   `press_agent_checkin` is SECURITY DEFINER and executable only by `service_role`/`postgres` (never anon or
+   authenticated), and refuses ids that are not `source = 'checkin'` rows.
+3. An agent that writes `press_agent_runs` (council agent-core) needs nothing else — but it is only "working" when it
+   logs `ok`; a `skipped` tick is never real work.

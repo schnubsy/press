@@ -1,50 +1,35 @@
-# Agent health notifier — a daily check that EMAILS when a marquee agent needs attention.
+# Agent health notifier — the WATCHER OF THE WATCHER (arc marquee-wings-monitor, slice 4).
 #
-# The agents.html page can SHOW health, but a page cannot NOTIFY — nobody is looking at it at
-# 3am. This scheduled workflow closes that gap. Once a day it runs scripts/agent-health-check.mjs
-# against the same header-gated public views the dashboard reads (press_agent_registry_public +
-# press_agent_runs_daily_public, scoped by x-app). The script:
-#   * exits 0 when every enabled agent is healthy — a quiet, green run, no email;
-#   * exits NON-ZERO with a plain-English summary (which agent, what is wrong, the ONE action)
-#     when an enabled agent is stale past 3x its cadence, has never run, or logged an error in
-#     the last day. A non-zero exit FAILS the run, and GitHub emails the repository owner on a
-#     failed scheduled run by default — that failure email IS the notification.
-#   * exits 1 (loud) if it cannot reach the status service — it never reports healthy on a
-#     failed check.
+# Primary alerting is server-side now: pg_cron fires the `agent-watch` Edge Function every 15 minutes; it reads
+# press_agent_monitor_public (status from REAL work against each agent's schedule, all apps) and sends a
+# Pushover push + Gmail email on every state change. This hourly-ish workflow is the INDEPENDENT check on that
+# watcher (GitHub's scheduler drifts — that is fine for a secondary check). It runs
+# .github/scripts/agent-health-check.mjs, which:
+#   * FAILS the run (GitHub emails the owner — that failure email IS the notification) when the status service is
+#     unreachable, when agent-watch has not run for > 45 minutes, or when the watcher saw a problem but could not
+#     deliver the alert (push and email both failed);
+#   * passes, listing late/failed agents the watcher ALREADY alerted on as ::warning:: lines — so a known problem
+#     does not email you again every hour;
+#   * with the manual input `strict: true`, fails on ANY late/failed enabled agent.
+# agent-watch records each run of this workflow (public GitHub API) as the "Watcher of the watcher" row on the
+# Agent Monitor page, so a silently-disabled schedule shows up there too.
 #
-# Modelled on the elevate-ops keep-awake-supabase workflow (same anon-key-in-a-secret,
-# curl-the-press-REST, ::error::-to-fail shape).
-#
-# ── REQUIRED SETUP (Mark's manual step — this workflow cannot set secrets for you) ──────────
-#   Settings → Secrets and variables → Actions → New repository secret, in THIS repo (schnubsy/press):
-#
-#     SUPABASE_PRESS_ANON_KEY   (REQUIRED)
-#       The press project's publishable/anon key (sb_publishable_…). Supabase dashboard →
-#       project eepjhpyziczrxvirczio → Project Settings → API keys. It is non-secret by design
-#       (it already ships in the marquee page source) but is kept as a secret for hygiene and
-#       easy rotation. NEVER put a service-role key here — anon is all this read needs. Until
-#       this secret is set, the run FAILS with a clear ::error:: telling you to add it (which is
-#       itself a harmless nudge, not a false alarm about the agents).
-#
-#     AGENT_HEALTH_HEARTBEAT_URL   (OPTIONAL — recommended dead-man's switch)
-#       A https://healthchecks.io ping URL. If set, a healthy run pings it on success; if this
-#       workflow ever silently stops firing (e.g. GitHub disables schedules after 60 days of
-#       repo inactivity), the monitor stops hearing the heartbeat and alerts you. If unset, the
-#       heartbeat step is simply skipped — the workflow still emails on real failures.
-#
-# Cost: $0 — one <1-minute run per day against the free Actions allowance.
+# ── SETUP (unchanged) ─────────────────────────────────────────────────────────────────────────────────────────
+#   Repository secret SUPABASE_PRESS_ANON_KEY = the press project's publishable (sb_publishable_…) key. Never a
+#   service-role key. Optional AGENT_HEALTH_HEARTBEAT_URL = a healthchecks.io ping URL (dead-man's switch).
+# Cost: $0 — <1-minute runs against the free Actions allowance (public repo).
 
 name: Agent health notifier
 
 on:
   schedule:
-    - cron: "20 13 * * *"   # once daily, 13:20 UTC
+    - cron: "17 * * * *"   # hourly at :17 UTC (GitHub may start it late; secondary check)
   workflow_dispatch:
     inputs:
-      stale_multiplier:
-        description: "Staleness threshold as a multiple of each agent's cadence (default 3). Set low (e.g. 0) to force the unhealthy path for a test — a threshold override that never edits live data."
+      strict:
+        description: "Fail on ANY late/failed enabled agent (not only a stale watcher / undelivered alert)."
         required: false
-        default: "3"
+        default: "false"
 
 concurrency:
   group: agent-health-notifier
@@ -61,11 +46,10 @@ jobs:
       - name: Check out the check script
         uses: actions/checkout@v4
 
-      - name: Check agent health (fails → GitHub emails the owner)
+      - name: Check the agent watcher + all apps (fails → GitHub emails the owner)
         env:
           SUPABASE_PRESS_ANON_KEY: ${{ secrets.SUPABASE_PRESS_ANON_KEY }}
-          AGENT_APP: giving
-          STALE_MULTIPLIER: ${{ github.event.inputs.stale_multiplier || '3' }}
+          STRICT: ${{ github.event.inputs.strict || 'false' }}
         run: node .github/scripts/agent-health-check.mjs
 
       - name: Dead-man's-switch heartbeat (only on a healthy run, only if armed)

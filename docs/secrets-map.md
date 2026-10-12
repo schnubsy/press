@@ -34,6 +34,17 @@ Sources read: (no .env* files) · 0 keys from `.env*` · 2 names read from `.git
 - **Supabase function secrets / tables** belong to each tenant app (`card-scout`, `cardsharp`, `fsa-claims`, …) and are
   mapped in those repos — press owns only the `press_vault`, `press_access_*` and `press_deals` gate objects (no secrets).
 
+## Agent Monitor (marquee-wings-monitor slice 4, 2026-10-12) — names + homes only
+| Name | Sensitive | Home | Used by |
+|---|---|---|---|
+| `agent-watch_secret` | yes | **Supabase Vault** (project `press`), generated in-database by `db/20261012_agent_monitor_watch_cron.sql` — no human copy, no 1Password entry needed | pg_cron job `agent-watch` sends it as header `x-agent-watch-secret`; the Edge Function checks it via `press_agent_watch_secret_ok()` (service_role only) — it is never a function env var |
+| `PUSHOVER_APP_TOKEN` · `PUSHOVER_USER_KEY` | yes | Supabase Edge Function secrets (project-wide; already set for card-scout) | `agent-watch` push alerts |
+| `MAILER_ENDPOINT` · `MAILER_KEY` | yes | Supabase Edge Function secrets (project-wide; already set) | `agent-watch` Gmail alerts |
+| `SUPABASE_SERVICE_ROLE_KEY` · `SUPABASE_URL` · `SUPABASE_ANON_KEY` | service key yes | injected by Supabase into every Edge Function | `agent-watch`, `agent-fix` |
+| `SUPABASE_PRESS_ANON_KEY` | no | GitHub Actions secret (unchanged) | the watcher-of-the-watcher workflow, now reading `press_agent_monitor_public` |
+- `agent-fix` holds no secret of its own: the caller's Supabase JWT (the Family Wing admin session) is the credential,
+  verified by GoTrue + `press_access_is_admin()`.
+
 ## Egress (cloud environment allowlist)
 - The gauntlet needs **no external host**: npm registry (install) only; every spec serves the repo locally and fakes
   Supabase. Live probes (Pages 200, Supabase grant SQL) run via the chat / the Supabase connector, not the gauntlet.
