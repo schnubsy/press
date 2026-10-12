@@ -24,7 +24,7 @@ const WANT = {
   'halvsies.html':      ['Splitting the Bill', 'Halvsies'],
   'cardsharp.html':     ['Gift Card Tracker', 'Cardsharp'],
   'card-scout.html':    ['Sales Finder', 'Card Scout'],
-  'access.html':        ['UAM', 'Family Wing Access'],
+  'access.html':        ['User Access Management', 'Family Wing Access'],
   'retirement.html':    ['Financial Planning', 'Retirement Projector'],
   'giving.html':        ['Charitable Donations', 'Giving Tracker'],
   'fsa.html':           ['Medical Expenses', 'FSA Claims Tracker'],
@@ -32,7 +32,7 @@ const WANT = {
   'remit.html':         ['Family Transfers', 'Remit'],
   'kayley.html':        ['Checklist', 'Kayley · 2-Week Upskilling Plan'],
   'eagle-path.html':    ['Checklist', "Brandon's Eagle Path · Saturday Check-In"],
-  'agent-health.html':  ['Monitor', 'Agent Monitor'],
+  'agent-health.html':  ['System Health', 'Agent Monitor'],
   'steward.html':       ['Environment Reports', 'Steward'],   // arc/steward-report (2026-10-12)
 };
 const personal = SPACES.personal || [], family = SPACES.family || [];
