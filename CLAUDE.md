@@ -38,7 +38,8 @@ through the new `steward-reports` Edge Function (v2), which checks the private w
 server-held `press_deals.sync_id` default via the service-role-only RPC `press_steward_capability_ok`. Gauntlet (close, after merging main): unit 133 ·
 Playwright 110 + 1 WebKit skip · tenants-check steward T1/T8/T9 PASS (21 env-only FAILs: tenant repos outside cloud scope).
 Also on main today: PR #35 marquee-wings-monitor (LABELS/T9, Family Wing requests, Agent Monitor).
-Open: fixture row delete + `.claude/settings.json` (classifier) + press_deals anon INSERT — HANDOFF. Narrative: `docs/history.md`.
+Then hotfix PR #37 (monitor 401, Access switches) + PR #38 Winston (every Claude email from winston.marksclaude@gmail.com).
+Open: `.claude/settings.json` (classifier) + press_deals anon INSERT — HANDOFF. Narrative: `docs/history.md`.
 
 ## Project rules
 
