@@ -6,7 +6,7 @@ insert into public.press_agent_expect
    sched, grace_minutes, fix_hint, fix_links, retry_action, sort, registered_at)
 values
 ('steward-watch', 'The Council', 'Steward watch', 'Mac Desktop scheduled task, Mondays at 8:47 — weekly diff-only environment watch.',
- 'mac-task', true, 'checkin', null, null, null, false, 'steward.html',
+ 'mac-task', true, 'checkin', null, null, null, false, null,
  '{"weekly":{"dow":1,"at":"08:47"}}', 1440,
  'Wake the Mac, open Claude Desktop → Code → Routines, and run "Steward watch" now.', '[]', null, 74, now())
 on conflict (id) do nothing;
