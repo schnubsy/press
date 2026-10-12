@@ -358,3 +358,11 @@ around the scope.
 - **Marquee owns card naming** (`LABELS`, T9). pages.json title = tab title only; never edit it to rename a card.
 - **Supabase connector cancels `drop … if exists` in cloud sessions too** (pop-up auto-cancel, #94450) — write new
   objects without defensive drops.
+- **Postgres checks function EXECUTE as the CALLER, even inside a definer-owned view.** A public view that calls a helper
+  needs anon EXECUTE on it (and on anything it calls). Test public views as anon with `select *`, never `count(*)` —
+  column pruning skips the function and hides the 401.
+- **Never let per-call options replace auth headers** (`Object.assign({headers}, opts)` lets opts.headers win). Mocks must
+  refuse writes without the real auth shape, or this class of bug passes every test.
+- **A scoped Supabase token needs Auth Config RW + Project Settings RW** to PATCH `/config/auth`.
+- **Gmail spam-files a brand-new sender** (Winston) until Mark marks Not spam + adds a contact/filter.
+

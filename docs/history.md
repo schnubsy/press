@@ -4,6 +4,18 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-10-12 (evening) — hotfix PR #37 + Winston PR #38 (close-out)
+
+**#37** Agent Monitor showed "can't check": anon lacked EXECUTE on the schedule helpers its public view calls (Postgres
+checks function EXECUTE as the caller even inside a definer-owned view). Access Manager switches never saved: `rest()` let
+per-call headers replace the admin auth headers (pre-existing; the spec mock now refuses writes without a Bearer JWT).
+Labels "User Access Management" / "System Health". **#38 Winston** — Mark's RULE: every email Claude sends comes from
+Winston (winston.marksclaude@gmail.com): Supabase Auth SMTP on press + elevate-ops, MAILER_* + COUNCIL_MAILER_* → the Winston
+mailer, `press_winston_mail()` for scheduled-task reports. Auth email sync ran green (scoped token). Steward fixture row
+deleted. NAS zip done by Mark. Council standard = council PR #29 (v4.14.1, Mac merge + bundle reload pending).
+
+---
+
 ## 2026-10-12 — arc/steward-report (Steward report page)
 
 Cloud Builder, three slices. **S1** (`155c873`) — council `20261012_press_steward_reports.sql` copied byte-identical into

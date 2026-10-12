@@ -45,7 +45,6 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
   - optimo's cloud Playwright baseline is RED (env).
 - Carried:
   - flow `kayley.html` compare, BLOCKED (flow out of scope).
-  - NAS zip (Mark).
   - Issues #28–#32.
   - Remote branch `claude/perth-phase-2-security-c7a88b` is safe to delete.
 
@@ -73,7 +72,6 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
    - The watch/audit now write `press_steward_reports` rows (the table is live).
 
 ## Mark's manual steps
-1. NAS zip of the Mac press folder (migrate.md step 7):
-   `test -d ~/Documents/code/press && ditto -c -k --keepParent ~/Documents/code/press "<NAS>/archive/code/press-2026-10-11.zip" && unzip -l "<NAS>/archive/code/press-2026-10-11.zip" | tail -1`
-   - Expected: a file count > 0 on the last line. Only then delete the Mac folder.
-2. Token renewal: `press-auth-email-sync` expires 2027-10 — make a new one (same two permissions) and update the Actions secret.
+1. Token renewal: `press-auth-email-sync` expires 2027-10 — make a new one (same two permissions: Auth Config RW +
+   Project Settings RW, press only) and update the Actions secret `SUPABASE_ACCESS_TOKEN`.
+(NAS zip of the Mac press folder: DONE by Mark 2026-10-12.)
