@@ -7,7 +7,7 @@
 #   KEEP_EVIDENCE=1 …                             # keep the evidence PNGs the Playwright specs rewrite
 #
 # Stages: 1 node --test (npm test) · 2 inline:check (index.html + src/gate.js == src/vault.js) ·
-#         3 tenants-check (contract T1–T8; sibling clones of the tenant repos + council are used when present) ·
+#         3 tenants-check (contract T1–T9; sibling clones of the tenant repos + council are used when present) ·
 #         4 Playwright smoke (all test/*.spec.mjs).
 # Cloud mode: when /opt/pw-browsers/chromium exists and PW_CHROMIUM is unset, PW_CHROMIUM is set to it —
 # Chromium only (the WebKit iPhone spec runs as Chromium iPhone-15 emulation; the one real-WebKit IDB test

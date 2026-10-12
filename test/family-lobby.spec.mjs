@@ -78,7 +78,8 @@ test('the family door renders from spaces.json alone — count only, zero auth/v
   await expect(door).toHaveAttribute('href', './?view=family');
 
   // remit.html is not among the public cards
-  const fns = await page.locator('.tw-card .fn').allTextContents();
+  const fns = await page.locator('.tw-card').evaluateAll(els => els.map(e => e.dataset.file));   // marquee-wings s1: no filename line — read the card's data-file
+  await expect(page.locator('.tw-card .fn')).toHaveCount(0);
   expect(fns).not.toContain('remit.html');
   for (const p of PUBLIC_FILES) expect(fns).toContain(p);
   // public count excludes personal AND family
@@ -144,7 +145,8 @@ test('a v1 spaces file (no family key) renders no family door — nothing breaks
   await expect(page.locator('.tw-secure')).toBeVisible();      // private wing still there
   await expect(page.locator('.tw-family')).toHaveCount(0);      // no family door on v1
   // remit.html has no family key so it falls back to a PUBLIC card (as it would pre-v2)
-  const fns = await page.locator('.tw-card .fn').allTextContents();
+  const fns = await page.locator('.tw-card').evaluateAll(els => els.map(e => e.dataset.file));   // marquee-wings s1: no filename line — read the card's data-file
+  await expect(page.locator('.tw-card .fn')).toHaveCount(0);
   expect(fns).toContain('remit.html');
   expect(state.authCalls).toBe(0);
 });

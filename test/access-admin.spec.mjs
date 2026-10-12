@@ -40,6 +40,8 @@ async function backend(context, seed) {
   const state = {
     people: seed?.people ? JSON.parse(JSON.stringify(seed.people)) : [{ email: 'mark@fam.test', name: 'Mark', is_admin: true, active: true, last_seen_at: null }],
     grants: seed?.grants ? JSON.parse(JSON.stringify(seed.grants)) : [],
+    requests: seed?.requests ? JSON.parse(JSON.stringify(seed.requests)) : [],
+    grantWrites: [],
     apps: [{ page: 'remit.html', label: 'Remit', gated: true }, { page: 'perth.html', label: 'The Runway — Perth', gated: true }],
   };
   // src/gate.js stub: a public (never-enrolled) browser -> no passkey belt -> straight to admin OTP.
@@ -71,9 +73,17 @@ async function backend(context, seed) {
     if (path === '/press_access_grants') {
       if (method === 'GET') return json(state.grants);
       const row = JSON.parse(req.postData() || '{}');
+      state.grantWrites.push(row);
       const ex = state.grants.find(g => g.email === row.email && g.page === row.page);
       if (ex) Object.assign(ex, row); else state.grants.push(row);
+      // mirror the DB trigger press_access_grants_resolve: a grant going active resolves its request
+      if (row.active) state.requests.forEach(r => { if (r.email === row.email && r.page === row.page && !r.handled_at) r.handled_at = new Date().toISOString(); });
       return route.fulfill({ status: 201, contentType: 'application/json', body: '[]' });
+    }
+    if (path === '/press_access_requests') {
+      // the page asks only for pending rows (handled_at=is.null)
+      const pendingOnly = u.searchParams.get('handled_at') === 'is.null';
+      return json(state.requests.filter(r => !pendingOnly || !r.handled_at));
     }
     return json([]);
   });
@@ -107,7 +117,7 @@ test('People are cards with a switch per family tool, ON by default; the "gate a
   await expect(card).toContainText('Mark');
   await expect(card.locator('.prow')).toHaveCount(2);                 // remit + perth
   await expect(card.locator('.sw2.on')).toHaveCount(2);               // both ON by default (opt-out)
-  await expect(card).toContainText('The Runway — Perth');
+  await expect(card).toContainText('The Runway');
   await expect(page.locator('body')).not.toContainText('Which tools are gated');   // removed section
   await page.screenshot({ path: join(ROOT, 'docs', 'evidence', 'wings-polish-slice-4-access-admin.png'), fullPage: true });
 });
@@ -138,4 +148,81 @@ test('opting a person out of a tool writes an active=false grant that persists a
   await page.reload();
   await expect(page.getByRole('heading', { name: 'People' })).toBeVisible();
   await expect(page.locator('.pcard').first().locator('.sw2[data-grant]').first()).not.toHaveClass(/on/);
+});
+
+// ── arc/marquee-wings-monitor slice 2 — Family Wing Access Manager + request flow ──
+const KAYLEY_OFF = {
+  people: [
+    { email: 'mark@fam.test', name: 'Mark', is_admin: true, active: true, last_seen_at: null },
+    { email: 'kayley@fam.test', name: 'Kayley', is_admin: false, active: true, last_seen_at: null },
+  ],
+  grants: [{ email: 'kayley@fam.test', page: 'perth.html', active: false }],
+  requests: [{ email: 'kayley@fam.test', page: 'perth.html', requested_at: new Date(Date.now() - 5 * 60000).toISOString(), handled_at: null }],
+};
+
+test('the page is the "Family Wing Access Manager" (title + heading)', async ({ page, context }) => {
+  await backend(context);
+  await page.goto(base + '/access.html');
+  await expect(page).toHaveTitle('Family Wing Access Manager');
+  await signIn(page);
+  await expect(page.getByRole('heading', { name: 'Family Wing Access Manager' })).toBeVisible();
+});
+
+for (const vp of [{ name: 'desktop', size: { width: 1280, height: 900 } }, { name: 'mobile', size: { width: 390, height: 844 } }]) {
+  test(`a pending request shows in the Requests strip + as a badge; "Turn on" resolves it (${vp.name})`, async ({ page, context }) => {
+    await page.setViewportSize(vp.size);
+    const state = await backend(context, KAYLEY_OFF);
+    await page.goto(base + '/access.html');
+    await signIn(page);
+    const strip = page.locator('#reqs');
+    await expect(strip).toBeVisible();
+    await expect(strip.locator('.rq')).toHaveCount(1);
+    await expect(strip).toContainText('Kayley wants The Runway');
+    const kcard = page.locator('.pcard', { hasText: 'Kayley' });
+    await expect(kcard.locator('.badge')).toHaveText('Requested');
+    await expect(kcard.locator('.sw2[data-grant="kayley@fam.test|perth.html"]')).not.toHaveClass(/on/);
+    await page.screenshot({ path: join(ROOT, 'docs', 'evidence', `marquee-wings-slice-2-access-manager-${vp.name}.png`), fullPage: true });
+
+    await strip.getByRole('button', { name: 'Turn on' }).click();
+    await expect(page.locator('#reqs')).toHaveCount(0);                                     // strip gone
+    await expect(kcard.locator('.badge')).toHaveCount(0);                                   // badge gone
+    await expect(kcard.locator('.sw2[data-grant="kayley@fam.test|perth.html"]')).toHaveClass(/on/);
+    expect(state.grantWrites.at(-1)).toMatchObject({ email: 'kayley@fam.test', page: 'perth.html', active: true, revoked_at: null });
+    expect(state.requests[0].handled_at).toBeTruthy();                                       // resolved
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'People' })).toBeVisible();
+    await expect(page.locator('#reqs')).toHaveCount(0);                                     // stays resolved
+  });
+}
+
+test('flipping the person’s switch ON also resolves their pending request', async ({ page, context }) => {
+  const state = await backend(context, KAYLEY_OFF);
+  await page.goto(base + '/access.html');
+  await signIn(page);
+  await expect(page.locator('#reqs .rq')).toHaveCount(1);
+  await page.locator('.sw2[data-grant="kayley@fam.test|perth.html"]').click();
+  await expect(page.locator('#reqs')).toHaveCount(0);
+  await expect(page.locator('.pcard', { hasText: 'Kayley' }).locator('.badge')).toHaveCount(0);
+  expect(state.requests[0].handled_at).toBeTruthy();
+});
+
+test('adding a person writes ONLY a people row — no grant rows (opt-out: no row = on)', async ({ page, context }) => {
+  const state = await backend(context);
+  await page.goto(base + '/access.html');
+  await signIn(page);
+  await page.locator('#an').fill('Barbara');
+  await page.locator('#ae').fill('barbara@fam.test');
+  await page.locator('#addBtn').click();
+  await expect(page.locator('.pcard', { hasText: 'Barbara' }).locator('.sw2.on')).toHaveCount(2);
+  expect(state.grantWrites).toHaveLength(0);
+  expect(state.grants.filter(g => g.email === 'barbara@fam.test')).toHaveLength(0);
+});
+
+test('an unreadable requests table never breaks the manager (no strip, grid still renders)', async ({ page, context }) => {
+  await backend(context, KAYLEY_OFF);
+  await context.route('**/rest/v1/press_access_requests**', route => route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"boom"}' }));
+  await page.goto(base + '/access.html');
+  await signIn(page);
+  await expect(page.locator('.pcard')).toHaveCount(2);
+  await expect(page.locator('#reqs')).toHaveCount(0);
 });

@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agent Health</title>
-<meta name="page-title" content="Agent Health">
+<title>Agent Monitor</title>
+<meta name="page-title" content="Agent Monitor">
 <!-- Marquee favicon — house standard: 64px rounded stage, gradient Feather glyph, inline data URI. -->
 <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSI2NCIgeTI9IjY0IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjNTdDNzlBIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjQjdBOEZGIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxMDBDMUUiLz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg4IDgpIHNjYWxlKDIpIiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjZykiIHN0cm9rZS13aWR0aD0iMi42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjIyIDEyIDE4IDEyIDE1IDIxIDkgMyA2IDEyIDIgMTIiLz48L2c+PC9zdmc+">
 <meta name="theme-color" content="#100C1E">
@@ -13,12 +13,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================================
-   PRESS — AGENT HEALTH · Twilight Cut house style (matches index.html / giving.html)
-   A plain-English status board for ALL apps' autonomous agents. REGISTRY-DRIVEN:
-   every enabled press_agent_health_public row renders a card automatically — no
-   agent name is ever written into this file. Grouped by app, attention-first.
-   Read-only; refresh on load + a manual button; NO polling loop (free tier).
-   Degrades honestly — a fetch failure never shows green.
+   PRESS — AGENT MONITOR · Twilight Cut house style (matches index.html / giving.html)
+   Every agent, AI function, scheduled job and scheduled task Mark relies on, as one status dot,
+   grouped by the app it supports. Click a dot for the detail. Status is computed SERVER-SIDE
+   (press_agent_monitor_public) from REAL work against the expected schedule — never from a
+   `skipped` tick, and never from anything this page decides. Read-only for everyone; the Retry
+   button appears only for the marquee admin (agent-fix re-checks that on the server).
    ============================================================================ */
 :root{
   --tw-stage:#100C1E; --tw-ink:#EDE7F2; --tw-violet:#8E7BE8; --tw-rose:#E7A6C7;
@@ -26,7 +26,7 @@
   --tw-dusk-1:#151029; --tw-dusk-2:#100C1E; --tw-dusk-3:#0E0A18;
   --tw-stage-gradient:linear-gradient(165deg,var(--tw-dusk-1),var(--tw-dusk-2) 55%,var(--tw-dusk-3));
   --tw-glass-card:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
-  --tw-border-card:rgba(255,255,255,.10); --tw-hairline:rgba(255,255,255,.06);
+  --tw-border-card:rgba(255,255,255,.10); --tw-hairline:rgba(255,255,255,.07);
   --tw-font-display:'Unbounded','Inter',system-ui,sans-serif;
   --tw-font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
   --tw-font-meta:'Space Mono',ui-monospace,'SF Mono',Menlo,monospace;
@@ -34,7 +34,6 @@
   --tw-shadow-card:0 10px 34px rgba(10,7,22,.5),inset 0 1px 0 rgba(255,255,255,.12);
   --tw-eyebrow:10px; --tw-track-eyebrow:.16em;
   --tw-grad-title:linear-gradient(92deg,#B7A8FF,#E7A6C7);
-  /* health palette */
   --ok:#57C79A; --ok-glow:rgba(87,199,154,.5);
   --warn:#E0A93B; --warn-glow:rgba(224,169,59,.5);
   --bad:#E5606B; --bad-glow:rgba(229,96,107,.5);
@@ -53,41 +52,41 @@ body.tw-page{background:var(--tw-stage-gradient);color:var(--tw-ink);font-family
   -webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden;min-height:100vh}
 .tw-aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;opacity:.6;
   background:var(--tw-aurora-field);animation:twBreath 32s ease-in-out infinite alternate}
-.tw-in{position:relative;z-index:3;max-width:620px;margin:0 auto;padding:26px 22px 48px}
+.tw-in{position:relative;z-index:3;max-width:720px;margin:0 auto;padding:26px 18px 48px}
+@media(min-width:700px){.tw-in{padding:34px 28px 56px}}
 .tw-back{display:inline-flex;align-items:center;gap:7px;font-family:var(--tw-font-meta);font-size:10px;
   letter-spacing:.14em;text-transform:uppercase;color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);
   padding:6px 12px;border-radius:var(--tw-radius-pill);text-decoration:none;margin-bottom:16px}
-.tw-top{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--tw-muted)}
+.tw-top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11.5px;color:var(--tw-muted)}
 .tw-top b{color:var(--tw-ink);font-weight:600;letter-spacing:.02em}
 h1.tw-title{font-family:var(--tw-font-display);font-weight:500;font-size:clamp(24px,6.5vw,31px);line-height:1.2;
-  letter-spacing:.005em;margin:14px 0 6px;background:var(--tw-grad-title);-webkit-background-clip:text;
-  background-clip:text;color:transparent}
-.tw-dek{font-size:13px;color:var(--tw-muted);max-width:440px;margin-bottom:20px}
+  margin:14px 0 6px;background:var(--tw-grad-title);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tw-dek{font-size:13px;color:var(--tw-muted);max-width:480px;margin-bottom:18px;line-height:1.5}
+.glass{border:1px solid var(--tw-border-card);background:var(--tw-glass-card);border-radius:var(--tw-radius-card);
+  backdrop-filter:blur(var(--tw-blur-card));-webkit-backdrop-filter:blur(var(--tw-blur-card));box-shadow:var(--tw-shadow-card)}
 
-/* ── the one big verdict ─────────────────────────────────────────────────── */
-.verdict{position:relative;border-radius:var(--tw-radius-card);padding:24px 22px;margin-bottom:22px;
-  border:1px solid var(--tw-border-card);background:var(--tw-glass-card);
-  backdrop-filter:blur(var(--tw-blur-card));-webkit-backdrop-filter:blur(var(--tw-blur-card));
-  box-shadow:var(--tw-shadow-card);display:flex;align-items:center;gap:18px}
-.verdict .dot{width:18px;height:18px;border-radius:50%;flex:none;margin-top:4px}
-.verdict .vtext{flex:1}
-.verdict h2{font-family:var(--tw-font-display);font-weight:500;font-size:clamp(20px,5.5vw,26px);line-height:1.15}
-.verdict p{font-size:13px;color:var(--tw-muted);margin-top:5px}
-.verdict.green{border-color:rgba(87,199,154,.4);box-shadow:0 10px 34px rgba(10,7,22,.5),0 0 40px rgba(87,199,154,.14),inset 0 1px 0 rgba(255,255,255,.12)}
-.verdict.green .dot{background:var(--ok);box-shadow:0 0 18px 3px var(--ok-glow)}
-.verdict.green h2{color:#8be0bd}
-.verdict.amber{border-color:rgba(224,169,59,.42)}
-.verdict.amber .dot{background:var(--warn);box-shadow:0 0 18px 3px var(--warn-glow)}
-.verdict.amber h2{color:#f0c877}
-.verdict.red{border-color:rgba(229,96,107,.45);box-shadow:0 10px 34px rgba(10,7,22,.5),0 0 40px rgba(229,96,107,.16),inset 0 1px 0 rgba(255,255,255,.12)}
-.verdict.red .dot{background:var(--bad);box-shadow:0 0 18px 3px var(--bad-glow)}
-.verdict.red h2{color:#f08a92}
+/* ── summary strip ─────────────────────────────────────────────────────────── */
+.summary{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:12px}
+@media(min-width:620px){.summary{grid-template-columns:1.6fr 1fr 1fr}}
+.verdict{padding:18px 18px;display:flex;align-items:center;gap:14px}
+.verdict .dot{width:16px;height:16px;border-radius:50%;flex:none}
+.verdict h2{font-family:var(--tw-font-display);font-weight:500;font-size:clamp(17px,4.8vw,21px);line-height:1.2}
+.verdict p{font-size:12px;color:var(--tw-muted);margin-top:4px}
+.verdict.green{border-color:rgba(87,199,154,.4)} .verdict.green .dot{background:var(--ok);box-shadow:0 0 16px 3px var(--ok-glow)} .verdict.green h2{color:#8be0bd}
+.verdict.amber{border-color:rgba(224,169,59,.42)} .verdict.amber .dot{background:var(--warn);box-shadow:0 0 16px 3px var(--warn-glow)} .verdict.amber h2{color:#f0c877}
+.verdict.red{border-color:rgba(229,96,107,.45)} .verdict.red .dot{background:var(--bad);box-shadow:0 0 16px 3px var(--bad-glow)} .verdict.red h2{color:#f08a92}
 .verdict.grey .dot{background:var(--off)}
-.verdict.grey h2{color:var(--tw-ink)}
+.costs{display:contents}
+@media(max-width:619px){.costs{display:grid;grid-template-columns:1fr 1fr;gap:10px}}
+.tile{padding:14px 16px}
+.tile .lbl{font-size:var(--tw-eyebrow);letter-spacing:.12em;text-transform:uppercase;color:var(--tw-faint)}
+.tile .val{font-family:var(--tw-font-meta);font-size:19px;margin-top:6px;color:var(--tw-ink)}
+.tile .sub{font-size:10.5px;color:var(--tw-faint);margin-top:3px}
 
-/* ── refresh row ─────────────────────────────────────────────────────────── */
-.ctrl{display:flex;justify-content:space-between;align-items:center;margin:-8px 0 16px}
+.ctrl{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:4px 0 6px;flex-wrap:wrap}
 .ctrl .stamp{font-family:var(--tw-font-meta);font-size:10.5px;color:var(--tw-faint)}
+.chip{font-family:var(--tw-font-meta);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;
+  border-radius:var(--tw-radius-pill);border:1px solid rgba(87,199,154,.4);color:#8be0bd}
 .refresh{cursor:pointer;font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);padding:7px 14px;border-radius:var(--tw-radius-pill);
   background:rgba(142,123,232,.08);display:inline-flex;align-items:center;gap:7px}
@@ -95,94 +94,93 @@ h1.tw-title{font-family:var(--tw-font-display);font-weight:500;font-size:clamp(2
 .refresh[aria-busy="true"]{opacity:.6;pointer-events:none}
 .refresh svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-/* ── app group heading ───────────────────────────────────────────────────── */
-.app-group{margin-bottom:10px}
-.app-heading{display:flex;align-items:center;gap:12px;margin:28px 0 12px}
-.app-heading h2{font-family:var(--tw-font-display);font-weight:500;font-size:clamp(16px,4vw,20px);
+/* ── app groups + agent dots ───────────────────────────────────────────────── */
+.app{margin-top:22px}
+.app-head{display:flex;align-items:center;gap:10px;margin:0 4px 10px}
+.app-head h2{font-family:var(--tw-font-display);font-weight:500;font-size:clamp(15px,4vw,18px);
   background:var(--tw-grad-title);-webkit-background-clip:text;background-clip:text;color:transparent}
-.app-verdict-pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--tw-font-meta);
-  font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;
-  border-radius:var(--tw-radius-pill);border:1px solid;flex-none}
-.app-verdict-pill .pdot{width:7px;height:7px;border-radius:50%;flex:none}
-.app-verdict-pill.green{border-color:rgba(87,199,154,.4);color:#8be0bd}
-.app-verdict-pill.green .pdot{background:var(--ok)}
-.app-verdict-pill.amber{border-color:rgba(224,169,59,.4);color:#f0c877}
-.app-verdict-pill.amber .pdot{background:var(--warn)}
-.app-verdict-pill.red{border-color:rgba(229,96,107,.4);color:#f08a92}
-.app-verdict-pill.red .pdot{background:var(--bad)}
-.app-verdict-pill.grey{border-color:rgba(255,255,255,.12);color:var(--tw-muted)}
-.app-verdict-pill.grey .pdot{background:var(--off)}
+.app-head .count{font-family:var(--tw-font-meta);font-size:10px;color:var(--tw-faint);margin-left:auto}
+.list{padding:4px 0;overflow:hidden}
+.agent + .agent{border-top:1px solid var(--tw-hairline)}
+.row{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:12px;width:100%;padding:13px 16px;cursor:pointer;min-height:48px}
+.row:focus-visible{outline:2px solid var(--tw-violet);outline-offset:-2px;border-radius:12px}
+.row .name{font-size:14.5px;font-weight:600;color:var(--tw-ink)}
+.row .line{font-size:12px;color:var(--tw-muted);margin-top:2px;line-height:1.35}
+.row .line.warn{color:#f0c877} .row .line.bad{color:#f08a92}
+.row .txt{flex:1;min-width:0}
+.row .chev{width:14px;height:14px;flex:none;stroke:var(--tw-faint);fill:none;stroke-width:2;transition:transform .2s}
+.agent.open .chev{transform:rotate(90deg)}
+.sdot{width:12px;height:12px;border-radius:50%;flex:none}
+.sdot.ok{background:var(--ok);box-shadow:0 0 10px 2px var(--ok-glow)}
+.sdot.warn{background:var(--warn);box-shadow:0 0 10px 2px var(--warn-glow)}
+.sdot.bad{background:var(--bad);box-shadow:0 0 10px 2px var(--bad-glow);animation:twPulse 2s ease-in-out infinite}
+.sdot.none{background:transparent;border:2px solid var(--tw-faint)}
+.sdot.off{background:var(--off)}
 
-/* ── agent cards ─────────────────────────────────────────────────────────── */
-.section-label{font-size:var(--tw-eyebrow);letter-spacing:var(--tw-track-eyebrow);text-transform:uppercase;
-  color:var(--tw-faint);margin:22px 4px 10px}
-.card{position:relative;border-radius:var(--tw-radius-card);padding:20px;margin-bottom:14px;
-  border:1px solid var(--tw-border-card);background:var(--tw-glass-card);
-  backdrop-filter:blur(var(--tw-blur-card));-webkit-backdrop-filter:blur(var(--tw-blur-card));
-  box-shadow:var(--tw-shadow-card)}
-.card.is-off{opacity:.55;filter:saturate(.5)}
-.card .head{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
-.card .statusdot{width:12px;height:12px;border-radius:50%;flex:none;margin-top:6px}
-.card .statusdot.s-ok{background:var(--ok);box-shadow:0 0 12px 2px var(--ok-glow)}
-.card .statusdot.s-warn{background:var(--warn);box-shadow:0 0 12px 2px var(--warn-glow)}
-.card .statusdot.s-bad{background:var(--bad);box-shadow:0 0 12px 2px var(--bad-glow);animation:twPulse 2s ease-in-out infinite}
-.card .statusdot.s-idle{background:var(--tw-violet);opacity:.7}
-.card .statusdot.s-off{background:var(--off)}
-.card .titlewrap{flex:1;min-width:0}
-.card h3{font-family:var(--tw-font-display);font-weight:400;font-size:17px;line-height:1.25}
-.card .sub{font-size:11.5px;color:var(--tw-muted);margin-top:3px}
-.card .statusline{font-size:14.5px;color:var(--tw-ink);margin:2px 0 0;font-weight:500}
-.card .statusline.warn{color:#f0c877}
-.card .statusline.bad{color:#f08a92}
-.card .statusline.ok{color:#8be0bd}
-
-.meta{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin-top:6px}
+/* ── detail (expanded) ─────────────────────────────────────────────────────── */
+.detail{padding:2px 16px 18px 40px}
+.detail[hidden]{display:none}
+.status-line{font-size:13.5px;font-weight:600;margin-bottom:4px}
+.status-line.ok{color:#8be0bd} .status-line.warn{color:#f0c877} .status-line.bad{color:#f08a92} .status-line.none,.status-line.off{color:var(--tw-muted)}
+.what{font-size:12px;color:var(--tw-muted);margin-bottom:12px;line-height:1.45}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
 @media(max-width:440px){.meta{grid-template-columns:1fr}}
-.meta .cell .lbl{font-size:var(--tw-eyebrow);letter-spacing:.1em;text-transform:uppercase;color:var(--tw-faint);margin-bottom:3px}
-.meta .cell .val{font-size:13px;color:var(--tw-ink)}
-.meta .cell .val.mono{font-family:var(--tw-font-meta);font-size:12px}
-
-/* 7-day strip */
-.strip{grid-column:1/-1;margin-top:2px}
-.strip .lbl{font-size:var(--tw-eyebrow);letter-spacing:.1em;text-transform:uppercase;color:var(--tw-faint);margin-bottom:7px}
-.bars{display:flex;gap:5px;align-items:flex-end;height:38px}
-.bars .bar{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;height:100%;position:relative}
-.bars .bar i{display:block;border-radius:3px;width:100%;min-height:3px;transition:height .3s}
-.bars .bar i.b-ok{background:linear-gradient(180deg,#6fd6ab,#3f9d78)}
-.bars .bar i.b-bad{background:linear-gradient(180deg,#f08a92,#c94651)}
-.bars .bar i.b-empty{background:rgba(255,255,255,.06);min-height:3px;height:3px!important}
-.bars .bar .d{font-size:8px;color:var(--tw-faint);text-align:center;margin-top:4px;font-family:var(--tw-font-meta)}
+.meta .lbl{font-size:var(--tw-eyebrow);letter-spacing:.1em;text-transform:uppercase;color:var(--tw-faint);margin-bottom:3px}
+.meta .val{font-size:13px;color:var(--tw-ink);line-height:1.4}
+.meta .val.mono{font-family:var(--tw-font-meta);font-size:12px}
+.meta .val small{color:var(--tw-muted);font-size:11.5px}
+.strip{grid-column:1/-1}
+.bars{display:flex;gap:4px;align-items:flex-end;height:40px;margin-top:4px}
+.bar{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.bar i{display:block;border-radius:3px;width:100%}
+.bar i.b-ok{background:linear-gradient(180deg,#6fd6ab,#3f9d78)}
+.bar i.b-bad{background:linear-gradient(180deg,#f08a92,#c94651)}
+.bar i.b-quiet{background:rgba(142,123,232,.45)}
+.bar i.b-empty{background:rgba(255,255,255,.07);height:3px!important}
+.bar .d{font-size:8px;color:var(--tw-faint);text-align:center;margin-top:4px;font-family:var(--tw-font-meta)}
 .striphint{font-size:10.5px;color:var(--tw-faint);margin-top:6px}
+.fix{margin-top:14px;border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.45}
+.fix.warn{background:rgba(224,169,59,.10);border:1px solid rgba(224,169,59,.3);color:#f0c877}
+.fix.bad{background:rgba(229,96,107,.10);border:1px solid rgba(229,96,107,.32);color:#f08a92}
+.fix.calm{background:rgba(255,255,255,.04);border:1px solid var(--tw-hairline);color:var(--tw-muted)}
+.fix b{color:var(--tw-ink)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.lnk{font-size:12px;color:var(--tw-icon);text-decoration:none;border:1px solid rgba(183,168,255,.3);padding:6px 11px;border-radius:var(--tw-radius-pill)}
+.lnk:hover{border-color:var(--tw-icon)}
+.retry{cursor:pointer;font:600 12px var(--tw-font-body);color:#100C1E;background:linear-gradient(92deg,#B7A8FF,#E7A6C7);
+  border:0;padding:8px 14px;border-radius:var(--tw-radius-pill)}
+.retry[disabled]{opacity:.55;cursor:default}
+.retry-msg{font-size:12px;color:var(--tw-muted)}
 
-/* what-to-do banner on unhealthy cards */
-.todo{margin-top:16px;border-radius:14px;padding:12px 14px;font-size:13px;display:flex;gap:9px;align-items:flex-start}
-.todo.warn{background:rgba(224,169,59,.10);border:1px solid rgba(224,169,59,.3);color:#f0c877}
-.todo.bad{background:rgba(229,96,107,.10);border:1px solid rgba(229,96,107,.32);color:#f08a92}
-.todo b{color:var(--tw-ink);font-weight:600}
-.todo svg{width:15px;height:15px;flex:none;margin-top:1px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* ── switched-off section ──────────────────────────────────────────────────── */
+details.offsec{margin-top:26px}
+details.offsec > summary{cursor:pointer;list-style:none;font-size:var(--tw-eyebrow);letter-spacing:var(--tw-track-eyebrow);
+  text-transform:uppercase;color:var(--tw-faint);padding:10px 4px;display:flex;align-items:center;gap:8px}
+details.offsec > summary::-webkit-details-marker{display:none}
+details.offsec > summary::before{content:'▸';font-size:11px}
+details.offsec[open] > summary::before{content:'▾'}
+details.offsec .list{opacity:.75}
+.offapp{font-family:var(--tw-font-meta);font-size:10px;color:var(--tw-faint);margin-left:6px}
 
-/* states */
-.tw-skel{padding:20px;margin-bottom:14px;border-radius:var(--tw-radius-card);background:var(--tw-glass-card);
-  border:1px solid var(--tw-border-card);height:150px;position:relative;overflow:hidden}
+.tw-skel{margin-bottom:12px;border-radius:var(--tw-radius-card);background:var(--tw-glass-card);
+  border:1px solid var(--tw-border-card);height:120px;position:relative;overflow:hidden}
 .tw-skel::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);animation:twShimmer 1.8s ease-in-out infinite}
-.tw-note{padding:22px;border-radius:var(--tw-radius-card);background:var(--tw-glass-card);
-  border:1px solid var(--tw-border-card);text-align:center}
-.tw-note h3{font-family:var(--tw-font-display);font-weight:400;font-size:16px;margin-bottom:6px}
-.tw-note p{font-size:13px;color:var(--tw-muted)}
-.foot{font-size:10.5px;color:var(--tw-faint);text-align:center;margin-top:22px;line-height:1.6}
-@media(prefers-reduced-motion:reduce){.tw-aurora,.tw-skel::after,.statusdot{animation:none!important}}
+.foot{font-size:10.5px;color:var(--tw-faint);text-align:center;margin-top:26px;line-height:1.6}
+@media(prefers-reduced-motion:reduce){.tw-aurora,.tw-skel::after,.sdot{animation:none!important}}
 </style>
 </head>
 <body class="tw-page">
   <div class="tw-aurora"></div>
   <div class="tw-in">
     <a class="tw-back" href="index.html">← the marquee</a>
-    <div class="tw-top"><span>The <b>Agents</b></span><span id="scope">watching…</span></div>
-    <h1 class="tw-title">Are the agents OK?</h1>
-    <div class="tw-dek">The little robots that read incoming mail and keep things tidy — across all apps. This page checks in on them in plain English, grouped by app, worst first.</div>
+    <div class="tw-top"><span>The <b>Agents</b></span><span id="scope">checking…</span></div>
+    <h1 class="tw-title">Agent Monitor</h1>
+    <div class="tw-dek">Every agent, AI and scheduled job behind the marquee apps — one dot each. Green means it did real work when it was due. Tap a dot for what it produced, what it cost, and how to fix it.</div>
+    <div id="summary"></div>
     <div class="ctrl">
       <span class="stamp" id="stamp"></span>
+      <span id="admin"></span>
       <span class="refresh" id="refresh" role="button" tabindex="0" aria-busy="false">
         <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         Refresh
@@ -192,399 +190,220 @@ h1.tw-title{font-family:var(--tw-font-display);font-weight:500;font-size:clamp(2
     <div class="foot" id="foot"></div>
   </div>
 
+<script src="src/agent-monitor.js"></script>
 <script>
-/* ══ ALL-APPS HEALTH DASHBOARD ══════════════════════════════════════════════
-   Reads press_agent_health_public (all apps, no x-app gate) and
-   press_agent_runs_daily_all_public (all apps, no x-app gate). Renders one
-   section per app, sorted attention-first (red→amber→green) then by name.
-   No ?app= default — this page shows everything. Degrades honestly if views
-   don't exist yet: shows a neutral "No agent data yet" state, NEVER green. */
-
-/* The press project + its publishable (anon) key — a public const, exactly like the
-   other press pages. NOT a secret. These all-apps views expose only non-sensitive
-   columns (no input_hash, no error text, no per-run timeline). */
+/* Reads ONLY the two public views (press_agent_monitor_public + press_agent_monitor_daily_public) with the
+   publishable key — no secrets, no emails, no prompts. Status is the server's; this script only draws it.
+   A fetch failure shows "can't check" — never green. Refreshes on open + the Refresh button; no polling. */
 const SB_URL = 'https://eepjhpyziczrxvirczio.supabase.co';
 const SB_KEY = 'sb_publishable__iv3bI7xDAsOdHUlXzbVZQ_2yyFS4uX';
-const REST   = SB_URL + '/rest/v1';
-const HEAD   = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
+const REST = SB_URL + '/rest/v1';
+const FIX_URL = SB_URL + '/functions/v1/agent-fix';
+const AM = window.AgentMonitor;
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const safeUrl = u => /^https:\/\//.test(String(u || '')) ? u : null;
 
-const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let ADMIN = null;          // the admin's access token when the Family Wing session belongs to an admin
+let ROWS = [], DAILY = {}, OPEN = new Set();
 
-/* ── plain-English helpers (never surface a raw value) ─────────────────────── */
-// Humanize an agent/app key into a friendly name — registry-driven, no per-agent table.
-const friendly = key => String(key||'').replace(/[-_]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase()).trim();
-
-const MIN=60000, HOUR=3600000, DAY=86400000;
-function ago(iso){
-  if(!iso) return null;
-  const t=new Date(iso).getTime(); if(isNaN(t)) return null;
-  let d=Date.now()-t;
-  if(d<0) d=0;
-  if(d<45*1000) return 'just now';
-  if(d<90*1000) return 'a minute ago';
-  if(d<HOUR) return Math.round(d/MIN)+' minutes ago';
-  if(d<2*HOUR) return 'about an hour ago';
-  if(d<DAY) return Math.round(d/HOUR)+' hours ago';
-  if(d<2*DAY) return 'yesterday';
-  if(d<7*DAY) return Math.round(d/DAY)+' days ago';
-  const wk=Math.round(d/(7*DAY)); if(wk<5) return wk+(wk===1?' week ago':' weeks ago');
-  return Math.round(d/(30*DAY))+' months ago';
-}
-function until(ms){ // ms in the future → "in ~10 minutes"; past → "overdue by ~5 minutes"
-  const overdue = ms<0; let d=Math.abs(ms);
-  let s;
-  if(d<90*1000) s='less than a minute';
-  else if(d<HOUR) s='about '+Math.round(d/MIN)+' minutes';
-  else if(d<2*HOUR) s='about an hour';
-  else if(d<DAY) s='about '+Math.round(d/HOUR)+' hours';
-  else s='about '+Math.round(d/DAY)+' days';
-  return overdue ? 'overdue by '+s : 'in '+s;
-}
-// friendly cadence, e.g. 10 → "every 10 minutes", 60 → "every hour", 1440 → "every day"
-function cadenceText(min){
-  if(min==null) return 'only when someone asks';
-  if(min%1440===0){const d=min/1440;return d===1?'every day':'every '+d+' days';}
-  if(min%60===0){const h=min/60;return h===1?'every hour':'every '+h+' hours';}
-  return 'every '+min+' minute'+(min===1?'':'s');
-}
-function money(n){
-  n=Number(n)||0;
-  if(n===0) return '$0.00';
-  if(n<0.01) return '<$0.01';
-  return '$'+n.toFixed(n<1?3:2);
-}
-
-/* ── data ──────────────────────────────────────────────────────────────────── */
 async function getJSON(path){
-  const r = await fetch(REST+path, {headers:HEAD, cache:'no-store'});
-  if(!r.ok) throw new Error('press '+r.status);
+  const r = await fetch(REST + path, { headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY }, cache: 'no-store' });
+  if (!r.ok) throw new Error('press ' + r.status);
   return r.json();
 }
 
-/* ── health rule ─────────────────────────────────────────────────────────────
-   healthy if last_ok_at is within 3x cadence_minutes. On-demand (cadence null) is
-   NEVER stale — it only reports its last run. Disabled rows are greyed and excluded
-   from the verdict. Severity: past 6x cadence, a never-run scheduled agent, or a
-   failure logged today = severe (red); milder lapses = amber. */
-function assess(reg, byDayForAgent){
-  const now = Date.now();
-  const enabled = reg.enabled === true;
-  const onDemand = reg.cadence_minutes == null;
-  const lastOk = reg.last_ok_at ? new Date(reg.last_ok_at).getTime() : null;
-
-  // last-7-day window facts from the daily aggregate. NOTE 'dead' rows are the
-  // heartbeat monitor's OWN silence-marker, not an agent failure — silence is already
-  // covered by the last_ok / next-expected rule below — so 'dead' never counts as a
-  // failure and never paints the strip red. Only a real 'error' outcome does.
-  const week = last7(byDayForAgent);
-  const failedWeek = week.reduce((a,d)=>a + (d.error_count||0), 0);
-  const ranThisWeek = week.some(d=>d.runs>0);
-  const erroredToday = (() => {
-    const row = byDayForAgent[dayKey(new Date())];
-    return row ? (row.error_count||0)>0 : false;
-  })();
-  const everRan = lastOk!=null || Object.values(byDayForAgent).some(d=>((d.runs||0)-(d.dead_count||0))>0);
-
-  let state, statusText, tone, todo=null, severe=false, attention=false;
-
-  if(!enabled){
-    state='off'; tone='off';
-    statusText='Turned off — not being watched.';
-  } else if(onDemand){
-    if(everRan){ state='idle'; tone='ok'; statusText='Ready. Runs when it’s asked.'; }
-    else { state='idle'; tone='idle'; statusText='Ready. Hasn’t needed to run yet.'; }
-  } else if(lastOk==null){
-    // an enabled scheduled/inlet agent that has NEVER succeeded
-    state='bad'; tone='bad'; severe=true; attention=true;
-    statusText='Has never run successfully.';
-    todo={tone:'bad', text:'Check the agent is actually deployed and its schedule (cron or inlet) is switched on.'};
-  } else {
-    const cadMs = reg.cadence_minutes*MIN;
-    const age = now - lastOk;
-    if(age <= 3*cadMs && !erroredToday){
-      state='ok'; tone='ok'; statusText='Working normally.';
-    } else if(erroredToday && age <= 3*cadMs){
-      state='warn'; tone='warn'; attention=true;
-      statusText='Something went wrong recently.';
-      todo={tone:'warn', text:'It logged an error today — have a look at the app’s logs when you get a chance.'};
-    } else {
-      // overdue
-      attention=true;
-      severe = age > 6*cadMs;
-      state = severe?'bad':'warn'; tone = severe?'bad':'warn';
-      statusText = 'Hasn’t checked in when it should have.';
-      todo={tone:tone, text:'The agent has gone quiet — check its schedule (cron or inlet) is still firing.'};
+/* ── admin session (reuse the Family Wing gate's localStorage session; the SERVER re-checks) ── */
+async function detectAdmin(){
+  let s = null;
+  try { s = AM.readSession(window.localStorage); } catch (e) { s = null; }
+  if (!s) return null;
+  try {
+    if (!AM.sessionFresh(s, Date.now())) {
+      const r = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', {
+        method: 'POST', headers: { apikey: SB_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: s.refresh_token }) });
+      if (!r.ok) return null;
+      const t = await r.json();
+      if (!t.access_token || !t.refresh_token) return null;
+      s = { access_token: t.access_token, refresh_token: t.refresh_token,
+            expires_at: t.expires_at ? t.expires_at * 1000 : Date.now() + (t.expires_in || 3600) * 1000,
+            email: s.email, name: s.name };
+      try { localStorage.setItem(AM.SESSION_KEY, JSON.stringify(s)); } catch (e) {}
     }
+    const a = await fetch(REST + '/rpc/press_access_is_admin', { method: 'POST',
+      headers: { apikey: SB_KEY, Authorization: 'Bearer ' + s.access_token, 'Content-Type': 'application/json' }, body: '{}' });
+    if (!a.ok) return null;
+    return (await a.json()) === true ? s.access_token : null;
+  } catch (e) { return null; }
+}
+
+/* ── render ─────────────────────────────────────────────────────────────── */
+function lineFor(r, now){
+  if (r.status === 'healthy' || r.status === 'off') {
+    if (r.last_real_work_at) return 'Last real work ' + AM.ago(r.last_real_work_at, now) + (r.last_output_note ? ' · ' + r.last_output_note : '');
+    return r.status_reason;
   }
-
-  // "last did something" + "next expected"
-  const lastSeen = lastOk!=null ? ago(reg.last_ok_at) : (everRan ? ago(newestRun(byDayForAgent)) : null);
-  let next;
-  if(!enabled) next='—';
-  else if(onDemand) next='Only when someone asks';
-  else if(lastOk==null) next='As soon as it first runs';
-  else next = until((lastOk + reg.cadence_minutes*MIN) - now);
-
-  return {
-    reg, enabled, onDemand, state, tone, statusText, todo, severe, attention,
-    lastSeen, next, week, failedWeek, ranThisWeek
-  };
+  if (r.status === 'no-data') return r.status_reason;
+  return r.status_reason + (r.last_real_work_at ? ' · last real work ' + AM.ago(r.last_real_work_at, now) : '');
 }
-
-// dailyRows keyed by day (YYYY-MM-DD) for one agent
-function dayKey(dt){ return dt.toISOString().slice(0,10); }
-function newestRun(byDay){
-  let m=null;
-  for(const k in byDay){ const s=byDay[k].last_started_at; if(s && (!m || s>m)) m=s; }
-  return m;
+function barsHTML(id, now){
+  const days = AM.stripDays(now, 14), byDay = DAILY[id] || {};
+  const max = Math.max(1, ...days.map(d => (byDay[d.key] ? byDay[d.key].real_n + byDay[d.key].failed_n : 0)));
+  let fails = 0, real = 0;
+  const bars = days.map(d => {
+    const x = byDay[d.key] || { real_n: 0, quiet_n: 0, failed_n: 0 };
+    fails += x.failed_n; real += x.real_n;
+    let cls, h;
+    if (x.failed_n > 0) { cls = 'b-bad'; h = Math.max(30, Math.round((x.real_n + x.failed_n) / max * 100)); }
+    else if (x.real_n > 0) { cls = 'b-ok'; h = Math.max(18, Math.round(x.real_n / max * 100)); }
+    else if (x.quiet_n > 0) { cls = 'b-quiet'; h = 10; }
+    else { cls = 'b-empty'; h = 0; }
+    const tip = d.dow + ' ' + d.m + '/' + d.d + ' — ' + x.real_n + ' real, ' + x.quiet_n + ' quiet, ' + x.failed_n + ' failed';
+    return `<div class="bar" title="${esc(tip)}"><i class="${cls}" style="height:${h}%"></i><span class="d">${esc(d.dow[0])}</span></div>`;
+  }).join('');
+  return { html: `<div class="bars">${bars}</div>`, fails, real };
 }
-function last7(byDay){
-  const out=[];
-  for(let i=6;i>=0;i--){
-    const dt=new Date(Date.now()-i*DAY);
-    const key=dayKey(dt);
-    const row=byDay[key];
-    const dead = row?(row.dead_count||0):0;
-    out.push({
-      key, dt,
-      runs: row?Math.max(0,(row.runs||0)-dead):0,   // agent ticks only — exclude monitor 'dead' rows
-      ok_count: row?(row.ok_count||0):0,
-      skipped_count: row?(row.skipped_count||0):0,
-      error_count: row?(row.error_count||0):0,
-      dead_count: dead
-    });
-  }
-  return out;
-}
-function monthCost(byDay){
-  const now=new Date();
-  const y=now.getUTCFullYear(), m=now.getUTCMonth();
-  let mtd=0;
-  for(const k in byDay){
-    const d=new Date(k+'T00:00:00Z');
-    if(d.getUTCFullYear()===y && d.getUTCMonth()===m) mtd += Number(byDay[k].cost_usd)||0;
-  }
-  const dayOfMonth=now.getUTCDate();
-  const daysInMonth=new Date(Date.UTC(y,m+1,0)).getUTCDate();
-  const projected = dayOfMonth>0 ? mtd/dayOfMonth*daysInMonth : mtd;
-  return {mtd, projected};
-}
-
-/* ── render ──────────────────────────────────────────────────────────────── */
-const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-function barsHTML(week){
-  const max=Math.max(1,...week.map(d=>d.runs));
-  return `<div class="bars">`+week.map(d=>{
-    const failed=d.error_count>0;
-    const h = d.runs===0 ? 0 : Math.max(20, Math.round(d.runs/max*100));
-    const cls = d.runs===0 ? 'b-empty' : (failed?'b-bad':'b-ok');
-    const label = d.runs===0 ? 'no runs' : (d.runs+' run'+(d.runs===1?'':'s')+', '+d.error_count+' failed');
-    return `<div class="bar" title="${esc(DOW[d.dt.getDay()]+' '+d.dt.getDate()+' — '+label)}">`+
-      `<i class="${cls}" style="height:${h}%"></i><span class="d">${DOW[d.dt.getDay()][0]}</span></div>`;
-  }).join('')+`</div>`;
-}
-function cardHTML(a){
-  const r=a.reg;
-  const cost=monthCost(byDayIndex(r.app, r.agent));
-  const dotCls = a.state==='ok'?'s-ok':a.state==='warn'?'s-warn':a.state==='bad'?'s-bad':a.state==='off'?'s-off':'s-idle';
-  const lineCls = a.tone==='ok'?'ok':a.tone==='warn'?'warn':a.tone==='bad'?'bad':'';
-  const kindText = !a.enabled ? 'Currently switched off'
-        : a.onDemand ? 'Runs on demand'
-        : 'Runs on a schedule — '+cadenceText(r.cadence_minutes);
-  const failText = a.failedWeek===0 ? 'None in the last 7 days' :
-        a.failedWeek+' in the last 7 days';
-  const todo = a.todo ? `<div class="todo ${a.todo.tone}">`+
-      `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>`+
-      `<div><b>What to do:</b> ${esc(a.todo.text)}</div></div>` : '';
-  return `<div class="card${a.enabled?'':' is-off'}">
-    <div class="head">
-      <span class="statusdot ${dotCls}"></span>
-      <div class="titlewrap">
-        <h3>${esc(friendly(r.agent))}</h3>
-        <div class="sub">${esc(kindText)}</div>
-        <p class="statusline ${lineCls}">${esc(a.statusText)}</p>
-      </div>
-    </div>
+function detailHTML(r, now){
+  const m = AM.statusMeta(r.status);
+  const strip = barsHTML(r.id, now);
+  const links = (Array.isArray(r.fix_links) ? r.fix_links : []).filter(l => safeUrl(l && l.url))
+    .map(l => `<a class="lnk" href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>`).join('');
+  const bad = AM.needsFix(r);
+  const retry = ADMIN && r.retry_available
+    ? `<button class="retry" type="button" data-retry="${esc(r.id)}">${bad ? 'Retry now' : 'Run now'}</button><span class="retry-msg" id="msg-${esc(r.id)}"></span>` : '';
+  const fixCls = r.status === 'failed' ? 'bad' : r.status === 'late' ? 'warn' : 'calm';
+  const fixLead = bad ? '<b>How to fix:</b> ' : '<b>If it goes wrong:</b> ';
+  const fix = (r.fix_hint || links || retry)
+    ? `<div class="fix ${fixCls}">${r.fix_hint ? fixLead + esc(r.fix_hint) : ''}<div class="actions">${links}${retry}</div></div>` : '';
+  const cost = r.cost_tracked
+    ? `<div><div class="lbl">Cost this month</div><div class="val mono">${esc(AM.money(r.cost_mtd))}</div></div>
+       <div><div class="lbl">Projected full month</div><div class="val mono">~${esc(AM.money(r.cost_projected))}</div></div>`
+    : `<div><div class="lbl">Cost</div><div class="val"><small>No model cost tracked here</small></div></div>`;
+  const reason = r.status_reason && r.status_reason !== m.word ? ' — ' + r.status_reason : '';
+  return `<div class="status-line ${m.dot}">${esc(m.word)}${esc(reason)}</div>
+    <div class="what">${esc(r.what)} <span style="color:var(--tw-faint)">· ${esc(AM.kindText(r.kind))} · ${esc(AM.schedText(r.sched))}</span></div>
     <div class="meta">
-      <div class="cell"><div class="lbl">Last did something</div><div class="val">${esc(a.lastSeen||'Never yet')}</div></div>
-      <div class="cell"><div class="lbl">Next expected</div><div class="val">${esc(a.next)}</div></div>
-      <div class="strip">
-        <div class="lbl">Last 7 days</div>
-        ${barsHTML(a.week)}
-        <div class="striphint">Failed runs: ${esc(failText)}</div>
-      </div>
-      <div class="cell"><div class="lbl">Cost this month</div><div class="val mono">${esc(money(cost.mtd))}</div></div>
-      <div class="cell"><div class="lbl">Projected full month</div><div class="val mono">~${esc(money(cost.projected))}</div></div>
-    </div>
-    ${todo}
+      <div><div class="lbl">Last real work</div><div class="val">${r.last_real_work_at ? esc(AM.whenCT(r.last_real_work_at)) + '<br><small>' + esc(AM.ago(r.last_real_work_at, now)) + '</small>' : 'Never yet'}</div></div>
+      <div><div class="lbl">What it produced</div><div class="val">${esc(r.last_output_note || '—')}</div></div>
+      <div><div class="lbl">Next due</div><div class="val">${esc(r.sched ? AM.dueText(r.next_due_at, now) : 'When it is asked')}</div></div>
+      <div><div class="lbl">Last failure</div><div class="val">${r.last_failed_at ? esc(AM.whenCT(r.last_failed_at)) : 'None seen'}</div></div>
+      ${cost}
+      <div class="strip"><div class="lbl">Last 14 days (Central time)</div>${strip.html}
+        <div class="striphint">${strip.real} real run${strip.real === 1 ? '' : 's'} · ${strip.fails} failed · faint = checked in with nothing to do</div></div>
+    </div>${fix}`;
+}
+function agentHTML(r, now, showApp){
+  const m = AM.statusMeta(r.status);
+  const open = OPEN.has(r.id);
+  const lineCls = r.status === 'failed' ? 'bad' : r.status === 'late' ? 'warn' : '';
+  return `<div class="agent${open ? ' open' : ''}" id="a-${esc(r.id)}" data-status="${esc(r.status)}">
+    <button class="row" type="button" aria-expanded="${open}" aria-controls="d-${esc(r.id)}" data-toggle="${esc(r.id)}">
+      <span class="sdot ${m.dot}" role="img" aria-label="${esc(m.word)}"></span>
+      <span class="txt"><span class="name">${esc(r.label)}</span>${showApp ? `<span class="offapp">${esc(r.app_label)}</span>` : ''}
+        <span class="line ${lineCls}" style="display:block">${esc(lineFor(r, now))}</span></span>
+      <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>
+    </button>
+    <div class="detail" id="d-${esc(r.id)}" ${open ? '' : 'hidden'}>${open ? detailHTML(r, now) : ''}</div>
   </div>`;
 }
-
-// BYDAY: app → agent → { dayKey → aggregate row }
-let BYDAY={};
-function byDayIndex(app, agent){
-  return (BYDAY[app]||{})[agent]||{};
+function summaryHTML(now){
+  const v = AM.overallVerdict(ROWS);
+  const tracked = ROWS.filter(r => r.cost_tracked);
+  const mtd = tracked.reduce((a, r) => a + (Number(r.cost_mtd) || 0), 0);
+  const dailyTotals = {};
+  for (const id in DAILY) for (const k in DAILY[id]) dailyTotals[k] = (dailyTotals[k] || 0) + (Number(DAILY[id][k].cost_usd) || 0);
+  const p = AM.projectMonth(mtd, dailyTotals, now);
+  return `<div class="summary">
+    <div class="glass verdict ${v.cls}" id="verdict"><span class="dot"></span><div><h2>${esc(v.title)}</h2><p>${esc(v.sub)}</p></div></div>
+    <div class="costs">
+      <div class="glass tile"><div class="lbl">AI cost this month</div><div class="val" id="cost-mtd">${esc(AM.money(p.mtd))}</div><div class="sub">Central-time month to date</div></div>
+      <div class="glass tile"><div class="lbl">Projected month</div><div class="val" id="cost-proj">~${esc(AM.money(p.projected))}</div><div class="sub">+ last 7 days’ average × ${p.remaining.toFixed(1)} days left</div></div>
+    </div></div>`;
 }
-
-/* ── app-level verdict (worst card in the app wins) ─────────────────────── */
-function appVerdictCls(assessed){
-  const watched = assessed.filter(a=>a.enabled);
-  if(watched.length===0) return 'grey';
-  if(watched.some(a=>a.attention && a.severe)) return 'red';
-  if(watched.some(a=>a.attention)) return 'amber';
-  return 'green';
-}
-function appVerdictLabel(cls, watched){
-  if(cls==='grey') return 'No active agents';
-  if(cls==='red') return 'Needs attention';
-  if(cls==='amber') return 'Check in';
-  return watched.length+' agent'+(watched.length===1?'':'s')+' healthy';
-}
-function appPillHTML(assessed){
-  const watched = assessed.filter(a=>a.enabled);
-  const cls = appVerdictCls(assessed);
-  const label = appVerdictLabel(cls, watched);
-  return `<span class="app-verdict-pill ${cls}"><span class="pdot"></span>${esc(label)}</span>`;
-}
-
-/* ── overall verdict pill (worst app verdict wins) ───────────────────────── */
-function overallVerdictHTML(allAssessed){
-  const watched = allAssessed.filter(a=>a.enabled);
-  const attention = watched.filter(a=>a.attention);
-  const anySevere = attention.some(a=>a.severe);
-  let cls, title, sub;
-  if(watched.length===0){
-    cls='grey'; title='No agents are switched on'; sub='Nothing to watch right now.';
-  } else if(attention.length===0){
-    cls='green'; title='All agents healthy';
-    sub='Everything that should be running is running. '+watched.length+' agent'+(watched.length===1?'':'s')+' being watched across all apps.';
-  } else {
-    cls = anySevere?'red':'amber';
-    const n=attention.length;
-    title = n+' agent'+(n===1?'':'s')+' need'+(n===1?'s':'')+' attention';
-    sub = 'The rest are fine — see the cards below for what to do.';
+function render(){
+  const now = Date.now();
+  const { groups, off } = AM.groupByApp(ROWS);
+  document.getElementById('summary').innerHTML = summaryHTML(now);
+  let html = '';
+  for (const g of groups) {
+    const n = g.items.length, bad = g.items.filter(AM.needsFix).length;
+    html += `<section class="app" data-app="${esc(g.app)}"><div class="app-head"><span class="sdot ${AM.statusMeta(g.worst).dot}"></span><h2>${esc(g.app)}</h2>
+      <span class="count">${bad ? bad + ' of ' + n + ' need attention' : n + (n === 1 ? ' item' : ' items')}</span></div>
+      <div class="glass list">${g.items.map(r => agentHTML(r, now, false)).join('')}</div></section>`;
   }
-  return `<div class="verdict ${cls}"><span class="dot"></span><div class="vtext"><h2>${esc(title)}</h2><p>${esc(sub)}</p></div></div>`;
-}
-
-/* ── app sort order: red apps first, then amber, then green, then by name ── */
-function appSortKey(cls, name){
-  const order = {red:0, amber:1, green:2, grey:3};
-  return (order[cls]??4)+'|'+name;
-}
-
-function render(registry){
-  const root=document.getElementById('root');
-
-  // Group registry rows by app
-  const byApp={};
-  for(const r of registry){
-    (byApp[r.app]=byApp[r.app]||[]).push(r);
+  if (off.length) {
+    html += `<details class="offsec" id="offsec"><summary>Switched off (${off.length})</summary>
+      <div class="glass list">${off.map(r => agentHTML(r, now, true)).join('')}</div></details>`;
   }
-
-  // Assess all agents
-  const allAssessed=[];
-  const appGroups=[]; // {app, appAssessed, verdictCls}
-  for(const app of Object.keys(byApp)){
-    const appAssessed = byApp[app].map(r=>assess(r, byDayIndex(app, r.agent)));
-    allAssessed.push(...appAssessed);
-    appGroups.push({app, appAssessed, verdictCls: appVerdictCls(appAssessed)});
-  }
-
-  // Sort apps: attention-first (red→amber→green→grey), then alpha
-  appGroups.sort((a,b)=>appSortKey(a.verdictCls, a.app).localeCompare(appSortKey(b.verdictCls, b.app)));
-
-  let html = overallVerdictHTML(allAssessed);
-
-  if(appGroups.length===0){
-    html += `<div class="tw-note"><h3>No agent data yet</h3><p>When agents are registered and the health views are live, they will appear here automatically.</p></div>`;
-  } else {
-    for(const {app, appAssessed, verdictCls} of appGroups){
-      // Sort cards within app: enabled+attention first, then enabled, then disabled; alpha within tiers
-      const sorted = [...appAssessed].sort((a,b)=>{
-        if(a.enabled!==b.enabled) return a.enabled?-1:1;
-        if(a.attention!==b.attention) return a.attention?-1:1;
-        return friendly(a.reg.agent).localeCompare(friendly(b.reg.agent));
-      });
-      const enabled = sorted.filter(a=>a.enabled);
-      const disabled = sorted.filter(a=>!a.enabled);
-
-      html += `<div class="app-group">`;
-      html += `<div class="app-heading"><h2>${esc(friendly(app))}</h2>${appPillHTML(appAssessed)}</div>`;
-      if(enabled.length) html += enabled.map(cardHTML).join('');
-      if(disabled.length){
-        html += `<div class="section-label">Switched off — not counted above</div>`;
-        html += disabled.map(cardHTML).join('');
-      }
-      html += `</div>`;
-    }
-  }
-
-  root.innerHTML = html;
-  const total = allAssessed.length;
-  document.getElementById('scope').textContent = total+' agent'+(total===1?'':'s')+' across '+appGroups.length+' app'+(appGroups.length===1?'':'s');
+  if (!groups.length && !off.length) html = `<div class="glass verdict grey"><span class="dot"></span><div><h2>Nothing registered yet</h2><p>Agents appear here once they have a row in press_agent_expect.</p></div></div>`;
+  document.getElementById('root').innerHTML = html;
+  const on = ROWS.filter(r => r.status !== 'off').length;
+  document.getElementById('scope').textContent = on + ' watched · ' + groups.length + ' apps';
 }
+function toggle(id){
+  if (OPEN.has(id)) OPEN.delete(id); else OPEN.add(id);
+  const r = ROWS.find(x => x.id === id); const el = document.getElementById('a-' + id);
+  if (!r || !el) return;
+  const open = OPEN.has(id), d = el.querySelector('.detail');
+  el.classList.toggle('open', open);
+  el.querySelector('.row').setAttribute('aria-expanded', String(open));
+  d.innerHTML = open ? detailHTML(r, Date.now()) : '';
+  d.hidden = !open;
+}
+async function retry(id, btn){
+  const msg = document.getElementById('msg-' + id);
+  btn.disabled = true; if (msg) msg.textContent = 'Running…';
+  try {
+    const r = await fetch(FIX_URL, { method: 'POST',
+      headers: { apikey: SB_KEY, Authorization: 'Bearer ' + ADMIN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agent: id }) });
+    const j = await r.json().catch(() => ({}));
+    if (msg) msg.textContent = r.ok ? (j.result || 'Done') + ' — refreshing shortly' : (j.error || ('Failed (' + r.status + ')'));
+    if (r.ok) setTimeout(load, 4000);
+  } catch (e) { if (msg) msg.textContent = 'Could not reach the fix service.'; }
+}
+document.getElementById('root').addEventListener('click', e => {
+  const t = e.target.closest('[data-toggle]'); if (t) { toggle(t.getAttribute('data-toggle')); return; }
+  const b = e.target.closest('[data-retry]'); if (b && !b.disabled) retry(b.getAttribute('data-retry'), b);
+});
 
-function showError(msg){
-  // Degrade honestly — NEVER a green verdict from missing data.
-  document.getElementById('root').innerHTML =
-    `<div class="verdict grey"><span class="dot"></span><div class="vtext">`+
-    `<h2>Can’t check the agents right now</h2>`+
-    `<p>${esc(msg)} This page shows nothing rather than a false all-clear. Try Refresh in a moment.</p></div></div>`;
+function showError(){
+  document.getElementById('summary').innerHTML = '';
+  document.getElementById('root').innerHTML = `<div class="glass verdict grey"><span class="dot"></span><div><h2>Can’t check the agents right now</h2>
+    <p>The status service didn’t answer. This page shows nothing rather than a false all-clear — try Refresh in a moment.</p></div></div>`;
   document.getElementById('scope').textContent = 'unavailable';
 }
-
-function showEmpty(){
-  // Honest degrade: views exist but returned no rows (views not yet created = 404 → showError)
-  document.getElementById('root').innerHTML =
-    `<div class="tw-note"><h3>No agent data yet</h3>`+
-    `<p>The health views are reachable but have no rows yet. Agents will appear here automatically once they’re registered.</p></div>`;
-  document.getElementById('scope').textContent = '0 agents';
-}
-
-const skel = `<div class="tw-skel"></div><div class="tw-skel"></div><div class="tw-skel"></div>`;
-
 async function load(){
-  const btn=document.getElementById('refresh');
-  btn.setAttribute('aria-busy','true');
-  document.getElementById('root').innerHTML = skel;
-  try{
-    const [registry, daily] = await Promise.all([
-      getJSON('/press_agent_health_public?select=app,agent,enabled,last_ok_at,kind,cadence_minutes,model&order=app.asc,agent.asc'),
-      getJSON('/press_agent_runs_daily_all_public?select=app,agent,day,runs,ok_count,skipped_count,refused_count,error_count,dead_count,cost_usd,tokens_in,tokens_out,last_started_at&order=day.desc')
+  const btn = document.getElementById('refresh');
+  btn.setAttribute('aria-busy', 'true');
+  if (!ROWS.length) document.getElementById('root').innerHTML = '<div class="tw-skel"></div><div class="tw-skel"></div><div class="tw-skel"></div>';
+  try {
+    const [rows, daily, admin] = await Promise.all([
+      getJSON('/press_agent_monitor_public?select=*&order=sort.asc'),
+      getJSON('/press_agent_monitor_daily_public?select=id,day,real_n,quiet_n,failed_n,cost_usd'),
+      ADMIN === null ? detectAdmin() : Promise.resolve(ADMIN)
     ]);
-    // index daily rows by app → agent → dayKey
-    BYDAY={};
-    for(const row of (daily||[])){
-      if(!BYDAY[row.app]) BYDAY[row.app]={};
-      if(!BYDAY[row.app][row.agent]) BYDAY[row.app][row.agent]={};
-      BYDAY[row.app][row.agent][row.day] = row;
-    }
-    if(!Array.isArray(registry)){
-      showError('The status service didn’t answer.');
-      return;
-    }
-    if(registry.length===0){
-      showEmpty();
-    } else {
-      render(registry);
-    }
-    document.getElementById('stamp').textContent = 'checked '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    document.getElementById('foot').innerHTML =
-      'Reads only non-sensitive status — no message contents, no per-item timeline. '+
-      'Refreshes when you open the page or press Refresh; it does not poll.';
-  }catch(e){
-    showError('The status service didn’t answer.');
-    document.getElementById('stamp').textContent='';
-    document.getElementById('foot').textContent='';
-  }finally{
-    btn.setAttribute('aria-busy','false');
+    if (!Array.isArray(rows)) throw new Error('shape');
+    ROWS = rows; DAILY = {};
+    for (const d of (daily || [])) (DAILY[d.id] = DAILY[d.id] || {})[d.day] = d;
+    ADMIN = admin || null;
+    const h = decodeURIComponent((location.hash || '').slice(1));
+    if (h && ROWS.some(r => r.id === h)) OPEN.add(h);
+    render();
+    document.getElementById('admin').innerHTML = ADMIN ? '<span class="chip">Admin · fixes on</span>' : '';
+    document.getElementById('stamp').textContent = 'checked ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    document.getElementById('foot').textContent = 'Status is decided on the server from real work against each schedule (a “nothing to do” tick never counts). A watcher checks every 15 minutes and pushes + emails Mark when something changes; a GitHub Action watches the watcher.';
+    if (h && OPEN.has(h)) { const el = document.getElementById('a-' + h); if (el) el.scrollIntoView({ block: 'center' }); }
+  } catch (e) {
+    showError();
+    document.getElementById('stamp').textContent = '';
+  } finally {
+    btn.setAttribute('aria-busy', 'false');
   }
 }
-
-const btn=document.getElementById('refresh');
-btn.addEventListener('click', load);
-btn.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); load(); }});
+const rb = document.getElementById('refresh');
+rb.addEventListener('click', load);
+rb.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); load(); } });
 load();
 </script>
 </body>

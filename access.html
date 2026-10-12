@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="color-scheme" content="dark"><title>press — Access admin</title>
+<meta name="color-scheme" content="dark"><title>Family Wing Access Manager</title>
 <!--
   The Family Wing access-admin page (docs/access-framework.md §6). It lives in the Private Wing:
   it is listed in spaces.json.personal, so the marquee keeps it out of the public lobby and its
@@ -37,7 +37,7 @@ a.back{display:inline-block;margin-bottom:14px;font:400 12px/1 var(--sans);color
 .hd{padding-bottom:12px;border-bottom:3px double var(--brass-dim)}
 .hd .r{display:flex;justify-content:space-between;align-items:baseline}
 .hd .who{font:600 22px/1 var(--sans);letter-spacing:-.01em}
-.hd .mo{font:400 10px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--brass)}
+.hd .mo{font:400 10px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--brass);white-space:nowrap;margin-left:12px}
 .hd .sub{font:400 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-top:7px}
 .zone{margin-top:26px}
 .zone-hd{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--brass-dim);padding-bottom:8px}
@@ -93,6 +93,16 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
 .prow:last-child{border-bottom:0}
 .pl{font-size:14px;color:var(--ink)}
 .sw2.dis{opacity:.4;cursor:not-allowed}
+/* Requests — pending "Request access" taps from blocked family members (press_access_requests). */
+.reqs{margin-top:22px;border:1px solid var(--brass);border-radius:10px;padding:12px 14px 4px;background:rgba(201,162,109,.08)}
+.reqs-hd{display:flex;justify-content:space-between;align-items:baseline;font:500 11px/1 var(--sans);letter-spacing:.26em;text-transform:uppercase;color:var(--brass);padding-bottom:8px;border-bottom:1px dotted var(--brass-dim)}
+.rq{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px dotted var(--brass-faint)}
+.rq:last-child{border-bottom:0}
+.rq .rt{flex:1;min-width:0;font-size:14px}
+.rq .rt em{display:block;font-style:normal;font-size:11px;color:var(--faint);margin-top:2px}
+.rq .on-btn{flex:none;background:var(--brass);color:#1a1205;border:0;border-radius:6px;font:600 11px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;padding:10px 12px;cursor:pointer;min-height:36px}
+.rq .on-btn[disabled]{opacity:.6;cursor:progress}
+.badge{display:inline-block;margin-left:8px;font:600 8.5px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#1a1205;background:var(--brass);border-radius:3px;padding:4px 6px;vertical-align:middle}
 </style></head><body>
 <main class="app" id="app"><div class="center"><p>Loading…</p></div></main>
 
@@ -124,7 +134,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
   // ── sign-in (admin's own Supabase session; RLS enforces is_admin on every write) ──
   function renderSignIn(note){
     h('<div class="center"><div class="fg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg></div>'+
-      '<h1>Access admin</h1><p>Sign in with your admin email to manage who can open which tool.</p>'+
+      '<h1>Family Wing Access Manager</h1><p>Sign in with your admin email to manage who can open which tool.</p>'+
       '<form id="ef"><label for="em">Admin email</label><input id="em" type="email" inputmode="email" autocomplete="email" autofocus placeholder="you@example.com">'+
       '<button class="btn" id="send" type="submit">Send me a code</button></form>'+
       '<form id="cf" hidden><label for="cd">Code from your email</label><input id="cd" type="text" inputmode="numeric" maxlength="10" placeholder="••••••" style="letter-spacing:.4em;text-align:center">'+
@@ -175,14 +185,20 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
       h('<div class="center"><h1>Couldn’t load</h1><p>'+esc((e.body&&e.body.message)||e.message)+'</p><button class="btn ghost" onclick="location.reload()">Reload</button></div>');
       return;
     }
+    // pending "Request access" taps — best-effort: if the table is missing or unreadable the manager
+    // still works, it just shows no Requests strip.
+    var requests = [];
+    try{ requests = await rest('/press_access_requests?select=email,page,requested_at&handled_at=is.null&order=requested_at.desc') || []; }catch(_){ requests = []; }
     try{ spaces = await (await fetch('spaces.json')).json(); }catch(_){ spaces={}; }
     try{ pages = await (await fetch('pages.json')).json(); }catch(_){ pages={}; }
     GATED_BY_SPACES = Array.isArray(spaces.family) ? spaces.family : [];
 
-    render(session, people||[], apps||[], grants||[], pages||{});
+    render(session, people||[], apps||[], grants||[], pages||{}, requests);
   }
 
-  function titleFor(page, pages){ return (pages[page]&&pages[page].title) || page.replace(/\.html$/,''); }
+  // Marquee card names (index.html LABELS owns naming; test/access-names.test.mjs keeps these in step).
+  var APP_NAMES = { 'remit.html':'Remit', 'perth.html':'The Runway', 'optimo.html':'Optimo' };
+  function titleFor(page, pages){ return APP_NAMES[page] || (pages[page]&&pages[page].title) || page.replace(/\.html$/,''); }
   function gatedPages(apps, pages){
     // the union of spaces.family and any app flagged gated — these are the columns of the grid
     var set = {}; GATED_BY_SPACES.forEach(function(p){ set[p]=true; });
@@ -196,6 +212,31 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
     var g = grants.find(function(x){ return x.email===email && x.page===page; });
     return !!(g && g.active===false);
   }
+  function isRequested(requests, email, page){
+    return requests.some(function(r){ return r.email===email && r.page===page; });
+  }
+  function ago(ts){
+    var m=(Date.now()-new Date(ts).getTime())/60000;
+    if(!(m>=0)) return 'just now';
+    if(m<1) return 'just now'; if(m<60) return Math.floor(m)+' min ago';
+    if(m<1440) return Math.floor(m/60)+' h ago'; return Math.floor(m/1440)+' days ago';
+  }
+  // A request is resolved server-side the moment its grant goes active (press_access_grants_resolve
+  // trigger); this just clears it from the screen without a re-fetch.
+  function clearRequest(email, page){
+    var key = email+'|'+page;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-req],[data-req-badge]'), function(el){
+      if(el.getAttribute('data-req')===key || el.getAttribute('data-req-badge')===key) el.parentNode.removeChild(el);
+    });
+    var left = document.querySelectorAll('[data-req]').length, n = document.getElementById('reqn'), box = document.getElementById('reqs');
+    if(n) n.textContent = left;
+    if(box && !left) box.parentNode.removeChild(box);
+  }
+  async function setGrant(email, page, on){
+    await rest('/press_access_grants?on_conflict=email,page', { method:'POST',
+      headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
+      body: JSON.stringify({ email:email, page:page, active:on, revoked_at: on?null:new Date().toISOString() }) });
+  }
   function lastSeen(ts){
     if(!ts) return 'never signed in';
     var d=(Date.now()-new Date(ts).getTime())/86400000;
@@ -203,12 +244,13 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
     return 'last in '+Math.floor(d)+' days ago';
   }
 
-  function render(session, people, apps, grants, pages){
+  function render(session, people, apps, grants, pages, requests){
+    requests = requests || [];
     // the family-wing apps = spaces.json family list UNION press_access_apps where gated.
     var famApps = gatedPages(apps, pages);
     var head = '<a class="back" href="index.html?view=personal">← the private wing</a>'+
       '<div class="wing">Private wing · admin</div>'+
-      '<div class="hd"><div class="r"><span class="who">Access</span><span class="mo">'+people.length+' '+(people.length===1?'person':'people')+'</span></div>'+
+      '<div class="hd"><div class="r"><h1 class="who" style="margin:0">Family Wing Access Manager</h1><span class="mo">'+people.length+' '+(people.length===1?'person':'people')+'</span></div>'+
       '<div class="sub">Who can open the family tools</div></div>';
 
     // 1) People — one card per person, a switch per family tool (everyone is ON by default), plus
@@ -226,7 +268,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
           // their switches are shown OFF and inert until they are reactivated.
           var shown = off ? false : on;
           var attrs = off ? ' aria-disabled="true"' : ' tabindex="0" data-grant="'+esc(pn.email)+'|'+esc(pg)+'"';
-          return '<div class="prow"><span class="pl">'+esc(titleFor(pg,pages))+'</span>'+
+          var asked = !off && !on && isRequested(requests, pn.email, pg);
+          return '<div class="prow"><span class="pl">'+esc(titleFor(pg,pages))+
+            (asked?'<span class="badge" data-req-badge="'+esc(pn.email)+'|'+esc(pg)+'">Requested</span>':'')+'</span>'+
             '<i class="sw2'+(shown?' on':'')+(off?' dis':'')+'" role="switch" aria-checked="'+shown+'"'+attrs+'></i></div>';
         }).join('');
         return '<div class="pcard'+(off?' off':'')+'">'+
@@ -250,7 +294,23 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
       '<div class="linkrow"><input id="lk" readonly value="'+esc(signInLink)+'"><button class="btn ghost" id="cp" style="margin:0;width:auto;white-space:nowrap">Copy</button></div>'+
       '</section>';
 
-    h(head + grid + add);
+    // 0) Requests — only those that still need a switch flipped (a request for an app the person can
+    // already open is shown nowhere; the DB resolves it when the switch goes on).
+    var pend = requests.filter(function(r){
+      var pn = people.find(function(p){ return p.email===r.email; });
+      return pn && pn.active && famApps.indexOf(r.page)!==-1 && isRevoked(grants, r.email, r.page);
+    });
+    var strip = !pend.length ? '' :
+      '<section class="reqs" id="reqs"><div class="reqs-hd"><span>Requests</span><span id="reqn">'+pend.length+'</span></div>'+
+      pend.map(function(r){
+        var pn = people.find(function(p){ return p.email===r.email; });
+        var key = esc(r.email)+'|'+esc(r.page);
+        return '<div class="rq" data-req="'+key+'"><span class="rt">'+esc((pn&&pn.name)||r.email)+' wants <b>'+esc(titleFor(r.page,pages))+'</b>'+
+          '<em>'+esc(ago(r.requested_at))+'</em></span>'+
+          '<button class="on-btn" data-turn-on="'+key+'">Turn on</button></div>';
+      }).join('')+'</section>';
+
+    h(head + strip + grid + add);
     wire(session, people, apps, grants, pages);
   }
 
@@ -264,15 +324,30 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
         var next = !sw.classList.contains('on');   // next === true means GRANTED
         sw.classList.add('busy');
         try{
-          await rest('/press_access_grants?on_conflict=email,page', { method:'POST',
-            headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
-            body: JSON.stringify({ email:email, page:page, active:next, revoked_at: next?null:new Date().toISOString() }) });
+          await setGrant(email, page, next);
           sw.classList.toggle('on', next); sw.setAttribute('aria-checked', next);
+          if(next) clearRequest(email, page);   // switching ON resolves any pending request
         }catch(e){ /* leave state unchanged on failure */ }
         sw.classList.remove('busy');
       };
       sw.addEventListener('click', toggle);
       sw.addEventListener('keydown', function(e){ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); toggle(); } });
+    });
+
+    // Requests strip — one tap "Turn on" = the same write as flipping that person's switch ON.
+    Array.prototype.forEach.call(document.querySelectorAll('[data-turn-on]'), function(btn){
+      btn.addEventListener('click', async function(){
+        if(btn.disabled) return;
+        var parts = btn.getAttribute('data-turn-on').split('|'), email=parts[0], page=parts[1];
+        btn.disabled = true; btn.textContent = 'Turning on…';
+        try{
+          await setGrant(email, page, true);
+          Array.prototype.forEach.call(document.querySelectorAll('[data-grant]'), function(sw){
+            if(sw.getAttribute('data-grant')===email+'|'+page){ sw.classList.add('on'); sw.setAttribute('aria-checked', true); }
+          });
+          clearRequest(email, page);
+        }catch(e){ btn.disabled = false; btn.textContent = 'Turn on'; }
+      });
     });
 
     // Deactivate / Reactivate a person — flip press_access_people.active (never delete). A
@@ -331,7 +406,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
   function renderWingGate(note){
     h('<div class="center"><div class="fg-icon"><svg viewBox="0 0 24 24" aria-hidden="true">'+
       '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>'+
-      '<h1>Private wing</h1><p>Unlock with your passkey to open the access admin.</p>'+
+      '<h1>Private wing</h1><p>Unlock with your passkey to open the Family Wing Access Manager.</p>'+
       '<button class="btn" id="pk" type="button">Unlock with your passkey</button>'+
       '<div class="msg '+((note&&note.cls)||'')+'" id="m">'+((note&&note.text)||'')+'</div>'+
       '<a class="back" href="index.html?view=personal" style="margin-top:16px">← the private wing</a></div>');
