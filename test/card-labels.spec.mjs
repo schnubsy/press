@@ -33,6 +33,7 @@ const WANT = {
   'kayley.html':        ['Checklist', 'Kayley · 2-Week Upskilling Plan'],
   'eagle-path.html':    ['Checklist', "Brandon's Eagle Path · Saturday Check-In"],
   'agent-health.html':  ['Monitor', 'Agent Monitor'],
+  'steward.html':       ['Environment Reports', 'Steward'],   // arc/steward-report (2026-10-12)
 };
 const personal = SPACES.personal || [], family = SPACES.family || [];
 const PUBLIC = Object.keys(PAGES).filter((f) => !personal.includes(f) && !family.includes(f));

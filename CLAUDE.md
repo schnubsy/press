@@ -10,7 +10,7 @@ served via GitHub Pages. `index.html` is the portal — card kicker / title / ic
 
 Served pages by tier (contract: `docs/spec.md` → Tenants):
 - **Public:** `kayley.html`, `council-guide.html`, `eagle-path.html`, `halvsies.html`, `agent-health.html`
-- **Private wing** (WebAuthn passkey + vault): `fsa.html`, `giving.html`, `retirement.html`, `card-scout.html`, `cardsharp.html`, `access.html` (family admin)
+- **Private wing** (WebAuthn passkey + vault): `fsa.html`, `giving.html`, `retirement.html`, `card-scout.html`, `cardsharp.html`, `access.html` (family admin), `steward.html` (Steward reports — borrows the Card Scout capability; `supabase/functions/steward-reports/`)
 - **Family wing** (email OTP + JWT + per-page grants): `remit.html`, `perth.html`, `optimo.html`
 - **optimo** = `optimo.html` (family-wing launcher card) + the `optimo/` app directory (the PWA, served at
   `/press/optimo/`), both mirrored by optimo's own `tools/release.js` (optimo migrate-home, 2026-10-10, from merge `83cdcc1`).
@@ -31,12 +31,14 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #35 9672b1c on 2026-10-12; main checkout on main @ 9672b1c
-**arc/marquee-wings-monitor (2026-10-12, cloud Builder).** Marquee owns card naming (`LABELS` + T9), Mark's new labels,
-filename lines gone, new icons. Family Wing: Request access → push+email → switch on; "Family Wing Access Manager";
-remit data gate opt-out; wing-level sign-in email (sync needs Mark's `SUPABASE_ACCESS_TOKEN`). Agent Monitor rebuilt on
-real work, full inventory incl. scheduled tasks, agent-watch alerts, admin-only Fix. remit PR #15 / optimo PR #114 carry
-the re-vendored gate. Full narrative: `docs/history.md`.
+Merge state: PR pending (branch arc/steward-report)
+**arc/steward-report (2026-10-12) — Steward report page; cloud Builder.** New press-native PRIVATE-wing `steward.html`
+(latest report + 12-week calendar-week strip, 390-first) over the service-role-only `press_steward_reports` table, read
+through the new `steward-reports` Edge Function (v2), which checks the private wing's Card Scout capability against the
+server-held `press_deals.sync_id` default via the service-role-only RPC `press_steward_capability_ok`. Gauntlet (close, after merging main): unit 133 ·
+Playwright 110 + 1 WebKit skip · tenants-check steward T1/T8/T9 PASS (21 env-only FAILs: tenant repos outside cloud scope).
+Also on main today: PR #35 marquee-wings-monitor (LABELS/T9, Family Wing requests, Agent Monitor).
+Open: fixture row delete + `.claude/settings.json` (classifier) + press_deals anon INSERT — HANDOFF. Narrative: `docs/history.md`.
 
 ## Project rules
 

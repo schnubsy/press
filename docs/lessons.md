@@ -329,6 +329,24 @@ branch. Cross-check `list_migrations` against `db/` when closing an arc that app
 repo (e.g. flow for the kayley compare) must have it added at dispatch — otherwise that step is BLOCKED, never fetched
 around the scope.
 
+## arc/steward-report (2026-10-12)
+
+- **[supabase][security] A header-gated table's ROWS are not a secret — never prove a capability by "a row with this id
+  exists".** `press_deals` lets anon INSERT any row whose `sync_id` equals its own `x-plan-id`, so any 32-hex string can be
+  made to "exist". A server-side capability check must compare against something no client can write. Here that is the
+  `press_deals.sync_id` COLUMN DEFAULT (read in a `security definer` RPC, execute revoked from public/anon/authenticated).
+  Found by the steward-report review slice before the merge.
+- **[supabase] Prove a gated Edge Function live without moving the secret: call it FROM the DB with pg_net.**
+  `net.http_post(..., headers := jsonb_build_object('x-plan-id', (select <secret> ...)))`, then read `net._http_response`,
+  projecting only safe fields. The capability never reaches the transcript, the shell or a commit. Cloud shells cannot reach
+  `*.supabase.co` (egress 403), so this is also the only live path from a cloud Builder.
+- **[supabase] A connector DELETE can time out on the confirmation step in an unattended cloud run (#94450 pattern).** Do not
+  retry. If the goal is "stop showing it", make a non-destructive UPDATE that achieves it (here: moving `run_at` outside the read
+  window), and give the guarded delete to Mark.
+- **[press] A press-native private page with no data store of its own can borrow a tool's capability**
+  (`PressGate.guard({page:'card-scout.html'})`). It needs no keyring entry (T7-exempt, like access.html) and adds no new secret
+  or Mark step. Record the coupling in docs/spec.md → Tenants: rotating the borrowed key moves access with it.
+
 ## arc/marquee-wings-monitor (2026-10-12)
 
 - **A monitor must not trust the agent's own "ok".** `last_ok_at` was refreshed by `skipped` ticks, so a dead scan

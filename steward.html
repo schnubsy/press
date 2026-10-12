@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en" class="sw-locked"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark"><title>Steward</title>
+<meta name="page-title" content="Steward">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSI2NCIgeTI9IjY0IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjN0JDOEE0Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRTBDMjcxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMwRjE1MTMiLz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg4IDgpIHNjYWxlKDIpIiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjZykiIHN0cm9rZS13aWR0aD0iMi44IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xNC43IDYuM2ExIDEgMCAwIDAgMCAxLjRsMS42IDEuNmExIDEgMCAwIDAgMS40IDBsMy43Ny0zLjc3YTYgNiAwIDAgMS03Ljk0IDcuOTRsLTYuOTEgNi45MWEyLjEyIDIuMTIgMCAwIDEtMy0zbDYuOTEtNi45MWE2IDYgMCAwIDEgNy45NC03Ljk0bC0zLjc2IDMuNzZ6Ii8+PC9nPjwvc3ZnPg==">
+<meta name="theme-color" content="#0F1513">
+<!--
+  steward.html — the Steward's weekly watch + monthly audit reports (press-native, PRIVATE wing; arc/steward-report).
+
+  READ PATH: press_steward_reports is SERVICE-ROLE-ONLY (RLS on, no policies, no anon/authenticated grant). This page
+  never reads it with a browser key. After the shared passkey gate (src/gate.js, loaded by relative path like
+  access.html — never vendored, never modified) releases the private wing's Card Scout capability from the sealed
+  keyring, the page POSTs it as `x-plan-id` to the `steward-reports` Edge Function, which checks it with the service
+  role and only then returns the rows (supabase/functions/steward-reports/). No session → no request at all.
+  Nothing here is a secret: the Supabase URL is the same public value every wing page embeds.
+-->
+<style>
+:root{
+  --ground:#0F1513; --raised:#151d1a; --line:rgba(123,200,164,.16); --line-2:rgba(123,200,164,.28);
+  --ink:#e8ede9; --muted:#8a9a93; --faint:#5f6e68;
+  --sage:#7BC8A4; --gold:#E0C271; --green:#57C79A; --amber:#E8B04E; --red:#E06C6C;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--ground);color:var(--ink);font:400 15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+html.sw-locked .app{visibility:hidden}
+.app{max-width:430px;margin:0 auto;min-height:100vh;padding:20px 16px 56px}
+@media(min-width:900px){.app{max-width:760px;padding:36px 32px 64px}}
+a.back{display:inline-block;margin-bottom:16px;font-size:12.5px;color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line)}
+.kick{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--sage);margin-bottom:6px}
+.kick:before{content:"";width:6px;height:6px;border-radius:50%;background:linear-gradient(135deg,var(--sage),var(--gold))}
+h1{margin:0 0 18px;font:600 24px/1.15 var(--sans);letter-spacing:-.01em}
+.card{background:var(--raised);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.head{display:flex;gap:12px;align-items:flex-start}
+.lamp{flex:0 0 auto;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:22px;line-height:1;background:rgba(255,255,255,.04);border:1px solid var(--line-2)}
+.lamp.g{box-shadow:0 0 0 3px rgba(87,199,154,.14)} .lamp.y{box-shadow:0 0 0 3px rgba(232,176,78,.16)} .lamp.r{box-shadow:0 0 0 3px rgba(224,108,108,.18)}
+.summary{font:600 17px/1.35 var(--sans);margin:0 0 4px}
+.meta{font-size:12.5px;color:var(--muted)}
+h2{margin:0 0 8px;font:600 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+h2 .n{color:var(--faint);letter-spacing:0;margin-left:4px}
+.sec{margin-top:16px}
+.sec ul{margin:0;padding:0;list-style:none}
+.sec li{position:relative;padding:8px 0 8px 18px;border-top:1px solid var(--line)}
+.sec li:first-child{border-top:0}
+.sec li:before{content:"";position:absolute;left:2px;top:15px;width:7px;height:7px;border-radius:50%;background:var(--faint)}
+.sec.needs h2{color:var(--gold)} .sec.needs li:before{background:var(--gold)}
+.sec.fixed li:before{background:var(--sage)}
+.sec.cost li:before{background:var(--amber)}
+.none{color:var(--faint);font-size:13.5px;padding:2px 0}
+.clear{font-size:13.5px;color:var(--muted)}
+.strip{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;align-items:end;margin-top:6px}
+.wk{display:flex;flex-direction:column-reverse;align-items:center;gap:4px;min-height:44px;padding:6px 0;border-radius:8px;background:rgba(255,255,255,.02)}
+.wk.now{background:rgba(123,200,164,.07)}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--faint)}
+.dot.g{background:var(--green)} .dot.y{background:var(--amber)} .dot.r{background:var(--red)}
+.dot.m{width:14px;height:14px;background:transparent;border:3px solid var(--faint)}
+.dot.m.g{border-color:var(--green)} .dot.m.y{border-color:var(--amber)} .dot.m.r{border-color:var(--red)}
+.axis{display:flex;justify-content:space-between;font-size:11px;color:var(--faint);margin-top:6px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.state{padding:28px 6px;text-align:center;color:var(--muted)}
+.state b{display:block;color:var(--ink);font-size:16px;margin-bottom:6px}
+.state a{color:var(--sage)}
+.btn{margin-top:12px;font:500 13px/1 var(--sans);color:var(--ink);background:transparent;border:1px solid var(--line-2);border-radius:999px;padding:9px 16px;cursor:pointer}
+.ledger{width:100%;border-collapse:collapse;font-size:13px}
+.ledger td{padding:6px 0;border-top:1px solid var(--line)} .ledger td:last-child{text-align:right;color:var(--muted)}
+</style>
+</head><body>
+<main class="app" id="app" aria-live="polite">
+  <a class="back" href="index.html?view=personal">← the private wing</a>
+  <div class="kick">Steward</div>
+  <h1>Environment reports</h1>
+  <div id="view"><div class="state" id="st-loading">Loading the latest report…</div></div>
+</main>
+<script src="src/gate.js"></script>
+<script>
+(function(){
+  'use strict';
+  var FN = 'https://eepjhpyziczrxvirczio.supabase.co/functions/v1/steward-reports';
+  var WEEK = 7 * 864e5;
+  var LAMP = { '🟢':'g', '🟡':'y', '🔴':'r' };
+  var view = document.getElementById('view');
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function day(iso){ var d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'short' }); }
+  // a section line may be a plain string or a small object (text/line/action + optional detail)
+  function lineText(it){
+    if (it == null) return '';
+    if (typeof it !== 'object') return String(it);
+    var main = it.text || it.line || it.title || it.item || it.service || '';
+    var more = it.action || it.detail || it.note || '';
+    return more ? (main ? main + ' — ' + more : more) : (main || JSON.stringify(it));
+  }
+  function arr(x){ return Array.isArray(x) ? x : (x ? [x] : []); }
+  function sec(cls, title, items, emptyText){
+    var list = arr(items).map(lineText).filter(Boolean);
+    return '<section class="sec ' + cls + '"><h2>' + esc(title) + (list.length ? '<span class="n">' + list.length + '</span>' : '') + '</h2>' +
+      (list.length ? '<ul>' + list.map(function(t){ return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>'
+                   : '<div class="none">' + esc(emptyText) + '</div>') + '</section>';
+  }
+  function ledger(rows){
+    rows = arr(rows); if (!rows.length) return '';
+    return '<section class="sec"><h2>What I pay</h2><table class="ledger">' + rows.map(function(r){
+      if (typeof r !== 'object') return '<tr><td>' + esc(r) + '</td><td></td></tr>';
+      var right = [r.per_month != null ? '$' + r.per_month + '/mo' : (r.usd_month != null ? '$' + r.usd_month + '/mo' : ''), r.trend || ''].filter(Boolean).join(' · ');
+      return '<tr><td>' + esc([r.service, r.plan].filter(Boolean).join(' · ') || lineText(r)) + '</td><td>' + esc(right) + '</td></tr>';
+    }).join('') + '</table></section>';
+  }
+  function weekStart(ms){ var d = new Date(ms); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getTime(); }
+  function strip(history, now){
+    var cols = []; for (var i = 0; i < 12; i++) cols.push([]);
+    // calendar weeks (local, Monday-start) — not rolling 7-day windows, so last Monday's run never reads as "this
+    // week" before today's run lands. Math.round absorbs the ±1h of a DST change inside the span.
+    var wk0 = weekStart(now);
+    arr(history).forEach(function(h){
+      var t = Date.parse(h.run_at); if (isNaN(t)) return;
+      var ago = Math.round((wk0 - weekStart(t)) / WEEK); if (ago < 0) ago = 0; if (ago > 11) return;
+      cols[11 - ago].push(h);
+    });
+    var html = cols.map(function(c, i){
+      return '<div class="wk' + (i === 11 ? ' now' : '') + '">' + c.map(function(h){
+        var k = LAMP[h.headline] || '';
+        return '<span class="dot ' + k + (h.cadence === 'monthly' ? ' m' : '') + '" role="img" aria-label="' +
+          esc((h.cadence === 'monthly' ? 'Monthly' : 'Weekly') + ' ' + day(h.run_at) + ' ' + (h.headline || '')) + '" title="' +
+          esc((h.cadence === 'monthly' ? 'Monthly · ' : 'Weekly · ') + day(h.run_at)) + '"></span>';
+      }).join('') + '</div>';
+    }).join('');
+    return '<section class="card" aria-label="Last 12 weeks"><h2>Last 12 weeks</h2><div class="strip" id="strip">' + html + '</div>' +
+      '<div class="axis"><span>11 wk ago</span><span>this week</span></div>' +
+      '<div class="legend"><span><i class="dot g"></i>weekly watch</span><span><i class="dot m g"></i>monthly audit</span></div></section>';
+  }
+  function render(body){
+    var L = body && body.latest;
+    if (!L) {
+      view.innerHTML = '<div class="state" id="st-empty"><b>No reports yet.</b>The first weekly watch lands here on its next Monday run.</div>';
+      return;
+    }
+    var s = L.sections || {}, k = LAMP[L.headline] || '';
+    var meta = [(L.cadence === 'monthly' ? 'Monthly audit' : 'Weekly watch'), day(L.run_at)];
+    if (L.model) meta.push(L.model);
+    if (L.cost_usd != null && L.cost_usd !== '') meta.push('$' + Number(L.cost_usd).toFixed(2));
+    view.innerHTML =
+      '<article class="card" id="latest">' +
+        '<div class="head"><div class="lamp ' + k + '" id="headline" role="img" aria-label="' + esc(L.headline) + '">' + esc(L.headline) + '</div>' +
+        '<div><p class="summary" id="summary">' + esc(L.summary) + '</p><div class="meta">' + esc(meta.join(' · ')) + '</div></div></div>' +
+        sec('needs', 'Needs you', s.needs_you, 'Nothing needs you.') +
+        sec('fixed', 'Fixed for you', s.fixed_for_you, 'No repairs this run.') +
+        sec('cost', 'Cost moves', s.cost_moves, 'No cost moved.') +
+        ledger(s.ledger) +
+        '<section class="sec"><h2>All clear</h2><div class="clear">' + esc(lineText(s.all_clear) || '—') + '</div></section>' +
+      '</article>' + strip(body.history, Date.now());
+  }
+  function stateMsg(id, title, text, retry){
+    view.innerHTML = '<div class="state" id="' + id + '"><b>' + esc(title) + '</b>' + text +
+      (retry ? '<br><button class="btn" id="retry" type="button">Try again</button>' : '') + '</div>';
+    if (retry) document.getElementById('retry').addEventListener('click', function(){ load(retry); });
+  }
+  var seq = 0;
+  function load(syncId){
+    var mine = ++seq;
+    view.innerHTML = '<div class="state" id="st-loading">Loading the latest report…</div>';
+    fetch(FN, { method:'POST', headers:{ 'x-plan-id': syncId } }).then(function(r){
+      if (mine !== seq) return;
+      if (r.status === 401) return stateMsg('st-denied', 'This key doesn’t open the reports.',
+        'Reconnect Card Scout in the <a href="index.html?view=personal">private wing</a> — the Steward reads with its key.');
+      if (!r.ok) return stateMsg('st-error', 'Couldn’t reach the reports.', 'The server answered ' + r.status + '.', syncId);
+      return r.json().then(function(b){ if (mine === seq) render(b); });
+    }).catch(function(){ if (mine === seq) stateMsg('st-error', 'Couldn’t reach the reports.', 'Check the connection.', syncId); });
+  }
+  function reveal(){ document.documentElement.classList.remove('sw-locked'); }
+  function blank(){ seq++; view.innerHTML = ''; document.documentElement.classList.add('sw-locked'); }
+
+  if (!(window.PressGate && window.PressGate.guard)) {
+    reveal(); stateMsg('st-error', 'The private-wing gate didn’t load.', 'Reload the page.'); return;
+  }
+  // The Steward reads with the private wing's Card Scout capability (see the header note) — no key of its own.
+  PressGate.guard({
+    page: 'card-scout.html',
+    onUnlock: function(creds){ reveal(); load(creds.syncId); },
+    onLock: blank
+  });
+})();
+</script>
+</body></html>

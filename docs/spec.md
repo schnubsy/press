@@ -188,6 +188,15 @@ always; `grant select on public.<t> to anon;` ONLY when the page is genuinely pu
 RLS still decides which rows; the grant only opens the door. A service-role-only table (e.g. a deny-all
 `*_capture_*` or a views-only base table) grants `service_role` alone and says so in a comment.
 
+**Borrowed capability — `steward.html` (press-native, private wing; arc/steward-report 2026-10-12).** It has no
+keyring entry of its own (T7-exempt, like `access.html`). It guards on `card-scout.html`, so the shared gate releases
+the private wing's Card Scout capability, and POSTs that capability as `x-plan-id` to the `steward-reports` Edge Function
+(`supabase/functions/steward-reports/`). The function compares it, through the service-role-only RPC
+`press_steward_capability_ok` (`db/20261012_press_steward_capability.sql`), against the **server-held
+`press_deals.sync_id` column default**. It never checks "a row with this sync_id exists", because anon can INSERT rows
+with any sync_id. Only after that does it read the service-role-only `press_steward_reports` table. **Coupling:**
+rotating Card Scout's key moves Steward access with it.
+
 **Family-wing tenants inherit the wing (arc/marquee-wings-monitor, 2026-10-12):** a new family-wing app
 inherits the ONE wing-level sign-in email (`docs/auth/family-wing-otp.*`, "Your Family Wing sign-in code",
 synced to Supabase Auth by `auth-email-sync.yml`) — **never a per-app template or an app name in the email**

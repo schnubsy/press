@@ -1,44 +1,78 @@
 # press — HANDOFF
 
-_Last updated: 2026-10-12 — arc/marquee-wings-monitor (cloud Builder)._
+_Last updated: 2026-10-12. arc/steward-report (the Steward report page), run by a cloud Builder. PR #35
+(marquee-wings-monitor) landed on main the same day; its open items are carried below._
 
-## Standing rule — publish auto-close (do NOT re-litigate)
+## Standing rule: publish auto-close (do NOT re-litigate)
 
-An outward-facing publish at the end of a **green arc or hotfix** does NOT need a separate merge approval
-from Mark. When the gauntlet is green, complete the publish (merge/push to `main`, which GitHub Pages serves)
-as part of closing out. (Auto-merge is still never enabled pre-emptively.) Set by Mark 2026-09-18.
+When a **green arc or hotfix** ends in an outward-facing publish, that publish does NOT need a separate merge approval from
+Mark. Once the gauntlet is green, the publish (merge or push to `main`, which GitHub Pages serves) is completed as part of
+the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-18.
 
 ## Current state
 
-- Merge state: Merged: PR #35 9672b1c on 2026-10-12; main checkout on main @ 9672b1c
-- Home: `github:schnubsy/press` (PUBLIC). Tenant PRs: remit #15, optimo #114 (re-vendored family-gate).
-- Ship gate GREEN (cloud): unit 123/0 · inline in sync · tenants-check 64/0 (T9 new) · Playwright 102 + 1 WebKit skip.
-- Live DB/functions already applied: press_access_requests + RPC + triggers, remit_has_access opt-out, agent monitor
-  tables/views/cron `agent-watch` (15 min), review fixes; Edge: access-notify v2, agent-watch v1, agent-fix v1.
-- Scheduled tasks check in: Card Scout weekly + Cowork pop-up watch (cloud prompts updated); Mac snag-train /
-  fsa-monthly / steward-audit via claude-environment `system/scheduled-tasks/_report.md` step 4 (uncommitted on the Mac).
+- Merge state: PR pending (branch arc/steward-report)
+- Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
+- Ship gate: `bash scripts/gauntlet.sh` via `.claude/skills/verify/SKILL.md`. The close-gauntlet numbers are in `docs/evidence/steward-report-close-gauntlet.txt`.
+- New: `steward.html` (private wing; LABELS "Environment Reports / Steward", glyph `tool`).
+- New: Edge Function `steward-reports` v2 (ezbr `6d542a81…`) · table `press_steward_reports` · RPC `press_steward_capability_ok`.
+- From PR #35, live: press_access_requests + RPC/triggers · remit_has_access opt-out · agent monitor tables/views ·
+  cron `agent-watch` (15 min) · Edge access-notify v2, agent-watch v1, agent-fix v1.
 
 ## Shipped this arc
-- S1 marquee `LABELS` (Mark's 10 labels), no filename lines, new icons, T9. S2 Request access flow, Access Manager,
-  wing email template + sync workflow. S3 remit/optimo re-vendor PRs. S4 Agent Monitor rebuild. S5 review fixes.
-- Evidence: `docs/evidence/marquee-wings-slice-{1..5}-*`.
+- **S1 `155c873`**: `press_steward_reports` applied. Service-role-only: RLS on, 0 policies, no anon or authenticated grant.
+- **S2 `910da08`**: `steward.html` with the latest report and a 12-week strip, 390-first.
+  - Registered in spaces, pages and tenants JSON, the marquee label/icon, the favicon register and the council snag-registry row.
+  - Council PR #28 merged as `3b707b5`.
+- **S3 `02fff38`**: review 🔴 fixed. The first gate trusted press_deals rows, which anon can forge. It now uses the server-held-default RPC.
+  - Also: calendar-week strip, XSS and lock specs, and `docs/spec.md` → Tenants "Borrowed capability".
+- Evidence: `docs/evidence/steward-report-slice-{1,2,3}-*`, `steward-report-merge-review.md`.
 
 ## Open / blockers
-- **Sign-in email still says "remit"** until Mark's step 1 (token) and the Auth email sync workflow runs.
-- On-demand AI functions (cardsharp-receipt, cardsharp-ynab, plan-day, propublica) record no runs → "No data".
-- plan-day 401 at 11:58 UTC = a GET without a user token (verify_jwt) — probe, not a function bug (optimo).
-- optimo cloud Playwright baseline is RED on main (Google Fonts egress, incognito installability) — env, not this arc.
-- flow `kayley.html` compare (carried) · NAS zip (Mark, carried) · Issues #28–#32 (Eye polish).
+- **Fixture row** `press_steward_reports.id=1` still exists. The connector DELETE timed out on its confirmation step (#94450).
+  - Its `run_at` was moved outside the 84-day window, so the page does not show it.
+  - Deletion is Mark's step 1.
+- **`.claude/settings.json`** (`Bash(gh pr merge:*)`, arc.md D1) is missing. Writing it was refused by the auto-mode classifier
+  `[Self-Modification]`. Code change → next press arc.
+- **press_deals anon INSERT (and TRUNCATE/REFERENCES/TRIGGER) grants**: pre-existing. Steward no longer depends on them.
+- **Cloud gauntlet stage 3**: tenants-check FAILs T2–T4 when tenant repos are not in session scope. Dispatch press arcs with the tenant repos.
+- From PR #35:
+  - The sign-in email still says "remit" until Mark's step 2.
+  - On-demand AI functions record no runs ("No data").
+  - optimo's cloud Playwright baseline is RED (env).
+- Carried:
+  - flow `kayley.html` compare, BLOCKED (flow out of scope).
+  - NAS zip (Mark).
+  - Issues #28–#32.
+  - Remote branch `claude/perth-phase-2-security-c7a88b` is safe to delete.
 
 ## Exact next steps
-1. Chat: run verify on this PR (close-out report is its final comment).
-2. card-scout arc: re-sync `docs/cowork-task.md` to the live weekly task prompt (step 6 check-in added 2026-10-12).
-3. remit arc: CLAUDE.md access contract → opt-out (`remit_has_access()` now delegates to `press_access_has`).
-4. council arc (mac home): release.md/press.md point at press spec "Card naming — marquee label map" + Agent Monitor
-   registration rule; MANUAL Steward update (§9.4 check-ins, §12.6 prune is daily/30d, notifier now all apps).
-5. Polish: private-wing pill wrap at 390px; wing-card title wrap <400px; on-demand AI run logging.
+1. Chat: run verify on PR #36. The close-out report is its final comment.
+   - Live `https://schnubsy.github.io/press/steward.html` → 200 was BLOCKED here (egress), so verify checks it in Chrome.
+   - Unlock with the passkey → expect "No reports yet" until the first watch row lands.
+2. Next press arc: **press-hygiene**. HOME: github:schnubsy/press · BRANCH: arc/press-hygiene
+   - S1: add `.claude/settings.json` = `{"permissions": {"allow": ["Bash(gh pr merge:*)"]}}`.
+   - S2: tenants-check cloud mode, so absent sibling clones SKIP (or always dispatch with the tenant repos in scope).
+   - S3: flow kayley carry-over. Needs schnubsy/flow in scope.
+   - S4: private-wing pill wrap at 390px, and wing-card title wrap under 400px (from PR #35).
+3. Card Scout tenant arc (schnubsy/card-scout + press in scope):
+   - Revoke anon INSERT/TRUNCATE/REFERENCES/TRIGGER on `press_deals`. First confirm that no browser path inserts deals.
+   - Re-sync `docs/cowork-task.md` to the live weekly task prompt.
+   - Done-criterion: keep the `press_deals.sync_id` literal default; `press_steward_capability_ok(<real key>)` must still return true (the Steward gate).
+4. remit arc: change the CLAUDE.md access contract to opt-out (`remit_has_access()` delegates to `press_access_has`).
+5. council arc (mac home):
+   - Point release.md/press.md at the press spec "Card naming — marquee label map" + the Agent Monitor registration rule.
+   - MANUAL Steward update.
+   - The watch/audit now write `press_steward_reports` rows (the table is live).
 
 ## Mark's manual steps
-1. Create a Supabase personal access token (supabase.com → Account → Access Tokens), add it in GitHub → schnubsy/press →
-   Settings → Secrets → Actions as `SUPABASE_ACCESS_TOKEN`, then Actions → "Auth email sync" → Run workflow —
-   expected: the run is green and prints "SHIP PROOF — Supabase Auth serves the repo's Family Wing email".
+1. Delete the fixture row in the Supabase SQL editor (project `eepjhpyziczrxvirczio`). Run as ONE statement:
+   `with d as (delete from public.press_steward_reports where id = 1 and summary like 'FIXTURE — arc/steward-report%' returning id) select (select count(*) from d) as deleted, (select count(*) from public.press_steward_reports where summary like 'FIXTURE%') - (select count(*) from d) as fixtures_left;`
+   - Expected: `deleted = 1, fixtures_left = 0`. If `deleted = 0`, the row is already gone.
+2. Create a Supabase personal access token (supabase.com → Account → Access Tokens).
+   - Add it in GitHub → schnubsy/press → Settings → Secrets → Actions as `SUPABASE_ACCESS_TOKEN`.
+   - Then Actions → "Auth email sync" → Run workflow.
+   - Expected: the run is green and prints "SHIP PROOF — Supabase Auth serves the repo's Family Wing email".
+3. NAS zip of the Mac press folder (migrate.md step 7):
+   `test -d ~/Documents/code/press && ditto -c -k --keepParent ~/Documents/code/press "<NAS>/archive/code/press-2026-10-11.zip" && unzip -l "<NAS>/archive/code/press-2026-10-11.zip" | tail -1`
+   - Expected: a file count > 0 on the last line. Only then delete the Mac folder.

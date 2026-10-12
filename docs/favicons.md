@@ -50,6 +50,7 @@ has no page-title meta). No external asset — the single-file rule holds.
 | `card-scout.html` | Card Scout | `#0E1220` | `#4FC38A → #E0BD8F` | price / gift tag | inline |
 | `cardsharp.html` | Cardsharp | `#12132A` | `#2EC5E8` (cyan) + `#F4F6FB` chip | gift card: stripe + chip | inline (flat, rounded-square ground) |
 | `perth.html` | Perth · The Runway | `#22312F` | `#6B7F6A → #D8C6A3` + `#E08B4E` | pin on a horizon | inline |
+| `steward.html` | Steward | `#0F1513` | `#7BC8A4 → #E0C271` | wrench (Feather "tool") | inline |
 
 ## Glyph paths (24x24 box)
 
@@ -65,6 +66,7 @@ has no page-title meta). No external asset — the single-file rule holds.
 | `card-scout.html` | `<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>` | 2.8 |
 | `cardsharp.html` | `<rect x="9" y="17" width="46" height="30" rx="5"/>` (filled; 64 viewBox) | fill |
 | `perth.html` | `<path d="M10 45H54"/><path d="M41 45V30"/><circle cx="41" cy="25" r="7.5"/>` | 5 |
+| `steward.html` | `<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>` | 2.8 |
 
 ## Verify before publish
 
