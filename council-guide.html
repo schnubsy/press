@@ -329,7 +329,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v4.12.3</span>
+    <span class="nav-badge">v4.13.0</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -1169,11 +1169,11 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       <div class="instr i-hand" id="cap-audit">
         <span class="who">Owner: Steward · trigger — "sync the council" / "run the audit" / <code>/council:audit</code> / monthly cadence</span>
         <h4>Steward Audit</h4>
-        <p class="instr-sum">The one command that keeps the plugin aligned across every surface — detect drift, repair what's automatable, propagate. Runs monthly, and nudges you once a day until it's run.</p>
+        <p class="instr-sum">The one command that keeps the plugin aligned across every surface — detect drift, repair what's automatable, propagate. Runs monthly, unattended, and on demand.</p>
         <details class="facet">
           <summary><span class="fmk">&#9656;</span>Detect — what it checks for drift</summary>
           <div class="facet-body">
-            <p><b class="ink">Detect:</b> seven check-groups, each with an exact command.</p>
+            <p><b class="ink">Detect:</b> ten check-groups, each with an exact command.</p>
             <p><b class="ink">Stamps &amp; guide</b> — the five version stamps all match <code>plugin.json</code> (the guide nav badge and footer, and the <code>Version:</code> headers in <code>PERSONAS.md</code> and <code>CAPABILITIES.md</code>); every persona named in a skill exists in <code>PERSONAS.md</code>; every registered instrument has its reference file, a one-line entry in <code>skills/hand/SKILL.md</code>, and a guide card with balanced <code>&lt;div&gt;</code>s; no capability is used but unregistered; the inbox-sync contract is intact in all its homes; and every skill, command, and agent description stays valid.</p>
             <p><b class="ink">Bundle &amp; propagation</b> — flags a <code>dist/council.plugin</code> older than the newest committed source (so the chat on Desktop, web and mobile is stale), and always emits the fresh-chat canary that proves the Desktop reload actually propagated.</p>
             <p><b class="ink">Docs currency</b> — the environment <code>MANUAL.md</code> and <code>CHANGELOG.md</code> track the plugin version, <code>manual.html</code> is freshly built, and the published Press copy of this guide has not fallen behind.</p>
@@ -1181,6 +1181,9 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
             <p><b class="ink">Agents</b> — sweeps for an agent gone silent past its cadence, one registered but never once observed running, and a live agent nobody registered, plus a <b class="ink">read-only watch that the container registry stays within its storage quota</b>.</p>
             <p><b class="ink">Projects</b> — every project repo conforms to the control-file v2 layout: a <code>CLAUDE.md</code> within its line cap, none of the retired root files, and a lessons log present.</p>
             <p><b class="ink">Marquee tenants</b> — runs tenants-check across every app on the marquee — vendored gate identical to the canonical copy, registry entries present, release scripts conformant, rebuild matches live where deterministic, and every family page holds an active grant.</p>
+            <p><b class="ink">Data access grants</b> — every database table carries the access grants it needs, and any new migration that creates a table without them is named for the next arc.</p>
+            <p><b class="ink">Prompt hygiene</b> — Claude Code's own prompt audit over the loaded skills and instructions, for conflicts, dead references and bloat.</p>
+            <p><b class="ink">Central-rule drift</b> — reads every active claude.ai project's instructions and every memory file and flags any line that restates or contradicts a Council rule (merging, publishing, dispatch, close-out) or describes a retired setup; a coding project's instructions must carry the one standard line that defers to the Council. Fixes are proposed, and applied only after your explicit go.</p>
           </div>
         </details>
         <details class="facet">
@@ -1677,7 +1680,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <footer>
   <div class="footer-in">
     <div>The Council · a private prospectus · hand-maintained to parity with PERSONAS.md + skills</div>
-    <div class="mono">council v4.12.3 · last updated 2026-10-12</div>
+    <div class="mono">council v4.13.0 · last updated 2026-10-12</div>
   </div>
 </footer>
 
