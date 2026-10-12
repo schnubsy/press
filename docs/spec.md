@@ -165,6 +165,15 @@ always; `grant select on public.<t> to anon;` ONLY when the page is genuinely pu
 RLS still decides which rows; the grant only opens the door. A service-role-only table (e.g. a deny-all
 `*_capture_*` or a views-only base table) grants `service_role` alone and says so in a comment.
 
+**Borrowed capability — `steward.html` (press-native, private wing; arc/steward-report 2026-10-12).** It has no
+keyring entry of its own (T7-exempt, like `access.html`). It guards on `card-scout.html`, so the shared gate releases
+the private wing's Card Scout capability, and POSTs that capability as `x-plan-id` to the `steward-reports` Edge Function
+(`supabase/functions/steward-reports/`). The function compares it, through the service-role-only RPC
+`press_steward_capability_ok` (`db/20261012_press_steward_capability.sql`), against the **server-held
+`press_deals.sync_id` column default**. It never checks "a row with this sync_id exists", because anon can INSERT rows
+with any sync_id. Only after that does it read the service-role-only `press_steward_reports` table. **Coupling:**
+rotating Card Scout's key moves Steward access with it.
+
 **What the marquee OWES a tenant:** the canonical gate modules in `press/src`; the shell; and
 the shared DB shapes (`press_<shape>`, every row keyed by a `page` column = filename stem):
 - `press_state` — simple checkboxes. Cols `page`, `item_id`, `checked` bool, `updated_at`;

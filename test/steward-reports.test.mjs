@@ -6,12 +6,14 @@ import { cleanPlanId, authorize, reportsPath, shape, HISTORY_DAYS } from '../sup
 
 const GOOD = 'c1a2b3d4e5f6a7b8c9d0e1f2a3b4c5d6'; // throwaway
 const res = (status, body) => ({ ok: status >= 200 && status < 300, status, json: async () => body });
+// The fake mirrors the live RPC: true iff p equals the server-held column default (validId).
 function fakeDb(validId) {
   const calls = [];
-  const db = async (path) => {
-    calls.push(path);
-    const m = path.match(/sync_id=eq\.([^&]+)/);
-    return res(200, m && m[1] === validId ? [{ item_id: 'x' }] : []);
+  const db = async (path, init) => {
+    calls.push({ path, init });
+    if (path !== 'rpc/press_steward_capability_ok') return res(200, [{ item_id: 'forged' }]); // any table read "succeeds"
+    const p = JSON.parse((init && init.body) || '{}').p;
+    return res(200, p === validId);
   };
   return { db, calls };
 }
@@ -37,25 +39,39 @@ test('malformed id (filter-injection shape) → 401 with NO lookup', async () =>
   assert.equal(calls.length, 0);
 });
 
-test('wrong capability → 401 (zero rows is NOT a pass)', async () => {
+test('wrong capability → 401; the ONLY lookup is the server-held-default RPC (POST, id in the body)', async () => {
   const { db, calls } = fakeDb(GOOD);
   assert.deepEqual(await authorize('0'.repeat(32), db), { ok: false, status: 401 });
   assert.equal(calls.length, 1);
-  assert.match(calls[0], /^press_deals\?page=eq\.card-scout&sync_id=eq\.0{32}&select=item_id&limit=1$/);
+  assert.equal(calls[0].path, 'rpc/press_steward_capability_ok');
+  assert.equal(calls[0].init.method, 'POST');
+  assert.deepEqual(JSON.parse(calls[0].init.body), { p: '0'.repeat(32) });
 });
 
-test('right capability → ok; lookup is pinned to the card-scout page', async () => {
-  const { db, calls } = fakeDb(GOOD);
+test('review 🔴: a FORGED press_deals row for an attacker id does not open the reports', async () => {
+  // anon can INSERT press_deals rows with any sync_id; the gate must never consult row existence.
+  const attacker = 'a'.repeat(32);
+  const { db, calls } = fakeDb(GOOD);              // table reads return a "forged" row for anything
+  assert.deepEqual(await authorize(attacker, db), { ok: false, status: 401 });
+  assert.ok(calls.every((c) => !c.path.startsWith('press_deals')));
+});
+
+test('right capability → ok', async () => {
+  const { db } = fakeDb(GOOD);
   assert.deepEqual(await authorize(GOOD, db), { ok: true, status: 200 });
-  assert.ok(calls[0].includes('page=eq.card-scout'));
+});
+
+test('only a literal true passes (truthy look-alikes fail closed)', async () => {
+  for (const body of ['true', 1, [true], { ok: true }, null]) {
+    assert.deepEqual(await authorize(GOOD, async () => res(200, body)), { ok: false, status: 401 }, JSON.stringify(body));
+  }
 });
 
 test('lookup failures fail closed (503, never ok)', async () => {
   assert.deepEqual(await authorize(GOOD, async () => { throw new Error('net'); }), { ok: false, status: 503 });
   assert.deepEqual(await authorize(GOOD, async () => res(500, null)), { ok: false, status: 503 });
   assert.deepEqual(await authorize(GOOD, async () => ({ ok: true, status: 200, json: async () => { throw new Error('x'); } })), { ok: false, status: 503 });
-  assert.deepEqual(await authorize(GOOD, async () => res(200, { not: 'an array' })), { ok: false, status: 401 });
-});
+  });
 
 test('reportsPath reads 12 weeks, newest first, bounded', () => {
   const now = Date.parse('2026-10-12T12:00:00Z');

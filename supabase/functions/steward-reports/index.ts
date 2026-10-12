@@ -2,7 +2,7 @@
 // browser→server, on-demand shape (council instruments/agent/functions/_template, 'on-demand'): CORS allow-list +
 // x-plan-id gate, RESPONSE ONLY (writes nothing). Auth + shaping live in ./core.mjs (unit-tested in press
 // test/steward-reports.test.mjs). Deployed with verify_jwt=false — the custom x-plan-id gate below IS the auth.
-// ENV: SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY (auto-provided). No other secret.
+// ENV: SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY (auto-provided). No other secret. DB: rpc press_steward_capability_ok.
 import { authorize, reportsPath, shape } from './core.mjs';
 
 const ALLOWED_ORIGINS = ['https://schnubsy.github.io'];
@@ -31,14 +31,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const SB_URL = Deno.env.get('SUPABASE_URL') || '';
   const SB_SERVICE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
   if (!SB_URL || !SB_SERVICE) return json({ error: 'server not configured' }, 503, c);
-  const db = (path: string) => fetch(SB_URL + '/rest/v1/' + path, {
-    headers: { apikey: SB_SERVICE, Authorization: 'Bearer ' + SB_SERVICE },
+  const db = (path: string, init?: RequestInit) => fetch(SB_URL + '/rest/v1/' + path, {
+    ...(init || {}),
+    headers: { apikey: SB_SERVICE, Authorization: 'Bearer ' + SB_SERVICE, 'content-type': 'application/json' },
   });
 
   const auth = await authorize(req.headers.get('x-plan-id'), db);
   if (!auth.ok) return json({ error: auth.status === 401 ? 'unauthorized' : 'unavailable' }, auth.status, c);
 
-  const r = await db(reportsPath(Date.now()));
-  if (!r.ok) return json({ error: 'unavailable' }, 503, c);
-  return json(shape(await r.json()), 200, c);
+  try {
+    const r = await db(reportsPath(Date.now()));
+    if (!r.ok) return json({ error: 'unavailable' }, 503, c);
+    return json(shape(await r.json()), 200, c);
+  } catch (_) {
+    return json({ error: 'unavailable' }, 503, c);   // a bad body / network error still answers WITH CORS headers
+  }
 });

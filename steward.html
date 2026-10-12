@@ -107,11 +107,15 @@ h2 .n{color:var(--faint);letter-spacing:0;margin-left:4px}
       return '<tr><td>' + esc([r.service, r.plan].filter(Boolean).join(' · ') || lineText(r)) + '</td><td>' + esc(right) + '</td></tr>';
     }).join('') + '</table></section>';
   }
+  function weekStart(ms){ var d = new Date(ms); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getTime(); }
   function strip(history, now){
     var cols = []; for (var i = 0; i < 12; i++) cols.push([]);
+    // calendar weeks (local, Monday-start) — not rolling 7-day windows, so last Monday's run never reads as "this
+    // week" before today's run lands. Math.round absorbs the ±1h of a DST change inside the span.
+    var wk0 = weekStart(now);
     arr(history).forEach(function(h){
       var t = Date.parse(h.run_at); if (isNaN(t)) return;
-      var ago = Math.floor((now - t) / WEEK); if (ago < 0) ago = 0; if (ago > 11) return;
+      var ago = Math.round((wk0 - weekStart(t)) / WEEK); if (ago < 0) ago = 0; if (ago > 11) return;
       cols[11 - ago].push(h);
     });
     var html = cols.map(function(c, i){
@@ -123,7 +127,7 @@ h2 .n{color:var(--faint);letter-spacing:0;margin-left:4px}
       }).join('') + '</div>';
     }).join('');
     return '<section class="card" aria-label="Last 12 weeks"><h2>Last 12 weeks</h2><div class="strip" id="strip">' + html + '</div>' +
-      '<div class="axis"><span>12 wk ago</span><span>this week</span></div>' +
+      '<div class="axis"><span>11 wk ago</span><span>this week</span></div>' +
       '<div class="legend"><span><i class="dot g"></i>weekly watch</span><span><i class="dot m g"></i>monthly audit</span></div></section>';
   }
   function render(body){

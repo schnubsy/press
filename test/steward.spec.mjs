@@ -14,13 +14,16 @@ const CARD_SYNC = 'c1a2b3d4e5f6a7b8c9d0e1f2a3b4c5d6';  // throwaway card-scout c
 const SENTINEL = 'not-a-secret:card-scout-has-no-passphrase:sentinel-only-to-satisfy-credsFor';
 const NOW = Date.now();
 const iso = (daysAgo) => new Date(NOW - daysAgo * 864e5).toISOString();
+// the page buckets by LOCAL Monday-start calendar week; build history relative to this week's Monday 00:00
+const weekStart = (ms) => { const d = new Date(ms); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getTime(); };
+const MON = weekStart(NOW);
 // The slice-1 fixture row (newest) + older history: weekly dots and one monthly ring.
 const ROWS = [
-  { id: 1, run_at: iso(0.2), cadence: 'weekly', headline: '🟡', summary: 'FIXTURE — arc/steward-report S1 read-back',
+  { id: 1, run_at: new Date(NOW - 60000).toISOString(), cadence: 'weekly', headline: '🟡', summary: 'FIXTURE — arc/steward-report S1 read-back',
     sections: { needs_you: ['Fixture: sign in to 1Password CLI'], fixed_for_you: ['Fixture: re-pointed a stale path'], cost_moves: [], all_clear: 'Everything else held.' },
     model: 'sonnet', cost_usd: '0.0123' },
-  { id: 0, run_at: iso(7.1), cadence: 'weekly', headline: '🟢', summary: 'quiet', sections: {} },
-  { id: -1, run_at: iso(11), cadence: 'monthly', headline: '🔴', summary: 'audit', sections: {} },
+  { id: 0, run_at: new Date(MON - 3 * 864e5).toISOString(), cadence: 'weekly', headline: '🟢', summary: 'quiet', sections: {} },
+  { id: -1, run_at: new Date(MON - 10 * 864e5).toISOString(), cadence: 'monthly', headline: '🔴', summary: 'audit', sections: {} },
 ];
 
 let server, base;
@@ -39,10 +42,10 @@ test.afterAll(async () => { if (server) await new Promise((r) => server.close(r)
 
 async function harness(context, rows = ROWS) {
   const state = { posts: 0, planIds: [] };
-  const deals = async (path) => {
-    const m = path.match(/sync_id=eq\.([^&]+)/);
-    const hit = path.includes('page=eq.card-scout') && m && m[1] === CARD_SYNC;
-    return { ok: true, status: 200, json: async () => (hit ? [{ item_id: 'x' }] : []) };
+  // the live RPC: true iff the presented id equals the server-held press_deals.sync_id default (CARD_SYNC here)
+  const deals = async (path, init) => {
+    const p = path === 'rpc/press_steward_capability_ok' ? JSON.parse((init && init.body) || '{}').p : null;
+    return { ok: true, status: 200, json: async () => p === CARD_SYNC };
   };
   await context.route('**/functions/v1/steward-reports', async (route) => {
     const req = route.request();
@@ -86,6 +89,8 @@ test.describe('mobile 390', () => {
     await expect(page.locator('#strip .dot')).toHaveCount(3);
     await expect(page.locator('#strip .dot.m.r')).toHaveCount(1);      // the monthly audit ring
     await expect(page.locator('#strip .wk').nth(11).locator('.dot.y')).toHaveCount(1); // this week = the fixture
+    await expect(page.locator('#strip .wk').nth(10).locator('.dot.g')).toHaveCount(1);  // last calendar week
+    await expect(page.locator('#strip .wk').nth(9).locator('.dot.m.r')).toHaveCount(1); // two weeks back
     expect(st.planIds).toEqual([CARD_SYNC]);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow).toBeLessThanOrEqual(0);
@@ -122,6 +127,30 @@ test.describe('mobile 390', () => {
     await page.goto(base + '/steward.html');
     await expect(page.locator('#st-denied')).toBeVisible();
     await expect(page.locator('#latest')).toHaveCount(0);
+  });
+
+  test('report text is rendered as text, never markup (XSS)', async ({ page, context }) => {
+    const evil = '<img src=x onerror="window.__pwn=1">"\'&';
+    await harness(context, [{ id: 9, run_at: iso(0.1), cadence: 'monthly', headline: '<b>🔴</b>', summary: evil,
+      sections: { needs_you: [evil, { text: evil, action: evil }], fixed_for_you: [evil], cost_moves: [evil],
+        ledger: [{ service: evil, plan: evil, per_month: evil, trend: evil }, evil], all_clear: evil } }]);
+    await seed(context, session(CARD_SYNC));
+    await page.goto(base + '/steward.html');
+    await expect(page.locator('#summary')).toHaveText(evil);
+    await expect(page.locator('.sec.needs li').first()).toHaveText(evil);
+    expect(await page.locator('#app img').count()).toBe(0);
+    expect(await page.evaluate(() => window.__pwn)).toBeUndefined();
+  });
+
+  test('a lock after unlock blanks the report and brings the gate back', async ({ page, context }) => {
+    await harness(context);
+    await seed(context, session(CARD_SYNC));
+    await page.goto(base + '/steward.html');
+    await expect(page.locator('#headline')).toHaveText('🟡');
+    await page.evaluate(() => window.PressVault.lock());
+    await expect(page.locator('#press-gate')).toBeVisible();
+    await expect(page.locator('#latest')).toHaveCount(0);
+    expect(await page.evaluate(() => getComputedStyle(document.getElementById('app')).visibility)).toBe('hidden');
   });
 
   test('no reports yet: an honest empty state', async ({ page, context }) => {
