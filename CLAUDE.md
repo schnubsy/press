@@ -31,7 +31,7 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: PR pending (branch arc/steward-report)
+Merge state: Merged: PR #36 7808766 on 2026-10-12; main checkout on main @ 7808766
 **arc/steward-report (2026-10-12) — Steward report page; cloud Builder.** New press-native PRIVATE-wing `steward.html`
 (latest report + 12-week calendar-week strip, 390-first) over the service-role-only `press_steward_reports` table, read
 through the new `steward-reports` Edge Function (v2), which checks the private wing's Card Scout capability against the

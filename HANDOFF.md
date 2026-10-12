@@ -11,7 +11,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 
 ## Current state
 
-- Merge state: PR pending (branch arc/steward-report)
+- Merge state: Merged: PR #36 7808766 on 2026-10-12; main checkout on main @ 7808766
 - Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
 - Ship gate: `bash scripts/gauntlet.sh` via `.claude/skills/verify/SKILL.md`. The close-gauntlet numbers are in `docs/evidence/steward-report-close-gauntlet.txt`.
 - New: `steward.html` (private wing; LABELS "Environment Reports / Steward", glyph `tool`).
