@@ -31,7 +31,7 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: PR pending (branch arc/marquee-wings-monitor)
+Merge state: Merged: PR #35 9672b1c on 2026-10-12; main checkout on main @ 9672b1c
 **arc/marquee-wings-monitor (2026-10-12, cloud Builder).** Marquee owns card naming (`LABELS` + T9), Mark's new labels,
 filename lines gone, new icons. Family Wing: Request access → push+email → switch on; "Family Wing Access Manager";
 remit data gate opt-out; wing-level sign-in email (sync needs Mark's `SUPABASE_ACCESS_TOKEN`). Agent Monitor rebuilt on

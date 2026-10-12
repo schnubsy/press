@@ -10,7 +10,7 @@ as part of closing out. (Auto-merge is still never enabled pre-emptively.) Set b
 
 ## Current state
 
-- Merge state: PR pending (branch arc/marquee-wings-monitor)
+- Merge state: Merged: PR #35 9672b1c on 2026-10-12; main checkout on main @ 9672b1c
 - Home: `github:schnubsy/press` (PUBLIC). Tenant PRs: remit #15, optimo #114 (re-vendored family-gate).
 - Ship gate GREEN (cloud): unit 123/0 · inline in sync · tenants-check 64/0 (T9 new) · Playwright 102 + 1 WebKit skip.
 - Live DB/functions already applied: press_access_requests + RPC + triggers, remit_has_access opt-out, agent monitor
