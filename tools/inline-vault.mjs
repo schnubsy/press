@@ -8,6 +8,12 @@
 //
 // The --check is the guard the plan/HANDOFF rely on: the crypto core must be
 // character-for-character identical across src/vault.js, index.html and src/gate.js.
+//
+// SECOND SOURCE (arc/marquee-wings-monitor slice 2): src/family-gate.js is inlined VERBATIM into the
+// two press-native pages that boot it without a <script src> — index.html (the Family-Wing door) and
+// perth.html (a family tenant with no source repo). Those blocks have no markers (they predate this
+// guard); each is located by its own header line ` * press family-gate.js` through the module's closing
+// `})(typeof globalThis !== 'undefined' ? globalThis : this);`. Same write / --check contract.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -54,6 +60,23 @@ for (const c of carriers) {
   } else {
     writeFileSync(c.path, out);
     console.log(`inline-vault: injected src/vault.js into ${c.label} (${vault.length} bytes)`);
+  }
+}
+
+// ── family-gate carriers ─────────────────────────────────────────────────────
+const fgate = readFileSync(join(ROOT, 'src', 'family-gate.js'), 'utf8').replace(/\s+$/, '');
+const FG_BLOCK_RE = /\/\* =+\n \* press family-gate\.js[\s\S]*?\}\)\(typeof globalThis !== 'undefined' \? globalThis : this\);/;
+for (const label of ['index.html', 'perth.html']) {
+  const path = join(ROOT, label);
+  const src = readFileSync(path, 'utf8');
+  if (!FG_BLOCK_RE.test(src)) { console.error(`inline-family-gate: no inlined family-gate block in ${label}`); process.exit(2); }
+  const out = src.replace(FG_BLOCK_RE, () => fgate);
+  if (check) {
+    if (out !== src) { console.error(`inline-family-gate: ${label} is OUT OF SYNC with src/family-gate.js — run: node tools/inline-vault.mjs`); failed = true; }
+    else console.log(`inline-family-gate: ${label} is in sync with src/family-gate.js`);
+  } else {
+    writeFileSync(path, out);
+    console.log(`inline-family-gate: injected src/family-gate.js into ${label} (${fgate.length} bytes)`);
   }
 }
 

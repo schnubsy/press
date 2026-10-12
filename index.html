@@ -163,7 +163,6 @@ h2.tw-title .lit{background:none;-webkit-background-clip:initial;background-clip
 .tw-card .k{font-size:var(--tw-eyebrow);letter-spacing:var(--tw-track-eyebrow);text-transform:uppercase;
   color:var(--tw-rose);margin-bottom:6px;display:flex;align-items:center;gap:6px}
 .tw-card h3{font-family:var(--tw-font-display);font-weight:400;font-size:var(--tw-card-title);margin-bottom:3px;line-height:1.3}
-.tw-card .fn{font-family:var(--tw-font-meta);font-size:10.5px;color:var(--tw-muted)}
 /* R3.1/R3.4 — labeled "new" pill, flush right, sunrise = early/new */
 .tw-card .newpill{color:var(--tw-violet);flex:none;font-family:var(--tw-font-meta);font-size:8.5px;
   letter-spacing:.1em;text-transform:uppercase;
@@ -904,6 +903,11 @@ body.tw-sorting .tw-card{transition:none}
  *   FamilyGate.authHeaders()  -> { apikey, Authorization } for the tenant's own REST calls
  *   FamilyGate.signOut()      -> clears the local session (and best-effort GoTrue logout)
  *
+ * Blocked → "Request access" (2026-10-12, framework §8a): a signed-in person whose switch for the page
+ * is OFF sees a Request access button; it calls rpc/press_access_request(page) with their own JWT and
+ * shows "Requested — Mark has been notified…". requestAccess() is the call, requestView() the pure
+ * verdict → screen-state map (both unit-tested).
+ *
  * Design notes:
  *   - It talks to Supabase Auth (GoTrue) and PostgREST with RAW fetch — NO supabase-js,
  *     no CDN, no runtime dep, matching the house "no network at boot for public pages"
@@ -972,6 +976,58 @@ body.tw-sorting .tw-card{transition:none}
     return { access_token: o.access_token, refresh_token: o.refresh_token,
              expires_at: o.expires_at, email: String(o.email || '').toLowerCase(), name: o.name || null };
   }
+  // Decode a base64url JSON segment (a JWT payload) in both browser (atob) and Node (Buffer). Returns
+  // null on anything malformed — never throws.
+  function b64urlToJson(seg) {
+    if (typeof seg !== 'string' || !seg) return null;
+    try {
+      var b64 = seg.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      var txt;
+      if (typeof atob === 'function') {
+        var bin = atob(b64);
+        // handle UTF-8 payloads correctly
+        try { txt = decodeURIComponent(bin.split('').map(function (c) { return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); }).join('')); }
+        catch (e) { txt = bin; }
+      } else if (typeof Buffer !== 'undefined') {
+        txt = Buffer.from(b64, 'base64').toString('utf8');
+      } else { return null; }
+      return JSON.parse(txt);
+    } catch (e) { return null; }
+  }
+  // Parse a URL fragment ('#a=1&b=2' or 'a=1&b=2') into a plain object. Empty/garbage -> {}.
+  function parseHashParams(hash) {
+    var out = {};
+    var s = String(hash == null ? '' : hash).replace(/^#/, '');
+    if (!s) return out;
+    s.split('&').forEach(function (pair) {
+      if (!pair) return;
+      var i = pair.indexOf('=');
+      var k = i === -1 ? pair : pair.slice(0, i);
+      var v = i === -1 ? '' : pair.slice(i + 1);
+      try { out[decodeURIComponent(k)] = decodeURIComponent(v); } catch (e) { out[k] = v; }
+    });
+    return out;
+  }
+  // Build a normalised session from a GoTrue magic-link URL fragment. The fragment carries
+  // access_token (a JWT), refresh_token, expires_at/expires_in — the email/name come from the JWT
+  // payload. Returns null unless BOTH tokens are present and the payload decodes (a malformed hash
+  // falls through to the sign-in screen — spec §8, arc slice 2). Never throws.
+  function sessionFromHash(hash, now) {
+    var p = parseHashParams(hash);
+    if (!p.access_token || !p.refresh_token) return null;
+    var payload = b64urlToJson(String(p.access_token).split('.')[1]);
+    if (!payload || !payload.email) return null;   // not a usable Supabase access token
+    now = (typeof now === 'number') ? now : Date.now();
+    var expMs = p.expires_at ? (Number(p.expires_at) * 1000)
+              : (p.expires_in ? (now + Number(p.expires_in) * 1000)
+              : (payload.exp ? (payload.exp * 1000) : (now + 3600 * 1000)));
+    var meta = payload.user_metadata || {};
+    return normSession({
+      access_token: p.access_token, refresh_token: p.refresh_token, expires_at: expMs,
+      email: payload.email, name: meta.name || meta.full_name || null,
+    });
+  }
   function isExpired(session, now, skewMs) {
     if (!session) return true;
     now = (typeof now === 'number') ? now : Date.now();
@@ -1038,6 +1094,29 @@ body.tw-sorting .tw-card{transition:none}
     var v = await r.json();
     return v === true;
   }
+  // "Request access" (blocked screen). Calls the security-definer RPC press_access_request(page) with the
+  // caller's OWN JWT — the server takes the email from the token, never from the body. Returns
+  // { ok, status } where status is the RPC's text verdict ('requested' | 'already_requested' |
+  // 'already_granted' | 'not_on_list' | 'not_gated' | 'not_signed_in') or the HTTP status on a non-2xx.
+  // Never throws on an HTTP error (a network failure still rejects; the caller catches it).
+  async function requestAccess(session, page) {
+    var r = await authFetch()(REST + '/rpc/press_access_request',
+      { method: 'POST', headers: bearerHeaders(session), body: JSON.stringify({ page: page }) });
+    if (!r || !r.ok) return { ok: false, status: (r && r.status) || 0 };
+    var v = null; try { v = await r.json(); } catch (e) {}
+    return { ok: true, status: typeof v === 'string' ? v : '' };
+  }
+  // Pure: map a requestAccess result to what the blocked screen shows. { text, err, done, reload }.
+  var REQUESTED_TEXT = 'Requested — Mark has been notified. Try again once he’s switched you on.';
+  function requestView(res) {
+    res = res || {};
+    var s = res.status;
+    if (res.ok && (s === 'requested' || s === 'already_requested')) return { text: REQUESTED_TEXT, err: false, done: true, reload: false };
+    if (res.ok && (s === 'already_granted' || s === 'not_gated')) return { text: 'You’re already switched on — opening…', err: false, done: true, reload: true };
+    if (res.ok && s === 'not_on_list') return { text: 'That address isn’t on the family list — ask Mark directly.', err: true, done: true, reload: false };
+    if (s === 'not_signed_in' || s === 401 || s === 403) return { text: 'Your sign-in has expired — use “Sign in as someone else” to sign in again.', err: true, done: false, reload: false };
+    return { text: 'Couldn’t send the request — try again in a moment.', err: true, done: false, reload: false };
+  }
   function touch(session) {
     // fire-and-forget last_seen_at stamp (§6); never blocks sign-in and never throws.
     try {
@@ -1074,8 +1153,30 @@ body.tw-sorting .tw-card{transition:none}
     return sessionFromToken(await r.json());
   }
 
+  // Magic-link landing (arc slice 2). A SECOND entry point, not a replacement: if the page loaded
+  // with a GoTrue token fragment (the link flow, which otherwise dead-ends), adopt it as the session
+  // in the gate's normal format, strip the fragment from the URL, and return it. No fragment / a
+  // malformed one -> null, and the normal code path runs unchanged. Browser-only; never throws.
+  function consumeHashLanding() {
+    try {
+      if (typeof location === 'undefined' || !location.hash) return null;
+      var s = sessionFromHash(location.hash);
+      if (!s) return null;
+      saveSession(s);
+      // strip the token fragment so it never lingers in the address bar / history
+      try {
+        if (typeof history !== 'undefined' && history.replaceState) {
+          history.replaceState(null, '', location.pathname + location.search);
+        } else { location.hash = ''; }
+      } catch (e) {}
+      return s;
+    } catch (e) { return null; }
+  }
+
   // Resolve a usable session from storage, refreshing if needed. Returns a live session or null.
   async function ensureFresh() {
+    consumeHashLanding();   // a fresh magic-link landing is adopted before we read storage
+
     var s = loadSession();
     if (!s) return null;
     if (!isExpired(s)) return s;
@@ -1124,6 +1225,7 @@ body.tw-sorting .tw-card{transition:none}
     "font-family:Outfit,system-ui,-apple-system,'Segoe UI',sans-serif;color:#eae4d6}" +
     /* muted text colour, raised to clear WCAG AA on the card */
     '#family-gate *{box-sizing:border-box}' +
+    '#family-gate [hidden]{display:none!important}' +
     '#family-gate .fg-card{width:100%;max-width:400px;text-align:center;padding:34px 26px;border-radius:14px;' +
     'background:rgba(19,29,44,.82);border:1px solid rgba(201,162,109,.28);box-shadow:0 24px 60px rgba(0,0,0,.5)}' +
     '#family-gate .fg-icon{width:44px;height:44px;margin:0 auto 14px;color:#c9a26d}' +
@@ -1194,15 +1296,32 @@ body.tw-sorting .tw-card{transition:none}
     var MARQUEE = 'index.html?view=family';
 
     if (existing) {
+      // BLOCKED: a valid family session whose switch for THIS page is off (opt-out). No password, no
+      // form — one "Request access" tap files press_access_request(page) under the caller's own JWT;
+      // Mark is pushed + emailed, flips the switch on, and the next visit simply works.
       host.innerHTML =
         '<div class="fg-card">' +
           '<div class="fg-icon">' + ICON + '</div>' +
-          '<h1>You’re signed in.</h1>' +
-          '<p>Signed in as <b>' + escapeHtml(existing.email) + '</b>, but that address doesn’t have access to this page yet. Ask Mark to grant it.</p>' +
+          '<h1>You don’t have access to this yet.</h1>' +
+          '<p>You’re signed in as <b>' + escapeHtml(existing.email) + '</b>. Tap below and Mark will be asked to switch it on for you.</p>' +
+          '<button class="fg-btn" id="fg-request" type="button">Request access</button>' +
+          '<div class="fg-msg" id="fg-msg" aria-live="polite"></div>' +
           '<button class="fg-link" id="fg-signout" type="button">Sign in as someone else</button>' +
           '<div><a class="fg-back" href="' + MARQUEE + '">← the family wing</a></div>' +
         '</div>';
       document.body.appendChild(host);
+      var reqBtn = host.querySelector('#fg-request');
+      var reqMsg = host.querySelector('#fg-msg');
+      reqBtn.addEventListener('click', async function () {
+        reqBtn.disabled = true; reqMsg.className = 'fg-msg'; reqMsg.textContent = 'Sending your request…';
+        var res;
+        try { res = await requestAccess(existing, page); } catch (e) { res = { ok: false, status: 'network' }; }
+        var view = requestView(res);
+        reqMsg.className = 'fg-msg' + (view.err ? ' err' : '');
+        reqMsg.textContent = view.text;
+        if (view.done) { reqBtn.hidden = true; } else { reqBtn.disabled = false; }
+        if (view.reload && typeof location !== 'undefined') { try { location.reload(); } catch (e) {} }
+      });
       host.querySelector('#fg-signout').addEventListener('click', function () {
         clearSession(); renderSignIn(page, done, null);
       });
@@ -1359,9 +1478,12 @@ body.tw-sorting .tw-card{transition:none}
     cfg: cfg, SUPA_URL: SUPA_URL, SUPA_KEY: SUPA_KEY, REST: REST, AUTH: AUTH, SESSION_KEY: SESSION_KEY,
     // exposed for unit tests
     sessionFromToken: sessionFromToken, normSession: normSession, isExpired: isExpired,
+    parseHashParams: parseHashParams, b64urlToJson: b64urlToJson, sessionFromHash: sessionFromHash,
+    consumeHashLanding: consumeHashLanding,
     gatedDecision: gatedDecision, isGated: isGated, ensureFresh: ensureFresh,
     loadSession: loadSession, saveSession: saveSession, clearSession: clearSession,
     sendCode: sendCode, verifyCode: verifyCode, refresh: refresh, hasGrant: hasGrant,
+    requestAccess: requestAccess, requestView: requestView, REQUESTED_TEXT: REQUESTED_TEXT,
     friendlyAuthErr: friendlyAuthErr, verifyErr: verifyErr, isValidCode: isValidCode, escapeHtml: escapeHtml
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
@@ -1370,48 +1492,72 @@ body.tw-sorting .tw-card{transition:none}
 const OWNER='schnubsy', REPO='press';
 const API=`https://api.github.com/repos/${OWNER}/${REPO}/contents`;
 const RAW=`https://raw.githubusercontent.com/${OWNER}/${REPO}/main`;
-const KICKERS=[[/remit/,'Family Transfers'], // remit FIRST (first-match wins) so it can never fall through to Money/Page. Kicker "Family Transfers", title "Remit" (pages.json) — Mark, 2026-09-27
-  [/agent-health|health|monitor|status/,'Monitor'],[/halvsies|split|money|budget|spend/,'Money'],[/council/,'Reference'],[/checklist|prep|kayley|eagle/,'Checklist'],
-  [/log|notes|journal/,'Notes'],[/guide|how-?to|readme/,'Guide'],
-  // Phase 3 — the wing pages get real page-type icons (matched before the generic 'Page' fallback).
-  [/fsa/,'FSA'],[/giving/,'Giving'],[/retirement/,'Retirement'],[/card-scout/,'Cards'],[/cardsharp/,'Gift Cards'],[/perth/,'Perth'],[/steward/,'Steward']];
-const kicker=f=>{for(const[re,k]of KICKERS)if(re.test(f))return k;return 'Page';};
 const titleize=f=>f.replace(/\.html$/,'').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-/* ══ ICON REGISTRY (R3.3, upgraded R3.5) — Hand instrument note ══════════════
-   Page-type → icon, rendered right-center on each card in --tw-icon (#B7A8FF).
-   Paths are Feather-set quality (24 viewBox, stroke 2, round joins). When a
-   new page type is added to KICKERS above, add a matching Feather/Lucide-grade
-   path here. Unknown types fall back to 'Page'. */
+/* ══ ICON REGISTRY (R3.3, upgraded R3.5; re-keyed marquee-wings slice 1) ═════
+   Rendered right-center on each card in --tw-icon (#B7A8FF). Paths are
+   Feather/Lucide quality (24 viewBox, stroke 2, round joins). Page glyphs are
+   keyed by GLYPH NAME and chosen per page in LABELS below (its `icon` key) — so
+   renaming a kicker never silently changes an icon. Unknown keys fall back to
+   'Page'. Every served page has its own glyph (no two pages share one). */
 const ICONS={
-  'Monitor':   '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
-  'Reference': '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>',
-  'Checklist': '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
-  'Notes':     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
-  'Guide':     '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
-  'Money':     '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+  // structural glyphs (wing doors, archive, unknown-page fallback)
   'Page':      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>',
   'Archive':   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
   'Secure':    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="10.5" r="1.5"/><path d="M12 12V15"/></svg>',
   // Family door — reads as PEOPLE (Feather "users"), not the old envelope.
   'Family':    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-  // Private-wing pages (Phase 3): each gets a real Feather-grade glyph via the KICKERS map below.
-  'FSA':        '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
-  'Gift Cards': '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="16" height="12" rx="2"/><line x1="2" y1="11" x2="18" y2="11"/><line x1="20" y1="2" x2="20" y2="8"/><line x1="17" y1="5" x2="23" y2="5"/></svg>', // cardsharp — a card with a sparkle
-  'Giving':     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>',
-  'Retirement': '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
-  'Cards':      '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',
+  // page glyphs (one per served page — chosen in LABELS)
+  'activity':       '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+  'check-square':   '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+  'mountain':       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>',
+  'landmark':       '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>',
+  'receipt':        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></svg>',
+  'calendar-check': '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg>',
   // Perth — a PLANE (Feather "send" paper-plane): a flight/runway glyph that stays crisp at 26px.
-  // (Replaced the hand-drawn Australia, which did not read at row size.)
-  'Perth':      '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
-  // Steward (steward.html) — a wrench (Feather "tool"): the environment-maintenance reports.
-  'Steward':    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
-  // Family Transfers (remit.html) — a banknote (Lucide "banknote"), deliberately distinct from the
-  // bare $ dollar-sign used for halvsies' Money. Keyed by the kicker, so it follows the kicker's name.
-  'Family Transfers': '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01"/><path d="M18 12h.01"/></svg>'
+  // (Replaced the hand-drawn Australia, which did not read at row size — polish slice 2.)
+  'send':           '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+  // remit — a banknote (Lucide "banknote"), deliberately distinct from halvsies' receipt.
+  'banknote':       '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01"/><path d="M18 12h.01"/></svg>',
+  'gift':           '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>',
+  // card-scout — a sales FINDER: a search lens with a percent sign inside.
+  'search-percent': '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="14" y1="8" x2="8" y2="14"/><path d="M8.5 8.5h.01"/><path d="M13.5 13.5h.01"/></svg>',
+  'user-check':     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>',
+  'trending-up':    '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+  'heart':          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+  'stethoscope':    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 2v2"/><path d="M5 2v2"/><path d="M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"/><path d="M8 15a6 6 0 0 0 12 0v-3"/><circle cx="20" cy="10" r="2"/></svg>',
+  // steward — a wrench (Feather "tool"): the Steward's environment-maintenance reports.
+  'tool':           '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>'
 };
 const iconFor=k=>ICONS[k]||ICONS['Page'];
+
+/* ══ CARD LABELS — the marquee owns card naming (RULE, Mark 2026-10-12) ══════
+   ONE map per served page: kicker (small pink .k) + title (white h3) + icon (an
+   ICONS glyph key). It WINS over pages.json — pages.json `title` is the page's own
+   manifest/tab title, written by release scripts, and is only the fallback for a
+   page with no entry here. A new page's publish adds its entry here IN THE SAME
+   press change (release scripts never set card wording); tools/tenants-check.mjs
+   T9 `labels` fails any pages.json page without one. Keep one entry per line. */
+const LABELS = {
+  'optimo.html':        { kicker:'Day planner',                     title:'Optimo',                                   icon:'calendar-check' },
+  'perth.html':         { kicker:'Moving to Perth',                 title:'The Runway',                               icon:'send' },
+  'remit.html':         { kicker:'Family Transfers',                title:'Remit',                                    icon:'banknote' },
+  'halvsies.html':      { kicker:'Splitting the Bill',              title:'Halvsies',                                 icon:'receipt' },
+  'cardsharp.html':     { kicker:'Gift Card Tracker',               title:'Cardsharp',                                icon:'gift' },
+  'card-scout.html':    { kicker:'Sales Finder',                    title:'Card Scout',                               icon:'search-percent' },
+  'access.html':        { kicker:'UAM',                             title:'Family Wing Access',                       icon:'user-check' },
+  'retirement.html':    { kicker:'Financial Planning',              title:'Retirement Projector',                     icon:'trending-up' },
+  'giving.html':        { kicker:'Charitable Donations',            title:'Giving Tracker',                           icon:'heart' },
+  'fsa.html':           { kicker:'Medical Expenses',                title:'FSA Claims Tracker',                       icon:'stethoscope' },
+  'council-guide.html': { kicker:'Agentic Capabilities Prospectus', title:'The Council',                              icon:'landmark' },
+  'kayley.html':        { kicker:'Checklist',                       title:'Kayley · 2-Week Upskilling Plan',          icon:'check-square' },
+  'eagle-path.html':    { kicker:'Checklist',                       title:"Brandon's Eagle Path · Saturday Check-In", icon:'mountain' },
+  'agent-health.html':  { kicker:'Monitor',                         title:'Agent Monitor',                            icon:'activity' },
+  'steward.html':       { kicker:'Environment Reports',             title:'Steward',                                  icon:'tool' },
+};
+// The card wording for a page: its LABELS entry, else a neutral fallback (pages.json title, generic glyph).
+function labelFor(f, man){ return LABELS[f] || { kicker:'Page', title:titleOf(f, man), icon:'Page' }; }
 /* R3.4/R3.5 — Feather "sunrise" inside the "new" pill (early morning sun = fresh) */
 const SUNRISE='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><polyline points="8 6 12 2 16 6"/></svg>';
 
@@ -1580,10 +1726,10 @@ function applyState(files, man){ // user sort first, then default order for the 
 function titleOf(f, man){ return (man&&man[f]&&man[f].title) ? man[f].title : titleize(f); }
 
 function cardHTML(f, man, isNewest){
-  const k = kicker(f);
+  const L = labelFor(f, man);   // the marquee label map owns kicker + title + icon
   return `<a class="tw-card${isNewest?' has-new':''}" href="${esc(f)}" data-file="${esc(f)}" draggable="false">`+
-    `<div class="k">${esc(k)}${isNewest?`<span class="newpill">${SUNRISE} new</span>`:''}</div><h3>${esc(titleOf(f,man))}</h3>`+
-    `<div class="fn">${esc(f)}</div><span class="ticon">${iconFor(k)}</span></a>`;
+    `<div class="k">${esc(L.kicker)}${isNewest?`<span class="newpill">${SUNRISE} new</span>`:''}</div><h3>${esc(L.title)}</h3>`+
+    `<span class="ticon">${iconFor(L.icon)}</span></a>`;
 }
 function archiveCardHTML(count){
   return `<a class="tw-arch" id="archTarget" href="./?view=archive" draggable="false"><div class="k">▤ The Archive</div>`+
@@ -1808,13 +1954,14 @@ async function renderArchive(root){
     }
     const stateCards = [...stateArchived].sort().map(f=>
       `<a class="tw-card restorable" href="${esc(f)}" data-file="${esc(f)}" draggable="false">`+
-      `<div class="k">${esc(kicker(f))}</div><h3>${esc(titleOf(f,rootMan))}</h3>`+
-      `<div class="fn">${esc(f)}</div>`+
+      `<div class="k">${esc(labelFor(f,rootMan).kicker)}</div><h3>${esc(labelFor(f,rootMan).title)}</h3>`+
       `<span class="tw-restore" role="button" tabindex="0" aria-label="Move back to the launchpad">↩ launchpad</span></a>`).join('');
-    const physCards = [...physFiles].sort().map(f=>{const k=kicker(f);
-      return `<a class="tw-card" href="archive/${esc(f)}" draggable="false">`+
-      `<div class="k">${esc(k)}</div><h3>${esc(titleOf(f,physMan))}</h3>`+
-      `<div class="fn">archive/${esc(f)}</div><span class="ticon">${iconFor(k)}</span></a>`;}).join('');
+    // physically archived pages (archive/) are not served pages: no label entry — kicker "Archive",
+    // title from archive/pages.json, the archive glyph. No filename line (marquee-wings slice 1).
+    const physCards = [...physFiles].sort().map(f=>
+      `<a class="tw-card" href="archive/${esc(f)}" draggable="false">`+
+      `<div class="k">Archive</div><h3>${esc(titleOf(f,physMan))}</h3>`+
+      `<span class="ticon">${iconFor('Archive')}</span></a>`).join('');
     root.innerHTML = back +
       `<div class="tw-top"><span>The <b>Archive</b></span><span>${total} resting</span></div>`+
       `<h2 class="tw-title">At rest.</h2>`+
@@ -1901,13 +2048,15 @@ async function loadDevices(root, man){
    Reconnect button). Its fields are NOT in the DOM until Reconnect is activated;
    collapsing removes them again, clearing anything typed. A NOT-connected tool shows
    its full form, expanded. */
-const TOOL_CFG = {
-  'fsa.html':        { label:'FSA Claims',          kind:'app', table:'press_fsa',        idcol:'sync_id', select:'doc,version',                 env:(r)=>r.doc },
-  'giving.html':     { label:'Giving Tracker',      kind:'app', table:'press_giving',     idcol:'id',      select:'ciphertext,iv,salt,kdf_iters', env:(r)=>r },
-  'retirement.html': { label:'Retirement Projection',kind:'app', table:'press_retirement', idcol:'id',      select:'ciphertext,iv,salt,kdf_iters', env:(r)=>r },
-  'card-scout.html': { label:'Card Scout',          kind:'deals' }, // sync-id-only; verified against press_deals
-  'cardsharp.html':  { label:'Cardsharp',           kind:'app', table:'press_cardsharp',  idcol:'sync_id', select:'doc,version',                 env:(r)=>r.doc },
+const TOOL_CFG = {   // tool NAMES come from LABELS (toolName) — the marquee label map owns naming
+  'fsa.html':        { kind:'app', table:'press_fsa',        idcol:'sync_id', select:'doc,version',                 env:(r)=>r.doc },
+  'giving.html':     { kind:'app', table:'press_giving',     idcol:'id',      select:'ciphertext,iv,salt,kdf_iters', env:(r)=>r },
+  'retirement.html': { kind:'app', table:'press_retirement', idcol:'id',      select:'ciphertext,iv,salt,kdf_iters', env:(r)=>r },
+  'card-scout.html': { kind:'deals' }, // sync-id-only; verified against press_deals
+  'cardsharp.html':  { kind:'app', table:'press_cardsharp',  idcol:'sync_id', select:'doc,version',                 env:(r)=>r.doc },
 };
+// A tool row's name = the page's card title in LABELS (one naming source for cards, rows and the kit).
+const toolName = f => labelFor(f, null).title;
 const CONNECT_TOOLS = ['fsa.html','giving.html','retirement.html','card-scout.html','cardsharp.html'];
 
 /* CARD_SCOUT_GATE_SENTINEL — an INERT, PUBLIC shape-filler. NOT a secret, NOT a passphrase.
@@ -1949,10 +2098,10 @@ function wingDownload(name, text){
 // per-field aria labels; card-scout gets a sync-id field ONLY (no passphrase, no download).
 function toolFieldsHTML(f){
   const cfg=TOOL_CFG[f], deals=cfg.kind==='deals';
-  const sync=`<input class="tw-cinput tw-sync" type="text" inputmode="latin" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${deals?'Card Scout sync id':'sync id (32 hex)'}" aria-label="${esc(cfg.label)} sync id">`;
-  const pass=deals?'':`<input class="tw-cinput tw-pass" type="password" autocomplete="off" placeholder="passphrase" aria-label="${esc(cfg.label)} passphrase">`;
+  const sync=`<input class="tw-cinput tw-sync" type="text" inputmode="latin" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${deals?'Card Scout sync id':'sync id (32 hex)'}" aria-label="${esc(toolName(f))} sync id">`;
+  const pass=deals?'':`<input class="tw-cinput tw-pass" type="password" autocomplete="off" placeholder="passphrase" aria-label="${esc(toolName(f))} passphrase">`;
   const dl  =deals?'':`<span class="tw-dl" hidden role="button" tabindex="0">Download my data</span>`;
-  return `<div class="tw-tool-form" role="region" aria-label="Connect ${esc(cfg.label)}">`+
+  return `<div class="tw-tool-form" role="region" aria-label="Connect ${esc(toolName(f))}">`+
       sync+pass+
       `<div class="tw-tool-actions"><span class="tw-btn tw-verify" role="button" tabindex="0">Verify &amp; connect</span>${dl}</div>`+
       `<div class="tw-tool-msg" aria-live="polite"></div>`+
@@ -1964,7 +2113,7 @@ function connectToolsHTML(){
   return `<p class="tw-cmeta">Each tool works once its sync key is sealed behind your passkey — verified against your real data before anything is stored, nothing re-encrypted. Connected tools sit quiet; hit Reconnect to re-enter a key.</p>`+
     CONNECT_TOOLS.map(f=>{
       const cfg=TOOL_CFG[f], on=toolConnected(f);
-      const head=`<div class="tw-tool-head"><span class="tw-tool-name">${esc(cfg.label)}</span>`+
+      const head=`<div class="tw-tool-head"><span class="tw-tool-name">${esc(toolName(f))}</span>`+
         `<span class="tw-tool-status ${on?'on':'off'}">${on?'● Connected':'○ not connected'}</span></div>`;
       // CONNECTED → empty slot + a Reconnect button (fields absent from the DOM until it is pressed).
       // NOT connected → the full form, expanded, and no foot button (nothing to reconnect yet).
@@ -2099,7 +2248,7 @@ function recoveryKitHTML(man){
   const stamp = when.toLocaleString(undefined, {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
   const rows = Object.keys(apps).map(f=>{
     const v = apps[f] || {};
-    const name = esc(titleOf(f, man));
+    const name = esc(labelFor(f, man).title);   // the marquee label map names the tool here too
     if (v.redacted) return `<tr><th scope="row">${name}</th><td colspan="2"><em>unlock with your passkey on this page to include it</em></td></tr>`;
     const sync = v.sync_id ? esc(v.sync_id) : '—';
     // card-scout (kind:'deals') has no passphrase — its inert sentinel is never printed as one.

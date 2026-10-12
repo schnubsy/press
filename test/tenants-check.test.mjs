@@ -3,7 +3,7 @@
 // dir and runs the REAL checker against it via --press + CODE_ROOT, asserting exit code + output.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
@@ -204,10 +204,20 @@ function writeVault(press, apps) {
   writeFileSync(join(press, 'src', 'vault.js'),
     `var emptyKeyring = function () {\n  return { v: 1, apps: {\n${entries}\n  } };\n};\n`);
 }
-function writeIndex(press, cfgApps) {
-  const entries = cfgApps.map((a) => `  '${a}': { label:'${a}', kind:'app' }`).join(',\n');
+// The index.html also carries the T9 marquee label map: by default one LABELS entry per pages.json page
+// (call AFTER e.write()); pass `labels` (an object page → {kicker,title,icon}) to override it, or
+// `labels: null` to omit the LABELS block entirely. ICONS always holds 'Page' + 'gift'.
+function writeIndex(press, cfgApps, { labels } = {}) {
+  const entries = cfgApps.map((a) => `  '${a}': { kind:'app' }`).join(',\n');
+  if (labels === undefined) {
+    const pages = JSON.parse(readFileSync(join(press, 'pages.json'), 'utf8'));
+    labels = Object.fromEntries(Object.keys(pages).map((p) => [p, { kicker: 'Kick', title: 'T ' + p, icon: 'Page' }]));
+  }
+  const icons = `const ICONS={\n  'Page': '<svg/>',\n  'gift': '<svg/>'\n};\n`;
+  const lbl = labels === null ? '' : `const LABELS = {\n${Object.entries(labels).map(([p, l]) =>
+    `  '${p}': { ${Object.entries(l).map(([k, v]) => `${k}:'${v}'`).join(', ')} },`).join('\n')}\n};\n`;
   writeFileSync(join(press, 'index.html'),
-    `<html><body><script>\nconst TOOL_CFG = {\n${entries}${cfgApps.length ? ',' : ''}\n};\n</script></body></html>`);
+    `<html><body><script>\n${icons}${lbl}const TOOL_CFG = {\n${entries}${cfgApps.length ? ',' : ''}\n};\n</script></body></html>`);
 }
 
 test('T7 tool-cfg PASS — every personal data (keyring) page is in TOOL_CFG', () => {
@@ -306,6 +316,51 @@ test('T8 registry-parity FAIL (not SKIP) — the council registry file is missin
   e.page('k.html').tenant('k.html', { repo: null, tier: 'public', gate: null, vendored: null, release: null }).noSnagRegistry().write();
   const r = e.run();
   assert.match(line(r.out, 'T8 registry-parity', '(marquee)'), /FAIL.*MISSING/);
+  assert.equal(r.code, 1);
+  e.cleanup();
+});
+
+// --- T9 labels: every pages.json page has a marquee LABELS entry (kicker/title/icon; icon ∈ ICONS).
+test('T9 labels PASS — every pages.json page has a LABELS entry with a known icon', () => {
+  const e = estate();
+  e.page('a.html').page('fsa.html').tier('fsa.html', 'personal').write();
+  writeIndex(e.press, [], { labels: { 'a.html': { kicker: 'Day planner', title: 'Optimo', icon: 'Page' }, 'fsa.html': { kicker: 'Medical Expenses', title: 'FSA Claims Tracker', icon: 'gift' } } });
+  const r = e.run();
+  assert.match(line(r.out, 'T9 labels', 'a.html'), /PASS.*Day planner \/ Optimo/);
+  assert.match(line(r.out, 'T9 labels', 'fsa.html'), /PASS.*FSA Claims Tracker · gift/);
+  assert.equal(r.code, 0);
+  e.cleanup();
+});
+
+test('T9 labels FAIL — a pages.json page has no LABELS entry (published without coordinating naming)', () => {
+  const e = estate();
+  e.page('a.html').page('newapp.html').write();
+  writeIndex(e.press, [], { labels: { 'a.html': { kicker: 'K', title: 'A', icon: 'Page' } } });
+  const r = e.run();
+  assert.match(line(r.out, 'T9 labels', 'a.html'), /PASS/);
+  assert.match(line(r.out, 'T9 labels', 'newapp.html'), /FAIL.*no LABELS entry/);
+  assert.equal(r.code, 1);
+  e.cleanup();
+});
+
+test('T9 labels FAIL — an entry missing a field, or naming an icon not in ICONS', () => {
+  const e = estate();
+  e.page('a.html').page('b.html').write();
+  writeIndex(e.press, [], { labels: { 'a.html': { kicker: 'K', icon: 'Page' }, 'b.html': { kicker: 'K', title: 'B', icon: 'nope' } } });
+  const r = e.run();
+  assert.match(line(r.out, 'T9 labels', 'a.html'), /FAIL.*missing title/);
+  assert.match(line(r.out, 'T9 labels', 'b.html'), /FAIL.*icon "nope" is not a key in ICONS/);
+  assert.equal(r.code, 1);
+  e.cleanup();
+});
+
+test('T9 labels FAIL — index.html without a LABELS block; SKIP with no index.html', () => {
+  const e = estate();
+  e.page('a.html').write();
+  assert.match(line(e.run().out, 'T9 labels', '(marquee)'), /SKIP/);   // no index.html yet
+  writeIndex(e.press, [], { labels: null });
+  const r = e.run();
+  assert.match(line(r.out, 'T9 labels', '(marquee)'), /FAIL.*LABELS block not found/);
   assert.equal(r.code, 1);
   e.cleanup();
 });

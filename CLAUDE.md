@@ -5,7 +5,7 @@ Global rules: council arc instrument
 ## Purpose
 
 press is the marquee **publishing target** for the council. It hosts single-file pages
-served via GitHub Pages. `index.html` is the portal (KICKERS / ICONS driven by `pages.json`);
+served via GitHub Pages. `index.html` is the portal — card kicker / title / icon come from its ONE `LABELS` label map (+ `ICONS` glyphs; the marquee owns card naming, tenants-check T9 enforces an entry per page);
 `pages.json` maps `filename → title`, `spaces.json` the tier split, `tenants.json` the tenant registry.
 
 Served pages by tier (contract: `docs/spec.md` → Tenants):
@@ -35,8 +35,9 @@ Merge state: PR pending (branch arc/steward-report)
 **arc/steward-report (2026-10-12) — Steward report page; cloud Builder.** New press-native PRIVATE-wing `steward.html`
 (latest report + 12-week calendar-week strip, 390-first) over the service-role-only `press_steward_reports` table, read
 through the new `steward-reports` Edge Function (v2), which checks the private wing's Card Scout capability against the
-server-held `press_deals.sync_id` default via the service-role-only RPC `press_steward_capability_ok`. Gauntlet: unit 101 ·
-Playwright 88 + 1 WebKit skip · tenants-check steward rows PASS (21 env-only FAILs: tenant repos outside cloud scope).
+server-held `press_deals.sync_id` default via the service-role-only RPC `press_steward_capability_ok`. Gauntlet (close, after merging main): unit 133 ·
+Playwright 110 + 1 WebKit skip · tenants-check steward T1/T8/T9 PASS (21 env-only FAILs: tenant repos outside cloud scope).
+Also on main today: PR #35 marquee-wings-monitor (LABELS/T9, Family Wing requests, Agent Monitor).
 Open: fixture row delete + `.claude/settings.json` (classifier) + press_deals anon INSERT — HANDOFF. Narrative: `docs/history.md`.
 
 ## Project rules
@@ -58,8 +59,8 @@ Open: fixture row delete + `.claude/settings.json` (classifier) + press_deals an
 
 | Path | Purpose |
 |---|---|
-| `index.html` | Portal — reads `pages.json` + `spaces.json`; inlines `src/vault.js` |
-| `pages.json` | Page manifest — object keyed by filename `{title}` (release scripts write it) |
+| `index.html` | Portal — reads `pages.json` + `spaces.json`; `LABELS` label map owns card kicker/title/icon; inlines `src/vault.js` |
+| `pages.json` | Page manifest — object keyed by filename `{title}` = tab title (release scripts write it; card wording lives in index.html `LABELS`) |
 | `spaces.json` | Public/personal split `{v,personal[]}` — repo-owned, release scripts only READ it |
 | `src/vault.js` · `test/` | Vault module (HKDF + AES-GCM + WebAuthn PRF) + Node/Playwright tests |
 | `db/` | Applied Supabase migrations (`press_vault`, `press_deals` gate) |

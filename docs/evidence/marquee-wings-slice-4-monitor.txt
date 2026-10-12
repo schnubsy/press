@@ -1,0 +1,95 @@
+marquee-wings-monitor · SLICE 4 — Agent Monitor rebuilt on real work · evidence (2026-10-12, ~10:37 CT)
+====================================================================================================
+
+Supabase project press (eepjhpyziczrxvirczio)
+
+1. MIGRATIONS (applied via MCP; db/ mirrors byte-identical — md5 of schema_migrations.statements == md5 of file)
+   agent_monitor_core        db/20261012_agent_monitor_core.sql        5ba57a8912d395203324f6fa030b33b1  ✓
+   agent_monitor_watch_cron  db/20261012_agent_monitor_watch_cron.sql  6f266add83768b9bec1cc9af093c8462  ✓
+   agent_monitor_view_v2     db/20261012_agent_monitor_view_v2.sql     2e8792ff9972c0b602abaa0f5d7bea51  ✓
+
+2. EDGE FUNCTIONS (deployed via MCP; source mirrored in supabase/functions/)
+   agent-watch v1  verify_jwt=false (Vault header secret checked via press_agent_watch_secret_ok)  files: agent-watch/index.ts,
+                   agent-watch/watch-core.mjs, _shared/notify.mjs (verbatim copy of council instruments/agent/functions/_shared/notify.mjs @ 820c17d; cmp == same)
+   agent-fix   v1  verify_jwt=false (GoTrue /auth/v1/user + press_access_is_admin() as the caller, in-function)
+   pg_cron job agent-watch  */15 * * * *  (net.http_post + Vault secret agent-watch_secret)
+
+3. AUTH BOUNDARY PROBES (net.http_post from the DB; this cloud sandbox has no egress to *.supabase.co)
+   agent-fix  no Authorization                         → 401 {"error":"Sign in as the admin first."}
+   agent-fix  forged JWT                               → 401 {"error":"Your sign-in has expired — sign in again on the Access page."}
+   agent-watch wrong x-agent-watch-secret              → 401 {"error":"unauthorized"}
+   agent-watch Vault secret + {"dry":true}             → 200 {"outcome":"ok","counts":{healthy 11,no-data 12,failed 1,off 1},"alerts":[],"dry":true}
+   EXECUTE grants (has_function_privilege):
+     press_agent_checkin / press_agent_fix_run / press_agent_watch_secret_ok / press_agent_last_due
+       anon=false · authenticated=false · service_role=true · postgres=true   (REVOKE … FROM PUBLIC first, then explicit grants)
+   press_agent_fix_run('fsa-capture')  → "no retry available for fsa-capture"   (allowlist: only the row's own retry_action)
+   press_agent_fix_run('card-scout-prune') → "Re-ran scheduled job card-scout-prune"   (multi-statement cron command executes)
+   press_agent_checkin('card-scout',…) → "unknown check-in agent card-scout"   (only source='checkin' rows accept check-ins)
+   press_agent_checkin('snag-train','maybe',…) → "status must be ok | warn | fail"
+   check-in round trip (inside a rolled-back probe): weekly-store-check  no-data → after 'ok' check-in: healthy / "Checked 6 stores; 2 new deals"
+   NOT probed live: a VALID non-admin user JWT → expected 403 (logic: rpc press_access_is_admin as caller ≠ true). Covered in
+   Playwright only at the page level (non-admin session never sees Retry).
+
+4. FIRST REAL ALERT (the one wanted end-to-end test; notifications sent during this slice: 1 — push + email of the same alert)
+   15:30 UTC tick: {"outcome":"ok","counts":{"healthy":10,"no-data":13,"failed":1,"off":1},"changes":25,
+                    "alerts":["fsa-capture:null->failed"],"sent":{"push":"ok","email":"ok"}}
+   press_agent_watch_state fsa-capture: status failed · since 15:30:03Z · notified_at 15:30:03Z
+   agent-watch run row: "10 healthy · 0 late · 1 failed · 13 no data · alerted 1 (push ok, email ok) · github: 10 runs seen"
+   GitHub notifier runs recorded: 10 rows gh:<run id> (all "All clear") → "Watcher of the watcher" = healthy.
+
+5. NOT SELF-VALIDATING — card-scout skipped ticks never count as real work
+   registry.last_ok_at (what the OLD page read) = 10-12 10:30 CT  ← a `skipped` tick (outside-window / quiet)
+   view last_real_work_at                      = 10-12 07:00 CT  ← the last `ok` run ("5 deals judged/updated")
+   counterfactual (read-only re-computation of the view rule with today's ok run removed, skipped ticks kept):
+     now 10:32 CT · due 07:00 CT · real work 10-11 18:00 · latest tick incl. skipped 10-12 10:30
+     status by real-work rule = LATE      status if skipped counted = healthy      registry.last_ok_at = 10-12 10:30
+   → under the old rule a Card Scout that stopped judging would stay green on its 30-minute skipped ticks; now it goes late.
+
+6. COST PROJECTION (card-scout, CT days)
+   MTD $0.2981 · avg(last 7 complete CT days) $0.01405/day · 19.558 CT days left
+   new  = 0.2981 + 0.01405 × 19.558 = $0.5729   (view: 0.2981 / 0.5729 ✓)
+   old  = mtd_utc / UTC day-of-month × 31     = $0.8486   (overstated ~48%)
+   all apps: cost_mtd Σ $0.3130 · cost_projected Σ $0.6131 (runs-alive inlets excluded — no double count, view v2)
+
+7. AUDIT TABLE — view status vs ground truth (independent per-source query; 2026-10-12 10:37 CT)
+   agent · kind · status (view) · ground truth · match
+   card-scout                    · edge-cron      · healthy · runs card-scout: ok=97 skipped=802 error=0 · last ok 10-12 07:00 · last tick 10-12 10:30 (due 07:00, grace 90m) · MATCH
+   card-scout-prune              · pg-cron        · healthy · cron active · last succeeded 10-12 04:00 CT (397 min ago; daily + 120m)                       · MATCH
+   card-scout-weekly-store-check · browser-task   · no-data · 0 check-ins · registered 10-12 10:22 (first due Wed 10-14 12:00 CT + 6h)                 · MATCH
+   cardsharp-receipt             · edge-on-demand · no-data · no run log exists for this function                                                       · MATCH
+   cardsharp-ynab                · edge-on-demand · no-data · no run log exists for this function                                                       · MATCH
+   plan-day                      · edge-on-demand · no-data · no run log exists (edge logs: GET 401 at 06:58 CT — gateway verify_jwt, see report)     · MATCH
+   planner-push-send             · pg-cron        · healthy · cron active · last succeeded 10:36 CT (1 min ago) — dispatch only (HTTP queued)               · MATCH
+   planner-calendar-sync         · pg-cron        · healthy · cron active · last succeeded 10:30 CT (7 min ago) — dispatch only                             · MATCH
+   planner-purge-tombstones      · pg-cron        · healthy · cron active · last succeeded 10-11 23:15 CT (682 min ago)                                     · MATCH
+   fsa-capture                   · inlet          · failed  · runs fsa/fsa-capture: ok=0 skipped=0 error=0 · never ticked (registered 09-18)              · MATCH
+   fsa-ynab-sync                 · edge-on-demand · no-data · runs fsa/fsa-ynab-sync: none                                                              · MATCH
+   fsa-monthly                   · mac-task       · no-data · 0 check-ins · first due Nov 1 09:00 CT                                                   · MATCH
+   capture                       · inlet          · healthy · runs giving/capture: ok=18 skipped=4208 error=0 · last ok 10-11 19:18                       · MATCH
+   gmail-capture-inlet           · inlet          · healthy · same rows · last tick 10-12 10:28 (every 10m + 50m)                                       · MATCH
+   import-extract                · edge-on-demand · no-data · runs giving/import-extract: none                                                          · MATCH
+   propublica                    · edge-on-demand · no-data · no run log exists for this function                                                       · MATCH
+   ynab-sync                     · pg-cron        · off     · cron giving-ynab-nightly active=false · last 09-11                                        · MATCH
+   snag-inlet                    · inlet          · healthy · runs council/snag-inlet: ok=2 error=0 · last ok 09-26 18:28 (on demand, idle ≠ broken)    · MATCH
+   snag-train                    · mac-task       · no-data · 0 check-ins · first due Nov 2 09:00 CT                                                   · MATCH
+   steward-audit                 · mac-task       · no-data · 0 check-ins · first due Nov 1 09:00 CT                                                   · MATCH
+   cowork-popup-watch            · cloud-task     · no-data · 0 check-ins · first due Mon 10-19 08:52 CT                                               · MATCH
+   agent-watch                   · edge-cron      · healthy · runs marquee/agent-watch: ok=1 · last ok 10:30 CT (every 15m + 30m)                        · MATCH
+   agent-health-notifier         · gh-action      · healthy · 10 GH runs recorded · last 10-11 13:06 CT (every 60m + 1500m drift grace)                  · MATCH
+   agent-fix                     · edge-on-demand · no-data · no calls yet                                                                              · MATCH
+   marquee-agent-heartbeat       · pg-cron        · healthy · cron active · last succeeded 10-12 01:15 CT                                               · MATCH
+   25 rows · 25 MATCH · 0 MISMATCH   (healthy 11 · failed 1 · no-data 12 · off 1)
+
+8. ADVISORS (security) after the change
+   rls_enabled_no_policy INFO: press_agent_expect, press_agent_watch_state — intended (service-role-only; public reads via views)
+   security_definer_view ERROR: press_agent_monitor_public, press_agent_monitor_daily_public — same accepted pattern as the four
+     existing press_agent_*_public views: they expose only non-sensitive columns of service-only tables (+ cron.job_run_details
+     aggregates without command text), which anon cannot read directly. No new function appears in the anon/authenticated
+     SECURITY DEFINER executable lists.
+
+9. PAGE (agent-health.html, title "Agent Monitor") — Playwright test/agent-monitor.spec.mjs (7) with fake Supabase:
+   landing dots grouped by app (worst first) · expand/collapse on click · off section collapsed <details> · unknown status never
+   green · Retry hidden without session · hidden for a non-admin session · shown + POSTs agent-fix with the admin JWT · service
+   down → "can't check" · 390px no horizontal scroll · #id deep link opens the detail.
+   Screenshots: marquee-wings-slice-4-desktop-landing.png · -desktop-expanded.png · -desktop-off.png ·
+                -mobile-landing.png · -mobile-expanded.png · -mobile-off.png

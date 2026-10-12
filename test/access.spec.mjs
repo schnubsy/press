@@ -62,7 +62,8 @@ test('enrolled browser WITH a live session: the passkey belt passes, admin sign-
 test('never-enrolled browser: no passkey belt, admin OTP sign-in shows (RLS still enforces admin)', async ({ page, context }) => {
   await stubVault(context, { enrolled: false, hasSession: false });
   await page.goto(base + '/access.html');
-  await expect(page.getByRole('heading', { name: 'Access admin' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Family Wing Access Manager' })).toBeVisible();
+  await expect(page).toHaveTitle('Family Wing Access Manager');
   await expect(page.locator('#em')).toBeVisible();                 // admin email sign-in
   await expect(page.locator('#pk')).toHaveCount(0);                // no passkey gate on a public browser
 });

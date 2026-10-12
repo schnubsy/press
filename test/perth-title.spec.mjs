@@ -47,7 +47,9 @@ test('pages.json + perth.html carry the renamed title; old title is gone', () =>
   expect(perthHtml).toContain('<h1>The Runway</h1>');   // the h1 is deliberately left alone
 });
 
-test('the family-wing directory card shows "The Runway — Perth" (portal surface)', async ({ page, context }) => {
+// marquee-wings slice 1: the marquee label map owns CARD wording — the card reads kicker "Moving to Perth"
+// + title "The Runway"; pages.json's "The Runway — Perth" stays the page's tab title only.
+test('the family-wing directory card shows kicker "Moving to Perth" + title "The Runway" (portal surface)', async ({ page, context }) => {
   await context.route('https://api.github.com/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
   await context.route('https://raw.githubusercontent.com/**', route => {
     const url = route.request().url();
@@ -62,8 +64,11 @@ test('the family-wing directory card shows "The Runway — Perth" (portal surfac
 
   await page.goto(base + '/?view=family');
   const perthCard = page.locator('a[href="perth.html"], a[href$="/perth.html"]').first();
-  await expect(perthCard).toContainText(NEW_TITLE);
+  await expect(perthCard.locator('h3')).toHaveText('The Runway');
+  await expect(perthCard.locator('.k')).toHaveText('Moving to Perth');
+  await expect(perthCard.locator('svg polygon[points="22 2 15 22 11 13 2 9 22 2"]')).toHaveCount(1);   // the plane, kept
   await expect(page.locator('body')).not.toContainText(OLD_TITLE);
+  await expect(page.locator('body')).not.toContainText(NEW_TITLE);   // the tab title never leaks onto the card
 });
 
 test('access.html titleFor() resolves perth to the new title (same man[page].title source)', async ({ page }) => {

@@ -1,0 +1,49 @@
+# Auth email sync — the Family Wing sign-in email is owned by press and pushed to Supabase Auth automatically.
+#
+# RULE (Mark, 2026-10-12): the sign-in email is WING-level ("Your Family Wing sign-in code"), lives in
+# docs/auth/ (family-wing-otp.json + family-wing-otp.html), and is synced here — never hand-edited in the
+# Supabase dashboard, never per app. Email OTP codes (signInWithOtp / POST /auth/v1/otp) render from the
+# MAGIC LINK template, so the job PATCHes mailer_subjects_magic_link + mailer_templates_magic_link_content
+# on project eepjhpyziczrxvirczio via the Management API, then GETs the config back and asserts equality
+# (the ship proof). Logic: tools/auth-email-sync.mjs (node, no deps; `--dry-run` validates locally).
+#
+# ── REQUIRED SETUP (Mark's one manual step) ─────────────────────────────────────────────────────────
+#   1. supabase.com/dashboard/account/tokens → Generate new token (name: press auth-email-sync).
+#   2. schnubsy/press → Settings → Secrets and variables → Actions → New repository secret:
+#        SUPABASE_ACCESS_TOKEN = <that token>
+#   3. Actions → "Auth email sync" → Run workflow (or push a docs/auth change).
+#   Until the secret exists the job FAILS with "Add SUPABASE_ACCESS_TOKEN …" — a nudge, not a breakage.
+
+name: Auth email sync
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/auth/**'
+      - 'tools/auth-email-sync.mjs'
+      - '.github/workflows/auth-email-sync.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: auth-email-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate the template (dry run)
+        run: node tools/auth-email-sync.mjs --dry-run
+      - name: Push to Supabase Auth and read it back
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node tools/auth-email-sync.mjs

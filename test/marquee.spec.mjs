@@ -109,7 +109,8 @@ test('landing shows the two-space marquee and makes ZERO vault calls (not set up
   await expect(secure.locator('h3')).toHaveText('The Private Wing'); // marquee-polish: big text = the wing NAME (tagline moved to the kicker)
   await expect(secure.locator('.lockline')).toContainText('Set up the private wing');
   // public cards present; personal files NOT among them
-  const fns = await page.locator('.tw-card .fn').allTextContents();
+  const fns = await page.locator('.tw-card').evaluateAll(els => els.map(e => e.dataset.file));   // marquee-wings s1: no filename line — read the card's data-file
+  await expect(page.locator('.tw-card .fn')).toHaveCount(0);
   for (const p of PERSONAL_FILES) expect(fns).not.toContain(p);
   for (const p of PUBLIC_FILES) expect(fns).toContain(p);
   // landing header counts only public cards
@@ -148,7 +149,8 @@ test('enrol → 4 cards → lock → unlock → lock (full private-wing flow)', 
 
   // enrol resolves → unlocked → the four personal cards render
   await expect(page.locator('.tw-card')).toHaveCount(PERSONAL_FILES.length);
-  const fns = await page.locator('.tw-card .fn').allTextContents();
+  const fns = await page.locator('.tw-card').evaluateAll(els => els.map(e => e.dataset.file));   // marquee-wings s1: no filename line — read the card's data-file
+  await expect(page.locator('.tw-card .fn')).toHaveCount(0);
   for (const p of PERSONAL_FILES) expect(fns).toContain(p);
   await expect(page.locator('#lockBtn')).toBeVisible();
   expect(state.vault.size).toBe(1); // exactly one enrolled row written

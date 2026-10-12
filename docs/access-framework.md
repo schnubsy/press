@@ -158,7 +158,11 @@ hour, but every query it makes returns nothing, because `press_access_has()` is 
 
 ---
 
-## 6. The access admin page
+## 6. The access admin page — the Family Wing Access Manager
+
+> **Current shape (2026-10-12):** titled **Family Wing Access Manager**; one card per person with a switch
+> per family app (opt-out, ON by default), a **Requests** strip on top — see §8a. The original design
+> notes below are kept for history.
 
 `access.html` — a new page in the press repo, listed in `spaces.json.personal`, so it sits in the
 **Private Wing behind Mark's passkey**. It additionally requires Mark's own Supabase session,
@@ -216,6 +220,62 @@ Behaviour:
 4. Grant the people in the admin grid.
 
 That is the whole contract. No new tables, no new flow, no new decisions.
+
+---
+
+## 8a. Blocked → "Request access" → switched on (2026-10-12)
+
+**RULE (Mark): the Family Wing has no extra passwords.** Access is **opt-out** — every active person can
+open every gated family app by default (`press_access_has`, `db/20260924_press_access_optout.sql`); a
+`press_access_grants` row with `active=false` is a switch turned OFF in the Access Manager. remit now
+uses the same decision: `remit_private.remit_has_access()` = `press_access_has('remit.html')`
+(`db/20261012_remit_access_optout.sql`).
+
+When a person's switch for an app is off:
+
+1. **Blocked screen.** They sign in as usual (one emailed code), and `FamilyGate.require(page)` shows
+   *"You're signed in … doesn't have access to this page yet"* with a **Request access** button.
+2. **One tap.** The button calls `rpc/press_access_request(page)` with their own JWT (security definer;
+   the email comes from the token, never the body). It records a pending row in
+   `public.press_access_requests (email, page, requested_at, handled_at)` and returns a verdict:
+   `requested` · `already_requested` (rate limit — a repeat within 10 min is ignored) · `already_granted`
+   (the page reloads into the app) · `not_on_list` · `not_gated` · `not_signed_in`. The screen then reads
+   *"Requested — Mark has been notified. Try again once he's switched you on."*
+3. **Mark is notified.** An AFTER INSERT/UPDATE trigger (`press_access_requests_notify`, only for a NEW
+   pending request) calls the edge function **`access-notify`** via `pg_net`, with a header secret read
+   from Vault (`access_notify_secret`). The function (verify_jwt off; it checks the header against Vault
+   through the service_role-only `press_access_notify_secret_ok()`) re-reads the row (must still be
+   pending) and sends a **Pushover push + Gmail email** — the notify standard (council `_shared/notify.mjs`,
+   vendored at `supabase/functions/_shared/`): *"Family Wing access request — ‹name› wants ‹app›"*, linking
+   to `access.html`.
+4. **He flips the switch on.** The **Family Wing Access Manager** (`access.html`) shows a **Requests** strip
+   at the top (one-tap **Turn on**) and a *Requested* badge on that person's switch. Turning the switch on
+   — from either place — upserts the grant `active=true`; the trigger `press_access_grants_resolve` stamps
+   the request `handled_at` (deleting a revoke row does the same).
+5. **Next visit works.** `press_access_has` now returns true; nothing else to do.
+
+Requests are admin-read/update only (RLS on `press_access_is_admin()`); `anon` has no grant on the table
+and no EXECUTE on the RPC. Adding a person writes ONLY a `press_access_people` row — no grant rows — so a
+new person starts with every switch on.
+
+---
+
+## 8b. Sign-in email — owned by press
+
+**RULE (Mark): the sign-in email is wing-level, owned by press, synced automatically.** All family-wing
+apps share the press Supabase project, and email OTP codes (`POST /auth/v1/otp`, i.e. `signInWithOtp`)
+render from Supabase Auth's **Magic Link** template — so there is exactly ONE sign-in email for the wing.
+
+- **Source of truth:** `docs/auth/family-wing-otp.json` (`{subject, file}`) + `docs/auth/family-wing-otp.html`.
+  Subject *"Your Family Wing sign-in code"*; the body carries `{{ .Token }}` and names **no app**.
+- **Sync:** `.github/workflows/auth-email-sync.yml` runs `tools/auth-email-sync.mjs` on every push to `main`
+  touching `docs/auth/**` (and on demand). It PATCHes `mailer_subjects_magic_link` +
+  `mailer_templates_magic_link_content` on `/v1/projects/eepjhpyziczrxvirczio/config/auth`, then GETs the
+  config back and asserts equality — the ship proof. Needs the Actions secret `SUPABASE_ACCESS_TOKEN` (a
+  Supabase personal access token Mark creates once); without it the job fails with *"Add
+  SUPABASE_ACCESS_TOKEN …"*.
+- **Never edit the template in the dashboard** — the next sync overwrites it. Never add a per-app
+  template; `test/auth-email.test.mjs` fails on `{{ .Token }}` missing or an app name present.
 
 ---
 

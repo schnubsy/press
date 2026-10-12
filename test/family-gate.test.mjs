@@ -192,3 +192,55 @@ test('ensureFresh — valid stays, expired refreshes, failed refresh clears', as
   assert.equal(s, null);
   assert.equal(G.loadSession(), null, 'failed refresh clears the session');
 });
+
+// ── request access (arc/marquee-wings-monitor slice 2) ───────────────────────
+test('requestAccess — POSTs rpc/press_access_request with the caller JWT and returns the text verdict', async () => {
+  let seen = null;
+  G.cfg({ store: memStore(), fetch: fakeFetch([
+    { test: u => /\/rpc\/press_access_request$/.test(u), reply: (u, o) => { seen = o; return json('requested'); } },
+  ]) });
+  const r = await G.requestAccess({ access_token: 'jwt-k', refresh_token: 'r', expires_at: Date.now() + 3600_000, email: 'k@x.com' }, 'remit.html');
+  assert.deepEqual(r, { ok: true, status: 'requested' });
+  assert.equal(seen.method, 'POST');
+  assert.equal(seen.headers.Authorization, 'Bearer jwt-k', 'the caller’s OWN token, never the anon key');
+  assert.deepEqual(JSON.parse(seen.body), { page: 'remit.html' }, 'only the page is sent — the email comes from the JWT');
+});
+
+test('requestAccess — an HTTP error is a result, not a throw', async () => {
+  G.cfg({ store: memStore(), fetch: fakeFetch([{ test: () => true, reply: () => json({ message: 'nope' }, 401) }]) });
+  assert.deepEqual(await G.requestAccess({ access_token: 'a' }, 'remit.html'), { ok: false, status: 401 });
+});
+
+test('requestView — maps every verdict to the blocked-screen state', () => {
+  const req = G.requestView({ ok: true, status: 'requested' });
+  assert.equal(req.text, G.REQUESTED_TEXT);
+  assert.match(req.text, /^Requested — Mark has been notified\. Try again once he’s switched you on\.$/);
+  assert.deepEqual([req.err, req.done, req.reload], [false, true, false]);
+  assert.equal(G.requestView({ ok: true, status: 'already_requested' }).text, G.REQUESTED_TEXT, 'rate-limited re-tap reads the same');
+  assert.equal(G.requestView({ ok: true, status: 'already_granted' }).reload, true, 'switched on meanwhile -> reload into the app');
+  assert.equal(G.requestView({ ok: true, status: 'not_gated' }).reload, true);
+  const off = G.requestView({ ok: true, status: 'not_on_list' });
+  assert.deepEqual([off.err, off.done], [true, true]);
+  const exp = G.requestView({ ok: false, status: 401 });
+  assert.deepEqual([exp.err, exp.done], [true, false], 'expired sign-in keeps the button for a retry');
+  const net = G.requestView({ ok: false, status: 'network' });
+  assert.deepEqual([net.err, net.done], [true, false]);
+  assert.match(net.text, /try again/i);
+  assert.equal(G.requestView(null).err, true, 'garbage in -> a graceful error, never a throw');
+});
+
+// The two press-native carriers inline src/family-gate.js verbatim (tools/inline-vault.mjs guards the
+// same in the gauntlet's inline stage; this is the unit-level belt so `npm test` alone catches drift).
+test('index.html + perth.html inline src/family-gate.js byte-for-byte', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { fileURLToPath } = await import('node:url');
+  const { dirname, join } = await import('node:path');
+  const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+  const src = readFileSync(join(ROOT, 'src', 'family-gate.js'), 'utf8').replace(/\s+$/, '');
+  const RE = /\/\* =+\n \* press family-gate\.js[\s\S]*?\}\)\(typeof globalThis !== 'undefined' \? globalThis : this\);/;
+  for (const page of ['index.html', 'perth.html']) {
+    const m = readFileSync(join(ROOT, page), 'utf8').match(RE);
+    assert.ok(m, `${page} carries an inlined family-gate block`);
+    assert.equal(m[0], src, `${page}'s inlined family-gate drifted — run: node tools/inline-vault.mjs`);
+  }
+});

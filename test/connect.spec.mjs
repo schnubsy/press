@@ -132,6 +132,18 @@ test('DEFECT 2: a second device (reachable row, no local flag) adopts via Setup 
   expect([...state.vault.values()].length).toBe(1);
 });
 
+// marquee-wings slice 1: the tool rows are named from the marquee label map — the same title as each card.
+test('Connect rows carry the marquee LABELS titles (same naming as the cards)', async ({ page, context }) => {
+  const state = await harness(page, context);
+  await enrolEmptyAndOpen(page, state);
+  const want = { 'fsa.html': 'FSA Claims Tracker', 'giving.html': 'Giving Tracker', 'retirement.html': 'Retirement Projector',
+                 'card-scout.html': 'Card Scout', 'cardsharp.html': 'Cardsharp' };
+  for (const [f, name] of Object.entries(want)) {
+    await expect(tool(page, f).locator('.tw-tool-name')).toHaveText(name);
+    await expect(tool(page, f).locator('.tw-sync')).toHaveAttribute('aria-label', `${name} sync id`);
+  }
+});
+
 // cardsharp (2026-09-28): an app-kind tool on press_cardsharp — verified by decrypting its real row
 // (sync_id column, envelope in `doc`) before anything is sealed into the keyring.
 test('Cardsharp connects only after its press_cardsharp row decrypts; a wrong passphrase stores nothing', async ({ page, context }) => {

@@ -23,6 +23,24 @@ row was moved out of the 84-day window instead (the page shows the empty state) 
 
 ---
 
+## 2026-10-12 — arc/marquee-wings-monitor (marquee wording · Family Wing requests · Agent Monitor rebuild)
+
+From Mark's petition (one batched checkpoint: email automatic, Fix = admin-only, marquee owns naming, alerts push+email).
+**S1** marquee owns card naming: one `LABELS` map in index.html (kicker/title/icon) wins over pages.json; Mark's 10 new
+labels; filename lines removed; topical distinct icons; tenants-check **T9** fails a page with no label entry; spec RULE
+for future apps. **S2** Family Wing: blocked screen gains **Request access** (`press_access_request` RPC → trigger →
+`access-notify` push+email; switching on resolves it); access.html → "Family Wing Access Manager" with a Requests strip;
+remit's data gate moved to opt-out (`remit_has_access()` → `press_access_has`); wing-level sign-in email template in
+`docs/auth/` + `auth-email-sync` workflow (needs Mark's `SUPABASE_ACCESS_TOKEN`). **S3** remit PR #15 + optimo PR #114
+re-vendor the gate. **S4** Agent Monitor rebuilt: health from REAL work (skipped ticks never count), 25-row inventory
+(edge, pg_cron, cloud + Mac scheduled tasks, browser lane, notifier) with expected cadence → late detection; landing =
+dots grouped by app, click to expand, switched-off collapsed; projection = MTD + 7-day avg × days left (CT); `agent-watch`
+(pg_cron 15 min) alerts on change; GitHub Action = watcher-of-the-watcher; admin-only `agent-fix`; scheduled tasks
+check in via `press_agent_checkin`. **S5** review: 0 🔴 / 4 🟡 fixed + Eye P0 (never-run = amber) fixed.
+Audit finding recorded: the old notifier only watched `AGENT_APP=giving`, and `skipped` runs refreshed `last_ok_at`.
+
+---
+
 ## 2026-10-11 — arc/migrate-home (press → GitHub home, PR #27)
 
 First cloud Builder run on press (council v4.12.1 migrate instrument, Wave 1). **S1** §0 gate re-checked in a fresh clone:

@@ -16,6 +16,11 @@
  *   FamilyGate.authHeaders()  -> { apikey, Authorization } for the tenant's own REST calls
  *   FamilyGate.signOut()      -> clears the local session (and best-effort GoTrue logout)
  *
+ * Blocked → "Request access" (2026-10-12, framework §8a): a signed-in person whose switch for the page
+ * is OFF sees a Request access button; it calls rpc/press_access_request(page) with their own JWT and
+ * shows "Requested — Mark has been notified…". requestAccess() is the call, requestView() the pure
+ * verdict → screen-state map (both unit-tested).
+ *
  * Design notes:
  *   - It talks to Supabase Auth (GoTrue) and PostgREST with RAW fetch — NO supabase-js,
  *     no CDN, no runtime dep, matching the house "no network at boot for public pages"
@@ -202,6 +207,29 @@
     var v = await r.json();
     return v === true;
   }
+  // "Request access" (blocked screen). Calls the security-definer RPC press_access_request(page) with the
+  // caller's OWN JWT — the server takes the email from the token, never from the body. Returns
+  // { ok, status } where status is the RPC's text verdict ('requested' | 'already_requested' |
+  // 'already_granted' | 'not_on_list' | 'not_gated' | 'not_signed_in') or the HTTP status on a non-2xx.
+  // Never throws on an HTTP error (a network failure still rejects; the caller catches it).
+  async function requestAccess(session, page) {
+    var r = await authFetch()(REST + '/rpc/press_access_request',
+      { method: 'POST', headers: bearerHeaders(session), body: JSON.stringify({ page: page }) });
+    if (!r || !r.ok) return { ok: false, status: (r && r.status) || 0 };
+    var v = null; try { v = await r.json(); } catch (e) {}
+    return { ok: true, status: typeof v === 'string' ? v : '' };
+  }
+  // Pure: map a requestAccess result to what the blocked screen shows. { text, err, done, reload }.
+  var REQUESTED_TEXT = 'Requested — Mark has been notified. Try again once he’s switched you on.';
+  function requestView(res) {
+    res = res || {};
+    var s = res.status;
+    if (res.ok && (s === 'requested' || s === 'already_requested')) return { text: REQUESTED_TEXT, err: false, done: true, reload: false };
+    if (res.ok && (s === 'already_granted' || s === 'not_gated')) return { text: 'You’re already switched on — opening…', err: false, done: true, reload: true };
+    if (res.ok && s === 'not_on_list') return { text: 'That address isn’t on the family list — ask Mark directly.', err: true, done: true, reload: false };
+    if (s === 'not_signed_in' || s === 401 || s === 403) return { text: 'Your sign-in has expired — use “Sign in as someone else” to sign in again.', err: true, done: false, reload: false };
+    return { text: 'Couldn’t send the request — try again in a moment.', err: true, done: false, reload: false };
+  }
   function touch(session) {
     // fire-and-forget last_seen_at stamp (§6); never blocks sign-in and never throws.
     try {
@@ -310,6 +338,7 @@
     "font-family:Outfit,system-ui,-apple-system,'Segoe UI',sans-serif;color:#eae4d6}" +
     /* muted text colour, raised to clear WCAG AA on the card */
     '#family-gate *{box-sizing:border-box}' +
+    '#family-gate [hidden]{display:none!important}' +
     '#family-gate .fg-card{width:100%;max-width:400px;text-align:center;padding:34px 26px;border-radius:14px;' +
     'background:rgba(19,29,44,.82);border:1px solid rgba(201,162,109,.28);box-shadow:0 24px 60px rgba(0,0,0,.5)}' +
     '#family-gate .fg-icon{width:44px;height:44px;margin:0 auto 14px;color:#c9a26d}' +
@@ -380,15 +409,32 @@
     var MARQUEE = 'index.html?view=family';
 
     if (existing) {
+      // BLOCKED: a valid family session whose switch for THIS page is off (opt-out). No password, no
+      // form — one "Request access" tap files press_access_request(page) under the caller's own JWT;
+      // Mark is pushed + emailed, flips the switch on, and the next visit simply works.
       host.innerHTML =
         '<div class="fg-card">' +
           '<div class="fg-icon">' + ICON + '</div>' +
-          '<h1>You’re signed in.</h1>' +
-          '<p>Signed in as <b>' + escapeHtml(existing.email) + '</b>, but that address doesn’t have access to this page yet. Ask Mark to grant it.</p>' +
+          '<h1>You don’t have access to this yet.</h1>' +
+          '<p>You’re signed in as <b>' + escapeHtml(existing.email) + '</b>. Tap below and Mark will be asked to switch it on for you.</p>' +
+          '<button class="fg-btn" id="fg-request" type="button">Request access</button>' +
+          '<div class="fg-msg" id="fg-msg" aria-live="polite"></div>' +
           '<button class="fg-link" id="fg-signout" type="button">Sign in as someone else</button>' +
           '<div><a class="fg-back" href="' + MARQUEE + '">← the family wing</a></div>' +
         '</div>';
       document.body.appendChild(host);
+      var reqBtn = host.querySelector('#fg-request');
+      var reqMsg = host.querySelector('#fg-msg');
+      reqBtn.addEventListener('click', async function () {
+        reqBtn.disabled = true; reqMsg.className = 'fg-msg'; reqMsg.textContent = 'Sending your request…';
+        var res;
+        try { res = await requestAccess(existing, page); } catch (e) { res = { ok: false, status: 'network' }; }
+        var view = requestView(res);
+        reqMsg.className = 'fg-msg' + (view.err ? ' err' : '');
+        reqMsg.textContent = view.text;
+        if (view.done) { reqBtn.hidden = true; } else { reqBtn.disabled = false; }
+        if (view.reload && typeof location !== 'undefined') { try { location.reload(); } catch (e) {} }
+      });
       host.querySelector('#fg-signout').addEventListener('click', function () {
         clearSession(); renderSignIn(page, done, null);
       });
@@ -550,6 +596,7 @@
     gatedDecision: gatedDecision, isGated: isGated, ensureFresh: ensureFresh,
     loadSession: loadSession, saveSession: saveSession, clearSession: clearSession,
     sendCode: sendCode, verifyCode: verifyCode, refresh: refresh, hasGrant: hasGrant,
+    requestAccess: requestAccess, requestView: requestView, REQUESTED_TEXT: REQUESTED_TEXT,
     friendlyAuthErr: friendlyAuthErr, verifyErr: verifyErr, isValidCode: isValidCode, escapeHtml: escapeHtml
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

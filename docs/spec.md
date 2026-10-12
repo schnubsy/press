@@ -55,11 +55,32 @@ root (via the GitHub raw URL, with a `press:marquee:v3` cache/offline fallback).
 }
 ```
 
-The **kicker** and **icon** are NOT stored in `pages.json` — `index.html` derives them
-from the filename via its `KICKERS` regex list and `ICONS` registry. Adding a new page
-type means adding a `KICKERS` rule + a matching `ICONS` (Feather-grade, 24 viewBox,
-stroke 2) path in `index.html`. `pages.json` is the release scripts' business; `spaces.json`
-is not.
+`pages.json` `title` is the page's own manifest / **tab title** only — it does NOT name the card.
+
+### Card naming — the marquee label map (RULE, Mark 2026-10-12)
+
+**RULE: the marquee owns card naming.** Every card's small pink **kicker** (`.k`), large white
+**title** (`h3`) and **icon** come from ONE label map in `index.html`:
+
+```js
+const LABELS = {
+  'optimo.html': { kicker:'Day planner', title:'Optimo', icon:'calendar-check' },
+  …
+};
+```
+
+- `icon` is a key in `index.html`'s `ICONS` registry (Feather/Lucide-grade, 24 viewBox, stroke 2,
+  round joins). Icons key off the label entry, never off kicker text — a kicker rename never moves an icon.
+  Every served page has its own glyph.
+- The same title names the page everywhere the marquee shows it: lobby/wing cards, the Private Wing
+  "Connect your tools" rows (`TOOL_CFG` carries no label), and the recovery kit.
+- Cards carry no filename line.
+- A page with no entry falls back to kicker "Page" + its `pages.json` title + the generic glyph — a
+  degraded state that `tools/tenants-check.mjs` **T9 `labels`** FAILS (every `pages.json` page needs an
+  entry with a non-empty kicker, title and an `icon` that exists in `ICONS`).
+- **New web apps coordinate naming with the marquee:** a new page's publish adds its `LABELS` entry
+  (and, if needed, a new `ICONS` glyph) **in the same press change**. Release scripts never set card
+  wording — they write `pages.json` (tab title) only. `spaces.json` is not theirs at all.
 
 ## The vault model (personal wing)
 
@@ -153,10 +174,12 @@ pixelmatch): above `--threshold` (default 2 % of pixels on either viewport) it e
   writer on press at a time (fixed order: council `arc.md` → Tenant-change arcs).
 
 **What a tenant OWES the marquee:** a `pages.json` entry (`{title}` only); a `tenants.json`
-entry; its tier in `spaces.json` (repo-owned; release scripts READ, never write); a `KICKERS`
-+ `ICONS` rule in `index.html` for a new page type (never an icon field in `pages.json`); for
-a **family** page, a `press_access_apps` row + ≥1 active `press_access_grants` row seeded
-BEFORE the gate ships (a gated page with no grant locks everyone out).
+entry; its tier in `spaces.json` (repo-owned; release scripts READ, never write); a **`LABELS`
+entry in `index.html`** (kicker + title + icon key, added in the same press change as the first publish —
+the marquee owns card naming, see Portal contract → Card naming; T9 `labels` enforces it; never a card
+field or icon in `pages.json`); for
+a **family** page, a `press_access_apps` row (gated) BEFORE the gate ships. Access is opt-out (2026-09-24; remit
+aligned 2026-10-12): every active person is in unless a switch is off — no grant rows needed.
 
 **DB grants RULE (Data API grants — from 2026-10-30):** every migration that creates a table in `public` GRANTS in
 the same file — Supabase stops auto-granting Data API access to NEW `public` tables on that date (existing
@@ -173,6 +196,13 @@ the private wing's Card Scout capability, and POSTs that capability as `x-plan-i
 `press_deals.sync_id` column default**. It never checks "a row with this sync_id exists", because anon can INSERT rows
 with any sync_id. Only after that does it read the service-role-only `press_steward_reports` table. **Coupling:**
 rotating Card Scout's key moves Steward access with it.
+
+**Family-wing tenants inherit the wing (arc/marquee-wings-monitor, 2026-10-12):** a new family-wing app
+inherits the ONE wing-level sign-in email (`docs/auth/family-wing-otp.*`, "Your Family Wing sign-in code",
+synced to Supabase Auth by `auth-email-sync.yml`) — **never a per-app template or an app name in the email**
+(`test/auth-email.test.mjs` enforces it). It also inherits the opt-out access model and the blocked-screen
+"Request access" flow from `src/family-gate.js`; its RLS goes through `press_access_has('<page>.html')` (or a
+helper that delegates to it, as `remit_private.remit_has_access()` now does) — never a private opt-in check.
 
 **What the marquee OWES a tenant:** the canonical gate modules in `press/src`; the shell; and
 the shared DB shapes (`press_<shape>`, every row keyed by a `page` column = filename stem):
@@ -194,3 +224,57 @@ the shared DB shapes (`press_<shape>`, every row keyed by a `page` column = file
 - **Never writes `spaces.json` or `tenants.json`**; never pushes on its own (the arc close does).
 
 **Hotfix rule:** source repo first, then release — never patch `press/<page>.html` by hand.
+
+## Agent Monitor (`agent-health.html`)
+
+Arc marquee-wings-monitor slice 4 (2026-10-12). One page answers, for every agent, AI function, pg_cron job and
+scheduled task behind the marquee apps: *is it working, when did it last do REAL work and what did it produce, is
+anything late or missed, what did it cost this month (and projected), and how do I fix it?*
+
+**Not self-validating.** Status is computed on the server by `press_agent_monitor_public` from real evidence against
+an expected schedule — never from `press_agent_registry.last_ok_at` (council agent-core bumps that on `skipped`
+ticks too) and never by the page. Evidence sources (`press_agent_expect.source`):
+
+| source | real work = | used for |
+|---|---|---|
+| `runs-work` | `press_agent_runs` outcome `ok`/`warn` (never `skipped`) | scheduled agents (card-scout, agent-watch) |
+| `runs-alive` | any non-`dead` run — the pipe is alive | inlets polled on a timer (Gmail Apps Script, fsa-capture, the GH notifier) |
+| `runs-event` | last attempt's outcome; no cadence | on-demand agents that log runs |
+| `cron` | `cron.job_run_details` (`dispatch_only` = an http_post job: "succeeded" only means queued) | pg_cron jobs |
+| `checkin` | `press_agent_checkin()` rows | cloud / Mac / browser scheduled tasks |
+| `none` | — shown honestly as **No data** | AI functions that log nothing yet |
+
+Statuses: `healthy` · `late` (missed its due time + grace) · `failed` (never ran, last attempt failed, or silent
+4× its window) · `no-data` (grey ring — never green) · `off`. Schedules (`sched`, America/Chicago):
+`{"every":min}` · `{"daily":["HH:MM",…]}` · `{"weekly":{"dow":0-6,"at":"HH:MM"}}` · `{"monthly":{"dom":1-28,"at":"HH:MM"}}` · `null` (on demand).
+Expectations start at `registered_at` — a new row is never "late" for a run due before it existed.
+Month cost = CT month-to-date; **projected = MTD + avg(cost of the last 7 complete CT days) × CT days remaining
+(fractional)** (server per agent; `src/agent-monitor.js` `projectMonth` for the page total).
+
+**Alerting.** pg_cron `agent-watch` (every 15 min, Vault-held header secret) → Edge Function `agent-watch` diffs the
+view against `press_agent_watch_state` and sends ONE Pushover push + ONE Gmail email (council `notify.mjs`
+transports) only on a change into late/failed, late→failed, or a recovery to healthy; it notes its own gaps. The GH
+Action `agent-health-notifier` (hourly-ish) is the watcher of the watcher: it fails (GitHub emails) if agent-watch is
+stale > 45 min or saw a problem it could not deliver.
+
+**Fix.** Per-agent `fix_hint` + public-safe `fix_links` for everyone. Retry/Run now appears only when the Family
+Wing session in localStorage (`press:family:v1`) belongs to an admin; Edge Function `agent-fix` re-verifies the JWT
+(GoTrue) and `press_access_is_admin()` as the caller, runs only the row's allowlisted `retry_action`
+(`cron:<job>` → `press_agent_fix_run`, service_role only), rate-limits 1 per agent per 10 min and logs a run row.
+
+### RULE — registering a new agent (every future agent, AI function, job or scheduled task)
+
+1. **One row in `public.press_agent_expect`** (migration in `db/`, mirrored byte-identical): `id`, `app_label` (the
+   marquee app name: Card Scout, Cardsharp, Optimo, FSA Claims Tracker, Giving Tracker, The Council, Marquee …),
+   `label`, `what`, `kind`, `source` (+ `run_app`/`run_agent` or `cron_job`), `sched` + `grace_minutes`, `fix_hint`,
+   `fix_links`, optional `retry_action`. The page, the watcher and the GH check pick it up automatically.
+2. **A scheduled task (cloud / Mac / browser) checks in as its LAST step** via the Supabase connector (`execute_sql`
+   on project `eepjhpyziczrxvirczio`):
+   ```sql
+   select public.press_agent_checkin('<id>', 'ok', '<one line: what it produced>');   -- 'ok' | 'warn' | 'fail'
+   RULE: the note is PUBLIC (shown on agent-health.html) — counts only; never amounts, names, providers or personal data.
+   ```
+   `press_agent_checkin` is SECURITY DEFINER and executable only by `service_role`/`postgres` (never anon or
+   authenticated), and refuses ids that are not `source = 'checkin'` rows.
+3. An agent that writes `press_agent_runs` (council agent-core) needs nothing else — but it is only "working" when it
+   logs `ok`; a `skipped` tick is never real work.
