@@ -49,6 +49,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
    - S3: flow kayley carry-over. Needs schnubsy/flow in scope; see the prior HANDOFF steps in git history (`76c7b0c`).
 3. Card Scout tenant arc (schnubsy/card-scout + press in scope): revoke anon INSERT/TRUNCATE/REFERENCES/TRIGGER on `press_deals`.
    - First confirm that no browser path inserts deals; the agent writes with the service role.
+   - Done-criterion: keep the `press_deals.sync_id` literal default; `press_steward_capability_ok(<real key>)` must still return true (the Steward gate).
 4. Snag train / polish for Issues #28–#32 when Mark wants it.
 
 ## Mark's manual steps
