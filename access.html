@@ -196,7 +196,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
     render(session, people||[], apps||[], grants||[], pages||{}, requests);
   }
 
-  function titleFor(page, pages){ return (pages[page]&&pages[page].title) || page.replace(/\.html$/,''); }
+  // Marquee card names (index.html LABELS owns naming; test/access-names.test.mjs keeps these in step).
+  var APP_NAMES = { 'remit.html':'Remit', 'perth.html':'The Runway', 'optimo.html':'Optimo' };
+  function titleFor(page, pages){ return APP_NAMES[page] || (pages[page]&&pages[page].title) || page.replace(/\.html$/,''); }
   function gatedPages(apps, pages){
     // the union of spaces.family and any app flagged gated — these are the columns of the grid
     var set = {}; GATED_BY_SPACES.forEach(function(p){ set[p]=true; });

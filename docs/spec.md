@@ -178,8 +178,8 @@ entry; its tier in `spaces.json` (repo-owned; release scripts READ, never write)
 entry in `index.html`** (kicker + title + icon key, added in the same press change as the first publish —
 the marquee owns card naming, see Portal contract → Card naming; T9 `labels` enforces it; never a card
 field or icon in `pages.json`); for
-a **family** page, a `press_access_apps` row + ≥1 active `press_access_grants` row seeded
-BEFORE the gate ships (a gated page with no grant locks everyone out).
+a **family** page, a `press_access_apps` row (gated) BEFORE the gate ships. Access is opt-out (2026-09-24; remit
+aligned 2026-10-12): every active person is in unless a switch is off — no grant rows needed.
 
 **DB grants RULE (Data API grants — from 2026-10-30):** every migration that creates a table in `public` GRANTS in
 the same file — Supabase stops auto-granting Data API access to NEW `public` tables on that date (existing
