@@ -16,5 +16,6 @@ S2 — page `steward.html` in the PRIVATE wing (passkey gate, same tier as fsa /
      mobile-first 390px. Reads through the private wing's existing service-role read path — never an anon key.
      Done: Playwright outcome test — given the fixture row, when Mark opens the page past the gate, then he sees
      the headline and the Needs-you lines; an ungated request gets no rows.
+     Status: done 910da08
 S3 — /code-review slice; close per arc.md rule 4 incl. publish ship proof (live 200 + blob SHA == hash-object).
 Chat: run verify
