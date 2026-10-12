@@ -56,6 +56,7 @@ a.back{display:inline-block;margin-bottom:14px;font:400 12px/1 var(--sans);color
 .sw2.on{background:rgba(201,162,109,.28);border-color:var(--brass)}
 .sw2.on:after{left:19px;background:var(--brass)}
 .sw2.busy{opacity:.5;cursor:progress}
+.sw2.err{outline:2px solid #d9534f;outline-offset:2px}
 .arow{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px dotted var(--brass-faint)}
 .arow .nm{flex:1;min-width:0}
 .arow .nm b{font-weight:400;font-size:15px}
@@ -122,7 +123,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
   function headers(extra){ return Object.assign({}, G.authHeaders(), extra||{}); }
 
   async function rest(path, opts){
-    var r = await fetch(REST + path, Object.assign({ headers: headers((opts&&opts.headers)||{}) }, opts||{}));
+    // opts.headers are MERGED into the auth headers — never allowed to replace them (that silently dropped the
+    // admin JWT on every switch write → 401 → switches never flipped, 2026-10-12).
+    var r = await fetch(REST + path, Object.assign({}, opts||{}, { headers: headers((opts&&opts.headers)||{}) }));
     if(!r.ok){ var e = new Error('rest '+r.status); e.status=r.status; try{ e.body=await r.json(); }catch(_){} throw e; }
     var t = await r.text(); return t ? JSON.parse(t) : null;
   }
@@ -327,7 +330,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
           await setGrant(email, page, next);
           sw.classList.toggle('on', next); sw.setAttribute('aria-checked', next);
           if(next) clearRequest(email, page);   // switching ON resolves any pending request
-        }catch(e){ /* leave state unchanged on failure */ }
+        }catch(e){ sw.classList.add('err'); sw.setAttribute('title', 'Couldn’t save — '+(e.status===401?'sign in again':'try again')); setTimeout(function(){ sw.classList.remove('err'); }, 2500); }
         sw.classList.remove('busy');
       };
       sw.addEventListener('click', toggle);

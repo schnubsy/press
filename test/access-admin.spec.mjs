@@ -60,6 +60,10 @@ async function backend(context, seed) {
     const path = u.pathname.replace('/rest/v1', '');
     const method = req.method();
     const json = body => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+    // Like PostgREST + RLS: a write without the admin's Bearer JWT is refused (401). This is what caught the
+    // 2026-10-12 bug where rest() let per-call headers REPLACE the auth headers, so switches never saved.
+    const auth = (req.headers()['authorization'] || '');
+    if (method !== 'GET' && !/^Bearer\s+\S+\.\S+\.\S+/.test(auth)) return route.fulfill({ status: 401, contentType: 'application/json', body: '{"message":"no jwt"}' });
     if (path === '/rpc/press_access_is_admin') return json(true);
     if (path === '/rpc/press_access_touch') return route.fulfill({ status: 204, body: '' });
     if (path === '/press_access_people') {
