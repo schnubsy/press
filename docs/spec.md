@@ -55,11 +55,32 @@ root (via the GitHub raw URL, with a `press:marquee:v3` cache/offline fallback).
 }
 ```
 
-The **kicker** and **icon** are NOT stored in `pages.json` — `index.html` derives them
-from the filename via its `KICKERS` regex list and `ICONS` registry. Adding a new page
-type means adding a `KICKERS` rule + a matching `ICONS` (Feather-grade, 24 viewBox,
-stroke 2) path in `index.html`. `pages.json` is the release scripts' business; `spaces.json`
-is not.
+`pages.json` `title` is the page's own manifest / **tab title** only — it does NOT name the card.
+
+### Card naming — the marquee label map (RULE, Mark 2026-10-12)
+
+**RULE: the marquee owns card naming.** Every card's small pink **kicker** (`.k`), large white
+**title** (`h3`) and **icon** come from ONE label map in `index.html`:
+
+```js
+const LABELS = {
+  'optimo.html': { kicker:'Day planner', title:'Optimo', icon:'calendar-check' },
+  …
+};
+```
+
+- `icon` is a key in `index.html`'s `ICONS` registry (Feather/Lucide-grade, 24 viewBox, stroke 2,
+  round joins). Icons key off the label entry, never off kicker text — a kicker rename never moves an icon.
+  Every served page has its own glyph.
+- The same title names the page everywhere the marquee shows it: lobby/wing cards, the Private Wing
+  "Connect your tools" rows (`TOOL_CFG` carries no label), and the recovery kit.
+- Cards carry no filename line.
+- A page with no entry falls back to kicker "Page" + its `pages.json` title + the generic glyph — a
+  degraded state that `tools/tenants-check.mjs` **T9 `labels`** FAILS (every `pages.json` page needs an
+  entry with a non-empty kicker, title and an `icon` that exists in `ICONS`).
+- **New web apps coordinate naming with the marquee:** a new page's publish adds its `LABELS` entry
+  (and, if needed, a new `ICONS` glyph) **in the same press change**. Release scripts never set card
+  wording — they write `pages.json` (tab title) only. `spaces.json` is not theirs at all.
 
 ## The vault model (personal wing)
 
@@ -153,8 +174,10 @@ pixelmatch): above `--threshold` (default 2 % of pixels on either viewport) it e
   writer on press at a time (fixed order: council `arc.md` → Tenant-change arcs).
 
 **What a tenant OWES the marquee:** a `pages.json` entry (`{title}` only); a `tenants.json`
-entry; its tier in `spaces.json` (repo-owned; release scripts READ, never write); a `KICKERS`
-+ `ICONS` rule in `index.html` for a new page type (never an icon field in `pages.json`); for
+entry; its tier in `spaces.json` (repo-owned; release scripts READ, never write); a **`LABELS`
+entry in `index.html`** (kicker + title + icon key, added in the same press change as the first publish —
+the marquee owns card naming, see Portal contract → Card naming; T9 `labels` enforces it; never a card
+field or icon in `pages.json`); for
 a **family** page, a `press_access_apps` row + ≥1 active `press_access_grants` row seeded
 BEFORE the gate ships (a gated page with no grant locks everyone out).
 

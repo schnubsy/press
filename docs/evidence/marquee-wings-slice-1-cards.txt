@@ -1,0 +1,30 @@
+SLICE 1 (arc/marquee-wings-monitor) — marquee card wording + icons — 2026-10-12
+RULE (Mark): the marquee owns card naming. ONE label map `LABELS` in index.html wins over pages.json
+(pages.json title = tab title only). KICKERS regex list removed; ICONS re-keyed by glyph name and picked
+per page via LABELS.icon (a kicker rename can no longer move an icon). Filename (.fn) lines removed from
+main, wing and archive cards (+ dead .fn CSS). Physical archive cards: kicker "Archive" + archive glyph.
+Connect-your-tools rows + recovery kit now name tools from LABELS (TOOL_CFG.label removed).
+Enforcement: tools/tenants-check.mjs T9 `labels` — FAIL when a pages.json page has no LABELS entry, an
+entry lacks kicker/title/icon, or its icon is not an ICONS key; FAIL when index.html has no LABELS block.
+
+LABEL MAP (kicker / title · icon)            change
+  optimo.html        Day planner / Optimo · calendar-check                         renamed; icon new (was generic page)
+  perth.html         Moving to Perth / The Runway · send (plane)                   renamed; plane kept (polish slice 2 decision)
+  remit.html         Family Transfers / Remit · banknote                           unchanged
+  halvsies.html      Splitting the Bill / Halvsies · receipt                       renamed; $ -> Lucide receipt (a bill)
+  cardsharp.html     Gift Card Tracker / Cardsharp · gift                          renamed; card+sparkle -> Feather gift
+  card-scout.html    Sales Finder / Card Scout · search-percent                    renamed; credit card -> lens with % (finder of sales)
+  access.html        UAM / Family Wing Access · user-check                         renamed; icon new (was generic page)
+  retirement.html    Financial Planning / Retirement Projector · trending-up       renamed; projection line kept
+  giving.html        Charitable Donations / Giving Tracker · heart                 renamed kicker; heart kept
+  fsa.html           Medical Expenses / FSA Claims Tracker · stethoscope           renamed; plus-in-square -> Lucide stethoscope
+  council-guide.html Agentic Capabilities Prospectus / The Council · landmark      renamed; open book -> Lucide landmark (council chamber)
+  kayley.html        Checklist / Kayley · 2-Week Upskilling Plan · check-square     unchanged
+  eagle-path.html    Checklist / Brandon's Eagle Path · Saturday Check-In · mountain  wording unchanged; icon check-square -> mountain
+                     (it shared kayley's glyph; every page now distinct — the summit of the Eagle path)
+  agent-health.html  Monitor / Agent Health · activity                             unchanged
+
+14 served pages, 14 distinct glyphs (asserted by test/card-labels.spec.mjs).
+Screenshots: docs/evidence/marquee-wings-slice-1-{landing,private,family}-{desktop,mobile}.png (1280 / 390),
+rendered by test/card-labels.spec.mjs with PRESS_SHOT_DIR (real pages.json + spaces.json, seeded sessions).
+Gauntlet: docs/evidence/marquee-wings-slice-1-cards-gauntlet.txt

@@ -5,7 +5,7 @@
 // three repo-owned registries (tenants.json, pages.json, spaces.json) and, per tenant, runs one
 // named check. Prints PASS / FAIL / SKIP / INFO / EMITTED + a reason; EXITS 1 on any FAIL.
 //
-//   node tools/tenants-check.mjs                 # T1–T4 + T6 + T7 (no build)
+//   node tools/tenants-check.mjs                 # T1–T4 + T6–T9 (no build)
 //   node tools/tenants-check.mjs --rebuild       # + T5 rebuild-vs-live for deterministic tenants
 //   node tools/tenants-check.mjs --press <dir>   # override the press root (default: where this lives)
 //   CODE_ROOT=<dir> node tools/tenants-check.mjs   # override the source-repos parent (default ~/Documents/code on the Mac; scripts/gauntlet.sh passes the sibling-clone parent)
@@ -206,6 +206,40 @@ for (const page of Object.keys(tenants)) {
       if (!row) say('FAIL', 'T8 registry-parity', page, `no snag-registry row (add it to council instruments/snag/registry.json)`);
       else if (row.repo !== want) say('FAIL', 'T8 registry-parity', page, `registry repo ${row.repo} != tenants.json ${want}`);
       else say('PASS', 'T8 registry-parity', page, `${row.id} → ${row.repo}`);
+    }
+  }
+}
+
+// ---- T9 labels — every pages.json page has a marquee LABELS entry (the marquee owns card naming) ----
+// RULE (Mark, 2026-10-12): a card's kicker / title / icon live in ONE label map in index.html (`const LABELS`);
+// release scripts never set card wording and pages.json `title` is the tab title only. So a page published
+// without its LABELS entry would render a generic fallback card — FAIL it. Each entry must carry a non-empty
+// kicker, title and an icon key that exists in index.html's ICONS registry. No index.html = SKIP (as T7);
+// an index.html with no LABELS block = FAIL.
+{
+  const indexPath = join(PRESS, 'index.html');
+  if (!existsSync(indexPath)) say('SKIP', 'T9 labels', '(marquee)', 'no index.html to audit');
+  else {
+    const src = readFileSync(indexPath, 'utf8');
+    const lm = src.match(/const LABELS\s*=\s*\{([\s\S]*?)\n\};/);
+    if (!lm) say('FAIL', 'T9 labels', '(marquee)', 'LABELS block not found in index.html (the marquee label map)');
+    else {
+      const labels = new Map();
+      for (const m of lm[1].matchAll(/['"]([a-z0-9-]+\.html)['"]\s*:\s*\{([^}]*)\}/g)) {
+        const f = {};
+        for (const fm of m[2].matchAll(/(kicker|title|icon)\s*:\s*(['"])(.*?)\2/g)) f[fm[1]] = fm[3];
+        labels.set(m[1], f);
+      }
+      const im = src.match(/const ICONS\s*=\s*\{([\s\S]*?)\n\};/);
+      const icons = new Set(im ? [...im[1].matchAll(/^\s*['"]([^'"]+)['"]\s*:/gm)].map((m) => m[1]) : []);
+      for (const page of Object.keys(pages)) {
+        const l = labels.get(page);
+        if (!l) { say('FAIL', 'T9 labels', page, 'no LABELS entry in index.html — add {kicker,title,icon} in the same press change as the publish'); continue; }
+        const miss = ['kicker', 'title', 'icon'].filter((k) => !l[k]);
+        if (miss.length) say('FAIL', 'T9 labels', page, `LABELS entry missing ${miss.join(', ')}`);
+        else if (!icons.has(l.icon)) say('FAIL', 'T9 labels', page, `LABELS icon "${l.icon}" is not a key in ICONS`);
+        else say('PASS', 'T9 labels', page, `${l.kicker} / ${l.title} · ${l.icon}`);
+      }
     }
   }
 }

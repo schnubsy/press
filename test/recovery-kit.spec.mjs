@@ -76,11 +76,11 @@ test('unlocked wing renders the recovery kit — every keyring entry + restore s
   const kit = page.locator('#recoveryKit');
   await expect(kit).toBeVisible();
 
-  // every tool: title, sync ID, and passphrase (card-scout: no passphrase, and NEVER the sentinel)
+  // every tool: its marquee LABELS title, sync ID, and passphrase (card-scout: no passphrase, and NEVER the sentinel)
   for (const [title, sync, pass] of [
-    ['FSA Claims', 'fsa-sync-1111', 'fsa-pass-ALPHA'],
-    ['Giving', 'giving-sync-2222', 'giving-pass-BETA'],
-    ['Retirement', 'retire-sync-3333', 'retire-pass-GAMMA'],
+    ['FSA Claims Tracker', 'fsa-sync-1111', 'fsa-pass-ALPHA'],
+    ['Giving Tracker', 'giving-sync-2222', 'giving-pass-BETA'],
+    ['Retirement Projector', 'retire-sync-3333', 'retire-pass-GAMMA'],
   ]) {
     await expect(kit).toContainText(title);
     await expect(kit).toContainText(sync);

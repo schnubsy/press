@@ -5,7 +5,7 @@ Global rules: council arc instrument
 ## Purpose
 
 press is the marquee **publishing target** for the council. It hosts single-file pages
-served via GitHub Pages. `index.html` is the portal (KICKERS / ICONS driven by `pages.json`);
+served via GitHub Pages. `index.html` is the portal — card kicker / title / icon come from its ONE `LABELS` label map (+ `ICONS` glyphs; the marquee owns card naming, tenants-check T9 enforces an entry per page);
 `pages.json` maps `filename → title`, `spaces.json` the tier split, `tenants.json` the tenant registry.
 
 Served pages by tier (contract: `docs/spec.md` → Tenants):
@@ -58,8 +58,8 @@ Full narrative: `docs/history.md`.
 
 | Path | Purpose |
 |---|---|
-| `index.html` | Portal — reads `pages.json` + `spaces.json`; inlines `src/vault.js` |
-| `pages.json` | Page manifest — object keyed by filename `{title}` (release scripts write it) |
+| `index.html` | Portal — reads `pages.json` + `spaces.json`; `LABELS` label map owns card kicker/title/icon; inlines `src/vault.js` |
+| `pages.json` | Page manifest — object keyed by filename `{title}` = tab title (release scripts write it; card wording lives in index.html `LABELS`) |
 | `spaces.json` | Public/personal split `{v,personal[]}` — repo-owned, release scripts only READ it |
 | `src/vault.js` · `test/` | Vault module (HKDF + AES-GCM + WebAuthn PRF) + Node/Playwright tests |
 | `db/` | Applied Supabase migrations (`press_vault`, `press_deals` gate) |

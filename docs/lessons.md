@@ -245,10 +245,10 @@ same hole. Corollary: read the post-apply advisor after every DDL slice; this cl
 
 ## 2026-09-22 — arc/marquee UI batch
 
-**RULE [press]:** page-type icons live in `index.html`'s KICKERS + ICONS registry, NOT in `pages.json`.
+**RULE [press]:** page icons live in `index.html`'s ICONS registry, chosen per page by the LABELS map (superseded KICKERS, 2026-10-12 — see spec → Card naming), NOT in `pages.json`.
 `pages.json` is fetched at runtime and stubbed by both smoke fixtures (marquee + connect), so an `icon`
-field there would be untested and silently fall back to the generic glyph. New page type → add a KICKERS
-regex + a matching Feather-grade ICONS path (24 viewBox, stroke 2, round joins).
+field there would be untested and silently fall back to the generic glyph. New page → add a LABELS
+entry (+ a Feather-grade ICONS path if new: 24 viewBox, stroke 2, round joins).
 
 **RULE [press]:** a hand-drawn country silhouette (e.g. Australia for perth) does NOT survive row size
 (~26px) as a stroked glyph — it reads as a blob or, with a top notch, as "ears". If a place needs an icon
