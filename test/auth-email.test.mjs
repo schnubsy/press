@@ -16,9 +16,10 @@ test('subject is the wing-level "Your Family Wing sign-in code"', () => {
   assert.equal(meta.subject, 'Your Family Wing sign-in code');
 });
 
-test('template carries the OTP {{ .Token }} and no magic link', () => {
+test('template carries the OTP {{ .Token }} (primary) and keeps the magic link (the gate also lands links)', () => {
   assert.ok(html.includes('{{ .Token }}'), 'the code must be in the email');
-  assert.ok(!html.includes('ConfirmationURL'), 'code-only: the gate verifies a typed code, not a link');
+  assert.ok(html.includes('{{ .ConfirmationURL }}'), 'keep the link: family-gate consumes magic-link landings, so dropping it would regress link sign-in');
+  assert.ok(html.indexOf('{{ .Token }}') < html.indexOf('{{ .ConfirmationURL }}'), 'the code comes first');
 });
 
 test('template + subject name NO family-wing app (remit / perth / runway / optimo)', () => {
