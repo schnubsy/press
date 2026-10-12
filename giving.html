@@ -411,9 +411,7 @@
   .field textarea { min-height:56px; resize:vertical; }
   .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .itemline { border:1px solid var(--line); border-radius:11px; padding:12px; margin-bottom:10px; background:var(--surface-2); }
-  .itemline .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
   .itemline .lt { font-family:var(--mono); font-weight:600; }
-  .itemline .rm { background:transparent; border:0; color:var(--danger); font-size:0.78rem; font-weight:700; }
   .chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
   .chip { border:1px solid var(--line); background:var(--bg); color:var(--muted); border-radius:999px;
     padding:5px 10px; font-size:0.74rem; font-weight:600; }
@@ -566,6 +564,97 @@
   .kv .v { font-weight:600; }
   .kv .btn.sm { margin-left:auto; }
   .btn.danger.ghost { background:transparent; color:var(--danger); border:1px solid var(--line); font-weight:600; }
+
+  /* ===== iPhone UI pass (ARC 2026-10-12) — visual fixes only (D4). Gated by the UI matrix in
+     test/mobile/ui-audit.js at 320/375/390/393/430, dark + light: no horizontal overflow, no clipped or
+     ellipsised control/label text, no button/tab/chip label or money value wrapping, every tap target
+     ≥44×44, safe-area insets on edge-anchored fixed/sticky chrome, inputs ≥16px (no iOS focus zoom). ===== */
+  /* inputs: 16px stops iOS Safari zooming on focus; every field is a 44px target; grids may shrink */
+  .txt, select, textarea, .field select, .field textarea, .stsel, .yearbar select { font-size:16px; }
+  .txt, select, .stsel { min-height:44px; }
+  .txt, select { min-width:0; }
+  .grid2 { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+  .grid2 > .field { min-width:0; }
+  /* every button-like control is at least 44×44, and its label never wraps */
+  .btn, .exbtn, .gpick, .tabs button, .dtabs button, .radio button { min-height:44px; }
+  .btn.sm, .btn.xs, .btn.inline, .iconbtn, .tw-back, .chip, .listctl button, .viewswitch button, .cmeasure button,
+  .row .acts button, .ihead .rm, .savepill {
+    min-height:44px; min-width:44px; display:inline-flex; align-items:center; justify-content:center; white-space:nowrap; }
+  .iconbtn.ic { width:44px; padding:0; }
+  label.chk { min-height:44px; }
+  .tgtable thead th { height:44px; }
+  .lightbox-x { width:44px; height:44px; top:calc(14px + env(safe-area-inset-top)); right:calc(14px + env(safe-area-inset-right)); }
+  /* safe-area: viewport-fit=cover lets content run under the notch / home bar — pad edge-anchored chrome */
+  .top { padding-top:calc(14px + env(safe-area-inset-top)); padding-left:max(18px, env(safe-area-inset-left)); padding-right:max(18px, env(safe-area-inset-right)); }
+  .sheet-top { padding-top:calc(14px + env(safe-area-inset-top)); padding-left:max(18px, env(safe-area-inset-left)); padding-right:max(18px, env(safe-area-inset-right)); }
+  .sheet-top h2 { min-width:0; overflow-wrap:anywhere; line-height:1.25; }
+  .selbar { top:calc(8px + env(safe-area-inset-top)); }
+  #toast { bottom:calc(26px + env(safe-area-inset-bottom)); }
+  .sheet-body { padding-bottom:calc(60px + env(safe-area-inset-bottom)); }
+  /* item / lot line header (was `.top`, which also matched the sticky app header rules) */
+  .itemline .ihead { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .ihead .rm { background:transparent; border:0; color:var(--danger); font-size:0.78rem; font-weight:700; padding:0 6px; }
+  /* totals: sentence-case titles sized to the card so "Deductible this year" stays on one line at 320 */
+  .totals .lab { text-transform:none; letter-spacing:0; font-size:clamp(0.66rem, 3.3vw, 0.8rem); white-space:nowrap; }
+  .totals .savings.prompt .fig { white-space:normal; overflow:visible; font-size:0.95rem; line-height:1.3; }
+  /* compliance flags are sentences: a rounded notice that wraps by design, not a pill */
+  .flag { white-space:normal; border-radius:12px; line-height:1.35; }
+  /* list header: title + count, then a control row whose BUTTONS never wrap (the row may) */
+  .section-h { flex-wrap:wrap; gap:8px; align-items:center; }
+  .section-h .sh-title { display:flex; align-items:baseline; gap:8px; }
+  .listctl { flex-wrap:wrap; }
+  .listctl button { padding:0 12px; }
+  /* export rows: the arrow word is redundant with the description on a phone */
+  .exbtn .arr { white-space:nowrap; flex:0 0 auto; }
+  .readybar { flex-wrap:wrap; }
+  .readybar .btn { white-space:nowrap; }
+  /* item-type picker result: name on line 1, category + value range on line 2 */
+  .gpick { flex-wrap:wrap; row-gap:2px; }
+  .gpick .gp-n { flex:1 1 100%; }
+  .gpick .gp-c { flex:1 1 auto; }
+  .blockers li { flex-wrap:wrap; row-gap:6px; }
+  .blockers .bmeta { white-space:nowrap; }
+  .blockers li .btn { margin-left:auto; }
+  @media (max-width:560px) {
+    /* header: row 1 back link · save state · settings; row 2 brand; row 3 the four actions, one line */
+    .top { padding:calc(8px + env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 10px max(14px, env(safe-area-inset-left)); gap:6px; }
+    .top .tw-back { order:0; margin-right:auto; padding-left:0; }
+    .top #savePill { order:1; }
+    .top #btnSettings { order:2; }
+    .top .brand { order:3; flex:1 1 100%; margin:0 0 4px; }
+    .top #btnLog, .top #btnInbox, .top #btnCharities, .top #btnExport { order:4; flex:1 1 auto; padding:0 8px; }
+    .sheet-top { padding:calc(8px + env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 8px max(14px, env(safe-area-inset-left)); gap:8px; }
+    .sheet-body { padding:18px 14px calc(60px + env(safe-area-inset-bottom)); }
+    .card { padding:16px 14px; }
+    .listctl { width:100%; }
+    .listctl button { flex:1 1 auto; }
+    /* log type tabs: a wrapping grid — every type visible, none scrolled off-screen */
+    .dtabs { display:grid; grid-template-columns:repeat(auto-fit, minmax(96px, 1fr)); overflow:visible; }
+    .dtabs button { padding:0 6px; }
+    .exbtn .arrw { display:none; }
+    /* charities: the search box gets its own line; a saved row's actions sit under its name */
+    #charQ, #mEin { flex:1 1 100%; }
+    .search-row .stsel { flex:1 1 auto; max-width:none; }
+    .charlist .cresult { flex-wrap:wrap; row-gap:8px; }
+    .charlist .cresult .info { flex:1 1 100%; }
+    .charlist .cresult .info + * { margin-left:auto; }
+    .editrow input[data-f="ein"] { flex:1 1 100%; }
+    .blockers { padding:12px; }
+    .blockers .bmeta { font-size:0.74rem; }
+  }
+  @media (max-width:400px) {
+    .totals { gap:10px; }
+    .totals .hero, .totals .stat, .totals #savings > .savings { padding:14px 12px; }
+    .lock-wrap { padding:16px; }
+    .lock-card { padding:24px 18px; }
+    .exbtn { padding:12px; gap:8px; }
+    .exbtn .xt { font-size:0.9rem; }
+  }
+  @media (max-width:360px) {
+    .breakdown { grid-template-columns:1fr 1fr; }
+    /* paired fields (date · currency, AGI · rate …) stack: a date needs the full width at 320 */
+    .grid2 { grid-template-columns:minmax(0,1fr); }
+  }
 </style>
 </head>
 <body>
@@ -578,7 +667,7 @@
 
     <div class="tabs" role="tablist">
       <button id="tabCreate" role="tab" aria-selected="true">New here</button>
-      <button id="tabConnect" role="tab" aria-selected="false">Connect a device</button>
+      <button id="tabConnect" role="tab" aria-selected="false">Connect</button>
     </div>
 
     <!-- CREATE -->
@@ -675,9 +764,8 @@
 
     <div id="listView">
       <div class="section-h">
-        <h2>Receipts</h2>
+        <div class="sh-title"><h2>Receipts</h2><span id="rcptCnt" class="cnt"></span></div>
         <div class="listctl">
-          <span id="rcptCnt" class="cnt" style="margin-right:8px;align-self:center;"></span>
           <button id="sortDir" title="Sort by date">Newest first ↓</button>
           <button id="grpDate" aria-pressed="true">By date</button>
           <button id="grpCharity" aria-pressed="false">By charity</button>
@@ -706,7 +794,7 @@
     <div class="card">
       <div class="card-h">Find a charity</div>
       <div class="search-row">
-        <input id="charQ" class="txt" type="text" placeholder="Name or EIN, e.g. Salvation Army or 95-1922279"
+        <input id="charQ" class="txt" type="text" placeholder="Charity name or EIN"
           autocomplete="off" spellcheck="false">
         <select id="charState" class="stsel" title="Restrict the search to one state (default: nationwide)" aria-label="State filter"></select>
         <button id="btnCharSearch" class="btn inline">Search</button>
@@ -769,7 +857,7 @@
       <p class="hint">Everything for the year in one ZIP — the Entry Guide, donation report + 8283,
         giving history, full CSV/JSON, TXF, a compliance checklist, and every attached receipt
         (decrypted on this device). No email; the file downloads straight to this device.</p>
-      <button class="exbtn primary" id="exPack"><span><span class="xt">📦 Year-end pack (ZIP)</span><div class="xd" id="exPackDesc">Download · one folder with everything below + receipts</div></span><span class="arr" id="exPackArr">Download ›</span></button>
+      <button class="exbtn primary" id="exPack"><span><span class="xt">📦 Year-end pack (ZIP)</span><div class="xd" id="exPackDesc">Download · one folder with everything below + receipts</div></span><span class="arr" id="exPackArr"><span class="arrw">Download </span>›</span></button>
       <div id="exPackProgress" class="ghint" style="margin-top:8px;"></div>
     </div>
     <div class="card">
@@ -777,12 +865,12 @@
       <p class="hint">TurboTax Online has no donation import — the Entry Guide makes manual entry
         copy-down-the-list trivial. Tax outputs include deductible gifts only and exclude DAF grants.</p>
       <div class="exlist">
-        <button class="exbtn" id="exGuide"><span><span class="xt">TurboTax Online Entry Guide</span><div class="xd">Print · ordered exactly like the TurboTax interview</div></span><span class="arr">Print ›</span></button>
-        <button class="exbtn" id="exReport"><span><span class="xt">Donation report (with 8283)</span><div class="xd">Print · by charity, Form 8283 Section A fields</div></span><span class="arr">Print ›</span></button>
-        <button class="exbtn" id="exHistory"><span><span class="xt">Giving history</span><div class="xd">Print · what you gave to whom (not a tax document)</div></span><span class="arr">Print ›</span></button>
-        <button class="exbtn" id="exCsv"><span><span class="xt">CSV</span><div class="xd">Download · every field, one row per line item</div></span><span class="arr">Download ›</span></button>
-        <button class="exbtn" id="exJson"><span><span class="xt">JSON backup</span><div class="xd">Download · full year, re-importable</div></span><span class="arr">Download ›</span></button>
-        <button class="exbtn" id="exTxf"><span><span class="xt">TXF · TurboTax Desktop only</span><div class="xd">Download · cash + items (codes spec-verified, not import-tested)</div></span><span class="arr">Download ›</span></button>
+        <button class="exbtn" id="exGuide"><span><span class="xt">TurboTax Online Entry Guide</span><div class="xd">Print · ordered exactly like the TurboTax interview</div></span><span class="arr"><span class="arrw">Print </span>›</span></button>
+        <button class="exbtn" id="exReport"><span><span class="xt">Donation report (with 8283)</span><div class="xd">Print · by charity, Form 8283 Section A fields</div></span><span class="arr"><span class="arrw">Print </span>›</span></button>
+        <button class="exbtn" id="exHistory"><span><span class="xt">Giving history</span><div class="xd">Print · what you gave to whom (not a tax document)</div></span><span class="arr"><span class="arrw">Print </span>›</span></button>
+        <button class="exbtn" id="exCsv"><span><span class="xt">CSV</span><div class="xd">Download · every field, one row per line item</div></span><span class="arr"><span class="arrw">Download </span>›</span></button>
+        <button class="exbtn" id="exJson"><span><span class="xt">JSON backup</span><div class="xd">Download · full year, re-importable</div></span><span class="arr"><span class="arrw">Download </span>›</span></button>
+        <button class="exbtn" id="exTxf"><span><span class="xt">TXF · TurboTax Desktop only</span><div class="xd">Download · cash + items (codes spec-verified, not import-tested)</div></span><span class="arr"><span class="arrw">Download </span>›</span></button>
       </div>
     </div>
     <div class="card">
@@ -8818,7 +8906,7 @@ window.GT.exp = {
   var LOG_TABS = [
     { key:'money', label:'Money' }, { key:'items', label:'Items' },
     { key:'stock', label:'Stock' }, { key:'mileage', label:'Mileage' },
-    { key:'into_daf', label:'Into DAF' }, { key:'grant', label:'Grant out of DAF' },
+    { key:'into_daf', label:'Into DAF' }, { key:'grant', label:'DAF grant' },
   ];
   function today(){ return new Date().toISOString().slice(0,10); }
   function logKeyFor(d){
@@ -9066,7 +9154,7 @@ window.GT.exp = {
     var it=state.log.items[i];
     var el=document.createElement('div'); el.className='itemline';
     el.innerHTML =
-      '<div class="top"><span class="lt" data-lt>$0</span><button type="button" class="rm" data-rm>Remove</button></div>'
+      '<div class="ihead"><span class="lt" data-lt>$0</span><button type="button" class="rm" data-rm>Remove</button></div>'
       + '<div class="field"><label>Find item type</label><input class="txt" data-search placeholder="Search e.g. coat, sofa, laptop, book…" autocomplete="off"></div>'
       + '<div class="guidepick" data-results hidden></div>'
       + '<div class="chips" data-chips></div>'
@@ -9197,7 +9285,7 @@ window.GT.exp = {
     var L=state.log.lots[i];
     var el=document.createElement('div'); el.className='itemline';
     el.innerHTML =
-      '<div class="top"><span class="lt" data-lt>$0</span><button type="button" class="rm" data-rm>Remove</button></div>'
+      '<div class="ihead"><span class="lt" data-lt>$0</span><button type="button" class="rm" data-rm>Remove</button></div>'
       + '<div class="grid2"><div class="field"><label>Security</label><input class="txt" data-f="security" placeholder="e.g. AAPL" value="'+esc(L.security||'')+'"></div>'
       +   '<div class="field"><label>Shares</label><input type="number" class="txt" data-f="shares" step="any" min="0" value="'+(L.shares!=null?L.shares:'')+'"></div></div>'
       + '<div class="grid2"><div class="field"><label>FMV ($)</label><input type="number" class="txt" data-f="fmv" step="0.01" min="0" value="'+(L.fmv!=null?L.fmv:'')+'"></div>'
