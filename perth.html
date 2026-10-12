@@ -784,8 +784,8 @@ textarea.inp{resize:vertical;min-height:70px;font-family:inherit}
       host.innerHTML =
         '<div class="fg-card">' +
           '<div class="fg-icon">' + ICON + '</div>' +
-          '<h1>You’re signed in.</h1>' +
-          '<p>Signed in as <b>' + escapeHtml(existing.email) + '</b>, but that address doesn’t have access to this page yet.</p>' +
+          '<h1>You don’t have access to this yet.</h1>' +
+          '<p>You’re signed in as <b>' + escapeHtml(existing.email) + '</b>. Tap below and Mark will be asked to switch it on for you.</p>' +
           '<button class="fg-btn" id="fg-request" type="button">Request access</button>' +
           '<div class="fg-msg" id="fg-msg" aria-live="polite"></div>' +
           '<button class="fg-link" id="fg-signout" type="button">Sign in as someone else</button>' +

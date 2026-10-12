@@ -125,7 +125,7 @@ test('a signed-in but UNgranted address is told it lacks access (not let in)', a
   await page.click('#fg-send');
   await page.fill('#fg-code', '123456');                // valid code, but no grant
   await page.click('#fg-verify');
-  await expect(page.locator('#family-gate')).toContainText('doesn’t have access');
+  await expect(page.locator('#family-gate')).toContainText('don’t have access');
   expect(await page.evaluate(() => window.__result)).toBeNull();     // app never resolves
 });
 
@@ -147,7 +147,7 @@ async function blocked(page, context, verdicts) {
   await page.click('#fg-send');
   await page.fill('#fg-code', '123456');
   await page.click('#fg-verify');
-  await expect(page.locator('#family-gate')).toContainText('doesn’t have access');
+  await expect(page.locator('#family-gate')).toContainText('don’t have access');
   return state;
 }
 

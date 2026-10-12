@@ -263,6 +263,7 @@ Wing session in localStorage (`press:family:v1`) belongs to an admin; Edge Funct
    on project `eepjhpyziczrxvirczio`):
    ```sql
    select public.press_agent_checkin('<id>', 'ok', '<one line: what it produced>');   -- 'ok' | 'warn' | 'fail'
+   RULE: the note is PUBLIC (shown on agent-health.html) — counts only; never amounts, names, providers or personal data.
    ```
    `press_agent_checkin` is SECURITY DEFINER and executable only by `service_role`/`postgres` (never anon or
    authenticated), and refuses ids that are not `source = 'checkin'` rows.
