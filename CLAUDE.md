@@ -10,7 +10,7 @@ served via GitHub Pages. `index.html` is the portal (KICKERS / ICONS driven by `
 
 Served pages by tier (contract: `docs/spec.md` → Tenants):
 - **Public:** `kayley.html`, `council-guide.html`, `eagle-path.html`, `halvsies.html`, `agent-health.html`
-- **Private wing** (WebAuthn passkey + vault): `fsa.html`, `giving.html`, `retirement.html`, `card-scout.html`, `cardsharp.html`, `access.html` (family admin)
+- **Private wing** (WebAuthn passkey + vault): `fsa.html`, `giving.html`, `retirement.html`, `card-scout.html`, `cardsharp.html`, `access.html` (family admin), `steward.html` (Steward reports — borrows the Card Scout capability; `supabase/functions/steward-reports/`)
 - **Family wing** (email OTP + JWT + per-page grants): `remit.html`, `perth.html`, `optimo.html`
 - **optimo** = `optimo.html` (family-wing launcher card) + the `optimo/` app directory (the PWA, served at
   `/press/optimo/`), both mirrored by optimo's own `tools/release.js` (optimo migrate-home, 2026-10-10, from merge `83cdcc1`).
@@ -31,13 +31,13 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #27 76c7b0c on 2026-10-11; main checkout on main @ 76c7b0c
-**arc/migrate-home (2026-10-11) — Home moved to GitHub; ran as a cloud Builder.** press stays PUBLIC. New ship gate
-`scripts/gauntlet.sh` + verify skill (cloud mode = Chromium only); cloud gauntlet GREEN (unit 91 · tenants-check 50/0 ·
-Playwright 80 + 1 WebKit-only skip). `docs/secrets-map.md` (0 keys; 2 Actions secret names). Served pages list now
-includes cardsharp + optimo (`optimo/` app dir); applied `perth_rls_gate` mirror carried onto main; BACKLOG → Issues
-#28–#32. **BLOCKED:** flow `kayley.html` compare (flow not in session scope) — flow archive waits on it; NAS zip (Mark).
-Full narrative: `docs/history.md`.
+Merge state: PR pending (branch arc/steward-report)
+**arc/steward-report (2026-10-12) — Steward report page; cloud Builder.** New press-native PRIVATE-wing `steward.html`
+(latest report + 12-week calendar-week strip, 390-first) over the service-role-only `press_steward_reports` table, read
+through the new `steward-reports` Edge Function (v2), which checks the private wing's Card Scout capability against the
+server-held `press_deals.sync_id` default via the service-role-only RPC `press_steward_capability_ok`. Gauntlet: unit 101 ·
+Playwright 88 + 1 WebKit skip · tenants-check steward rows PASS (21 env-only FAILs: tenant repos outside cloud scope).
+Open: fixture row delete + `.claude/settings.json` (classifier) + press_deals anon INSERT — HANDOFF. Narrative: `docs/history.md`.
 
 ## Project rules
 

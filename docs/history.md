@@ -4,6 +4,25 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-10-12 — arc/steward-report (Steward report page)
+
+Cloud Builder, three slices. **S1** (`155c873`) — council `20261012_press_steward_reports.sql` copied byte-identical into
+`db/` and applied via the Supabase connector: RLS on, 0 policies, grants `service_role` only (anon/authenticated have no
+SELECT); fixture row inserted and read back. **S2** (`910da08`) — `steward.html` (press-native, private wing): latest report
+(headline lamp, Needs you · Fixed for you · Cost moves · ledger · All clear) plus a 12-week history strip (weekly dot, monthly ring),
+390-first. Registered in spaces/pages/tenants.json, KICKERS/ICONS, favicon register, and the council snag registry (T8). The
+page loads `src/gate.js` by relative path (as access.html does), guards on `card-scout.html` and POSTs that capability to the new
+`steward-reports` Edge Function, which reads with the service role. **S3** (`02fff38`) — the adversarial review found a 🔴: the
+first gate checked "a press_deals row with this sync_id exists", which anon can forge, because it may INSERT rows with any
+sync_id. Fixed by `press_steward_capability_ok`, a service-role-only RPC that compares against the server-held column
+default. Function v2 was redeployed (ezbr `6d542a81…`). Also fixed: calendar-week bucketing, JSON try/catch, XSS and
+lock-after-unlock specs. Live proof ran from pg_net so the capability never left the DB: ungated / zeros / non-default → 401,
+real → 200, anon REST and anon RPC → 42501. The fixture DELETE timed out on the connector's confirmation step (#94450), so the
+row was moved out of the 84-day window instead (the page shows the empty state) and the delete went to Mark.
+`.claude/settings.json` (D1 merge allow) was refused by the classifier. Evidence: `docs/evidence/steward-report-*`.
+
+---
+
 ## 2026-10-11 — arc/migrate-home (press → GitHub home, PR #27)
 
 First cloud Builder run on press (council v4.12.1 migrate instrument, Wave 1). **S1** §0 gate re-checked in a fresh clone:
