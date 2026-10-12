@@ -73,6 +73,7 @@
     padding:14px 18px; background:var(--surface); border-bottom:1px solid var(--line); }
   .top .brand h1 { font-size:1.15rem; }
   .top .spacer { flex:1; }
+  .top .hacts { display:contents; }   /* desktop: the four actions sit inline in the one header row */
   .tw-back{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 10px 6px 4px}
   .tw-back:hover{color:var(--ink)}
   .idpill { font-family:var(--mono); font-size:0.72rem; color:var(--muted); background:var(--surface-2);
@@ -85,7 +86,6 @@
   /* ---- responsive: phone header wraps instead of overflowing (slice 6) ---- */
   @media (max-width:560px) {
     .top { flex-wrap:wrap; gap:8px; padding:12px 14px; }
-    .top .brand { flex:1 1 100%; margin-bottom:2px; }
     .top .spacer { display:none; }
     .top .idpill { display:none; }          /* shown in Settings → This device */
     #btnTheme, #btnSignout { display:none; } /* both live in Settings on phones */
@@ -541,6 +541,19 @@
   .qhint.dup { background:rgba(217,138,78,0.16); color:var(--ember-soft); }
   .qhint.chk { background:rgba(217,138,138,0.16); color:var(--danger); }
   .qhint.ack { background:rgba(127,174,134,0.16); color:var(--ledger); }
+  .qhint.byrule { background:rgba(127,174,134,0.16); color:var(--ledger); }
+  /* D3: "is this new, or one of yours?" — asked once per new charity name, before approval */
+  .nnq { margin:2px 0 12px; padding:12px 14px; border:1px solid var(--ember); border-radius:10px; background:var(--surface-2); }
+  .nnq .nnt { font-size:0.88rem; font-weight:600; margin:0 0 6px; line-height:1.4; }
+  .nnq .nnsub { color:var(--muted); font-size:0.76rem; margin:0 0 4px; }
+  .nnq .cresult { padding:6px 0; }
+  /* a pick here saves a lasting rule / removes a record — show the WHOLE name, never an ellipsis */
+  .nnq .cresult .nm, #charMerge .cresult .nm { white-space:normal; overflow-wrap:anywhere; }
+  .nnq .nnpick { display:flex; gap:8px; align-items:center; margin-top:8px; }
+  .nnq .nnpick .field { flex:1 1 auto; min-width:0; margin:0; }
+  .nnq .nnnew { display:flex; justify-content:flex-end; margin-top:8px; }
+  .aliasbox { margin-top:4px; }
+  .aliasbox .cresult .nm { font-weight:600; }
   .qacts { display:flex; gap:6px; flex-wrap:wrap; }
   .inbox-empty { padding:34px 20px; text-align:center; color:var(--muted); }
   .inbox-empty .big { font-family:var(--serif); font-size:1.05rem; color:var(--ink); margin-bottom:4px; }
@@ -616,13 +629,19 @@
   .blockers .bmeta { white-space:nowrap; }
   .blockers li .btn { margin-left:auto; }
   @media (max-width:560px) {
-    /* header: row 1 back link · save state · settings; row 2 brand; row 3 the four actions, one line */
-    .top { padding:calc(8px + env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 10px max(14px, env(safe-area-inset-left)); gap:6px; }
-    .top .tw-back { order:0; margin-right:auto; padding-left:0; }
-    .top #savePill { order:1; }
-    .top #btnSettings { order:2; }
-    .top .brand { order:3; flex:1 1 100%; margin:0 0 4px; }
-    .top #btnLog, .top #btnInbox, .top #btnCharities, .top #btnExport { order:4; flex:1 1 auto; padding:0 8px; }
+    /* header (ARC 2026-10-12 D1): ONE top row — back link · logo + title · settings gear — then the
+       four actions as their own row. The save-state pill floats just under the bar (no layout shift). */
+    .top { display:grid; grid-template-columns:auto minmax(0,1fr) auto; grid-template-areas:"back brand gear" "acts acts acts";
+      column-gap:6px; row-gap:8px; align-items:center;
+      padding:calc(8px + env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 10px max(14px, env(safe-area-inset-left)); }
+    .top .tw-back { grid-area:back; justify-self:start; padding-left:0; }
+    .top .brand { grid-area:brand; justify-content:center; min-width:0; margin:0; }
+    .top .brand h1 { white-space:nowrap; }
+    .top #btnSettings { grid-area:gear; justify-self:end; }
+    .top .hacts { grid-area:acts; display:flex; gap:6px; min-width:0; }
+    .top .hacts .iconbtn { flex:1 1 auto; padding:0 8px; }
+    .top #savePill { position:absolute; top:calc(100% + 6px); left:50%; transform:translateX(-50%); z-index:6;
+      max-width:calc(100% - 28px); box-shadow:0 4px 14px rgba(0,0,0,.25); }
     .sheet-top { padding:calc(8px + env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 8px max(14px, env(safe-area-inset-left)); gap:8px; }
     .sheet-body { padding:18px 14px calc(60px + env(safe-area-inset-bottom)); }
     .card { padding:16px 14px; }
@@ -641,6 +660,11 @@
     .editrow input[data-f="ein"] { flex:1 1 100%; }
     .blockers { padding:12px; }
     .blockers .bmeta { font-size:0.74rem; }
+  }
+  @media (max-width:359px) {
+    /* D1: too narrow for the full back link beside the title — it shrinks to "←" (aria-label keeps
+       "Back to Private Wing") before the title ever shrinks */
+    .top .tw-back .bl { display:none; }
   }
   @media (max-width:400px) {
     .totals { gap:10px; }
@@ -703,15 +727,17 @@
 <!-- ================================= APP ================================= -->
 <div id="app" hidden>
   <div class="top">
-    <a class="tw-back" href="index.html?view=personal">&larr; Private Wing</a>
+    <a class="tw-back" href="index.html?view=personal" aria-label="Back to Private Wing">&larr;<span class="bl">&nbsp;Private Wing</span></a>
     <div class="brand"><span class="mark"></span><h1>Giving Tracker</h1></div>
     <span class="spacer"></span>
     <span id="idPill" class="idpill"></span>
     <button id="savePill" class="savepill" hidden><span class="dot"></span><span id="savePillTxt">Saved</span></button>
-    <button id="btnLog" class="iconbtn">+ Log</button>
-    <button id="btnInbox" class="iconbtn">Inbox<span id="inboxBadge" class="inboxbadge" hidden>0</span></button>
-    <button id="btnCharities" class="iconbtn">Charities</button>
-    <button id="btnExport" class="iconbtn">Export</button>
+    <div class="hacts">
+      <button id="btnLog" class="iconbtn">+ Log</button>
+      <button id="btnInbox" class="iconbtn">Inbox<span id="inboxBadge" class="inboxbadge" hidden>0</span></button>
+      <button id="btnCharities" class="iconbtn">Charities</button>
+      <button id="btnExport" class="iconbtn">Export</button>
+    </div>
     <button id="btnSettings" class="iconbtn ic" aria-label="Settings" title="Settings">
       <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H2a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 3.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H8a1.65 1.65 0 0 0 1-1.51V2a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V8a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
     </button>
@@ -1731,6 +1757,215 @@
   };
 })();
 
+/* ---- src/core/aliases.js ---- */
+window.__def("src/core/aliases.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/core/aliases.js — charity name rules ("always treat 'X' as Y") + merge.
+ *
+ * ARC 2026-10-12 (header-and-charity-aliases) D2–D4. A charity carries `aliases`
+ * (the other names its gifts arrive under — e.g. a captured "HCF Springfield" is the
+ * saved "Hope Community Fellowship"; examples here are SYNTHETIC). Matching order is EIN → exact name → alias
+ * (review.resolveCharity). Aliases live ONLY in the encrypted doc — never in the
+ * repo, logs or the capture function (data-security rule).
+ *
+ * Also: the "is this new, or one of yours?" suggestion ranker (acronym, shared
+ * words, same city), and mergeCharity — fold a duplicate into the charity Mark
+ * keeps. A merge only re-points charity_id (donations, persisted inbox drafts,
+ * series); amounts, deductibility and the §2A DAF split are untouched, so every
+ * total and export is identical. The locked DAF sponsor can never be merged away.
+ * Pure + node-testable: no DOM, no network.
+ * ========================================================================== */
+
+var model = require('./model.js');
+
+// Normalised comparison key for a name: lowercase, "&" → "and", punctuation dropped, spaces collapsed.
+function normAlias(s) {
+  return String(s == null ? '' : s).toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[’']/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+// The exact-name key review.resolveCharity uses (trim + lowercase) — a rule is redundant only when
+// THIS matches; a punctuation variant ("Hope Chapel Inc" vs "Hope Chapel, Inc.") still needs one.
+function exactKey(s) { return String(s == null ? '' : s).trim().toLowerCase(); }
+
+function aliasesOf(c) { return (c && Array.isArray(c.aliases)) ? c.aliases : []; }
+
+// Every charity with a rule for `name` (normally at most one — addAlias keeps a name on one charity).
+function charitiesWithAlias(doc, name) {
+  var k = normAlias(name), out = [];
+  if (!k) return out;
+  var cs = (doc && doc.charities) || [];
+  for (var i = 0; i < cs.length; i++) {
+    var al = aliasesOf(cs[i]);
+    for (var j = 0; j < al.length; j++) if (normAlias(al[j]) === k) { out.push(cs[i]); break; }
+  }
+  return out;
+}
+
+// The charity a name rule points at, or null. An alias NEVER matches across a different EIN: when the
+// incoming gift carries an EIN and the rule's charity has a different one, it is not that charity.
+function matchAlias(doc, name, ein) {
+  var hits = charitiesWithAlias(doc, name);
+  var e = model.normEin(ein);
+  for (var i = 0; i < hits.length; i++) {
+    var ce = model.normEin(hits[i].ein);
+    if (e && ce && e !== ce) continue;
+    return hits[i];
+  }
+  return null;
+}
+
+// Save "always treat `name` as charity `id`". Idempotent; a name already ruled to ANOTHER charity moves
+// here (one rule per name). A name equal to the charity's own name is a no-op (the name match covers it).
+// Returns the charity. Throws on a missing charity or an empty name.
+function addAlias(doc, id, name) {
+  var c = model.charityById(doc, id);
+  if (!c) throw new Error('charity not found: ' + id);
+  var label = String(name == null ? '' : name).replace(/\s+/g, ' ').trim();
+  var k = normAlias(label);
+  if (!k) throw new Error('alias name required');
+  // never a rule onto the locked DAF sponsor: ordinary gifts under that name would land on it as non-Into-DAF gifts
+  if (c.is_daf_sponsor || c.locked) throw new Error('no name rules on the locked DAF sponsor');
+  if (!Array.isArray(c.aliases)) c.aliases = [];
+  if (exactKey(c.name) === exactKey(label)) return c;
+  var others = charitiesWithAlias(doc, label);
+  for (var i = 0; i < others.length; i++) if (others[i] !== c) removeAlias(doc, others[i].id, label);
+  for (var j = 0; j < c.aliases.length; j++) if (normAlias(c.aliases[j]) === k) return c;
+  c.aliases.push(label);
+  return c;
+}
+
+// Remove a rule (by any spelling that normalises the same). Returns true when one was removed.
+function removeAlias(doc, id, name) {
+  var c = model.charityById(doc, id);
+  if (!c || !Array.isArray(c.aliases)) return false;
+  var k = normAlias(name), before = c.aliases.length;
+  c.aliases = c.aliases.filter(function (a) { return normAlias(a) !== k; });
+  return c.aliases.length < before;
+}
+
+// ---- suggestion ranker ------------------------------------------------------
+var STOP = ['the', 'of', 'and', 'for', 'a', 'an', 'in', 'at', 'on', 'to', 'inc', 'incorporated', 'llc', 'co', 'corp', 'foundation', 'fund'];
+function words(s) { return normAlias(s).split(' ').filter(Boolean); }
+function sigWords(s) { return words(s).filter(function (w) { return STOP.indexOf(w) < 0; }); }
+// Initials of a name: with and without the stop words ("Hope Community Fellowship" → "hcf").
+function acronyms(name) {
+  var all = words(name), sig = all.filter(function (w) { return STOP.indexOf(w) < 0; });
+  var out = [];
+  [sig, all].forEach(function (ws) { var a = ws.map(function (w) { return w[0]; }).join(''); if (a.length >= 2 && out.indexOf(a) < 0) out.push(a); });
+  return out;
+}
+
+// Rank the charities a new name most likely IS: acronym (HCF → Hope Community Fellowship), shared
+// words (exact, or a ≥4-letter prefix: "pres" ~ "presbyterian"), and the same city ("Springfield" ~
+// city "Springfield"). Returns [{ charity, score, why[] }] best first, score > 0 only, archived and
+// already-exact-name matches excluded. opts.limit (default 3).
+function suggestCharities(doc, name, opts) {
+  opts = opts || {};
+  var limit = opts.limit == null ? 3 : opts.limit;
+  var qAll = words(name), qSig = sigWords(name);
+  if (!qAll.length) return [];
+  var qn = normAlias(name), qx = exactKey(name);
+  var out = [];
+  var cs = (doc && doc.charities) || [];
+  for (var i = 0; i < cs.length; i++) {
+    var c = cs[i];
+    if (!c || c.archived) continue;
+    if (exactKey(c.name) === qx) continue;
+    var score = 0, why = [];
+    if (normAlias(c.name) === qn) { score += 6; why.push('same name'); }   // punctuation / "&" variant
+    // acronym: a query token (2–6 letters) equal to the charity's initials, or the query's own
+    // initials equal to a short charity token
+    var acr = acronyms(c.name);
+    var acHit = qAll.some(function (t) { return t.length >= 2 && t.length <= 6 && acr.indexOf(t) >= 0; });
+    if (!acHit) { var qa = acronyms(name); acHit = words(c.name).some(function (t) { return t.length >= 2 && qa.indexOf(t) >= 0; }); }
+    if (acHit) { score += 3; why.push('initials'); }
+    // shared words (significant only)
+    var cSig = sigWords(c.name), shared = 0;
+    qSig.forEach(function (q) {
+      for (var j = 0; j < cSig.length; j++) {
+        var w = cSig[j];
+        if (q === w) { shared += 1; return; }
+        if (q.length >= 4 && w.length >= 4 && (w.indexOf(q) === 0 || q.indexOf(w) === 0)) { shared += 0.5; return; }
+      }
+    });
+    if (shared) { score += shared; why.push('shared words'); }
+    // same city (or a query word naming the charity's city)
+    var city = sigWords(c.city);
+    if (city.length && (opts.city ? normAlias(opts.city) === normAlias(c.city) : city.every(function (w) { return qSig.indexOf(w) >= 0; }))) { score += 1; why.push('same city'); }
+    if (score > 0) out.push({ charity: c, score: score, why: why });
+  }
+  out.sort(function (a, b) { return b.score - a.score || String(a.charity.name).localeCompare(String(b.charity.name)); });
+  return limit ? out.slice(0, limit) : out;
+}
+
+// ---- merge ------------------------------------------------------------------
+// Can `fromId` be merged into `toId`? { ok, reason: 'not_found'|'same'|'locked'|'locked_target'|'ein_mismatch'|null }.
+// The locked DAF sponsor is never merged AWAY (the Into-DAF path depends on it) nor merged INTO (its
+// gifts would read as gifts to the sponsor that aren't Into-DAF, and the duplicate's name would become a
+// rule silently routing future captures to it). Two charities with
+// DIFFERENT EINs are different organisations — refused.
+function canMergeCharity(doc, fromId, toId) {
+  var from = model.charityById(doc, fromId), to = model.charityById(doc, toId);
+  if (!from || !to) return { ok: false, reason: 'not_found' };
+  if (from === to) return { ok: false, reason: 'same' };
+  if (from.locked || from.is_daf_sponsor) return { ok: false, reason: 'locked' };
+  if (to.locked || to.is_daf_sponsor) return { ok: false, reason: 'locked_target' };
+  var fe = model.normEin(from.ein), te = model.normEin(to.ein);
+  if (fe && te && fe !== te) return { ok: false, reason: 'ein_mismatch' };
+  return { ok: true, reason: null };
+}
+
+// Fold `fromId` into `toId`: every donation, persisted inbox draft and series pointing at the duplicate
+// moves to the target; the duplicate's name (and its own rules) become the target's rules; the duplicate
+// is removed. FAILS CLOSED (throws) when canMergeCharity refuses. Only charity_id changes — totals,
+// deductibility and the DAF split are identical before and after.
+// Returns { target, moved: { donations, inbox, series } }.
+function mergeCharity(doc, fromId, toId) {
+  var dec = canMergeCharity(doc, fromId, toId);
+  if (!dec.ok) throw new Error('cannot merge charity (' + dec.reason + ')');
+  var from = model.charityById(doc, fromId), to = model.charityById(doc, toId);
+  var moved = { donations: 0, inbox: 0, series: 0 };
+  // the kept record inherits what only the duplicate knew (its EIN, address, IRS codes) — never overwrites
+  var tookEin = !model.normEin(to.ein) && !!model.normEin(from.ein);
+  ['ein', 'address', 'city', 'state', 'zip', 'subsection_code', 'ntee_code'].forEach(function (f) {
+    if ((to[f] == null || to[f] === '') && from[f] != null && from[f] !== '') to[f] = from[f];
+  });
+  if (tookEin && from.deductible === true) to.deductible = true;   // the IRS identity came with it — only ever turns Deductible ON, never off
+  (doc.donations || []).forEach(function (d) { if (d && d.charity_id === fromId) { d.charity_id = toId; moved.donations++; } });
+  var pend = (doc.inbox && Array.isArray(doc.inbox.pending)) ? doc.inbox.pending : [];
+  pend.forEach(function (d) { if (d && d.charity_id === fromId) { d.charity_id = toId; d.charity_name = to.name; d.charity_ein = to.ein || null; moved.inbox++; } });
+  (doc.series || []).forEach(function (s) { if (s && s.charity_id === fromId) { s.charity_id = toId; moved.series++; } });
+  if (doc.settings && doc.settings.lastCharityId === fromId) doc.settings.lastCharityId = toId;
+  if (!Array.isArray(to.aliases)) to.aliases = [];
+  [from.name].concat(aliasesOf(from)).forEach(function (n) { if (normAlias(n)) addAlias(doc, toId, n); });
+  doc.charities = doc.charities.filter(function (c) { return c.id !== fromId; });
+  return { target: to, moved: moved };
+}
+
+// Another charity already carrying this EIN (for "an EIN added later matches another charity — offer
+// the merge"). Returns that charity or null.
+function einOwner(doc, ein, exceptId) {
+  var e = model.normEin(ein);
+  if (!e) return null;
+  var cs = (doc && doc.charities) || [];
+  for (var i = 0; i < cs.length; i++) if (cs[i].id !== exceptId && model.normEin(cs[i].ein) === e) return cs[i];
+  return null;
+}
+
+module.exports = {
+  normAlias: normAlias, aliasesOf: aliasesOf, charitiesWithAlias: charitiesWithAlias,
+  matchAlias: matchAlias, addAlias: addAlias, removeAlias: removeAlias,
+  acronyms: acronyms, suggestCharities: suggestCharities,
+  canMergeCharity: canMergeCharity, mergeCharity: mergeCharity, einOwner: einOwner,
+};
+
+});
+
 /* ---- src/core/charts.js ---- */
 window.__def("src/core/charts.js", function(module, exports, require){
 'use strict';
@@ -2336,7 +2571,7 @@ window.__def("src/core/model.js", function(module, exports, require){
  * ========================================================================== */
 
 var SCHEMA = 'giving-doc';
-var DOC_VER = 2;   // v2 (S3): stock donations carry lots[]
+var DOC_VER = 3;   // v2 (S3): stock donations carry lots[]; v3 (2026-10-12): charities carry aliases[]
 
 // Fidelity Charitable — Mark's DAF sponsor. Pre-seeded and LOCKED. [verified EIN]
 var FIDELITY = {
@@ -2397,7 +2632,7 @@ function emptyDoc() {
 // A fresh document with Fidelity Charitable pre-seeded + locked.
 function seededDoc() {
   var doc = emptyDoc();
-  var f = Object.assign({ id: newId('char'), archived: false, created_at: nowIso() }, FIDELITY);
+  var f = Object.assign({ id: newId('char'), archived: false, created_at: nowIso() }, FIDELITY, { aliases: [] });
   doc.charities.push(f);
   return doc;
 }
@@ -2417,8 +2652,9 @@ function addCharity(doc, charity) {
     name: '', ein: null, address: null, city: null, state: null, zip: null,
     subsection_code: null, ntee_code: null,
     deductible: false, source: 'manual', is_daf_sponsor: false, locked: false,
-    archived: false, created_at: nowIso(),
+    archived: false, created_at: nowIso(), aliases: [],
   }, charity || {});
+  if (!Array.isArray(c.aliases)) c.aliases = [];
   if (!c.name) throw new Error('charity name required');
   doc.charities.push(c);
   return c;
@@ -2752,6 +2988,14 @@ function migrateDoc(doc) {
   if (!doc.inbox || typeof doc.inbox !== 'object') doc.inbox = { pending: [] };
   if (!Array.isArray(doc.inbox.pending)) doc.inbox.pending = [];
   if (!Array.isArray(doc.series)) doc.series = [];
+  // v3 (2026-10-12): every charity carries aliases[] — its saved name rules ("always treat 'X' as Y").
+  var cs = Array.isArray(doc.charities) ? doc.charities : [];
+  for (var ci = 0; ci < cs.length; ci++) {
+    var ch = cs[ci];
+    if (!ch || typeof ch !== 'object') continue;
+    if (!Array.isArray(ch.aliases)) ch.aliases = [];
+    else ch.aliases = ch.aliases.filter(function (a) { return typeof a === 'string' && a.trim(); });
+  }
   var ds = Array.isArray(doc.donations) ? doc.donations : [];
   for (var i = 0; i < ds.length; i++) {
     var d = ds[i];
@@ -3105,6 +3349,7 @@ window.__def("src/core/review.js", function(module, exports, require){
  * ========================================================================== */
 
 var model = require('./model.js');
+var aliases = require('./aliases.js');
 
 var LOW_CONFIDENCE = 0.7;
 var DUP_DAYS = 3;
@@ -3143,21 +3388,52 @@ function withinDays(a, b, n) {
   return Math.abs(da - db) <= n * 86400000;
 }
 
-// Resolve a charity against the doc: EIN first, then normalized name. daf_contribution
-// always targets the locked Fidelity sponsor.
+// Resolve a charity against the doc: EIN first, then normalized name, then Mark's saved name rules
+// (aliases — ARC 2026-10-12 D2; an alias never matches across a different EIN). daf_contribution
+// always targets the locked Fidelity sponsor. `matchedBy` says which step matched ('ein' | 'name' |
+// 'alias' | 'sponsor' | null); an alias match also carries `alias_name` (the name as it arrived) so the
+// inbox can say "matched by your rule".
 function resolveCharity(doc, extraction) {
   if (extraction.kind === 'daf_contribution') {
     var sp = model.dafSponsor(doc);
-    return { charity_id: sp ? sp.id : null, charity_name: sp ? sp.name : 'Fidelity Charitable', charity_ein: sp ? sp.ein : null, needsCharity: false };
+    return { charity_id: sp ? sp.id : null, charity_name: sp ? sp.name : 'Fidelity Charitable', charity_ein: sp ? sp.ein : null, needsCharity: false, matchedBy: 'sponsor', alias_name: null };
   }
   var ein = model.normEin(extraction.charity_ein);
   var name = String(extraction.charity_name || '').trim();
   var chars = doc.charities || [];
-  var match = null, i;
-  if (ein) { for (i = 0; i < chars.length; i++) if (model.normEin(chars[i].ein) === ein) { match = chars[i]; break; } }
-  if (!match && name) { var ln = normName(name); for (i = 0; i < chars.length; i++) if (normName(chars[i].name) === ln) { match = chars[i]; break; } }
-  if (match) return { charity_id: match.id, charity_name: match.name, charity_ein: match.ein || null, needsCharity: false };
-  return { charity_id: null, charity_name: name || null, charity_ein: ein ? extraction.charity_ein : null, needsCharity: true };
+  var match = null, by = null, i;
+  if (ein) { for (i = 0; i < chars.length; i++) if (model.normEin(chars[i].ein) === ein) { match = chars[i]; by = 'ein'; break; } }
+  if (!match && name) {
+    var ln = normName(name);
+    for (i = 0; i < chars.length; i++) {
+      if (normName(chars[i].name) === ln) { match = chars[i]; by = 'name'; break; }
+    }
+  }
+  if (!match && name) { match = aliases.matchAlias(doc, name, extraction.charity_ein); if (match) by = 'alias'; }
+  if (match) return { charity_id: match.id, charity_name: match.name, charity_ein: match.ein || null, needsCharity: false, matchedBy: by, alias_name: by === 'alias' ? name : null };
+  return { charity_id: null, charity_name: name || null, charity_ein: ein ? extraction.charity_ein : null, needsCharity: true, matchedBy: null, alias_name: null };
+}
+
+// D3: an incoming gift names a charity Mark has never given to → the inbox asks "is it new, or the
+// same as one of yours?" before it can be approved. True for a NAMED, unresolved, unanswered draft.
+// (An into-DAF draft always resolves to the sponsor; a nameless draft — a goods photo — has nothing to ask.)
+function needsNameCheck(draft) {
+  if (!draft || draft.charity_id || draft.daf_contribution) return false;
+  if (draft.newConfirmed) return false;
+  return !!String(draft.charity_name || '').trim();
+}
+
+// Re-resolve an UNRESOLVED draft against the current doc (a rule saved since the draft was made — or
+// a charity added — now matches it). Mutates + returns the draft; never touches a resolved one.
+function refreshDraftCharity(doc, draft) {
+  if (!draft || draft.charity_id || !String(draft.charity_name || '').trim()) return draft;
+  var res = resolveCharity(doc, { kind: draft.kind, charity_name: draft.charity_name, charity_ein: draft.charity_ein });
+  if (res.charity_id) {
+    draft.charity_id = res.charity_id; draft.charity_name = res.charity_name; draft.charity_ein = res.charity_ein;
+    draft.needsCharity = false; draft.matchedBy = res.matchedBy;
+    if (res.alias_name) draft.alias_name = res.alias_name;
+  }
+  return draft;
 }
 
 // opened = { extraction, meta, receipt_text }; rowMeta = { id, source }.
@@ -3188,6 +3464,8 @@ function toDraft(opened, doc, rowMeta) {
     charity_name: res.charity_name,
     charity_ein: res.charity_ein,
     needsCharity: res.needsCharity,
+    matchedBy: res.matchedBy,
+    alias_name: res.alias_name,
     date: date,
     amount: amount,
     amount_type: ex.amount_type || 'unknown',
@@ -3300,9 +3578,10 @@ function draftPayload(draft) {
   return p;
 }
 
-// "Approve all ready": has an amount and a date, and is not a likely duplicate.
+// "Approve all ready": has an amount and a date, is not a likely duplicate, and names no charity Mark
+// hasn't answered the new-name question for (D3 — that question is never skipped by a bulk approve).
 function isReady(draft, dupResult) {
-  return draft.amount != null && !!draft.date && !(dupResult && dupResult.isDuplicate);
+  return draft.amount != null && !!draft.date && !(dupResult && dupResult.isDuplicate) && !needsNameCheck(draft);
 }
 
 // Orchestrate an approve/merge with the CORRECT ordering: write to the model (DAF split
@@ -3324,6 +3603,7 @@ async function commitApproval(steps) {
 module.exports = {
   LOW_CONFIDENCE: LOW_CONFIDENCE, DUP_DAYS: DUP_DAYS, DUP_DOLLARS: DUP_DOLLARS,
   toDraft: toDraft, resolveCharity: resolveCharity,
+  needsNameCheck: needsNameCheck, refreshDraftCharity: refreshDraftCharity,
   emailDay: emailDay, draftAckDefault: draftAckDefault,
   findDuplicates: findDuplicates, merge: merge, sourceRecord: sourceRecord,
   draftPayload: draftPayload, isReady: isReady, withinDays: withinDays,
@@ -6365,6 +6645,7 @@ function rowToDraft(cells, mapping, doc, id) {
   var draft = {
     id: id, source: 'import', local: true, kind: kind, type: type, daf_contribution: false,
     charity_id: res.charity_id, charity_name: res.charity_name, charity_ein: res.charity_ein, needsCharity: res.needsCharity,
+    matchedBy: res.matchedBy, alias_name: res.alias_name,
     date: parseDate(get('date')), amount: (type === 'items' ? null : amount),
     amount_type: (type === 'items' ? 'items' : 'cash'), amountNeeded: false,
     stock: null, goods_or_services: null, confidence: 1, lowConfidence: false,
@@ -6670,6 +6951,12 @@ function sameRecipient(doc, name, charityId) {
   return normName((c && c.name) || name);
 }
 function withinRecon(a, b) { return review.withinDays(a, b, RECONCILE_DAYS); }
+// Same recipient — by name, or (ARC 2026-10-12 D2) by the charity the record's name RESOLVES to
+// (EIN / exact name / Mark's saved name rule), so a ruled alias reconciles like the real name.
+function recipientMatches(doc, recName, recCharityId, name, charityId) {
+  if (recCharityId && charityId && recCharityId === charityId) return true;
+  return sameRecipient(doc, name, charityId) === recName;
+}
 
 // Reconcile parsed records against existing inbox drafts + the ledger.
 //   inboxDrafts: current review drafts (email/import). An "amount needed" draft with a
@@ -6685,6 +6972,7 @@ function reconcile(records, doc, inboxDrafts) {
     var rec = records[i];
     if (rec.skip) { out.summary.skipped++; continue; }
     var name = normName(recordCharityName(rec));
+    var recId = review.resolveCharity(doc, { kind: rec.kind, charity_name: recordCharityName(rec), charity_ein: null }).charity_id;
 
     // 1) fill an existing amount-needed inbox draft (same recipient; date within ±7 if it has one)
     var filledDraft = null;
@@ -6692,7 +6980,7 @@ function reconcile(records, doc, inboxDrafts) {
       var dr = inboxDrafts[j];
       if (!dr || !dr.amountNeeded) continue;
       if (dr.kind !== rec.kind) continue;
-      if (sameRecipient(doc, dr.charity_name, dr.charity_id) !== name) continue;
+      if (!recipientMatches(doc, name, recId, dr.charity_name, dr.charity_id)) continue;
       if (dr.date && !withinRecon(dr.date, rec.date)) continue;
       dr.amount = rec.amount; dr.amountNeeded = (rec.amount == null);
       if (!dr.date && rec.date) dr.date = rec.date;
@@ -6706,7 +6994,7 @@ function reconcile(records, doc, inboxDrafts) {
       var don = ds[k];
       var donKind = (don.type === 'daf_grant') ? 'daf_grant' : (don.daf_contribution ? 'daf_contribution' : null);
       if (donKind !== rec.kind) continue;
-      if (sameRecipient(doc, null, don.charity_id) !== name) continue;
+      if (!recipientMatches(doc, name, recId, null, don.charity_id)) continue;
       if (!withinRecon(don.date, rec.date)) continue;
       match = don; break;
     }
@@ -6838,6 +7126,7 @@ function recordToDraft(rec, doc, opts) {
   var draft = {
     id: opts.id, source: 'import', local: true, kind: rec.kind || 'charity_receipt', type: type, daf_contribution: dafc,
     charity_id: res.charity_id, charity_name: res.charity_name, charity_ein: res.charity_ein, needsCharity: res.needsCharity,
+    matchedBy: res.matchedBy, alias_name: res.alias_name,
     date: rec.date || null, amount: amount, amount_type: rec.amount_type || 'unknown', amountNeeded: (amount == null),
     lots: lots, items: (type === 'items' ? items : null), stock: null, goods_or_services: rec.goods_or_services || null,
     confidence: conf, lowConfidence: (conf < review.LOW_CONFIDENCE),
@@ -7469,6 +7758,7 @@ window.GT = {
   heartbeat: window.__require('src/core/heartbeat.js'),
   tax:    window.__require('src/core/tax.js'),
   review: window.__require('src/core/review.js'),
+  aliases: window.__require('src/core/aliases.js'),
   propublica: window.__require('src/data/propublica.js'),
   queue:  window.__require('src/data/queue.js'),
   files:  window.__require('src/data/files.js'),
@@ -7497,7 +7787,7 @@ window.GT.exp = {
 (function(){
   'use strict';
   var GT = window.GT, FX = GT.fx, M = GT.model, C = GT.client, X = GT.crypto, P = GT.propublica, V = GT.valueguide, T = GT.tax, S = GT.saver, RK = GT.rekey;
-  var Q = GT.queue, RV = GT.review, SEAL = GT.seal, F = GT.files, LF = GT.logform, IB = GT.inbox, SER = GT.series, HB = GT.heartbeat, PH = GT.photoitems, CH = GT.charts, MG = GT.mediagate, DG = GT.dafgroup, PF = GT.prefill, TG = GT.totalgiving, RG = GT.receiptgroups;
+  var Q = GT.queue, RV = GT.review, SEAL = GT.seal, F = GT.files, LF = GT.logform, IB = GT.inbox, SER = GT.series, HB = GT.heartbeat, PH = GT.photoitems, CH = GT.charts, MG = GT.mediagate, DG = GT.dafgroup, PF = GT.prefill, TG = GT.totalgiving, RG = GT.receiptgroups, AL = GT.aliases;
   var LS = window.localStorage;
   var DOC_KEY = 'giving_doc_v1';
   var $ = function(id){ return document.getElementById(id); };
@@ -8803,7 +9093,12 @@ window.GT.exp = {
       + '<div class="meta">'+meta+' '+charBadge(c)+'</div></div>';
     if(c.locked){
       var lk=document.createElement('span'); lk.className='cbadge daf'; lk.textContent='locked';
-      el.appendChild(lk); return el;
+      el.appendChild(lk);
+      if(AL.aliasesOf(c).length){   // D4: a rule pointing at the locked sponsor is still removable
+        var rb=document.createElement('button'); rb.className='btn sm ghost'; rb.textContent='Name rules';
+        rb.addEventListener('click', function(){ startEdit(c); }); el.appendChild(rb);
+      }
+      return el;
     }
     if(c.archived){
       var un=document.createElement('button'); un.className='btn sm ghost'; un.textContent='Unarchive';
@@ -8821,7 +9116,63 @@ window.GT.exp = {
     var del=document.createElement('button'); del.className='btn sm danger'; del.textContent='Delete';
     del.addEventListener('click', function(){ tryDeleteCharity(c); });
     el.appendChild(del);
+    // D4: fold a duplicate into the charity Mark keeps (gifts move; its name becomes a rule)
+    var mg=document.createElement('button'); mg.className='btn sm ghost'; mg.textContent='Merge into…';
+    mg.addEventListener('click', function(){ showMergePanel(c); });
+    el.appendChild(mg);
     return el;
+  }
+
+  // ---- D4: "Merge into…" — closest matches first, then every other charity it may merge into ----
+  function showMergePanel(c, preferId){
+    var host=$('charList'); if(!host) return;
+    ['charBlockers','charMerge'].forEach(function(id){ var o=document.getElementById(id); if(o) o.remove(); });
+    var refs=M.charityReferences(state.doc, c.id);
+    var p=document.createElement('div'); p.id='charMerge'; p.className='blockers';
+    var h=document.createElement('div'); h.className='bh'; h.textContent='Merge “'+c.name+'” into…'; p.appendChild(h);
+    var note=document.createElement('div'); note.className='bnote';
+    note.textContent=(refs.donations ? ('Its '+refs.donations+' gift'+(refs.donations===1?'':'s')+(refs.series?(' and '+refs.series+' series'):'')+' move to the charity you pick, ') : 'It has no gifts to move. ')
+      + '“'+c.name+'” is remembered as another name for '+(refs.donations?'it':'the charity you pick')+', and this record is removed. Totals don’t change.';
+    p.appendChild(note);
+    var targets=(state.doc.charities||[]).filter(function(t){ return !t.archived && AL.canMergeCharity(state.doc, c.id, t.id).ok; });
+    var sugg=AL.suggestCharities(state.doc, c.name, { limit:0 }).filter(function(sg){ return targets.indexOf(sg.charity)>=0; }).slice(0,3);
+    if(preferId){   // the charity that already carries this EIN goes first
+      var pt=M.charityById(state.doc, preferId);
+      if(pt && targets.indexOf(pt)>=0){ sugg=sugg.filter(function(sg){ return sg.charity!==pt; }); sugg.unshift({ charity:pt, why:['same EIN'] }); sugg=sugg.slice(0,3); }
+    }
+    sugg.forEach(function(sg){
+      var t=sg.charity, row=document.createElement('div'); row.className='cresult';
+      row.innerHTML='<div class="info"><div class="nm">'+esc(t.name)+'</div><div class="meta">'+esc(sg.why.join(' · '))+'</div></div>';
+      var b=document.createElement('button'); b.className='btn sm'; b.textContent='Merge here'; b.setAttribute('aria-label','Merge into '+t.name);
+      b.addEventListener('click', function(){ doMergeCharity(c, t); });
+      row.appendChild(b); p.appendChild(row);
+    });
+    var pick=document.createElement('div'); pick.className='search-row';
+    var opts=targets.slice().sort(function(a,b){ return String(a.name).localeCompare(String(b.name)); });
+    pick.innerHTML='<div class="field" style="flex:1 1 auto;min-width:0;margin:0;"><select aria-label="Charity to merge into"><option value="">Pick a charity…</option>'
+      + opts.map(function(t){ return '<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>'; }).join('')+'</select></div>';
+    var go=document.createElement('button'); go.className='btn sm ghost'; go.textContent='Merge';
+    go.addEventListener('click', function(){ var v=pick.querySelector('select').value, t=v&&M.charityById(state.doc, v); if(!t){ toast('Pick a charity to merge into.', true); return; } doMergeCharity(c, t); });
+    pick.appendChild(go); p.appendChild(pick);
+    var acts=document.createElement('div'); acts.className='bacts';
+    var cancel=document.createElement('button'); cancel.className='btn sm ghost'; cancel.textContent='Cancel';
+    cancel.addEventListener('click', function(){ p.remove(); });
+    acts.appendChild(cancel); p.appendChild(acts);
+    host.parentNode.insertBefore(p, host);
+    p.scrollIntoView({ block:'nearest' });
+  }
+  function doMergeCharity(from, to){
+    try {
+      var fromName=from.name, r=AL.mergeCharity(state.doc, from.id, to.id);
+      // the sealed capture drafts live outside the doc — re-point any that resolved to the duplicate
+      state.inbox.drafts.forEach(function(d){ if(d.charity_id===from.id){ d.charity_id=to.id; d.charity_name=to.name; d.charity_ein=to.ein||null; } });
+      var o=document.getElementById('charMerge'); if(o) o.remove();
+      persistCharities();
+      toast('Merged “'+fromName+'” into '+to.name+' — '+r.moved.donations+' gift'+(r.moved.donations===1?'':'s')+' moved.');
+    } catch(e){
+      var why={ locked:'the locked DAF sponsor can’t be merged away', locked_target:'nothing merges into the locked DAF sponsor', ein_mismatch:'they have different EINs — they’re different organisations' };
+      var m=/\(([\w_]+)\)/.exec(e.message||''); toast('Can’t merge: '+((m&&why[m[1]])||e.message||'try again')+'.', true);
+    }
   }
 
   function tryDeleteCharity(c){
@@ -8878,28 +9229,57 @@ window.GT.exp = {
   function startEdit(c){
     var box=$('charList');
     var form=document.createElement('div'); form.className='editrow';
-    form.innerHTML='<input class="txt" data-f="name" value="'+esc(c.name)+'" placeholder="Name">'
-      + '<div class="search-row"><input class="txt" data-f="ein" value="'+esc(c.ein||'')+'" placeholder="EIN">'
-      + '<label class="chk"><input type="checkbox" data-f="deductible"'+(c.deductible?' checked':'')+'> Deductible</label></div>'
-      + '<input class="txt" data-f="address" value="'+esc(c.address||'')+'" placeholder="Address (optional)">';
+    if(!c.locked){
+      form.innerHTML='<input class="txt" data-f="name" value="'+esc(c.name)+'" placeholder="Name">'
+        + '<div class="search-row"><input class="txt" data-f="ein" value="'+esc(c.ein||'')+'" placeholder="EIN">'
+        + '<label class="chk"><input type="checkbox" data-f="deductible"'+(c.deductible?' checked':'')+'> Deductible</label></div>'
+        + '<input class="txt" data-f="address" value="'+esc(c.address||'')+'" placeholder="Address (optional)">';
+    } else {
+      form.innerHTML='<div class="cresult"><div class="info"><div class="nm">'+esc(c.name)+'</div><div class="meta">Locked DAF sponsor — only its name rules can change.</div></div></div>';
+    }
+    form.appendChild(aliasBox(c));
     var actions=document.createElement('div'); actions.className='search-row';
     var save=document.createElement('button'); save.className='btn sm'; save.textContent='Save';
-    var cancel=document.createElement('button'); cancel.className='btn sm ghost'; cancel.textContent='Cancel';
+    var cancel=document.createElement('button'); cancel.className='btn sm ghost'; cancel.textContent=c.locked?'Done':'Cancel';
     save.addEventListener('click', function(){
       var get=function(f){ return form.querySelector('[data-f="'+f+'"]'); };
       try {
+        var newEin=(get('ein').value||'').trim()||null, einChanged=M.normEin(newEin)!==M.normEin(c.ein);
         var up=M.updateCharity(state.doc, c.id, {
-          name:(get('name').value||'').trim(), ein:(get('ein').value||'').trim()||null,
+          name:(get('name').value||'').trim(), ein:newEin,
           address:(get('address').value||'').trim()||null, deductible:get('deductible').checked
         });
         persistCharities();
         toast('Saved '+up.name);
+        // D4: an EIN added later that another charity already carries → they're the same organisation; offer the merge
+        var owner=einChanged ? AL.einOwner(state.doc, newEin, c.id) : null;
+        if(owner && AL.canMergeCharity(state.doc, c.id, owner.id).ok) showMergePanel(up, owner.id);
       } catch(e){ toast(e.message||'Could not save.', true); }
     });
     cancel.addEventListener('click', renderCharList);
-    actions.appendChild(save); actions.appendChild(cancel); form.appendChild(actions);
+    if(!c.locked) actions.appendChild(save);
+    actions.appendChild(cancel); form.appendChild(actions);
     // replace the whole list with just this editor (simple, obvious)
     box.innerHTML=''; box.appendChild(form);
+  }
+  // D4: the charity's saved name rules — each removable (the gift that arrives under it is asked about again)
+  function aliasBox(c){
+    var wrap=document.createElement('div'); wrap.className='aliasbox';
+    var al=AL.aliasesOf(c);
+    var h=document.createElement('div'); h.className='subhead'; h.textContent='Name rules'; wrap.appendChild(h);
+    if(!al.length){
+      var none=document.createElement('p'); none.className='hint'; none.style.marginTop='4px';
+      none.textContent='None yet. When a gift arrives under another name and you say it’s this charity, the rule shows here.';
+      wrap.appendChild(none); return wrap;
+    }
+    al.forEach(function(a){
+      var row=document.createElement('div'); row.className='cresult';
+      row.innerHTML='<div class="info"><div class="nm">“'+esc(a)+'”</div><div class="meta">Gifts under this name go here automatically.</div></div>';
+      var rm=document.createElement('button'); rm.className='btn sm danger'; rm.textContent='Remove'; rm.setAttribute('aria-label','Remove the rule for '+a);
+      rm.addEventListener('click', function(){ AL.removeAlias(state.doc, c.id, a); persistDoc(); startEdit(c); toast('Removed the rule for “'+a+'”.'); });
+      row.appendChild(rm); wrap.appendChild(row);
+    });
+    return wrap;
   }
 
   // ---- donation entry sheet ----
@@ -10249,6 +10629,7 @@ window.GT.exp = {
     var list=$('inboxList'), ready=$('inboxReady'); if(!list) return;
     renderCaptureWarn();
     var drafts=allDrafts(), un=state.inbox.unopenable;
+    drafts.forEach(function(d){ RV.refreshDraftCharity(state.doc, d); });   // a rule saved since → matched
     // Imports (Fidelity + CSV) are always available — they make LOCAL drafts and don't
     // need the capture key. Only pulling email/YNAB items needs capture set up.
     ready.innerHTML='';
@@ -10431,10 +10812,12 @@ window.GT.exp = {
     // §1al: make the acknowledgment default visible on the card so Approve is never silent — the
     // emailed receipt counts as the written acknowledgment (Review lets Mark untick it).
     if(RV.draftAckDefault(d)) hints+='<span class="qhint ack" title="The emailed receipt counts as the written acknowledgment. Review to change.">✓ acknowledged</span>';
+    if(d.matchedBy==='alias' && d.alias_name) hints+='<span class="qhint byrule" title="“'+esc(d.alias_name)+'” always goes to this charity (Charities → Edit to change)">matched by your rule</span>';
     var lk=looksLikeSeries(d); if(lk){ var lc=M.charityById(state.doc, lk.charity_id); hints+='<span class="qhint series">looks like your '+esc(lk.cadence)+' '+esc(lc?lc.name:'')+' gift</span>'; }
     el.innerHTML='<div class="qh"><span class="qsrc">'+sourceIcon(d.source)+'</span>'
       + '<span class="qwho">'+esc(d.charity_name||'Unknown charity')+'</span>'+amtHtml+'</div>'
       + '<div class="qmeta">'+dateHtml+' '+draftBadge(d)+' '+hints+'</div>';
+    if(RV.needsNameCheck(d)) el.appendChild(newNamePrompt(d));
     var acts=document.createElement('div'); acts.className='qacts';
     var rev=document.createElement('button'); rev.className='btn sm ghost'; rev.textContent='Review';
     rev.addEventListener('click', function(){ reviewDraft(d); });
@@ -10450,6 +10833,76 @@ window.GT.exp = {
     el.appendChild(acts);
     return el;
   }
+  // ---- D3: a charity name Mark has never given to — new, or one of his? ----
+  // Shown on the draft card until answered. Picking one of his charities saves a rule ("always treat
+  // 'X' as Y", GT.aliases) applied silently from then on; "It's new" adds it as before. Approve /
+  // Review / Approve-all-ready wait for the answer (RV.needsNameCheck / RV.isReady).
+  function newNamePrompt(d){
+    var box=document.createElement('div'); box.className='nnq';
+    var q=document.createElement('p'); q.className='nnt';
+    q.textContent='You haven’t given to “'+d.charity_name+'” before. Is it new, or the same as one of yours?';
+    box.appendChild(q);
+    var sugg=AL.suggestCharities(state.doc, d.charity_name, { limit:4 }).filter(function(sg){ return !sg.charity.is_daf_sponsor; }).slice(0,3);
+    if(sugg.length){
+      var sub=document.createElement('p'); sub.className='nnsub'; sub.textContent='Closest of yours:'; box.appendChild(sub);
+      sugg.forEach(function(sg){
+        var c=sg.charity, row=document.createElement('div'); row.className='cresult';
+        row.innerHTML='<div class="info"><div class="nm">'+esc(c.name)+'</div><div class="meta">'+esc(sg.why.join(' · '))+'</div></div>';
+        var b=document.createElement('button'); b.className='btn sm ghost'; b.textContent='Same';
+        b.setAttribute('aria-label','Same as '+c.name);
+        b.addEventListener('click', function(){ applyNamePick(d, c.id); });
+        row.appendChild(b); box.appendChild(row);
+      });
+    }
+    var pick=document.createElement('div'); pick.className='nnpick';
+    var opts=activeGiftCharities().filter(function(c){ return !c.is_daf_sponsor; }).slice().sort(function(a,b){ return String(a.name).localeCompare(String(b.name)); });
+    pick.innerHTML='<div class="field"><select aria-label="Pick one of your charities"><option value="">Pick one…</option>'
+      + opts.map(function(c){ return '<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>'; }).join('')+'</select></div>';
+    var go=document.createElement('button'); go.className='btn sm ghost'; go.textContent='Use';
+    go.addEventListener('click', function(){ var v=pick.querySelector('select').value; if(!v){ toast('Pick one of your charities first.', true); return; } applyNamePick(d, v); });
+    pick.appendChild(go); box.appendChild(pick);
+    var nw=document.createElement('div'); nw.className='nnnew';
+    var nb=document.createElement('button'); nb.className='btn sm ghost'; nb.textContent='It’s new';
+    nb.addEventListener('click', function(){ confirmNewName(d, nb); });
+    nw.appendChild(nb); box.appendChild(nw);
+    return box;
+  }
+  function applyNamePick(d, charityId){
+    var c=M.charityById(state.doc, charityId); if(!c) return;
+    var name=String(d.charity_name||'').trim();
+    // an alias never matches across a different EIN — a receipt with another EIN is another organisation
+    var de=M.normEin(d.charity_ein), ce=M.normEin(c.ein);
+    if(de && ce && de!==ce){ toast('“'+name+'” has EIN '+d.charity_ein+', but '+c.name+' is EIN '+c.ein+' — they’re different organisations. Tap “It’s new”.', true); return; }
+    try { AL.addAlias(state.doc, c.id, name); } catch(e){ toast(e.message||'Could not save that rule.', true); return; }
+    allDrafts().forEach(function(x){ RV.refreshDraftCharity(state.doc, x); });   // this draft + any other with the same name
+    if(!d.charity_id){ d.charity_id=c.id; d.charity_name=c.name; d.charity_ein=c.ein||null; d.needsCharity=false; d.matchedBy='alias'; d.alias_name=name; }
+    persistDoc(); renderInbox();
+    toast('Got it — “'+name+'” is '+c.name+' from now on.');
+  }
+  async function confirmNewName(d, btn){
+    var name=String(d.charity_name||'').trim();
+    if(btn){ btn.disabled=true; btn.textContent='Adding…'; }
+    try {
+      // add it as it arrived (name + any EIN, looked up BY EIN only) — never a name-search guess that
+      // could save a lasting rule to the wrong organisation. Mark can Edit it later (EIN, deductibility).
+      var found=null;
+      if(d.charity_ein){ try { found=await P.getByEin(d.charity_ein); } catch(e){ found=null; } }
+      var c = found ? M.upsertCharity(state.doc, found)
+        : M.upsertCharity(state.doc, { name: name, ein: d.charity_ein || null, deductible: !!d.charity_ein, source: d.source||'email' });
+      d.charity_id=c.id;
+      // found BY EIN under its registered name → the arriving name is a safe rule for it
+      if(found && !c.is_daf_sponsor && !c.locked && String(c.name).trim().toLowerCase()!==name.toLowerCase()) AL.addAlias(state.doc, c.id, name);
+      d.newConfirmed=true; d.needsCharity=false;
+      if(c){ d.charity_name=c.name; d.charity_ein=c.ein||null; }
+      persistDoc(); renderCharList(); renderInbox();
+      toast('Added '+(c?c.name:name)+' to your charities.');
+    } catch(e){ if(btn){ btn.disabled=false; btn.textContent='It’s new'; } toast(e.message||'Could not add it.', true); }
+  }
+  function askNameFirst(d){
+    toast('First tell me who “'+d.charity_name+'” is — new, or one of yours?', true);
+    renderInbox();
+  }
+
   function unopenableCard(u){
     var el=document.createElement('div'); el.className='qcard';
     el.innerHTML='<div class="qh"><span class="qsrc">🔒</span><span class="qwho">Can’t open this item</span></div>'
@@ -10479,6 +10932,7 @@ window.GT.exp = {
   }
 
   async function approveDraft(d){
+    if(RV.needsNameCheck(d)){ askNameFirst(d); return; }
     try {
       d.charity_id = await ensureDraftCharity(d);
       var payload = RV.draftPayload(d);
@@ -10539,6 +10993,7 @@ window.GT.exp = {
 
   // Review = open the entry sheet prefilled; approving happens on Save (row removed then).
   async function reviewDraft(d){
+    if(RV.needsNameCheck(d)){ askNameFirst(d); return; }
     try { d.charity_id = await ensureDraftCharity(d); renderCharList(); } catch(e){}
     var key = d.type==='daf_grant' ? 'grant' : (d.daf_contribution ? 'into_daf' : (d.type==='items' ? 'items' : 'money'));
     var ed = {
