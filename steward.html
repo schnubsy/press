@@ -27,7 +27,7 @@ html,body{margin:0;background:var(--ground);color:var(--ink);font:400 15px/1.55 
 html.sw-locked .app{visibility:hidden}
 .app{max-width:430px;margin:0 auto;min-height:100vh;padding:20px 16px 56px}
 @media(min-width:900px){.app{max-width:760px;padding:36px 32px 64px}}
-a.back{display:inline-block;margin-bottom:16px;font-size:12.5px;color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line)}
+a.back{display:inline-flex;align-items:center;min-height:44px;margin:-13px 0 3px;font-size:12.5px;color:var(--muted);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px}  /* 44px tap box (safari-ui) */
 .kick{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--sage);margin-bottom:6px}
 .kick:before{content:"";width:6px;height:6px;border-radius:50%;background:linear-gradient(135deg,var(--sage),var(--gold))}
 h1{margin:0 0 18px;font:600 24px/1.15 var(--sans);letter-spacing:-.01em}
@@ -65,6 +65,12 @@ h2 .n{color:var(--faint);letter-spacing:0;margin-left:4px}
 .btn{margin-top:12px;font:500 13px/1 var(--sans);color:var(--ink);background:transparent;border:1px solid var(--line-2);border-radius:999px;padding:9px 16px;cursor:pointer}
 .ledger{width:100%;border-collapse:collapse;font-size:13px}
 .ledger td{padding:6px 0;border-top:1px solid var(--line)} .ledger td:last-child{text-align:right;color:var(--muted)}
+/* safari-ui (2026-10-12): 44px tap boxes for the vendored passkey gate's controls (ui-audit `touch`). A PAGE-LEVEL
+   override (`html` outranks the gate's injected #press-gate rules) — src/gate.js is the tenants' shared module and stays
+   byte-identical until a tenant-wave arc moves this into it and every tenant re-vendors. */
+html #press-gate .pg-btn{min-height:44px;justify-content:center}
+html #press-gate .pg-back{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;padding:0 6px;border-bottom:0;
+  text-decoration:underline;text-decoration-color:rgba(183,174,200,.35);text-underline-offset:4px}
 </style>
 </head><body>
 <main class="app" id="app" aria-live="polite">

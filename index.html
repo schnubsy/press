@@ -209,9 +209,12 @@ body.tw-sorting .tw-card{transition:none}
   color:var(--tw-violet);margin-left:8px}
 .tw-hint{font-size:10.5px;color:var(--tw-faint);margin-top:6px;text-align:center}
 .tw-auto{font-size:10.5px;color:var(--tw-faint);margin-top:16px;text-align:center}
-.tw-back{display:inline-flex;align-items:center;gap:7px;font-family:var(--tw-font-meta);font-size:10px;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);
-  padding:6px 12px;border-radius:var(--tw-radius-pill);text-decoration:none;margin-bottom:14px}
+.tw-back{position:relative;isolation:isolate;display:inline-flex;align-items:center;gap:7px;font-family:var(--tw-font-meta);font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--tw-violet);white-space:nowrap;
+  min-height:44px;padding:0 12px;text-decoration:none;margin:-9.5px 0 4.5px}
+/* safari-ui (2026-10-12): the tap box is 44px tall (iOS HIG / ui-audit `touch`); the pill keeps its 25px look */
+.tw-back::before{content:"";position:absolute;inset:9.5px 0;z-index:-1;pointer-events:none;
+  border:1px solid rgba(142,123,232,.4);border-radius:var(--tw-radius-pill)}
 /* R3 — restore control on archive cards */
 .tw-restore{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-family:var(--tw-font-meta);
   font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--tw-violet);
@@ -303,18 +306,23 @@ body.tw-sorting .tw-card{transition:none}
   stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 10px rgba(231,166,199,.4));margin-bottom:14px}
 .tw-unlock h3{font-family:var(--tw-font-display);font-weight:400;font-size:18px;margin-bottom:8px}
 .tw-unlock p{font-size:13px;color:var(--tw-muted);max-width:330px;margin:0 auto 20px}
-.tw-btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--tw-font-meta);font-size:12px;
+.tw-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;font-family:var(--tw-font-meta);font-size:12px;
   letter-spacing:.08em;text-transform:uppercase;color:#fff;cursor:pointer;border:0;
   background:linear-gradient(92deg,var(--tw-violet),var(--tw-rose));
   padding:12px 22px;border-radius:var(--tw-radius-pill);box-shadow:0 8px 24px rgba(142,123,232,.35)}
 .tw-btn:hover{filter:brightness(1.08)}
 .tw-btn[disabled]{opacity:.6;cursor:progress}
 .tw-secmsg{font-size:12.5px;margin-top:14px;min-height:1em}
-.tw-secbar{display:flex;gap:10px;align-items:center;justify-content:flex-start;margin:2px 0 16px}
-.tw-mini{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);padding:7px 12px;border-radius:var(--tw-radius-pill);
-  cursor:pointer;background:rgba(16,12,30,.4)}
-.tw-mini:hover{border-color:var(--tw-violet);background:rgba(142,123,232,.12)}
+.tw-secbar{display:flex;flex-wrap:wrap;gap:0 10px;align-items:center;justify-content:flex-start;margin:-6px 0 10px}
+/* safari-ui (2026-10-12): every mini control is a real <button>, one line, with a 44px tap box; the 27px pill is ::before */
+.tw-mini{position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;
+  min-height:44px;min-width:44px;padding:0 12px;border:0;background:none;white-space:nowrap;
+  font-family:var(--tw-font-meta);font-size:10px;line-height:1.2;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--tw-violet);cursor:pointer}
+.tw-mini::before{content:"";position:absolute;inset:8.5px 0;z-index:-1;pointer-events:none;
+  border:1px solid rgba(142,123,232,.4);border-radius:var(--tw-radius-pill);background:rgba(16,12,30,.4)}
+.tw-mini:hover::before{border-color:var(--tw-violet);background:rgba(142,123,232,.12)}
+.tw-mini:focus-visible{outline:2px solid var(--tw-violet);outline-offset:-6px;border-radius:var(--tw-radius-pill)}
 /* wings-polish slice 5 — the printable recovery kit. On screen it is a panel; on paper it is the
    only thing that prints (everything else is hidden by the @media print block below). */
 .tw-kit{margin-top:18px}
@@ -366,7 +374,7 @@ body.tw-sorting .tw-card{transition:none}
 .tw-tool-form{margin-top:12px;display:flex;flex-direction:column;gap:8px}
 .tw-tool-foot{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
 .tw-reconnect{-webkit-appearance:none;appearance:none;display:inline-flex;align-items:center;min-height:44px} /* real <button>; 44px tap target */
-.tw-cinput{width:100%;min-height:44px;background:rgba(16,12,30,.5);border:1px solid var(--tw-border-card);border-radius:10px;padding:10px 12px;color:var(--tw-ink,#efeaf6);font-size:13px;font-family:var(--tw-font-meta,monospace)}
+.tw-cinput{width:100%;min-height:44px;background:rgba(16,12,30,.5);border:1px solid var(--tw-border-card);border-radius:10px;padding:10px 12px;color:var(--tw-ink,#efeaf6);font-size:16px;font-family:var(--tw-font-meta,monospace)}
 .tw-cinput:focus{outline:2px solid var(--tw-violet);outline-offset:1px}
 .tw-tool-actions{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap}
 .tw-verify{font-size:11px;min-height:44px;padding:9px 16px}
@@ -376,8 +384,17 @@ body.tw-sorting .tw-card{transition:none}
 .tw-tool-msg.err{color:var(--tw-rose)}
 .tw-tool-msg.ok{color:var(--tw-violet)}
 .tw-setup-alt{margin-top:16px}
-.tw-setup-link{font-family:var(--tw-font-meta);font-size:11px;color:var(--tw-muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.tw-setup-alt{font-family:var(--tw-font-meta);font-size:11px;color:var(--tw-muted)}
+/* safari-ui (2026-10-12): the setup action is its own one-line button (44px) after the plain-text question */
+.tw-setup-link{display:inline-flex;align-items:center;min-height:44px;padding:0 6px;border:0;background:none;white-space:nowrap;
+  font:inherit;color:var(--tw-muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .tw-setup-link:hover{color:var(--tw-ink,#efeaf6)}
+/* safari-ui (2026-10-12): 44px tap boxes for the inlined family gate's text controls (ui-audit `touch`). A PAGE-LEVEL
+   override (`html` raises specificity over the gate's injected #family-gate rules) — src/family-gate.js is the tenants'
+   shared module and stays byte-identical until a tenant-wave arc moves this into it and every tenant re-vendors. */
+html #family-gate .fg-back{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;padding:0 6px;border-bottom:0;
+  text-decoration:underline;text-decoration-color:rgba(125,138,156,.4);text-underline-offset:4px}
+html #family-gate .fg-link{min-height:44px;padding:0 6px;margin-top:4px}
 </style>
 </head>
 <body class="tw-page">
@@ -2021,7 +2038,7 @@ async function loadDevices(root, man){
   const created=(row&&row.created_at)?new Date(row.created_at).toLocaleDateString():'—';
   list.innerHTML =
     `<div class="tw-device"><span>${esc(label)} <span class="meta">· this device · added ${esc(created)}</span></span>`+
-    `<span class="tw-mini" id="revBtn">Remove</span></div>`+
+    `<button type="button" class="tw-mini" id="revBtn">Remove</button></div>`+
     `<div class="meta" style="margin-top:8px">Each enrolled passkey holds its own sealed copy — other devices keep their access.</div>`;
   document.getElementById('revBtn').addEventListener('click', async ()=>{
     if(!confirm('Remove this device from the private wing? You will need another enrolled passkey to get back in from here.')) return;
@@ -2269,7 +2286,7 @@ function recoveryKitHTML(man){
       `<li><b>Connect your tools</b> from the wing.</li>`+
       `<li><b>Re-enter each app's sync ID + passphrase</b> from this sheet.</li>`+
     `</ol></div>`+
-    `<div class="tw-kit-actions tw-noprint"><span class="tw-mini" id="kitPrint">🖨 Print</span><span class="tw-mini" id="kitDone">Done</span></div>`+
+    `<div class="tw-kit-actions tw-noprint"><button type="button" class="tw-mini" id="kitPrint">🖨 Print</button><button type="button" class="tw-mini" id="kitDone">Done</button></div>`+
   `</div>`;
 }
 function showRecoveryKit(root, man){
@@ -2294,13 +2311,13 @@ function paintPersonal(root, man){
     const hint=cards?`<div class="tw-hint">hold a card to lift it · Alt+↑/↓ to reorder</div>`:'';
     root.innerHTML = back+top+`<h2 class="tw-title">The Private Wing</h2>`+
       `<div class="tw-dek">Unlocked · ${clockUntil(st.sess.expiresAt)}. Open any tool — no more prompts until you lock or it expires.</div>`+
-      `<div class="tw-secbar"><span class="tw-mini" id="lockBtn">⏻ Lock now</span>`+
-      `<span class="tw-mini" id="devBtn">⚙ Devices</span>`+
-      `<span class="tw-mini" id="kitBtn">🖨 Recovery kit</span></div>`+
+      `<div class="tw-secbar"><button type="button" class="tw-mini" id="lockBtn">⏻ Lock now</button>`+
+      `<button type="button" class="tw-mini" id="devBtn">⚙ Devices</button>`+
+      `<button type="button" class="tw-mini" id="kitBtn">🖨 Recovery kit</button></div>`+
       cards + hint +
       renderConnect() +
       `<div class="tw-devices" id="devWrap" hidden><h4>Enrolled passkeys</h4><div id="devList"></div>`+
-      `<div style="margin-top:14px"><span class="tw-mini" id="addBtn">＋ Add this device</span></div>`+
+      `<div style="margin-top:14px"><button type="button" class="tw-mini" id="addBtn">＋ Add this device</button></div>`+
       `<div class="tw-secmsg" id="devMsg"></div></div>`+
       `<div class="tw-kit" id="recoveryKit" hidden></div>`;
     document.getElementById('lockBtn').addEventListener('click', ()=>{ PressVault.lock(); paintPersonal(root, man); });
@@ -2326,7 +2343,7 @@ function paintPersonal(root, man){
       `<p>Use your passkey to open your personal tools. Nothing here loads until you unlock.</p>`+
       `<button class="tw-btn" id="unlockBtn">Use your passkey</button>`+
       `<div class="tw-secmsg" id="secmsg"></div>`+
-      `<div class="tw-setup-alt"><span class="tw-setup-link" id="setupLink" role="button" tabindex="0">First time on any device? Set up a new passkey</span></div>`+
+      `<div class="tw-setup-alt">First time on any device? <button type="button" class="tw-setup-link" id="setupLink">Set up a new passkey</button></div>`+
       `</div>`;
     const btn=document.getElementById('unlockBtn'), msg=document.getElementById('secmsg');
     btn.addEventListener('click', async ()=>{
@@ -2386,7 +2403,7 @@ async function renderFamily(root){
   const fam=wingOrdered(SPACES.family||[], 'family');
   const cards=fam.map(f=>cardHTML(f, man, false)).join('');
   const hint=`<div class="tw-hint">hold a card to lift it · Alt+↑/↓ to reorder</div>`;
-  const secbar=`<div class="tw-secbar"><span class="tw-mini" id="famLogout">⎋ Log out</span></div>`;
+  const secbar=`<div class="tw-secbar"><button type="button" class="tw-mini" id="famLogout">⎋ Log out</button></div>`;
   const dek=`<div class="tw-dek">Signed in as ${esc(who.email)}. Open any tool — no more prompts. Everyone here shares the same data; there are no roles.</div>`;
   const body = cards
     ? dek+secbar+cards+hint

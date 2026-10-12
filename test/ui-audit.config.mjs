@@ -191,7 +191,12 @@ export default {
     surfaces: '#family-gate, #recoveryKit:not([hidden]), dialog[open], [aria-modal="true"]:not([hidden])',
     main: 'body',
     // press's pill links + text links are single-line controls too (the default set covers button / [role=button])
-    oneLine: '.tw-back, .fg-back, a.back, .lnk',
+    oneLine: '.tw-back, .fg-back, .pg-back, a.back, .lnk',
+    wrapOk: '.row .line',
   },
-  exceptions: [],
+  exceptions: [
+    '.row .line (agent-health.html) — an agent row is one <button> (tap to expand), so the probe reads its status line as a '
+      + 'button label; it is server copy of variable length ("Missed the run due Wed Oct 7, 12:00 PM CT · last real work 9 days ago") '
+      + 'that must wrap at phone width — truncating it would hide the reason the agent needs attention. The row title (.name) stays gated.',
+  ],
 };
