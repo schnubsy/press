@@ -34,6 +34,8 @@
       /* Slice 6: in dark mode the tint is dark, so the BRIGHT accent text is the high-contrast choice. */
       --badge-hit-fg:#4fc38a; --badge-near-fg:#e0bd8f;
       --accentA:#4fc38a; --link:#5fd39a; --accentB:#e0bd8f; --hit:#4fc38a; --near:#e0bd8f;
+      /* polish Slice 5 (Eye): #b3261e on #171b21 was ≈1.7:1 — a light red clears 4.5:1 on the dark card. */
+      --danger:#ff8a80;
     }
   }
   *{box-sizing:border-box}
@@ -95,7 +97,7 @@
     padding:10px 14px;margin:48px 0 14px;scroll-margin-top:calc(var(--stick) + var(--stick2) + 16px)}
   .grouphead:first-child{margin-top:8px}
   .grouphead h2{font-size:24px;font-weight:800;letter-spacing:-.015em;margin:0;flex:1;min-width:0}
-  .grouphead .gcount{display:inline-block;font-size:14px;font-weight:600;color:var(--muted);background:var(--chip);border-radius:999px;padding:1px 9px;margin-left:6px;vertical-align:middle}
+  .grouphead .gcount,.badgroup .gcount{display:inline-block;font-size:14px;font-weight:600;color:var(--muted);background:var(--chip);border-radius:999px;padding:1px 9px;margin-left:6px;vertical-align:middle}
   /* Inbox arc Slice 5: the Processed section is a collapsible heading (button inside the h2).
      Multi-brand arc Slice 4: the bar is EXACTLY as tall as every other .grouphead — the ≥44px tap target is an
      absolutely-positioned ::before hit area spanning the bar, so it never grows the bar; content centred. */
@@ -121,6 +123,25 @@
   .badlist li:first-child{border-top:0}
   .badlist .meta{font-size:12px;color:var(--muted)}
   .badgroup h4{margin:10px 0 2px;font-size:14px}
+  /* polish Slice 5 (Eye P2): backlog links use the page link token (were default blue); sheet text is
+     left-aligned on every viewport; the sheet carries the deal's price line; the watch ✕ is a 44px target;
+     "no channel on" reads as a warning; the inline watch edit carries its keyboard hint. */
+  .badlist a{color:var(--link);font-weight:600}
+  .sheet,.sheet .field,.sheet label{text-align:left}
+  .sheet .field{align-items:stretch}
+  .sheet .price{margin-top:2px;font-weight:700;font-variant-numeric:tabular-nums}
+  .watchrow .fchip{min-width:var(--tap);min-height:var(--tap);display:inline-flex;align-items:center;justify-content:center}
+  .warntext{color:var(--danger);font-weight:700}
+  .wedit-hint{display:block;margin-top:4px;font-size:13px;color:var(--muted)}
+  /* polish Slice 4: Remove flag (in the sheet) + backlog Unflag + the Undo toast. */
+  .sheet .actions .unflag{margin-right:auto;color:var(--danger)}
+  .badlist li{display:flex;gap:10px;align-items:flex-start}
+  .badlist li .bl-body{flex:1;min-width:0}
+  .badlist li .btn{flex:0 0 auto}
+  .toast{position:fixed;left:0;right:0;margin:0 auto;width:fit-content;bottom:calc(16px + env(safe-area-inset-bottom));z-index:70;display:flex;align-items:center;gap:12px;
+    max-width:calc(100% - 32px);box-sizing:border-box;background:var(--ink);color:var(--card);border-radius:12px;padding:8px 8px 8px 14px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:14px}
+  .toast[hidden]{display:none}
+  .toast .btn{min-height:44px;background:transparent;color:inherit;border-color:currentColor}
   .grouphead .toplink{font-size:13px;font-weight:600;color:var(--link);text-decoration:none;flex:0 0 auto}
   /* rules search */
   .searchbar{display:flex;gap:8px;position:sticky;top:var(--stick);z-index:5;
@@ -159,9 +180,9 @@
   /* toggle — 52x44 hit area (iOS min), pill drawn 48x28 centred */
   .sw{position:relative;width:52px;height:44px;flex:0 0 auto;border:none;background:transparent;cursor:pointer;padding:0}
   .sw::before{content:"";position:absolute;top:50%;left:0;transform:translateY(-50%);width:48px;height:28px;border-radius:999px;background:#c7ccd3;transition:background .15s}
-  .sw[aria-pressed="true"]::before{background:linear-gradient(135deg,var(--accentA),var(--accentB))}
+  .sw[aria-checked="true"]::before{background:linear-gradient(135deg,var(--accentA),var(--accentB))}
   .sw::after{content:"";position:absolute;top:50%;left:3px;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s}
-  .sw[aria-pressed="true"]::after{transform:translate(20px,-50%)}
+  .sw[aria-checked="true"]::after{transform:translate(20px,-50%)}
   .stepper{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
   .stepper button{width:44px;height:44px;border:none;background:var(--card);color:var(--ink);font-size:20px;cursor:pointer}
   .stepper output{min-width:52px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
@@ -306,7 +327,7 @@
   .glance strong{font-weight:700;color:var(--ink)}
   .metrics .hero{margin:2px 0 10px}
   .herovalue{font-size:44px;line-height:1.05;font-weight:800;letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums}
-  .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+  .tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
   .tile{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--card);min-width:0}
   .tlabel{font-size:12px;color:var(--muted);font-weight:600}
   .tvalue{font-size:22px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:2px}
@@ -1308,6 +1329,9 @@
   // Multi-brand card arc: a One4all / Happy card whose brands couldn't be read (brands_unknown) is shown too.
   function meetsRules(d){ var e=d.extras||{}; return d.verdict==="hit" || (d.verdict==="near" && !!(e.unpriced||e.brands_unknown)); }
   function isDecided(d){ return d.status==="bought"||d.status==="skip"||d.status==="bad"; }
+  // polish Slice 4: a deal is FLAGGED Bad when Mark flagged it (status 'bad') or the agent auto-flagged it
+  // (extras.auto_bad on an undecided row — its bad- backlog row exists) — the Bad button reads pressed for both.
+  function isFlagged(d){ return !!d && (d.status==="bad" || (!isDecided(d) && !!(d.extras&&d.extras.auto_bad))); }
   function shownDeals(){ return (state.deals||[]).filter(function(d){ return meetsRules(d)||isDecided(d); }); }
   // Inbox arc Slice 5: the INBOX is what still needs a decision; PROCESSED holds Mark's decisions
   // (bought / skip / bad), newest decision first (extras.status_at, stamped on every status change).
@@ -1359,7 +1383,7 @@
     return String(k).replace(/\b[a-z]/g,function(c){ return c.toUpperCase(); });
   }
   function dealCard(d){
-    var p=pct(d); var isHit=d.verdict==="hit"; var bought=d.status==="bought", skip=d.status==="skip", isBad=d.status==="bad";
+    var p=pct(d); var isHit=d.verdict==="hit"; var bought=d.status==="bought", skip=d.status==="skip", isBad=isFlagged(d);
     var isNew=!isDecided(d)&&isUnseen(d); var rt=relTime(d.created_at); // a processed card is never NEW
     // Slice 1: the SHOP is a secondary label ("· at Sam's Club"), never the bucket.
     var retailer=d.extras&&d.extras.retailer;
@@ -1692,7 +1716,7 @@
       +'<div class="grow"><div class="title">'+esc(s.title)+' <span class="badge'+lbcls+'">'+label+'</span></div>'
       +'<div class="sub">'+esc(laneStr)+' · '+esc(checked)+'</div>'
       +(reason?'<div class="sub">'+esc(reason)+'</div>':"")+'</div>'
-      +'<button class="sw" role="switch" aria-checked="'+on+'" aria-pressed="'+on+'" '
+      +'<button class="sw" role="switch" aria-checked="'+on+'" '
         +(disabled?'disabled aria-disabled="true" title="Coming soon — nothing checks this yet" ':'')
         +'aria-label="Enable '+esc(s.title)+'" data-src="'+esc(s.item_id)+'"></button>'
       +'</div></div>';
@@ -1782,7 +1806,7 @@
       +(modeBadge?'<div class="sub"><span class="badge">'+modeBadge+'</span>'
         +(mode==="bonus-booster"?' A free HEB card adds to the discount on the brand you buy — judged against that brand.':"")+'</div>':"")
       +'</div>'
-      +'<button class="sw" role="switch" aria-checked="'+on+'" aria-pressed="'+on+'" aria-label="Enable '+esc(r.title)+'" data-rule="'+esc(r.item_id)+'"></button>'
+      +'<button class="sw" role="switch" aria-checked="'+on+'" aria-label="Enable '+esc(r.title)+'" data-rule="'+esc(r.item_id)+'"></button>'
       +overflowMenu(r)+'</div>';
     var ctrls="";
     if(mode==="pct"){
@@ -2048,8 +2072,13 @@
       ["Sale watches", watches],
       ["Last run", lr?relTime(lr):"Not yet"]
     ];
+    // polish Slice 5: no channel on = nothing reaches Mark — a warning, not a neutral fact.
+    var noChan=!chans.length;
     return '<div class="card summary" id="setup-summary"><h3 class="sumtitle">Current setup — at a glance</h3><ul class="glance">'
-      +items.map(function(i){ return '<li><strong>'+esc(i[0])+':</strong> '+esc(i[1])+'</li>'; }).join("")
+      +items.map(function(i){
+        if(noChan&&i[0]==="Alerts") return '<li id="glance-alerts"><strong>'+esc(i[0])+':</strong> <span class="warntext"><span aria-hidden="true">⚠ </span>no channel on</span>'
+          +esc(String(i[1]).replace(/^no channel on/,""))+' — turn on iPhone or Email below</li>';
+        return '<li><strong>'+esc(i[0])+':</strong> '+esc(i[1])+'</li>'; }).join("")
       +'</ul></div>';
   }
   // Enhancements Slice 7 — metrics from the permanent savings log (press_tasks category='savings', D1)
@@ -2077,7 +2106,6 @@
       rate:decided?Math.round(100*bought.length/decided):null, decided:decided, flagged:flagged,
       backlog:backlogState(state.raw, nowMs) };
   }
-  var BACKLOG_WORD={green:"OK",amber:"Slow",red:"Stuck"};
   function metricsCard(){
     var m=metrics(Date.now());
     function tile(id,label,value,note){ return '<div class="tile" id="m-'+id+'"><div class="tlabel">'+esc(label)+'</div><div class="tvalue">'+esc(value)+'</div>'+(note?'<div class="tnote">'+esc(note)+'</div>':'')+'</div>'; }
@@ -2090,7 +2118,7 @@
       +tile("alerts","Alerts sent (30 d)",String(m.alerts30))
       +tile("rate","Hit-to-bought rate",m.rate==null?"—":m.rate+"%",m.decided?m.bought+" of "+m.decided+" decided":"nothing decided yet")
       +tile("flagged","Too-good flags (30 d)",String(m.flagged),"60%+ off — double-check")
-      +'<div class="tile" id="m-backlog"><div class="tlabel">Judge backlog</div><div class="tvalue"><span aria-hidden="true">'+BACKLOG_ICON[m.backlog.level]+'</span> '+m.backlog.n+'</div><div class="tnote">'+esc(BACKLOG_WORD[m.backlog.level])+(m.backlog.n?" · oldest "+ageLabel(m.backlog.oldestMin):"")+'</div></div>'
+      // polish Slice 5 (Eye P2 "backlog shown twice"): the judge backlog lives ONLY in the Agent health card.
       +'</div></div>';
   }
   // Slice 1: iPhone push health + a one-tap "Send test push". The health line reads the push-health
@@ -2142,7 +2170,7 @@
     var host=el("alerts"); var s=state.settings||{}; var t=state.toggles||{};
     function tog(id,label,desc){
       return '<div class="card"><div class="row"><div class="grow"><div class="title">'+label+'</div><div class="sub">'+desc+'</div></div>'
-        +'<button class="sw" role="switch" aria-checked="'+(t[id]===true)+'" aria-pressed="'+(t[id]===true)+'" aria-label="'+label+'" data-toggle="'+id+'"></button></div></div>';
+        +'<button class="sw" role="switch" aria-checked="'+(t[id]===true)+'" aria-label="'+label+'" data-toggle="'+id+'"></button></div></div>';
     }
     var groups=[{slug:"channels",label:"Channels",count:2},{slug:"howoften",label:"How often",count:2},{slug:"timing",label:"Timing",count:4},{slug:"bad",label:"Bad backlog",count:(state.bad||[]).length}];
     var html=metricsCard()+alertsSummary();
@@ -2192,7 +2220,8 @@
   function renderAll(){ renderFeed(); renderFeedBadge(); renderSources(); renderRules(); renderAlerts(); renderFooter(); }
 
   // ---------- interactions ----------
-  function setSwitch(btn,on){ btn.setAttribute("aria-checked",on); btn.setAttribute("aria-pressed",on); }
+  // polish Slice 5: a role="switch" carries aria-checked only (aria-pressed is not allowed on it — axe aria-allowed-attr).
+  function setSwitch(btn,on){ btn.setAttribute("aria-checked",on); btn.removeAttribute("aria-pressed"); }
   document.addEventListener("click", function(ev){
     var b=ev.target.closest("button, a"); if(!b) return;
     // Slice 5: the ⋯ overflow menu (Move to…) — toggle; any other button click closes open menus.
@@ -2232,10 +2261,14 @@
     // bought / skip
     var buy=b.getAttribute("data-buy"), skip=b.getAttribute("data-skip");
     if(buy||skip){ markDeal(buy||skip, buy?"bought":"skip"); return; }
-    // Inbox arc Slice 6: Bad opens the in-page sheet; tapping an active Bad is undo (no sheet).
+    // Inbox arc Slice 6: Bad opens the in-page sheet. polish Slice 4: tapping a FLAGGED Bad never undoes
+    // silently — the sheet asks (change the reason, or Remove flag).
     var badId=b.getAttribute("data-bad");
-    if(badId){ var bd=find(state.deals,badId); if(bd&&bd.status==="bad") markDeal(badId,"bad"); else openBadSheet(badId,b); return; }
+    if(badId){ openBadSheet(badId,b); return; }
     if(b.id==="bad-cancel"){ closeBadSheet(); return; }
+    if(b.id==="bad-unflag"){ var uid=badSheetFor; var sh0=el("bad-sheet"); if(sh0) sh0.hidden=true; badSheetFor=null; if(uid) unflagDeal(uid); return; }
+    var unbad=b.getAttribute("data-unbad"); if(unbad){ unflagBacklog(unbad); return; }
+    if(b.id==="toast-undo"){ runToastUndo(); return; }
     if(b.id==="bad-save"){ saveBadSheet(); return; }
     // add brand
     if(b.id==="addbrand"){ addBrand(); return; }
@@ -2452,10 +2485,14 @@
   // (where undo returns to: judged / alerted). Tapping the ACTIVE button again is undo: the row goes back to
   // the inbox and its log row (savings or bad) is removed. Switching Bought↔Skip replaces the ONE savings row
   // (same sv- id); switching to/from Bad swaps the savings row for the bad-backlog row — never two of either.
-  function markDeal(id,status,bad){
+  // polish Slice 4: any decision consumes the agent's auto flag (extras.auto_bad) and removes its bad- row —
+  // Bought/Skip never leave a stale auto row behind; every change shows an Undo toast (opts.quiet = the undo itself).
+  function markDeal(id,status,bad,opts){
     var d=find(state.deals,id); if(!d) return;
     var cur=d.status, e=Object.assign({}, d.extras||{});
     var undo=(cur===status);
+    var snap={status:cur, auto:!!e.auto_bad&&!isDecided(d), badRow:find(state.bad||[],"bad-"+id)};
+    delete e.auto_bad;
     var base=isDecided({status:cur}) ? (e.prev_status||(e.alert?"alerted":"judged")) : cur;
     if(undo){
       d.status=base; delete e.user_status; delete e.prev_status; delete e.status_at; delete e.bad_reason;
@@ -2468,11 +2505,93 @@
     if(!undo&&(status==="bought"||status==="skip")) writes.push(writeSavings(d,status));
     else if(cur==="bought"||cur==="skip") writes.push(writeSavings(d,null));
     if(!undo&&status==="bad") writes.push(writeBad(d,bad||{}));
-    else if(cur==="bad") writes.push(writeBad(d,null));
-    withSave(Promise.all(writes).then(function(rs){ return {ok:rs.every(function(r){ return r&&r.ok; })}; }));
+    else if(cur==="bad"||snap.auto) writes.push(writeBad(d,null));
+    var saved=track(id,withSave(Promise.all(writes).then(function(rs){ return {ok:rs.every(function(r){ return r&&r.ok; })}; })));
+    rerenderDeals();
+    if(opts&&opts.quiet) return saved;
+    showToast(undo?(cur==="bad"?"Flag removed — back in Inbox":"Back in Inbox"):(STATUS_DONE[status]+" — moved to Processed"),
+      function(){ restoreDeal(id,snap); });
+    return saved;
+  }
+  var STATUS_DONE={bought:"Marked Bought",skip:"Skipped",bad:"Flagged Bad"};
+  // review fix: the last in-flight write per deal / backlog row — an Undo always chains on it, so a fast Undo can
+  // never race the action it undoes (DELETE vs re-POST of one row, two PATCHes of one deal, sv- POST vs DELETE).
+  var pendingWrites={};
+  function track(key,p){ pendingWrites[key]=Promise.resolve(p); return p; }
+  function after(key){ return Promise.resolve(pendingWrites[key]); }
+  // review fix: rows loaded from the DB carry only item_id,title,status,extras,updated_at — a re-POST must restore
+  // the full shape (page + category) or the kept-forever backlog row is lost.
+  function fullBadRow(row){ return Object.assign({page:PAGE,category:"bad",status:"bad",position:999}, row); }
+  function rerenderDeals(){
     renderFeedList(); syncFilterUI(); renderFeedBadge();
     if(typeof renderAlerts==="function"&&el("alerts")) renderAlerts();
   }
+  // Undo for markDeal / unflag: put the deal back exactly as the snapshot had it (status, Mark's bad reason +
+  // note, and the agent's auto flag + its backlog row).
+  function restoreDeal(id,snap){ return after(id).then(function(){ restoreDealNow(id,snap); }); }
+  function restoreDealNow(id,snap){
+    var d=find(state.deals,id); if(!d) return;
+    var br=snap.badRow&&snap.badRow.extras||{}, p=null;
+    if(isDecided({status:snap.status})){
+      if(d.status!==snap.status) p=markDeal(id,snap.status,snap.status==="bad"?{reason:br.reason||"other",note:br.note||""}:null,{quiet:true});
+    } else if(isDecided(d)) p=markDeal(id,d.status,null,{quiet:true});
+    // the auto flag is restored only AFTER markDeal's writes settle — its DELETE of bad-<id> and its deal PATCH
+    // must never race the re-POST / auto_bad PATCH below.
+    if(snap.auto) track(id,Promise.resolve(p).then(function(){ return restoreAutoBad(find(state.deals,id)||d,snap.badRow); }));
+    rerenderDeals();
+  }
+  function restoreAutoBad(d,row){
+    var e=Object.assign({}, d.extras||{}); e.auto_bad=true; d.extras=e;
+    if(!row){ row=badRowFor(d,{reason:e.brands_unknown?"brands_unknown":"price_missing"}); row.extras.auto=true; }
+    row=fullBadRow(row);
+    state.bad=(state.bad||[]).filter(function(x){ return x.item_id!==row.item_id; }).concat([row]);
+    rerenderDeals();
+    return withSave(Promise.all([patchDeal(d.item_id,{extras:e,updated_at:new Date().toISOString()}),
+      api("press_tasks?on_conflict=page,item_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(row)})])
+      .then(function(rs){ return {ok:rs.every(function(r){ return r&&r.ok; })}; }));
+  }
+  // Remove a Bad flag: Mark's own flag → undo the 'bad' status (back to the inbox); the agent's auto flag →
+  // drop extras.auto_bad + its backlog row. Either way an Undo toast follows.
+  function unflagDeal(id){
+    var d=find(state.deals,id); if(!d||!isFlagged(d)) return;
+    if(d.status==="bad"){ markDeal(id,"bad"); return; }
+    var snap={status:d.status, auto:true, badRow:find(state.bad||[],"bad-"+id)};
+    var e=Object.assign({}, d.extras||{}); delete e.auto_bad; d.extras=e;
+    track(id,withSave(Promise.all([patchDeal(id,{extras:e,updated_at:new Date().toISOString()}),writeBad(d,null)])
+      .then(function(rs){ return {ok:rs.every(function(r){ return r&&r.ok; })}; })));
+    rerenderDeals();
+    showToast("Flag removed",function(){ restoreDeal(id,snap); });
+  }
+  // The Bad backlog's Unflag: the deal is still loaded → unflagDeal; otherwise (pruned / not loaded) drop the
+  // backlog row alone. Undo re-posts the exact row.
+  function unflagBacklog(rowId){
+    var row=find(state.bad||[],rowId); if(!row) return;
+    var dealId=(row.extras&&row.extras.deal_item_id)||rowId.replace(/^bad-/,"");
+    var d=find(state.deals,dealId);
+    if(d&&isFlagged(d)){ unflagDeal(dealId); return; }
+    state.bad=state.bad.filter(function(x){ return x.item_id!==rowId; });
+    track(rowId,withSave(api("press_tasks?page=eq."+PAGE+"&item_id=eq."+encodeURIComponent(rowId),{method:"DELETE",headers:{Prefer:"return=minimal"}})));
+    rerenderDeals();
+    showToast("Flag removed",function(){
+      var full=fullBadRow(row);
+      state.bad=(state.bad||[]).filter(function(x){ return x.item_id!==rowId; }).concat([full]);
+      rerenderDeals();
+      track(rowId,after(rowId).then(function(){
+        return withSave(api("press_tasks?on_conflict=page,item_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(full)}));
+      }));
+    });
+  }
+  // polish Slice 4 — the Undo toast: one at a time, polite live region, never steals focus, 8 s.
+  var toastUndo=null, toastTimer=null;
+  function showToast(msg,undoFn){
+    var t=el("toast");
+    if(!t){ t=document.createElement("div"); t.id="toast"; t.className="toast"; t.setAttribute("role","status"); t.setAttribute("aria-live","polite");
+      t.innerHTML='<span id="toast-msg"></span><button class="btn small" type="button" id="toast-undo">Undo</button>'; document.body.appendChild(t); }
+    el("toast-msg").textContent=msg; toastUndo=undoFn||null; el("toast-undo").hidden=!undoFn; t.hidden=false;
+    clearTimeout(toastTimer); toastTimer=setTimeout(hideToast,8000);
+  }
+  function hideToast(){ var t=el("toast"); if(t) t.hidden=true; toastUndo=null; clearTimeout(toastTimer); }
+  function runToastUndo(){ var f=toastUndo; hideToast(); if(f) f(); }
   // Inbox arc Slice 6 — the Bad-backlog row (press_tasks category='bad', item_id 'bad-'+deal id, kept forever
   // like the savings log, sync_id column via api()). Same shape the agent writes for an auto price-unknown flag.
   // writeBad(d,null) removes it (undo / switch away from Bad).
@@ -2498,17 +2617,17 @@
     var sh=el("bad-sheet"); if(sh) return sh;
     sh=document.createElement("div"); sh.className="sheet-backdrop"; sh.id="bad-sheet"; sh.hidden=true;
     sh.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="bad-title" aria-describedby="bad-desc">'
-      +'<h3 id="bad-title">Flag as Bad</h3><div class="sub" id="bad-desc">It moves to Processed and onto the Bad backlog for review.</div>'
+      +'<h3 id="bad-title">Flag as Bad</h3><div class="sub price" id="bad-price"></div><div class="sub" id="bad-desc">It moves to Processed and onto the Bad backlog for review.</div>'
       +'<div class="field"><label for="bad-reason">What was wrong?</label><select id="bad-reason">'
       +BAD_REASONS.map(function(r){ return '<option value="'+r[0]+'">'+esc(r[1])+'</option>'; }).join("")+'</select></div>'
       +'<div class="field"><label for="bad-note">Note (optional)</label><textarea id="bad-note" rows="3" maxlength="500"></textarea></div>'
-      +'<div class="actions"><button class="btn" type="button" id="bad-cancel">Cancel</button><button class="btn primary" type="button" id="bad-save">Save</button></div></div>';
+      +'<div class="actions"><button class="btn unflag" type="button" id="bad-unflag" hidden>Remove flag</button><button class="btn" type="button" id="bad-cancel">Cancel</button><button class="btn primary" type="button" id="bad-save">Flag Bad</button></div></div>';
     document.body.appendChild(sh);
     sh.addEventListener("click", function(ev){ if(ev.target===sh) closeBadSheet(); });
     sh.addEventListener("keydown", function(ev){
       if(ev.key==="Escape"){ ev.preventDefault(); closeBadSheet(); return; }
       if(ev.key!=="Tab") return;
-      var f=[].slice.call(sh.querySelectorAll("select,textarea,button")); var i=f.indexOf(document.activeElement);
+      var f=[].slice.call(sh.querySelectorAll("select,textarea,button")).filter(function(x){ return !x.hidden; }); var i=f.indexOf(document.activeElement);
       if(ev.shiftKey&&i<=0){ f[f.length-1].focus(); ev.preventDefault(); }
       else if(!ev.shiftKey&&i===f.length-1){ f[0].focus(); ev.preventDefault(); }
     });
@@ -2517,11 +2636,21 @@
   function openBadSheet(id,opener){
     var d=find(state.deals,id); if(!d) return;
     var sh=ensureBadSheet(); badSheetFor=id; badSheetOpener=opener||null;
-    el("bad-title").textContent="Flag as Bad — "+(d.brand||"Gift card");
-    // an auto-flagged price-unknown row pre-selects the agent's reason
-    var ex=d.extras||{};
-    el("bad-reason").value=ex.brands_unknown?"brands_unknown":(ex.unpriced?"price_missing":"below_rule");
-    el("bad-note").value="";
+    // polish Slice 4: a FLAGGED deal (Mark's or the agent's) opens in "flagged" mode — change the reason, or
+    // Remove flag; re-tapping Bad never undoes without asking.
+    var flagged=isFlagged(d), ex=d.extras||{}, br=find(state.bad||[],"bad-"+id), bx=(br&&br.extras)||{};
+    el("bad-title").textContent=(flagged?"Flagged Bad — ":"Flag as Bad — ")+(d.brand||"Gift card");
+    el("bad-desc").textContent=flagged
+      ? (d.status==="bad"?"It's on the Bad backlog. Change the reason, or remove the flag to put it back in the Inbox.":"The agent flagged this automatically. Keep it, change the reason, or remove the flag.")
+      : "It moves to Processed and onto the Bad backlog for review.";
+    el("bad-unflag").hidden=!flagged;
+    // polish Slice 5: the sheet shows what is being flagged (price line + %), and the primary says what it does.
+    var pl=priceLine(d), pc=pct(d);
+    el("bad-price").textContent=[pl,pc!=null?pc+"% off":"",(!pl&&pc==null)?"Price unknown":""].filter(Boolean).join(" · ");
+    el("bad-save").textContent=d.status==="bad"?"Save reason":"Flag Bad";
+    // an auto-flagged row pre-selects the agent's reason; Mark's own flag pre-selects his reason + note
+    el("bad-reason").value=ex.bad_reason||bx.reason||(ex.brands_unknown?"brands_unknown":(ex.unpriced?"price_missing":"below_rule"));
+    el("bad-note").value=(d.status==="bad"&&bx.note)||"";
     sh.hidden=false; el("bad-reason").focus();
   }
   function closeBadSheet(){
@@ -2534,6 +2663,12 @@
     var id=badSheetFor; if(!id) return closeBadSheet();
     var reason=el("bad-reason").value, note=(el("bad-note").value||"").trim();
     var sh=el("bad-sheet"); if(sh) sh.hidden=true; badSheetFor=null;
+    var d=find(state.deals,id);
+    // already Mark's flag → Save edits the reason/note in place (markDeal would treat 'bad'→'bad' as undo).
+    if(d&&d.status==="bad"){ var e=Object.assign({}, d.extras||{}); e.bad_reason=reason; d.extras=e;
+      withSave(Promise.all([patchDeal(id,{extras:e,updated_at:new Date().toISOString()}),writeBad(d,{reason:reason,note:note})])
+        .then(function(rs){ return {ok:rs.every(function(r){ return r&&r.ok; })}; }));
+      rerenderDeals(); showToast("Reason updated"); var t0=el("proc-toggle"); if(t0) t0.focus(); return; }
     markDeal(id,"bad",{reason:reason,note:note});
     var t=el("proc-toggle"); if(t) t.focus();
   }
@@ -2547,23 +2682,34 @@
       var list=rows.filter(function(x){ return ((x.extras&&x.extras.reason)||"other")===r[0]; }); if(!list.length) return;
       html+='<div class="badgroup" data-reason="'+r[0]+'"><h4>'+esc(r[1])+' <span class="gcount">'+list.length+'</span></h4><ul class="badlist">';
       list.forEach(function(x){ var e=x.extras||{};
-        html+='<li><strong>'+esc(x.title||"Gift card")+'</strong>'+(e.auto?' <span class="badge">auto</span>':"")
+        html+='<li><div class="bl-body"><strong>'+esc(x.title||"Gift card")+'</strong>'+(e.auto?' <span class="badge">auto</span>':"")
           +(e.title?'<div class="meta">'+esc(e.title)+'</div>':"")
           +(e.note?'<div>'+esc(e.note)+'</div>':"")
           +'<div class="meta">'+esc([e.retailer?"at "+e.retailer:"",e.source?String(e.source).replace(/^src-/,""):"",e.at?fmtDate(e.at):""].filter(Boolean).join(" · "))
-          +(e.url?' · <a href="'+esc(e.url)+'" target="_blank" rel="noopener">open</a>':"")+'</div></li>'; });
+          +(e.url?' · <a href="'+esc(e.url)+'" target="_blank" rel="noopener">open</a>':"")+'</div></div>'
+          +'<button class="btn small" type="button" data-unbad="'+esc(x.item_id)+'" aria-label="Unflag '+esc(x.title||"Gift card")+'">Unflag</button></li>'; });
       html+='</ul></div>';
     });
     return html+'</div>';
   }
   // Enhancements Slice 6 (D2) — Delete = hide for good: status 'deleted' (+ extras.user_status so a re-run
   // never resurrects it). Never shown, never re-alerted; the 30-day prune clears it.
+  // polish Slice 5 (Eye P1): Delete gets an Undo toast — Undo puts the row back exactly as it was.
   function deleteDeal(id){
     var d=find(state.deals,id); if(!d) return;
+    var prev={status:d.status, extras:Object.assign({}, d.extras||{})};
     d.status="deleted"; d.extras=dealExtras(d,"deleted");
     state.deals=state.deals.filter(function(x){ return x.item_id!==id; });
     renderFeedList(); renderFeedBadge();
-    withSave(patchDeal(id,{status:"deleted",extras:d.extras,updated_at:new Date().toISOString()}));
+    var saved=track(id,withSave(patchDeal(id,{status:"deleted",extras:d.extras,updated_at:new Date().toISOString()})));
+    showToast("Deleted — hidden for good",function(){
+      Promise.resolve(saved).then(function(){
+        d.status=prev.status; d.extras=prev.extras;
+        if(!find(state.deals,id)) state.deals.push(d);
+        withSave(patchDeal(id,{status:prev.status,extras:prev.extras,updated_at:new Date().toISOString()}));
+        rerenderDeals();
+      });
+    });
   }
   // Slice 2: a rule whose brand normalizes to the same key (apostrophes deleted) as `name`, or null.
   // Inbox arc Slice 1: compared on the COMPACT key (spaces dropped) so "KrispyKreme" / "Chick fil A" /
@@ -2670,6 +2816,9 @@
     var w=find(state.watch,id); var btn=document.querySelector('[data-editwatch="'+id+'"]'); if(!w||!btn) return;
     var inp=document.createElement("input"); inp.type="text"; inp.className="wedit"; inp.value=w.title; inp.maxLength=80;
     inp.setAttribute("aria-label","Watch term"); var done=false;
+    // polish Slice 5 (Eye): the inline edit says how to finish it.
+    var hint=document.createElement("span"); hint.className="wedit-hint"; hint.id="wedit-hint-"+id; hint.textContent="Enter to save · Esc to cancel";
+    inp.setAttribute("aria-describedby",hint.id);
     function finish(save){
       if(done) return; done=true;
       var v=(inp.value||"").trim();
@@ -2680,7 +2829,7 @@
     }
     inp.addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); finish(true); } else if(e.key==="Escape"){ e.preventDefault(); finish(false); } });
     inp.addEventListener("blur",function(){ finish(true); });
-    btn.replaceWith(inp); inp.focus(); inp.select();
+    btn.replaceWith(inp); inp.insertAdjacentElement("afterend",hint); inp.focus(); inp.select();
   }
   function removeWatch(id){
     state.watch=watchTerms().filter(function(w){ return w.item_id!==id; });
