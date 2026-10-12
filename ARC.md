@@ -9,6 +9,7 @@ S1 — table: copy council `instruments/agent/db/20261012_press_steward_reports.
      Supabase connector (surface.md → "Supabase channel"). Service-role-only (RLS on, no policies, no anon /
      authenticated grant). Done: `select relrowsecurity from pg_class where relname='press_steward_reports'` = t;
      the grants query (council audit.md group 8) shows service_role only; one fixture row inserted + read back.
+     Status: done 155c873
 S2 — page `steward.html` in the PRIVATE wing (passkey gate, same tier as fsa / giving — `spaces.json` tier,
      `pages.json` title "Steward", favicon per docs/favicons.md): the latest report (headline 🟢/🟡/🔴, Needs you,
      Fixed for you, Cost moves, All clear) + a 12-week history strip (one dot per run, weekly + monthly),
