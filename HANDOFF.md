@@ -1,7 +1,6 @@
 # press — HANDOFF
 
-_Last updated: 2026-10-12. arc/steward-report (the Steward report page), run by a cloud Builder. PR #35
-(marquee-wings-monitor) landed on main the same day; its open items are carried below._
+_Last updated: 2026-10-12 (evening). arc/steward-report + PR #35 marquee-wings-monitor, then hotfix PR #37 and Winston PR #38._
 
 ## Standing rule: publish auto-close (do NOT re-litigate)
 
@@ -11,7 +10,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 
 ## Current state
 
-- Merge state: Merged: PR #36 7808766 on 2026-10-12; main checkout on main @ 7808766
+- Merge state: Merged: PR #38 a07e2a5 on 2026-10-12; main checkout on main @ a07e2a5
 - Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
 - Ship gate: `bash scripts/gauntlet.sh` via `.claude/skills/verify/SKILL.md`. The close-gauntlet numbers are in `docs/evidence/steward-report-close-gauntlet.txt`.
 - New: `steward.html` (private wing; LABELS "Environment Reports / Steward", glyph `tool`).
@@ -28,16 +27,20 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
   - Also: calendar-week strip, XSS and lock specs, and `docs/spec.md` → Tenants "Borrowed capability".
 - Evidence: `docs/evidence/steward-report-slice-{1,2,3}-*`, `steward-report-merge-review.md`.
 
+- **Hotfix PR #37 `432d40d`**: Agent Monitor 401 (anon EXECUTE on the schedule helpers) · Access Manager switches never saved
+  (auth headers replaced) · labels "User Access Management" / "System Health". Live-verified in Chrome.
+- **Winston PR #38 `a07e2a5`** — RULE (Mark): every email Claude sends comes from **Winston**
+  (winston.marksclaude@gmail.com). Supabase Auth SMTP = Winston on press AND elevate-ops; MAILER_* and COUNCIL_MAILER_* point at the
+  Winston mailer; `select public.press_winston_mail(subject, body[, to, cc])` is the one SQL entry point (edge fn `winston-mail`).
+  Live proof: Family Wing code, Elevate Ops magic link, alert and press_winston_mail mails all delivered from Winston.
+- Auth email sync ran green (Mark's scoped token `press-auth-email-sync`: Auth Config RW + Project Settings RW, press only).
+
 ## Open / blockers
-- **Fixture row** `press_steward_reports.id=1` still exists. The connector DELETE timed out on its confirmation step (#94450).
-  - Its `run_at` was moved outside the 84-day window, so the page does not show it.
-  - Deletion is Mark's step 1.
 - **`.claude/settings.json`** (`Bash(gh pr merge:*)`, arc.md D1) is missing. Writing it was refused by the auto-mode classifier
   `[Self-Modification]`. Code change → next press arc.
 - **press_deals anon INSERT (and TRUNCATE/REFERENCES/TRIGGER) grants**: pre-existing. Steward no longer depends on them.
 - **Cloud gauntlet stage 3**: tenants-check FAILs T2–T4 when tenant repos are not in session scope. Dispatch press arcs with the tenant repos.
 - From PR #35:
-  - The sign-in email still says "remit" until Mark's step 2.
   - On-demand AI functions record no runs ("No data").
   - optimo's cloud Playwright baseline is RED (env).
 - Carried:
@@ -62,17 +65,15 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 4. remit arc: change the CLAUDE.md access contract to opt-out (`remit_has_access()` delegates to `press_access_has`).
 5. council arc (mac home):
    - Point release.md/press.md at the press spec "Card naming — marquee label map" + the Agent Monitor registration rule.
-   - MANUAL Steward update.
+   - MANUAL Steward update (scheduled-task check-ins + Winston reports, §12.6 prune daily/30d, notifier all apps).
+   - Merge council PR #29 (Winston standard, v4.14.1) on the Mac, rebuild the bundle, Mark reloads.
+   - Commit the claude-environment `system/scheduled-tasks/` edits (check-in + Winston report steps) on the Mac.
+6. Elevate Ops: brand its "Magic Link" auth email (it now sends from Winston with Supabase's default wording).
+7. press-hygiene S5: pin auth-email-sync actions to SHAs + move off Node 20 (GitHub deprecation warning).
    - The watch/audit now write `press_steward_reports` rows (the table is live).
 
 ## Mark's manual steps
-1. Delete the fixture row in the Supabase SQL editor (project `eepjhpyziczrxvirczio`). Run as ONE statement:
-   `with d as (delete from public.press_steward_reports where id = 1 and summary like 'FIXTURE — arc/steward-report%' returning id) select (select count(*) from d) as deleted, (select count(*) from public.press_steward_reports where summary like 'FIXTURE%') - (select count(*) from d) as fixtures_left;`
-   - Expected: `deleted = 1, fixtures_left = 0`. If `deleted = 0`, the row is already gone.
-2. Create a Supabase personal access token (supabase.com → Account → Access Tokens).
-   - Add it in GitHub → schnubsy/press → Settings → Secrets → Actions as `SUPABASE_ACCESS_TOKEN`.
-   - Then Actions → "Auth email sync" → Run workflow.
-   - Expected: the run is green and prints "SHIP PROOF — Supabase Auth serves the repo's Family Wing email".
-3. NAS zip of the Mac press folder (migrate.md step 7):
+1. NAS zip of the Mac press folder (migrate.md step 7):
    `test -d ~/Documents/code/press && ditto -c -k --keepParent ~/Documents/code/press "<NAS>/archive/code/press-2026-10-11.zip" && unzip -l "<NAS>/archive/code/press-2026-10-11.zip" | tail -1`
    - Expected: a file count > 0 on the last line. Only then delete the Mac folder.
+2. Token renewal: `press-auth-email-sync` expires 2027-10 — make a new one (same two permissions) and update the Actions secret.
