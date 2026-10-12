@@ -329,7 +329,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v4.13.0</span>
+    <span class="nav-badge">v4.14.0</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -1173,7 +1173,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <details class="facet">
           <summary><span class="fmk">&#9656;</span>Detect — what it checks for drift</summary>
           <div class="facet-body">
-            <p><b class="ink">Detect:</b> ten check-groups, each with an exact command.</p>
+            <p><b class="ink">Detect:</b> eleven check-groups, each with an exact command.</p>
             <p><b class="ink">Stamps &amp; guide</b> — the five version stamps all match <code>plugin.json</code> (the guide nav badge and footer, and the <code>Version:</code> headers in <code>PERSONAS.md</code> and <code>CAPABILITIES.md</code>); every persona named in a skill exists in <code>PERSONAS.md</code>; every registered instrument has its reference file, a one-line entry in <code>skills/hand/SKILL.md</code>, and a guide card with balanced <code>&lt;div&gt;</code>s; no capability is used but unregistered; the inbox-sync contract is intact in all its homes; and every skill, command, and agent description stays valid.</p>
             <p><b class="ink">Bundle &amp; propagation</b> — flags a <code>dist/council.plugin</code> older than the newest committed source (so the chat on Desktop, web and mobile is stale), and always emits the fresh-chat canary that proves the Desktop reload actually propagated.</p>
             <p><b class="ink">Docs currency</b> — the environment <code>MANUAL.md</code> and <code>CHANGELOG.md</code> track the plugin version, <code>manual.html</code> is freshly built, and the published Press copy of this guide has not fallen behind.</p>
@@ -1184,6 +1184,8 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
             <p><b class="ink">Data access grants</b> — every database table carries the access grants it needs, and any new migration that creates a table without them is named for the next arc.</p>
             <p><b class="ink">Prompt hygiene</b> — Claude Code's own prompt audit over the loaded skills and instructions, for conflicts, dead references and bloat.</p>
             <p><b class="ink">Central-rule drift</b> — reads every active claude.ai project's instructions and every memory file and flags any line that restates or contradicts a Council rule (merging, publishing, dispatch, close-out) or describes a retired setup; a coding project's instructions must carry the one standard line that defers to the Council. Fixes are proposed, and applied only after your explicit go.</p>
+            <p><b class="ink">Currency</b> — reads what changed in Claude Code and the Claude app since the last audit and names at most five things to change, delete or rethink, each tied to the council file it affects.</p>
+            <p><b class="ink">Monthly extras</b> — the full cost ledger and model-fit check, key rotation dates, the dossier review, and a mutation-testing sample on one repo. The monthly report has the same shape as the weekly watch, and it still emails you.</p>
           </div>
         </details>
         <details class="facet">
@@ -1200,14 +1202,31 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         </details>
       </div>
 
-      <div class="instr i-hand" id="cap-thrift">
-        <span class="who">Owner: Steward · trigger — "run thrift" / "check my cloud costs"</span>
-        <h4>Thrift</h4>
-        <p class="instr-sum">Cloud-cost diagnosis and the guardrails that catch the next surprise. Reads spend by resource, service, and day, then checks each suspect's live config before naming a cause. Read-only; changes only on your go.</p>
+      <div class="instr i-hand" id="cap-watch">
+        <span class="who">Owner: Steward · trigger — "run the watch" / "steward watch" / every Monday morning</span>
+        <h4>Steward Watch</h4>
+        <p class="instr-sum">The proactive Steward. A cheap weekly check that finds what broke or crept since last week, fixes only what can be undone, and tells you only what changed.</p>
         <details class="facet">
-          <summary><span class="fmk">&#9656;</span>Full detail — and the budget rule</summary>
+          <summary><span class="fmk">&#9656;</span>What it checks, what it fixes, how it tells you</summary>
           <div class="facet-body">
-            <p>Cloud-cost diagnosis and the safeguards that catch the next one. Reads month-to-date spend by resource, by service, and by day to separate a genuine leak from a step-change — then reads each suspect resource's live configuration before naming a cause. Its hardest-won rule: a budget that exists is not a budget that works. Scope and notification address are verified character-for-character, because a mistyped alert email fails silently and looks exactly like a working one. Read-only throughout; mutations only on an explicit go, one at a time, each reversible.</p>
+            <p><b class="ink">Checks:</b> agents that failed twice running or went quiet, scheduled tasks that missed their run, failed builds and pull requests left open, a stale plugin bundle or public guide, spending that crept, and keys close to their rotation date.</p>
+            <p><b class="ink">Fixes on its own — reversible only:</b> re-runs a failed agent or a missed task once, rebuilds a stale bundle, regenerates the manual, republishes a stale guide copy. Everything else is an alert, never a fix, and every fix is listed in the report.</p>
+            <p><b class="ink">Tells you:</b> a phone push only for red; no weekly email. The report is plain English — headline, what needs you, what it fixed, cost moves, and one all-clear line — at most ten lines, and it never repeats an unchanged item from last week. The monthly audit uses the same shape and still emails.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="instr i-hand" id="cap-thrift">
+        <span class="who">Owner: Steward · trigger — "run thrift" / "check my costs" / "what do I pay" / monthly in the audit</span>
+        <h4>Thrift</h4>
+        <p class="instr-sum">What you pay for the whole tech stack, whether any of it is creeping, and whether every job runs on the cheapest model that can do it. Read-only; money settings change only on your go.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Full detail — the ledger, the creep rule, model fit</summary>
+          <div class="facet-body">
+            <p><b class="ink">The ledger:</b> one monthly "what I pay" list — service, plan, monthly cost, three-month trend — built from the cloud providers' own billing pages plus your budgeting app, read-only, so recurring charges that never show up in a cloud console are counted too.</p>
+            <p><b class="ink">Creep rule:</b> amber when a line runs more than 15% over its three-month average or a new recurring charge appears; red when a budget hits 100%. It proposes budget alerts and spend caps, and applies them only after your go.</p>
+            <p><b class="ink">Model fit:</b> lists every agent, scheduled task, routine and subagent with the model it runs on, and flags a top-tier model doing work a smaller one handles — sorting, formatting, polling — with the monthly saving. It also flags runs that work one-by-one where they could run in parallel, or re-read a large file every time.</p>
+            <p><b class="ink">The original cloud-cost diagnosis is kept intact:</b> spend by resource, service and day, each suspect's live configuration read before naming a cause, and a budget's alert address checked character-for-character — a budget that exists is not a budget that works.</p>
           </div>
         </details>
       </div>
@@ -1364,9 +1383,9 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 
       <!-- Garrick (Hand lead) -->
       <div class="instr i-hand" id="cap-optimize">
-        <span class="who">Owner: Garrick + Steward · trigger — "optimization review" / quarterly</span>
+        <span class="who">Owner: Garrick + Steward · trigger — "optimization review" / monthly, inside the Steward audit</span>
         <h4>Optimization Review</h4>
-        <p class="instr-sum">Audits your own configuration — saved memory, global preferences, per-project instructions — hunting contradictions, stale rules, and project-local rules that deserve promotion to global (or the reverse). Delivers ready-to-paste diffs; memory edits are applied only on your confirmation.</p>
+        <p class="instr-sum">Audits your own configuration — saved memory, global preferences, per-project instructions — hunting contradictions, stale rules, and project-local rules that deserve promotion to global (or the reverse). Delivers ready-to-paste diffs; memory edits are applied only on your confirmation. Now part of the monthly Steward audit, together with the batched dossier review.</p>
       </div>
 
       <div class="instr i-hand" id="cap-elevate-ops">
@@ -1680,7 +1699,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <footer>
   <div class="footer-in">
     <div>The Council · a private prospectus · hand-maintained to parity with PERSONAS.md + skills</div>
-    <div class="mono">council v4.13.0 · last updated 2026-10-12</div>
+    <div class="mono">council v4.14.0 · last updated 2026-10-12</div>
   </div>
 </footer>
 
