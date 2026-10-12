@@ -41,4 +41,4 @@ as part of closing out. (Auto-merge is still never enabled pre-emptively.) Set b
 ## Mark's manual steps
 1. Create a Supabase personal access token (supabase.com → Account → Access Tokens), add it in GitHub → schnubsy/press →
    Settings → Secrets → Actions as `SUPABASE_ACCESS_TOKEN`, then Actions → "Auth email sync" → Run workflow —
-   expected: the run is green and its last step prints "template matches".
+   expected: the run is green and prints "SHIP PROOF — Supabase Auth serves the repo's Family Wing email".
