@@ -4,3 +4,5 @@
 -- maths (no table access, not security definer), so anon/authenticated may execute them.
 grant execute on function public.press_agent_last_due(jsonb, timestamptz) to anon, authenticated;
 grant execute on function public.press_agent_next_due(jsonb, timestamptz) to anon, authenticated;
+-- …and the inner helper both call (also pure schedule maths, not security definer, no table access).
+grant execute on function public.press_agent_due_times(jsonb, timestamptz, timestamptz) to anon, authenticated;
