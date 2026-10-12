@@ -1,0 +1,77 @@
+marquee-wings-monitor — SLICE 2 — Family Wing: request access, Access Manager, wing-level sign-in email
+Date: 2026-10-12 · Supabase project press (eepjhpyziczrxvirczio) · Builder: cloud Claude Code
+(No secret values and no email addresses beyond their first 4 chars appear in this file.)
+
+== Live state read at slice start ==
+press_access_people:  kayl (active, not admin) · mark (active, admin)
+press_access_apps:    remit.html gated · perth.html gated · optimo.html gated
+press_access_grants:  mark→remit/perth/optimo active · kayl→remit active   (no active=false rows)
+remit_private.remit_has_access(): OPT-IN (required an active grant row) — wrong under the opt-out model
+extensions: pg_net 0.20.3 · supabase_vault 0.3.1 · pg_cron 1.6.4
+
+== Migrations applied (apply_migration) — mirrors byte-identical ==
+version          name                      sha256(applied statements) == sha256(db file)
+20261012151543   remit_access_optout       a04c3d92…71cc == db/20261012_remit_access_optout.sql
+20261012151636   press_access_requests     30696bd7…7939 == db/20261012_press_access_requests.sql
+20261012151708   press_access_request_fix  efa45885…cca8c == db/20261012_press_access_request_fix.sql (see BUG below)
+Notes:
+- press_access_requests: the first two apply attempts came back "cancelled" (they carried `drop policy/trigger
+  if exists` lines that trip the destructive-statement confirm). The objects were brand new, so the drops were
+  removed from BOTH the file and the migration; the third apply succeeded. Nothing was applied by the cancelled
+  attempts (verified: table/function/vault secret absent before the successful apply).
+- BUG caught by the SQL proof before any caller existed: `on conflict (email, page)` inside the plpgsql RPC is
+  ambiguous with the `page` parameter (42702). Fixed by migration press_access_request_fix
+  (`on conflict on constraint press_access_requests_pkey`).
+
+== SQL proofs (one DO block per run; it RAISEs its results, so the whole transaction ROLLS BACK —
+   synthetic person zz-s…@example.invalid, request.jwt.claims set via set_config(…, true)) ==
+PROOF remit_no_row=t remit_revoked=f remit_deactivated=f
+    | req_when_granted=already_granted req_when_revoked=requested req_again=already_requested
+      req_ungated=not_gated req_deactivated=not_on_list req_no_email=not_signed_in
+    | pending_after_request=1 notify_queued=1 | handled_after_switch_on=t
+Reading: an active person with NO grant row passes remit (opt-out) · an active=false row blocks it · a
+deactivated person is blocked · request RPC verdicts as designed · the 10-min rate limit holds · exactly one
+pg_net call is queued per new request (rolled back → nothing sent) · switching the grant ON stamps handled_at.
+Residue after the proofs: 0 synthetic people, 0 request rows.
+
+ACL check: press_access_request(text) anon=f authenticated=t · press_access_notify_secret_ok(text) anon=f
+authenticated=f service_role=t · trigger fns anon=f authenticated=f · remit_private.remit_has_access() anon=f
+authenticated=t · table press_access_requests: anon select=f, authenticated=t (RLS on; admin-only policies).
+Security advisors after apply: no finding on any slice-2 object for anon; press_access_request appears in
+"authenticated can execute security definer" — intentional (same class as press_access_has/is_admin/touch).
+
+== Vault ==
+access_notify_secret created IN the database (gen_random_uuid ×2), never printed or exported. The edge function
+verifies the header through press_access_notify_secret_ok() (service_role only) — so no ACCESS_NOTIFY_SECRET
+function secret was created (the MCP secret tool takes the value from the dashboard, which would have split the
+secret into two homes that can drift; Vault-only keeps ONE home).
+
+== Edge function access-notify ==
+deployed version 2 (verify_jwt=false), ezbr_sha256 bb4ab34f89b02b4d84c330b81b12dde9e521f98caa552d52fd69048502cba896
+(version 1 shipped a placeholder for _shared/notify.mjs by mistake and never ran; v2 carries the real file.)
+Sources == repo: supabase/functions/access-notify/index.ts · supabase/functions/_shared/notify.mjs (verbatim copy
+of council instruments/agent/functions/_shared/notify.mjs @ council 820c17d; cmp identical).
+
+== Live end-to-end test (ONE notification, labelled "TEST — Family Wing request flow") ==
+net.http_post (exactly as the trigger posts, header from Vault) body {"test":true} → net._http_response id 23202:
+  status_code 200 · {"ok":true,"test":true,"push":"ok","email":"ok"} · timed_out=false
+Negative auth (no message sent): wrong header → 401 {"error":"unauthorized"} (id 23203);
+no header → 401 (id 23204).
+
+== Sign-in email ==
+docs/auth/family-wing-otp.json + .html — subject "Your Family Wing sign-in code", body carries {{ .Token }}, no app
+name. Management API fields confirmed in Supabase docs: OTP codes render from the Magic Link template →
+mailer_subjects_magic_link + mailer_templates_magic_link_content on /v1/projects/eepjhpyziczrxvirczio/config/auth.
+tools/auth-email-sync.mjs --dry-run: OK (template 981 bytes). Without the secret: exit 1 "Add SUPABASE_ACCESS_TOKEN …".
+The live sync has NOT run yet — it needs Mark's SUPABASE_ACCESS_TOKEN Actions secret and a push to main.
+
+== Screenshots ==
+marquee-wings-slice-2-blocked-{desktop,mobile}.png      blocked screen with "Request access"
+marquee-wings-slice-2-requested-{desktop,mobile}.png    after the tap: "Requested — Mark has been notified…"
+marquee-wings-slice-2-access-manager-{desktop,mobile}.png  Family Wing Access Manager with a pending request
+                                                          (Requests strip + "Requested" badge)
+
+== Gauntlet ==
+See marquee-wings-slice-2-family-gauntlet.txt (CODE_ROOT=/home/claude) and
+marquee-wings-slice-2-family-revendored-gauntlet.txt (same tree; CODE_ROOT = scratch copies of remit + optimo with
+src/vendor/family-gate.js re-vendored from this slice's src/family-gate.js — the Slice 3 state).

@@ -129,6 +129,58 @@ test('a signed-in but UNgranted address is told it lacks access (not let in)', a
   expect(await page.evaluate(() => window.__result)).toBeNull();     // app never resolves
 });
 
+// arc/marquee-wings-monitor slice 2 — blocked → "Request access" → requested. The RPC is faked with the
+// server's real rate-limit shape: the first call files the request, a second within 10 min is
+// 'already_requested'. The request carries ONLY the page; the email comes from the bearer JWT.
+async function blocked(page, context, verdicts) {
+  const state = await harness(page, context, { grantEmails: [] });
+  state.requests = [];
+  await context.route('**/rest/v1/rpc/press_access_request', route => {
+    const auth = route.request().headers()['authorization'] || '';
+    state.requests.push({ auth, body: JSON.parse(route.request().postData() || '{}') });
+    const v = verdicts[Math.min(state.requests.length - 1, verdicts.length - 1)];
+    if (typeof v === 'number') return route.fulfill({ status: v, contentType: 'application/json', body: '{"message":"x"}' });
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(v) });
+  });
+  await page.goto(base + '/gate');
+  await page.fill('#fg-email', 'kayley@example.com');
+  await page.click('#fg-send');
+  await page.fill('#fg-code', '123456');
+  await page.click('#fg-verify');
+  await expect(page.locator('#family-gate')).toContainText('doesn’t have access');
+  return state;
+}
+
+for (const vp of [{ name: 'desktop', size: { width: 1280, height: 800 } }, { name: 'mobile', size: { width: 390, height: 844 } }]) {
+  test(`blocked → Request access → requested (${vp.name})`, async ({ page, context }) => {
+    await page.setViewportSize(vp.size);
+    const state = await blocked(page, context, ['requested']);
+    const btn = page.locator('#fg-request');
+    await expect(btn).toBeVisible();
+    await expect(btn).toHaveText('Request access');
+    await page.screenshot({ path: join(ROOT, 'docs', 'evidence', `marquee-wings-slice-2-blocked-${vp.name}.png`) });
+    await btn.click();
+    await expect(page.locator('#fg-msg')).toHaveText('Requested — Mark has been notified. Try again once he’s switched you on.');
+    await expect(page.locator('#fg-msg')).not.toHaveClass(/err/);
+    await expect(btn).toBeHidden();                                   // one tap; no double-filing
+    expect(state.requests).toHaveLength(1);
+    expect(state.requests[0].auth).toBe('Bearer at.kayley@example.com');   // the caller's own JWT
+    expect(state.requests[0].body).toEqual({ page: 'remit.html' });        // page only — never an email
+    expect(await page.evaluate(() => window.__result)).toBeNull();          // still blocked
+    await page.screenshot({ path: join(ROOT, 'docs', 'evidence', `marquee-wings-slice-2-requested-${vp.name}.png`) });
+  });
+}
+
+test('a failed request is shown gracefully and the button stays for a retry', async ({ page, context }) => {
+  const state = await blocked(page, context, [500, 'already_requested']);
+  await page.click('#fg-request');
+  await expect(page.locator('#fg-msg.err')).toContainText(/try again/i);
+  await expect(page.locator('#fg-request')).toBeEnabled();
+  await page.click('#fg-request');                                    // retry → server says already filed
+  await expect(page.locator('#fg-msg')).toHaveText(/^Requested — Mark has been notified/);
+  expect(state.requests).toHaveLength(2);
+});
+
 test('zero auth calls happen before the page is known gated', async ({ page, context }) => {
   const state = await harness(page, context);
   await page.goto(base + '/gate');

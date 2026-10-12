@@ -188,6 +188,13 @@ always; `grant select on public.<t> to anon;` ONLY when the page is genuinely pu
 RLS still decides which rows; the grant only opens the door. A service-role-only table (e.g. a deny-all
 `*_capture_*` or a views-only base table) grants `service_role` alone and says so in a comment.
 
+**Family-wing tenants inherit the wing (arc/marquee-wings-monitor, 2026-10-12):** a new family-wing app
+inherits the ONE wing-level sign-in email (`docs/auth/family-wing-otp.*`, "Your Family Wing sign-in code",
+synced to Supabase Auth by `auth-email-sync.yml`) — **never a per-app template or an app name in the email**
+(`test/auth-email.test.mjs` enforces it). It also inherits the opt-out access model and the blocked-screen
+"Request access" flow from `src/family-gate.js`; its RLS goes through `press_access_has('<page>.html')` (or a
+helper that delegates to it, as `remit_private.remit_has_access()` now does) — never a private opt-in check.
+
 **What the marquee OWES a tenant:** the canonical gate modules in `press/src`; the shell; and
 the shared DB shapes (`press_<shape>`, every row keyed by a `page` column = filename stem):
 - `press_state` — simple checkboxes. Cols `page`, `item_id`, `checked` bool, `updated_at`;

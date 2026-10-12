@@ -903,6 +903,11 @@ body.tw-sorting .tw-card{transition:none}
  *   FamilyGate.authHeaders()  -> { apikey, Authorization } for the tenant's own REST calls
  *   FamilyGate.signOut()      -> clears the local session (and best-effort GoTrue logout)
  *
+ * Blocked → "Request access" (2026-10-12, framework §8a): a signed-in person whose switch for the page
+ * is OFF sees a Request access button; it calls rpc/press_access_request(page) with their own JWT and
+ * shows "Requested — Mark has been notified…". requestAccess() is the call, requestView() the pure
+ * verdict → screen-state map (both unit-tested).
+ *
  * Design notes:
  *   - It talks to Supabase Auth (GoTrue) and PostgREST with RAW fetch — NO supabase-js,
  *     no CDN, no runtime dep, matching the house "no network at boot for public pages"
@@ -971,6 +976,58 @@ body.tw-sorting .tw-card{transition:none}
     return { access_token: o.access_token, refresh_token: o.refresh_token,
              expires_at: o.expires_at, email: String(o.email || '').toLowerCase(), name: o.name || null };
   }
+  // Decode a base64url JSON segment (a JWT payload) in both browser (atob) and Node (Buffer). Returns
+  // null on anything malformed — never throws.
+  function b64urlToJson(seg) {
+    if (typeof seg !== 'string' || !seg) return null;
+    try {
+      var b64 = seg.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      var txt;
+      if (typeof atob === 'function') {
+        var bin = atob(b64);
+        // handle UTF-8 payloads correctly
+        try { txt = decodeURIComponent(bin.split('').map(function (c) { return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); }).join('')); }
+        catch (e) { txt = bin; }
+      } else if (typeof Buffer !== 'undefined') {
+        txt = Buffer.from(b64, 'base64').toString('utf8');
+      } else { return null; }
+      return JSON.parse(txt);
+    } catch (e) { return null; }
+  }
+  // Parse a URL fragment ('#a=1&b=2' or 'a=1&b=2') into a plain object. Empty/garbage -> {}.
+  function parseHashParams(hash) {
+    var out = {};
+    var s = String(hash == null ? '' : hash).replace(/^#/, '');
+    if (!s) return out;
+    s.split('&').forEach(function (pair) {
+      if (!pair) return;
+      var i = pair.indexOf('=');
+      var k = i === -1 ? pair : pair.slice(0, i);
+      var v = i === -1 ? '' : pair.slice(i + 1);
+      try { out[decodeURIComponent(k)] = decodeURIComponent(v); } catch (e) { out[k] = v; }
+    });
+    return out;
+  }
+  // Build a normalised session from a GoTrue magic-link URL fragment. The fragment carries
+  // access_token (a JWT), refresh_token, expires_at/expires_in — the email/name come from the JWT
+  // payload. Returns null unless BOTH tokens are present and the payload decodes (a malformed hash
+  // falls through to the sign-in screen — spec §8, arc slice 2). Never throws.
+  function sessionFromHash(hash, now) {
+    var p = parseHashParams(hash);
+    if (!p.access_token || !p.refresh_token) return null;
+    var payload = b64urlToJson(String(p.access_token).split('.')[1]);
+    if (!payload || !payload.email) return null;   // not a usable Supabase access token
+    now = (typeof now === 'number') ? now : Date.now();
+    var expMs = p.expires_at ? (Number(p.expires_at) * 1000)
+              : (p.expires_in ? (now + Number(p.expires_in) * 1000)
+              : (payload.exp ? (payload.exp * 1000) : (now + 3600 * 1000)));
+    var meta = payload.user_metadata || {};
+    return normSession({
+      access_token: p.access_token, refresh_token: p.refresh_token, expires_at: expMs,
+      email: payload.email, name: meta.name || meta.full_name || null,
+    });
+  }
   function isExpired(session, now, skewMs) {
     if (!session) return true;
     now = (typeof now === 'number') ? now : Date.now();
@@ -1037,6 +1094,29 @@ body.tw-sorting .tw-card{transition:none}
     var v = await r.json();
     return v === true;
   }
+  // "Request access" (blocked screen). Calls the security-definer RPC press_access_request(page) with the
+  // caller's OWN JWT — the server takes the email from the token, never from the body. Returns
+  // { ok, status } where status is the RPC's text verdict ('requested' | 'already_requested' |
+  // 'already_granted' | 'not_on_list' | 'not_gated' | 'not_signed_in') or the HTTP status on a non-2xx.
+  // Never throws on an HTTP error (a network failure still rejects; the caller catches it).
+  async function requestAccess(session, page) {
+    var r = await authFetch()(REST + '/rpc/press_access_request',
+      { method: 'POST', headers: bearerHeaders(session), body: JSON.stringify({ page: page }) });
+    if (!r || !r.ok) return { ok: false, status: (r && r.status) || 0 };
+    var v = null; try { v = await r.json(); } catch (e) {}
+    return { ok: true, status: typeof v === 'string' ? v : '' };
+  }
+  // Pure: map a requestAccess result to what the blocked screen shows. { text, err, done, reload }.
+  var REQUESTED_TEXT = 'Requested — Mark has been notified. Try again once he’s switched you on.';
+  function requestView(res) {
+    res = res || {};
+    var s = res.status;
+    if (res.ok && (s === 'requested' || s === 'already_requested')) return { text: REQUESTED_TEXT, err: false, done: true, reload: false };
+    if (res.ok && (s === 'already_granted' || s === 'not_gated')) return { text: 'You’re already switched on — opening…', err: false, done: true, reload: true };
+    if (res.ok && s === 'not_on_list') return { text: 'That address isn’t on the family list — ask Mark directly.', err: true, done: true, reload: false };
+    if (s === 'not_signed_in' || s === 401 || s === 403) return { text: 'Your sign-in has expired — use “Sign in as someone else” to sign in again.', err: true, done: false, reload: false };
+    return { text: 'Couldn’t send the request — try again in a moment.', err: true, done: false, reload: false };
+  }
   function touch(session) {
     // fire-and-forget last_seen_at stamp (§6); never blocks sign-in and never throws.
     try {
@@ -1073,8 +1153,30 @@ body.tw-sorting .tw-card{transition:none}
     return sessionFromToken(await r.json());
   }
 
+  // Magic-link landing (arc slice 2). A SECOND entry point, not a replacement: if the page loaded
+  // with a GoTrue token fragment (the link flow, which otherwise dead-ends), adopt it as the session
+  // in the gate's normal format, strip the fragment from the URL, and return it. No fragment / a
+  // malformed one -> null, and the normal code path runs unchanged. Browser-only; never throws.
+  function consumeHashLanding() {
+    try {
+      if (typeof location === 'undefined' || !location.hash) return null;
+      var s = sessionFromHash(location.hash);
+      if (!s) return null;
+      saveSession(s);
+      // strip the token fragment so it never lingers in the address bar / history
+      try {
+        if (typeof history !== 'undefined' && history.replaceState) {
+          history.replaceState(null, '', location.pathname + location.search);
+        } else { location.hash = ''; }
+      } catch (e) {}
+      return s;
+    } catch (e) { return null; }
+  }
+
   // Resolve a usable session from storage, refreshing if needed. Returns a live session or null.
   async function ensureFresh() {
+    consumeHashLanding();   // a fresh magic-link landing is adopted before we read storage
+
     var s = loadSession();
     if (!s) return null;
     if (!isExpired(s)) return s;
@@ -1123,6 +1225,7 @@ body.tw-sorting .tw-card{transition:none}
     "font-family:Outfit,system-ui,-apple-system,'Segoe UI',sans-serif;color:#eae4d6}" +
     /* muted text colour, raised to clear WCAG AA on the card */
     '#family-gate *{box-sizing:border-box}' +
+    '#family-gate [hidden]{display:none!important}' +
     '#family-gate .fg-card{width:100%;max-width:400px;text-align:center;padding:34px 26px;border-radius:14px;' +
     'background:rgba(19,29,44,.82);border:1px solid rgba(201,162,109,.28);box-shadow:0 24px 60px rgba(0,0,0,.5)}' +
     '#family-gate .fg-icon{width:44px;height:44px;margin:0 auto 14px;color:#c9a26d}' +
@@ -1193,15 +1296,32 @@ body.tw-sorting .tw-card{transition:none}
     var MARQUEE = 'index.html?view=family';
 
     if (existing) {
+      // BLOCKED: a valid family session whose switch for THIS page is off (opt-out). No password, no
+      // form — one "Request access" tap files press_access_request(page) under the caller's own JWT;
+      // Mark is pushed + emailed, flips the switch on, and the next visit simply works.
       host.innerHTML =
         '<div class="fg-card">' +
           '<div class="fg-icon">' + ICON + '</div>' +
           '<h1>You’re signed in.</h1>' +
-          '<p>Signed in as <b>' + escapeHtml(existing.email) + '</b>, but that address doesn’t have access to this page yet. Ask Mark to grant it.</p>' +
+          '<p>Signed in as <b>' + escapeHtml(existing.email) + '</b>, but that address doesn’t have access to this page yet.</p>' +
+          '<button class="fg-btn" id="fg-request" type="button">Request access</button>' +
+          '<div class="fg-msg" id="fg-msg" aria-live="polite"></div>' +
           '<button class="fg-link" id="fg-signout" type="button">Sign in as someone else</button>' +
           '<div><a class="fg-back" href="' + MARQUEE + '">← the family wing</a></div>' +
         '</div>';
       document.body.appendChild(host);
+      var reqBtn = host.querySelector('#fg-request');
+      var reqMsg = host.querySelector('#fg-msg');
+      reqBtn.addEventListener('click', async function () {
+        reqBtn.disabled = true; reqMsg.className = 'fg-msg'; reqMsg.textContent = 'Sending your request…';
+        var res;
+        try { res = await requestAccess(existing, page); } catch (e) { res = { ok: false, status: 'network' }; }
+        var view = requestView(res);
+        reqMsg.className = 'fg-msg' + (view.err ? ' err' : '');
+        reqMsg.textContent = view.text;
+        if (view.done) { reqBtn.hidden = true; } else { reqBtn.disabled = false; }
+        if (view.reload && typeof location !== 'undefined') { try { location.reload(); } catch (e) {} }
+      });
       host.querySelector('#fg-signout').addEventListener('click', function () {
         clearSession(); renderSignIn(page, done, null);
       });
@@ -1358,9 +1478,12 @@ body.tw-sorting .tw-card{transition:none}
     cfg: cfg, SUPA_URL: SUPA_URL, SUPA_KEY: SUPA_KEY, REST: REST, AUTH: AUTH, SESSION_KEY: SESSION_KEY,
     // exposed for unit tests
     sessionFromToken: sessionFromToken, normSession: normSession, isExpired: isExpired,
+    parseHashParams: parseHashParams, b64urlToJson: b64urlToJson, sessionFromHash: sessionFromHash,
+    consumeHashLanding: consumeHashLanding,
     gatedDecision: gatedDecision, isGated: isGated, ensureFresh: ensureFresh,
     loadSession: loadSession, saveSession: saveSession, clearSession: clearSession,
     sendCode: sendCode, verifyCode: verifyCode, refresh: refresh, hasGrant: hasGrant,
+    requestAccess: requestAccess, requestView: requestView, REQUESTED_TEXT: REQUESTED_TEXT,
     friendlyAuthErr: friendlyAuthErr, verifyErr: verifyErr, isValidCode: isValidCode, escapeHtml: escapeHtml
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -10,6 +10,15 @@ Sources read: (no .env* files) · 0 keys from `.env*` · 2 names read from `.git
 |---|---|---|---|---|
 | SUPABASE_PRESS_ANON_KEY | no (publishable by design) | 1Password | GitHub Actions repo secret (`agent-health-notifier.yml`) | `.github/workflows/agent-health-notifier.yml` |
 | AGENT_HEALTH_HEARTBEAT_URL | yes (optional ping URL) | 1Password | GitHub Actions repo secret (`agent-health-notifier.yml`) | `.github/workflows/agent-health-notifier.yml` |
+| SUPABASE_ACCESS_TOKEN | yes (Supabase personal access token) | 1Password | GitHub Actions repo secret (`auth-email-sync.yml`) — **Mark creates it** | `.github/workflows/auth-email-sync.yml`, `tools/auth-email-sync.mjs` |
+| access_notify_secret | yes (trigger → edge-fn header) | Supabase Vault (press project) — generated in-DB, never exported | none (the edge fn verifies via `press_access_notify_secret_ok()`, service_role only) | `db/20261012_press_access_requests.sql` |
+
+## Notes (marquee-wings-monitor slice 2, 2026-10-12)
+- `SUPABASE_ACCESS_TOKEN` lets the press workflow PATCH the Auth email template (Management API). Until it is set
+  the workflow fails with "Add SUPABASE_ACCESS_TOKEN …".
+- `access_notify_secret` has ONE home (Vault). The `access-notify` edge function reuses the existing project function
+  secrets `PUSHOVER_APP_TOKEN`, `PUSHOVER_USER_KEY`, `MAILER_ENDPOINT`, `MAILER_KEY` (shared with card-scout) and the
+  platform-provided `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` — no new function secret.
 
 ## Notes (migrate-home, 2026-10-11)
 - **0 `.env*` files, 0 sensitive keys in the repo.** The run read a fresh cloud clone; the site has no build step and
