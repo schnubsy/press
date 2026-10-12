@@ -220,7 +220,9 @@ test('no IndexedDB (private mode) → memory only, as before: a reload asks agai
 
 test('WebKit: the IDB-held key survives a reload and unseals with no prompt; a lock deletes it', async () => {
   let browser;
-  try { browser = await webkit.launch(); } catch (e) { test.skip(true, 'WebKit not installed: ' + String(e).slice(0, 80)); }
+  // explicit WebKit binary: the test runner hands every browser type the running project's launchOptions, and the cloud
+  // chromium project's executablePath made this launch fail → a silent skip (arc/safari-ui, 2026-10-12)
+  try { browser = await webkit.launch({ executablePath: webkit.executablePath() }); } catch (e) { test.skip(true, 'WebKit not installed: ' + String(e).slice(0, 80)); }
   try {
     const context = await browser.newContext();
     await routes(context);

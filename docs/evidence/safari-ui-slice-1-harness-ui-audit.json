@@ -1,0 +1,4864 @@
+{
+  "name": "press",
+  "engine": "webkit",
+  "fallback": null,
+  "widths": [
+    320,
+    375,
+    390,
+    393,
+    430
+  ],
+  "schemes": [
+    "dark",
+    "light"
+  ],
+  "states": [
+    "(initial)",
+    "lobby-ready",
+    "archive",
+    "private-first-time",
+    "private-locked",
+    "private-unlocked",
+    "private-devices",
+    "private-recovery-kit",
+    "family-signin",
+    "family-code",
+    "family-signed-in",
+    "steward-locked",
+    "steward-report",
+    "monitor",
+    "monitor-detail",
+    "monitor-admin",
+    "access-locked",
+    "access-signin",
+    "access-admin"
+  ],
+  "exceptions": [],
+  "defects": 666,
+  "undriven": 0,
+  "verdict": "RED",
+  "code": 1,
+  "results": [
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "\"First time on any device? Set up a\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "212×33"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "\"First time on any device? Set up a\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "212×33"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "button#pg-unlock.pg-btn \"Use your passkey\"",
+          "detail": "181×41"
+        },
+        {
+          "check": "touch",
+          "el": "a.pg-back \"← the marquee\"",
+          "detail": "86×20"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "110×20"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line.bad \"Last attempt failed · last real \"",
+          "detail": "\"Last attempt failed · last real wo\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 3 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line.bad \"Last attempt failed · last real \"",
+          "detail": "\"Last attempt failed · last real wo\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 3 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Apps Script ↗\"",
+          "detail": "103×31"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line.bad \"Last attempt failed · last real \"",
+          "detail": "\"Last attempt failed · last real wo\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 3 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Function logs ↗\"",
+          "detail": "113×31"
+        },
+        {
+          "check": "touch",
+          "el": "button.retry \"Retry now\"",
+          "detail": "87×31"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        },
+        {
+          "check": "touch",
+          "el": "button.on-btn \"Turn on\"",
+          "detail": "79×36"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2",
+          "detail": "38×21"
+        },
+        {
+          "check": "font16",
+          "el": "input#lk \"http://127.0.0.1:46549/index.htm\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "\"First time on any device? Set up a\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "252×33"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "\"First time on any device? Set up a\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "252×33"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "button#pg-unlock.pg-btn \"Use your passkey\"",
+          "detail": "181×41"
+        },
+        {
+          "check": "touch",
+          "el": "a.pg-back \"← the marquee\"",
+          "detail": "86×20"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "110×20"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Apps Script ↗\"",
+          "detail": "103×31"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Function logs ↗\"",
+          "detail": "113×31"
+        },
+        {
+          "check": "touch",
+          "el": "button.retry \"Retry now\"",
+          "detail": "87×31"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        },
+        {
+          "check": "touch",
+          "el": "button.on-btn \"Turn on\"",
+          "detail": "79×36"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2",
+          "detail": "38×21"
+        },
+        {
+          "check": "font16",
+          "el": "input#lk \"http://127.0.0.1:46549/index.htm\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "\"First time on any device? Set up a\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "252×33"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "\"First time on any device? Set up a\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "252×33"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "button#pg-unlock.pg-btn \"Use your passkey\"",
+          "detail": "181×41"
+        },
+        {
+          "check": "touch",
+          "el": "a.pg-back \"← the marquee\"",
+          "detail": "86×20"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "110×20"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Apps Script ↗\"",
+          "detail": "103×31"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Function logs ↗\"",
+          "detail": "113×31"
+        },
+        {
+          "check": "touch",
+          "el": "button.retry \"Retry now\"",
+          "detail": "87×31"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        },
+        {
+          "check": "touch",
+          "el": "button.on-btn \"Turn on\"",
+          "detail": "79×36"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2",
+          "detail": "38×21"
+        },
+        {
+          "check": "font16",
+          "el": "input#lk \"http://127.0.0.1:46549/index.htm\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "\"First time on any device? Set up a\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "252×33"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "\"First time on any device? Set up a\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "252×33"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "button#pg-unlock.pg-btn \"Use your passkey\"",
+          "detail": "181×41"
+        },
+        {
+          "check": "touch",
+          "el": "a.pg-back \"← the marquee\"",
+          "detail": "86×20"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "110×20"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Apps Script ↗\"",
+          "detail": "103×31"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Function logs ↗\"",
+          "detail": "113×31"
+        },
+        {
+          "check": "touch",
+          "el": "button.retry \"Retry now\"",
+          "detail": "87×31"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        },
+        {
+          "check": "touch",
+          "el": "button.on-btn \"Turn on\"",
+          "detail": "79×36"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2",
+          "detail": "38×21"
+        },
+        {
+          "check": "font16",
+          "el": "input#lk \"http://127.0.0.1:46549/index.htm\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "305×13"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "305×13"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "button#pg-unlock.pg-btn \"Use your passkey\"",
+          "detail": "181×41"
+        },
+        {
+          "check": "touch",
+          "el": "a.pg-back \"← the marquee\"",
+          "detail": "86×20"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "110×20"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Apps Script ↗\"",
+          "detail": "103×31"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Function logs ↗\"",
+          "detail": "113×31"
+        },
+        {
+          "check": "touch",
+          "el": "button.retry \"Retry now\"",
+          "detail": "87×31"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        },
+        {
+          "check": "touch",
+          "el": "button.on-btn \"Turn on\"",
+          "detail": "79×36"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2",
+          "detail": "38×21"
+        },
+        {
+          "check": "font16",
+          "el": "input#lk \"http://127.0.0.1:46549/index.htm\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "\"First time on any device? Set up a\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "212×33"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "\"First time on any device? Set up a\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "212×33"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "button#pg-unlock.pg-btn \"Use your passkey\"",
+          "detail": "181×41"
+        },
+        {
+          "check": "touch",
+          "el": "a.pg-back \"← the marquee\"",
+          "detail": "86×20"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "110×20"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line.bad \"Last attempt failed · last real \"",
+          "detail": "\"Last attempt failed · last real wo\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 3 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line.bad \"Last attempt failed · last real \"",
+          "detail": "\"Last attempt failed · last real wo\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 3 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Apps Script ↗\"",
+          "detail": "103×31"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line.bad \"Last attempt failed · last real \"",
+          "detail": "\"Last attempt failed · last real wo\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 3 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Function logs ↗\"",
+          "detail": "113×31"
+        },
+        {
+          "check": "touch",
+          "el": "button.retry \"Retry now\"",
+          "detail": "87×31"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        },
+        {
+          "check": "touch",
+          "el": "button.on-btn \"Turn on\"",
+          "detail": "79×36"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2",
+          "detail": "38×21"
+        },
+        {
+          "check": "font16",
+          "el": "input#lk \"http://127.0.0.1:46549/index.htm\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "\"First time on any device? Set up a\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "252×33"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "\"First time on any device? Set up a\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "252×33"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "button#pg-unlock.pg-btn \"Use your passkey\"",
+          "detail": "181×41"
+        },
+        {
+          "check": "touch",
+          "el": "a.pg-back \"← the marquee\"",
+          "detail": "86×20"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "110×20"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Apps Script ↗\"",
+          "detail": "103×31"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Function logs ↗\"",
+          "detail": "113×31"
+        },
+        {
+          "check": "touch",
+          "el": "button.retry \"Retry now\"",
+          "detail": "87×31"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        },
+        {
+          "check": "touch",
+          "el": "button.on-btn \"Turn on\"",
+          "detail": "79×36"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2",
+          "detail": "38×21"
+        },
+        {
+          "check": "font16",
+          "el": "input#lk \"http://127.0.0.1:46549/index.htm\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "\"First time on any device? Set up a\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "252×33"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "\"First time on any device? Set up a\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "252×33"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "button#pg-unlock.pg-btn \"Use your passkey\"",
+          "detail": "181×41"
+        },
+        {
+          "check": "touch",
+          "el": "a.pg-back \"← the marquee\"",
+          "detail": "86×20"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "110×20"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Apps Script ↗\"",
+          "detail": "103×31"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Function logs ↗\"",
+          "detail": "113×31"
+        },
+        {
+          "check": "touch",
+          "el": "button.retry \"Retry now\"",
+          "detail": "87×31"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        },
+        {
+          "check": "touch",
+          "el": "button.on-btn \"Turn on\"",
+          "detail": "79×36"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2",
+          "detail": "38×21"
+        },
+        {
+          "check": "font16",
+          "el": "input#lk \"http://127.0.0.1:46549/index.htm\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "\"First time on any device? Set up a\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "252×33"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "\"First time on any device? Set up a\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "252×33"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "button#pg-unlock.pg-btn \"Use your passkey\"",
+          "detail": "181×41"
+        },
+        {
+          "check": "touch",
+          "el": "a.pg-back \"← the marquee\"",
+          "detail": "86×20"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "110×20"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Apps Script ↗\"",
+          "detail": "103×31"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line \"Last real work 3 hours ago · 5 d\"",
+          "detail": "\"Last real work 3 hours ago · 5 dea\" wraps onto 2 lines"
+        },
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Function logs ↗\"",
+          "detail": "113×31"
+        },
+        {
+          "check": "touch",
+          "el": "button.retry \"Retry now\"",
+          "detail": "87×31"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        },
+        {
+          "check": "touch",
+          "el": "button.on-btn \"Turn on\"",
+          "detail": "79×36"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2",
+          "detail": "38×21"
+        },
+        {
+          "check": "font16",
+          "el": "input#lk \"http://127.0.0.1:46549/index.htm\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "305×13"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button#unlockBtn.tw-btn \"Use your passkey\"",
+          "detail": "175×38"
+        },
+        {
+          "check": "touch",
+          "el": "span#setupLink.tw-setup-link \"First time on any device? Set up\"",
+          "detail": "305×13"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "button.tw-mini.tw-connect-toggle \"Hide\"",
+          "detail": "55×27"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"FSA Claims Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"FSA Claims Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Giving Tracker sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Giving Tracker passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Retirement Projector sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Retirement Projector passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-sync \"Cardsharp sync id\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        },
+        {
+          "check": "font16",
+          "el": "input.tw-cinput.tw-pass \"Cardsharp passphrase\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.fg-back \"← the family wing\"",
+          "detail": "101×16"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "button#pg-unlock.pg-btn \"Use your passkey\"",
+          "detail": "181×41"
+        },
+        {
+          "check": "touch",
+          "el": "a.pg-back \"← the marquee\"",
+          "detail": "86×20"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "110×20"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Apps Script ↗\"",
+          "detail": "103×31"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": [
+        {
+          "check": "wrap",
+          "el": "span.line.warn \"Missed the run due Wed Oct 7, 12\"",
+          "detail": "\"Missed the run due Wed Oct 7, 12:0\" wraps onto 2 lines"
+        },
+        {
+          "check": "touch",
+          "el": "a.tw-back \"← the marquee\"",
+          "detail": "122×25"
+        },
+        {
+          "check": "touch",
+          "el": "span#refresh.refresh \"Refresh\"",
+          "detail": "101×28"
+        },
+        {
+          "check": "touch",
+          "el": "a.lnk \"Function logs ↗\"",
+          "detail": "113×31"
+        },
+        {
+          "check": "touch",
+          "el": "button.retry \"Retry now\"",
+          "detail": "87×31"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        }
+      ]
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": [
+        {
+          "check": "touch",
+          "el": "a.back \"← the private wing\"",
+          "detail": "106×13"
+        },
+        {
+          "check": "touch",
+          "el": "button.on-btn \"Turn on\"",
+          "detail": "79×36"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "button.pbtn \"Deactivate\"",
+          "detail": "94×28"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2.on",
+          "detail": "38×21"
+        },
+        {
+          "check": "touch",
+          "el": "i.sw2",
+          "detail": "38×21"
+        },
+        {
+          "check": "font16",
+          "el": "input#lk \"http://127.0.0.1:46549/index.htm\"",
+          "detail": "font-size 13.00px — iOS zooms on focus"
+        }
+      ]
+    }
+  ]
+}
