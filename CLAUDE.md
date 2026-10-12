@@ -31,13 +31,12 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #27 76c7b0c on 2026-10-11; main checkout on main @ 76c7b0c
-**arc/migrate-home (2026-10-11) — Home moved to GitHub; ran as a cloud Builder.** press stays PUBLIC. New ship gate
-`scripts/gauntlet.sh` + verify skill (cloud mode = Chromium only); cloud gauntlet GREEN (unit 91 · tenants-check 50/0 ·
-Playwright 80 + 1 WebKit-only skip). `docs/secrets-map.md` (0 keys; 2 Actions secret names). Served pages list now
-includes cardsharp + optimo (`optimo/` app dir); applied `perth_rls_gate` mirror carried onto main; BACKLOG → Issues
-#28–#32. **BLOCKED:** flow `kayley.html` compare (flow not in session scope) — flow archive waits on it; NAS zip (Mark).
-Full narrative: `docs/history.md`.
+Merge state: PR pending (branch arc/marquee-wings-monitor)
+**arc/marquee-wings-monitor (2026-10-12, cloud Builder).** Marquee owns card naming (`LABELS` + T9), Mark's new labels,
+filename lines gone, new icons. Family Wing: Request access → push+email → switch on; "Family Wing Access Manager";
+remit data gate opt-out; wing-level sign-in email (sync needs Mark's `SUPABASE_ACCESS_TOKEN`). Agent Monitor rebuilt on
+real work, full inventory incl. scheduled tasks, agent-watch alerts, admin-only Fix. remit PR #15 / optimo PR #114 carry
+the re-vendored gate. Full narrative: `docs/history.md`.
 
 ## Project rules
 

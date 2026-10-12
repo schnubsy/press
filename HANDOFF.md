@@ -1,6 +1,6 @@
 # press — HANDOFF
 
-_Last updated: 2026-10-11 — arc/migrate-home (press → GitHub home), cloud Builder, PR #27._
+_Last updated: 2026-10-12 — arc/marquee-wings-monitor (cloud Builder)._
 
 ## Standing rule — publish auto-close (do NOT re-litigate)
 
@@ -10,40 +10,35 @@ as part of closing out. (Auto-merge is still never enabled pre-emptively.) Set b
 
 ## Current state
 
-- Merge state: Merged: PR #27 76c7b0c on 2026-10-11; main checkout on main @ 76c7b0c
-- Home: `github:schnubsy/press` — work happens in a cloud clone (`git clone https://github.com/schnubsy/press`); PUBLIC, stays public.
-- Ship gate: `bash scripts/gauntlet.sh` via `.claude/skills/verify/SKILL.md` — cloud GREEN 2026-10-11 (unit 91/0 ·
-  inline in sync · tenants-check 50/0 · Playwright 80 passed + 1 WebKit-only skip).
-- `delete_branch_on_merge` = true (already set). Served pages unchanged by this arc.
+- Merge state: PR pending (branch arc/marquee-wings-monitor)
+- Home: `github:schnubsy/press` (PUBLIC). Tenant PRs: remit #15, optimo #114 (re-vendored family-gate).
+- Ship gate GREEN (cloud): unit 123/0 · inline in sync · tenants-check 64/0 (T9 new) · Playwright 102 + 1 WebKit skip.
+- Live DB/functions already applied: press_access_requests + RPC + triggers, remit_has_access opt-out, agent monitor
+  tables/views/cron `agent-watch` (15 min), review fixes; Edge: access-notify v2, agent-watch v1, agent-fix v1.
+- Scheduled tasks check in: Card Scout weekly + Cowork pop-up watch (cloud prompts updated); Mac snag-train /
+  fsa-monthly / steward-audit via claude-environment `system/scheduled-tasks/_report.md` step 4 (uncommitted on the Mac).
 
 ## Shipped this arc
-- S1 Home line · path sweep · `docs/secrets-map.md` · gauntlet + verify skill (cloud mode) · `perth_rls_gate` db mirror onto main.
-- S2 CLAUDE.md served pages (+cardsharp, +optimo app dir, retirement live state) · BACKLOG → Issues #28–#32 · T6 grants live.
-- S3 adversarial review (0 defects, 5 nits fixed) · sentry GREEN.
-- Evidence: `docs/evidence/migrate-home-slice-{1,2,3}-*`.
+- S1 marquee `LABELS` (Mark's 10 labels), no filename lines, new icons, T9. S2 Request access flow, Access Manager,
+  wing email template + sync workflow. S3 remit/optimo re-vendor PRs. S4 Agent Monitor rebuild. S5 review fixes.
+- Evidence: `docs/evidence/marquee-wings-slice-{1..5}-*`.
 
 ## Open / blockers
-- **flow `kayley.html` compare — BLOCKED.** schnubsy/flow was not in this session's repo scope (no `add_repo`; clone auth
-  failed). press `kayley.html` blob `347e248` unchanged; flow's per migrate.md §2 = `779b1c4`. flow must NOT be archived
-  until a press arc with flow in scope diffs the two (next steps).
-- **GitHub Actions secrets set-state** unreadable from the cloud (proxy 403 on `actions/secrets`) — see Mark's step 2.
-- **NAS zip** of the Mac press folder — Mark's step 1 (BLOCKED in the cloud).
-- Remote branch `claude/perth-phase-2-security-c7a88b` survives (cloud cannot delete remote branches); its only commit is
-  now on main by patch-id — safe for Mark/the chat to delete.
-- Issues #28–#32 (Eye polish, `page:index`).
+- **Sign-in email still says "remit"** until Mark's step 1 (token) and the Auth email sync workflow runs.
+- On-demand AI functions (cardsharp-receipt, cardsharp-ynab, plan-day, propublica) record no runs → "No data".
+- plan-day 401 at 11:58 UTC = a GET without a user token (verify_jwt) — probe, not a function bug (optimo).
+- optimo cloud Playwright baseline is RED on main (Google Fonts egress, incognito installability) — env, not this arc.
+- flow `kayley.html` compare (carried) · NAS zip (Mark, carried) · Issues #28–#32 (Eye polish).
 
 ## Exact next steps
-1. Chat: run verify on PR #27 (close-out report is its final comment).
-2. Next press arc — **flow kayley carry-over** (dispatch with BOTH repos in scope):
-   HOME: github:schnubsy/press · BRANCH: arc/flow-kayley
-   S1 — `git clone https://github.com/schnubsy/flow ../flow` (read-only); diff `../flow/kayley.html` vs `kayley.html`; if flow's
-   is newer and correct, bring it in per the press publish rules (pages.json untouched), ship proof (200 + blob == hash-object);
-   record the diff in `docs/evidence/`. Then the chat archives flow (`gh repo archive schnubsy/flow --yes`) per migrate.md §2.
-3. Snag train / polish arc for Issues #28–#32 when Mark wants it.
+1. Chat: run verify on this PR (close-out report is its final comment).
+2. card-scout arc: re-sync `docs/cowork-task.md` to the live weekly task prompt (step 6 check-in added 2026-10-12).
+3. remit arc: CLAUDE.md access contract → opt-out (`remit_has_access()` now delegates to `press_access_has`).
+4. council arc (mac home): release.md/press.md point at press spec "Card naming — marquee label map" + Agent Monitor
+   registration rule; MANUAL Steward update (§9.4 check-ins, §12.6 prune is daily/30d, notifier now all apps).
+5. Polish: private-wing pill wrap at 390px; wing-card title wrap <400px; on-demand AI run logging.
 
 ## Mark's manual steps
-1. NAS zip of the Mac press folder (migrate.md step 7):
-   `test -d ~/Documents/code/press && ditto -c -k --keepParent ~/Documents/code/press "<NAS>/archive/code/press-2026-10-11.zip" && unzip -l "<NAS>/archive/code/press-2026-10-11.zip" | tail -1`
-   — expected: a file count > 0 on the last line. Only then may the Mac folder be deleted (Finder).
-2. Confirm in GitHub → schnubsy/press → Settings → Secrets → Actions that `SUPABASE_PRESS_ANON_KEY` (and optionally
-   `AGENT_HEALTH_HEARTBEAT_URL`) exist — expected: both names listed; the daily Agent health notifier runs green.
+1. Create a Supabase personal access token (supabase.com → Account → Access Tokens), add it in GitHub → schnubsy/press →
+   Settings → Secrets → Actions as `SUPABASE_ACCESS_TOKEN`, then Actions → "Auth email sync" → Run workflow —
+   expected: the run is green and its last step prints "template matches".

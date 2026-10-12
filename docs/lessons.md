@@ -329,3 +329,14 @@ branch. Cross-check `list_migrations` against `db/` when closing an arc that app
 repo (e.g. flow for the kayley compare) must have it added at dispatch — otherwise that step is BLOCKED, never fetched
 around the scope.
 
+## arc/marquee-wings-monitor (2026-10-12)
+
+- **A monitor must not trust the agent's own "ok".** `last_ok_at` was refreshed by `skipped` ticks, so a dead scan
+  looked healthy. Health = last REAL work (ok runs / real output) + an expected cadence; status is computed server-side.
+- **Watch the watcher from outside.** agent-watch (pg_cron) alerts; a GitHub Action independently fails if agent-watch is
+  stale. A notifier scoped by an env filter (`AGENT_APP: giving`) silently ignored every other app for weeks.
+- **Silent state changes must be stamped notified**, or an "alert owed but undelivered" check fires forever.
+- **Check-in notes are public** on agent-health.html — counts only, never amounts/names/providers.
+- **Marquee owns card naming** (`LABELS`, T9). pages.json title = tab title only; never edit it to rename a card.
+- **Supabase connector cancels `drop … if exists` in cloud sessions too** (pop-up auto-cancel, #94450) — write new
+  objects without defensive drops.
