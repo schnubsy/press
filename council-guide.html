@@ -329,7 +329,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v4.14.0</span>
+    <span class="nav-badge">v4.15.0</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -1268,6 +1268,18 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         </details>
       </div>
 
+      <div class="instr i-hand" id="cap-ui-audit">
+        <span class="who">Owner: Snag · trigger — "iPhone UI audit" / "Safari check" / every web gauntlet</span>
+        <h4>iPhone UI audit</h4>
+        <p class="instr-sum">Every web project is checked the way an iPhone sees it — in Safari's engine, at five iPhone widths, in dark and light, on every screen and state — for overflow, clipped or wrapped labels, small tap targets, notch-safe bars and zoom-on-focus inputs.</p>
+        <details class="facet">
+          <summary><span class="fmk">&#9656;</span>Full detail</summary>
+          <div class="facet-body">
+            <p>A gated stage of the <b class="ink">gauntlet</b> for every web project. It drives every view, sheet, modal, menu and form state of the built app at widths <b class="ink">320 / 375 / 390 / 393 / 430</b>, in <b class="ink">dark and light</b>, on <b class="ink">WebKit — the iPhone engine of record</b>, and fails the build on any of six defects: horizontal overflow, clipped or ellipsised text, a single-line control wrapping onto two lines, a tap target under 44×44, a fixed bar that ignores the notch or home indicator, and a text input under 16px (which makes iOS zoom). Designed exceptions are named in the project's config and printed in the evidence, never silent. When Safari's engine cannot be installed the run falls back to Chromium and is reported <b class="ink">partial</b>, never green — the fix is the environment, not the verdict. Every new web project is scaffolded with it; existing ones are rolled out one small arc each.</p>
+          </div>
+        </details>
+      </div>
+
       <!-- Forge -->
       <div class="instr i-hand" id="cap-release">
         <span class="who">Owner: Forge · consulted: Quill (comms) + Pulse, Ear (market) · trigger — "release this" / "ship it" / "prepare the launch"</span>
@@ -1699,7 +1711,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <footer>
   <div class="footer-in">
     <div>The Council · a private prospectus · hand-maintained to parity with PERSONAS.md + skills</div>
-    <div class="mono">council v4.14.0 · last updated 2026-10-12</div>
+    <div class="mono">council v4.15.0 · last updated 2026-10-12</div>
   </div>
 </footer>
 
