@@ -19,5 +19,6 @@ S1 — harness: from a council clone at main, vendor `instruments/ui-audit/{ui-p
      Status: done 334d533
 S2 — fix every defect the audit found (fix, or a named designed exception with its why — an exception added only
      to turn red green is a 🔴 in review); re-run until GREEN on WebKit across 320/375/390/393/430 × dark + light.
+     Status: done 3c734f2
 S3 — /code-review slice; close per arc.md rule 4 (publish + ship proof where a target is named).
 Chat: run verify
