@@ -856,6 +856,63 @@ html.tw-locked body>*:not(#press-gate):not(script){display:none!important}
    down after first paint (CLS). A CSS-only fallback reveals it after 3s if script never ran. */
 html:not(.rd-ready) .wrap{visibility:hidden;animation:rdReveal 0s 3s forwards}
 @keyframes rdReveal{to{visibility:visible}}
+
+/* ============ safari-ui (2026-10-12) — the iPhone UI audit floors (council ui-audit, WebKit) ============
+   LAST in the sheet so it wins the cascade at phone widths. Three platform floors are !important on purpose:
+   they are minimums every control must meet whatever its component rule says (ids included), not styling.
+   · font16  — iOS Safari zooms the page on focus of any text entry under 16px.
+   · touch   — every tap target ≥ 44×44 CSS px (Apple HIG / WCAG 2.5.5).
+   · safearea — bottom-anchored fixed layers pad for the home indicator.
+   `screen` only: a printed page is ~720–790 CSS px wide and must keep the desktop statement layout. */
+@media screen and (max-width:820px){
+  :root{--ctl-h:44px;--ctl-h-sm:44px}
+  input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]),select,textarea{font-size:16px!important}
+  input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]),select,
+  button,.btn,.icobtn,.seg button,.status-chip,.tw-back,.chead,.gtoggle,.wiz-check,.elec-def,.elec-lab{min-height:44px!important}
+  .icobtn,.ov-x,.arrow,.chead .arrow,.se-del,.st-hbtn,.btn,.seg button{min-width:44px!important;min-height:44px!important}
+  .seg,.simseg{height:auto}
+  /* the ▲▼ stepper becomes two 44px buttons side by side at the field's right edge (was two 20×19 halves) */
+  .ginput{padding-right:100px}
+  .gunit{right:96px}
+  .gstep{top:0;bottom:0;right:0;width:auto;flex-direction:row;gap:0}
+  .gstep button{flex:0 0 44px;width:44px;font-size:12px;border-radius:0}
+  .gstep button:last-child{border-radius:0 var(--ctl-r) var(--ctl-r) 0}
+  .globals{padding:12px}
+  .gsel{padding:0 6px}
+  /* the globals panel: one column (the phone rule used to switch it to a flex ROW — five squeezed columns) */
+  body.globals-open .globals{display:grid;grid-template-columns:minmax(0,1fr)}
+  .glabel{white-space:normal}
+  .ggrp-head{white-space:normal}
+  /* hero chart header: the sim + Scroll/Fit segments wrap instead of running off the card */
+  .sechead{flex-wrap:wrap;align-items:center}
+  .sechead .spacer{display:none}
+  /* legend readout labels wrap rather than ellipsise next to the fixed value column */
+  .lgro-k{white-space:normal}
+  /* the family preset picker: one full-width row each, so every label stays on one line */
+  #kidsPreset{grid-template-columns:minmax(0,1fr)}
+  #kidsPreset button{white-space:nowrap}
+  /* the controller sheet + FAB clear the home indicator */
+  #ctrlSheet{padding-bottom:env(safe-area-inset-bottom);
+    transform:translateY(calc(100% - var(--sheet-peek-h,52px) - env(safe-area-inset-bottom)))}
+  #ctrlSheet.expanded{transform:translateY(0)}
+  #sterlingFab{bottom:calc(var(--sheet-peek-h,52px) + 12px + env(safe-area-inset-bottom))}
+  /* launcher rows: the plan's buttons drop under its name instead of squeezing it to a sliver */
+  .lch-item{flex-wrap:wrap}
+  .lch-item .lch-btns{width:100%;justify-content:flex-end}
+  /* settings: the add-source picker and the pension-election editor fit the card */
+  .set-add select{flex:1 1 100%;width:100%;min-width:0}
+  .elec-lab{flex:1 1 100%;flex-wrap:wrap}
+  .elec-lab .elec-f,.elec-row .elec-f{flex:1 1 0;min-width:0;max-width:100%}
+  /* the financial statement reads as a phone page: label + value on one row, the source line under it */
+  .stmt-overlay{padding:12px}
+  .stmt-toolbar{top:-12px;padding-top:calc(8px + env(safe-area-inset-top))}
+  .stmt-page{padding:16px 14px}
+  .stmt-table tr{display:grid;grid-template-columns:minmax(0,1fr) auto}
+  .stmt-table td{display:block;width:auto!important}
+  .stmt-table td.src{grid-column:1/-1;padding-top:0}
+  .stmt-table td:not(.val),.stmt-compliance th,.stmt-compliance td{white-space:normal;overflow-wrap:anywhere}
+  .stmt-compliance table{table-layout:fixed}
+}
 </style>
 
 <div class="wrap">
@@ -11303,8 +11360,9 @@ function salaryEditorHTML(){
       +'<button class="se-del" data-i="'+i+'" title="Remove entry">✕</button></div>'
       +'<div class="salr2">'
         +'<label class="se-lab">$/yr (today)<input class="se-f se-money" data-f="annual" type="text" inputmode="numeric" value="'+fmtMoneyField(annual)+'"></label>'
-        +'<label class="se-lab">from<input class="se-f" data-f="start" type="text" value="'+e.start+'"></label>'
-        +'<label class="se-lab">to<input class="se-f" data-f="end" type="text" value="'+e.end+'"></label>'
+        // safari-ui S2 — an unset date shows an empty field (placeholder —), never the literal "null"
+        +'<label class="se-lab">from<input class="se-f" data-f="start" type="text" value="'+esc(e.start)+'" placeholder="—"></label>'
+        +'<label class="se-lab">to<input class="se-f" data-f="end" type="text" value="'+esc(e.end)+'" placeholder="—"></label>'
       +'</div>'+zNote+'</div>';
   }).join('');
   if(!entries.length) rows='<div class="faint" style="font-size:12px">No salary lines yet.</div>';
@@ -13246,14 +13304,14 @@ function renderSync(){
       +'<h3>Set up a new synced plan</h3>'
       +'<div class="sync-sec">'
         +'<div class="sync-field"><label>Your new sync id (generated for you)</label><div class="sync-id" id="syncGenId">'+esc(syncNewId||'')+'</div></div>'
-        +'<div class="sync-field"><label>Choose a passphrase</label><input type="password" id="syncPassNew" autocomplete="new-password" placeholder="a strong passphrase you will remember"></div>'
+        +'<div class="sync-field"><label>Choose a passphrase</label><input type="password" id="syncPassNew" autocomplete="new-password" placeholder="a strong passphrase"></div>'
         +'<div class="sync-field"><label>Name this device (shown to your other devices)</label><input type="text" id="syncLabelNew" placeholder="e.g. laptop"></div>'
         +'<div class="sync-warn"><b>Save both the sync id and the passphrase in your password manager now.</b> They are the only way in. If you lose either one, the synced copy cannot be recovered — there is no reset.</div>'
         +'<div class="sync-actions"><button class="btn primary" data-sync="setup">Turn on sync &amp; upload this plan</button></div>'
       +'</div>'
       +'<h3>Or connect to an existing synced plan</h3>'
       +'<div class="sync-sec">'
-        +'<div class="sync-field"><label>Sync id</label><input type="text" id="syncIdIn" placeholder="paste the id from your other device" autocomplete="off"></div>'
+        +'<div class="sync-field"><label>Sync id</label><input type="text" id="syncIdIn" placeholder="paste your sync id" autocomplete="off"></div>'
         +'<div class="sync-field"><label>Passphrase</label><input type="password" id="syncPassIn" autocomplete="current-password" placeholder="the passphrase you chose"></div>'
         +'<div class="sync-field"><label>Name this device</label><input type="text" id="syncLabelIn" placeholder="e.g. tablet"></div>'
         +'<div class="sync-actions"><button class="btn" data-sync="connect">Connect &amp; download the plan</button></div>'
@@ -13458,7 +13516,7 @@ function renderSettings(){
   let basics='<div class="set-cat">People &amp; plan basics</div>'
     +'<p class="set-help">Who the plan is for and its start point. Everything you tune to see an impact lives on the main page — the assumptions band and the per-source controllers.</p>'
     +'<div class="set-grid">'+m.basics.map(leafInputHtml).join('')+'</div>'
-    +'<div class="set-add"><button class="btn" id="setGuided2">↻ Re-run the guided setup (People → Plan → Sources)</button></div>';
+    +'<div class="set-add"><button class="btn" id="setGuided2" title="People → Plan → Sources">↻ Re-run the guided setup</button></div>';
   // ---- 2) Sources — add / rename / enable-disable / remove + STRUCTURAL fields (election
   //         tables, lump amounts, labels). Balances/statement/mortgage live on the controllers.
   let sources='<div class="set-cat">Income &amp; asset sources</div>'
