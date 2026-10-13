@@ -46,6 +46,8 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
    then every tenant re-vendors (card-scout, retirement, giving, fsa, cardsharp; remit, optimo) and re-publishes; drop the
    overrides from index.html + steward.html; tenants-check T3 0 fail. The tenants' own safari-ui roll-outs can carry it.
 3. press-hygiene arc (HOME github:schnubsy/press · BRANCH arc/press-hygiene):
+   - ui-audit config: add the unaudited states (steward gate before enrolment, access OTP code step + "not an admin",
+     family-gate send/verify errors) — D1 review 🟡; give access `.sw2` switches `tabindex=0` + Space/Enter (pre-existing a11y gap).
    - tenants-check cloud mode, so absent sibling clones SKIP (or always dispatch with the tenant repos in scope).
    - flow kayley carry-over (needs schnubsy/flow in scope).
    - pin auth-email-sync actions to SHAs + move off Node 20 (GitHub deprecation warning).
