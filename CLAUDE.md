@@ -31,7 +31,7 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: PR pending (branch arc/safari-ui)
+Merge state: Merged: PR #40 1f8dcb2 on 2026-10-13; main checkout on main @ 1f8dcb2
 **arc/safari-ui (2026-10-13) — iPhone UI audit on WebKit; cloud Builder.** Vendored council `ui-audit@1.0.0`
 (`test/ui-audit/`) + `test/ui-audit.config.mjs`: 20 press-native states (lobby, archive, private wing + passkey gate, family
 wing + code gate, steward, agent monitor, access) × 320/375/390/393/430 × dark+light, GREEN on WebKit 26.6 after fixing

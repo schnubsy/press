@@ -10,7 +10,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 
 ## Current state
 
-- Merge state: PR pending (branch arc/safari-ui)
+- Merge state: Merged: PR #40 1f8dcb2 on 2026-10-13; main checkout on main @ 1f8dcb2
 - Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
 - Ship gate: `bash scripts/gauntlet.sh` (verify skill). Now: stage 0 `npx playwright install webkit` · 1 unit · 2 inline ·
   3 tenants-check · 4 Playwright `chromium` + `iphone-webkit` (real WebKit, iPhone 15) · 5 **ui-audit** on WebKit.
