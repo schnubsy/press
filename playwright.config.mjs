@@ -24,6 +24,7 @@ export default defineConfig({
   projects: [
     { name: 'chromium', testIgnore: '**/wing-drag-iphone.spec.mjs',
       use: { ...devices['Desktop Chrome'], ...(CLOUD_CHROMIUM ? { launchOptions: { executablePath: CLOUD_CHROMIUM } } : {}) } },
-    { name: 'iphone-webkit', testMatch: IPHONE_SPECS, use: { ...devices['iPhone 15'] } },
+    // desktop-titled tests stay chromium-only (they also write the *-desktop evidence PNGs)
+    { name: 'iphone-webkit', testMatch: IPHONE_SPECS, grepInvert: /desktop/i, use: { ...devices['iPhone 15'] } },
   ],
 });

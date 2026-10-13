@@ -178,6 +178,12 @@ export default {
     // ── steward.html (private wing) ──
     { name: 'steward-locked', run: (p) => open(p, '/steward.html', { enrolled: true }, '#press-gate') },
     { name: 'steward-report', run: (p) => open(p, '/steward.html', { enrolled: true, vault: true }, '#latest') },
+    { name: 'steward-denied', run: async (p) => {   // a key the server refuses → the honest denied state
+      await p.route('**/functions/v1/steward-reports', (r) => r.request().method() === 'OPTIONS'
+        ? r.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' } })
+        : r.fulfill({ status: 401, headers: { 'access-control-allow-origin': '*' }, contentType: 'application/json', body: '{"error":"unauthorized"}' }));
+      await open(p, '/steward.html', { enrolled: true, vault: true }, '#st-denied');
+    } },
     // ── agent-health.html (public monitor; admin Retry) ──
     { name: 'monitor', run: (p) => open(p, '/agent-health.html', {}, '#verdict') },
     { name: 'monitor-detail', run: (p) => open(p, '/agent-health.html#fsa-capture', {}, '.agent.open') },

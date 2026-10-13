@@ -72,7 +72,8 @@ else summary+=("🔴 3 $(grep -E '^tenants-check:' "$LOG" | tail -1) — ✗ FAI
 # 4 — Playwright smoke
 say "== 4 playwright"
 if [ -n "${PW_NO_WEBKIT:-}" ]; then PWARGS=(--project chromium); else PWARGS=(); fi
-if npx playwright test "${PWARGS[@]}" >>"$LOG" 2>&1; then pw=ok; else pw=fail; fi
+# ${A[@]+"${A[@]}"}: an empty array under set -u is "unbound" on bash < 4.4 (macOS /bin/bash 3.2)
+if npx playwright test ${PWARGS[@]+"${PWARGS[@]}"} >>"$LOG" 2>&1; then pw=ok; else pw=fail; fi
 pwline="$(grep -E '^[[:space:]]+[0-9]+ (passed|failed|skipped|flaky)' "$LOG" | tr -s ' ' | tr '\n' ' ')"
 skipped="$(grep -E '^[[:space:]]+-[[:space:]]+[0-9]+ ' "$LOG" | sed 's/^ *//' | head -5)"
 if [ "$pw" = ok ]; then summary+=("🟢 4 playwright:${pwline}")
@@ -83,6 +84,7 @@ if [ -z "${PW_NO_WEBKIT:-}" ] && [ -n "$skipped" ]; then summary+=("🔴 4 playw
 
 # 5 — the iPhone UI audit (WebKit; exit 0 GREEN · 1 RED · 2 PARTIAL = not on WebKit)
 say "== 5 ui-audit → $UISTEM.{txt,json}"
+rm -f "$UISTEM.txt" "$UISTEM.json"   # a crashed run must never report the previous run's matrix
 node test/ui-audit/run.mjs test/ui-audit.config.mjs --evidence "$UISTEM" >>"$LOG" 2>&1; ua=$?
 ualine="$(grep -E '^matrix:' "$UISTEM.txt" 2>/dev/null | head -1)"
 case $ua in
