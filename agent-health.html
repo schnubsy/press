@@ -54,9 +54,12 @@ body.tw-page{background:var(--tw-stage-gradient);color:var(--tw-ink);font-family
   background:var(--tw-aurora-field);animation:twBreath 32s ease-in-out infinite alternate}
 .tw-in{position:relative;z-index:3;max-width:720px;margin:0 auto;padding:26px 18px 48px}
 @media(min-width:700px){.tw-in{padding:34px 28px 56px}}
-.tw-back{display:inline-flex;align-items:center;gap:7px;font-family:var(--tw-font-meta);font-size:10px;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);
-  padding:6px 12px;border-radius:var(--tw-radius-pill);text-decoration:none;margin-bottom:16px}
+.tw-back{position:relative;isolation:isolate;display:inline-flex;align-items:center;gap:7px;font-family:var(--tw-font-meta);font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--tw-violet);white-space:nowrap;
+  min-height:44px;padding:0 12px;text-decoration:none;margin:-9.5px 0 6.5px}
+/* safari-ui (2026-10-12): 44px tap box; the 25px pill is ::before (look unchanged) */
+.tw-back::before{content:"";position:absolute;inset:9.5px 0;z-index:-1;pointer-events:none;
+  border:1px solid rgba(142,123,232,.4);border-radius:var(--tw-radius-pill)}
 .tw-top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11.5px;color:var(--tw-muted)}
 .tw-top b{color:var(--tw-ink);font-weight:600;letter-spacing:.02em}
 h1.tw-title{font-family:var(--tw-font-display);font-weight:500;font-size:clamp(24px,6.5vw,31px);line-height:1.2;
@@ -89,7 +92,7 @@ h1.tw-title{font-family:var(--tw-font-display);font-weight:500;font-size:clamp(2
   border-radius:var(--tw-radius-pill);border:1px solid rgba(87,199,154,.4);color:#8be0bd}
 .refresh{cursor:pointer;font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);padding:7px 14px;border-radius:var(--tw-radius-pill);
-  background:rgba(142,123,232,.08);display:inline-flex;align-items:center;gap:7px}
+  background:rgba(142,123,232,.08);display:inline-flex;align-items:center;gap:7px;min-height:44px}
 .refresh:hover{border-color:var(--tw-violet);background:rgba(142,123,232,.16)}
 .refresh[aria-busy="true"]{opacity:.6;pointer-events:none}
 .refresh svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -145,10 +148,10 @@ h1.tw-title{font-family:var(--tw-font-display);font-weight:500;font-size:clamp(2
 .fix.calm{background:rgba(255,255,255,.04);border:1px solid var(--tw-hairline);color:var(--tw-muted)}
 .fix b{color:var(--tw-ink)}
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
-.lnk{font-size:12px;color:var(--tw-icon);text-decoration:none;border:1px solid rgba(183,168,255,.3);padding:6px 11px;border-radius:var(--tw-radius-pill)}
+.lnk{display:inline-flex;align-items:center;min-height:44px;font-size:12px;color:var(--tw-icon);text-decoration:none;border:1px solid rgba(183,168,255,.3);padding:6px 14px;border-radius:var(--tw-radius-pill)}
 .lnk:hover{border-color:var(--tw-icon)}
 .retry{cursor:pointer;font:600 12px var(--tw-font-body);color:#100C1E;background:linear-gradient(92deg,#B7A8FF,#E7A6C7);
-  border:0;padding:8px 14px;border-radius:var(--tw-radius-pill)}
+  border:0;padding:8px 16px;border-radius:var(--tw-radius-pill);min-height:44px}
 .retry[disabled]{opacity:.55;cursor:default}
 .retry-msg{font-size:12px;color:var(--tw-muted)}
 

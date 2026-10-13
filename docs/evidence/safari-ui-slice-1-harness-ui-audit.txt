@@ -1,0 +1,13 @@
+ui-audit press · webkit
+matrix: 19 states × 320/375/390/393/430 × dark+light = 190 surfaces
+🟢 overflow 0
+🟢 clip     0
+✗ wrap     76  e.g. private-first-time@320/dark: span#setupLink.tw-setup-link "First time on any device? Set up" — "First time on 
+✗ touch    420  e.g. archive@320/dark: a.tw-back "← the marquee" — 122×25
+🟢 safearea 0
+✗ font16   170  e.g. private-unlocked@320/dark: input.tw-cinput.tw-sync "FSA Claims Tracker sync id" — font-size 13.00px — iOS zoom
+designed exceptions: none
+VERDICT: RED
+
+exceptions:
+

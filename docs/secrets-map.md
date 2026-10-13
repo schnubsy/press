@@ -46,5 +46,8 @@ Sources read: (no .env* files) · 0 keys from `.env*` · 2 names read from `.git
   verified by GoTrue + `press_access_is_admin()`.
 
 ## Egress (cloud environment allowlist)
-- The gauntlet needs **no external host**: npm registry (install) only; every spec serves the repo locally and fakes
-  Supabase. Live probes (Pages 200, Supabase grant SQL) run via the chat / the Supabase connector, not the gauntlet.
+- The gauntlet needs exactly these external hosts: the **npm registry** (install) and, for the WebKit download
+  (stage 0 — `npx playwright install webkit`; arc/safari-ui 2026-10-12): **`cdn.playwright.dev`** +
+  **`playwright.download.prss.microsoft.com`**. Without the two WebKit hosts the gauntlet reports
+  `GAUNTLET PARTIAL (egress)` (exit 2) — the iPhone smoke and the ui-audit need real WebKit. Every spec and the
+  ui-audit serve the repo locally and fake Supabase / GitHub / Google Fonts. Live probes (Pages 200, Supabase grant SQL) run via the chat / the Supabase connector, not the gauntlet.

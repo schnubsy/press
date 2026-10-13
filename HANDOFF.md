@@ -1,6 +1,6 @@
 # press — HANDOFF
 
-_Last updated: 2026-10-12 (evening). arc/steward-report + PR #35 marquee-wings-monitor, then hotfix PR #37 and Winston PR #38._
+_Last updated: 2026-10-13. arc/safari-ui — the iPhone UI audit on WebKit (cloud Builder)._
 
 ## Standing rule: publish auto-close (do NOT re-litigate)
 
@@ -10,68 +10,56 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 
 ## Current state
 
-- Merge state: Merged: PR #38 a07e2a5 on 2026-10-12; main checkout on main @ a07e2a5
+- Merge state: PR pending (branch arc/safari-ui)
 - Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
-- Ship gate: `bash scripts/gauntlet.sh` via `.claude/skills/verify/SKILL.md`. The close-gauntlet numbers are in `docs/evidence/steward-report-close-gauntlet.txt`.
-- New: `steward.html` (private wing; LABELS "Environment Reports / Steward", glyph `tool`).
-- New: Edge Function `steward-reports` v2 (ezbr `6d542a81…`) · table `press_steward_reports` · RPC `press_steward_capability_ok`.
-- From PR #35, live: press_access_requests + RPC/triggers · remit_has_access opt-out · agent monitor tables/views ·
-  cron `agent-watch` (15 min) · Edge access-notify v2, agent-watch v1, agent-fix v1.
+- Ship gate: `bash scripts/gauntlet.sh` (verify skill). Now: stage 0 `npx playwright install webkit` · 1 unit · 2 inline ·
+  3 tenants-check · 4 Playwright `chromium` + `iphone-webkit` (real WebKit, iPhone 15) · 5 **ui-audit** on WebKit.
+  Exit 0 GREEN · 1 RED · 2 PARTIAL (egress — the WebKit hosts are missing from the environment).
+- ui-audit: `test/ui-audit/` = council `ui-audit@1.0.0` byte-identical; `test/ui-audit.config.mjs` = 20 press-native states
+  × 320/375/390/393/430 × dark+light (200 surfaces). Close evidence: `docs/evidence/safari-ui-slice-3-review-*`.
+- `.claude/settings.json` (`Bash(gh pr merge:*)`) is on main (backfilled by a Mac session, `32d8498`).
 
 ## Shipped this arc
-- **S1 `155c873`**: `press_steward_reports` applied. Service-role-only: RLS on, 0 policies, no anon or authenticated grant.
-- **S2 `910da08`**: `steward.html` with the latest report and a 12-week strip, 390-first.
-  - Registered in spaces, pages and tenants JSON, the marquee label/icon, the favicon register and the council snag-registry row.
-  - Council PR #28 merged as `3b707b5`.
-- **S3 `02fff38`**: review 🔴 fixed. The first gate trusted press_deals rows, which anon can forge. It now uses the server-held-default RPC.
-  - Also: calendar-week strip, XSS and lock specs, and `docs/spec.md` → Tenants "Borrowed capability".
-- Evidence: `docs/evidence/steward-report-slice-{1,2,3}-*`, `steward-report-merge-review.md`.
-
-- **Hotfix PR #37 `432d40d`**: Agent Monitor 401 (anon EXECUTE on the schedule helpers) · Access Manager switches never saved
-  (auth headers replaced) · labels "User Access Management" / "System Health". Live-verified in Chrome.
-- **Winston PR #38 `a07e2a5`** — RULE (Mark): every email Claude sends comes from **Winston**
-  (winston.marksclaude@gmail.com). Supabase Auth SMTP = Winston on press AND elevate-ops; MAILER_* and COUNCIL_MAILER_* point at the
-  Winston mailer; `select public.press_winston_mail(subject, body[, to, cc])` is the one SQL entry point (edge fn `winston-mail`).
-  Live proof: Family Wing code, Elevate Ops magic link, alert and press_winston_mail mails all delivered from Winston.
-- Auth email sync ran green (Mark's scoped token `press-auth-email-sync`: Auth Config RW + Project Settings RW, press only).
+- **S1 `334d533`**: harness + gauntlet stages + iphone-webkit project + secrets-map Egress (`cdn.playwright.dev`,
+  `playwright.download.prss.microsoft.com`). First run RED (76 wrap · 420 touch · 170 font16). sealed-unlock's WebKit test
+  no longer silently skips in cloud mode.
+- **S2 `3c734f2`**: every defect fixed — 44px tap boxes (pills keep their look via `::before`), the mini controls are real
+  `<button>`s (fixes the 390px pill wrap from PR #35), 16px text fields, "Set up a new passkey" is a one-line button, access
+  switch 44×44. One designed exception: agent-health `.row .line` (server status copy that must wrap).
+- **S3 `f671ac7`**: code-review — bash 3.2 empty-array 🔴 fixed; desktop tests chromium-only; steward-denied state audited
+  (its inline link is now running text).
 
 ## Open / blockers
-- **`.claude/settings.json`** (`Bash(gh pr merge:*)`, arc.md D1) is missing. Writing it was refused by the auto-mode classifier
-  `[Self-Modification]`. Code change → next press arc.
+- **The shared gates still carry sub-44px controls.** `src/gate.js` (`.pg-back`, `.pg-btn`) and `src/family-gate.js`
+  (`.fg-back`, `.fg-link`) are fixed on press pages by page-level overrides only; editing the modules drifts 7 tenants (T3).
 - **press_deals anon INSERT (and TRUNCATE/REFERENCES/TRIGGER) grants**: pre-existing. Steward no longer depends on them.
-- **Cloud gauntlet stage 3**: tenants-check FAILs T2–T4 when tenant repos are not in session scope. Dispatch press arcs with the tenant repos.
-- From PR #35:
-  - On-demand AI functions record no runs ("No data").
-  - optimo's cloud Playwright baseline is RED (env).
-- Carried:
-  - flow `kayley.html` compare, BLOCKED (flow out of scope).
-  - Issues #28–#32.
-  - Remote branch `claude/perth-phase-2-security-c7a88b` is safe to delete.
+- **Cloud gauntlet stage 3**: tenants-check needs the tenant repos as sibling clones (present in this session: 0 fail).
+- Carried: on-demand AI functions record no runs ("No data") · optimo's cloud Playwright baseline RED (env) · flow
+  `kayley.html` compare BLOCKED (flow out of scope) · Issues #28–#32 · remote branch `claude/perth-phase-2-security-c7a88b`
+  safe to delete.
 
 ## Exact next steps
-1. Chat: run verify on PR #36. The close-out report is its final comment.
-   - Live `https://schnubsy.github.io/press/steward.html` → 200 was BLOCKED here (egress), so verify checks it in Chrome.
-   - Unlock with the passkey → expect "No reports yet" until the first watch row lands.
-2. Next press arc: **press-hygiene**. HOME: github:schnubsy/press · BRANCH: arc/press-hygiene
-   - S1: add `.claude/settings.json` = `{"permissions": {"allow": ["Bash(gh pr merge:*)"]}}`.
-   - S2: tenants-check cloud mode, so absent sibling clones SKIP (or always dispatch with the tenant repos in scope).
-   - S3: flow kayley carry-over. Needs schnubsy/flow in scope.
-   - S4: private-wing pill wrap at 390px, and wing-card title wrap under 400px (from PR #35).
-3. Card Scout tenant arc (schnubsy/card-scout + press in scope):
-   - Revoke anon INSERT/TRUNCATE/REFERENCES/TRIGGER on `press_deals`. First confirm that no browser path inserts deals.
-   - Re-sync `docs/cowork-task.md` to the live weekly task prompt.
-   - Done-criterion: keep the `press_deals.sync_id` literal default; `press_steward_capability_ok(<real key>)` must still return true (the Steward gate).
-4. remit arc: change the CLAUDE.md access contract to opt-out (`remit_has_access()` delegates to `press_access_has`).
-5. council arc (mac home):
-   - Point release.md/press.md at the press spec "Card naming — marquee label map" + the Agent Monitor registration rule.
-   - MANUAL Steward update (scheduled-task check-ins + Winston reports, §12.6 prune daily/30d, notifier all apps).
-   - Merge council PR #29 (Winston standard, v4.14.1) on the Mac, rebuild the bundle, Mark reloads.
-   - Commit the claude-environment `system/scheduled-tasks/` edits (check-in + Winston report steps) on the Mac.
-6. Elevate Ops: brand its "Magic Link" auth email (it now sends from Winston with Supabase's default wording).
-7. press-hygiene S5: pin auth-email-sync actions to SHAs + move off Node 20 (GitHub deprecation warning).
-   - The watch/audit now write `press_steward_reports` rows (the table is live).
+1. Chat: run verify on the safari-ui PR (close-out report = its final comment). Live check: `index.html?view=personal`
+   on Mark's iPhone — Lock now / Devices / Recovery kit on one line each, pills look unchanged.
+2. **Tenant wave — shared-gate tap targets** (one arc per tenant, or one wave): move the page-level overrides into
+   `src/gate.js` + `src/family-gate.js` (min-height 44 on `.pg-btn`; inline-flex 44px `.pg-back` / `.fg-back` / `.fg-link`),
+   then every tenant re-vendors (card-scout, retirement, giving, fsa, cardsharp; remit, optimo) and re-publishes; drop the
+   overrides from index.html + steward.html; tenants-check T3 0 fail. The tenants' own safari-ui roll-outs can carry it.
+3. press-hygiene arc (HOME github:schnubsy/press · BRANCH arc/press-hygiene):
+   - ui-audit config: add the unaudited states (steward gate before enrolment, access OTP code step + "not an admin",
+     family-gate send/verify errors) — D1 review 🟡; give access `.sw2` switches `tabindex=0` + Space/Enter (pre-existing a11y gap).
+   - tenants-check cloud mode, so absent sibling clones SKIP (or always dispatch with the tenant repos in scope).
+   - flow kayley carry-over (needs schnubsy/flow in scope).
+   - pin auth-email-sync actions to SHAs + move off Node 20 (GitHub deprecation warning).
+   - (done here: `.claude/settings.json` exists; the 390px private-wing pill wrap is fixed.)
+4. Card Scout tenant arc (schnubsy/card-scout + press in scope): revoke anon INSERT/TRUNCATE/REFERENCES/TRIGGER on
+   `press_deals` after confirming no browser path inserts deals; keep the `sync_id` literal default
+   (`press_steward_capability_ok(<real key>)` must stay true); re-sync `docs/cowork-task.md`.
+5. remit arc: CLAUDE.md access contract → opt-out (`remit_has_access()` delegates to `press_access_has`).
+6. council (mac home): release.md/press.md → the press spec "Card naming — marquee label map" + Agent Monitor registration
+   rule; MANUAL Steward update; claude-environment `system/scheduled-tasks/` edits.
+7. Elevate Ops: brand its "Magic Link" auth email.
 
 ## Mark's manual steps
 1. Token renewal: `press-auth-email-sync` expires 2027-10 — make a new one (same two permissions: Auth Config RW +
    Project Settings RW, press only) and update the Actions secret `SUPABASE_ACCESS_TOKEN`.
-(NAS zip of the Mac press folder: DONE by Mark 2026-10-12.)

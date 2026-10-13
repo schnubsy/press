@@ -6,8 +6,8 @@ import { test, expect, devices } from '@playwright/test';
 import { join } from 'node:path';
 import { startServer, harness, order, reloadFromCloud, ROOT, PUBLIC_FILES, PERSONAL_FILES, FAMILY_FILES } from './wing-drag-harness.mjs';
 
-// Cloud mode (PW_CHROMIUM set, no WebKit in the image): Chromium iPhone-15 emulation; the Mac runs real WebKit.
-const ENGINE = process.env.PW_CHROMIUM ? 'chromium' : 'webkit';
+// Real WebKit everywhere (arc/safari-ui): it runs in the `iphone-webkit` project only (playwright.config.mjs).
+const ENGINE = 'webkit';
 test.use({ ...devices['iPhone 15'], browserName: ENGINE });
 
 let server, base;
