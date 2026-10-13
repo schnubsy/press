@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#131916" media="(prefers-color-scheme: dark)">
   <title>FSA Claims</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMTQxNjFBIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJBMkYzNiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIyIDQ5LjMyIEEyMCAyMCAwIDAgMSAxNC42OCAyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDBBM0UwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIzMiIgeTE9IjMyIiB4Mj0iNDAiIHkyPSIxOC4xNCIgc3Ryb2tlPSIjRTZFOUVEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
-  <meta name="build" content="2026-10-09T05:24:35.371Z d80caa2">
+  <meta name="build" content="2026-10-13T00:06:40.937Z 76b677e">
   <link rel="preload" as="font" type="font/woff2" href="fsa-assets/fonts/nunito-sans-latin.woff2" crossorigin>
   <link rel="manifest" href="fsa-assets/manifest.webmanifest">
   <link rel="apple-touch-icon" href="fsa-assets/apple-touch-icon.png">
@@ -212,7 +212,7 @@ button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 :focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 select {
   background: var(--input-bg); color: var(--ink); border: 0; border-radius: var(--radius-input);
-  min-height: var(--tap-min); padding: 9px 12px; font-size: 15px;
+  min-height: var(--tap-min); padding: 9px 12px; font-size: 16px; /* ≥16px: iOS Safari zooms on focus below it */
 }
 
 #topbar {
@@ -260,7 +260,7 @@ select {
 .inbox-label { font-size: var(--text-xs); font-weight: 600; color: var(--ink-dim); }
 .inbox-form input {
   background: var(--input-bg); color: var(--ink); border: 0; border-radius: var(--radius-input);
-  min-height: var(--tap-min); padding: 9px 12px; font-size: 15px; width: 100%; min-width: 0;
+  min-height: var(--tap-min); padding: 9px 12px; font-size: 16px; width: 100%; min-width: 0;
 }
 .inbox-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-4); }
 .inbox-error {
@@ -294,10 +294,19 @@ select {
 #gauge-pending { height: 100%; width: 0; flex: 0 1 auto; background: var(--pending); }
 /* denied — returned to the pool: a soft rose segment, still a <button> that jumps to the denial cards. */
 #gauge-denied {
-  height: 100%; width: 0; flex: 0 1 auto; padding: 0; min-height: 0; min-width: 0;
-  background: var(--denied-fill); border: 0; cursor: pointer;
+  /* The visible segment is the bar's 18px; the button itself is a 44px-tall tap target centred on it
+     (ui-audit touch). The segment is painted by ::before so the rounded shape is unchanged. */
+  position: relative; align-self: center; height: var(--tap-min); width: 0; flex: 0 1 auto;
+  padding: 0; min-height: 0; min-width: 0; background: transparent; border: 0; cursor: pointer;
 }
-#gauge-denied:hover { background: var(--denied-fill); filter: brightness(0.94); }
+#gauge-denied::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 50%; height: var(--gauge-height);
+  transform: translateY(-50%); background: var(--denied-fill); border-radius: var(--radius-gauge);
+}
+#gauge-denied:hover, #gauge-denied:active { background: transparent; filter: brightness(0.94); transform: none; }
+#gauge-denied:focus-visible { outline: none; }
+#gauge-denied:focus-visible::before { outline: 2px solid var(--focus-ring); outline-offset: 2px; } /* ring on the visible segment */
+@media print { #gauge-denied::before { height: 100%; } } /* print bar is 14px */
 #gauge-unfilled { flex: 1 1 auto; height: 100%; background: var(--open); min-width: 0; }
 /* Zero-width segments must not leave a stray 4px gap (gauge.js toggles .is-zero). */
 #gauge-fill.is-zero, #gauge-pending.is-zero { display: none; }
@@ -439,8 +448,13 @@ select {
 #year-static { font-size: var(--text-sm); font-weight: 600; }
 .agent-alert {
   font-size: var(--text-xs); font-weight: 700; color: var(--denied); background: var(--denied-tint);
-  border-radius: var(--radius-pill); min-height: 0; padding: 4px 10px;
+  border-radius: var(--radius-pill); min-height: var(--tap-min); padding: 4px 10px;
+  /* the visible pill stays ~22px tall; the transparent 11px top/bottom border makes the tap target 44px (ui-audit touch) */
+  border: 11px solid transparent; border-left-width: 0; border-right-width: 0; background-clip: padding-box;
 }
+/* base.css's button:hover/:active `background` shorthand would reset background-clip and fill the 44px box */
+.agent-alert:hover, .agent-alert:active { background-color: var(--denied-tint); background-clip: padding-box; transform: none; }
+.agent-alert:focus-visible { outline-offset: -9px; } /* ring hugs the visible pill, not the transparent border */
 .overflow { margin-left: auto; position: relative; }
 #overflow-btn { line-height: 1; font-size: 20px; padding: 0; width: var(--tap-min); min-height: var(--tap-min); background: transparent; color: var(--ink-dim); }
 #overflow-btn:hover { background: var(--primary-tint); color: var(--ink); }
@@ -455,6 +469,7 @@ select {
 }
 #overflow-menu > button:hover { background: var(--primary-tint); }
 #overflow-menu #agents { display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap; }
+#overflow-menu #agents:empty { display: none; } /* demo / signed-out: no control → no empty menuitem */
 #topbar #theme-toggle { margin-left: 0; }
 
 /* --- hero: the plain sentence + stones, with the deadline row beneath --- */
@@ -492,7 +507,7 @@ select {
   color: var(--warn); background: var(--warn-tint); border-radius: var(--radius-pill); padding: 3px 10px 3px 8px;
 }
 .strip-confirm {
-  font-size: var(--text-sm); font-weight: 600; min-height: 34px; padding: 6px 12px;
+  font-size: var(--text-sm); font-weight: 600; min-height: var(--tap-min); padding: 6px 12px; /* was 34px — beat table.css's 44px touch rule (chase.css loads later) */
   border-radius: var(--radius-button); text-transform: none; letter-spacing: 0;
 }
 
@@ -592,7 +607,7 @@ select {
 .small-summary td { padding: var(--sp-2); }
 .small-toggle {
   font-size: var(--text-sm); width: 100%; justify-content: flex-start; text-align: left;
-  font-variant-numeric: tabular-nums; min-height: 40px;
+  font-variant-numeric: tabular-nums; min-height: var(--tap-min); /* was 40px — beat table.css's 44px touch rule */
 }
 
 /* styles/receipts.css */
@@ -3259,7 +3274,8 @@ function renderTable(state, claims) {
     const tr = document.createElement('tr'); tr.className = 'small-summary';
     const cell = document.createElement('td'); cell.colSpan = 7;
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'small-toggle';
-    btn.textContent = `${small.length} charges under ${money(threshold)} · ${money(sum)} — show`;
+    // Whole-dollar threshold ("$75", not "$75.00"): the label must stay on ONE line at 320px (ui-audit wrap).
+    btn.textContent = `${small.length} charges under $${int(threshold)} · ${money(sum)} — show`;
     btn.addEventListener('click', () => { state.expandSmall = true; renderTable(state, claims); });
     cell.appendChild(btn); tr.appendChild(cell); body.appendChild(tr);
   }
