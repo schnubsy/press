@@ -4,6 +4,22 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-10-13 — arc/safari-ui (iPhone UI audit on WebKit)
+
+Cloud Builder, three slices, dispatched from the council safari-ui roll-out. **S1** (`334d533`) — vendored council
+`instruments/ui-audit/{ui-probe,run}.mjs` byte-identical (stamp `council-ui-audit@1.0.0`) + `test/ui-audit.config.mjs`
+(hermetic: local server, faked GitHub/Fonts/Supabase, the passkey gate seeded past-lock through its localStorage hook).
+WebKit installed in the cloud (cdn.playwright.dev); first run RED: 76 wrap · 420 touch · 170 font16. Gauntlet gained stage 0
+(WebKit install) + stage 5 (ui-audit) and an `iphone-webkit` Playwright project; sealed-unlock's WebKit test had been silently
+skipping in cloud mode (the runner handed it chromium's executablePath). **S2** (`3c734f2`) — every defect fixed: 44px tap
+boxes with the pills redrawn by `::before`, clickable spans → buttons, 16px fields, one-line setup action, access switch
+44×44; one named exception (`.row .line`). A first attempt edited `src/gate.js` + `src/family-gate.js` → tenants-check T3 RED
+for 7 tenants, so the gate fixes became page-level overrides. **S3** (`f671ac7`) — code-review: bash 3.2 empty-array 🔴
+fixed, desktop tests chromium-only, steward-denied state added (found + fixed an inline-link tap target). GREEN on WebKit,
+200 surfaces.
+
+---
+
 ## 2026-10-12 (evening) — hotfix PR #37 + Winston PR #38 (close-out)
 
 **#37** Agent Monitor showed "can't check": anon lacked EXECUTE on the schedule helpers its public view calls (Postgres

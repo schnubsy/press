@@ -366,3 +366,17 @@ around the scope.
 - **A scoped Supabase token needs Auth Config RW + Project Settings RW** to PATCH `/config/auth`.
 - **Gmail spam-files a brand-new sender** (Winston) until Mark marks Not spam + adds a contact/filter.
 
+## arc/safari-ui (2026-10-13)
+
+- **@playwright/test hands every browser type the running project's launchOptions** — a test that calls `webkit.launch()`
+  inside a project with a chromium `executablePath` fails to launch and (if guarded) silently SKIPS. Pass
+  `executablePath: webkit.executablePath()` explicitly. [tag: testing]
+- **A 44px tap box need not change the look:** make the control the 44px box (`isolation:isolate`) and draw the old pill on
+  `::before` with `z-index:-1`; offset with negative margins. The ui-audit measures the element box, so a pseudo-element
+  hit area alone does not count. [tag: ui]
+- **Never touch `src/gate.js` / `src/family-gate.js` for a press-page fix** — it drifts every tenant's vendored copy (T3 RED).
+  Use a page-level `html #press-gate …` / `html #family-gate …` override; a tenant wave moves it into the module. [tag: tenants]
+- **ui-audit states share one context per width×scheme** — wipe storage once per page before each state's seed, or a session
+  from an earlier state leaks into a "locked" one. Playwright's LAST-registered matching route wins: register catch-alls first. [tag: testing]
+- **`"${arr[@]}"` on an empty array under `set -u` dies on bash < 4.4 (macOS /bin/bash 3.2)** — use `${arr[@]+"${arr[@]}"}`. [tag: bash]
+

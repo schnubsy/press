@@ -22,8 +22,8 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 
 - **Host**: GitHub Pages at https://schnubsy.github.io/press/
 - **No build step** — static HTML files only
-- **Ship gate:** `bash scripts/gauntlet.sh` via `.claude/skills/verify/SKILL.md` (node --test · inline:check · tenants-check ·
-  Playwright; runs in a cloud clone — Chromium only there, real WebKit on the Mac)
+- **Ship gate:** `bash scripts/gauntlet.sh` via `.claude/skills/verify/SKILL.md` (WebKit install · node --test · inline:check ·
+  tenants-check · Playwright chromium + iphone-webkit · ui-audit on WebKit; cloud clone or Mac — exit 2 = PARTIAL (egress))
 - **Publish**: via the council press instrument (Lane A hash-verify → commit → push)
 - `pages.json` must be updated whenever a new page is published
 - `agent-health.html` connects to Supabase all-apps views at runtime (client-side JS)
@@ -31,15 +31,13 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #38 a07e2a5 on 2026-10-12; main checkout on main @ a07e2a5
-**arc/steward-report (2026-10-12) — Steward report page; cloud Builder.** New press-native PRIVATE-wing `steward.html`
-(latest report + 12-week calendar-week strip, 390-first) over the service-role-only `press_steward_reports` table, read
-through the new `steward-reports` Edge Function (v2), which checks the private wing's Card Scout capability against the
-server-held `press_deals.sync_id` default via the service-role-only RPC `press_steward_capability_ok`. Gauntlet (close, after merging main): unit 133 ·
-Playwright 110 + 1 WebKit skip · tenants-check steward T1/T8/T9 PASS (21 env-only FAILs: tenant repos outside cloud scope).
-Also on main today: PR #35 marquee-wings-monitor (LABELS/T9, Family Wing requests, Agent Monitor).
-Then hotfix PR #37 (monitor 401, Access switches) + PR #38 Winston (every Claude email from winston.marksclaude@gmail.com).
-Open: `.claude/settings.json` (classifier) + press_deals anon INSERT — HANDOFF. Narrative: `docs/history.md`.
+Merge state: PR pending (branch arc/safari-ui)
+**arc/safari-ui (2026-10-13) — iPhone UI audit on WebKit; cloud Builder.** Vendored council `ui-audit@1.0.0`
+(`test/ui-audit/`) + `test/ui-audit.config.mjs`: 20 press-native states (lobby, archive, private wing + passkey gate, family
+wing + code gate, steward, agent monitor, access) × 320/375/390/393/430 × dark+light, GREEN on WebKit 26.6 after fixing
+every defect (44px tap boxes, real buttons, 16px fields; one named exception). Gauntlet: stage 0 installs WebKit, stage 5 =
+ui-audit, `iphone-webkit` Playwright project; exit 2 = PARTIAL (egress). Gate tap fixes are PAGE-LEVEL overrides — the shared
+`src/gate.js` / `src/family-gate.js` are untouched (moving them in is a tenant wave). Narrative: `docs/history.md`.
 
 ## Project rules
 
