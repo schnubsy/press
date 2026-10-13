@@ -420,7 +420,77 @@ font:600 15px/1 var(--sans)}
 .seg button{min-height:36px;font-size:15px;border-radius:6px}
 .period{margin:8px -18px 0;padding:0 18px 6px}
 .period .years button{min-height:36px;font-size:17px}
-@media(min-width:900px){.period{margin:8px 0 0;padding:0 0 6px}}</style>
+@media(min-width:900px){.period{margin:8px 0 0;padding:0 0 6px}}
+.app{padding-top:calc(20px + env(safe-area-inset-top))}
+@media(min-width:900px){.app{padding-top:calc(32px + env(safe-area-inset-top))}}
+.foot,.selbar{padding-bottom:env(safe-area-inset-bottom)}
+.foot .in{padding-bottom:18px}
+.selbar .in{padding-bottom:14px}
+.rhead{padding-top:calc(16px + env(safe-area-inset-top))}
+.rtabs{top:calc(63px + env(safe-area-inset-top))}
+.tw-back{min-height:44px;margin:-10px 0 -10px -4px;padding:0 10px 0 4px}
+.seg{padding:0 3px}
+.seg button,.period .years button,.period .mgrid button{position:relative;isolation:isolate;min-height:44px;background:none;border:0;border-radius:0}
+.seg button::before,.period .years button::before,.period .mgrid button::before{content:"";position:absolute;inset:4px 0;z-index:-1;
+transform:none;height:auto;border-radius:6px}
+.seg button[aria-pressed=true]{background:none}
+.seg button[aria-pressed=true]::before{background:var(--brass)}
+.period .mgrid button{margin:-4px 0}
+.period .mgrid button::before{border:1px solid var(--brass-faint);border-radius:7px}
+.period .mgrid button[aria-current=true]{background:none}
+.period .mgrid button[aria-current=true]::before{background:var(--brass);border-color:var(--brass)}
+.period .years button{margin:-4px 0}
+.zone-hd{flex-wrap:wrap;row-gap:6px}
+.zone-hd h2{overflow:visible;text-overflow:clip}
+.edefaults{display:inline-flex;align-items:center;min-height:44px;margin:-16px 4px;padding:0 4px;vertical-align:middle}
+.bk.custom{margin-top:16px}
+.bk.custom .secname{font-size:16px;letter-spacing:.12em;min-height:44px}
+.delsec{width:44px;min-height:44px}
+.addsec .linkbtn,.linkrow .linkbtn,.selbar .linkbtn{display:inline-flex;align-items:center;min-height:44px;padding:0 4px}
+.linkrow{margin-bottom:0}
+.erow{grid-template-columns:24px 24px minmax(0,1fr) auto max-content 32px;column-gap:6px}
+.erow .grip{width:24px;margin-left:-2px}
+.erow .tick{width:24px;height:24px}
+.erow .curpill{min-width:24px}
+.erow .note{font-size:16px;line-height:1.3;min-height:24px}
+.erow .what::placeholder{font-size:16px}
+.brow input{min-height:44px}
+.brow .note{font-size:16px}
+.brow .curpill{min-width:44px}
+.alsorow{min-height:44px}
+.acts .btn{white-space:nowrap}
+@media(max-width:374px){
+.srow{grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"nm am del" "nm usd del" "note note note"}
+.srow .usd{justify-self:end}
+}
+.srow .del{min-width:44px;min-height:44px}
+.toast button{min-height:44px;padding:0 6px}
+.rback{min-width:44px;white-space:nowrap}
+.rtabs button{min-height:44px;min-width:44px}
+html body #family-gate .fg-back,html body #family-gate .fg-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px}
+.rtabs button{flex:0 0 auto}
+.acts .btn{padding-left:10px;padding-right:10px}
+@media(max-width:374px){
+.srow{grid-template-areas:"nm am del" "usd usd usd" "note note note"}
+.srow .usd{margin-top:2px}
+.riding{padding-left:12px;padding-right:12px}
+}
+.curmenu{overflow-y:auto}
+.brow .del{width:44px;min-height:44px}
+.erow.addrow .amt{min-width:0}
+@media(max-width:374px){
+.rtabs{gap:4px;padding-left:12px;padding-right:12px}
+.rtabs button{font-size:11.5px;letter-spacing:.02em;padding-left:2px;padding-right:2px}
+}
+@media(max-width:374px){.erow{column-gap:4px}.riding{padding-left:10px;padding-right:10px}}
+.erow .note{margin-top:0}
+.brow[data-add] .amt{min-width:0}
+@media(max-width:374px){.brow{gap:4px}}
+.tw-back{position:relative;z-index:1}
+.edefaults{margin:-16px 4px -4px}
+.seg button:focus-visible,.period .years button:focus-visible,.period .mgrid button:focus-visible{outline:0}
+.seg button:focus-visible::before,.period .years button:focus-visible::before,.period .mgrid button:focus-visible::before{outline:2px solid var(--brass);outline-offset:-2px}
+.btn{min-height:44px}</style>
 </head>
 <body>
 <main class="app" id="remit-root">
@@ -1856,7 +1926,7 @@ var tick = isAdd ? '<span class="tick" aria-hidden="true"></span>'
 return '<div class="row erow' + (paid ? ' paid' : '') + (isAdd ? ' addrow' : '') + (selected ? ' sel' : '') + '"' + ctxAttr + '>' +
 grip + tick +
 '<span class="nm">' +
-'<input class="what" data-f="description" value="' + esc(desc) + '" placeholder="' + (isAdd ? 'Add an item…' : 'What is it?') + '" aria-label="What" autocomplete="off">' +
+'<input class="what" data-f="description" value="' + esc(desc) + '" placeholder="' + (isAdd ? 'Add item' : 'What is it?') + '" aria-label="What" autocomplete="off">' +
 '<input class="note" data-f="note" value="' + esc(note) + '" placeholder="note" aria-label="Note" autocomplete="off">' +
 '</span>' +
 curPill(cur, homeCur) +
@@ -2017,6 +2087,7 @@ m.innerHTML = ys.map((y) => '<button type="button" role="menuitemradio" aria-che
 document.body.appendChild(m);
 var r = yp.getBoundingClientRect();
 m.style.left = Math.max(12, r.left) + 'px'; m.style.top = (r.bottom + 6) + 'px';
+m.style.maxHeight = Math.max(132, innerHeight - (r.bottom + 6) - 44) + 'px';
 var close = function () { m.remove(); document.removeEventListener('pointerdown', outside, true); document.removeEventListener('keydown', onKey, true); yp.setAttribute('aria-expanded', 'false'); };
 var outside = function (e) { if (!m.contains(e.target) && !yp.contains(e.target)) close(); };
 var onKey = function (e) { if (e.key === 'Escape') { close(); yp.focus(); } };
@@ -2399,7 +2470,7 @@ var isAdd = !b;
 return '<div class="brow"' + (isAdd ? ' data-add' : ' data-bud="' + esc(b.id) + '"') + '>' +
 '<span class="nm">' +
 '<input class="what" data-f="label" value="' + (isAdd ? '' : esc(b.label)) + '" placeholder="' + (isAdd ? 'Add a default…' : 'What') + '" aria-label="What">' +
-'<input class="note" data-f="note" value="' + (isAdd ? '' : esc(b.note || '')) + '" placeholder="note (optional)" aria-label="Note">' +
+'<input class="note" data-f="note" value="' + (isAdd ? '' : esc(b.note || '')) + '" placeholder="note" aria-label="Note">' +
 '</span>' +
 pill(isAdd ? homeCur : b.currency) +
 '<input class="amt num" data-f="amount" inputmode="decimal" value="' + (isAdd ? '' : Number(b.amount).toFixed(2)) + '" placeholder="0.00" aria-label="Amount">' +
