@@ -391,4 +391,5 @@ around the scope.
   count, so later in-place fixes to the view are never reverted. [tag: supabase] (2026-10-13)
 - **Scheduled-task notification channels can't be changed from a session** (update_trigger has no notifications field) — Mark
   sets them in the task's Edit dialog under the collapsed **Advanced settings**. [tag: council] (2026-10-13)
-
+- **Compare paths a script prints about itself against `realpath`.** Node resolves the main module symlink-free, so a test built
+  on `mkdtemp` passes on Linux and fails on macOS (`/var` → `/private/var`). [tag: testing] (2026-10-14)
