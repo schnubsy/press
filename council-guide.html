@@ -329,7 +329,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
       </li>
       <li class="nav-item"><a class="nav-link" data-page="engage" href="#engage">Engage</a></li>
     </ul>
-    <span class="nav-badge">v4.16.0</span>
+    <span class="nav-badge">v4.17.0</span>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">MENU</button>
   </div>
 </nav>
@@ -1175,7 +1175,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
           <div class="facet-body">
             <p><b class="ink">Detect:</b> eleven check-groups, each with an exact command.</p>
             <p><b class="ink">Stamps &amp; guide</b> — the five version stamps all match <code>plugin.json</code> (the guide nav badge and footer, and the <code>Version:</code> headers in <code>PERSONAS.md</code> and <code>CAPABILITIES.md</code>); every persona named in a skill exists in <code>PERSONAS.md</code>; every registered instrument has its reference file, a one-line entry in <code>skills/hand/SKILL.md</code>, and a guide card with balanced <code>&lt;div&gt;</code>s; no capability is used but unregistered; the inbox-sync contract is intact in all its homes; and every skill, command, and agent description stays valid.</p>
-            <p><b class="ink">Bundle &amp; propagation</b> — flags a <code>dist/council.plugin</code> older than the newest committed source (so the chat on Desktop, web and mobile is stale), and always emits the fresh-chat canary that proves the Desktop reload actually propagated.</p>
+            <p><b class="ink">Release &amp; propagation</b> — flags plugin changes that landed without a version bump (the plugin syncs to every surface by version, so an unbumped change reaches no one), and always emits the fresh-chat canary that proves the synced version actually arrived.</p>
             <p><b class="ink">Docs currency</b> — the environment <code>MANUAL.md</code> and <code>CHANGELOG.md</code> track the plugin version, <code>manual.html</code> is freshly built, and the published Press copy of this guide has not fallen behind.</p>
             <p><b class="ink">Dead names &amp; paths</b> — sweeps the repo and the dossiers for retired names and paths in live instruction text, leaving dated history byte-preserved.</p>
             <p><b class="ink">Agents</b> — sweeps for an agent gone silent past its cadence, one registered but never once observed running, and a live agent nobody registered, plus a <b class="ink">read-only watch that the container registry stays within its storage quota</b>.</p>
@@ -1191,13 +1191,13 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <details class="facet">
           <summary><span class="fmk">&#9656;</span>Repair &amp; propagate</summary>
           <div class="facet-body">
-            <p><b class="ink">Repair (automatable):</b> fixes the stamps to match <code>plugin.json</code> and flags any guide card out of parity — the guide is hand-maintained, so parity is restored by hand in the same arc. <b class="ink">Propagate:</b> on a chat surface it <i>emits</i> ready-to-paste Claude Code prompts to commit + push and to rebuild the bundle; run instead as the <code>/council:audit</code> command in Claude Code, those same steps <i>execute</i> directly. Either way you get a manual checklist for the two steps no tool can do — reloading <code>dist/council.plugin</code> in Desktop (the single action that refreshes the chat on Desktop, web and mobile together) and a fresh-chat cast check to verify. It separates what it fixed itself from what waits on your manual reload. When the published copy is out of sync, propagate also <b class="ink">republishes this guide to the public Press copy</b> (<code>council-guide.html</code>) — lane-aware by size and hash-verified — so the published prospectus never lags the generated one.</p>
+            <p><b class="ink">Repair (automatable):</b> fixes the stamps to match <code>plugin.json</code> and flags any guide card out of parity — the guide is hand-maintained, so parity is restored by hand in the same arc. <b class="ink">Propagate:</b> on a chat surface it <i>emits</i> ready-to-paste Claude Code prompts to commit, bump the version and push; run instead as the <code>/council:audit</code> command in Claude Code, those same steps <i>execute</i> directly. There is nothing to reload: the plugin syncs from its repository to the chat on Desktop, web and mobile, and to every Claude Code session, as soon as a new version lands — a fresh-chat cast check confirms it. When the published copy is out of sync, propagate also <b class="ink">republishes this guide to the public Press copy</b> (<code>council-guide.html</code>) — lane-aware by size and hash-verified — so the published prospectus never lags the generated one.</p>
           </div>
         </details>
         <details class="facet">
           <summary><span class="fmk">&#9656;</span>Cadence</summary>
           <div class="facet-body">
-            <p><b class="ink">Cadence:</b> monthly, unattended — it runs on its own as a scheduled task on the 1st, and can still be run on demand whenever something looks off. Each run emails you a report: what it found, what it repaired and propagated, and the one step left for you — reloading the bundle in Desktop, with the fresh-chat check to confirm it took.</p>
+            <p><b class="ink">Cadence:</b> monthly, unattended — it runs on its own as a scheduled task on the 1st, and can still be run on demand whenever something looks off. Each run emails you a report: what it found, what it repaired and propagated, and the fresh-chat check that confirms the synced version arrived.</p>
           </div>
         </details>
       </div>
@@ -1209,8 +1209,8 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
         <details class="facet">
           <summary><span class="fmk">&#9656;</span>What it checks, what it fixes, how it tells you</summary>
           <div class="facet-body">
-            <p><b class="ink">Checks:</b> agents that failed twice running or went quiet, scheduled tasks that missed their run, failed builds and pull requests left open, a stale plugin bundle or public guide, spending that crept, and keys close to their rotation date.</p>
-            <p><b class="ink">Fixes on its own — reversible only:</b> re-runs a failed agent or a missed task once, rebuilds a stale bundle, regenerates the manual, republishes a stale guide copy. Everything else is an alert, never a fix, and every fix is listed in the report.</p>
+            <p><b class="ink">Checks:</b> agents that failed twice running or went quiet, scheduled tasks that missed their run, failed builds and pull requests left open, an unreleased plugin change or a stale public guide, spending that crept, and keys close to their rotation date.</p>
+            <p><b class="ink">Fixes on its own — reversible only:</b> re-runs a failed agent or a missed task once, regenerates the manual, republishes a stale guide copy. Everything else is an alert, never a fix, and every fix is listed in the report.</p>
             <p><b class="ink">Tells you:</b> a phone push only for red; no weekly email. The report is plain English — headline, what needs you, what it fixed, cost moves, and one all-clear line — at most ten lines, and it never repeats an unchanged item from last week. The monthly audit uses the same shape and still emails. Each run also lands on your private Steward page on the marquee, and it reads 1Password on its own through a read-only service account, so no sign-in prompt can stall it.</p>
           </div>
         </details>
@@ -1713,7 +1713,7 @@ footer{border-top:1px solid var(--hairline);margin-top:20px}
 <footer>
   <div class="footer-in">
     <div>The Council · a private prospectus · hand-maintained to parity with PERSONAS.md + skills</div>
-    <div class="mono">council v4.16.0 · last updated 2026-10-13</div>
+    <div class="mono">council v4.17.0 · last updated 2026-10-14</div>
   </div>
 </footer>
 
