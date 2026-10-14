@@ -1695,7 +1695,9 @@ function pLocalLoad(){ try{ PSTATE=pNorm(JSON.parse(localStorage.getItem(PKEY)||
 // a wing's cards: the user's saved order first (only files the wing already shows), then the
 // rest in spaces.json order. Never adds a page, never drops one.
 function wingOrdered(files, scope){
-  const saved = PSTATE[ORDER_KEY[scope]].filter((f,i,a)=>files.includes(f) && a.indexOf(f)===i);
+  // linkFile(): a saved order written before a rename names the OLD file (orderPersonal held "card-scout.html") — map it
+  // to the current link file so a renamed tool keeps its place instead of dropping to the end (rename arc, 2026-10-14).
+  const saved = PSTATE[ORDER_KEY[scope]].map(linkFile).filter((f,i,a)=>files.includes(f) && a.indexOf(f)===i);
   return [...saved, ...files.filter(f=>!saved.includes(f))];
 }
 async function pCloudLoad(){
@@ -1766,7 +1768,9 @@ const skelHTML=`${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><
 function paintMarquee(root, files, man, physArchiveCount, stale){
   // personal-wing AND family-wing files are removed BEFORE applyState — they can never be
   // sorted, dragged into the public archive, or counted among the public cards.
-  const pub = files.filter(f=>!isPersonalFile(f) && !isFamilyFile(f));
+  // keyringId(): fail SAFE on a stale spaces.json (raw CDN / the press:marquee:v3 cache) that still names a renamed tool
+  // by its old file — the renamed page must never surface on the public lobby (rename arc, 2026-10-14).
+  const pub = files.filter(f=>!isPersonalFile(f) && !isFamilyFile(f) && !isPersonalFile(keyringId(f)) && !isFamilyFile(keyringId(f)));
   const {ordered, newest, stateArchived} = applyState(pub, man);
   const archiveCount = physArchiveCount + stateArchived.length;
   const secure = secureCardHTML();

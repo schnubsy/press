@@ -134,6 +134,28 @@ test('(d) steward.html still unlocks on the card-scout.html capability', async (
   await routes(context, session({ 'card-scout.html': { sync_id: SYNC, pass: SENTINEL } }));
   await page.goto(base + '/steward.html');
   await expect(page.locator('#press-gate')).toHaveCount(0);
+  await expect(page.locator('#st-empty')).toBeVisible();          // the function answered 200 to the borrowed capability
   await expect(page.locator('body')).not.toContainText('Reconnect Thrift Shop');
   await expect(page.locator('body')).not.toContainText('Card Scout');
+});
+
+test('a saved wing order naming the OLD file keeps Thrift Shop in its place (press_portal orderPersonal)', async ({ page, context }) => {
+  await routes(context, session({ 'card-scout.html': { sync_id: SYNC, pass: SENTINEL } }));
+  // the live row on 2026-10-14: Card Scout 2nd, by its old file name
+  const state = { order: [], archived: [], orderPersonal: ['cardsharp.html', 'card-scout.html', 'fsa.html', 'giving.html', 'retirement.html', 'access.html'], orderFamily: [] };
+  await context.route('**/rest/v1/press_portal**', (r) => r.fulfill({ status: r.request().method() === 'GET' ? 200 : 201, contentType: 'application/json', body: JSON.stringify([{ state }]) }));
+  await page.goto(base + '/?view=personal');
+  await expect(page.locator('.tw-card').first()).toBeVisible();
+  const files = await page.locator('.tw-card').evaluateAll((els) => els.map((e) => e.getAttribute('data-file')));
+  expect(files.slice(0, 2)).toEqual(['cardsharp.html', 'thrift-shop.html']);
+});
+
+test('a STALE spaces.json (still naming card-scout.html) never puts Thrift Shop on the public lobby', async ({ page, context }) => {
+  await routes(context, null);
+  const stale = { ...SPACES, personal: SPACES.personal.map((f) => (f === 'thrift-shop.html' ? 'card-scout.html' : f)) };
+  await context.route('https://raw.githubusercontent.com/**/spaces.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(stale) }));
+  await page.goto(base + '/');
+  await expect(page.locator('.tw-card').first()).toBeVisible();
+  await expect(page.locator('.tw-card[data-file="thrift-shop.html"]')).toHaveCount(0);
+  await expect(page.locator('.tw-card[data-file="card-scout.html"]')).toHaveCount(0);
 });

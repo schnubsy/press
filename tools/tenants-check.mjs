@@ -181,15 +181,20 @@ for (const page of Object.keys(tenants)) {
     const km = indexSrc.match(/const KEYRING_ID\s*=\s*\{([^}]*)\}/);
     const alias = new Map(km ? [...km[1].matchAll(/'([a-z0-9-]+\.html)'\s*:\s*'([a-z0-9-]+\.html)'/g)].map((m) => [m[1], m[2]]) : []);
     const kid = (p) => alias.get(p) || p;
+    // an alias map that exists but parses to nothing would silently drop every renamed page from the audit
+    const aliasBroken = km && /\.html/.test(km[1]) && !alias.size;
     if (!keyring.size) say('SKIP', 'T7 tool-cfg', '(marquee)', 'could not read the vault keyring (emptyKeyring)');
+    else if (aliasBroken) say('FAIL', 'T7 tool-cfg', '(marquee)', "KEYRING_ID found in index.html but no 'link.html': 'id.html' pair parsed");
     else if (!tcm) say('FAIL', 'T7 tool-cfg', '(marquee)', 'TOOL_CFG block not found in index.html');
     else {
       const dataPersonal = personal.filter((p) => keyring.has(kid(p))); // personal pages that store data (via KEYRING_ID)
-      const orphan = [...keyring].filter((id) => !personal.some((p) => kid(p) === id) && !redirects[id]);
-      if (orphan.length) say('INFO', 'T7 tool-cfg', '(marquee)', `keyring id(s) with no personal page: ${orphan.join(', ')}`);
+      // every vault keyring id must belong to a personal page (directly or via KEYRING_ID) — an orphan id means a renamed
+      // or removed tool silently left Connect / the recovery kit
+      const orphan = [...keyring].filter((id) => !personal.some((p) => kid(p) === id));
+      if (orphan.length) say('FAIL', 'T7 tool-cfg', '(marquee)', `keyring id(s) with no personal page (map a renamed page in KEYRING_ID): ${orphan.join(', ')}`);
       const missing = dataPersonal.filter((p) => !toolcfg.has(p));
       if (missing.length) say('FAIL', 'T7 tool-cfg', '(marquee)', `personal data page(s) with NO TOOL_CFG entry (won't show in Connect / recovery kit): ${missing.join(', ')}`);
-      else say('PASS', 'T7 tool-cfg', '(marquee)', `${dataPersonal.length} personal data page(s) all present in TOOL_CFG`);
+      else if (!orphan.length) say('PASS', 'T7 tool-cfg', '(marquee)', `${dataPersonal.length} personal data page(s) all present in TOOL_CFG`);
     }
   }
 }
@@ -280,7 +285,7 @@ for (const page of Object.keys(tenants)) {
       if (txt.length > 2048) errs.push(`${txt.length} bytes (> 2 KB)`);
       if (!/<meta name="robots" content="noindex">/.test(txt)) errs.push('no noindex');
       if (!txt.includes(`location.replace('${to}' + location.search + location.hash)`)) errs.push(`no hash-preserving location.replace to ${to}`);
-      if (/PressGate|press:vault|sb_publishable_|fetch\(|localStorage/.test(txt)) errs.push('carries gate/vault/data code');
+      if (/PressGate|press:vault|supabase|sb_publishable_|fetch\(|localStorage/i.test(txt)) errs.push('carries gate/vault/data code');
     }
     if (!to || !pages[to]) errs.push(`target ${to} is not a pages.json page`);
     if (pages[stub] || personal.includes(stub) || family.includes(stub) || labelKeys.has(stub) || tenants[stub]) errs.push('also registered as a page');
@@ -292,8 +297,11 @@ for (const page of Object.keys(tenants)) {
   let rootHtml = [];
   try { rootHtml = execFileSync('git', ['-C', PRESS, 'ls-files', '*.html'], { encoding: 'utf8' }).split('\n').filter((f) => f && !f.includes('/')); } catch { /* not a git checkout */ }
   const stray = rootHtml.filter((f) => f !== 'index.html' && !pages[f] && !redirects[f]);
+  // the reverse: every registered page + redirect target is a TRACKED file (a stub must never point at a 404)
+  const missing = rootHtml.length ? [...Object.keys(pages), ...Object.values(redirects).map((r) => r && r.to)].filter((f) => f && !f.includes('/') && !rootHtml.includes(f)) : [];
   if (stray.length) say('FAIL', 'T10 redirects', '(root)', `root .html not in pages.json or redirects: ${stray.join(', ')}`);
-  else if (rootHtml.length) say('PASS', 'T10 redirects', '(root)', `${rootHtml.length} root .html = pages.json + redirects + index.html`);
+  if (missing.length) say('FAIL', 'T10 redirects', '(root)', `registered but not a tracked root file: ${[...new Set(missing)].join(', ')}`);
+  if (rootHtml.length && !stray.length && !missing.length) say('PASS', 'T10 redirects', '(root)', `${rootHtml.length} root .html = pages.json + redirects + index.html`);
 }
 
 // ---- T6 family grants (EMITTED — the script cannot reach the DB) ------------

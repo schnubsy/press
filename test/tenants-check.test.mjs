@@ -424,3 +424,34 @@ test('T10 redirects FAIL — stub also a page, index map disagrees, no hash-pres
     e.cleanup();
   }
 });
+
+test('T7 tool-cfg FAIL — a keyring id with no personal page (a rename without KEYRING_ID)', () => {
+  const e = estate();
+  e.page('thrift-shop.html').tier('thrift-shop.html', 'personal').write();
+  writeVault(e.press, ['card-scout.html']);
+  writeIndex(e.press, ['thrift-shop.html']);                 // no KEYRING_ID: the enrolled id is orphaned
+  const r = e.run();
+  assert.match(line(r.out, 'T7 tool-cfg', '(marquee)'), /FAIL.*keyring id\(s\) with no personal page.*card-scout\.html/);
+  assert.equal(r.code, 1);
+  e.cleanup();
+});
+
+test('T10 root — in a git checkout every root .html is registered AND every page / redirect target is tracked', () => {
+  const e = estate();
+  e.page('thrift-shop.html').redirect('card-scout.html', 'thrift-shop.html').write();
+  writeIndex(e.press, [], { extra: "const REDIRECT_STUBS = { 'card-scout.html': 'thrift-shop.html' };\n" });
+  const git = (...a) => execFileSync('git', ['-C', e.press, ...a], { encoding: 'utf8' });
+  git('init', '-q'); git('add', 'card-scout.html', 'index.html');      // the stub tracked, its target NOT (the 🔴 shape)
+  let r = e.run();
+  assert.match(line(r.out, 'T10 redirects', '(root)'), /FAIL.*registered but not a tracked root file: thrift-shop\.html/);
+  assert.equal(r.code, 1);
+  git('add', 'thrift-shop.html');
+  writeFileSync(join(e.press, 'stray.html'), '<html></html>'); git('add', 'stray.html');
+  r = e.run();
+  assert.match(line(r.out, 'T10 redirects', '(root)'), /FAIL.*not in pages\.json or redirects: stray\.html/);
+  git('rm', '-q', '--cached', 'stray.html');
+  r = e.run();
+  assert.match(line(r.out, 'T10 redirects', '(root)'), /PASS.*3 root \.html/);
+  assert.equal(r.code, 0);
+  e.cleanup();
+});
