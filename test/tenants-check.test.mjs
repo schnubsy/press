@@ -3,7 +3,7 @@
 // dir and runs the REAL checker against it via --press + CODE_ROOT, asserting exit code + output.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, realpathSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
@@ -24,7 +24,8 @@ console.log('ok', spaces);
 const STUB = (to) => `<!doctype html><meta name="robots" content="noindex"><script>location.replace('${to}' + location.search + location.hash);</script><meta http-equiv="refresh" content="0;url=${to}">`;
 
 function estate() {
-  const base = mkdtempSync(join(tmpdir(), 'tenants-check-'));
+  // realpath: Node resolves the checker's own path symlink-free (macOS tmpdir /var → /private/var)
+  const base = realpathSync(mkdtempSync(join(tmpdir(), 'tenants-check-')));
   const press = join(base, 'press');
   const vscode = join(base, 'vscode');
   const council = join(base, 'council');
@@ -461,7 +462,7 @@ test('defaults (arc/unpin-the-mac): CODE_ROOT + COUNCIL_DIR are sibling clones o
   assert.doesNotMatch(src, /join\(homedir\(\), 'Documents'/);
   // run a copy of the checker from <base>/press/tools with NO env overrides: it must look beside the press clone
   const e = estate();
-  e.page('a.html').write();
+  e.page('k.html').tenant('k.html', { repo: null, tier: 'public', gate: null, vendored: null, release: null }).write();
   mkdirSync(join(e.press, 'tools'), { recursive: true });
   writeFileSync(join(e.press, 'tools', 'tenants-check.mjs'), src);
   const env = { ...process.env }; delete env.CODE_ROOT; delete env.COUNCIL_DIR;
@@ -472,6 +473,7 @@ test('defaults (arc/unpin-the-mac): CODE_ROOT + COUNCIL_DIR are sibling clones o
   assert.doesNotMatch(out, /Documents\/(code|Claude)/);
   // COUNCIL_DIR default = <base>/council (the estate's sibling council with its snag registry): T8 finds it
   assert.doesNotMatch(out, /snag registry MISSING/);
+  assert.match(out, /\[PASS\] T8 registry-parity/); // positive: T8 actually ran against the sibling registry
   e.cleanup();
   // …and with that sibling registry absent, T8 names exactly <base>/council as where it looked
   const e2 = estate().noSnagRegistry();
@@ -483,4 +485,13 @@ test('defaults (arc/unpin-the-mac): CODE_ROOT + COUNCIL_DIR are sibling clones o
   catch (err) { out2 = String(err.stdout) + String(err.stderr); }
   assert.ok(out2.includes(`snag registry MISSING at ${join(e2.base, 'council', 'instruments', 'snag', 'registry.json')}`), out2);
   e2.cleanup();
+  // …and --press <dir> moves the defaults with it: siblings of <dir>, not of the checker's own clone
+  const e3 = estate();
+  e3.page('k.html').tenant('k.html', { repo: null, tier: 'public', gate: null, vendored: null, release: null }).write();
+  let out3;
+  try { out3 = execFileSync('node', [CHECKER, '--press', e3.press], { env, encoding: 'utf8' }); }
+  catch (err) { out3 = String(err.stdout) + String(err.stderr); }
+  assert.ok(out3.includes(`source repos: ${e3.base}`), out3);
+  assert.match(out3, /\[PASS\] T8 registry-parity/);
+  e3.cleanup();
 });
