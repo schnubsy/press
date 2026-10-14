@@ -1,0 +1,17 @@
+# slice 1 — tenants-check defaults with NO CODE_ROOT/COUNCIL_DIR set (cloud clone /home/claude/press)
+  source repos: /home/claude
+  [PASS] T1 registry          council-guide.html   tier public
+  [SKIP] T2 source            council-guide.html   provenance-only repo "council" not on disk at /root/Documents/Claude/council-hub/council
+  [SKIP] T3 gate              council-guide.html   no vendored gate
+  [SKIP] T4 release           council-guide.html   no release script
+  [PASS] T8 registry-parity   thrift-shop.html     card-scout → schnubsy/card-scout (FORMER name card-scout.html; council registry update pending → page thrift-shop.html, repo schnubsy/thrift-shop)
+  [PASS] T8 registry-parity   council-guide.html   council-guide → schnubsy/council
+  [PASS] T9 labels            council-guide.html   Agentic Capabilities Prospectus / The Council · landmark
+tenants-check: 69 pass, 0 fail, 24 skip, 1 emitted
+
+# node --test test/tenants-check.test.mjs
+# Subtest: defaults (arc/unpin-the-mac): CODE_ROOT + COUNCIL_DIR are sibling clones of the press clone, never homedir()/Documents
+ok 34 - defaults (arc/unpin-the-mac): CODE_ROOT + COUNCIL_DIR are sibling clones of the press clone, never homedir()/Documents
+# tests 34
+# pass 34
+# fail 0

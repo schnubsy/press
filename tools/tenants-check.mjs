@@ -8,8 +8,9 @@
 //   node tools/tenants-check.mjs                 # T1–T4 + T6–T10 (no build)
 //   node tools/tenants-check.mjs --rebuild       # + T5 rebuild-vs-live for deterministic tenants
 //   node tools/tenants-check.mjs --press <dir>   # override the press root (default: where this lives)
-//   CODE_ROOT=<dir> node tools/tenants-check.mjs   # override the source-repos parent (default ~/Documents/code on the Mac; scripts/gauntlet.sh passes the sibling-clone parent)
-//   COUNCIL_DIR=<dir> node tools/tenants-check.mjs # override the council repo for T8 (default = the Mac council-hub checkout; scripts/gauntlet.sh passes ../council when cloned)
+//   CODE_ROOT=<dir> node tools/tenants-check.mjs   # override the source-repos parent (default = the parent of the press root (--press or this clone) — sibling clones)
+//   COUNCIL_DIR=<dir> node tools/tenants-check.mjs # override the council repo for T8 (default = the sibling ../council clone)
+//   A Mac press run whose council / tenant repos are NOT beside the press clone sets COUNCIL_DIR / CODE_ROOT explicitly.
 //
 // No dependencies (Node ≥20). The DB checks it cannot reach are EMITTED as SQL, never asserted.
 import { readFileSync, existsSync, statSync } from 'node:fs';
@@ -25,9 +26,10 @@ const argVal = (f) => { const i = argv.indexOf(f); return i >= 0 ? argv[i + 1] :
 
 const SELF_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PRESS = resolve(argVal('--press') || SELF_ROOT);
-const CODE_ROOT = process.env.CODE_ROOT || join(homedir(), 'Documents', 'code');
+// Defaults are sibling clones of this press clone (arc/unpin-the-mac, fsa-claims 2026-10-14) — never a homedir()/Documents path.
+const CODE_ROOT = resolve(process.env.CODE_ROOT || join(PRESS, '..'));
 const REBUILD = has('--rebuild');
-const COUNCIL_DIR = process.env.COUNCIL_DIR || join(homedir(), 'Documents', 'Claude', 'council-hub', 'council');
+const COUNCIL_DIR = resolve(process.env.COUNCIL_DIR || join(PRESS, '..', 'council'));
 
 // ---- helpers ---------------------------------------------------------------
 const C = { reset: '\x1b[0m', red: '\x1b[31m', grn: '\x1b[32m', yel: '\x1b[33m', dim: '\x1b[2m', cyn: '\x1b[36m' };

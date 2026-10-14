@@ -4,6 +4,17 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-10-14 — arc/tenants-check-siblings (tenants-check sibling-clone defaults)
+
+Verify of fsa-claims PR #20 ("Unpin the Mac") found press S2 built + gauntlet-green but never pushed (press was outside that
+Builder's session scope); the patch rode in on this branch (`docs/evidence/unpin-the-mac-slice-2-press.patch`). S1 applied it:
+`tools/tenants-check.mjs` defaults `CODE_ROOT` to the parent of the press clone and `COUNCIL_DIR` to `../council` (env overrides
+kept; no `homedir()/Documents` paths); header line says a Mac run without siblings sets the env; `scripts/gauntlet.sh` comment
+updated; new defaults test. S2 (adversarial review, fresh subagent): test base realpath'd (macOS `/var` → `/private/var` would
+fail it), defaults follow `--press`, the defaults test now asserts a positive T8 PASS. Gauntlet GREEN both slices (unit 144,
+tenants-check 69/0/24 with every sibling cloned, Playwright 148, ui-audit GREEN). Residual: council-guide's `repoPath`
+(`~/Documents/Claude/council-hub/council`) still SKIPs T2 in a cloud clone — left by the order.
+
 ## 2026-10-13 — arc/quiet-alerts (agent alerts only after a day down)
 
 Mark: nothing running is SLA-critical — tell me when an agent has been down for a day and needs me, not when it is a
