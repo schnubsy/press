@@ -2,14 +2,12 @@
 #
 # Primary alerting is server-side now: pg_cron fires the `agent-watch` Edge Function every 15 minutes; it reads
 # press_agent_monitor_public (status from REAL work against each agent's schedule, all apps) and sends a
-# Pushover push + Gmail email on every state change. This hourly-ish workflow is the INDEPENDENT check on that
+# Pushover push + Gmail email only when something has been down for 24h+ (arc quiet-alerts). This 6-hourly workflow is the INDEPENDENT check on that
 # watcher (GitHub's scheduler drifts — that is fine for a secondary check). It runs
 # .github/scripts/agent-health-check.mjs, which:
 #   * FAILS the run (GitHub emails the owner — that failure email IS the notification) when the status service is
-#     unreachable, when agent-watch has not run for > 45 minutes, or when the watcher saw a problem but could not
-#     deliver the alert (push and email both failed);
-#   * passes, listing late/failed agents the watcher ALREADY alerted on as ::warning:: lines — so a known problem
-#     does not email you again every hour;
+#     unreachable, or when agent-watch has not done real work for > 24 hours;
+#   * passes, listing late/failed agents as ::warning:: lines (the watcher owns telling Mark, after a day);
 #   * with the manual input `strict: true`, fails on ANY late/failed enabled agent.
 # agent-watch records each run of this workflow (public GitHub API) as the "Watcher of the watcher" row on the
 # Agent Monitor page, so a silently-disabled schedule shows up there too.
@@ -23,7 +21,7 @@ name: Agent health notifier
 
 on:
   schedule:
-    - cron: "17 * * * *"   # hourly at :17 UTC (GitHub may start it late; secondary check)
+    - cron: "17 */6 * * *"   # every 6 hours at :17 UTC (arc quiet-alerts; secondary check, GitHub may start it late)
   workflow_dispatch:
     inputs:
       strict:

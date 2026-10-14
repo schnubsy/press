@@ -8,18 +8,17 @@
 //
 //   exit 1 (the job fails → GitHub emails the owner) when
 //     • the status service cannot be reached (never "healthy" on a failed check), or
-//     • agent-watch has not done real work for > WATCH_STALE_MIN minutes (default 45), or
-//     • an enabled agent is late/failed, the watcher HAS seen that state, but never managed to alert on it
-//       (watch_notified_at missing/older than watch_since — push AND email both failed), or
+//     • agent-watch has not done real work for > WATCH_STALE_MIN minutes (default 1440 = a day — arc
+//       quiet-alerts: nothing here is urgent; a watcher that cannot deliver an alert logs itself as an error and
+//       retries every tick, so a stuck alert also ends up here as a stale watcher), or
 //     • STRICT=1 and any enabled agent is late/failed (manual runs: workflow_dispatch input `strict`).
-//   exit 0 otherwise — late/failed agents the watcher already alerted on are listed as ::warning:: lines, so
-//   the run log shows them without GitHub emailing the same problem every hour.
+//   exit 0 otherwise — late/failed agents are listed as ::warning:: lines (the watcher owns telling Mark).
 //
 // It reads NO secret beyond the publishable key (apikey header only — a publishable key is not a JWT).
 
 const SB_URL = process.env.SB_URL || 'https://eepjhpyziczrxvirczio.supabase.co';
 const SB_KEY = process.env.SUPABASE_PRESS_ANON_KEY || '';
-const STALE_MIN = Number(process.env.WATCH_STALE_MIN || '45');
+const STALE_MIN = Number(process.env.WATCH_STALE_MIN || '1440');
 const STRICT = /^(1|true|yes)$/i.test(process.env.STRICT || '');
 const BAD = new Set(['late', 'failed']);
 
@@ -55,11 +54,8 @@ export function assess(rows, nowMs, { staleMin = STALE_MIN, strict = STRICT } = 
   for (const r of rows) {
     if (!r.enabled || !BAD.has(r.status) || r.id === 'agent-watch') continue;
     const line = `${r.app_label} · ${r.label}: ${r.status} — ${r.status_reason}${r.fix_hint ? ` (fix: ${r.fix_hint})` : ''}`;
-    const seen = r.watch_status === r.status;
-    const alerted = seen && r.watch_notified_at && (!r.watch_since || new Date(r.watch_notified_at) >= new Date(r.watch_since));
     if (strict) errors.push(line);
-    else if (seen && !alerted) errors.push(`${line} — the watcher saw this but could not deliver the alert (push and email both failed).`);
-    else warnings.push(`${line}${alerted ? ' — already alerted' : ' — new since the watcher’s last check'}`);
+    else warnings.push(line);
   }
   return { errors, warnings };
 }
@@ -76,7 +72,7 @@ async function main() {
     process.exit(1);
   }
   const on = rows.filter((r) => r.enabled).length;
-  console.log(`OK — watcher fresh; ${on} enabled items checked across all apps; ${warnings.length} known issue(s) already alerted.`);
+  console.log(`OK — watcher fresh; ${on} enabled items checked across all apps; ${warnings.length} known issue(s) (the watcher alerts after a day).`);
   process.exit(0);
 }
 
