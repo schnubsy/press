@@ -158,6 +158,12 @@
   .searchbar .btn{min-height:44px}
   /* per-rule controls: the % and min-denomination steppers, stacked on narrow screens */
   .ctrls{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
+  /* bad-flag-learning S4 — Settings → What I've learned */
+  ol.learned{margin:10px 0 0;padding:0;list-style:none;counter-reset:lr}
+  ol.learned li{display:flex;gap:10px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line);font-size:15px;line-height:1.4}
+  ol.learned li:first-child{border-top:none}
+  .learned-n{flex:0 0 auto;font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap}
+  .judge-bad{margin-top:6px}
   .ctrl{display:flex;align-items:center;gap:10px}
   .ctrl-lab{font-size:13px;color:var(--muted);font-weight:600}
   /* plain-English alerts summary */
@@ -262,6 +268,8 @@
   .fchip{flex:0 0 auto;font-size:13px;font-weight:600;color:var(--ink);background:var(--chip);border:1px solid var(--line);
     border-radius:999px;padding:8px 12px;white-space:nowrap;min-height:var(--tap);cursor:pointer}
   .fchip:hover{border-color:var(--accentB)}
+  /* bad-flag-learning S7 (ui-audit): a long blocked name wraps inside its chip instead of running off a 320px screen */
+  #blocklist .fchip,#sales-blocklist .fchip{white-space:normal;overflow-wrap:anywhere;max-width:100%;text-align:left}
   .tabbadge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;
     border-radius:999px;background:var(--danger);color:var(--on-danger);font-size:11px;font-weight:700;vertical-align:middle}
   .tabbadge[hidden]{display:none} /* class display would otherwise override the [hidden] UA rule */
@@ -322,6 +330,7 @@
   .ovfmenu button{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;border:none;
     background:none;color:var(--ink);font-size:15px;font-weight:600;text-align:left;padding:0 10px;border-radius:8px;cursor:pointer;white-space:nowrap}
   .ovfmenu button:hover,.ovfmenu button:focus{background:var(--chip);outline:none}
+  .ovfmenu button.ovf-block{white-space:normal;overflow-wrap:anywhere;padding:8px 10px;line-height:1.3}
   .ovfmenu button::before{content:"";width:18px;flex:0 0 auto;color:var(--accentA);font-weight:800}
   .ovfmenu button[aria-checked="true"]::before{content:"✓"}
   /* Slice 3: delete a rule — separator + danger item + inline confirm */
@@ -1333,7 +1342,7 @@
   // with one. A stale model pct_off (Krispy Kreme @ Costco 75% vs a real 25%) can never win again.
   function pct(d){ var e=d.extras||{}; var p=(Object.prototype.hasOwnProperty.call(e,"effective_pct"))?e.effective_pct:d.pct_off; return p==null?null:Math.round(p); }
   function fmtDate(s){ if(!s) return ""; var t=new Date(s); return isNaN(t)?"":t.toLocaleDateString(undefined,{month:"short",day:"numeric"}); }
-  function normBrand(s){ return String(s==null?"":s).toLowerCase().replace(/['’ʼ`]/g,"").replace(/[^a-z0-9]+/g," ").trim(); }
+  function normBrand(s){ return String(s==null?"":s).normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/['’ʼ`]/g,"").replace(/[^a-z0-9]+/g," ").trim(); }
 
   // The one heading + quick-nav pair used on ALL four tabs. groups: [{slug,label,count}].
   // ids are prefixed by tab so the same slug (e.g. "other") can live on two tabs at once.
@@ -1435,7 +1444,34 @@
   // polish Slice 4: a deal is FLAGGED Bad when Mark flagged it (status 'bad') or the agent auto-flagged it
   // (extras.auto_bad on an undecided row — its bad- backlog row exists) — the Bad button reads pressed for both.
   function isFlagged(d){ return !!d && (d.status==="bad" || (!isDecided(d) && !!(d.extras&&d.extras.auto_bad))); }
-  function shownDeals(){ return (state.deals||[]).filter(function(d){ return (meetsRules(d)||isDecided(d)) && !isExpiredOffer(d); }); }
+  function shownDeals(){ return (state.deals||[]).filter(function(d){ return (meetsRules(d)||isDecided(d)) && !isExpiredOffer(d) && !isBlockedDeal(d); }); }
+  // bad-flag-learning S2 (R12) — ONE blocklist (settings.extras.retailer_blocklist) for gift cards, sales and email offers.
+  // An entry blocks a deal when it is a whole-token run of the deal's brand or store (the agent's matcher: "pink" blocks
+  // "PINK" and "Victoria's Secret PINK", never "Pinkberry"). The feed hides them at once; the agent never stores them.
+  // mirrors the agent's normalizeRetailer (judge.mjs) so the page hides exactly what the agent blocks
+  function normRet(s){ return normBrand(s).replace(/\bsams?\s+club\b/g,"sams").replace(/\b(com|members?|stores?)\b/g," ").replace(/\s+/g," ").trim(); }
+  function tokenRun(text,entry){
+    var t=normRet(text).split(" ").filter(Boolean), e=normRet(entry).split(" ").filter(Boolean);
+    if(!t.length||!e.length) return false;
+    for(var i=0;i+e.length<=t.length;i++){ var ok=true; for(var j=0;j<e.length;j++) if(t[i+j]!==e[j]){ ok=false; break; } if(ok) return true; }
+    return false;
+  }
+  function blockedEntryFor(d){
+    var bl=blocklist(), names=[d&&d.brand, d&&d.extras&&d.extras.retailer];
+    for(var i=0;i<bl.length;i++) for(var k=0;k<names.length;k++) if(names[k]&&tokenRun(names[k],bl[i])) return bl[i];
+    return null;
+  }
+  function isBlockedDeal(d){ return !isDecided(d) && !!blockedEntryFor(d); }
+  // What "Block …" blocks: the brand of an offer or a gift card; the STORE of a sale-watch find (its brand is the watch term).
+  function blockTarget(d){
+    if(!d) return "";
+    if(dealKind(d)==="sale") return String((d.extras&&d.extras.retailer)||"").trim();
+    return String(d.brand||"").trim();
+  }
+  function blockMenuItem(d){
+    var t=blockTarget(d); if(!t||!normBrand(t)) return "";
+    return '<button class="ovf-block" role="menuitem" data-blockbrand="'+esc(t)+'">Block '+esc(t)+'</button>';
+  }
   // Inbox arc Slice 5: the INBOX is what still needs a decision; PROCESSED holds Mark's decisions
   // (bought / skip / bad), newest decision first (extras.status_at, stamped on every status change).
   function inboxDeals(){ return shownDeals().filter(function(d){ return !isDecided(d); }); }
@@ -1555,6 +1591,7 @@
       +'<button class="ovf" data-ovf="'+esc(d.item_id)+'" aria-haspopup="menu" aria-expanded="false" aria-label="Options for '+label+' deal">⋯</button>'
       +'<div class="ovfmenu" id="ovfmenu-'+esc(d.item_id)+'" role="menu" aria-label="Options for '+label+' deal" hidden>'
       +'<button class="ovf-danger" role="menuitem" data-deldeal="'+esc(d.item_id)+'">Delete — hide for good</button>'
+      +blockMenuItem(d)
       +'</div></div>';
     return '<div class="swipe" data-swipe="'+esc(d.item_id)+'">'
       +'<button class="swipe-del" data-deldeal="'+esc(d.item_id)+'" tabindex="-1" aria-hidden="true">Delete</button>'
@@ -1588,6 +1625,7 @@
       +'<button class="ovf" data-ovf="'+esc(d.item_id)+'" aria-haspopup="menu" aria-expanded="false" aria-label="Options for '+label+' offer">⋯</button>'
       +'<div class="ovfmenu" id="ovfmenu-'+esc(d.item_id)+'" role="menu" aria-label="Options for '+label+' offer" hidden>'
       +'<button class="ovf-danger" role="menuitem" data-deldeal="'+esc(d.item_id)+'">Delete — hide for good</button>'
+      +blockMenuItem(d)
       +'</div></div>';
     return '<div class="swipe" data-swipe="'+esc(d.item_id)+'">'
       +'<button class="swipe-del" data-deldeal="'+esc(d.item_id)+'" tabindex="-1" aria-hidden="true">Delete</button>'
@@ -2197,8 +2235,8 @@
       // Slice 3: blocked stores — deals from these are never shown or alerted, even if they beat a rule.
       +'<div class="grouphead"><h2>Blocked stores</h2></div>'
       +'<div class="card">'
-        +'<div class="sub">Deals from these stores are never shown or alerted — even at a big discount. '
-        +'Applies to every deal type: gift cards, sales and email offers.</div>'
+        +'<div class="sub">Deals from these stores and brands are never shown or alerted — even at a big discount. '
+        +'Applies to every deal type: gift cards, sales and email offers (the same list as Sales → Blocked brands).</div>'
         +'<div id="blocklist" class="chiprow" style="flex-wrap:wrap;margin-top:8px"></div>'
         +'<div class="addrow" style="margin-top:8px"><input id="newblock" type="text" placeholder="e.g. Dollar General" aria-label="Block a store">'
         +'<button class="btn primary" id="addblock">Block</button></div></div>'
@@ -2215,8 +2253,8 @@
     ["free_small_item","Free drink, side, cookie or dessert"],["new_item","New menu item or flavor"],["everyday_sale","Everyday sale"],
     ["free_shipping","Free shipping"],["sweepstakes","Sweepstakes or newsletter"],["other","Anything else"],
     ["bogo_discount","Buy one, get one % off"],["bundle_price","Bundle price (N for $X)"],["points_multiplier","Double or bonus points"],["recurring_promo","Weekly or daily standing deal"]];
-  var OFFER_HELP={free_meal:"A free meal, entrée or main.",bogo_free:"Buy one, get one FREE.",expiring_reward:"Your own rewards, points or credit about to expire.",
-    dollar_off:"Dollars off with no minimum, or a low one.",pct_off:"Any offer at least this many percent off.",birthday_reward:"Birthday freebies and credits.",
+  var OFFER_HELP={free_meal:"A free meal, entrée or main.",bogo_free:"Buy one, get one FREE — an equal item. Buy 2 get 1 is only 33%.",expiring_reward:"Your own reward or credit, $10 or more, about to expire. Points never count.",
+    dollar_off:"Dollars off with no minimum. With a minimum it’s a percent ($5 off $25 = 20%) held to Big % off.",pct_off:"Any offer at least this many percent off.",birthday_reward:"Your birthday freebies — only within 30 days of your birthday.",
     bonus_gift_card:"Judged by your Gift cards rules (Min %, Min $, blocked stores).",free_small_item:"Small freebies — usually not worth a trip.",
     new_item:"Launch announcements.",everyday_sale:"Routine sales — counts at or above this %.",free_shipping:"Shipping deals.",sweepstakes:"Contests, newsletters and content.",other:"Anything that fits nowhere else.",
     bogo_discount:"BOGO where the second item is only discounted.",bundle_price:"“3 for $15” — a bundle price, not dollars off.",
@@ -2241,13 +2279,31 @@
     var t=offerType(r), on=r.status==="on", e=r.extras||{};
     var ctrls="";
     if(t==="pct_off"||t==="everyday_sale") ctrls=stepperHtml(r.item_id,"min_pct","Min %",OSTEP.min_pct.fmt(oval(r,"min_pct")),"minimum percent off for "+r.title);
-    else if(t==="dollar_off") ctrls=stepperHtml(r.item_id,"min_value","Min $",OSTEP.min_value.fmt(oval(r,"min_value")),"minimum dollars off")
-      +stepperHtml(r.item_id,"max_min_spend","Max spend",OSTEP.max_min_spend.fmt(oval(r,"max_min_spend")),"largest minimum purchase");
+    // bad-flag-learning R5: a $-off WITH a minimum is judged as a percent against the Big-% bar, so "Max spend" is retired
+    else if(t==="dollar_off") ctrls=stepperHtml(r.item_id,"min_value","Min $",OSTEP.min_value.fmt(oval(r,"min_value")),"minimum dollars off");
     else if(t==="expiring_reward") ctrls=stepperHtml(r.item_id,"window_days","Within",OSTEP.window_days.fmt(oval(r,"window_days")),"expiry window");
     return '<div class="card offer-type" data-otype="'+esc(t)+'"><div class="row"><div class="grow"><div class="title">'+esc(r.title)+'</div>'
       +'<div class="sub">'+esc(OFFER_HELP[t]||"")+'</div></div>'
       +'<button class="sw" role="switch" aria-checked="'+on+'" aria-label="Count '+esc(r.title)+' as a deal" data-offer="'+esc(r.item_id)+'"></button></div>'
       +(ctrls?'<div class="ctrls">'+ctrls+'</div>':'')+'</div>';
+  }
+  // bad-flag-learning R4 — "Birthday = MY birthday only": a birthday reward counts within 30 days of this date
+  // (settings.extras.birthday, MM-DD; the agent falls back to 05-03 when unset). Month + day only — no year is stored.
+  var MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function birthdayParts(){ var m=/^(\d{2})-(\d{2})$/.exec(String((state.settings&&state.settings.birthday)||"05-03")); return m?[Number(m[1]),Number(m[2])]:[5,3]; }
+  function birthdayCard(){
+    var p=birthdayParts(), mo="", dd="";
+    for(var i=1;i<=12;i++) mo+='<option value="'+i+'"'+(i===p[0]?" selected":"")+'>'+MONTHS[i-1]+'</option>';
+    for(var d=1;d<=31;d++) dd+='<option value="'+d+'"'+(d===p[1]?" selected":"")+'>'+d+'</option>';
+    return '<div class="card" id="bday-card"><div class="row"><div class="grow"><div class="title">Your birthday</div>'
+      +'<div class="sub">Birthday rewards count only within 30 days of it. A brand’s own birthday sale is judged like any offer.</div></div></div>'
+      +'<div class="ctrls"><label class="ctrl"><span class="ctrl-lab">Month</span><select id="bday-month" aria-label="Birthday month">'+mo+'</select></label>'
+      +'<label class="ctrl"><span class="ctrl-lab">Day</span><select id="bday-day" aria-label="Birthday day">'+dd+'</select></label></div></div>';
+  }
+  function saveBirthday(){
+    var m=Number((el("bday-month")||{}).value)||5, d=Number((el("bday-day")||{}).value)||3;
+    var dim=[31,29,31,30,31,30,31,31,30,31,30,31][m-1]; if(d>dim){ d=dim; var ds=el("bday-day"); if(ds) ds.value=String(d); }
+    state.settings.birthday=(m<10?"0":"")+m+"-"+(d<10?"0":"")+d; saveSettings();
   }
   function outlookLine(){
     var s=outlookSource(); var x=outlookExtras(s); var st=s?outlookState(x,Date.now()):"not_connected";
@@ -2279,12 +2335,14 @@
     var rows=offerRows();
     var onN=rows.filter(function(r){ return r.status==="on"; }).length;
     var groups=[{slug:"counts",label:"What counts as a deal",short:"What counts",count:onN},{slug:"brands",label:"Brand overrides",short:"Brands",count:brandRows().length},
-      {slug:"note",label:"Also count…",short:"Also count",count:(state.settings&&state.settings.offer_note)?1:0},{slug:"watch",label:"Sale watch",count:(state.watch||[]).length}];
+      {slug:"note",label:"Also count…",short:"Also count",count:(state.settings&&state.settings.offer_note)?1:0},{slug:"watch",label:"Sale watch",count:(state.watch||[]).length},
+      {slug:"blocked",label:"Blocked brands",short:"Blocked",count:blocklist().length}];
     var note=String((state.settings&&state.settings.offer_note)||"");
     var html=outlookLine()+quickNav("sales",groups);
     html+=groupHead("sales","counts","What counts as a deal",onN);
     html+='<div class="helper" style="margin:-6px 2px 10px">Email offers from your Outlook “offers” folder. Only the ones switched on reach your Feed and alerts.</div>';
     html+=rows.length?rows.map(offerCard).join(""):'<div class="card"><div class="empty">Offer types load from your settings — none found yet.</div></div>';
+    html+=birthdayCard();
     html+=groupHead("sales","brands","Brand overrides",brandRows().length);
     html+='<div class="card" id="brand-card"><div class="searchrow addrow"><input id="brandsearch" type="text" placeholder="Search overrides…" aria-label="Search brand overrides" value="'+esc(brandQuery)+'">'
       +'<button class="btn primary" type="button" id="addbrandov">Add brand</button></div>'
@@ -2310,9 +2368,13 @@
             +'<output id="newwatchmin">'+pctMinLabel(newWatchMin)+'</output>'
             +'<button data-wnewinc aria-label="Increase minimum percent">+</button></div></div>'
           +'<button class="btn primary" id="addwatch">Watch</button></div></div>';
+    html+=groupHead("sales","blocked","Blocked brands",blocklist().length)
+      +'<div class="card"><div class="sub">Never shown or alerted — email offers, sales and gift cards. Block a brand from any card’s ⋯ menu; tap one here to unblock it.</div>'
+      +'<div id="sales-blocklist" class="chiprow" style="flex-wrap:wrap;margin-top:8px"></div></div>';
     host.innerHTML=html;
     renderBrandList();
     renderWatchList();
+    renderBlockList();
   }
   // The sale-watch terms (press_tasks category='watch') as removable chips + an add row (cap 10).
   // Inbox arc Slice 10: Mark's own order — press_tasks.position first, then created_at for rows never
@@ -2453,13 +2515,16 @@
   }
   // The retailer blocklist (settings.extras.retailer_blocklist) as removable chips + an add row.
   function blocklist(){ var b=state.settings&&state.settings.retailer_blocklist; return Array.isArray(b)?b:[]; }
+  // S2: the SAME list renders on the Gift cards tab (#blocklist) and the Sales tab (#sales-blocklist) — one source.
   function renderBlockList(){
-    var host=el("blocklist"); if(!host) return;
     var items=blocklist();
-    if(!items.length){ host.innerHTML='<span class="sub">No blocked stores.</span>'; return; }
-    host.innerHTML=items.map(function(e){
-      return '<button class="fchip" data-unblock="'+esc(e)+'" aria-label="Unblock '+esc(e)+'">'+esc(e)+' ✕</button>';
-    }).join("");
+    ["blocklist","sales-blocklist"].forEach(function(id){
+      var host=el(id); if(!host) return;
+      if(!items.length){ host.innerHTML='<span class="sub">Nothing blocked.</span>'; return; }
+      host.innerHTML=items.map(function(e){
+        return '<button class="fchip" data-unblock="'+esc(e)+'" aria-label="Unblock '+esc(e)+'">'+esc(e)+' ✕</button>';
+      }).join("");
+    });
   }
   function renderRulesList(){
     var list=el("rules-list"), nav=el("rules-nav"); if(!list) return;
@@ -2658,6 +2723,11 @@
     var head='<span class="'+(j.pass?"judge-ok":"judge-fail")+'">'+(j.pass?"✓":"✗")+'</span> <strong>'+esc(j.model)+'</strong>: '
       +Math.round(100*(Number(j.overall)||0))+'% agreement'+(j.pass?" — at or above":" — below")+' the '+Math.round(100*(Number(j.bar)||0.9))+'% bar · '
       +((j.items&&j.items.offers)||0)+' offers + '+((j.items&&j.items.cards)||0)+' cards · $'+(Number(j.cost_usd)||0).toFixed(4);
+    // bad-flag-learning S4: Mark's own Bad flags, scored separately — each should now read "not significant"
+    var b=j.bad;
+    if(b&&b.total) head+='<div class="judge-bad" data-bad-agree="'+b.agree+'"><span class="'+(b.agree===b.total?"judge-ok":"judge-fail")+'">'+(b.agree===b.total?"✓":"✗")+'</span> '
+      +'Your Bad flags: <strong>'+b.agree+' of '+b.total+'</strong> now judged not significant'+(b.code?' · '+b.code+' link rule enforced in code':'')
+      +((b.misses&&b.misses.length)?' <span class="sub">— still a deal: '+esc(b.misses.slice(0,4).join("; "))+'</span>':'')+'</div>';
     out.innerHTML=head+'<ul class="judge-fields">'+keys.map(function(k){ return '<li data-field="'+esc(k)+'">'+esc(JUDGE_FIELD_LABEL[k])+' <strong>'+pctTxt(f[k].agree,f[k].total)+'</strong> <span class="sub">('+f[k].agree+'/'+f[k].total+')</span></li>'; }).join("")+'</ul>'
       +((j.misses&&j.misses.length)?'<details class="judge-misses"><summary>'+j.misses.length+' miss'+(j.misses.length===1?"":"es")+'</summary><ul>'+j.misses.map(function(m){ return "<li>"+esc(m)+"</li>"; }).join("")+'</ul></details>':"");
   }
@@ -2678,7 +2748,8 @@
       return '<div class="card"><div class="row"><div class="grow"><div class="title">'+label+'</div><div class="sub">'+desc+'</div></div>'
         +'<button class="sw" role="switch" aria-checked="'+(t[id]===true)+'" aria-label="'+label+'" data-toggle="'+id+'"></button></div></div>';
     }
-    var groups=[{slug:"channels",label:"Channels",count:2},{slug:"howoften",label:"How often",count:3},{slug:"timing",label:"Timing",count:4},{slug:"bad",label:"Bad backlog",count:(state.bad||[]).length}];
+    var groups=[{slug:"channels",label:"Channels",count:2},{slug:"howoften",label:"How often",count:3},{slug:"timing",label:"Timing",count:4},{slug:"bad",label:"Bad backlog",count:(state.bad||[]).length},
+      {slug:"learned",label:"What I’ve learned",short:"Learned",count:LEARNED.length}];
     var html=metricsCard()+alertsSummary();
     html+=quickNav("alerts",groups);
     html+=groupHead("alerts","channels","Channels",2);
@@ -2719,7 +2790,22 @@
       +'</div>';
     html+=groupHead("alerts","bad","Bad backlog",(state.bad||[]).length);
     html+=badBacklogCard();
+    html+=groupHead("alerts","learned","What I’ve learned",LEARNED.length);
+    html+=learnedCard();
     host.innerHTML=html;
+  }
+  // bad-flag-learning S4 — Settings → "What I've learned": the rules Thrift Shop now judges by, in plain words, with how
+  // many of Mark's Bad flags taught each. LEARNED is generated from the flags by tools/bad-to-fixtures.mjs.
+  /* LEARNED:BEGIN — generated by tools/bad-to-fixtures.mjs */
+  var LEARNED=[{"rule":"R1","text":"Gift-card bonus offers are judged on the total: a $50 bonus for $250 is about 17% off, not 20%.","flags":1},{"rule":"R2","text":"Bonus points, double points and points days never count — and points are never dollars.","flags":8},{"rule":"R3","text":"A balance or credit notice isn’t a deal. A reward only counts when it expires soon and is worth $10 or more.","flags":2},{"rule":"R4","text":"Birthday rewards count only around your birthday. A brand’s own birthday sale is judged like any offer.","flags":2},{"rule":"R5","text":"$ off with a minimum is a percent: $5 off $25 is 20%, held to the 40% bar.","flags":2},{"rule":"R6","text":"Buy one, get one 50% off is really 25% off.","flags":3},{"rule":"R7","text":"Buy N, get M free is M ÷ (N + M): buy 3 get the 4th free is 25%. Only a true BOGO free (50%) counts.","flags":2},{"rule":"R8","text":"A free item must be worth the same as the one you buy — a kids meal or a side doesn’t count.","flags":2},{"rule":"R9","text":"A set price (“3 for $15”, “$6 sandwich”, “Whopper $3.98 Wednesdays”) isn’t a discount.","flags":8},{"rule":"R10","text":"Drinks-only discounts never count, at any percent.","flags":1},{"rule":"R11","text":"A small % coupon stays small, even when it’s “a reward that expires soon”.","flags":1},{"rule":"R12","text":"Brands you block are never shown — email offers, sales and gift cards.","flags":1},{"rule":"R13","text":"A deal’s link is the feed’s own link — never one the model wrote.","flags":1}];
+  /* LEARNED:END */
+  function learnedCard(){
+    var total=0; LEARNED.forEach(function(r){ total+=r.flags; });
+    return '<div class="card" id="learned-card"><div class="sub">From your '+total+' Bad flag'+(total===1?"":"s")+' — the rules every email offer, sale and gift card is now judged by. “Check judging” re-tests them.</div>'
+      +'<ol class="learned">'+LEARNED.map(function(r){
+        return '<li data-rule="'+esc(r.rule)+'"><span class="grow">'+esc(r.text)+'</span>'
+          +'<span class="learned-n" aria-label="'+r.flags+' flag'+(r.flags===1?"":"s")+'">'+(r.flags?r.flags+' flag'+(r.flags===1?"":"s"):"rule")+'</span></li>';
+      }).join("")+'</ol></div>';
   }
 
   // Footer copy is derived from the live feed cadence (reuses cadencePhrase) so it never lies about
@@ -2771,6 +2857,8 @@
     // delete a deal (swipe-revealed button or the ⋯ menu item) — Enhancements Slice 6
     var dd=b.getAttribute("data-deldeal");
     if(dd){ closeOverflowMenus(); deleteDeal(dd); return; }
+    var bb=b.getAttribute("data-blockbrand");
+    if(bb){ closeOverflowMenus(); blockBrand(bb); return; }
     // bought / skip
     var buy=b.getAttribute("data-buy"), skip=b.getAttribute("data-skip");
     // Thrift Shop Slice 5: Bought / Used asks (optionally) how much was saved — prefilled — before it is recorded; tapping the
@@ -2966,6 +3054,7 @@
     }
   });
   document.addEventListener("change", function(ev){
+    if(ev.target && (ev.target.id==="bday-month"||ev.target.id==="bday-day")){ saveBirthday(); return; }
     var f=ev.target.getAttribute && ev.target.getAttribute("data-set");
     if(!f) return;
     state.settings[f]=ev.target.value;
@@ -3346,7 +3435,7 @@
   // ---------- Sales actions (Thrift Shop Slice 4) ----------
   // review fix (slice 7): the Sales jump chips' counts follow every change (not only the group heading).
   function syncSalesNav(){
-    var c={counts:offerRows().filter(function(x){ return x.status==="on"; }).length,brands:brandRows().length,note:(state.settings&&state.settings.offer_note)?1:0,watch:(state.watch||[]).length};
+    var c={counts:offerRows().filter(function(x){ return x.status==="on"; }).length,brands:brandRows().length,note:(state.settings&&state.settings.offer_note)?1:0,watch:(state.watch||[]).length,blocked:blocklist().length};
     Object.keys(c).forEach(function(k){ var q=document.querySelector('#qn-sales a[href="#grp-sales-'+k+'"] .qcount'); if(q) q.textContent=String(c[k]);
       var g=document.querySelector('#grp-sales-'+k+' .gcount'); if(g) g.textContent=String(c[k]); });
   }
@@ -3496,12 +3585,24 @@
     var list=blocklist().slice();
     if(list.indexOf(name)<0) list.push(name);
     state.settings.retailer_blocklist=list;
-    if(inp) inp.value=""; renderBlockList(); saveSettings();
+    if(inp) inp.value=""; blockChanged(); saveSettings();
   }
-  function removeBlock(entry){
+  function removeBlock(entry,opts){
     state.settings.retailer_blocklist=blocklist().filter(function(e){ return e!==entry; });
-    renderBlockList(); saveSettings();
+    blockChanged(); saveSettings();
+    if(!(opts&&opts.quiet)) showToast("Unblocked "+entry,function(){ blockBrand(entry,{quiet:true}); });
   }
+  // S2 (R12): ⋯ → "Block <brand>" — adds the normalized name (the judge's matcher), hides that brand's cards at once,
+  // Undo restores. Already blocked → a no-op toast.
+  function blockBrand(name,opts){
+    var entry=normBrand(name); if(!entry) return;
+    var list=blocklist().slice();
+    if(list.indexOf(entry)>=0){ if(!(opts&&opts.quiet)) showToast(name+" is already blocked",null); return; }
+    list.push(entry); state.settings.retailer_blocklist=list;
+    blockChanged(); saveSettings();
+    if(!(opts&&opts.quiet)) showToast("Blocked "+name+" — hidden from your feed",function(){ removeBlock(entry,{quiet:true}); });
+  }
+  function blockChanged(){ renderBlockList(); renderFeed(); renderFeedBadge(); syncSalesNav(); }
   // ---------- sale watch (Slice 6) ----------
   function addWatch(){
     var inp=el("newwatch"); var term=(inp&&inp.value||"").trim(); if(!term) return;
