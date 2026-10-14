@@ -389,6 +389,6 @@ around the scope.
   that exact marker means "checked, nothing to do". Opt agents in per row (`idle_is_work`), never count all skips. [tag: monitoring] (2026-10-13)
 - **Patch a live view from `pg_get_viewdef`, not from a repo copy** — string-replace inside a DO block and assert the patch
   count, so later in-place fixes to the view are never reverted. [tag: supabase] (2026-10-13)
-- **Scheduled-task notification channels can't be changed from a session** (update_trigger has no notifications field and the
-  web task page shows none) — they are set at creation or in the app. [tag: council] (2026-10-13)
+- **Scheduled-task notification channels can't be changed from a session** (update_trigger has no notifications field) — Mark
+  sets them in the task's Edit dialog under the collapsed **Advanced settings**. [tag: council] (2026-10-13)
 

@@ -19,6 +19,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 - Ship gate: `bash scripts/gauntlet.sh` (verify skill) — 0 webkit · 1 unit · 2 inline · 3 tenants-check · 4 Playwright · 5 ui-audit.
 
 ## Shipped this arc
+- Weekly task notifications set by Mark (Advanced settings): store check push off; pop-up bug watch email off, push on.
 - **PR #41 `c8b86c9`**: `watch-core.mjs` episode rule (`bad_since`/`down_alerted`), undelivered alert retried each tick;
   self-gap 24 h; GH check stale > 24 h only, "undeliverable" path removed; tests rewritten (unit 137/0).
 - DB: `press_agent_expect.idle_is_work` (card-scout on — its empty-input `skipped` = real work); `fsa-capture` enabled=false;
@@ -27,8 +28,6 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
   (identical on untouched main).
 
 ## Open / blockers
-- **Weekly scheduled-task notifications not changed** — no session tool or web control for a task's notification channels
-  (see Mark's manual steps).
 - **FSA receipt inlet** is off on the monitor until it actually reports in; switch `press_agent_expect.enabled` back on then.
 - **The shared gates still carry sub-44px controls.** `src/gate.js` (`.pg-back`, `.pg-btn`) and `src/family-gate.js`
   (`.fg-back`, `.fg-link`) are fixed on press pages by page-level overrides only; editing the modules drifts 7 tenants (T3).
@@ -59,7 +58,5 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 6. Elevate Ops: brand its "Magic Link" auth email.
 
 ## Mark's manual steps
-1. In the Claude app, open each scheduled task's settings: **Card Scout — weekly store check** → push notifications off;
-   **Watch: Cowork Supabase pop-up bug (#94450)** → email off, keep push (it still flags "FIXED").
-2. Token renewal: `press-auth-email-sync` expires 2027-10 — make a new one (same two permissions: Auth Config RW +
+1. Token renewal: `press-auth-email-sync` expires 2027-10 — make a new one (same two permissions: Auth Config RW +
    Project Settings RW, press only) and update the Actions secret `SUPABASE_ACCESS_TOKEN`.
