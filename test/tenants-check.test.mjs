@@ -455,3 +455,32 @@ test('T10 root — in a git checkout every root .html is registered AND every pa
   assert.equal(r.code, 0);
   e.cleanup();
 });
+
+test('defaults (arc/unpin-the-mac): CODE_ROOT + COUNCIL_DIR are sibling clones of the press clone, never homedir()/Documents', () => {
+  const src = readFileSync(CHECKER, 'utf8');
+  assert.doesNotMatch(src, /join\(homedir\(\), 'Documents'/);
+  // run a copy of the checker from <base>/press/tools with NO env overrides: it must look beside the press clone
+  const e = estate();
+  e.page('a.html').write();
+  mkdirSync(join(e.press, 'tools'), { recursive: true });
+  writeFileSync(join(e.press, 'tools', 'tenants-check.mjs'), src);
+  const env = { ...process.env }; delete env.CODE_ROOT; delete env.COUNCIL_DIR;
+  let out;
+  try { out = execFileSync('node', [join(e.press, 'tools', 'tenants-check.mjs')], { env, encoding: 'utf8' }); }
+  catch (err) { out = String(err.stdout) + String(err.stderr); }
+  assert.match(out, new RegExp(`source repos: ${e.base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s`));
+  assert.doesNotMatch(out, /Documents\/(code|Claude)/);
+  // COUNCIL_DIR default = <base>/council (the estate's sibling council with its snag registry): T8 finds it
+  assert.doesNotMatch(out, /snag registry MISSING/);
+  e.cleanup();
+  // …and with that sibling registry absent, T8 names exactly <base>/council as where it looked
+  const e2 = estate().noSnagRegistry();
+  e2.page('a.html').write();
+  mkdirSync(join(e2.press, 'tools'), { recursive: true });
+  writeFileSync(join(e2.press, 'tools', 'tenants-check.mjs'), src);
+  let out2;
+  try { out2 = execFileSync('node', [join(e2.press, 'tools', 'tenants-check.mjs')], { env, encoding: 'utf8' }); }
+  catch (err) { out2 = String(err.stdout) + String(err.stderr); }
+  assert.ok(out2.includes(`snag registry MISSING at ${join(e2.base, 'council', 'instruments', 'snag', 'registry.json')}`), out2);
+  e2.cleanup();
+});
