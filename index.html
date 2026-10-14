@@ -1538,8 +1538,9 @@ const ICONS={
   // remit — a banknote (Lucide "banknote"), deliberately distinct from halvsies' receipt.
   'banknote':       '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01"/><path d="M18 12h.01"/></svg>',
   'gift':           '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>',
-  // card-scout — a sales FINDER: a search lens with a percent sign inside.
-  'search-percent': '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="14" y1="8" x2="8" y2="14"/><path d="M8.5 8.5h.01"/><path d="M13.5 13.5h.01"/></svg>',
+  // thrift-shop — the Thrift Shop "Drop Bag" (shopping bag + price-drop chevron), the app's own favicon mark redrawn on
+  // the 24-unit grid (rename arc, 2026-10-14; replaced Card Scout's search-percent lens).
+  'drop-bag':       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7.75v-1.5a4 4 0 0 1 8 0v1.5"/><path d="M3.5 7.75h17l-1.25 14h-14.5z"/><path d="M8.5 13.25l3.5 3.5 3.5-3.5"/></svg>',
   'user-check':     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>',
   'trending-up':    '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
   'heart':          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>',
@@ -1562,7 +1563,7 @@ const LABELS = {
   'remit.html':         { kicker:'Family Transfers',                title:'Remit',                                    icon:'banknote' },
   'halvsies.html':      { kicker:'Splitting the Bill',              title:'Halvsies',                                 icon:'receipt' },
   'cardsharp.html':     { kicker:'Gift Card Tracker',               title:'Cardsharp',                                icon:'gift' },
-  'card-scout.html':    { kicker:'Sales Finder',                    title:'Card Scout',                               icon:'search-percent' },
+  'thrift-shop.html':   { kicker:'Deals',                           title:'Thrift Shop',                              icon:'drop-bag' },
   'access.html':        { kicker:'User Access Management',          title:'Family Wing Access',                       icon:'user-check' },
   'retirement.html':    { kicker:'Financial Planning',              title:'Retirement Projector',                     icon:'trending-up' },
   'giving.html':        { kicker:'Charitable Donations',            title:'Giving Tracker',                           icon:'heart' },
@@ -1585,10 +1586,14 @@ const COPY_FLAVOR='on the pad';
 
 async function ghJson(url){const r=await fetch(url,{headers:{'Accept':'application/vnd.github+json'}});
   if(!r.ok)throw new Error('GitHub '+r.status);return r.json();}
+/* REDIRECT STUBS — an old page file kept ONLY so bookmarks / home-screen icons still land (rename arc, 2026-10-14).
+   A stub is never a page: never a card, never in pages.json / spaces.json / LABELS. Mirrors tenants.json `redirects`
+   (tools/tenants-check.mjs T10 asserts the two agree and that each stub is a tiny hash-preserving redirect). */
+const REDIRECT_STUBS = { 'card-scout.html': 'thrift-shop.html' };
 async function listPages(dir){ // dir '' = root, 'archive' = archive/
   const url = dir?`${API}/${dir}?ref=main`:`${API}?ref=main`;
   const items = await ghJson(url);
-  return items.filter(x=>x.type==='file'&&x.name.endsWith('.html')&&x.name!=='index.html').map(x=>x.name);
+  return items.filter(x=>x.type==='file'&&x.name.endsWith('.html')&&x.name!=='index.html'&&!(!dir&&REDIRECT_STUBS[x.name])).map(x=>x.name);
 }
 async function loadManifest(dir){
   const path = dir?`${dir}/pages.json`:'pages.json';
@@ -1690,7 +1695,9 @@ function pLocalLoad(){ try{ PSTATE=pNorm(JSON.parse(localStorage.getItem(PKEY)||
 // a wing's cards: the user's saved order first (only files the wing already shows), then the
 // rest in spaces.json order. Never adds a page, never drops one.
 function wingOrdered(files, scope){
-  const saved = PSTATE[ORDER_KEY[scope]].filter((f,i,a)=>files.includes(f) && a.indexOf(f)===i);
+  // linkFile(): a saved order written before a rename names the OLD file (orderPersonal held "card-scout.html") — map it
+  // to the current link file so a renamed tool keeps its place instead of dropping to the end (rename arc, 2026-10-14).
+  const saved = PSTATE[ORDER_KEY[scope]].map(linkFile).filter((f,i,a)=>files.includes(f) && a.indexOf(f)===i);
   return [...saved, ...files.filter(f=>!saved.includes(f))];
 }
 async function pCloudLoad(){
@@ -1761,7 +1768,9 @@ const skelHTML=`${bulbsHTML}<div class="tw-top"><span>The <b>Marquee</b></span><
 function paintMarquee(root, files, man, physArchiveCount, stale){
   // personal-wing AND family-wing files are removed BEFORE applyState — they can never be
   // sorted, dragged into the public archive, or counted among the public cards.
-  const pub = files.filter(f=>!isPersonalFile(f) && !isFamilyFile(f));
+  // keyringId(): fail SAFE on a stale spaces.json (raw CDN / the press:marquee:v3 cache) that still names a renamed tool
+  // by its old file — the renamed page must never surface on the public lobby (rename arc, 2026-10-14).
+  const pub = files.filter(f=>!isPersonalFile(f) && !isFamilyFile(f) && !isPersonalFile(keyringId(f)) && !isFamilyFile(keyringId(f)));
   const {ordered, newest, stateArchived} = applyState(pub, man);
   const archiveCount = physArchiveCount + stateArchived.length;
   const secure = secureCardHTML();
@@ -2069,12 +2078,20 @@ const TOOL_CFG = {   // tool NAMES come from LABELS (toolName) — the marquee l
   'fsa.html':        { kind:'app', table:'press_fsa',        idcol:'sync_id', select:'doc,version',                 env:(r)=>r.doc },
   'giving.html':     { kind:'app', table:'press_giving',     idcol:'id',      select:'ciphertext,iv,salt,kdf_iters', env:(r)=>r },
   'retirement.html': { kind:'app', table:'press_retirement', idcol:'id',      select:'ciphertext,iv,salt,kdf_iters', env:(r)=>r },
-  'card-scout.html': { kind:'deals' }, // sync-id-only; verified against press_deals
+  'thrift-shop.html': { kind:'deals' }, // sync-id-only; verified against press_deals (keyring id card-scout.html — KEYRING_ID)
   'cardsharp.html':  { kind:'app', table:'press_cardsharp',  idcol:'sync_id', select:'doc,version',                 env:(r)=>r.doc },
 };
 // A tool row's name = the page's card title in LABELS (one naming source for cards, rows and the kit).
 const toolName = f => labelFor(f, null).title;
-const CONNECT_TOOLS = ['fsa.html','giving.html','retirement.html','card-scout.html','cardsharp.html'];
+const CONNECT_TOOLS = ['fsa.html','giving.html','retirement.html','thrift-shop.html','cardsharp.html'];
+/* KEYRING_ID — the ONE alias map between a tool's LINK FILE (what the marquee lists, LABELS/TOOL_CFG/CONNECT_TOOLS keys)
+   and its vault KEYRING ID (keyring.apps[...], read by the shared gate's guard({page}) in every tenant + steward.html).
+   They differ only where a page file was renamed after enrolment: Thrift Shop moved to thrift-shop.html (2026-10-14) but
+   its sealed keyring entry stays "card-scout.html" so nobody re-enrols (R2). Every keyring read/write in this page goes
+   through keyringId(); anything that names or configures a tool from a keyring entry goes back through linkFile(). */
+const KEYRING_ID = { 'thrift-shop.html': 'card-scout.html' };
+const keyringId = f => KEYRING_ID[f] || f;
+const linkFile  = id => Object.keys(KEYRING_ID).find(f => KEYRING_ID[f] === id) || id;
 
 /* CARD_SCOUT_GATE_SENTINEL — an INERT, PUBLIC shape-filler. NOT a secret, NOT a passphrase.
    Card Scout has no passphrase of its own: its data is gated by the sync_id capability
@@ -2106,7 +2123,7 @@ async function fetchAppRow(cfg, syncId){
 }
 // CONNECTED = the keyring holds this tool's full capability. For an app that is a
 // {sync_id, pass}; card-scout is sync-id-only, so a sync_id alone is connected.
-function toolConnected(f){ const k=vaultState().sess; const v=k&&k.keyring&&k.keyring.apps&&k.keyring.apps[f]; if(v&&v.redacted) return true; /* MEMORY_ONLY (cardsharp): connected, creds kept out of localStorage */ if(!v||!v.sync_id) return false; return TOOL_CFG[f].kind==='deals' ? true : !!v.pass; }
+function toolConnected(f){ const k=vaultState().sess; const v=k&&k.keyring&&k.keyring.apps&&k.keyring.apps[keyringId(f)]; if(v&&v.redacted) return true; /* MEMORY_ONLY (cardsharp): connected, creds kept out of localStorage */ if(!v||!v.sync_id) return false; return TOOL_CFG[f].kind==='deals' ? true : !!v.pass; }
 function wingDownload(name, text){
   try{ const blob=new Blob([text],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000); }catch(e){}
 }
@@ -2115,7 +2132,7 @@ function wingDownload(name, text){
 // per-field aria labels; card-scout gets a sync-id field ONLY (no passphrase, no download).
 function toolFieldsHTML(f){
   const cfg=TOOL_CFG[f], deals=cfg.kind==='deals';
-  const sync=`<input class="tw-cinput tw-sync" type="text" inputmode="latin" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${deals?'Card Scout sync id':'sync id (32 hex)'}" aria-label="${esc(toolName(f))} sync id">`;
+  const sync=`<input class="tw-cinput tw-sync" type="text" inputmode="latin" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${deals?'Thrift Shop sync id':'sync id (32 hex)'}" aria-label="${esc(toolName(f))} sync id">`;
   const pass=deals?'':`<input class="tw-cinput tw-pass" type="password" autocomplete="off" placeholder="passphrase" aria-label="${esc(toolName(f))} passphrase">`;
   const dl  =deals?'':`<span class="tw-dl" hidden role="button" tabindex="0">Download my data</span>`;
   return `<div class="tw-tool-form" role="region" aria-label="Connect ${esc(toolName(f))}">`+
@@ -2195,16 +2212,17 @@ function wireConnect(root, man){
       const run=async ()=>{
         const syncId=(idIn.value||'').trim(); msg.className='tw-tool-msg';
         if(cfg.kind==='deals'){
-          if(!syncId){ msg.classList.add('err'); msg.textContent="Enter Card Scout's sync id."; return; }
+          if(!syncId){ msg.classList.add('err'); msg.textContent="Enter "+toolName(f)+"'s sync id."; return; }
           msg.textContent='Verifying against your deals…';
           let verdict; try{ verdict=await PressVault.verifyCardScout(syncId); }catch(e){ verdict='unreachable'; }
           if(verdict==='unreachable'){ msg.classList.add('err'); msg.textContent='Could not reach the data service. Try again.'; return; }
-          if(verdict!=='verified'){ msg.classList.add('err'); msg.textContent="That sync id doesn't open Card Scout's deals."; return; } // 200+0 rows = wrong, never success
+          if(verdict!=='verified'){ msg.classList.add('err'); msg.textContent="That sync id doesn't open "+toolName(f)+"'s deals."; return; } // 200+0 rows = wrong, never success
           const sess=PressVault.loadSession(); if(!sess){ msg.classList.add('err'); msg.textContent='Session expired — unlock again.'; return; }
           const keyring=sess.keyring; keyring.apps=keyring.apps||{};
-          const entry=Object.assign({}, keyring.apps[f], { sync_id:syncId, pass:CARD_SCOUT_GATE_SENTINEL });
+          const kid=keyringId(f); // thrift-shop.html seals under its enrolled keyring id card-scout.html (KEYRING_ID)
+          const entry=Object.assign({}, keyring.apps[kid], { sync_id:syncId, pass:CARD_SCOUT_GATE_SENTINEL });
           // card-scout's pass is the inert CARD_SCOUT_GATE_SENTINEL sealed above (no secret; data access is keyed on sync_id)
-          keyring.apps[f]=entry;
+          keyring.apps[kid]=entry;
           try{ await PressVault.updateKeyring(keyring); }
           catch(e){ console.error('[private-wing] updateKeyring failed:', e); msg.classList.add('err'); msg.textContent=friendlyErr(e); return; }
           msg.classList.remove('err'); msg.classList.add('ok'); msg.textContent='Connected ✓ — sealed behind your passkey.';
@@ -2222,7 +2240,7 @@ function wireConnect(root, man){
         if(!doc){ msg.classList.add('err'); msg.textContent='That passphrase did not open the data. Check it and try again.'; return; } // decrypt failed
         // VERIFIED — seal into the keyring (never store unverified; never overwrite a working entry with an unverified one)
         const sess=PressVault.loadSession(); if(!sess){ msg.classList.add('err'); msg.textContent='Session expired — unlock again.'; return; }
-        const keyring=sess.keyring; keyring.apps=keyring.apps||{}; keyring.apps[f]=Object.assign({}, keyring.apps[f], { sync_id:syncId, pass:pass });
+        const keyring=sess.keyring; keyring.apps=keyring.apps||{}; keyring.apps[keyringId(f)]=Object.assign({}, keyring.apps[keyringId(f)], { sync_id:syncId, pass:pass });
         try{ await PressVault.updateKeyring(keyring); }
         catch(e){ console.error('[private-wing] updateKeyring failed:', e); msg.classList.add('err'); msg.textContent=friendlyErr(e); return; }
         lastDoc=doc;
@@ -2263,8 +2281,9 @@ function recoveryKitHTML(man){
   const apps = (full && full.apps) ? full.apps : {};
   const when = new Date();
   const stamp = when.toLocaleString(undefined, {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
-  const rows = Object.keys(apps).map(f=>{
-    const v = apps[f] || {};
+  const rows = Object.keys(apps).map(id=>{
+    const v = apps[id] || {};
+    const f = linkFile(id);                     // keyring id → link file (KEYRING_ID), so a renamed tool keeps its card name
     const name = esc(labelFor(f, man).title);   // the marquee label map names the tool here too
     if (v.redacted) return `<tr><th scope="row">${name}</th><td colspan="2"><em>unlock with your passkey on this page to include it</em></td></tr>`;
     const sync = v.sync_id ? esc(v.sync_id) : '—';
@@ -2307,7 +2326,9 @@ function paintPersonal(root, man){
   const top=`<div class="tw-top"><span>behind the <b>passkey</b></span><span>personal tools</span></div>`;
   const st=vaultState();
   if(st.sess){
-    const cards=wingOrdered(SPACES.personal||[], 'personal').map(f=>cardHTML(f, man, false)).join('');
+    // linkFile(): a CDN-stale spaces.json may still name a renamed tool by its old file (now a redirect stub) — map +
+    // de-dupe so the wing shows the real page, never a stub card (rename arc, 2026-10-14).
+    const cards=wingOrdered([...new Set((SPACES.personal||[]).map(linkFile))], 'personal').map(f=>cardHTML(f, man, false)).join('');
     const hint=cards?`<div class="tw-hint">hold a card to lift it · Alt+↑/↓ to reorder</div>`:'';
     root.innerHTML = back+top+`<h2 class="tw-title">The Private Wing</h2>`+
       `<div class="tw-dek">Unlocked · ${clockUntil(st.sess.expiresAt)}. Open any tool — no more prompts until you lock or it expires.</div>`+

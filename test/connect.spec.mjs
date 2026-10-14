@@ -14,7 +14,7 @@ import { setupVirtualAuthenticator, buildEnvelope, enrolInPage } from '../src/ga
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const INDEX = readFileSync(join(ROOT, 'index.html'), 'utf8');
 const PUBLIC_FILES = ['council-guide.html', 'agent-health.html'];
-const PERSONAL_FILES = ['fsa.html', 'giving.html', 'retirement.html', 'card-scout.html', 'cardsharp.html'];
+const PERSONAL_FILES = ['fsa.html', 'giving.html', 'retirement.html', 'thrift-shop.html', 'cardsharp.html'];
 const MANIFEST = Object.fromEntries([...PUBLIC_FILES, ...PERSONAL_FILES].map((f) => [f, { title: f.replace(/\.html$/, '') }]));
 const SPACES = { v: 1, personal: PERSONAL_FILES };
 
@@ -137,7 +137,7 @@ test('Connect rows carry the marquee LABELS titles (same naming as the cards)', 
   const state = await harness(page, context);
   await enrolEmptyAndOpen(page, state);
   const want = { 'fsa.html': 'FSA Claims Tracker', 'giving.html': 'Giving Tracker', 'retirement.html': 'Retirement Projector',
-                 'card-scout.html': 'Card Scout', 'cardsharp.html': 'Cardsharp' };
+                 'thrift-shop.html': 'Thrift Shop', 'cardsharp.html': 'Cardsharp' };
   for (const [f, name] of Object.entries(want)) {
     await expect(tool(page, f).locator('.tw-tool-name')).toHaveText(name);
     await expect(tool(page, f).locator('.tw-sync')).toHaveAttribute('aria-label', `${name} sync id`);
@@ -248,31 +248,31 @@ for (const vp of VIEWPORTS) {
       await expect(t.locator('.tw-sync')).toHaveValue('');
     });
 
-    test('Card Scout row: sync-id field ONLY (no passphrase input)', async ({ page, context }) => {
+    test('Thrift Shop row: sync-id field ONLY (no passphrase input)', async ({ page, context }) => {
       const state = await harness(page, context);
       await enrolEmptyAndOpen(page, state);
-      const t = tool(page, 'card-scout.html');
+      const t = tool(page, 'thrift-shop.html');
       await expect(t.locator('.tw-tool-form')).toBeVisible();
       await expect(t.locator('.tw-sync')).toHaveCount(1);
       await expect(t.locator('.tw-pass')).toHaveCount(0);           // NO passphrase input for card-scout
     });
 
-    test('Card Scout: a WRONG sync id (200 + zero rows) is rejected with the plain-language message; nothing stored', async ({ page, context }) => {
+    test('Thrift Shop: a WRONG sync id (200 + zero rows) is rejected with the plain-language message; nothing stored', async ({ page, context }) => {
       const state = await harness(page, context);
       await enrolEmptyAndOpen(page, state);
-      const t = tool(page, 'card-scout.html');
+      const t = tool(page, 'thrift-shop.html');
       await t.locator('.tw-sync').fill(CARD_WRONG);
       await t.locator('.tw-verify').click();
-      await expect(t.locator('.tw-tool-msg')).toContainText("doesn't open Card Scout's deals");
+      await expect(t.locator('.tw-tool-msg')).toContainText("doesn't open Thrift Shop's deals");
       await expect(t.locator('.tw-tool-msg')).not.toContainText('Connected');
       const kr = await page.evaluate(() => window.PressVault.loadSession().keyring.apps['card-scout.html']);
       expect(kr).toEqual({ sync_id: '' });                          // unchanged — never store an unverified key
     });
 
-    test('Card Scout: a CORRECT sync id connects; keyring holds sync_id + inert gate sentinel pass; row collapses', async ({ page, context }) => {
+    test('Thrift Shop: a CORRECT sync id connects; keyring (id card-scout.html, KEYRING_ID) holds sync_id + inert gate sentinel pass; row collapses', async ({ page, context }) => {
       const state = await harness(page, context);
       await enrolEmptyAndOpen(page, state);
-      const t = tool(page, 'card-scout.html');
+      const t = tool(page, 'thrift-shop.html');
       await t.locator('.tw-sync').fill(CARD_SYNC);
       await t.locator('.tw-verify').click();
       await expect(t.locator('.tw-tool-msg')).toContainText('Connected');

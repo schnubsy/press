@@ -5,7 +5,7 @@
 // three repo-owned registries (tenants.json, pages.json, spaces.json) and, per tenant, runs one
 // named check. Prints PASS / FAIL / SKIP / INFO / EMITTED + a reason; EXITS 1 on any FAIL.
 //
-//   node tools/tenants-check.mjs                 # T1–T4 + T6–T9 (no build)
+//   node tools/tenants-check.mjs                 # T1–T4 + T6–T10 (no build)
 //   node tools/tenants-check.mjs --rebuild       # + T5 rebuild-vs-live for deterministic tenants
 //   node tools/tenants-check.mjs --press <dir>   # override the press root (default: where this lives)
 //   CODE_ROOT=<dir> node tools/tenants-check.mjs   # override the source-repos parent (default ~/Documents/code on the Mac; scripts/gauntlet.sh passes the sibling-clone parent)
@@ -50,8 +50,8 @@ function resolveRepo(entry) {
 }
 
 // ---- load registries -------------------------------------------------------
-let tenants, pages, spaces;
-try { tenants = readJSON(join(PRESS, 'tenants.json')).tenants; } catch (e) { console.error('tenants-check: cannot read tenants.json at ' + PRESS + ' — ' + e.message); process.exit(1); }
+let tenants, pages, spaces, redirects;
+try { const tj = readJSON(join(PRESS, 'tenants.json')); tenants = tj.tenants; redirects = tj.redirects || {}; } catch (e) { console.error('tenants-check: cannot read tenants.json at ' + PRESS + ' — ' + e.message); process.exit(1); }
 try { pages = readJSON(join(PRESS, 'pages.json')); } catch (e) { console.error('tenants-check: cannot read pages.json — ' + e.message); process.exit(1); }
 try { spaces = readJSON(join(PRESS, 'spaces.json')); } catch (e) { console.error('tenants-check: cannot read spaces.json — ' + e.message); process.exit(1); }
 const personal = Array.isArray(spaces.personal) ? spaces.personal : [];
@@ -176,13 +176,25 @@ for (const page of Object.keys(tenants)) {
     // TOOL_CFG keys in index.html.
     const tcm = indexSrc.match(/const TOOL_CFG\s*=\s*\{([\s\S]*?)\n\};/);
     const toolcfg = new Set(tcm ? [...tcm[1].matchAll(/'([a-z0-9-]+\.html)'\s*:/g)].map((m) => m[1]) : []);
+    // KEYRING_ID (rename arc 2026-10-14): a renamed page keeps its ENROLLED keyring id — map link file → keyring id so the
+    // renamed page is still recognised as a data page (thrift-shop.html stores data under keyring id card-scout.html).
+    const km = indexSrc.match(/const KEYRING_ID\s*=\s*\{([^}]*)\}/);
+    const alias = new Map(km ? [...km[1].matchAll(/'([a-z0-9-]+\.html)'\s*:\s*'([a-z0-9-]+\.html)'/g)].map((m) => [m[1], m[2]]) : []);
+    const kid = (p) => alias.get(p) || p;
+    // an alias map that exists but parses to nothing would silently drop every renamed page from the audit
+    const aliasBroken = km && /\.html/.test(km[1]) && !alias.size;
     if (!keyring.size) say('SKIP', 'T7 tool-cfg', '(marquee)', 'could not read the vault keyring (emptyKeyring)');
+    else if (aliasBroken) say('FAIL', 'T7 tool-cfg', '(marquee)', "KEYRING_ID found in index.html but no 'link.html': 'id.html' pair parsed");
     else if (!tcm) say('FAIL', 'T7 tool-cfg', '(marquee)', 'TOOL_CFG block not found in index.html');
     else {
-      const dataPersonal = personal.filter((p) => keyring.has(p)); // personal pages that store data
+      const dataPersonal = personal.filter((p) => keyring.has(kid(p))); // personal pages that store data (via KEYRING_ID)
+      // every vault keyring id must belong to a personal page (directly or via KEYRING_ID) — an orphan id means a renamed
+      // or removed tool silently left Connect / the recovery kit
+      const orphan = [...keyring].filter((id) => !personal.some((p) => kid(p) === id));
+      if (orphan.length) say('FAIL', 'T7 tool-cfg', '(marquee)', `keyring id(s) with no personal page (map a renamed page in KEYRING_ID): ${orphan.join(', ')}`);
       const missing = dataPersonal.filter((p) => !toolcfg.has(p));
       if (missing.length) say('FAIL', 'T7 tool-cfg', '(marquee)', `personal data page(s) with NO TOOL_CFG entry (won't show in Connect / recovery kit): ${missing.join(', ')}`);
-      else say('PASS', 'T7 tool-cfg', '(marquee)', `${dataPersonal.length} personal data page(s) all present in TOOL_CFG`);
+      else if (!orphan.length) say('PASS', 'T7 tool-cfg', '(marquee)', `${dataPersonal.length} personal data page(s) all present in TOOL_CFG`);
     }
   }
 }
@@ -203,7 +215,13 @@ for (const page of Object.keys(tenants)) {
     for (const page of Object.keys(tenants)) {
       const want = 'schnubsy/' + (tenants[page].repo || 'press');
       const row = rows.get(page);
-      if (!row) say('FAIL', 'T8 registry-parity', page, `no snag-registry row (add it to council instruments/snag/registry.json)`);
+      // A renamed tenant (tenants.json `formerly`) may still be registered under its former page + repo until the council
+      // registry is updated (Steward) — accepted ONLY when that row matches the former pair exactly, and said out loud.
+      const was = tenants[page].formerly;
+      const oldRow = was && was.page ? rows.get(was.page) : null;
+      if (!row && oldRow && oldRow.repo === 'schnubsy/' + was.repo)
+        say('PASS', 'T8 registry-parity', page, `${oldRow.id} → ${oldRow.repo} (FORMER name ${was.page}; council registry update pending → page ${page}, repo ${want})`);
+      else if (!row) say('FAIL', 'T8 registry-parity', page, `no snag-registry row (add it to council instruments/snag/registry.json)`);
       else if (row.repo !== want) say('FAIL', 'T8 registry-parity', page, `registry repo ${row.repo} != tenants.json ${want}`);
       else say('PASS', 'T8 registry-parity', page, `${row.id} → ${row.repo}`);
     }
@@ -242,6 +260,48 @@ for (const page of Object.keys(tenants)) {
       }
     }
   }
+}
+
+// ---- T10 redirects — the named exception for an old page file kept as a redirect stub (rename arc, 2026-10-14) ----
+// tenants.json `redirects` {old: {to, …}} is the ONE list of root .html files that are NOT pages. Each must: exist; stay
+// tiny (≤ 2 KB) and noindex; location.replace() to its target keeping the #hash; carry no gate/vault/data code; point at
+// a real page; and appear in NO page registry (pages.json, spaces.json, LABELS) — else it would render as a card.
+// index.html REDIRECT_STUBS must list exactly the same map (the marquee hides those files). And every root .html is
+// either a pages.json page, a redirect, or index.html — nothing unregistered.
+{
+  const indexPath = join(PRESS, 'index.html');
+  const src = existsSync(indexPath) ? readFileSync(indexPath, 'utf8') : '';
+  const rm = src.match(/const REDIRECT_STUBS\s*=\s*\{([^}]*)\}/);
+  const inIndex = new Map(rm ? [...rm[1].matchAll(/'([a-z0-9-]+\.html)'\s*:\s*'([a-z0-9-]+\.html)'/g)].map((m) => [m[1], m[2]]) : []);
+  const lm = src.match(/const LABELS\s*=\s*\{([\s\S]*?)\n\};/);
+  const labelKeys = new Set(lm ? [...lm[1].matchAll(/['"]([a-z0-9-]+\.html)['"]\s*:/g)].map((m) => m[1]) : []);
+  for (const [stub, r] of Object.entries(redirects)) {
+    const to = r && r.to;
+    const p = join(PRESS, stub);
+    const errs = [];
+    if (!existsSync(p)) errs.push('file missing');
+    else {
+      const txt = readFileSync(p, 'utf8');
+      if (txt.length > 2048) errs.push(`${txt.length} bytes (> 2 KB)`);
+      if (!/<meta name="robots" content="noindex">/.test(txt)) errs.push('no noindex');
+      if (!txt.includes(`location.replace('${to}' + location.search + location.hash)`)) errs.push(`no hash-preserving location.replace to ${to}`);
+      if (/PressGate|press:vault|supabase|sb_publishable_|fetch\(|localStorage/i.test(txt)) errs.push('carries gate/vault/data code');
+    }
+    if (!to || !pages[to]) errs.push(`target ${to} is not a pages.json page`);
+    if (pages[stub] || personal.includes(stub) || family.includes(stub) || labelKeys.has(stub) || tenants[stub]) errs.push('also registered as a page');
+    if (inIndex.get(stub) !== to) errs.push(`index.html REDIRECT_STUBS says ${inIndex.get(stub) || 'nothing'}`);
+    if (errs.length) say('FAIL', 'T10 redirects', stub, errs.join('; '));
+    else say('PASS', 'T10 redirects', stub, `→ ${to} (named exception: not a page)`);
+  }
+  for (const [stub] of inIndex) if (!redirects[stub]) say('FAIL', 'T10 redirects', stub, 'in index.html REDIRECT_STUBS but not tenants.json redirects');
+  let rootHtml = [];
+  try { rootHtml = execFileSync('git', ['-C', PRESS, 'ls-files', '*.html'], { encoding: 'utf8' }).split('\n').filter((f) => f && !f.includes('/')); } catch { /* not a git checkout */ }
+  const stray = rootHtml.filter((f) => f !== 'index.html' && !pages[f] && !redirects[f]);
+  // the reverse: every registered page + redirect target is a TRACKED file (a stub must never point at a 404)
+  const missing = rootHtml.length ? [...Object.keys(pages), ...Object.values(redirects).map((r) => r && r.to)].filter((f) => f && !f.includes('/') && !rootHtml.includes(f)) : [];
+  if (stray.length) say('FAIL', 'T10 redirects', '(root)', `root .html not in pages.json or redirects: ${stray.join(', ')}`);
+  if (missing.length) say('FAIL', 'T10 redirects', '(root)', `registered but not a tracked root file: ${[...new Set(missing)].join(', ')}`);
+  if (rootHtml.length && !stray.length && !missing.length) say('PASS', 'T10 redirects', '(root)', `${rootHtml.length} root .html = pages.json + redirects + index.html`);
 }
 
 // ---- T6 family grants (EMITTED — the script cannot reach the DB) ------------

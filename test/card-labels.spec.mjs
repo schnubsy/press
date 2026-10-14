@@ -23,7 +23,7 @@ const WANT = {
   'perth.html':         ['Moving to Perth', 'The Runway'],
   'halvsies.html':      ['Splitting the Bill', 'Halvsies'],
   'cardsharp.html':     ['Gift Card Tracker', 'Cardsharp'],
-  'card-scout.html':    ['Sales Finder', 'Card Scout'],
+  'thrift-shop.html':   ['Deals', 'Thrift Shop'],          // thrift-shop rename (2026-10-14)
   'access.html':        ['User Access Management', 'Family Wing Access'],
   'retirement.html':    ['Financial Planning', 'Retirement Projector'],
   'giving.html':        ['Charitable Donations', 'Giving Tracker'],

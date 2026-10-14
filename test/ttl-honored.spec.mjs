@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const TENANTS = ['fsa.html', 'giving.html', 'retirement.html', 'card-scout.html'];
+const TENANTS = ['fsa.html', 'giving.html', 'retirement.html', 'thrift-shop.html'];  // thrift-shop.html keeps keyring id card-scout.html
 const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 const EIGHT_HOURS = 8 * 60 * 60 * 1000;
 

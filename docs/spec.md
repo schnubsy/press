@@ -13,7 +13,7 @@ The marquee is split into two spaces:
 - **Public** — open-access cards, plus the Archive card. Anyone can view them; nothing
   is required to see the landing or the public marquee.
 - **Personal wing** — sensitive tools (`fsa.html`, `giving.html`, `retirement.html`,
-  `card-scout.html`), reached through a **personal/secure card pinned to the top of the
+  `thrift-shop.html`), reached through a **personal/secure card pinned to the top of the
   stack**. One WebAuthn passkey (1Password, PRF) unlocks the wing; once in, every personal
   app is usable without a further prompt.
 
@@ -31,7 +31,7 @@ is — AES-256-GCM ciphertext in Supabase behind header-gated RLS. The arc gates
 by a release script**:
 
 ```json
-{ "v": 1, "personal": ["fsa.html", "giving.html", "retirement.html", "card-scout.html"] }
+{ "v": 1, "personal": ["fsa.html", "giving.html", "retirement.html", "thrift-shop.html"] }
 ```
 
 A page in neither list is treated as **public** (matches historical behaviour). Fail-closed
@@ -94,7 +94,12 @@ const LABELS = {
   output via **HKDF-SHA-256** (correct for high-entropy PRF output; the apps' own document
   crypto uses PBKDF2 because their input is a low-entropy passphrase). The key never reaches
   the server; there is no readable data in `press_vault`.
-- **Keyring** (v1): `{ v, apps: { "fsa.html": {sync_id, pass}, … , "card-scout.html": {sync_id} } }`.
+- **Keyring** (v1): `{ v, apps: { "fsa.html": {sync_id, pass}, … , "card-scout.html": {sync_id} } }`. A keyring key is a
+  **keyring id**, normally the page's file name — but a page renamed after enrolment keeps its enrolled id: Thrift Shop
+  (`thrift-shop.html`, renamed 2026-10-14) still seals under `"card-scout.html"`. index.html maps link file → keyring id
+  in ONE alias map, `KEYRING_ID` (+ `keyringId()` / `linkFile()`); `TOOL_CFG`, `CONNECT_TOOLS` and `LABELS` are keyed by
+  the link file, every keyring read/write goes through `keyringId()`. The shared gate is untouched (tenants keep calling
+  `guard({page:'card-scout.html'})`), so nobody re-enrols.
 - **Enrolment** creates a discoverable credential (`residentKey`+`userVerification` required,
   `rp.id` = the site's hostname). PRF absent ⇒ abort with a plain message; **there is no
   passphrase fallback**. `addPasskey` seals the SAME keyring under a new key as a NEW row.
@@ -150,6 +155,16 @@ referenced by their paired page and committed together.
 
 ## Tenants
 
+**Redirect stubs (named exception, 2026-10-14).** A root `.html` that is NOT a page: an old file name kept only so
+bookmarks / home-screen icons still land after a rename. Listed in `tenants.json` → `redirects` (`{old: {to, source,
+why}}`) and mirrored by index.html `REDIRECT_STUBS` (the marquee never lists it). A stub is ≤ 2 KB, noindex,
+`location.replace('<to>' + location.search + location.hash)` before a meta-refresh fallback, with no gate/vault/data code,
+and appears in no page registry (pages.json, spaces.json, LABELS). Its source lives in the tenant repo and ships with the
+tenant's release. tenants-check **T10 `redirects`** enforces all of it, and that every root `.html` is a pages.json page,
+a redirect or `index.html`. Today: `card-scout.html` → `thrift-shop.html` (source `thrift-shop:redirect/card-scout.html`).
+A renamed tenant may carry `formerly: {page, repo}` so T8 accepts its council snag-registry row under the former name
+until the Steward updates that row (reported as PASS with "council registry update pending").
+
 The marquee is a **platform with tenants**, not an instrument. A tenant is a page whose
 source lives in another repo (`~/Documents/VSCode/<repo>`) and ships here via that repo's
 release script; a **press-native** page (`repo: null`) is authored directly in press. The
@@ -195,7 +210,7 @@ the private wing's Card Scout capability, and POSTs that capability as `x-plan-i
 `press_steward_capability_ok` (`db/20261012_press_steward_capability.sql`), against the **server-held
 `press_deals.sync_id` column default**. It never checks "a row with this sync_id exists", because anon can INSERT rows
 with any sync_id. Only after that does it read the service-role-only `press_steward_reports` table. **Coupling:**
-rotating Card Scout's key moves Steward access with it.
+rotating Thrift Shop's (keyring id `card-scout.html`) key moves Steward access with it.
 
 **Family-wing tenants inherit the wing (arc/marquee-wings-monitor, 2026-10-12):** a new family-wing app
 inherits the ONE wing-level sign-in email (`docs/auth/family-wing-otp.*`, "Your Family Wing sign-in code",

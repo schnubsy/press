@@ -47,7 +47,7 @@ has no page-title meta). No external asset — the single-file rule holds.
 | `kayley.html` | Kayley · Upskilling Plan | `#100C1E` | `#8E7BE8 → #E7A6C7` | three ascending bars | inline |
 | `retirement.html` | Retirement Projection | `#0F1618` | `#7BC0AC → #E0BD8F` | rising line | inline |
 | `fsa.html` | FSA Claims | `#14161A` | `#00A3E0` (cyan) + `#E6E9ED` needle | gauge dial + needle | inline (flat, no gradient — Apparatus Gauge) |
-| `card-scout.html` | Thrift Shop | `#0E1220` | `#4FC38A → #E0BD8F` | shopping bag + price-drop chevron | inline |
+| `thrift-shop.html` | Thrift Shop | `#0E1220` | `#4FC38A → #E0BD8F` | shopping bag + price-drop chevron | inline |
 | `cardsharp.html` | Cardsharp | `#12132A` | `#2EC5E8` (cyan) + `#F4F6FB` chip | gift card: stripe + chip | inline (flat, rounded-square ground) |
 | `perth.html` | Perth · The Runway | `#22312F` | `#6B7F6A → #D8C6A3` + `#E08B4E` | pin on a horizon | inline |
 | `steward.html` | Steward | `#0F1513` | `#7BC8A4 → #E0C271` | wrench (Feather "tool") | inline |
@@ -63,7 +63,7 @@ has no page-title meta). No external asset — the single-file rule holds.
 | `halvsies.html` | `<circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="21"/>` | 2.6 |
 | `kayley.html` | `<line x1="5" y1="19" x2="5" y2="15"/><line x1="12" y1="19" x2="12" y2="11"/><line x1="19" y1="19" x2="19" y2="6"/>` | 3.0 |
 | `retirement.html` | `<polyline points="3 18 9.5 11.5 13.5 15.5 21 6"/>` | 2.8 |
-| `card-scout.html` | `<path d="M24 23v-3a8 8 0 0 1 16 0v3"/><path d="M15 23h34l-2.5 28h-29z"/><path d="M25 34l7 7 7-7"/>` (64 viewBox) | 5 |
+| `thrift-shop.html` | `<path d="M24 23v-3a8 8 0 0 1 16 0v3"/><path d="M15 23h34l-2.5 28h-29z"/><path d="M25 34l7 7 7-7"/>` (64 viewBox) | 5 |
 | `cardsharp.html` | `<rect x="9" y="17" width="46" height="30" rx="5"/>` (filled; 64 viewBox) | fill |
 | `perth.html` | `<path d="M10 45H54"/><path d="M41 45V30"/><circle cx="41" cy="25" r="7.5"/>` | 5 |
 | `steward.html` | `<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>` | 2.8 |

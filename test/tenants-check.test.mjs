@@ -20,6 +20,9 @@ const spaces = JSON.parse(readFileSync(PRESS + '/spaces.json', 'utf8'));
 console.log('ok', spaces);
 `;
 
+// A conforming redirect stub (rename arc, T10): tiny, noindex, hash-preserving replace, no data code.
+const STUB = (to) => `<!doctype html><meta name="robots" content="noindex"><script>location.replace('${to}' + location.search + location.hash);</script><meta http-equiv="refresh" content="0;url=${to}">`;
+
 function estate() {
   const base = mkdtempSync(join(tmpdir(), 'tenants-check-'));
   const press = join(base, 'press');
@@ -29,7 +32,7 @@ function estate() {
   mkdirSync(vscode, { recursive: true });
   mkdirSync(join(council, 'instruments', 'snag'), { recursive: true });
   writeFileSync(join(press, 'src', 'gate.js'), GATE);
-  const reg = { pages: {}, spaces: { v: 2, personal: [], family: [] }, tenants: {} };
+  const reg = { pages: {}, spaces: { v: 2, personal: [], family: [] }, tenants: {}, redirects: null };
   // T8: by default the council snag registry mirrors tenants.json; a test may edit it (snagRows) or drop it (noRegistry).
   let snagEdit = null, noRegistry = false;
   return {
@@ -39,6 +42,7 @@ function estate() {
     page(name, content = '<html>' + name + '</html>') { writeFileSync(join(press, name), content); reg.pages[name] = { title: name }; return this; },
     tier(name, t) { if (t === 'personal') reg.spaces.personal.push(name); else if (t === 'family') reg.spaces.family.push(name); return this; },
     tenant(name, entry) { reg.tenants[name] = entry; return this; },
+    redirect(stub, to, content = STUB(to)) { writeFileSync(join(press, stub), content); (reg.redirects ||= {})[stub] = { to }; return this; },
     repo(name, { gate = GATE, vendored = 'src/vendor/press-gate.js', release = GOOD_RELEASE, releasePath = 'tools/release.js', git = true, build, buildOut } = {}) {
       const dir = join(vscode, name);
       mkdirSync(dir, { recursive: true });
@@ -51,7 +55,7 @@ function estate() {
     write() {
       writeFileSync(join(press, 'pages.json'), JSON.stringify(reg.pages, null, 2));
       writeFileSync(join(press, 'spaces.json'), JSON.stringify(reg.spaces));
-      writeFileSync(join(press, 'tenants.json'), JSON.stringify({ v: 1, tenants: reg.tenants }, null, 2));
+      writeFileSync(join(press, 'tenants.json'), JSON.stringify({ v: 1, tenants: reg.tenants, ...(reg.redirects ? { redirects: reg.redirects } : {}) }, null, 2));
       if (!noRegistry) {
         let rows = Object.entries(reg.tenants).map(([page, t]) => ({ id: page.replace(/\.html$/, ''), kind: 'web', page, repo: 'schnubsy/' + (t.repo || 'press') }));
         if (snagEdit) rows = snagEdit(rows);
@@ -207,7 +211,7 @@ function writeVault(press, apps) {
 // The index.html also carries the T9 marquee label map: by default one LABELS entry per pages.json page
 // (call AFTER e.write()); pass `labels` (an object page → {kicker,title,icon}) to override it, or
 // `labels: null` to omit the LABELS block entirely. ICONS always holds 'Page' + 'gift'.
-function writeIndex(press, cfgApps, { labels } = {}) {
+function writeIndex(press, cfgApps, { labels, extra = '' } = {}) {
   const entries = cfgApps.map((a) => `  '${a}': { kind:'app' }`).join(',\n');
   if (labels === undefined) {
     const pages = JSON.parse(readFileSync(join(press, 'pages.json'), 'utf8'));
@@ -217,7 +221,7 @@ function writeIndex(press, cfgApps, { labels } = {}) {
   const lbl = labels === null ? '' : `const LABELS = {\n${Object.entries(labels).map(([p, l]) =>
     `  '${p}': { ${Object.entries(l).map(([k, v]) => `${k}:'${v}'`).join(', ')} },`).join('\n')}\n};\n`;
   writeFileSync(join(press, 'index.html'),
-    `<html><body><script>\n${icons}${lbl}const TOOL_CFG = {\n${entries}${cfgApps.length ? ',' : ''}\n};\n</script></body></html>`);
+    `<html><body><script>\n${icons}${lbl}const TOOL_CFG = {\n${entries}${cfgApps.length ? ',' : ''}\n};\n${extra}</script></body></html>`);
 }
 
 test('T7 tool-cfg PASS — every personal data (keyring) page is in TOOL_CFG', () => {
@@ -362,5 +366,92 @@ test('T9 labels FAIL — index.html without a LABELS block; SKIP with no index.h
   const r = e.run();
   assert.match(line(r.out, 'T9 labels', '(marquee)'), /FAIL.*LABELS block not found/);
   assert.equal(r.code, 1);
+  e.cleanup();
+});
+
+// --- rename arc (2026-10-14): KEYRING_ID alias (T7), `formerly` (T8), redirect stubs (T10).
+test('T7 tool-cfg — a RENAMED data page counts via KEYRING_ID (link file → enrolled keyring id)', () => {
+  const e = estate();
+  e.page('thrift-shop.html').tier('thrift-shop.html', 'personal').write();
+  writeVault(e.press, ['card-scout.html']);                 // the enrolled id never changed
+  writeIndex(e.press, ['thrift-shop.html'], { extra: "const KEYRING_ID = { 'thrift-shop.html': 'card-scout.html' };\n" });
+  assert.match(line(e.run().out, 'T7 tool-cfg', '(marquee)'), /PASS.*1 personal data/);
+  writeIndex(e.press, [], { extra: "const KEYRING_ID = { 'thrift-shop.html': 'card-scout.html' };\n" });   // dropped from TOOL_CFG
+  const r = e.run();
+  assert.match(line(r.out, 'T7 tool-cfg', '(marquee)'), /FAIL.*thrift-shop\.html/);
+  assert.equal(r.code, 1);
+  e.cleanup();
+});
+
+test('T8 registry-parity — a renamed tenant passes on its FORMER registry row (said out loud); a wrong former repo FAILs', () => {
+  const e = estate();
+  e.page('new.html').tenant('new.html', { repo: null, tier: 'public', gate: null, vendored: null, release: null, formerly: { page: 'old.html', repo: 'oldrepo' } })
+    .snagRows(() => [{ id: 'old', page: 'old.html', repo: 'schnubsy/oldrepo' }]).write();
+  assert.match(line(e.run().out, 'T8 registry-parity', 'new.html'), /PASS.*FORMER name old\.html; council registry update pending/);
+  e.snagRows(() => [{ id: 'old', page: 'old.html', repo: 'schnubsy/elsewhere' }]).write();
+  const r = e.run();
+  assert.match(line(r.out, 'T8 registry-parity', 'new.html'), /FAIL.*no snag-registry row/);
+  assert.equal(r.code, 1);
+  e.cleanup();
+});
+
+test('T10 redirects PASS — a conforming stub is a named exception (no card, no registry entry)', () => {
+  const e = estate();
+  e.page('thrift-shop.html').redirect('card-scout.html', 'thrift-shop.html').write();
+  writeIndex(e.press, [], { extra: "const REDIRECT_STUBS = { 'card-scout.html': 'thrift-shop.html' };\n" });
+  const r = e.run();
+  assert.match(line(r.out, 'T10 redirects', 'card-scout.html'), /PASS.*→ thrift-shop\.html/);
+  assert.equal(r.code, 0);
+  e.cleanup();
+});
+
+test('T10 redirects FAIL — stub also a page, index map disagrees, no hash-preserving replace, oversize', () => {
+  const idx = "const REDIRECT_STUBS = { 'card-scout.html': 'thrift-shop.html' };\n";
+  const cases = [
+    [(e) => e.page('thrift-shop.html').redirect('card-scout.html', 'thrift-shop.html').page('card-scout.html', STUB('thrift-shop.html')), idx, /also registered as a page/],
+    [(e) => e.page('thrift-shop.html').redirect('card-scout.html', 'thrift-shop.html'), '', /REDIRECT_STUBS says nothing/],
+    [(e) => e.page('thrift-shop.html').redirect('card-scout.html', 'thrift-shop.html', '<meta name="robots" content="noindex"><meta http-equiv="refresh" content="0;url=thrift-shop.html">'), idx, /no hash-preserving location\.replace/],
+    [(e) => e.page('thrift-shop.html').redirect('card-scout.html', 'thrift-shop.html', STUB('thrift-shop.html') + ' '.repeat(3000)), idx, /> 2 KB/],
+    [(e) => e.redirect('card-scout.html', 'thrift-shop.html'), idx, /target thrift-shop\.html is not a pages\.json page/],
+  ];
+  for (const [build, extra, re] of cases) {
+    const e = estate();
+    build(e).write();
+    writeIndex(e.press, [], { extra });
+    const r = e.run();
+    assert.match(line(r.out, 'T10 redirects', 'card-scout.html'), re);
+    assert.equal(r.code, 1);
+    e.cleanup();
+  }
+});
+
+test('T7 tool-cfg FAIL — a keyring id with no personal page (a rename without KEYRING_ID)', () => {
+  const e = estate();
+  e.page('thrift-shop.html').tier('thrift-shop.html', 'personal').write();
+  writeVault(e.press, ['card-scout.html']);
+  writeIndex(e.press, ['thrift-shop.html']);                 // no KEYRING_ID: the enrolled id is orphaned
+  const r = e.run();
+  assert.match(line(r.out, 'T7 tool-cfg', '(marquee)'), /FAIL.*keyring id\(s\) with no personal page.*card-scout\.html/);
+  assert.equal(r.code, 1);
+  e.cleanup();
+});
+
+test('T10 root — in a git checkout every root .html is registered AND every page / redirect target is tracked', () => {
+  const e = estate();
+  e.page('thrift-shop.html').redirect('card-scout.html', 'thrift-shop.html').write();
+  writeIndex(e.press, [], { extra: "const REDIRECT_STUBS = { 'card-scout.html': 'thrift-shop.html' };\n" });
+  const git = (...a) => execFileSync('git', ['-C', e.press, ...a], { encoding: 'utf8' });
+  git('init', '-q'); git('add', 'card-scout.html', 'index.html');      // the stub tracked, its target NOT (the 🔴 shape)
+  let r = e.run();
+  assert.match(line(r.out, 'T10 redirects', '(root)'), /FAIL.*registered but not a tracked root file: thrift-shop\.html/);
+  assert.equal(r.code, 1);
+  git('add', 'thrift-shop.html');
+  writeFileSync(join(e.press, 'stray.html'), '<html></html>'); git('add', 'stray.html');
+  r = e.run();
+  assert.match(line(r.out, 'T10 redirects', '(root)'), /FAIL.*not in pages\.json or redirects: stray\.html/);
+  git('rm', '-q', '--cached', 'stray.html');
+  r = e.run();
+  assert.match(line(r.out, 'T10 redirects', '(root)'), /PASS.*3 root \.html/);
+  assert.equal(r.code, 0);
   e.cleanup();
 });

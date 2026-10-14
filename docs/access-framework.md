@@ -76,7 +76,7 @@ data access is enforced by RLS on the email in the JWT, a forged `gated:false` s
 
 ```json
 { "v": 2,
-  "personal": ["fsa.html", "giving.html", "retirement.html", "card-scout.html"],
+  "personal": ["fsa.html", "giving.html", "retirement.html", "thrift-shop.html"],
   "family":   ["remit.html"] }
 ```
 
