@@ -401,6 +401,15 @@
   .ktag.k-sale{background:var(--k-sale-bg);color:var(--k-sale-fg)}
   .ktag.k-offer{background:var(--k-offer-bg);color:var(--k-offer-fg)}
   .expiry.soon{color:var(--danger);font-weight:700}
+  .morefrom{margin:-4px 0 10px;display:flex;justify-content:flex-end}
+  .morefrom .btn{min-height:44px}
+  .morelist{margin-left:14px;border-left:2px solid var(--line);padding-left:10px}
+  .morelist[hidden]{display:none}
+  .judgerow{margin-top:10px}
+  .judge-ok{color:var(--hit);font-weight:800}
+  .judge-fail{color:var(--danger);font-weight:800}
+  .judge-fields{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 12px}
+  .judge-misses summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
   .fpop .fgroup{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding:8px 12px 2px}
   .sheet input[type=number]{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);padding:10px;min-height:var(--tap);font:inherit;font-size:16px}
   .bykind{margin:-4px 0 10px;font-size:13px;color:var(--muted)}
@@ -1367,7 +1376,7 @@
   // "Expires today" / "Expires tomorrow" / "Expires in 3 days" / "Expires Oct 20"; red when ≤ 48 h away.
   function expiryLabel(d){ var n=daysLeft(d); if(n==null) return ""; if(n<0) return "Expired"; if(n===0) return "Expires today"; if(n===1) return "Expires tomorrow";
     if(n<14) return "Expires in "+n+" days"; return "Expires "+fmtDate(isoDay(d.expiry)+"T12:00:00"); }
-  var OFFER_WORD={free_meal:"Free meal",bogo_free:"BOGO free",birthday_reward:"Birthday reward",free_small_item:"Free treat",new_item:"New item",free_shipping:"Free shipping",sweepstakes:"Sweepstakes",other:"Offer",everyday_sale:"Sale"};
+  var OFFER_WORD={free_meal:"Free meal",bogo_free:"BOGO free",birthday_reward:"Birthday reward",free_small_item:"Free treat",new_item:"New item",free_shipping:"Free shipping",sweepstakes:"Sweepstakes",other:"Offer",everyday_sale:"Sale",bogo_discount:"BOGO deal",bundle_price:"Bundle price",points_multiplier:"Bonus points",recurring_promo:"Weekly deal"};
   // The offer's headline (mirrors notify.mjs offerHeadline): "$10 off $25+", "40% off", "$5 reward", "Free meal" …
   function offerHeadline(d){
     var e=d.extras||{}, v=d.face_value!=null?Number(d.face_value):null, p=d.pct_off!=null?Math.round(Number(d.pct_off)):null;
@@ -1375,6 +1384,8 @@
     if(e.offer_type==="dollar_off") return v!=null?money(v)+" off"+(e.min_spend!=null?" "+money(Number(e.min_spend))+"+":""):"$ off";
     if(e.offer_type==="pct_off"||e.offer_type==="everyday_sale") return p!=null?p+"% off":(OFFER_WORD[e.offer_type]||"Sale");
     if(e.offer_type==="expiring_reward") return v!=null?money(v)+" reward":"Reward";
+    if(e.offer_type==="bogo_discount") return "BOGO"+(p!=null?" "+p+"% off":" deal");
+    if(e.offer_type==="bundle_price"||e.offer_type==="points_multiplier"||e.offer_type==="recurring_promo") return OFFER_WORD[e.offer_type];
     return (p!=null&&p>=40)?p+"% off":(OFFER_WORD[e.offer_type]||"Offer");
   }
   // ---------- Feed (grouped by card type) ----------
@@ -1430,11 +1441,43 @@
   function inboxDeals(){ return shownDeals().filter(function(d){ return !isDecided(d); }); }
   function statusTime(d){ var t=new Date((d.extras&&d.extras.status_at)||d.created_at||0).getTime(); return isNaN(t)?0:t; }
   function processedDeals(){ return shownDeals().filter(isDecided).sort(function(a,b){ return statusTime(b)-statusTime(a); }); }
+  // offer-accuracy Slice 2 — brand flood control (mirrors offers.mjs capBrandOffers): at most 2 inbox offer cards per
+  // brand, best value first; the rest fold under the top card's "+N more from <brand>" (expand in place).
+  var BRAND_CAP=2, brandOpen={};
+  function offerBrandKey(d){ return normBrand(d.brand||"").replace(/ /g,"")||("?"+d.item_id); }
+  function offerRankCmp(a,b){
+    var v=function(r){ return r.verdict==="hit"?1:0; }, n=function(x){ return x==null||!isFinite(Number(x))?-1:Number(x); };
+    var t=function(r){ var ms=new Date(r.created_at||r.updated_at||0).getTime(); return isNaN(ms)?0:ms; };
+    return (v(b)-v(a)) || (n(b.face_value)-n(a.face_value)) || (n(b.pct_off)-n(a.pct_off))
+      || ((Number(b.extras&&b.extras.also_seen)||1)-(Number(a.extras&&a.extras.also_seen)||1)) || (t(b)-t(a)) || String(a.item_id).localeCompare(String(b.item_id));
+  }
+  function capOffers(list){
+    var groups={}, order=[], kept=[], folded={};
+    list.forEach(function(d){
+      if(dealKind(d)!=="offer"||isDecided(d)){ kept.push(d); return; }
+      var k=offerBrandKey(d); if(!groups[k]){ groups[k]=[]; order.push(k); } groups[k].push(d);
+    });
+    order.forEach(function(k){ var g=groups[k].slice().sort(offerRankCmp); kept.push.apply(kept,g.slice(0,BRAND_CAP));
+      if(g.length>BRAND_CAP) folded[g[0].item_id]={key:k,brand:g[0].brand||"this brand",deals:g.slice(BRAND_CAP)}; });
+    var keep={}; kept.forEach(function(d){ keep[d.item_id]=1; });
+    return { list:list.filter(function(d){ return keep[d.item_id]; }), folded:folded };
+  }
+  // The brand is shortened to ≤16 chars in the label (the button never wraps on a 320 px phone); the full name and the
+  // folded email count ride in the accessible name.
+  function shortBrand(b){ b=String(b||""); return b.length>16?b.slice(0,15).replace(/\s+\S*$/,"").replace(/[\s,.;:-]+$/,"")+"…":b; }
+  function moreFromHtml(top,f){
+    var open=!!brandOpen[f.key], n=f.deals.length, id="more-"+esc(top.item_id);
+    var seen=f.deals.reduce(function(a,d){ return a+(Number(d.extras&&d.extras.also_seen)||1); },0);
+    var aria=(open?"Hide ":"Show ")+n+" more offer"+(n===1?"":"s")+" from "+f.brand+" ("+seen+" email"+(seen===1?"":"s")+")";
+    return '<div class="morefrom"><button class="btn small more-toggle" type="button" data-more="'+esc(f.key)+'" aria-expanded="'+open+'" aria-controls="'+id+'" aria-label="'+esc(aria)+'">'
+      +(open?"Hide ":"+")+n+' more from '+esc(shortBrand(f.brand))+'</button></div>'
+      +'<div class="morelist" id="'+id+'"'+(open?'':' hidden')+'>'+(open?f.deals.map(dealCard).join(""):"")+'</div>';
+  }
   var PROC_LS="card-scout:processed-open"; // per-viewer convenience only (try/catch — storage may be blocked)
   function procOpen(){ try{ return localStorage.getItem(PROC_LS)==="1"; }catch(e){ return false; } }
   function setProcOpen(v){ try{ localStorage.setItem(PROC_LS, v?"1":"0"); }catch(e){} }
   // Unseen = new INBOX rows (a decided or hidden near-miss row never badges).
-  function unseenDeals(){ return inboxDeals().filter(function(d){ return isUnseen(d); }); }
+  function unseenDeals(){ return capOffers(inboxDeals()).list.filter(function(d){ return isUnseen(d); }); }
   function relTime(iso){
     if(!iso) return "";
     var t=new Date(iso).getTime(); if(isNaN(t)) return "";
@@ -1600,8 +1643,7 @@
   // option shows how many rows it WOULD add. Unknown groups fall back to "other".
   function typeCounts(){
     var c={restaurant:0,retail:0,retailer:0,other:0,"k:card":0,"k:sale":0,"k:offer":0};
-    inboxDeals().forEach(function(d){
-      if(!withinWindow(d)||!matchesBrand(d)) return;
+    capOffers(inboxDeals().filter(function(d){ return withinWindow(d)&&matchesBrand(d); })).list.forEach(function(d){
       var k=dealKind(d); c["k:"+k]++;
       if(k!=="card") return;
       var g=dealGroup(d); if(c[g]==null) g="other"; c[g]++;
@@ -1684,7 +1726,7 @@
   // Update trigger labels, active fills, type counts, and the status line WITHOUT rebuilding the bar
   // (so an open Type popover keeps its focus + open state while checkboxes toggle).
   function syncFilterUI(){
-    var filtered=sortFeed(feedFiltered());
+    var filtered=sortFeed(capOffers(feedFiltered()).list);
     var newN=filtered.filter(isUnseen).length;
     function setTrig(id,label,active){
       var t=el(id); if(!t) return;
@@ -1725,9 +1767,9 @@
     var listEl=el("feed-list"); if(!listEl) return;
     // Inbox arc Slice 5: ONE flat inbox, newest first by default (Mark's call — the card-type headings are
     // gone from the inbox; the Type filter + Sort still apply), then the collapsible Processed section.
-    var deals=sortFeed(feedFiltered());
+    var capped=capOffers(feedFiltered()), deals=sortFeed(capped.list);
     var html='<div class="grouphead" id="grp-feed-inbox"><h2>Inbox<span class="gcount">'+deals.length+'</span></h2></div>';
-    if(deals.length) deals.forEach(function(d){ html+=dealCard(d); });
+    if(deals.length) deals.forEach(function(d){ html+=dealCard(d); var f=capped.folded[d.item_id]; if(f) html+=moreFromHtml(d,f); });
     else html+='<div class="empty">'+(inboxDeals().length?"No deals match these filters.":"Inbox clear — nothing waiting for you.")+'</div>';
     var proc=processedDeals(), open=procOpen();
     html+='<div class="grouphead proc-head" id="grp-feed-processed"><h2><button class="proc-toggle" id="proc-toggle" type="button" aria-expanded="'+open+'" aria-controls="proc-list">'
@@ -1902,6 +1944,14 @@
   // review fix (slice 7): the Live/Stale window follows the chosen scan cadence at once (the tick copies the setting
   // onto the source row only on its next scan).
   function outlookExtras(s){ var x=Object.assign({},(s&&s.extras)||{}); var c=state.settings&&state.settings.offer_cadence; if(c) x.cadence=c; return x; }
+  // offer-accuracy S4 — mirrors offers.mjs rescanPending: requested after the last start ⇒ queued.
+  function rescanQueued(x){ var r=Date.parse((x&&x.rescan_requested_at)||""), st=Date.parse((x&&x.rescan_started_at)||""); return isFinite(r)&&(!isFinite(st)||r>st); }
+  function rescanState(x){
+    if(rescanQueued(x)) return "Re-scan queued — it runs on the next scan.";
+    var st=Date.parse((x&&x.rescan_started_at)||""); if(!isFinite(st)) return "";
+    if(!x.backfill_done) return "Re-scanning the last 30 days… (started "+relTime(x.rescan_started_at)+")";
+    return Date.now()-st<7*864e5 ? "Re-scanned "+relTime(x.rescan_started_at)+(x.rescan_tombstoned!=null?" · "+Number(x.rescan_tombstoned)+" old offers cleared":"") : "";
+  }
   function outlookCard(s){
     var x=outlookExtras(s); var st=outlookState(x,Date.now()); var on=s.status==="on";
     var dot=st==="live"?"ok":((st==="stale"||st==="error")?"err":"");
@@ -1913,10 +1963,13 @@
     else lines.push("Scans "+esc(offerCadencePhrase(cad))+" · "+(x.last_checked?"last scan "+esc(relTime(x.last_checked)):"Not yet scanned"));
     if(x.oauth==="connected"||x.last_checked) lines.push(t.read+" email"+(t.read===1?"":"s")+" read · "+t.offers+" offer"+(t.offers===1?"":"s")+" found (30 d)"+(x.delta_next?" · catching up…":""));
     if(st==="error"||(x.health==="error"&&x.last_error)) lines.push('<span class="warntext">'+esc(x.last_error||"Sign-in expired — reconnect")+'</span>');
+    // offer-accuracy S4: the one-time re-scan's honest state (queued → re-scanning → done)
+    var rs=rescanState(x); if(rs) lines.push('<span id="outlook-rescan-state">'+esc(rs)+'</span>');
     var btns;
     if(st==="not_connected"||st==="connecting") btns='<button class="btn primary" type="button" id="outlook-connect">'+(st==="connecting"?"Show sign-in code":"Connect Outlook")+'</button>';
     else if(st==="error") btns='<button class="btn primary" type="button" id="outlook-connect">Reconnect</button>';
-    else btns='<button class="btn" type="button" id="outlook-connect">Reconnect</button><button class="btn" type="button" id="outlook-disconnect">Disconnect</button>';
+    else btns='<button class="btn" type="button" id="outlook-connect">Reconnect</button><button class="btn" type="button" id="outlook-disconnect">Disconnect</button>'
+      +'<button class="btn" type="button" id="outlook-rescan"'+(rescanQueued(x)?' disabled':'')+'>Re-scan last 30 days</button>';
     return '<div class="card" id="outlook-card"><div class="row">'
       +'<span class="dot '+dot+'" title="'+esc(OUTLOOK_LABEL[st])+'"></span>'
       +'<div class="grow"><div class="title">'+esc(s.title||"Outlook offers")+' <span class="badge'+lbcls+'" id="outlook-state">'+OUTLOOK_LABEL[st]+'</span></div>'
@@ -2160,11 +2213,14 @@
   var OFFER_DEFAULTS=[["free_meal","Free meal or entrée"],["bogo_free","Buy one, get one free"],["expiring_reward","Rewards, points or credits expiring"],
     ["dollar_off","$ off with no or low minimum"],["pct_off","Big % off"],["birthday_reward","Birthday reward"],["bonus_gift_card","Bonus gift card with purchase"],
     ["free_small_item","Free drink, side, cookie or dessert"],["new_item","New menu item or flavor"],["everyday_sale","Everyday sale"],
-    ["free_shipping","Free shipping"],["sweepstakes","Sweepstakes or newsletter"],["other","Anything else"]];
+    ["free_shipping","Free shipping"],["sweepstakes","Sweepstakes or newsletter"],["other","Anything else"],
+    ["bogo_discount","Buy one, get one % off"],["bundle_price","Bundle price (N for $X)"],["points_multiplier","Double or bonus points"],["recurring_promo","Weekly or daily standing deal"]];
   var OFFER_HELP={free_meal:"A free meal, entrée or main.",bogo_free:"Buy one, get one FREE.",expiring_reward:"Your own rewards, points or credit about to expire.",
     dollar_off:"Dollars off with no minimum, or a low one.",pct_off:"Any offer at least this many percent off.",birthday_reward:"Birthday freebies and credits.",
     bonus_gift_card:"Judged by your Gift cards rules (Min %, Min $, blocked stores).",free_small_item:"Small freebies — usually not worth a trip.",
-    new_item:"Launch announcements.",everyday_sale:"Routine sales — counts at or above this %.",free_shipping:"Shipping deals.",sweepstakes:"Contests, newsletters and content.",other:"Anything that fits nowhere else."};
+    new_item:"Launch announcements.",everyday_sale:"Routine sales — counts at or above this %.",free_shipping:"Shipping deals.",sweepstakes:"Contests, newsletters and content.",other:"Anything that fits nowhere else.",
+    bogo_discount:"BOGO where the second item is only discounted.",bundle_price:"“3 for $15” — a bundle price, not dollars off.",
+    points_multiplier:"Double or bonus points days.",recurring_promo:"Standing weekly deals — “every Wednesday”, happy hour."};
   function offerType(r){ var e=r&&r.extras||{}; return e.type||String(r&&r.item_id||"").replace(/^offer-/,"").replace(/-/g,"_"); }
   function offerRows(){
     var by={}; (state.offers||[]).forEach(function(r){ by[offerType(r)]=r; });
@@ -2581,7 +2637,40 @@
     return '<div class="card"><div class="title">Agent health</div>'
       +'<div class="sub" id="backlog-line">'+backlogLine()+'</div>'
       +'<div class="sub" id="outlook-health">'+outlookHealthLine()+'</div>'
-      +'<div class="helper">Browser-lane finds waiting to be judged. Red (over 6 h) is also flagged in the daily digest.</div></div>';
+      +'<div class="helper">Browser-lane finds waiting to be judged. Red (over 6 h) is also flagged in the daily digest.</div>'
+      // offer-accuracy S3: run the fixed golden set through the current model — read-only, ≤ 5¢, 1 per minute.
+      +'<div class="row testrow judgerow"><div class="grow"><div class="sub">Check the model against the golden set — writes nothing, costs under 5¢.</div></div>'
+      +'<button class="btn" id="check-judging" style="min-height:44px;min-width:44px">Check judging</button></div>'
+      +'<div class="sub" id="check-judging-result" role="status" aria-live="polite"></div></div>';
+  }
+  // offer-accuracy S3 — "Check judging": POSTs {action:'check_judging'} with the page's sync_id (no secret on the page);
+  // the server runs the golden set through ITS configured model and returns per-field agreement. Nothing is written.
+  var JUDGE_FIELD_LABEL={offer_type:"Offer type",offer_verdict:"Offer verdict",offer_value_usd:"Offer $",offer_pct_off:"Offer %",offer_min_spend:"Offer minimum",
+    card_brand:"Card brand",card_face_value:"Card face",card_price:"Card price",card_pct_off:"Card %"};
+  function pctTxt(a,t){ return t?Math.round(100*a/t)+"%":"—"; }
+  function renderCheckJudging(res){
+    var out=el("check-judging-result"); if(!out) return; var j=res.j||{};
+    if(res.status===429){ out.innerHTML="Please wait "+Math.max(1,Number(j.retry_after_s)||60)+" s between checks."; return; }
+    if(res.status===401){ out.innerHTML="Not authorized — unlock the page and try again."; return; }
+    if(res.status!==200){ out.innerHTML="Check judging couldn’t run (error "+res.status+")."; return; }
+    if(!j.ok){ out.innerHTML='<span class="judge-fail">✗</span> '+esc(j.model||"")+' — '+esc({model_not_priced:"this model has no price on file, so the 5¢ cap can’t be checked",over_budget:"this run could cost more than 5¢"}[j.error]||("couldn’t finish ("+String(j.error||"error")+")")); return; }
+    var f=j.fields||{}, keys=Object.keys(JUDGE_FIELD_LABEL).filter(function(k){ return f[k]; });
+    var head='<span class="'+(j.pass?"judge-ok":"judge-fail")+'">'+(j.pass?"✓":"✗")+'</span> <strong>'+esc(j.model)+'</strong>: '
+      +Math.round(100*(Number(j.overall)||0))+'% agreement'+(j.pass?" — at or above":" — below")+' the '+Math.round(100*(Number(j.bar)||0.9))+'% bar · '
+      +((j.items&&j.items.offers)||0)+' offers + '+((j.items&&j.items.cards)||0)+' cards · $'+(Number(j.cost_usd)||0).toFixed(4);
+    out.innerHTML=head+'<ul class="judge-fields">'+keys.map(function(k){ return '<li data-field="'+esc(k)+'">'+esc(JUDGE_FIELD_LABEL[k])+' <strong>'+pctTxt(f[k].agree,f[k].total)+'</strong> <span class="sub">('+f[k].agree+'/'+f[k].total+')</span></li>'; }).join("")+'</ul>'
+      +((j.misses&&j.misses.length)?'<details class="judge-misses"><summary>'+j.misses.length+' miss'+(j.misses.length===1?"":"es")+'</summary><ul>'+j.misses.map(function(m){ return "<li>"+esc(m)+"</li>"; }).join("")+'</ul></details>':"");
+  }
+  function runCheckJudging(btn){
+    var sid=planId(); var out=el("check-judging-result");
+    if(!sid){ if(out) out.innerHTML="Unlock the page first, then try again."; return; }
+    btn.disabled=true; var prev=btn.textContent; btn.textContent="Checking…";
+    if(out) out.innerHTML="Running the golden set through the model — about 20 seconds…";
+    fetch(SUPA+"/functions/v1/"+PAGE, { method:"POST", headers:{ "content-type":"application/json", "apikey":KEY, "x-plan-id":sid }, body: JSON.stringify({ action:"check_judging" }) })
+      .then(function(r){ return r.json().catch(function(){return {};}).then(function(j){ return {status:r.status, j:j||{}}; }); })
+      .then(renderCheckJudging)
+      .catch(function(){ if(out) out.innerHTML="Couldn’t reach the server — check your connection."; })
+      .then(function(){ btn.disabled=false; btn.textContent=prev; });
   }
   function renderAlerts(){
     var host=el("alerts"); var s=state.settings||{}; var t=state.toggles||{};
@@ -2661,6 +2750,7 @@
     if(b.id==="feed-clear"){ clearFeedFilters(); return; }
     if(b.id==="feed-markseen"){ markFeedSeen(); return; }
     if(b.id==="proc-toggle"){ toggleProcessed(b); return; }
+    var more=b.getAttribute("data-more"); if(more!=null){ brandOpen[more]=!brandOpen[more]; renderFeedList(); var nb=document.querySelector('[data-more="'+more.replace(/["\\]/g,"")+'"]'); if(nb) nb.focus(); return; }
     // source toggle — a "Coming soon" source is forced off and cannot be enabled (Slice 9).
     var sid=b.getAttribute("data-src");
     if(sid){ var s=find(state.sources,sid); if(!s||sourceState(s)==="coming") return; var on=s.status!=="on"; s.status=on?"on":"off"; setSwitch(b,on); withSave(patchTask(sid,{status:s.status,updated_at:new Date().toISOString()})); return; }
@@ -2732,11 +2822,15 @@
     // Thrift Shop Slice 2: Outlook connect / device-code panel / disconnect
     if(b.id==="outlook-connect"){ startOutlookConnect(); return; }
     if(b.id==="outlook-disconnect"){ disconnectOutlook(); return; }
+    if(b.id==="outlook-rescan"){ openRescanSheet(b); return; }
+    if(b.id==="rescan-cancel"){ closeRescanSheet(); return; }
+    if(b.id==="rescan-confirm"){ confirmRescan(); return; }
     if(b.id==="devcode-copy"){ copyOutlookCode(); return; }
     if(b.id==="devcode-cancel"){ cancelOutlookFlow(); return; }
     // Slice 1: send test push
     if(b.id==="send-test-push"){ sendTestPush(b); return; }
     if(b.id==="run-full-test"){ runFullTest(b); return; }
+    if(b.id==="check-judging"){ runCheckJudging(b); return; }
   });
   // Slice 1: POST {action:'test_push'} to the Edge Function, gated on the page's sync_id (x-plan-id).
   // Shows the REAL Pushover outcome inline; never sends or displays a Pushover credential.
@@ -3300,6 +3394,41 @@
     setBrandSheetMode("always"); sh.hidden=false; el("brand-name").focus();
   }
   function setBrandSheetMode(m){ var sh=el("brand-sheet"); if(!sh) return; sh.querySelectorAll("[data-bsmode]").forEach(function(b){ var on=b.getAttribute("data-bsmode")===m; b.classList.toggle("on",on); b.setAttribute("aria-pressed",String(on)); }); }
+  // offer-accuracy S4 — "Re-scan last 30 days" confirm sheet (focus-trapped, Esc = Cancel). Confirm → outlook_rescan.
+  var rescanOpener=null;
+  function ensureRescanSheet(){
+    var sh=el("rescan-sheet"); if(sh) return sh;
+    sh=document.createElement("div"); sh.className="sheet-backdrop"; sh.id="rescan-sheet"; sh.hidden=true;
+    sh.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rescan-title" aria-describedby="rescan-desc">'
+      +'<h3 id="rescan-title">Re-scan the last 30 days?</h3>'
+      +'<div class="sub" id="rescan-desc">Every email offer you haven’t acted on is cleared and judged again with the current rules. Offers you marked Used, Skip or Bad — and anything you deleted — stay as they are. The re-scan is quiet: no pushes for old emails.</div>'
+      +'<div class="sub" id="rescan-msg" role="status" aria-live="polite"></div>'
+      +'<div class="actions"><button class="btn" type="button" id="rescan-cancel">Cancel</button><button class="btn primary" type="button" id="rescan-confirm">Re-scan</button></div></div>';
+    document.body.appendChild(sh);
+    sh.addEventListener("click", function(ev){ if(ev.target===sh) closeRescanSheet(); });
+    sh.addEventListener("keydown", function(ev){
+      if(ev.key==="Escape"){ ev.preventDefault(); closeRescanSheet(); return; }
+      if(ev.key!=="Tab") return;
+      var f=[].slice.call(sh.querySelectorAll("button")).filter(function(x){ return !x.hidden&&!x.disabled; }); var i=f.indexOf(document.activeElement);
+      if(ev.shiftKey&&i<=0){ f[f.length-1].focus(); ev.preventDefault(); }
+      else if(!ev.shiftKey&&i===f.length-1){ f[0].focus(); ev.preventDefault(); }
+    });
+    return sh;
+  }
+  function openRescanSheet(opener){ var sh=ensureRescanSheet(); rescanOpener=opener||null; el("rescan-msg").textContent=""; el("rescan-confirm").disabled=false; sh.hidden=false; el("rescan-cancel").focus(); }
+  function closeRescanSheet(){ var sh=el("rescan-sheet"); if(sh) sh.hidden=true; var b=el("outlook-rescan")||rescanOpener; if(b&&b.isConnected&&!b.disabled) b.focus(); }
+  function confirmRescan(){
+    var btn=el("rescan-confirm"), msg=el("rescan-msg"); btn.disabled=true; msg.textContent="Queuing the re-scan…";
+    callFn("outlook_rescan").then(function(res){
+      var j=res.j||{};
+      if(res.status===200&&j.ok){ setOutlookExtras({rescan_requested_at:new Date().toISOString()}); closeRescanSheet(); renderSources(); outlookMsg("Re-scan queued — the next scan clears and re-reads the last 30 days."); var b=el("outlook-connect"); if(b) b.focus(); return; }
+      btn.disabled=false;
+      if(res.status===429) msg.textContent="A re-scan just ran — try again in "+Math.max(1,Math.ceil((Number(j.retry_after_s)||600)/60))+" min.";
+      else if(res.status===409) msg.textContent="Connect Outlook first.";
+      else if(res.status===401) msg.textContent="Not authorized — unlock the page and try again.";
+      else msg.textContent="Couldn’t queue the re-scan (error "+res.status+").";
+    }).catch(function(){ btn.disabled=false; msg.textContent="Couldn’t reach the server — check your connection."; });
+  }
   function closeBrandSheet(){ var sh=el("brand-sheet"); if(sh) sh.hidden=true; if(brandSheetOpener&&brandSheetOpener.isConnected) brandSheetOpener.focus(); }
   function saveBrandSheet(){
     var name=(el("brand-name").value||"").trim(); var msg=el("brand-sheet-msg");
