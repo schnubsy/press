@@ -2326,7 +2326,9 @@ function paintPersonal(root, man){
   const top=`<div class="tw-top"><span>behind the <b>passkey</b></span><span>personal tools</span></div>`;
   const st=vaultState();
   if(st.sess){
-    const cards=wingOrdered(SPACES.personal||[], 'personal').map(f=>cardHTML(f, man, false)).join('');
+    // linkFile(): a CDN-stale spaces.json may still name a renamed tool by its old file (now a redirect stub) — map +
+    // de-dupe so the wing shows the real page, never a stub card (rename arc, 2026-10-14).
+    const cards=wingOrdered([...new Set((SPACES.personal||[]).map(linkFile))], 'personal').map(f=>cardHTML(f, man, false)).join('');
     const hint=cards?`<div class="tw-hint">hold a card to lift it · Alt+↑/↓ to reorder</div>`:'';
     root.innerHTML = back+top+`<h2 class="tw-title">The Private Wing</h2>`+
       `<div class="tw-dek">Unlocked · ${clockUntil(st.sess.expiresAt)}. Open any tool — no more prompts until you lock or it expires.</div>`+

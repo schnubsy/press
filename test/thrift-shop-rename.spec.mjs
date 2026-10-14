@@ -159,3 +159,13 @@ test('a STALE spaces.json (still naming card-scout.html) never puts Thrift Shop 
   await expect(page.locator('.tw-card[data-file="thrift-shop.html"]')).toHaveCount(0);
   await expect(page.locator('.tw-card[data-file="card-scout.html"]')).toHaveCount(0);
 });
+
+test('a STALE spaces.json never shows the stub as a Private Wing card either (mapped to the real page)', async ({ page, context }) => {
+  await routes(context, session({ 'card-scout.html': { sync_id: SYNC, pass: SENTINEL } }));
+  const stale = { ...SPACES, personal: SPACES.personal.map((f) => (f === 'thrift-shop.html' ? 'card-scout.html' : f)) };
+  await context.route('https://raw.githubusercontent.com/**/spaces.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(stale) }));
+  await page.goto(base + '/?view=personal');
+  await expect(page.locator('.tw-card[data-file="thrift-shop.html"] h3')).toHaveText('Thrift Shop');
+  await expect(page.locator('.tw-card[data-file="card-scout.html"]')).toHaveCount(0);
+  await expect(page.locator('.tw-card')).toHaveCount(SPACES.personal.length);
+});
