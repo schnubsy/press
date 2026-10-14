@@ -31,7 +31,7 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #42 788bec6 on 2026-10-13 (arc PR #41 12f019e); main checkout on main @ 788bec6
+Merge state: Merged: PR #42 788bec6 on 2026-10-13 (arc PR #41 12f019e); main checkout on main @ fa1a60b (PR #43 control-file follow-up)
 **arc/quiet-alerts (2026-10-13) — agent alerts only after a day down.** `agent-watch` (Edge Function v7) alerts once per
 late/failed episode at 24h+ and sends one quiet "working again" note after; shorter blips are silent. GH backup check every
 6 h, fails only if the watcher is stale > 24 h. Card Scout's "nothing to judge" skip counts as real work (`idle_is_work`);
