@@ -55,9 +55,12 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
    `press_deals` after confirming no browser path inserts deals; keep the `sync_id` literal default
    (`press_steward_capability_ok(<real key>)` must stay true); re-sync `docs/cowork-task.md`.
 4. remit arc: CLAUDE.md access contract → opt-out (`remit_has_access()` delegates to `press_access_has`).
-5. council (mac home): release.md/press.md → the press spec "Card naming — marquee label map" + Agent Monitor registration
+5. claude-environment: any Mac task that runs press tenants-check without a sibling council clone exports
+   `COUNCIL_DIR=~/Documents/Claude/council-hub/council` (else T8 FAILs — D1 review 🟡). The carried
+   `docs/evidence/unpin-the-mac-slice-2-press.patch` predates S2 — never re-apply it.
+6. council (mac home): release.md/press.md → the press spec "Card naming — marquee label map" + Agent Monitor registration
    rule; MANUAL Steward update; claude-environment `system/scheduled-tasks/` edits.
-6. Elevate Ops: brand its "Magic Link" auth email.
+7. Elevate Ops: brand its "Magic Link" auth email.
 
 ## Mark's manual steps
 1. Token renewal: `press-auth-email-sync` expires 2027-10 — make a new one (same two permissions: Auth Config RW +
