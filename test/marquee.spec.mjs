@@ -13,7 +13,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const INDEX = readFileSync(join(ROOT, 'index.html'), 'utf8');
 
 const PUBLIC_FILES = ['council-guide.html', 'kayley.html', 'eagle-path.html', 'halvsies.html', 'agent-health.html'];
-const PERSONAL_FILES = ['fsa.html', 'giving.html', 'retirement.html', 'card-scout.html'];
+const PERSONAL_FILES = ['fsa.html', 'giving.html', 'retirement.html', 'thrift-shop.html'];
 const MANIFEST = Object.fromEntries([...PUBLIC_FILES, ...PERSONAL_FILES].map(f => [f, { title: f.replace(/\.html$/, '') }]));
 const SPACES = { v: 1, personal: PERSONAL_FILES };
 

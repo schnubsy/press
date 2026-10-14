@@ -170,7 +170,7 @@ html #press-gate .pg-back{display:inline-flex;align-items:center;min-height:44px
     fetch(FN, { method:'POST', headers:{ 'x-plan-id': syncId } }).then(function(r){
       if (mine !== seq) return;
       if (r.status === 401) return stateMsg('st-denied', 'This key doesn’t open the reports.',
-        'Reconnect Card Scout in the <a href="index.html?view=personal">private wing</a> — the Steward reads with its key.');
+        'Reconnect Thrift Shop in the <a href="index.html?view=personal">private wing</a> — the Steward reads with its key.');
       if (!r.ok) return stateMsg('st-error', 'Couldn’t reach the reports.', 'The server answered ' + r.status + '.', syncId);
       return r.json().then(function(b){ if (mine === seq) render(b); });
     }).catch(function(){ if (mine === seq) stateMsg('st-error', 'Couldn’t reach the reports.', 'Check the connection.', syncId); });

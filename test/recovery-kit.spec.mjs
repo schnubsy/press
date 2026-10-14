@@ -13,10 +13,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const INDEX = readFileSync(join(ROOT, 'index.html'), 'utf8');
 const EVID = join(ROOT, 'docs', 'evidence');
 
-const PERSONAL = ['fsa.html', 'giving.html', 'retirement.html', 'card-scout.html'];
+const PERSONAL = ['fsa.html', 'giving.html', 'retirement.html', 'thrift-shop.html'];
 const MANIFEST = {
   'fsa.html': { title: 'FSA Claims' }, 'giving.html': { title: 'Giving' },
-  'retirement.html': { title: 'Retirement' }, 'card-scout.html': { title: 'Card Scout' },
+  'retirement.html': { title: 'Retirement' }, 'thrift-shop.html': { title: 'Thrift Shop' },
 };
 const SPACES = { v: 2, personal: PERSONAL, family: [] };
 const SENTINEL = 'not-a-secret:card-scout-has-no-passphrase:sentinel-only-to-satisfy-credsFor';
@@ -86,7 +86,7 @@ test('unlocked wing renders the recovery kit — every keyring entry + restore s
     await expect(kit).toContainText(sync);
     await expect(kit).toContainText(pass);
   }
-  await expect(kit).toContainText('Card Scout');
+  await expect(kit).toContainText('Thrift Shop');   // keyring id card-scout.html → link file thrift-shop.html → its LABELS title
   await expect(kit).toContainText('cardscout-sync-4444');
   await expect(kit).toContainText('no passphrase');
   await expect(kit).not.toContainText(SENTINEL);   // the inert sentinel is never printed

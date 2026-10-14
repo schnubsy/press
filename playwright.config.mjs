@@ -11,7 +11,7 @@ import { defineConfig, devices } from '@playwright/test';
 // GAUNTLET PARTIAL (egress) — never a Chromium run called Safari-green.
 const CLOUD_CHROMIUM = process.env.PW_CHROMIUM;
 // The iPhone smoke on WebKit: the touch-drag spec (iPhone-only) + the pages whose phone layout is press-owned.
-const IPHONE_SPECS = ['**/wing-drag-iphone.spec.mjs', '**/steward.spec.mjs', '**/family-gate.spec.mjs', '**/card-labels.spec.mjs'];
+const IPHONE_SPECS = ['**/wing-drag-iphone.spec.mjs', '**/steward.spec.mjs', '**/family-gate.spec.mjs', '**/card-labels.spec.mjs', '**/thrift-shop-rename.spec.mjs'];
 
 export default defineConfig({
   testDir: './test',

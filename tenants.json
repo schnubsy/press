@@ -1,8 +1,8 @@
 {
   "v": 1,
   "tenants": {
-    "card-scout.html": {
-      "repo": "card-scout",
+    "thrift-shop.html": {
+      "repo": "thrift-shop",
       "tier": "personal",
       "gate": "src/gate.js",
       "vendored": "src/vendor/press-gate.js",
@@ -10,7 +10,11 @@
       "build": null,
       "output": null,
       "deterministic": false,
-      "note": "card-scout.html at the repo root IS the artifact (no build.js); tools/inline-gate.mjs inlines the vendored gate in place. inline-gate --check green; root blob == press blob (aa0e7bb2, 2026-09-22)."
+      "note": "thrift-shop.html at the repo root IS the artifact (no build.js); tools/inline-gate.mjs inlines the vendored gate in place. Renamed from card-scout.html / repo card-scout on 2026-10-14 (thrift-shop rename arc): the vault keyring id stays card-scout.html (index.html KEYRING_ID) and card-scout.html survives only as a redirect stub (`redirects`).",
+      "formerly": {
+        "page": "card-scout.html",
+        "repo": "card-scout"
+      }
     },
     "kayley.html": {
       "repo": null,
@@ -166,6 +170,13 @@
       "output": null,
       "deterministic": false,
       "note": "press-native private-wing page (arc/steward-report, 2026-10-12): the Steward's watch/audit reports. Loads src/gate.js by relative path (like access.html); reads press_steward_reports (service-role-only) through the steward-reports Edge Function, gated on the private wing's Card Scout capability (x-plan-id). No keyring entry of its own (T7-exempt)."
+    }
+  },
+  "redirects": {
+    "card-scout.html": {
+      "to": "thrift-shop.html",
+      "source": "thrift-shop: redirect/card-scout.html",
+      "why": "Card Scout → Thrift Shop rename (2026-10-14): old bookmarks + the iPhone home-screen icon. Not a page: no card, no pages.json/spaces.json/LABELS entry."
     }
   }
 }
