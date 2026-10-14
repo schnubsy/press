@@ -251,11 +251,15 @@ Expectations start at `registered_at` — a new row is never "late" for a run du
 Month cost = CT month-to-date; **projected = MTD + avg(cost of the last 7 complete CT days) × CT days remaining
 (fractional)** (server per agent; `src/agent-monitor.js` `projectMonth` for the page total).
 
-**Alerting.** pg_cron `agent-watch` (every 15 min, Vault-held header secret) → Edge Function `agent-watch` diffs the
-view against `press_agent_watch_state` and sends ONE Pushover push + ONE Gmail email (council `notify.mjs`
-transports) only on a change into late/failed, late→failed, or a recovery to healthy; it notes its own gaps. The GH
-Action `agent-health-notifier` (hourly-ish) is the watcher of the watcher: it fails (GitHub emails) if agent-watch is
-stale > 45 min or saw a problem it could not deliver.
+**Alerting (arc quiet-alerts, 2026-10-13).** pg_cron `agent-watch` (every 15 min, Vault-held header secret) → Edge
+Function `agent-watch` diffs the view against `press_agent_watch_state` (`bad_since` = start of the unbroken late/failed
+episode, `down_alerted`) and sends ONE Pushover push (priority 0) + ONE Gmail email only when an item has been down
+for **24h+** (once per episode), plus one quiet (priority −1) "working again" note if that item recovers. Shorter blips
+are stored silently; an undelivered alert is retried every tick and logs the watcher as an error. It reports its own
+silence only after a day. An agent with `press_agent_expect.idle_is_work` (Card Scout's judge) counts a `skipped` run
+with the empty-input hash `h-811c9dc5` ("checked, nothing to judge") as real work. The GH Action
+`agent-health-notifier` (every 6 h) is the watcher of the watcher: it fails (GitHub emails) only if agent-watch has
+done no real work for > 24 h.
 
 **Fix.** Per-agent `fix_hint` + public-safe `fix_links` for everyone. Retry/Run now appears only when the Family
 Wing session in localStorage (`press:family:v1`) belongs to an admin; Edge Function `agent-fix` re-verifies the JWT

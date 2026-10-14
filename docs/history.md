@@ -4,6 +4,22 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-10-13 — arc/quiet-alerts (agent alerts only after a day down)
+
+Mark: nothing running is SLA-critical — tell me when an agent has been down for a day and needs me, not when it is a
+bit late. Before: 5 alerts in 2 days (push + email each), none needing action. Causes found: Card Scout's judge logs a
+`skipped` run when there is nothing new to judge, which the monitor read as a missed 7am run; FSA receipt inlet was
+never connected (permanently "late"); GitHub's hourly timer drifts; Steward watch (Mac-side) ran ~10 h late.
+Changes: `watch-core.mjs` alerts once per down episode at 24h+ and sends one quiet "working again" note after such an
+alert; watcher self-gap threshold 24 h; GH backup check every 6 h, fails only if agent-watch is stale > 24 h (the
+"undeliverable alert" path moved into the watcher's own retry). Migration `db/20261013_agent_monitor_quiet_alerts.sql`:
+`press_agent_watch_state.bad_since/down_alerted`, `press_agent_expect.idle_is_work` (card-scout on), view patched
+from its live definition, `fsa-capture` switched off, notifier sched every 360. Edge Function `agent-watch` v7.
+Gauntlet: unit 137/0, inline ✓, Playwright 130 ✓, ui-audit GREEN; tenants-check red only for sibling repos absent in
+the cloud clone (same on untouched main).
+
+---
+
 ## 2026-10-13 — arc/safari-ui (iPhone UI audit on WebKit)
 
 Cloud Builder, three slices, dispatched from the council safari-ui roll-out. **S1** (`334d533`) — vendored council

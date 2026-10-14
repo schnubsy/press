@@ -5,8 +5,9 @@
 // so the secret never exists as a function env var). Each tick:
 //   1. records the watcher-of-the-watcher's latest GitHub Action runs (public GitHub API) as press_agent_runs rows;
 //   2. reads the server-computed press_agent_monitor_public view (status from REAL work, never `skipped`);
-//   3. diffs against press_agent_watch_state and, on a change that matters, sends ONE Pushover push + ONE Gmail
-//      email (council notify.mjs transports) — never a repeat for an unchanged state;
+//   3. diffs against press_agent_watch_state and alerts ONLY when an item has been down (late|failed) for 24h+
+//      (once per episode) or comes back after such an alert — ONE Pushover push + ONE Gmail email
+//      (council notify.mjs transports). Shorter blips are stored silently (arc quiet-alerts);
 //   4. notes its own gap since the previous tick, and logs itself as a press_agent_runs row (agent-watch).
 // Body {"dry":true} = compute + store nothing, notify nothing (for testing).
 import { makePushImpl, makeEmailImpl } from '../_shared/notify.mjs';
@@ -65,23 +66,18 @@ Deno.serve(async (req) => {
   try {
     if (!dry) notes.push(await syncGitHub());
     const view = await rows('press_agent_monitor_public?select=id,label,app_label,status,status_reason,fix_hint,last_real_work_at');
-    const state = await rows('press_agent_watch_state?select=id,status');
-    const prev: Record<string, { status: string }> = {};
+    const state = await rows('press_agent_watch_state?select=id,status,since,bad_since,down_alerted');
+    const prev: Record<string, any> = {};
     for (const s of state) prev[s.id] = s;
     const self = view.find((r: any) => r.id === 'agent-watch');
     const gap = selfGapMinutes(self && self.last_real_work_at, started.getTime());
     const { upserts, alerts } = diffStates(view, prev, nowIso);
     const counts: Record<string, number> = {};
     for (const r of view) counts[r.status] = (counts[r.status] || 0) + 1;
-    result = { counts, changes: upserts.length, alerts: alerts.map((a) => `${a.id}:${a.from}->${a.to}`), gap_min: gap, dry };
+    result = { counts, changes: upserts.length, alerts: alerts.map((a) => `${a.id}:${a.kind}`), gap_min: gap, dry };
 
-    if (!dry && upserts.length) {
-      const up = await db('press_agent_watch_state?on_conflict=id', {
-        method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(upserts),
-      });
-      if (!up.ok) throw new Error('state upsert HTTP ' + up.status);
-    }
     let sent = { push: 'none', email: 'none' };
+    let notifiedIds: string[] = [];
     if (!dry && (alerts.length || gap)) {
       const msg = formatAlert(alerts, gap, PAGE_URL);
       sent = { push: 'off', email: 'off' };
@@ -96,15 +92,23 @@ Deno.serve(async (req) => {
         catch (e) { sent.email = 'failed'; console.error('agent-watch: email failed', String((e as Error).message).slice(0, 160)); }
       }
       if (sent.push === 'ok' || sent.email === 'ok') {
-        const ids = alerts.map((a) => a.id);
-        if (ids.length) {
-          await db(`press_agent_watch_state?id=in.(${ids.map(encodeURIComponent).join(',')})`, {
-            method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ notified_at: nowIso }),
-          });
-        }
+        notifiedIds = alerts.map((a) => a.id);
       } else if (alerts.length) {
-        outcome = 'error'; // an alert that reached nobody is a watcher failure
+        outcome = 'error'; // an alert that reached nobody is a watcher failure — retried next tick
+        const downIds = new Set(alerts.filter((a) => a.kind === 'down').map((a) => a.id));
+        for (const u of upserts) if (downIds.has(u.id)) u.down_alerted = false;
       }
+    }
+    if (!dry && upserts.length) {
+      const up = await db('press_agent_watch_state?on_conflict=id', {
+        method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(upserts),
+      });
+      if (!up.ok) throw new Error('state upsert HTTP ' + up.status);
+    }
+    if (notifiedIds.length) {
+      await db(`press_agent_watch_state?id=in.(${notifiedIds.map(encodeURIComponent).join(',')})`, {
+        method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ notified_at: nowIso }),
+      });
     }
     result.sent = sent;
     const c = counts;
