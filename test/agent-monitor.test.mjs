@@ -103,38 +103,55 @@ test('admin session: reads press:family:v1, rejects junk', () => {
   assert.equal(AM.sessionFresh({ expires_at: 1000 + 30000 }, 1000), false);
 });
 
-test('watcher: alerts into trouble, escalation and recovery only', () => {
-  assert.equal(W.isAlertingChange(null, 'failed'), true);     // first sight of a broken thing
-  assert.equal(W.isAlertingChange(null, 'healthy'), false);
-  assert.equal(W.isAlertingChange('healthy', 'late'), true);
-  assert.equal(W.isAlertingChange('late', 'failed'), true);
-  assert.equal(W.isAlertingChange('failed', 'late'), false);
-  assert.equal(W.isAlertingChange('failed', 'healthy'), true);
-  assert.equal(W.isAlertingChange('late', 'off'), false);
-  assert.equal(W.isAlertingChange('healthy', 'no-data'), false);
-  assert.equal(W.isAlertingChange('failed', 'failed'), false);
+const T0 = '2026-10-12T12:00:00.000Z';
+const plus = (h) => new Date(at(T0) + h * 3600000).toISOString();
+const row = (status, extra = {}) => ({ id: 'a', label: 'A', app_label: 'App', status, status_reason: 'Has never run', fix_hint: 'Set it up', ...extra });
+
+test('watcher (quiet-alerts): a blip under 24h is stored silently, never alerted', () => {
+  let r = W.diffStates([row('late')], { a: { status: 'healthy', since: T0 } }, plus(1));
+  assert.equal(r.alerts.length, 0);
+  assert.deepEqual(r.upserts[0], { id: 'a', status: 'late', since: plus(1), bad_since: plus(1), down_alerted: false });
+  // late → failed keeps the same episode start and still stays quiet under 24h
+  r = W.diffStates([row('failed')], { a: { status: 'late', since: plus(1), bad_since: plus(1), down_alerted: false } }, plus(5));
+  assert.equal(r.alerts.length, 0); assert.equal(r.upserts[0].bad_since, plus(1));
+  // recovers inside the day → silent, episode cleared
+  r = W.diffStates([row('healthy')], { a: { status: 'failed', since: plus(5), bad_since: plus(1), down_alerted: false } }, plus(6));
+  assert.equal(r.alerts.length, 0); assert.equal(r.upserts[0].bad_since, null);
+  // first sight of a broken thing is quiet too
+  r = W.diffStates([row('failed')], {}, plus(0));
+  assert.equal(r.alerts.length, 0);
 });
 
-test('watcher: diff stores every change, alerts only the ones that matter', () => {
-  const rows = [
-    { id: 'a', label: 'A', app_label: 'App', status: 'failed', status_reason: 'Has never run', fix_hint: 'Set it up' },
-    { id: 'b', label: 'B', app_label: 'App', status: 'healthy' },
-    { id: 'c', label: 'C', app_label: 'App', status: 'no-data' },
-  ];
-  const { upserts, alerts } = W.diffStates(rows, { b: { status: 'healthy' }, c: { status: 'healthy' } }, 'T');
-  assert.deepEqual(upserts.map((u) => u.id), ['a', 'c']);
-  assert.deepEqual(alerts.map((a) => a.id), ['a']);
-  const msg = W.formatAlert(alerts, 0, 'https://x/agent-health.html');
-  assert.equal(msg.push.title, 'App · A FAILED');
+test('watcher (quiet-alerts): down 24h+ alerts once, then one "working again" note', () => {
+  const prev = { a: { status: 'late', since: plus(0), bad_since: plus(0), down_alerted: false } };
+  assert.equal(W.diffStates([row('late')], prev, plus(23.9)).alerts.length, 0);
+  let r = W.diffStates([row('late')], prev, plus(24));
+  assert.equal(r.alerts.length, 1); assert.equal(r.alerts[0].kind, 'down');
+  assert.equal(r.upserts[0].down_alerted, true); assert.equal(r.upserts[0].since, plus(0));
+  const msg = W.formatAlert(r.alerts, 0, 'https://x/agent-health.html');
+  assert.equal(msg.push.title, 'App · A has been down 24 hours');
   assert.match(msg.push.body, /Fix: Set it up/);
-  assert.equal(msg.push.priority, 1);
+  assert.equal(msg.push.priority, 0);
   assert.match(msg.mail.text, /agent-health\.html/);
+  // already alerted → no repeat, nothing to store
+  r = W.diffStates([row('failed')], { a: { status: 'late', since: plus(0), bad_since: plus(0), down_alerted: true } }, plus(30));
+  assert.equal(r.alerts.length, 0); assert.equal(r.upserts[0].down_alerted, true);
+  r = W.diffStates([row('failed')], { a: { status: 'failed', since: plus(30), bad_since: plus(0), down_alerted: true } }, plus(31));
+  assert.equal(r.alerts.length, 0); assert.equal(r.upserts.length, 0);
+  // back to healthy after an alert → one quiet "working again"
+  r = W.diffStates([row('healthy')], { a: { status: 'failed', since: plus(30), bad_since: plus(0), down_alerted: true } }, plus(40));
+  assert.equal(r.alerts.length, 1); assert.equal(r.alerts[0].kind, 'fixed');
+  const fixed = W.formatAlert(r.alerts, 0, 'u');
+  assert.equal(fixed.push.title, 'App · A is working again'); assert.equal(fixed.push.priority, -1);
+  // switched off while down → silent
+  r = W.diffStates([row('off')], { a: { status: 'late', since: plus(0), bad_since: plus(0), down_alerted: true } }, plus(40));
+  assert.equal(r.alerts.length, 0);
 });
 
-test('watcher: notices its own gap', () => {
+test('watcher: notices its own gap only after a day', () => {
   assert.equal(W.selfGapMinutes(null, 0), 0);
-  assert.equal(W.selfGapMinutes(new Date(0).toISOString(), 20 * 60000), 0);
-  assert.equal(W.selfGapMinutes(new Date(0).toISOString(), 90 * 60000), 90);
+  assert.equal(W.selfGapMinutes(new Date(0).toISOString(), 90 * 60000), 0);
+  assert.equal(W.selfGapMinutes(new Date(0).toISOString(), 1500 * 60000), 1500);
 });
 
 test('GH notifier runs: a run that flagged a problem still did its job', () => {
@@ -148,22 +165,19 @@ const GH = await import('../.github/scripts/agent-health-check.mjs');
 const NOW = at('2026-10-12T15:30:00Z');
 const watchRow = (minAgo) => ({ id: 'agent-watch', enabled: true, status: 'healthy', last_real_work_at: new Date(NOW - minAgo * 60000).toISOString() });
 
-test('GH watcher-of-the-watcher: a stale or missing agent-watch fails the job', () => {
+test('GH watcher-of-the-watcher: a watcher silent for a day (or missing) fails the job', () => {
   assert.equal(GH.assess([watchRow(10)], NOW).errors.length, 0);
-  assert.match(GH.assess([watchRow(60)], NOW).errors[0], /last ran 60 minutes ago/);
+  assert.equal(GH.assess([watchRow(600)], NOW).errors.length, 0);           // a few hours is not worth an email
+  assert.match(GH.assess([watchRow(1500)], NOW).errors[0], /last ran 1500 minutes ago/);
   assert.match(GH.assess([{ id: 'agent-watch', enabled: true, status: 'no-data', last_real_work_at: null }], NOW).errors[0], /never run/);
   assert.match(GH.assess([], NOW).errors[0], /missing/);
 });
 
-test('GH watcher: alerted problems warn (no hourly duplicate email); undeliverable alerts fail; STRICT fails all', () => {
+test('GH watcher: late/failed agents only warn (the watcher alerts after a day); STRICT fails all', () => {
   const bad = { id: 'fsa-capture', app_label: 'FSA', label: 'Inlet', enabled: true, status: 'failed', status_reason: 'Has never run',
-                watch_status: 'failed', watch_since: '2026-10-12T15:30:03Z', watch_notified_at: '2026-10-12T15:30:03Z' };
+                watch_status: 'failed', watch_since: '2026-10-12T15:30:03Z', watch_notified_at: null };
   let r = GH.assess([watchRow(5), bad], NOW);
-  assert.equal(r.errors.length, 0); assert.match(r.warnings[0], /already alerted/);
-  r = GH.assess([watchRow(5), { ...bad, watch_notified_at: null }], NOW);
-  assert.match(r.errors[0], /could not deliver/);
-  r = GH.assess([watchRow(5), { ...bad, watch_status: 'healthy' }], NOW);
-  assert.equal(r.errors.length, 0); assert.match(r.warnings[0], /new since/);
+  assert.equal(r.errors.length, 0); assert.equal(r.warnings.length, 1);
   r = GH.assess([watchRow(5), bad], NOW, { strict: true });
   assert.equal(r.errors.length, 1);
   r = GH.assess([watchRow(5), { ...bad, enabled: false }], NOW, { strict: true });

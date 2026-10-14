@@ -380,3 +380,15 @@ around the scope.
   from an earlier state leaks into a "locked" one. Playwright's LAST-registered matching route wins: register catch-alls first. [tag: testing]
 - **`"${arr[@]}"` on an empty array under `set -u` dies on bash < 4.4 (macOS /bin/bash 3.2)** — use `${arr[@]+"${arr[@]}"}`. [tag: bash]
 
+## arc/quiet-alerts (2026-10-13)
+
+- **Alert on duration, not on transition.** A watcher that fires on every state change turns schedule drift into noise; store
+  the episode start (`bad_since`) and alert once when it crosses the threshold. A failed delivery must leave the episode
+  un-alerted so the next tick retries. [tag: monitoring] (2026-10-13)
+- **"Skipped" is not one thing.** Card Scout logs `skipped` for every no-input tick (hash `h-811c9dc5` = empty input); only
+  that exact marker means "checked, nothing to do". Opt agents in per row (`idle_is_work`), never count all skips. [tag: monitoring] (2026-10-13)
+- **Patch a live view from `pg_get_viewdef`, not from a repo copy** — string-replace inside a DO block and assert the patch
+  count, so later in-place fixes to the view are never reverted. [tag: supabase] (2026-10-13)
+- **Scheduled-task notification channels can't be changed from a session** (update_trigger has no notifications field) — Mark
+  sets them in the task's Edit dialog under the collapsed **Advanced settings**. [tag: council] (2026-10-13)
+

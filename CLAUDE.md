@@ -31,13 +31,12 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #40 1f8dcb2 on 2026-10-13; main checkout on main @ 1f8dcb2
-**arc/safari-ui (2026-10-13) — iPhone UI audit on WebKit; cloud Builder.** Vendored council `ui-audit@1.0.0`
-(`test/ui-audit/`) + `test/ui-audit.config.mjs`: 20 press-native states (lobby, archive, private wing + passkey gate, family
-wing + code gate, steward, agent monitor, access) × 320/375/390/393/430 × dark+light, GREEN on WebKit 26.6 after fixing
-every defect (44px tap boxes, real buttons, 16px fields; one named exception). Gauntlet: stage 0 installs WebKit, stage 5 =
-ui-audit, `iphone-webkit` Playwright project; exit 2 = PARTIAL (egress). Gate tap fixes are PAGE-LEVEL overrides — the shared
-`src/gate.js` / `src/family-gate.js` are untouched (moving them in is a tenant wave). Narrative: `docs/history.md`.
+Merge state: Merged: PR #42 788bec6 on 2026-10-13 (arc PR #41 12f019e); main checkout on main @ fa1a60b (PR #43 control-file follow-up)
+**arc/quiet-alerts (2026-10-13) — agent alerts only after a day down.** `agent-watch` (Edge Function v7) alerts once per
+late/failed episode at 24h+ and sends one quiet "working again" note after; shorter blips are silent. GH backup check every
+6 h, fails only if the watcher is stale > 24 h. Card Scout's "nothing to judge" skip counts as real work (`idle_is_work`);
+FSA receipt inlet switched off on the monitor. Migration `db/20261013_agent_monitor_quiet_alerts.sql`. Contract:
+`docs/spec.md` → Agent Monitor · Alerting. Narrative: `docs/history.md`.
 
 ## Project rules
 
