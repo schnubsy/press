@@ -170,6 +170,17 @@
       "output": null,
       "deterministic": false,
       "note": "press-native private-wing page (arc/steward-report, 2026-10-12): the Steward's watch/audit reports. Loads src/gate.js by relative path (like access.html); reads press_steward_reports (service-role-only) through the steward-reports Edge Function, gated on the private wing's Card Scout capability (x-plan-id). No keyring entry of its own (T7-exempt)."
+    },
+    "app-lab.html": {
+      "repo": "vantage",
+      "tier": "family",
+      "gate": "src/family-gate.js",
+      "vendored": "web/press/vendor/family-gate.js",
+      "release": "web/tools/build-app-lab.mjs",
+      "build": "npm --prefix web run build:press",
+      "output": "app-lab.html + app-lab/vantage/",
+      "deterministic": false,
+      "note": "App Lab — the ONE family-wing card for in-development Apple-app web prototypes (Mark, web-twin decision 6, 2026-10-13): app-lab.html lists each prototype (name · one line · status · open link); each prototype is served from app-lab/<app>/ (never its own wing card). Vantage is the first entry (app-lab/vantage/ = the web twin's App Lab build, base /press/app-lab/vantage/, data local to the browser). Added by vantage arc web-twin S8."
     }
   },
   "redirects": {

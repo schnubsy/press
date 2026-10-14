@@ -1,7 +1,7 @@
 // arc/marquee-wings-monitor slice 1 — the marquee owns card naming (RULE, Mark 2026-10-12).
 // Hermetic. Serves the REAL index.html with the REAL pages.json + spaces.json and proves, on every
 // surface a card shows (public landing, unlocked private wing, signed-in family wing):
-//   • each card's pink kicker (.k) + white title (h3) come from the LABELS map — the ten renamed pairs
+//   • each card's pink kicker (.k) + white title (h3) come from the LABELS map — the eleven renamed pairs
 //     render exactly, and pages.json titles (tab titles) never override them;
 //   • the filename line is gone (no .fn anywhere);
 //   • every served page wears its own glyph (no two cards share an icon).
@@ -20,6 +20,7 @@ const SPACES = JSON.parse(readFileSync(join(ROOT, 'spaces.json'), 'utf8'));
 // The ten renamed cards (Mark, 2026-10-12) — kicker / title — plus the four kept as they were.
 const WANT = {
   'optimo.html':        ['Day planner', 'Optimo'],
+  'app-lab.html':       ['Prototypes', 'App Lab'],
   'perth.html':         ['Moving to Perth', 'The Runway'],
   'halvsies.html':      ['Splitting the Bill', 'Halvsies'],
   'cardsharp.html':     ['Gift Card Tracker', 'Cardsharp'],
@@ -95,7 +96,7 @@ for (const v of VIEWS) {
   });
 }
 
-test('the ten renamed pairs are exactly the served set, and every served page has its own icon', async ({ page, context }) => {
+test('the eleven renamed pairs are exactly the served set, and every served page has its own icon', async ({ page, context }) => {
   await routes(context);
   expect(Object.keys(WANT).sort()).toEqual(Object.keys(PAGES).sort());   // one label per served page
   const icons = {};
