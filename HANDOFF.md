@@ -1,6 +1,6 @@
 # press — HANDOFF
 
-_Last updated: 2026-10-13. arc/quiet-alerts — agent alerts only after a day down (cloud Builder)._
+_Last updated: 2026-10-14. arc/tenants-check-siblings — tenants-check defaults = sibling clones (cloud Builder)._
 
 ## Standing rule: publish auto-close (do NOT re-litigate)
 
@@ -10,7 +10,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 
 ## Current state
 
-- Merge state: Merged: PR #42 788bec6 on 2026-10-13 (arc PR #41 12f019e); main checkout on main @ fa1a60b (PR #43 control-file follow-up)
+- Merge state: Merged: PR #45 137d9ec on 2026-10-14; main checkout on main @ 137d9ec
 - Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
 - Agent alerting rule (Mark, 2026-10-13): nothing running is SLA-critical — one push + email only when an item has been
   down (late/failed) for 24h+, one quiet "working again" after. Contract: `docs/spec.md` → Agent Monitor · Alerting.
@@ -19,20 +19,22 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 - Ship gate: `bash scripts/gauntlet.sh` (verify skill) — 0 webkit · 1 unit · 2 inline · 3 tenants-check · 4 Playwright · 5 ui-audit.
 
 ## Shipped this arc
-- Weekly task notifications set by Mark (Advanced settings): store check push off; pop-up bug watch email off, push on.
-- **PR #41 `c8b86c9`**: `watch-core.mjs` episode rule (`bad_since`/`down_alerted`), undelivered alert retried each tick;
-  self-gap 24 h; GH check stale > 24 h only, "undeliverable" path removed; tests rewritten (unit 137/0).
-- DB: `press_agent_expect.idle_is_work` (card-scout on — its empty-input `skipped` = real work); `fsa-capture` enabled=false;
-  `agent-health-notifier` sched every 360. View patched from its live definition.
-- Gauntlet: unit ✓ · inline ✓ · Playwright 130 ✓ · ui-audit GREEN · tenants-check RED only for absent sibling clones
-  (identical on untouched main).
+- **S1** (`9ed270d`): applied `docs/evidence/unpin-the-mac-slice-2-press.patch` — `tools/tenants-check.mjs` defaults
+  `CODE_ROOT` = parent of the press root, `COUNCIL_DIR` = `../council`; env overrides kept; header: a Mac run without
+  siblings sets them; gauntlet comment; defaults test.
+- **S2** (`f203f90`, code review): realpath'd test base (macOS tmp symlink), defaults follow `--press`, positive T8 assert.
+- Gauntlet GREEN both slices: unit 144/0 · inline ✓ · tenants-check 69/0/24 (council + every tenant cloned beside press) ·
+  Playwright 148 ✓ · ui-audit GREEN on WebKit. No page, DB or publish change.
+- Earlier (quiet-alerts, 2026-10-13): `agent-watch` v7 alerts once per 24h+ down episode; `idle_is_work`; fsa-capture off.
 
 ## Open / blockers
 - **FSA receipt inlet** is off on the monitor until it actually reports in; switch `press_agent_expect.enabled` back on then.
 - **The shared gates still carry sub-44px controls.** `src/gate.js` (`.pg-back`, `.pg-btn`) and `src/family-gate.js`
   (`.fg-back`, `.fg-link`) are fixed on press pages by page-level overrides only; editing the modules drifts 7 tenants (T3).
 - **press_deals anon INSERT (and TRUNCATE/REFERENCES/TRIGGER) grants**: pre-existing. Steward no longer depends on them.
-- **Cloud gauntlet stage 3**: tenants-check needs the tenant repos as sibling clones (present in this session: 0 fail).
+- **Cloud gauntlet stage 3**: tenants-check defaults to sibling clones now; a vendored/released tenant whose repo is absent
+  still FAILs T2 (by design) — dispatch press arcs with the tenant repos in scope. council-guide's `repoPath`
+  (`~/Documents/Claude/council-hub/council`, tenants.json) SKIPs T2 in the cloud.
 - Carried: on-demand AI functions record no runs ("No data") · optimo's cloud Playwright baseline RED (env) · flow
   `kayley.html` compare BLOCKED (flow out of scope) · Issues #28–#32 · remote branch `claude/perth-phase-2-security-c7a88b`
   safe to delete.
@@ -45,7 +47,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 2. press-hygiene arc (HOME github:schnubsy/press · BRANCH arc/press-hygiene):
    - ui-audit config: add the unaudited states (steward gate before enrolment, access OTP code step + "not an admin",
      family-gate send/verify errors) — D1 review 🟡; give access `.sw2` switches `tabindex=0` + Space/Enter (pre-existing a11y gap).
-   - tenants-check cloud mode, so absent sibling clones SKIP (or always dispatch with the tenant repos in scope).
+   - tenants.json council-guide `repoPath` → drop it (or fall back to `CODE_ROOT/council`) so T2 sees the sibling council clone.
    - flow kayley carry-over (needs schnubsy/flow in scope).
    - pin auth-email-sync actions to SHAs + move off Node 20 (GitHub deprecation warning).
    - (done here: `.claude/settings.json` exists; the 390px private-wing pill wrap is fixed.)
@@ -53,9 +55,12 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
    `press_deals` after confirming no browser path inserts deals; keep the `sync_id` literal default
    (`press_steward_capability_ok(<real key>)` must stay true); re-sync `docs/cowork-task.md`.
 4. remit arc: CLAUDE.md access contract → opt-out (`remit_has_access()` delegates to `press_access_has`).
-5. council (mac home): release.md/press.md → the press spec "Card naming — marquee label map" + Agent Monitor registration
+5. claude-environment: any Mac task that runs press tenants-check without a sibling council clone exports
+   `COUNCIL_DIR=~/Documents/Claude/council-hub/council` (else T8 FAILs — D1 review 🟡). The carried
+   `docs/evidence/unpin-the-mac-slice-2-press.patch` predates S2 — never re-apply it.
+6. council (mac home): release.md/press.md → the press spec "Card naming — marquee label map" + Agent Monitor registration
    rule; MANUAL Steward update; claude-environment `system/scheduled-tasks/` edits.
-6. Elevate Ops: brand its "Magic Link" auth email.
+7. Elevate Ops: brand its "Magic Link" auth email.
 
 ## Mark's manual steps
 1. Token renewal: `press-auth-email-sync` expires 2027-10 — make a new one (same two permissions: Auth Config RW +

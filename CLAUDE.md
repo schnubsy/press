@@ -31,12 +31,12 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #42 788bec6 on 2026-10-13 (arc PR #41 12f019e); main checkout on main @ fa1a60b (PR #43 control-file follow-up)
-**arc/quiet-alerts (2026-10-13) — agent alerts only after a day down.** `agent-watch` (Edge Function v7) alerts once per
-late/failed episode at 24h+ and sends one quiet "working again" note after; shorter blips are silent. GH backup check every
-6 h, fails only if the watcher is stale > 24 h. Card Scout's "nothing to judge" skip counts as real work (`idle_is_work`);
-FSA receipt inlet switched off on the monitor. Migration `db/20261013_agent_monitor_quiet_alerts.sql`. Contract:
-`docs/spec.md` → Agent Monitor · Alerting. Narrative: `docs/history.md`.
+Merge state: Merged: PR #45 137d9ec on 2026-10-14; main checkout on main @ 137d9ec
+**arc/tenants-check-siblings (2026-10-14) — tenants-check defaults = sibling clones (verify 🔴 fix for fsa-claims PR #20).**
+`tools/tenants-check.mjs`: `CODE_ROOT` default = parent of the press root, `COUNCIL_DIR` = `../council` (env overrides kept;
+no `homedir()/Documents` defaults; a Mac run without siblings sets them). Code-review fixes: realpath test base, `--press`
+moves the defaults, positive T8 assert. Gauntlet GREEN (unit 144, tenants-check 0 fail, PW 148, ui-audit GREEN). No page or
+publish change. Before it: quiet-alerts (PR #41/#42). Narrative: `docs/history.md`.
 
 ## Project rules
 

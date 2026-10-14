@@ -1,0 +1,78 @@
+diff --git a/scripts/gauntlet.sh b/scripts/gauntlet.sh
+index 1d23e0f..0f19364 100755
+--- a/scripts/gauntlet.sh
++++ b/scripts/gauntlet.sh
+@@ -34,7 +34,7 @@ if [ -z "${PW_CHROMIUM:-}" ] && [ -x /opt/pw-browsers/chromium ]; then export PW
+ [ -n "${PW_CHROMIUM:-}" ] && summary+=("ℹ️ cloud mode: chromium project = $("$PW_CHROMIUM" --version 2>/dev/null | head -1)")
+ partial=0
+ 
+-# Sibling clones (cloud: /home/claude/<repo>; Mac: ~/Documents/code/<repo>) feed tenants-check's T4/T8.
++# Sibling clones of this press clone (the tools' own defaults too) feed tenants-check's T4/T8.
+ PARENT="$(dirname "$ROOT")"
+ export CODE_ROOT="${CODE_ROOT:-$PARENT}"
+ [ -z "${COUNCIL_DIR:-}" ] && [ -d "$PARENT/council" ] && export COUNCIL_DIR="$PARENT/council"
+diff --git a/test/tenants-check.test.mjs b/test/tenants-check.test.mjs
+index cddd900..9463fad 100644
+--- a/test/tenants-check.test.mjs
++++ b/test/tenants-check.test.mjs
+@@ -455,3 +455,32 @@ test('T10 root — in a git checkout every root .html is registered AND every pa
+   assert.equal(r.code, 0);
+   e.cleanup();
+ });
++
++test('defaults (arc/unpin-the-mac): CODE_ROOT + COUNCIL_DIR are sibling clones of the press clone, never homedir()/Documents', () => {
++  const src = readFileSync(CHECKER, 'utf8');
++  assert.doesNotMatch(src, /join\(homedir\(\), 'Documents'/);
++  // run a copy of the checker from <base>/press/tools with NO env overrides: it must look beside the press clone
++  const e = estate();
++  e.page('a.html').write();
++  mkdirSync(join(e.press, 'tools'), { recursive: true });
++  writeFileSync(join(e.press, 'tools', 'tenants-check.mjs'), src);
++  const env = { ...process.env }; delete env.CODE_ROOT; delete env.COUNCIL_DIR;
++  let out;
++  try { out = execFileSync('node', [join(e.press, 'tools', 'tenants-check.mjs')], { env, encoding: 'utf8' }); }
++  catch (err) { out = String(err.stdout) + String(err.stderr); }
++  assert.match(out, new RegExp(`source repos: ${e.base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s`));
++  assert.doesNotMatch(out, /Documents\/(code|Claude)/);
++  // COUNCIL_DIR default = <base>/council (the estate's sibling council with its snag registry): T8 finds it
++  assert.doesNotMatch(out, /snag registry MISSING/);
++  e.cleanup();
++  // …and with that sibling registry absent, T8 names exactly <base>/council as where it looked
++  const e2 = estate().noSnagRegistry();
++  e2.page('a.html').write();
++  mkdirSync(join(e2.press, 'tools'), { recursive: true });
++  writeFileSync(join(e2.press, 'tools', 'tenants-check.mjs'), src);
++  let out2;
++  try { out2 = execFileSync('node', [join(e2.press, 'tools', 'tenants-check.mjs')], { env, encoding: 'utf8' }); }
++  catch (err) { out2 = String(err.stdout) + String(err.stderr); }
++  assert.ok(out2.includes(`snag registry MISSING at ${join(e2.base, 'council', 'instruments', 'snag', 'registry.json')}`), out2);
++  e2.cleanup();
++});
+diff --git a/tools/tenants-check.mjs b/tools/tenants-check.mjs
+index 7723ae4..f5ff79b 100644
+--- a/tools/tenants-check.mjs
++++ b/tools/tenants-check.mjs
+@@ -8,8 +8,8 @@
+ //   node tools/tenants-check.mjs                 # T1–T4 + T6–T10 (no build)
+ //   node tools/tenants-check.mjs --rebuild       # + T5 rebuild-vs-live for deterministic tenants
+ //   node tools/tenants-check.mjs --press <dir>   # override the press root (default: where this lives)
+-//   CODE_ROOT=<dir> node tools/tenants-check.mjs   # override the source-repos parent (default ~/Documents/code on the Mac; scripts/gauntlet.sh passes the sibling-clone parent)
+-//   COUNCIL_DIR=<dir> node tools/tenants-check.mjs # override the council repo for T8 (default = the Mac council-hub checkout; scripts/gauntlet.sh passes ../council when cloned)
++//   CODE_ROOT=<dir> node tools/tenants-check.mjs   # override the source-repos parent (default = the parent of this press clone — sibling clones)
++//   COUNCIL_DIR=<dir> node tools/tenants-check.mjs # override the council repo for T8 (default = the sibling ../council clone)
+ //
+ // No dependencies (Node ≥20). The DB checks it cannot reach are EMITTED as SQL, never asserted.
+ import { readFileSync, existsSync, statSync } from 'node:fs';
+@@ -25,9 +25,10 @@ const argVal = (f) => { const i = argv.indexOf(f); return i >= 0 ? argv[i + 1] :
+ 
+ const SELF_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+ const PRESS = resolve(argVal('--press') || SELF_ROOT);
+-const CODE_ROOT = process.env.CODE_ROOT || join(homedir(), 'Documents', 'code');
++// Defaults are sibling clones of this press clone (arc/unpin-the-mac, fsa-claims 2026-10-14) — never a homedir()/Documents path.
++const CODE_ROOT = resolve(process.env.CODE_ROOT || join(SELF_ROOT, '..'));
+ const REBUILD = has('--rebuild');
+-const COUNCIL_DIR = process.env.COUNCIL_DIR || join(homedir(), 'Documents', 'Claude', 'council-hub', 'council');
++const COUNCIL_DIR = resolve(process.env.COUNCIL_DIR || join(SELF_ROOT, '..', 'council'));
+ 
+ // ---- helpers ---------------------------------------------------------------
+ const C = { reset: '\x1b[0m', red: '\x1b[31m', grn: '\x1b[32m', yel: '\x1b[33m', dim: '\x1b[2m', cyn: '\x1b[36m' };

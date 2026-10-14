@@ -34,7 +34,7 @@ if [ -z "${PW_CHROMIUM:-}" ] && [ -x /opt/pw-browsers/chromium ]; then export PW
 [ -n "${PW_CHROMIUM:-}" ] && summary+=("ℹ️ cloud mode: chromium project = $("$PW_CHROMIUM" --version 2>/dev/null | head -1)")
 partial=0
 
-# Sibling clones (cloud: /home/claude/<repo>; Mac: ~/Documents/code/<repo>) feed tenants-check's T4/T8.
+# Sibling clones of this press clone (the tools' own defaults too) feed tenants-check's T4/T8.
 PARENT="$(dirname "$ROOT")"
 export CODE_ROOT="${CODE_ROOT:-$PARENT}"
 [ -z "${COUNCIL_DIR:-}" ] && [ -d "$PARENT/council" ] && export COUNCIL_DIR="$PARENT/council"
