@@ -41,6 +41,7 @@ function estate() {
     snagRows(fn) { snagEdit = fn; return this; },
     noSnagRegistry() { noRegistry = true; return this; },
     page(name, content = '<html>' + name + '</html>') { writeFileSync(join(press, name), content); reg.pages[name] = { title: name }; return this; },
+    parent(name, par) { reg.pages[name].parent = par; return this; },
     tier(name, t) { if (t === 'personal') reg.spaces.personal.push(name); else if (t === 'family') reg.spaces.family.push(name); return this; },
     tenant(name, entry) { reg.tenants[name] = entry; return this; },
     redirect(stub, to, content = STUB(to)) { writeFileSync(join(press, stub), content); (reg.redirects ||= {})[stub] = { to }; return this; },
@@ -494,4 +495,41 @@ test('defaults (arc/unpin-the-mac): CODE_ROOT + COUNCIL_DIR are sibling clones o
   assert.ok(out3.includes(`source repos: ${e3.base}`), out3);
   assert.match(out3, /\[PASS\] T8 registry-parity/);
   e3.cleanup();
+});
+
+// ---- T1 parent (arc app-lab, 2026-10-14): a pages.json `parent` names a real, same-tier, un-parented page ----
+const fam = (e, ...names) => { for (const n of names) e.page(n).tier(n, 'family'); return e; };
+
+test('T1 parent PASS — family page parented under a family page', () => {
+  const e = fam(estate(), 'lab.html', 'proto.html').parent('proto.html', 'lab.html').write();
+  const r = e.run();
+  assert.match(line(r.out, 'T1 parent', 'proto.html'), /PASS.*lab\.html/);
+  assert.equal(r.code, 0);
+  e.cleanup();
+});
+
+test('T1 parent FAIL — parent not in pages.json', () => {
+  const e = fam(estate(), 'proto.html').parent('proto.html', 'ghost.html').write();
+  const r = e.run();
+  assert.match(line(r.out, 'T1 parent', 'proto.html'), /FAIL.*ghost\.html is not in pages\.json/);
+  assert.equal(r.code, 1);
+  e.cleanup();
+});
+
+test('T1 parent FAIL — parent in a different space tier', () => {
+  const e = estate();
+  e.page('lab.html').page('proto.html').tier('proto.html', 'family').parent('proto.html', 'lab.html').write(); // lab = public
+  const r = e.run();
+  assert.match(line(r.out, 'T1 parent', 'proto.html'), /FAIL.*public but proto\.html is family/);
+  assert.equal(r.code, 1);
+  e.cleanup();
+});
+
+test('T1 parent FAIL — nested parent (the parent is itself parented)', () => {
+  const e = fam(estate(), 'top.html', 'lab.html', 'proto.html').parent('lab.html', 'top.html').parent('proto.html', 'lab.html').write();
+  const r = e.run();
+  assert.match(line(r.out, 'T1 parent', 'proto.html'), /FAIL.*itself parented/);
+  assert.match(line(r.out, 'T1 parent', 'lab.html'), /PASS/);
+  assert.equal(r.code, 1);
+  e.cleanup();
 });

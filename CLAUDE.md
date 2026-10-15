@@ -11,9 +11,11 @@ served via GitHub Pages. `index.html` is the portal — card kicker / title / ic
 Served pages by tier (contract: `docs/spec.md` → Tenants):
 - **Public:** `kayley.html`, `council-guide.html`, `eagle-path.html`, `halvsies.html`, `agent-health.html`
 - **Private wing** (WebAuthn passkey + vault): `fsa.html`, `giving.html`, `retirement.html`, `thrift-shop.html` (Thrift Shop; `card-scout.html` = its redirect stub + keyring id), `cardsharp.html`, `access.html` (family admin), `steward.html` (Steward reports — borrows the Thrift Shop (keyring id `card-scout.html`) capability; `supabase/functions/steward-reports/`)
-- **Family wing** (email OTP + JWT + per-page grants): `remit.html`, `perth.html`, `optimo.html`
-- **optimo** = `optimo.html` (family-wing launcher card) + the `optimo/` app directory (the PWA, served at
-  `/press/optimo/`), both mirrored by optimo's own `tools/release.js` (optimo migrate-home, 2026-10-10, from merge `83cdcc1`).
+- **Family wing** (email OTP + JWT + per-page grants): `remit.html`, `perth.html`, `app-lab.html` (App Lab), `optimo.html` (no card — listed in App Lab)
+- **optimo** = an **App Lab** prototype (optimo arc app-lab, 2026-10-14): `optimo.html` is its Family Wing sign-in step only
+  (pages.json `parent: app-lab.html` ⇒ no wing card; still in spaces.json family, grant key unchanged); the app is served at
+  `/press/app-lab/optimo/` and listed in `app-lab/prototypes.json`, all mirrored by optimo's `web/tools/release.js`;
+  `/press/optimo/` = redirect tombstone.
 - **retirement** (`retirement.html`) — Home `github:schnubsy/retirement`; live = its `--public` build from merge `a0d0b80`
   (published `b99282b`, 2026-10-10; blob `77506d01` == a fresh rebuild, 2026-10-11).
 - Tier truth is `spaces.json`; tenant metadata `tenants.json`; titles `pages.json`.

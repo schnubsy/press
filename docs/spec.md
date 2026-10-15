@@ -162,6 +162,13 @@ why}}`) and mirrored by index.html `REDIRECT_STUBS` (the marquee never lists it)
 and appears in no page registry (pages.json, spaces.json, LABELS). Its source lives in the tenant repo and ships with the
 tenant's release. tenants-check **T10 `redirects`** enforces all of it, and that every root `.html` is a pages.json page,
 a redirect or `index.html`. Today: `card-scout.html` → `thrift-shop.html` (source `thrift-shop:redirect/card-scout.html`).
+**Parented pages (`parent`, arc app-lab 2026-10-14).** A `pages.json` entry may carry `"parent": "<page>.html"`: the page
+is listed INSIDE that parent (today: `optimo.html` → `app-lab.html`, an App Lab prototype whose `optimo.html` is only its
+Family Wing sign-in step), so the portal renders **no card** for it on any surface (lobby, wing views, wing-door counts —
+`index.html` `cardFiles()`). Everything else is unchanged: it stays in `spaces.json`, keeps its gate, grant key and access-admin
+column, and stays a served root file. The parent's own registry (e.g. `app-lab/prototypes.json`) lists it. `tenants.json`
+mirrors the field. tenants-check **T1 parent** fails a `parent` that is not a pages.json page, sits in a different space tier,
+or is itself parented (one level only).
 A renamed tenant may carry `formerly: {page, repo}` so T8 accepts its council snag-registry row under the former name
 until the Steward updates that row (reported as PASS with "council registry update pending").
 

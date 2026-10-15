@@ -5,7 +5,7 @@
 // three repo-owned registries (tenants.json, pages.json, spaces.json) and, per tenant, runs one
 // named check. Prints PASS / FAIL / SKIP / INFO / EMITTED + a reason; EXITS 1 on any FAIL.
 //
-//   node tools/tenants-check.mjs                 # T1–T4 + T6–T10 (no build)
+//   node tools/tenants-check.mjs                 # T1–T4 + T6–T10 (no build); T1 parent = pages.json `parent` rule
 //   node tools/tenants-check.mjs --rebuild       # + T5 rebuild-vs-live for deterministic tenants
 //   node tools/tenants-check.mjs --press <dir>   # override the press root (default: where this lives)
 //   CODE_ROOT=<dir> node tools/tenants-check.mjs   # override the source-repos parent (default = the parent of the press root (--press or this clone) — sibling clones)
@@ -153,6 +153,28 @@ for (const page of Object.keys(tenants)) {
         }
       }
     }
+  }
+}
+
+// ---- T1 parent — a pages.json entry with `parent` (arc app-lab, 2026-10-14) ---------------------------
+// A parented page (e.g. optimo.html → app-lab.html) is listed INSIDE its parent, so the portal renders no card for it;
+// its tier, gate and grants are unchanged. The parent must be a real pages.json page in the SAME space tier (a family
+// prototype can't hide under a public or private card) and must not itself be parented (one level only — no chains).
+{
+  const tierOf = (f) => (personal.includes(f) ? 'personal' : family.includes(f) ? 'family' : 'public');
+  for (const [page, entry] of Object.entries(pages)) {
+    if (!entry || entry.parent == null) continue;
+    const par = entry.parent;
+    const errs = [];
+    if (typeof par !== 'string' || !par) errs.push('parent is not a page filename');
+    else if (par === page) errs.push('parent is itself');
+    else if (!pages[par]) errs.push(`parent ${par} is not in pages.json`);
+    else {
+      if (tierOf(par) !== tierOf(page)) errs.push(`parent ${par} is ${tierOf(par)} but ${page} is ${tierOf(page)} (same space tier required)`);
+      if (pages[par].parent != null) errs.push(`parent ${par} is itself parented (→ ${pages[par].parent}; one level only)`);
+    }
+    if (errs.length) say('FAIL', 'T1 parent', page, errs.join('; '));
+    else say('PASS', 'T1 parent', page, `→ ${par} (${tierOf(page)}; no card — listed in the parent)`);
   }
 }
 
