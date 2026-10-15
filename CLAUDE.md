@@ -33,7 +33,7 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #45 137d9ec on 2026-10-14; main checkout on main @ 137d9ec
+Merge state: Merged: PR #49 7770a2b on 2026-10-15; main checkout on main @ 7770a2b (published 5bf1747: optimo → App Lab)
 **arc/tenants-check-siblings (2026-10-14) — tenants-check defaults = sibling clones (verify 🔴 fix for fsa-claims PR #20).**
 `tools/tenants-check.mjs`: `CODE_ROOT` default = parent of the press root, `COUNCIL_DIR` = `../council` (env overrides kept;
 no `homedir()/Documents` defaults; a Mac run without siblings sets them). Code-review fixes: realpath test base, `--press`
