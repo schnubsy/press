@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0e131e">
+<title>App Lab · iPhone preview</title>
+<style>
+/* App Lab · iPhone preview — press app-lab/frame.html. Shows ONE App Lab prototype inside a 393×852 phone frame.
+   Source: schnubsy/vantage web/press/app-lab-frame.html, copied by web/tools/build-app-lab.mjs (never edit press/app-lab/frame.html).
+   URL contract: app-lab/frame.html?app=<id> — <id> must be a row of app-lab/prototypes.json with "iphone" in views;
+   the iframe only ever loads '../' + row.href (= ../app-lab/<id>/). No gate here: the framed app gates itself;
+   this page shows no data of its own. Narrower than 500px (a real phone) → location.replace('../' + row.href). */
+:root { --canvas: #0e131e; --surface: #171e2c; --ink: #eef1f6; --ink-2: #a3acbd; --accent: #7aa9ff; --on-accent: #0c111c;
+  --line: #273145; --chip: #1f2b44; --chip-ink: #9fc0ff; --focus: 0 0 0 3px rgba(122,169,255,.5); --bezel: #05070b; --bar: 52px; }
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--canvas); color: var(--ink); font: 400 15px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
+.bar { height: var(--bar); display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.bar h1 { margin: 0 auto 0 4px; font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar a, .bar button { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border-radius: 999px; border: 0; font: inherit; font-size: 13px; font-weight: 700; text-decoration: none; cursor: pointer; white-space: nowrap; }
+.back { background: transparent; color: var(--ink-2); padding-left: 4px !important; }
+.reload { background: var(--chip); color: var(--chip-ink); }
+.desk { background: var(--accent); color: var(--on-accent); }
+.bar a:focus-visible, .bar button:focus-visible, .msg a:focus-visible { outline: none; box-shadow: var(--focus); }
+.stage { height: calc(100% - var(--bar)); display: grid; place-items: center; padding: 16px; }
+.sizer { position: relative; }
+.phone { position: absolute; top: 0; left: 0; width: 421px; height: 880px; padding: 14px; border-radius: 68px; background: var(--bezel);
+  box-shadow: 0 0 0 2px #2b3448, 0 30px 80px rgba(0,0,0,.55); transform-origin: 0 0; }
+.phone iframe { display: block; width: 393px; height: 852px; border: 0; border-radius: 55px; background: #000; }
+.msg { max-width: 420px; background: var(--surface); border-radius: 18px; padding: 22px; box-shadow: inset 0 0 0 1px var(--line); display: grid; gap: 14px; justify-items: start; }
+.msg p { margin: 0; color: var(--ink-2); }
+.msg a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-weight: 700; text-decoration: none; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<nav class="bar" aria-label="iPhone preview">
+  <a class="back" href="../app-lab.html" data-testid="app-lab-frame.back">← App Lab</a>
+  <h1 id="name" data-testid="app-lab-frame.name">iPhone preview</h1>
+  <button type="button" class="reload" id="reload" hidden data-testid="app-lab-frame.reload">Reload</button>
+  <a class="desk" id="desk" hidden data-testid="app-lab-frame.desktop">Open desktop</a>
+</nav>
+<main class="stage" id="stage">
+  <div class="msg" id="msg" role="status" hidden data-testid="app-lab-frame.message">
+    <p id="msg-text"></p>
+    <a href="../app-lab.html">Back to App Lab</a>
+  </div>
+</main>
+<script>
+(function () {
+  'use strict';
+  var W = 393, H = 852, PAD = 14, BW = W + 2 * PAD, BH = H + 2 * PAD, NARROW = 500;
+  var ID = /^[a-z0-9-]+$/;
+  var stage = document.getElementById('stage');
+  function say(text) {
+    document.getElementById('msg-text').textContent = text;
+    document.getElementById('msg').hidden = false;
+  }
+  var id = new URLSearchParams(location.search).get('app') || '';
+  if (!ID.test(id)) { say('No prototype named in the link — pick one in App Lab.'); return; }
+
+  fetch('prototypes.json', { cache: 'no-cache', headers: { 'Accept': 'application/json' } })
+    .then(function (r) { if (!r.ok) throw new Error('prototypes ' + r.status); return r.json(); })
+    .then(function (doc) {
+      var rows = (doc && doc.v === 1 && Array.isArray(doc.prototypes)) ? doc.prototypes : null;
+      if (!rows) throw new Error('prototypes: not a v1 list');
+      var p = rows.filter(function (x) { return x && x.id === id; })[0];
+      // Only ever a row from the list, whose href is exactly app-lab/<id>/ — never a URL from the query string.
+      if (!p || p.href !== 'app-lab/' + id + '/' || !Array.isArray(p.views)) { say('That prototype isn’t in App Lab.'); return; }
+      if (p.views.indexOf('iphone') === -1) { say((typeof p.name === 'string' ? p.name : 'This prototype') + ' has no iPhone view yet.'); return; }
+      var target = '../' + p.href;
+      if (window.innerWidth < NARROW) { location.replace(target); return; } // a real phone: run it full-screen
+      show(p, target);
+    })
+    .catch(function () { say('Couldn’t load the prototype list — try again.'); });
+
+  function show(p, target) {
+    var name = typeof p.name === 'string' ? p.name : id;
+    document.getElementById('name').textContent = name + ' · iPhone';
+    var desk = document.getElementById('desk');
+    if (p.views.indexOf('desktop') !== -1) { desk.href = target; desk.hidden = false; }
+    var sizer = document.createElement('div'); sizer.className = 'sizer';
+    var phone = document.createElement('div'); phone.className = 'phone';
+    var frame = document.createElement('iframe');
+    frame.title = name + ' — iPhone preview';
+    frame.width = String(W); frame.height = String(H);
+    frame.setAttribute('data-testid', 'app-lab-frame.iframe');
+    frame.src = target;
+    phone.appendChild(frame); sizer.appendChild(phone); stage.appendChild(sizer);
+    function fit() {
+      var availH = stage.clientHeight - 32, availW = stage.clientWidth - 32;
+      var s = Math.max(0.2, Math.min(1, availH / BH, availW / BW));
+      phone.style.transform = 'scale(' + s + ')';
+      sizer.style.width = Math.round(BW * s) + 'px';
+      sizer.style.height = Math.round(BH * s) + 'px';
+    }
+    fit();
+    window.addEventListener('resize', fit);
+    var reload = document.getElementById('reload');
+    reload.hidden = false;
+    reload.addEventListener('click', function () {
+      try { frame.contentWindow.location.reload(); } catch (e) { frame.src = target; }
+    });
+  }
+})();
+</script>
+</body>
+</html>

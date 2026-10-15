@@ -30,7 +30,14 @@ h2 { margin: 0; font-size: 18px; font-weight: 700; }
 .line { margin: 0; color: var(--ink-2); }
 .status { display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border-radius: 999px; background: var(--chip); color: var(--chip-ink); font-size: 13px; font-weight: 600; justify-self: start; }
 .open { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 22px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-weight: 700; text-decoration: none; justify-self: start; }
-.open:focus-visible { outline: none; box-shadow: var(--focus); }
+.open:focus-visible, .retry:focus-visible { outline: none; box-shadow: var(--focus); }
+.open.alt { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
+.open.alt:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent), var(--focus); }
+.primary { display: contents; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.msg { background: var(--surface); border-radius: 18px; padding: 18px; box-shadow: inset 0 0 0 1px var(--line); color: var(--ink-2); display: grid; gap: 12px; justify-items: start; }
+.msg p { margin: 0; }
+.retry { min-height: 44px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--chip); color: var(--chip-ink); font: inherit; font-weight: 700; cursor: pointer; }
 .note { font-size: 13px; color: var(--ink-2); }
 .foot { margin-top: 20px; font-size: 12px; font-weight: 600; color: var(--ink-2); }
 [hidden] { display: none !important; }
@@ -42,7 +49,11 @@ h2 { margin: 0; font-size: 18px; font-weight: 700; }
     <h1>App Lab</h1>
     <p>Apple apps in development, as web prototypes. Try them, break them, tell Mark.</p>
   </header>
-  <ul id="prototypes" aria-label="Prototypes"></ul>
+  <ul id="prototypes" aria-label="Prototypes" aria-busy="true"></ul>
+  <div id="list-msg" class="msg" role="status" hidden data-testid="app-lab.error">
+    <p>Couldn't load the prototype list — try again.</p>
+    <button type="button" class="retry" data-testid="app-lab.retry">Try again</button>
+  </div>
   <p class="foot">Family Wing · sign-in shared with the other family tools · prototypes keep their data in this browser only</p>
 </main>
 <script>
@@ -653,32 +664,81 @@ h2 { margin: 0; font-size: 18px; font-weight: 700; }
 <script>
 (async function () {
   'use strict';
-  // The prototype registry — one row per in-development Apple app (name · one line · status · open link).
-  var PROTOTYPES = [
-    { name: 'Vantage', line: 'Your whole workload in view — floating glass cards for Spaces, Areas and next actions, right on the desktop.',
-      status: 'Web prototype · desktop browser', href: 'app-lab/vantage/',
-      note: 'Built for a Mac-sized screen (Safari or Chrome). Your cards stay in this browser.',
-      mark: 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%230C111C%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%226%22%20width%3D%2214%22%20height%3D%2211%22%20rx%3D%222.5%22%20fill%3D%22%235B9DFF%22%2F%3E%3Crect%20x%3D%2213%22%20y%3D%2215%22%20width%3D%2214%22%20height%3D%2211%22%20rx%3D%222.5%22%20fill%3D%22%23F2F5F9%22%20fill-opacity%3D%22.85%22%2F%3E%3C%2Fsvg%3E' }
-  ];
-  var list = document.getElementById('prototypes');
-  PROTOTYPES.forEach(function (p) {
+  // The prototype list is DATA: app-lab/prototypes.json ({v:1, prototypes:[…]}), one row per in-development app,
+  // upserted by each app's own release script (vantage web/tools/app-lab-entry.mjs). Fetched only AFTER the gate.
+  // Row text goes in via textContent only; links are only ever app-lab/<id>/ and app-lab/frame.html?app=<id>.
+  var ID = /^[a-z0-9-]+$/, MARK = 'data:image/svg+xml,';
+  function validRow(p) {
+    return !!p && typeof p === 'object' && typeof p.id === 'string' && ID.test(p.id) && typeof p.name === 'string' &&
+      p.href === 'app-lab/' + p.id + '/' && Array.isArray(p.views);
+  }
+  function link(text, href, label, testid, alt) {
+    var a = document.createElement('a');
+    a.className = alt ? 'open alt' : 'open';
+    a.rel = 'noopener';
+    a.href = href;
+    a.textContent = text;
+    a.setAttribute('aria-label', label);
+    a.setAttribute('data-testid', testid);
+    return a;
+  }
+  function row(p) {
     var li = document.createElement('li');
     li.setAttribute('data-testid', 'app-lab.prototype');
-    li.innerHTML = '<div class="top"><img class="mark" alt="" width="44" height="44"><h2></h2></div>' +
-      '<p class="line"></p><span class="status"></span><a class="open" rel="noopener"></a><span class="note"></span>';
-    li.querySelector('img').src = p.mark;
-    li.querySelector('h2').textContent = p.name;
-    li.querySelector('.line').textContent = p.line;
-    li.querySelector('.status').textContent = p.status;
-    var a = li.querySelector('a'); a.href = p.href; a.textContent = 'Open ' + p.name; a.setAttribute('data-testid', 'app-lab.open');
-    li.querySelector('.note').textContent = p.note;
-    list.appendChild(li);
-  });
+    li.setAttribute('data-app', p.id);
+    var top = document.createElement('div'); top.className = 'top';
+    if (typeof p.mark === 'string' && p.mark.indexOf(MARK) === 0) {
+      var img = document.createElement('img'); img.className = 'mark'; img.alt = ''; img.width = 44; img.height = 44; img.src = p.mark;
+      top.appendChild(img);
+    }
+    var h2 = document.createElement('h2'); h2.textContent = p.name; top.appendChild(h2);
+    li.appendChild(top);
+    if (p.line) { var line = document.createElement('p'); line.className = 'line'; line.textContent = p.line; li.appendChild(line); }
+    if (p.status) { var st = document.createElement('span'); st.className = 'status'; st.textContent = p.status; li.appendChild(st); }
+    var actions = document.createElement('div'); actions.className = 'actions';
+    var links = [];
+    if (p.views.indexOf('iphone') !== -1)
+      links.push(link('Open iPhone', 'app-lab/frame.html?app=' + encodeURIComponent(p.id), 'Open iPhone · ' + p.name, 'app-lab.open-iphone'));
+    if (p.views.indexOf('desktop') !== -1)
+      links.push(link('Open desktop', p.href, 'Open desktop · ' + p.name, 'app-lab.open-desktop'));
+    // One element holds one data-testid: the PRIMARY (first) link sits in a display:contents wrapper that keeps the
+    // pre-list `app-lab.open` id (back-compat); the link itself carries its view id.
+    links.forEach(function (a, i) {
+      if (i === 0) { var w = document.createElement('span'); w.className = 'primary'; w.setAttribute('data-testid', 'app-lab.open'); w.appendChild(a); actions.appendChild(w); }
+      else { a.className = 'open alt'; actions.appendChild(a); }
+    });
+    if (!links.length) return null;
+    li.appendChild(actions);
+    if (p.note) { var note = document.createElement('span'); note.className = 'note'; note.textContent = p.note; li.appendChild(note); }
+    return li;
+  }
+  var list = document.getElementById('prototypes');
+  var msg = document.getElementById('list-msg');
+  async function load() {
+    msg.hidden = true;
+    list.setAttribute('aria-busy', 'true');
+    list.textContent = '';
+    try {
+      var r = await fetch('app-lab/prototypes.json', { cache: 'no-cache', headers: { 'Accept': 'application/json' } });
+      if (!r.ok) throw new Error('prototypes ' + r.status);
+      var doc = await r.json();
+      if (!doc || doc.v !== 1 || !Array.isArray(doc.prototypes)) throw new Error('prototypes: not a v1 list');
+      doc.prototypes.filter(validRow).forEach(function (p) {
+        var li = row(p);
+        if (li) list.appendChild(li);
+      });
+    } catch (e) {
+      msg.hidden = false;
+    }
+    list.setAttribute('aria-busy', 'false');
+  }
+  msg.querySelector('button').addEventListener('click', load);
   var main = document.getElementById('app-lab');
   if (!window.FamilyGate) { document.body.textContent = 'Sign-in unavailable — the gate did not load.'; return; }
   window.FamilyGate.cfg({ spacesUrl: 'spaces.json' });
   await window.FamilyGate.require('app-lab.html'); // resolves only for a granted Family Wing session
   main.hidden = false;
+  await load();
 })();
 </script>
 </body>
