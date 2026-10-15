@@ -37,7 +37,9 @@ const WANT = {
   'steward.html':       ['Environment Reports', 'Steward'],   // arc/steward-report (2026-10-12)
 };
 const personal = SPACES.personal || [], family = SPACES.family || [];
-const PUBLIC = Object.keys(PAGES).filter((f) => !personal.includes(f) && !family.includes(f));
+// a pages.json entry with `parent` (optimo.html → app-lab.html, arc app-lab 2026-10-14) gets NO card on any surface
+const carded = (fs) => fs.filter((f) => !(PAGES[f] && PAGES[f].parent));
+const PUBLIC = carded(Object.keys(PAGES).filter((f) => !personal.includes(f) && !family.includes(f)));
 
 const now = Date.now();
 const VAULT = { keyring: { v: 1, apps: {} }, unlockedAt: now, expiresAt: now + 7 * 864e5, vaultId: 'labels-probe' };
@@ -75,8 +77,8 @@ async function routes(context) {
 
 const VIEWS = [
   { name: 'landing', url: '/', files: PUBLIC },
-  { name: 'private', url: '/?view=personal', files: personal },
-  { name: 'family', url: '/?view=family', files: family },
+  { name: 'private', url: '/?view=personal', files: carded(personal) },
+  { name: 'family', url: '/?view=family', files: carded(family) },
 ];
 
 for (const v of VIEWS) {
@@ -113,9 +115,19 @@ test('the eleven renamed pairs are exactly the served set, and every served page
 test('pages.json titles stay tab titles — they never reach a card the label map names', async ({ page, context }) => {
   await routes(context);
   await page.goto(base + '/?view=family');
-  await expect(page.locator('.tw-card[data-file="optimo.html"] h3')).toHaveText('Optimo');
+  await expect(page.locator('.tw-card[data-file="app-lab.html"] h3')).toHaveText('App Lab');
   await expect(page.locator('body')).not.toContainText(PAGES['optimo.html'].title);   // "optimo · Day planner"
   await expect(page.locator('body')).not.toContainText(PAGES['perth.html'].title);    // "The Runway — Perth"
+});
+
+test('family wing (signed in): optimo is listed in App Lab — no optimo card, the App Lab card is present', async ({ page, context }) => {
+  expect(PAGES['optimo.html'].parent, 'pages.json optimo.html parent').toBe('app-lab.html');
+  expect(family, 'optimo.html stays in spaces.json family (its gate + grant key are unchanged)').toContain('optimo.html');
+  await routes(context);
+  await page.goto(base + '/?view=family');
+  await expect(page.locator('.tw-card[data-file="app-lab.html"]')).toHaveCount(1);
+  await expect(page.locator('.tw-card[data-file="optimo.html"]')).toHaveCount(0);
+  await expect(page.locator('.tw-card')).toHaveCount(carded(family).length);
 });
 
 if (process.env.PRESS_SHOT_DIR) {

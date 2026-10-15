@@ -142,12 +142,13 @@
       "repo": "optimo",
       "tier": "family",
       "gate": "src/family-gate.js",
-      "vendored": "src/vendor/family-gate.js",
-      "release": "tools/release.js",
-      "build": "node build-press.mjs",
-      "output": "dist/optimo.html",
+      "parent": "app-lab.html",
+      "vendored": "web/src/vendor/family-gate.js",
+      "release": "web/tools/release.js",
+      "build": "npm --prefix web run build:press",
+      "output": "web/dist/optimo.html",
       "deterministic": true,
-      "note": "launcher card for the optimo PWA, served from the marquee at https://schnubsy.github.io/press/optimo/ (press/optimo/ = optimo dist, mirrored by tools/release.js since optimo migrate-home 2026-10-10; the old /optimo/ Pages site is a redirect tombstone; repo goes private at migrate-home S3, after the chat verifies the marquee); build-press.mjs inlines the vendored family gate — deterministic, publish-checks rebuilds + compares. Added by optimo arc 2 slice 6."
+      "note": "App Lab prototype (optimo arc app-lab, 2026-10-14): optimo.html is the Family Wing SIGN-IN STEP only — no wing card (pages.json parent app-lab.html; the portal renders no card for a parented page), listed in App Lab via its row in app-lab/prototypes.json (upserted by optimo's release). It stays in spaces.json family so its grant key (optimo.html) and family-gate access are unchanged. The app is served at /press/app-lab/optimo/ (mirrored by optimo's web/tools/release.js into app-lab/optimo/); /press/optimo/ = a redirect tombstone. Source moved into optimo's web/ (build-press inlines the vendored family gate — deterministic, publish-checks rebuilds + compares). History: launcher card since optimo arc 2 slice 6; served from the marquee since migrate-home 2026-10-10."
     },
     "cardsharp.html": {
       "repo": "cardsharp",
@@ -178,9 +179,9 @@
       "vendored": "web/press/vendor/family-gate.js",
       "release": "web/tools/build-app-lab.mjs",
       "build": "npm --prefix web run build:press",
-      "output": "app-lab.html + app-lab/vantage/",
+      "output": "app-lab.html + app-lab/frame.html + app-lab/prototypes.json + app-lab/<app>/ (vantage, optimo)",
       "deterministic": false,
-      "note": "App Lab — the ONE family-wing card for in-development Apple-app web prototypes (Mark, web-twin decision 6, 2026-10-13): app-lab.html lists each prototype (name · one line · status · open link); each prototype is served from app-lab/<app>/ (never its own wing card). Vantage is the first entry (app-lab/vantage/ = the web twin's App Lab build, base /press/app-lab/vantage/, data local to the browser). Added by vantage arc web-twin S8."
+      "note": "App Lab — the ONE family-wing card for in-development Apple-app web prototypes (Mark, web-twin decision 6, 2026-10-13): app-lab.html lists each prototype (name · one line · status · open link) from app-lab/prototypes.json and opens it in app-lab/frame.html; each prototype is served from app-lab/<app>/ (never its own wing card) and its OWN release upserts its own prototypes.json row. A prototype that keeps a family sign-in page (optimo.html) carries pages.json parent app-lab.html so the portal shows no card for it. Vantage was the first entry (app-lab/vantage/ = the web twin's App Lab build, base /press/app-lab/vantage/, data local to the browser; added by vantage arc web-twin S8); optimo joined in optimo arc app-lab (2026-10-14)."
     }
   },
   "redirects": {

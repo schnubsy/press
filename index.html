@@ -1620,13 +1620,17 @@ function normSpaces(s){ return {personal: Array.isArray(s&&s.personal)? s.person
                                 family:   Array.isArray(s&&s.family)?   s.family   : []}; }
 function isPersonalFile(f){ return (SPACES.personal||[]).includes(f); }
 function isFamilyFile(f){ return (SPACES.family||[]).includes(f); }
+/* PARENTED PAGES (arc app-lab, 2026-10-14) — a pages.json entry may carry `"parent": "<page>.html"` (e.g. optimo.html →
+   app-lab.html): the page is listed INSIDE its parent (App Lab), so the portal renders NO card for it on ANY surface. Its
+   tier, gate, grants and access admin are untouched (it stays in spaces.json); only the card goes. tenants-check T1 parent
+   asserts the parent exists, shares the tier and is not itself parented. */
+function cardFiles(files, man){ return files.filter(f=>!(man&&man[f]&&man[f].parent)); }
 async function loadSpaces(){ try{ const r=await fetch(`${RAW}/spaces.json`); if(!r.ok) return null; return await r.json(); }catch(e){ return null; } }
 function vaultState(){
   const sess = (window.PressVault && PressVault.loadSession) ? PressVault.loadSession() : null; // localStorage only
   const enrolled = (window.PressVault && PressVault.everEnrolled) ? PressVault.everEnrolled() : false;
   return {sess, enrolled};
 }
-function personalCount(){ return (SPACES.personal||[]).length; }
 function familyCount(){ return (SPACES.family||[]).length; }
 function timeLeft(expiresAt){
   const ms = expiresAt - Date.now(); if(ms<=0) return 'expiring';
@@ -1641,8 +1645,8 @@ function clockUntil(expiresAt){
   const ap = h>=12 ? 'pm' : 'am'; h = h%12 || 12;
   return `until ${h}:${String(m).padStart(2,'0')} ${ap}`;
 }
-function secureCardHTML(){
-  const st = vaultState(), n = personalCount();
+function secureCardHTML(man){
+  const st = vaultState(), n = cardFiles(SPACES.personal||[], man).length;
   // wings-polish slice 2: the card lockline is a plain tool COUNT — no lock state, no wall clock,
   // no "tap to unlock". The only exception is the very first run: with no passkey enrolled yet, the
   // card invites setup. (Lock state still lives inside the wing view, not on the lobby card.)
@@ -1655,8 +1659,8 @@ function secureCardHTML(){
 // The Family Wing door — a sibling of the Private Wing card, rendered from spaces.json ALONE.
 // A COUNT and no page names (the public lobby does not enumerate a private space). Makes ZERO
 // auth / vault calls: it only reads SPACES.family.length. The gate lives on the page, not here.
-function familyCardHTML(){
-  const n = familyCount();
+function familyCardHTML(man){
+  const n = cardFiles(SPACES.family||[], man).length;   // the door counts the cards behind it (a parented page has none)
   // wings-polish slice 2: lockline is a plain tool COUNT — the "sign in with a code" cue moves off
   // the lobby card (the gate itself explains sign-in once the door is opened).
   const line = `${n} ${n===1?'tool':'tools'}`;
@@ -1773,13 +1777,13 @@ function paintMarquee(root, files, man, physArchiveCount, stale){
   // sorted, dragged into the public archive, or counted among the public cards.
   // keyringId(): fail SAFE on a stale spaces.json (raw CDN / the press:marquee:v3 cache) that still names a renamed tool
   // by its old file — the renamed page must never surface on the public lobby (rename arc, 2026-10-14).
-  const pub = files.filter(f=>!isPersonalFile(f) && !isFamilyFile(f) && !isPersonalFile(keyringId(f)) && !isFamilyFile(keyringId(f)));
+  const pub = cardFiles(files, man).filter(f=>!isPersonalFile(f) && !isFamilyFile(f) && !isPersonalFile(keyringId(f)) && !isFamilyFile(keyringId(f)));
   const {ordered, newest, stateArchived} = applyState(pub, man);
   const archiveCount = physArchiveCount + stateArchived.length;
-  const secure = secureCardHTML();
+  const secure = secureCardHTML(man);
   // the family door only appears once a page is in spaces.json.family — a v1/empty file shows
   // no door and the lobby is byte-for-byte the pre-Family-Wing paint.
-  const family = familyCount() ? familyCardHTML() : '';
+  const family = familyCount() ? familyCardHTML(man) : '';
   // Phase 3: the two wings sit as side-by-side squares — FAMILY left, PRIVATE right. With no family
   // door yet (v1/empty spaces), fall back to the private card alone, full-width (pre-Family paint).
   const wings = family ? `<div class="tw-wings">${family}${secure}</div>` : secure;
@@ -2331,7 +2335,7 @@ function paintPersonal(root, man){
   if(st.sess){
     // linkFile(): a CDN-stale spaces.json may still name a renamed tool by its old file (now a redirect stub) — map +
     // de-dupe so the wing shows the real page, never a stub card (rename arc, 2026-10-14).
-    const cards=wingOrdered([...new Set((SPACES.personal||[]).map(linkFile))], 'personal').map(f=>cardHTML(f, man, false)).join('');
+    const cards=wingOrdered(cardFiles([...new Set((SPACES.personal||[]).map(linkFile))], man), 'personal').map(f=>cardHTML(f, man, false)).join('');
     const hint=cards?`<div class="tw-hint">hold a card to lift it · Alt+↑/↓ to reorder</div>`:'';
     root.innerHTML = back+top+`<h2 class="tw-title">The Private Wing</h2>`+
       `<div class="tw-dek">Unlocked · ${clockUntil(st.sess.expiresAt)}. Open any tool — no more prompts until you lock or it expires.</div>`+
@@ -2424,7 +2428,7 @@ async function renderFamily(root){
   if(!who) return;
   pLocalLoad();   // order state loads only once the door is open
   await pCloudLoad().catch(()=>{});
-  const fam=wingOrdered(SPACES.family||[], 'family');
+  const fam=wingOrdered(cardFiles(SPACES.family||[], man), 'family');
   const cards=fam.map(f=>cardHTML(f, man, false)).join('');
   const hint=`<div class="tw-hint">hold a card to lift it · Alt+↑/↓ to reorder</div>`;
   const secbar=`<div class="tw-secbar"><button type="button" class="tw-mini" id="famLogout">⎋ Log out</button></div>`;

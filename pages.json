@@ -36,7 +36,8 @@
     "title": "Remit"
   },
   "optimo.html": {
-    "title": "optimo · Day planner"
+    "title": "optimo · Day planner",
+    "parent": "app-lab.html"
   },
   "cardsharp.html": {
     "title": "Cardsharp"
