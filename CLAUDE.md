@@ -33,12 +33,12 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #49 7770a2b on 2026-10-15; main checkout on main @ 7770a2b (published 5bf1747: optimo → App Lab)
-**arc/tenants-check-siblings (2026-10-14) — tenants-check defaults = sibling clones (verify 🔴 fix for fsa-claims PR #20).**
-`tools/tenants-check.mjs`: `CODE_ROOT` default = parent of the press root, `COUNCIL_DIR` = `../council` (env overrides kept;
-no `homedir()/Documents` defaults; a Mac run without siblings sets them). Code-review fixes: realpath test base, `--press`
-moves the defaults, positive T8 assert. Gauntlet GREEN (unit 144, tenants-check 0 fail, PW 148, ui-audit GREEN). No page or
-publish change. Before it: quiet-alerts (PR #41/#42). Narrative: `docs/history.md`.
+Merge state: PR pending (branch arc/amazon-memos-monitor)
+**arc/amazon-memos-monitor (2026-10-19) — Agent Monitor registers the weekly Amazon memos task + night-window times.**
+`db/20261019_amazon_memos_expect.sql` (staged by council PR #56, applied verbatim): `press_agent_expect` row `amazon-memos`
+(The Money · browser-task · checkin · Mon 01:43 CT · grace 1440) + five check-in rows moved to their night-window times
+(card-scout Wed 03:41, cowork-popup Mon 02:52, snag-train 2nd 02:13, steward-audit 1st 04:14, steward-watch Mon 04:24).
+Applied live after merge. No page or publish change. Before it: tenants-check-siblings. Narrative: `docs/history.md`.
 
 ## Project rules
 

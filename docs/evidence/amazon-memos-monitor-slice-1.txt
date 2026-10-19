@@ -1,0 +1,24 @@
+arc/amazon-memos-monitor — slice 1 — 2026-10-19 (cloud Builder)
+
+Source: schnubsy/council main 7830c0d docs/evidence/night-window-amazon-memos-staged-press.patch (PR #56) — git apply, clean.
+File: db/20261019_amazon_memos_expect.sql  blob 6b24941ae0c09fa9412940ba35951abd52fe730c
+
+Pre-apply live state (Supabase eepjhpyziczrxvirczio, press_agent_expect):
+  amazon-memos                   — absent
+  card-scout-weekly-store-check  weekly dow3 12:00
+  cowork-popup-watch             weekly dow1 08:52
+  snag-train                     monthly dom2 09:00
+  steward-audit                  monthly dom1 09:00
+  steward-watch                  weekly dow1 08:47
+Constraints checked: kind 'browser-task' and source 'checkin' are allowed values; id matches ^[a-z0-9][a-z0-9_-]{1,62}$.
+
+Dry run (live DB, DO block ending in RAISE → rolled back, nothing kept):
+  press_agent_monitor_public row amazon-memos: app_label 'The Money', status no-data ("Waiting for its first run"),
+  next_due_at 2026-10-26T06:43:00+00:00 (= Mon 01:43 CDT), grace 1440, sort 75.
+
+Gauntlet (scripts/gauntlet.sh, HEAD 886dbe3 + patch):
+  🟢 0 webkit 26.6 · 🟢 1 unit 151/0 · 🟢 2 inline:check · 🔴 3 tenants-check 52/24/24 · 🟢 4 Playwright 150 · 🟢 5 ui-audit GREEN (200 surfaces)
+  Stage 3: base (patch removed) vs patched tenants-check output IDENTICAL — 8 tenants × T2/T3/T4, sibling tenant repos not
+  cloned in this cloud session. Pre-existing, not this arc's (a .sql under db/ is not read by tenants-check).
+
+Live apply: after merge (see amazon-memos-monitor-live-apply.txt).
