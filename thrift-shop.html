@@ -1349,16 +1349,17 @@
   function quickNav(tab, groups){
     if(!groups.length) return '<div class="quicknav" id="qn-'+tab+'"></div>';
     var chips=groups.map(function(g){
-      // Slice 6: label may shorten (e.g. "Warehouse / retailer" → "Warehouse") but the count is kept;
-      // full label stays the accessible name so screen readers hear it.
+      // Slice 6: label may shorten (e.g. "Warehouse / retailer" → "Warehouse") but the count is kept.
+      // The accessible name STARTS with the visible text (WCAG 2.5.3 label-in-name), then names the full section.
       var short=g.short||String(g.label).split(" / ")[0];
-      return '<a class="qchip" href="#grp-'+tab+'-'+g.slug+'" aria-label="Jump to '+esc(g.label)+' ('+g.count+')">'
-        +'<span class="qlabel">'+esc(short)+'</span>'
+      return '<a class="qchip" href="#grp-'+tab+'-'+g.slug+'" data-full="'+esc(g.label)+'" aria-label="'+chipName(short,g.count,g.label)+'">'
+        +'<span class="qlabel">'+esc(short)+'</span> '   // the space keeps "What counts 5" one phrase for label-in-name
         +'<span class="qcount">'+g.count+'</span>'
         +'<span class="qdown" aria-hidden="true">↓</span></a>';
     }).join("");
     return '<div class="quicknav" id="qn-'+tab+'" role="navigation" aria-label="Jump to a section" style="--qn-cols:'+groups.length+'">'+chips+'</div>';
   }
+  function chipName(short,count,label){ return esc(short)+' '+count+', jump to '+esc(label); }
   function groupHead(tab, slug, label, count){
     return '<div class="grouphead" id="grp-'+tab+'-'+slug+'"><h2>'+esc(label)+'<span class="gcount">'+count+'</span></h2>'
       +'<a class="toplink" href="#qn-'+tab+'">&uarr; Top</a></div>';
@@ -1504,9 +1505,11 @@
   function moreFromHtml(top,f){
     var open=!!brandOpen[f.key], n=f.deals.length, id="more-"+esc(top.item_id);
     var seen=f.deals.reduce(function(a,d){ return a+(Number(d.extras&&d.extras.also_seen)||1); },0);
-    var aria=(open?"Hide ":"Show ")+n+" more offer"+(n===1?"":"s")+" from "+f.brand+" ("+seen+" email"+(seen===1?"":"s")+")";
+    // the accessible name STARTS with the visible label (WCAG 2.5.3 label-in-name), then the full brand + email count
+    var label=(open?"Hide ":"+")+n+" more from "+shortBrand(f.brand);
+    var aria=label+" — "+n+" offer"+(n===1?"":"s")+" from "+f.brand+", "+seen+" email"+(seen===1?"":"s");
     return '<div class="morefrom"><button class="btn small more-toggle" type="button" data-more="'+esc(f.key)+'" aria-expanded="'+open+'" aria-controls="'+id+'" aria-label="'+esc(aria)+'">'
-      +(open?"Hide ":"+")+n+' more from '+esc(shortBrand(f.brand))+'</button></div>'
+      +esc(label)+'</button></div>'
       +'<div class="morelist" id="'+id+'"'+(open?'':' hidden')+'>'+(open?f.deals.map(dealCard).join(""):"")+'</div>';
   }
   var PROC_LS="card-scout:processed-open"; // per-viewer convenience only (try/catch — storage may be blocked)
@@ -1583,7 +1586,8 @@
     // Slice 2: the badge is the real discount ("20% off"), never the words HIT/NEAR. An unpriced deal
     // reads "Price unknown". A hit carries a small subtle alerted dot instead of a HIT label.
     var badgeClass=isHit?"hit":(d.verdict==="near"?"near":"");
-    var badgeText=(p!=null?p+"% off":(dealKind(d)==="sale"&&!(d.extras&&d.extras.unpriced)?"On sale":"Price unknown"));
+    // R16 (bad-flags-2026-10-19): a sale-watch find with its listed price but no was-price shows the price, never "Price unknown"
+    var badgeText=(p!=null?p+"% off":(dealKind(d)==="sale"&&d.price!=null?"$"+d.price:(dealKind(d)==="sale"&&!(d.extras&&d.extras.unpriced)?"On sale":"Price unknown")));
     // Enhancements Slice 6: the card sits in a swipe track — swipe left ≥60px reveals a red Delete
     // (touch + pointer); keyboard/desktop users get the same Delete in the card's ⋯ menu.
     var label=esc(d.brand||KIND_LABEL[dealKind(d)]);
@@ -2726,7 +2730,7 @@
     // bad-flag-learning S4: Mark's own Bad flags, scored separately — each should now read "not significant"
     var b=j.bad;
     if(b&&b.total) head+='<div class="judge-bad" data-bad-agree="'+b.agree+'"><span class="'+(b.agree===b.total?"judge-ok":"judge-fail")+'">'+(b.agree===b.total?"✓":"✗")+'</span> '
-      +'Your Bad flags: <strong>'+b.agree+' of '+b.total+'</strong> now judged not significant'+(b.code?' · '+b.code+' link rule enforced in code':'')
+      +'Your Bad flags: <strong>'+b.agree+' of '+b.total+'</strong> now judged the way you flagged them'+(b.code?' · '+b.code+' link rule enforced in code':'')
       +((b.misses&&b.misses.length)?' <span class="sub">— still a deal: '+esc(b.misses.slice(0,4).join("; "))+'</span>':'')+'</div>';
     out.innerHTML=head+'<ul class="judge-fields">'+keys.map(function(k){ return '<li data-field="'+esc(k)+'">'+esc(JUDGE_FIELD_LABEL[k])+' <strong>'+pctTxt(f[k].agree,f[k].total)+'</strong> <span class="sub">('+f[k].agree+'/'+f[k].total+')</span></li>'; }).join("")+'</ul>'
       +((j.misses&&j.misses.length)?'<details class="judge-misses"><summary>'+j.misses.length+' miss'+(j.misses.length===1?"":"es")+'</summary><ul>'+j.misses.map(function(m){ return "<li>"+esc(m)+"</li>"; }).join("")+'</ul></details>':"");
@@ -2797,7 +2801,7 @@
   // bad-flag-learning S4 — Settings → "What I've learned": the rules Thrift Shop now judges by, in plain words, with how
   // many of Mark's Bad flags taught each. LEARNED is generated from the flags by tools/bad-to-fixtures.mjs.
   /* LEARNED:BEGIN — generated by tools/bad-to-fixtures.mjs */
-  var LEARNED=[{"rule":"R1","text":"Gift-card bonus offers are judged on the total: a $50 bonus for $250 is about 17% off, not 20%.","flags":1},{"rule":"R2","text":"Bonus points, double points and points days never count — and points are never dollars.","flags":8},{"rule":"R3","text":"A balance or credit notice isn’t a deal. A reward only counts when it expires soon and is worth $10 or more.","flags":2},{"rule":"R4","text":"Birthday rewards count only around your birthday. A brand’s own birthday sale is judged like any offer.","flags":2},{"rule":"R5","text":"$ off with a minimum is a percent: $5 off $25 is 20%, held to the 40% bar.","flags":2},{"rule":"R6","text":"Buy one, get one 50% off is really 25% off.","flags":3},{"rule":"R7","text":"Buy N, get M free is M ÷ (N + M): buy 3 get the 4th free is 25%. Only a true BOGO free (50%) counts.","flags":2},{"rule":"R8","text":"A free item must be worth the same as the one you buy — a kids meal or a side doesn’t count.","flags":2},{"rule":"R9","text":"A set price (“3 for $15”, “$6 sandwich”, “Whopper $3.98 Wednesdays”) isn’t a discount.","flags":8},{"rule":"R10","text":"Drinks-only discounts never count, at any percent.","flags":1},{"rule":"R11","text":"A small % coupon stays small, even when it’s “a reward that expires soon”.","flags":1},{"rule":"R12","text":"Brands you block are never shown — email offers, sales and gift cards.","flags":1},{"rule":"R13","text":"A deal’s link is the feed’s own link — never one the model wrote.","flags":1}];
+  var LEARNED=[{"rule":"R1","text":"Gift-card bonus offers are judged on the total: a $50 bonus for $250 is about 17% off, not 20%.","flags":1},{"rule":"R2","text":"Bonus points, double points and points days never count — and points are never dollars.","flags":8},{"rule":"R3","text":"A balance or credit notice isn’t a deal. A reward only counts when it expires soon and is worth $10 or more.","flags":2},{"rule":"R4","text":"Birthday rewards count only around your birthday. A brand’s own birthday sale is judged like any offer.","flags":2},{"rule":"R5","text":"$ off with a minimum is a percent: $5 off $25 is 20%, held to the 40% bar.","flags":2},{"rule":"R6","text":"Buy one, get one 50% off is really 25% off.","flags":3},{"rule":"R7","text":"Buy N, get M free is M ÷ (N + M): buy 3 get the 4th free is 25%. Only a true BOGO free (50%) counts.","flags":2},{"rule":"R8","text":"A free item must be worth the same as the one you buy — a kids meal or a side doesn’t count.","flags":2},{"rule":"R9","text":"A set price (“3 for $15”, “$6 sandwich”, “Whopper $3.98 Wednesdays”) isn’t a discount.","flags":8},{"rule":"R10","text":"Drinks-only discounts never count, at any percent.","flags":1},{"rule":"R11","text":"A small % coupon stays small, even when it’s “a reward that expires soon”.","flags":1},{"rule":"R12","text":"Brands you block are never shown — email offers, sales and gift cards.","flags":1},{"rule":"R13","text":"A deal’s link is the feed’s own link — never one the model wrote.","flags":1},{"rule":"R14","text":"A discount on one add-on — a dessert, a side, an appetizer — doesn’t count, even at half price.","flags":3},{"rule":"R15","text":"A watch find must be the product itself — ear pads or a case “for” it don’t count.","flags":1},{"rule":"R16","text":"A price written in a watch find’s title is its price — never “Price unknown”.","flags":1}];
   /* LEARNED:END */
   function learnedCard(){
     var total=0; LEARNED.forEach(function(r){ total+=r.flags; });
@@ -3436,7 +3440,8 @@
   // review fix (slice 7): the Sales jump chips' counts follow every change (not only the group heading).
   function syncSalesNav(){
     var c={counts:offerRows().filter(function(x){ return x.status==="on"; }).length,brands:brandRows().length,note:(state.settings&&state.settings.offer_note)?1:0,watch:(state.watch||[]).length,blocked:blocklist().length};
-    Object.keys(c).forEach(function(k){ var q=document.querySelector('#qn-sales a[href="#grp-sales-'+k+'"] .qcount'); if(q) q.textContent=String(c[k]);
+    Object.keys(c).forEach(function(k){ var a=document.querySelector('#qn-sales a[href="#grp-sales-'+k+'"]'), q=a&&a.querySelector('.qcount'); if(q){ q.textContent=String(c[k]);
+      a.setAttribute('aria-label',a.querySelector('.qlabel').textContent+' '+c[k]+', jump to '+a.getAttribute('data-full')); }
       var g=document.querySelector('#grp-sales-'+k+' .gcount'); if(g) g.textContent=String(c[k]); });
   }
   function toggleOffer(id,btn){
