@@ -1,6 +1,6 @@
 # press — HANDOFF
 
-_Last updated: 2026-10-14. arc/tenants-check-siblings — tenants-check defaults = sibling clones (cloud Builder)._
+_Last updated: 2026-10-19. arc/amazon-memos-monitor — Agent Monitor registers Amazon memos + night-window times (cloud Builder)._
 
 ## Standing rule: publish auto-close (do NOT re-litigate)
 
@@ -10,7 +10,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 
 ## Current state
 
-- Merge state: Merged: PR #49 7770a2b on 2026-10-15; main checkout on main @ 7770a2b (published 5bf1747: optimo → App Lab)
+- Merge state: PR pending (branch arc/amazon-memos-monitor)
 - Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
 - Agent alerting rule (Mark, 2026-10-13): nothing running is SLA-critical — one push + email only when an item has been
   down (late/failed) for 24h+, one quiet "working again" after. Contract: `docs/spec.md` → Agent Monitor · Alerting.
@@ -19,15 +19,17 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 - Ship gate: `bash scripts/gauntlet.sh` (verify skill) — 0 webkit · 1 unit · 2 inline · 3 tenants-check · 4 Playwright · 5 ui-audit.
 
 ## Shipped this arc
-- **S1** (`9ed270d`): applied `docs/evidence/unpin-the-mac-slice-2-press.patch` — `tools/tenants-check.mjs` defaults
-  `CODE_ROOT` = parent of the press root, `COUNCIL_DIR` = `../council`; env overrides kept; header: a Mac run without
-  siblings sets them; gauntlet comment; defaults test.
-- **S2** (`f203f90`, code review): realpath'd test base (macOS tmp symlink), defaults follow `--press`, positive T8 assert.
-- Gauntlet GREEN both slices: unit 144/0 · inline ✓ · tenants-check 69/0/24 (council + every tenant cloned beside press) ·
-  Playwright 148 ✓ · ui-audit GREEN on WebKit. No page, DB or publish change.
-- Earlier (quiet-alerts, 2026-10-13): `agent-watch` v7 alerts once per 24h+ down episode; `idle_is_work`; fsa-capture off.
+- **S1**: `db/20261019_amazon_memos_expect.sql` (council PR #56's staged patch, verbatim) — `press_agent_expect` row
+  `amazon-memos` (The Money · browser-task · checkin · weekly Mon 01:43 CT · grace 1440 · sort 75) + five check-in rows moved
+  to night-window times (card-scout-weekly-store-check Wed 03:41 · cowork-popup-watch Mon 02:52 · snag-train 2nd 02:13 ·
+  steward-audit 1st 04:14 · steward-watch Mon 04:24). Live dry-run (rolled back) OK; applied after merge via the connector.
+- Gauntlet: unit 151/0 · inline ✓ · Playwright 150 ✓ · ui-audit GREEN; tenants-check red only for absent sibling tenant
+  repos (identical without the patch). Evidence `docs/evidence/amazon-memos-monitor-*`. No page, publish or Edge Function change.
+- Earlier (tenants-check-siblings, 2026-10-14): tenants-check defaults = sibling clones.
 
 ## Open / blockers
+- **snag-train `kind` is still `mac-task`** while its `what` now says "Cloud scheduled task" (from council's patch) — confirm
+  where it runs and fix `kind` in a follow-up if it moved to the cloud (D1 🟡).
 - **FSA receipt inlet** is off on the monitor until it actually reports in; switch `press_agent_expect.enabled` back on then.
 - **The shared gates still carry sub-44px controls.** `src/gate.js` (`.pg-back`, `.pg-btn`) and `src/family-gate.js`
   (`.fg-back`, `.fg-link`) are fixed on press pages by page-level overrides only; editing the modules drifts 7 tenants (T3).

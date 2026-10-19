@@ -4,6 +4,17 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-10-19 — arc/amazon-memos-monitor (Agent Monitor: Amazon memos + night-window times)
+
+Mark asked to schedule the press half of council arc/night-window-amazon-memos. S1 applied council's staged patch
+(`docs/evidence/night-window-amazon-memos-staged-press.patch`, council main 7830c0d) verbatim: migration
+`db/20261019_amazon_memos_expect.sql` inserts the `amazon-memos` check-in expectation (The Money, browser-task, weekly Mon
+01:43, grace 24 h; idempotent ON CONFLICT DO NOTHING) — without it the task's `press_agent_checkin('amazon-memos', …)` raises
+"unknown check-in agent" — and moves five existing check-in expectations to their night-window times so real runs are not
+read as late. Dry-run on the live DB in a rolled-back block (next due 2026-10-26 06:43 UTC). Gauntlet: unit 151/0, inline ✓,
+Playwright 150 ✓, ui-audit GREEN; tenants-check red only for sibling tenant repos absent in the cloud clone (identical without
+the patch). Applied to Supabase after merge via the connector (non-destructive).
+
 ## 2026-10-14 — arc/tenants-check-siblings (tenants-check sibling-clone defaults)
 
 Verify of fsa-claims PR #20 ("Unpin the Mac") found press S2 built + gauntlet-green but never pushed (press was outside that
