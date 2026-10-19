@@ -1,0 +1,14 @@
+arc/amazon-memos-monitor — live apply — 2026-10-19 (after merge of PR #52 → 415c826)
+
+Supabase eepjhpyziczrxvirczio, connector apply_migration "amazon_memos_expect" = db/20261019_amazon_memos_expect.sql verbatim → success.
+Non-destructive: one INSERT … ON CONFLICT DO NOTHING + five UPDATE … SET sched/what by primary key.
+
+Post-apply, press_agent_monitor_public (the view agent-health.html reads) ⋈ press_agent_expect:
+  amazon-memos                   The Money   browser-task  checkin  weekly dow1 01:43   no-data  next 2026-10-26 06:43 UTC
+  card-scout-weekly-store-check  Card Scout  browser-task  checkin  weekly dow3 03:41   healthy  next 2026-10-21 08:41 UTC
+  cowork-popup-watch             The Council cloud-task    checkin  weekly dow1 02:52   healthy  next 2026-10-26 07:52 UTC
+  snag-train                     The Council mac-task      checkin  monthly dom2 02:13  no-data  next 2026-11-02 08:13 UTC
+  steward-audit                  The Council mac-task      checkin  monthly dom1 04:14  no-data  next 2026-11-01 10:14 UTC
+  steward-watch                  The Council mac-task      checkin  weekly dow1 04:24   healthy  next 2026-10-26 09:24 UTC
+Note: the order named press_agent_health_public; that is the all-apps runs view (app/agent/cadence columns) — the Agent
+Monitor page reads press_agent_monitor_public, verified above.

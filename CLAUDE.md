@@ -33,7 +33,7 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: PR pending (branch arc/amazon-memos-monitor)
+Merge state: Merged: PR #52 415c826 on 2026-10-19; main checkout on main @ 415c826
 **arc/amazon-memos-monitor (2026-10-19) — Agent Monitor registers the weekly Amazon memos task + night-window times.**
 `db/20261019_amazon_memos_expect.sql` (staged by council PR #56, applied verbatim): `press_agent_expect` row `amazon-memos`
 (The Money · browser-task · checkin · Mon 01:43 CT · grace 1440) + five check-in rows moved to their night-window times
