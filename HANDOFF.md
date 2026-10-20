@@ -1,6 +1,6 @@
 # press — HANDOFF
 
-_Last updated: 2026-10-19. arc/amazon-memos-monitor — Agent Monitor registers Amazon memos + night-window times (cloud Builder)._
+_Last updated: 2026-10-20. arc/chrome-route-press — quiet-night agent-watch + Chrome route expect rows (cloud Builder)._
 
 ## Standing rule: publish auto-close (do NOT re-litigate)
 
@@ -10,22 +10,24 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 
 ## Current state
 
-- Merge state: Merged: PR #52 415c826 on 2026-10-19; main checkout on main @ 415c826
+- Merge state: PR pending (branch arc/chrome-route-press)
 - Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
 - Agent alerting rule (Mark, 2026-10-13): nothing running is SLA-critical — one push + email only when an item has been
   down (late/failed) for 24h+, one quiet "working again" after. Contract: `docs/spec.md` → Agent Monitor · Alerting.
-- Live: Edge Function `agent-watch` v7 (verified: 02:00 UTC tick ok, cleared the FSA inlet episode); migration
-  `agent_monitor_quiet_alerts` applied; GH `agent-health-notifier` every 6 h.
+- Live: Edge Function `agent-watch` (quiet nights deployed after this merge — see the PR close-out for the ezbr proof);
+  migration `agent_monitor_quiet_alerts` applied; GH `agent-health-notifier` every 6 h.
+- Quiet nights (Mark 2026-10-19): any agent-watch push 22:00–07:00 America/Chicago goes out at Pushover priority −1
+  (delivered, no sound); email unchanged. `nightPriority` stays byte-identical with council `tools/quiet-night.mjs`.
 - Ship gate: `bash scripts/gauntlet.sh` (verify skill) — 0 webkit · 1 unit · 2 inline · 3 tenants-check · 4 Playwright · 5 ui-audit.
 
 ## Shipped this arc
-- **S1**: `db/20261019_amazon_memos_expect.sql` (council PR #56's staged patch, verbatim) — `press_agent_expect` row
-  `amazon-memos` (The Money · browser-task · checkin · weekly Mon 01:43 CT · grace 1440 · sort 75) + five check-in rows moved
-  to night-window times (card-scout-weekly-store-check Wed 03:41 · cowork-popup-watch Mon 02:52 · snag-train 2nd 02:13 ·
-  steward-audit 1st 04:14 · steward-watch Mon 04:24). Live dry-run (rolled back) OK; applied after merge via the connector.
-- Gauntlet: unit 151/0 · inline ✓ · Playwright 150 ✓ · ui-audit GREEN; tenants-check red only for absent sibling tenant
-  repos (identical without the patch). Evidence `docs/evidence/amazon-memos-monitor-*`. No page, publish or Edge Function change.
-- Earlier (tenants-check-siblings, 2026-10-14): tenants-check defaults = sibling clones.
+- **S1** (`a4758d3`): council `docs/evidence/chrome-keeper-staged-press.patch` (council 940bf96) applied verbatim —
+  `agent-watch` quiet nights (`nightPriority` in `watch-core.mjs`, applied in `index.ts`; DST tests) +
+  `db/20261020_chrome_route_expect.sql` (`chrome-preflight` daily 01:10 grace 180 · amazon-memos Mon 01:20 ·
+  card-scout-weekly-store-check Wed 01:35).
+- Gauntlet GREEN with the 8 tenant repos + council as siblings: unit 152/0 · inline ✓ · tenants-check 76/0/24 · Playwright 150 ·
+  ui-audit GREEN (WebKit). Sentry 0 hits. Evidence `docs/evidence/chrome-route-press-*`. No page or publish change.
+- Earlier (amazon-memos-monitor, 2026-10-19): amazon-memos expect row + five night-window times.
 
 ## Open / blockers
 - **snag-train `kind` is still `mac-task`** while its `what` now says "Cloud scheduled task" (from council's patch) — confirm
@@ -34,8 +36,8 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 - **The shared gates still carry sub-44px controls.** `src/gate.js` (`.pg-back`, `.pg-btn`) and `src/family-gate.js`
   (`.fg-back`, `.fg-link`) are fixed on press pages by page-level overrides only; editing the modules drifts 7 tenants (T3).
 - **press_deals anon INSERT (and TRUNCATE/REFERENCES/TRIGGER) grants**: pre-existing. Steward no longer depends on them.
-- **Cloud gauntlet stage 3**: tenants-check defaults to sibling clones now; a vendored/released tenant whose repo is absent
-  still FAILs T2 (by design) — dispatch press arcs with the tenant repos in scope. council-guide's `repoPath`
+- **Cloud gauntlet stage 3**: tenants-check defaults to sibling clones; with all 8 tenants + council attached it is GREEN
+  (76/0/24, this arc). A tenant repo left out still FAILs T2 (by design) — dispatch press arcs with the tenant repos in scope. council-guide's `repoPath`
   (`~/Documents/Claude/council-hub/council`, tenants.json) SKIPs T2 in the cloud.
 - Carried: on-demand AI functions record no runs ("No data") · optimo's cloud Playwright baseline RED (env) · flow
   `kayley.html` compare BLOCKED (flow out of scope) · Issues #28–#32 · remote branch `claude/perth-phase-2-security-c7a88b`

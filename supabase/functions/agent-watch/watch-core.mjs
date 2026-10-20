@@ -55,6 +55,25 @@ export function selfGapMinutes(prevWatchIso, nowMs, staleMin = WATCH_STALE_MIN) 
 const human = (m) => (m >= 2880 ? `${Math.round(m / 1440)} days` : m >= 90 ? `${Math.round(m / 60)} hours` : `${m} min`);
 const word = (a) => (a.kind === 'fixed' ? 'is working again' : `has been down ${human(a.down_min)}`);
 
+// Quiet nights (council arc chrome-keeper, Mark 2026-10-19): no phone buzz while Mark sleeps, never a silent failure —
+// any push sent 22:00–07:00 America/Chicago goes out at priority -1 (delivered, no sound/vibration). Daytime unchanged;
+// email unchanged. The block below is byte-identical with council tools/quiet-night.mjs (council test asserts it).
+// --- nightPriority (keep byte-identical with press watch-core.mjs) ---
+export function chicagoMinutes(date) {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(date);
+  const get = (t) => Number(parts.find((p) => p.type === t).value);
+  return (get('hour') % 24) * 60 + get('minute');
+}
+export function inQuietNight(date = new Date()) {
+  const n = chicagoMinutes(date);
+  return n >= 22 * 60 || n < 7 * 60;
+}
+export function nightPriority(priority, date = new Date()) {
+  const p = Number.isFinite(priority) ? priority : 0;
+  return inQuietNight(date) && p > -1 ? -1 : p;
+}
+// --- end nightPriority ---
+
 // One message per tick (push + email carry the same text). Never contains a secret or an email address.
 export function formatAlert(alerts, gapMin, pageUrl) {
   const lines = [];

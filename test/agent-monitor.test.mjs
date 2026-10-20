@@ -5,6 +5,7 @@
 //   • the watcher alerts only on changes that matter; the GH notifier run maps to real work
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 await import('../src/agent-monitor.js');
 const AM = globalThis.AgentMonitor;
@@ -146,6 +147,35 @@ test('watcher (quiet-alerts): down 24h+ alerts once, then one "working again" no
   // switched off while down → silent
   r = W.diffStates([row('off')], { a: { status: 'late', since: plus(0), bad_since: plus(0), down_alerted: true } }, plus(40));
   assert.equal(r.alerts.length, 0);
+});
+
+test('watcher (quiet nights): a push 22:00–07:00 America/Chicago goes out at -1; daytime unchanged; DST-safe', () => {
+  const at = (iso) => new Date(iso);
+  // CDT (UTC-5): 21:59 / 22:00 / 06:59 / 07:00
+  assert.equal(W.nightPriority(0, at('2026-10-20T02:59:00Z')), 0);
+  assert.equal(W.nightPriority(0, at('2026-10-20T03:00:00Z')), -1);
+  assert.equal(W.nightPriority(0, at('2026-10-20T11:59:00Z')), -1);
+  assert.equal(W.nightPriority(0, at('2026-10-20T12:00:00Z')), 0);
+  // CST (UTC-6), winter: 21:59 / 22:00 / 06:59 / 07:00
+  assert.equal(W.nightPriority(0, at('2026-01-15T03:59:00Z')), 0);
+  assert.equal(W.nightPriority(0, at('2026-01-15T04:00:00Z')), -1);
+  assert.equal(W.nightPriority(0, at('2026-01-15T12:59:00Z')), -1);
+  assert.equal(W.nightPriority(0, at('2026-01-15T13:00:00Z')), 0);
+  // DST ends 2026-11-01 02:00 CDT → 01:00 CST: 06:59 / 07:00 CST that morning
+  assert.equal(W.nightPriority(0, at('2026-11-01T12:59:00Z')), -1);
+  assert.equal(W.nightPriority(0, at('2026-11-01T13:00:00Z')), 0);
+  // DST starts 2026-03-08 02:00 CST → 03:00 CDT: 06:59 / 07:00 CDT that morning (12:00Z would be 06:00 under CST)
+  assert.equal(W.nightPriority(0, at('2026-03-08T11:59:00Z')), -1);
+  assert.equal(W.nightPriority(0, at('2026-03-08T12:00:00Z')), 0);
+  // already quiet stays as it is; anything louder is demoted at night only
+  assert.equal(W.nightPriority(-1, at('2026-10-20T06:00:00Z')), -1);
+  assert.equal(W.nightPriority(-2, at('2026-10-20T06:00:00Z')), -2);
+  assert.equal(W.nightPriority(1, at('2026-10-20T06:00:00Z')), -1);
+  assert.equal(W.nightPriority(1, at('2026-10-20T18:00:00Z')), 1);
+  assert.equal(W.nightPriority(undefined, at('2026-10-20T18:00:00Z')), 0);
+  // agent-watch applies it to the one push it sends (email untouched)
+  const ix = readFileSync(new URL('../supabase/functions/agent-watch/index.ts', import.meta.url), 'utf8');
+  assert.match(ix, /msg\.push\.priority = nightPriority\(msg\.push\.priority, started\)/);
 });
 
 test('watcher: notices its own gap only after a day', () => {

@@ -7,11 +7,12 @@
 //   2. reads the server-computed press_agent_monitor_public view (status from REAL work, never `skipped`);
 //   3. diffs against press_agent_watch_state and alerts ONLY when an item has been down (late|failed) for 24h+
 //      (once per episode) or comes back after such an alert — ONE Pushover push + ONE Gmail email
-//      (council notify.mjs transports). Shorter blips are stored silently (arc quiet-alerts);
+//      (council notify.mjs transports). Shorter blips are stored silently (arc quiet-alerts); a push sent
+//      22:00–07:00 America/Chicago goes out at priority -1 — no buzz at night (council arc chrome-keeper);
 //   4. notes its own gap since the previous tick, and logs itself as a press_agent_runs row (agent-watch).
 // Body {"dry":true} = compute + store nothing, notify nothing (for testing).
 import { makePushImpl, makeEmailImpl } from '../_shared/notify.mjs';
-import { diffStates, formatAlert, selfGapMinutes, ghRunToRow } from './watch-core.mjs';
+import { diffStates, formatAlert, selfGapMinutes, ghRunToRow, nightPriority } from './watch-core.mjs';
 
 const SB_URL = Deno.env.get('SUPABASE_URL') || '';
 const SERVICE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
@@ -80,6 +81,7 @@ Deno.serve(async (req) => {
     let notifiedIds: string[] = [];
     if (!dry && (alerts.length || gap)) {
       const msg = formatAlert(alerts, gap, PAGE_URL);
+      msg.push.priority = nightPriority(msg.push.priority, started); // quiet nights: 22:00–07:00 CT ⇒ -1
       sent = { push: 'off', email: 'off' };
       const appToken = Deno.env.get('PUSHOVER_APP_TOKEN') || '', userKey = Deno.env.get('PUSHOVER_USER_KEY') || '';
       const mailerEndpoint = Deno.env.get('MAILER_ENDPOINT') || '', mailerKey = Deno.env.get('MAILER_KEY') || '';
