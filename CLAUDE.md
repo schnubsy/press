@@ -33,7 +33,7 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: PR pending (branch arc/chrome-route-press)
+Merge state: Merged: PR #53 0837afa on 2026-10-20; main checkout on main @ 0837afa
 **arc/chrome-route-press (2026-10-20) — quiet-night agent-watch + Chrome route expect rows** (press half of council
 arc/chrome-keeper, PR #59 940bf96; staged patch applied verbatim). `agent-watch` sends any push 22:00–07:00 America/Chicago
 at Pushover priority −1 (`nightPriority`, byte-identical with council `tools/quiet-night.mjs`; email unchanged).
