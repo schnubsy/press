@@ -515,7 +515,25 @@ background:radial-gradient(circle,var(--faint) 1.1px,transparent 1.4px) 0 0/3px 
 .erow:focus-within .note{display:block;margin:0;min-height:0}
 .erow:focus-within .note::placeholder{color:var(--faint);opacity:.6}
 .erow:focus-within .amt{grid-row:1;height:24px;padding-bottom:0}
-.erow:focus-within .sgn{margin:4px 0 6px}</style>
+.erow:focus-within .sgn{margin:4px 0 6px}
+.erow{grid-template-columns:44px minmax(0,1fr) auto max-content 32px;
+grid-template-areas:"grip what cur amt del" "grip note cur amt del"}
+.erow:focus-within{grid-template-areas:"grip what cur amt del" "grip note cur sgn del"}
+.erow .grip{grid-area:grip;grid-row:1/3;position:relative;align-self:stretch;justify-self:stretch;
+width:44px;height:auto;min-height:44px;margin:0;padding:0;border:0;border-radius:6px;background:transparent;
+touch-action:none;color:transparent;-webkit-tap-highlight-color:transparent}
+.erow .grip::before{content:"";position:absolute;left:9px;top:5px;width:8px;height:15px;opacity:.6;
+background:radial-gradient(circle,var(--muted) 1.3px,transparent 1.7px) 0 0/4px 5px}
+.erow .grip:hover::before,.erow .grip:focus-visible::before{opacity:1}
+.erow .grip .pmark{position:absolute;right:3px;top:3px;width:18px;height:18px;
+font:700 15px/18px var(--sans);text-align:center;color:var(--paid);pointer-events:none}
+.erow.sel .grip::before{opacity:1;background-image:radial-gradient(circle,var(--brass) 1.3px,transparent 1.7px)}
+.erow.addrow .grip{touch-action:auto;pointer-events:none}
+.erow.addrow .grip::before{content:"＋";left:0;right:0;width:auto;height:auto;opacity:1;background:none;
+text-align:center;top:3px;font:500 15px/18px var(--sans);color:var(--brass)}
+.erow,.erow .grip,.erow .nm,.erow .curpill,.erow .del,.erow .sgn,.selbar{
+-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.erow input{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}</style>
 </head>
 <body>
 <main class="app" id="remit-root">
@@ -1949,18 +1967,17 @@ setTimeout(function () { document.addEventListener('pointerdown', outside, true)
 function erow(it, homeCur, addCtx, selected) {
 var isAdd = !it;
 var id = isAdd ? '' : it.id;
-var grip = isAdd ? '<span class="grip" aria-hidden="true"></span>'
-: '<button type="button" class="grip" data-grip="' + esc(id) + '" aria-label="Reorder or select ' + esc(it.description || 'line') + '"></button>';
 var desc = isAdd ? '' : (it.description || '');
 var note = isAdd ? '' : (it.note || '');
 var amt = isAdd ? '' : (it.amount != null ? Number(it.amount).toFixed(2) : '');
 var cur = isAdd ? (addCtx.currency || homeCur) : it.currency;
 var paid = !isAdd && it.status === 'paid';
 var ctxAttr = isAdd ? (' data-add data-bucket="' + esc(addCtx.bucket) + '"' + (addCtx.section_id ? ' data-section="' + esc(addCtx.section_id) + '"' : '') + ' data-cur="' + esc(cur) + '"') : (' data-item="' + esc(id) + '"');
-var tick = isAdd ? '<span class="tick" aria-hidden="true"></span>'
-: '<button type="button" class="tick' + (paid ? ' on' : '') + '" data-tick="' + esc(id) + '" role="switch" aria-checked="' + paid + '" aria-label="Paid"' + (paid ? '' : '') + '>' + (paid ? '✓' : '') + '</button>';
+var grip = isAdd ? '<span class="grip addmark" aria-hidden="true"></span>'
+: '<button type="button" class="grip" data-grip="' + esc(id) + '" aria-pressed="' + (!!selected) + '" aria-label="Select or move ' + esc(it.description || 'line') + (paid ? ' (paid)' : '') + '">' +
+(paid ? '<span class="pmark" aria-hidden="true">✓</span>' : '') + '</button>';
 return '<div class="row erow' + (paid ? ' paid' : '') + (isAdd ? ' addrow' : '') + (selected ? ' sel' : '') + '"' + ctxAttr + '>' +
-grip + tick +
+grip +
 '<span class="nm">' +
 '<input class="what" data-f="description" value="' + esc(desc) + '" placeholder="' + (isAdd ? 'Add item' : 'What is it?') + '" aria-label="What" autocomplete="off">' +
 '<input class="note" data-f="note" value="' + esc(note) + '" placeholder="note" aria-label="Note" autocomplete="off">' +
@@ -2206,7 +2223,7 @@ else if (e.key === 'Escape') { e.preventDefault(); inp.value = inp.getAttribute(
 });
 inp.addEventListener('blur', () => { setTimeout(() => { if (!rowEl.contains(document.activeElement)) commit(false); }, 0); });
 });
-rowEl.querySelectorAll('[data-curbtn],[data-tick],[data-del]').forEach((btn) => {
+rowEl.querySelectorAll('[data-curbtn],[data-del]').forEach((btn) => {
 btn.addEventListener('pointerdown', (e) => e.preventDefault());
 btn.addEventListener('mousedown', (e) => e.preventDefault());
 });
@@ -2221,11 +2238,6 @@ curBtn.setAttribute('aria-label', 'Currency: ' + CURNAME[next] + ' — change');
 } else { await store.updateItem(id, { currency: next }); }
 });
 wireSign(rowEl.querySelector('[data-sgn]'), rowEl.querySelector('[data-f="amount"]'));
-var tickBtn = rowEl.querySelector('[data-tick]');
-if (tickBtn) tickBtn.addEventListener('click', async () => {
-var it = ctrl.itemById(id); if (!it) return;
-await store.updateItem(id, { status: it.status === 'paid' ? 'requested' : 'paid' });
-});
 var delBtn = rowEl.querySelector('[data-del]');
 if (delBtn) delBtn.addEventListener('click', async () => {
 var it = ctrl.itemById(id);
@@ -2345,7 +2357,6 @@ return [].concat(m.recurring.rows, m.extras.rows, m.mine.rows, [].concat.apply([
 ctrl.itemById = function (id) { return ctrl.allRows().find((it) => it.id === id) || null; };
 ctrl.selection = new Set();
 ctrl.toggleSelect = function (id) { if (ctrl.selection.has(id)) ctrl.selection.delete(id); else ctrl.selection.add(id); render(ctrl); };
-ctrl.enterSelect = function (id) { ctrl.selection.add(id); render(ctrl); };
 ctrl.clearSelect = function () { ctrl.selection.clear(); render(ctrl); };
 ctrl.markSelected = async function (status) {
 var ids = Array.from(ctrl.selection); ctrl.selection.clear();
@@ -2398,12 +2409,20 @@ Remit.ui.swallow = swallow;
 (function (root) {
 'use strict';
 var Remit = root.Remit = root.Remit || {};
-var MOVE_THRESHOLD = 6;   // px before a press becomes a drag
-var LONG_PRESS_MS = 500;  // hold to enter selection on touch
+var MOVE_THRESHOLD = 6;         // px (|dx|+|dy|) before a mouse/pen press becomes a drag
+var TOUCH_MOVE_THRESHOLD = 12;  // a finger tap drifts — a sloppy tap must stay a tap (a drag clears the selection)
 function wireDrag(ctrl) {
 ctrl.root.querySelectorAll('.grip[data-grip]').forEach(function (grip) {
 grip.style.touchAction = 'none';
 grip.addEventListener('pointerdown', function (e) { onDown(ctrl, grip, e); });
+grip.addEventListener('contextmenu', function (e) { e.preventDefault(); });   // no press-and-hold menu
+grip.addEventListener('keydown', function (e) {
+if (e.key !== 'Enter' && e.key !== ' ') return;
+e.preventDefault();
+var gid = grip.getAttribute('data-grip');
+ctrl.toggleSelect(gid);
+var again = ctrl.root.querySelector('.grip[data-grip="' + gid + '"]'); if (again) again.focus();   // keep focus across the re-render
+});
 });
 }
 function onDown(ctrl, grip, e) {
@@ -2414,14 +2433,20 @@ if (!row) return;
 e.preventDefault();
 if (e.shiftKey) { ctrl.toggleSelect(id); return; }   // desktop multi-select
 var startX = e.clientX, startY = e.clientY;
-var dragging = false, longFired = false, clone = null;
-var longTimer = setTimeout(function () { if (!dragging) { longFired = true; ctrl.enterSelect(id); } }, LONG_PRESS_MS);
+var threshold = e.pointerType === 'touch' ? TOUCH_MOVE_THRESHOLD : MOVE_THRESHOLD;
+var dragging = false, clearedSel = false, clone = null;
 try { grip.setPointerCapture(e.pointerId); } catch (x) {}
 document.addEventListener('pointermove', onMove, true);
 document.addEventListener('pointerup', onUp, true);
-document.addEventListener('pointercancel', onUp, true);
+document.addEventListener('pointercancel', onCancel, true);
 function beginDrag() {
-dragging = true; clearTimeout(longTimer);
+dragging = true;
+if (ctrl.selection && ctrl.selection.size) {
+ctrl.selection.clear(); clearedSel = true;
+ctrl.root.querySelectorAll('.row.sel').forEach(function (r) { r.classList.remove('sel'); });
+ctrl.root.querySelectorAll('.grip[aria-pressed="true"]').forEach(function (g) { g.setAttribute('aria-pressed', 'false'); });
+var bar = ctrl.root.querySelector('.selbar'); if (bar) bar.remove();
+}
 clone = row.cloneNode(true);
 clone.classList.add('dragclone');
 clone.style.width = row.offsetWidth + 'px';
@@ -2442,31 +2467,41 @@ if (t && t !== row) t.classList.add('dropzone');
 }
 function onMove(ev) {
 if (!dragging) {
-if (Math.abs(ev.clientX - startX) + Math.abs(ev.clientY - startY) > MOVE_THRESHOLD) beginDrag();
+if (Math.abs(ev.clientX - startX) + Math.abs(ev.clientY - startY) > threshold) beginDrag();
 else return;
 }
 position(ev.clientX, ev.clientY);
 highlight(targetAt(ev.clientX, ev.clientY));
 }
-function onUp(ev) {
-clearTimeout(longTimer);
+function detach() {
 document.removeEventListener('pointermove', onMove, true);
 document.removeEventListener('pointerup', onUp, true);
-document.removeEventListener('pointercancel', onUp, true);
+document.removeEventListener('pointercancel', onCancel, true);
 try { grip.releasePointerCapture(e.pointerId); } catch (x) {}
-if (dragging) {
-var t = targetAt(ev.clientX, ev.clientY);
-if (t && t !== row) {
-var tid = t.getAttribute('data-item');
-if (tid) ctrl.moveItem(id, tid);
-else if (t.classList.contains('addrow')) ctrl.moveToSection(id, t.getAttribute('data-bucket'), t.getAttribute('data-section'));
-}
-} else if (!longFired && ctrl.selection && ctrl.selection.size) {
-ctrl.toggleSelect(id);   // in selection mode, a plain tap on the grip toggles the line
-}
 ctrl.root.querySelectorAll('.dropzone').forEach(function (r) { r.classList.remove('dropzone'); });
 if (clone) { clone.remove(); clone = null; }
 if (row) row.classList.remove('dragging');
+}
+function onCancel() { detach(); if (clearedSel) ctrl.clearSelect(); }
+function onUp(ev) {
+var moved = false;
+if (dragging) {
+var t = targetAt(ev.clientX, ev.clientY);
+detach();
+if (t && t !== row) {
+var tid = t.getAttribute('data-item');
+if (tid) { moved = true; ctrl.moveItem(id, tid); }
+else if (t.classList.contains('addrow')) { moved = true; ctrl.moveToSection(id, t.getAttribute('data-bucket'), t.getAttribute('data-section')); }
+}
+if (clearedSel && !moved) ctrl.clearSelect();
+return;
+}
+detach();
+var act = document.activeElement;
+if (act && act !== document.body && ctrl.root.contains(act) && act.blur) {
+act.blur();
+setTimeout(function () { if (!ctrl.root.querySelector('.amterr')) ctrl.toggleSelect(id); }, 0);
+} else ctrl.toggleSelect(id);
 }
 }
 Remit.ui = Remit.ui || {};
