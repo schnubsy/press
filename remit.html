@@ -490,7 +490,32 @@ html body #family-gate .fg-back,html body #family-gate .fg-link{display:inline-f
 .edefaults{margin:-16px 4px -4px}
 .seg button:focus-visible,.period .years button:focus-visible,.period .mgrid button:focus-visible{outline:0}
 .seg button:focus-visible::before,.period .years button:focus-visible::before,.period .mgrid button:focus-visible::before{outline:2px solid var(--brass);outline-offset:-2px}
-.btn{min-height:44px}</style>
+.btn{min-height:44px}
+.erow{grid-template-columns:14px 24px minmax(0,1fr) auto max-content 32px;grid-template-rows:24px 24px;
+grid-template-areas:"grip tick what cur amt del" "grip tick note cur amt del";align-items:center;min-height:0;padding:0}
+.erow .grip{grid-area:grip;position:relative;align-self:start;justify-self:start;width:24px;height:24px;min-height:0;
+margin:0 0 0 -10px;touch-action:none;color:transparent}
+.erow .grip::before{content:"";position:absolute;left:9px;top:6px;width:6px;height:11px;opacity:.55;
+background:radial-gradient(circle,var(--faint) 1.1px,transparent 1.4px) 0 0/3px 4px}
+.erow .grip:hover::before,.erow .grip:focus-visible::before{opacity:1}
+.erow.addrow .grip{touch-action:auto;pointer-events:none}
+.erow.addrow .grip::before{content:none}
+.erow .tick{grid-row:1;align-self:center}
+.erow .what{grid-area:what;align-self:end;height:24px;min-height:0;padding:2px 0;line-height:20px}
+.erow .note{grid-area:note;align-self:start;display:block;height:24px;min-height:0;margin:0;padding:0 0 4px;font-size:16px;line-height:20px}
+.erow .note:placeholder-shown{display:block}
+.erow .note::placeholder{color:transparent}
+.erow .curpill,.erow .amt{grid-row:1/3;align-self:stretch;height:48px;min-height:0;padding-bottom:24px;box-sizing:border-box}
+.erow .curpill{grid-area:cur;align-self:stretch}
+.erow .amt{grid-area:amt;line-height:24px}
+.erow .del{grid-row:1/3;min-height:0;height:48px;padding:0 0 24px;box-sizing:border-box;line-height:24px}
+.erow.paid .note:placeholder-shown{text-decoration:none}
+.erow:focus-within{grid-template-rows:24px auto;grid-template-areas:"grip tick what cur amt del" "grip tick note cur sgn del"}
+.erow:focus-within .what{min-height:0}
+.erow:focus-within .note{display:block;margin:0;min-height:0}
+.erow:focus-within .note::placeholder{color:var(--faint);opacity:.6}
+.erow:focus-within .amt{grid-row:1;height:24px;padding-bottom:0}
+.erow:focus-within .sgn{margin:4px 0 6px}</style>
 </head>
 <body>
 <main class="app" id="remit-root">
@@ -1234,6 +1259,17 @@ if (s === '') return { ok: true, value: null };
 if (!AMOUNT_RE.test(s) || !/\d/.test(s)) return { ok: false, value: null, error: AMOUNT_MSG };
 return { ok: true, value: Number(s.replace(/,/g, '')) };
 }
+function autoTickIds(lines, payment) {
+if (!payment || !payment.currency) return [];
+var pay = cents(payment.amount_delivered);
+if (!(pay > 0)) return [];
+var open = (lines || []).filter(function (it) {
+return it && alive(it) && !isPaidTick(it) && it.currency === payment.currency && it.amount != null && it.amount !== '';
+});
+if (!open.length) return [];
+var sum = open.reduce(function (a, it) { return a + cents(it.amount); }, 0);
+return sum === pay ? open.map(function (it) { return it.id; }) : [];
+}
 Remit.money = {
 SYMBOLS: SYMBOLS, symbol: symbol, cents: cents, fromCents: fromCents, fmt: fmt,
 alive: alive, isTransferLine: isTransferLine, isPaidTick: isPaidTick,
@@ -1242,7 +1278,7 @@ totalTotals: totalTotals, transferLineTotals: transferLineTotals,
 transfersDelivered: transfersDelivered, settledTotals: settledTotals, remainingTotals: remainingTotals,
 soleCurrency: soleCurrency, fmtByCurrency: fmtByCurrency, currenciesOf: currenciesOf,
 monthLabel: monthLabel, monthShort: monthShort, monthName: monthName, monthModel: monthModel,
-parseAmount: parseAmount, AMOUNT_MSG: AMOUNT_MSG,
+parseAmount: parseAmount, AMOUNT_MSG: AMOUNT_MSG, autoTickIds: autoTickIds,
 };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 </script>
@@ -2616,7 +2652,9 @@ if (money.parseAmount($(id).value).ok) Remit.ui.amtError($(id).closest('.f2'), $
 redraw();
 }));
 $('[data-act="cancel"]').addEventListener('click', () => close(host));
+var saving = false;   // row-touch-fit D1 🟡: one save per sheet — a double tap never records the payment twice
 $('[data-act="save"]').addEventListener('click', async () => {
+if (saving) return;
 var c = selCur();
 var pa = money.parseAmount($('#t-amt').value), ps = c === 'USD' ? { ok: true, value: null } : money.parseAmount($('#t-sent').value);
 Remit.ui.amtError($('#t-amt').closest('.f2'), $('#t-amt'), pa.ok ? null : pa.error);
@@ -2631,10 +2669,17 @@ person_id: ctrl.personId, period_year: ctrl.year, period_month: ctrl.month, curr
 sent_on: $('#t-date').value || todayISO(), amount_delivered: amt, amount_sent_usd: sent || null,
 provider: ($('#t-prov').value || '').trim() || null, note: ($('#t-note').value || '').trim() || null,
 };
+var tickIds = editing ? [] : money.autoTickIds(ctrl.allRows ? ctrl.allRows() : [], fields);
+saving = true;
+try {
 if (editing) await store.updateTransfer(existing.id, fields);
 else await store.createTransfer(fields);
+} catch (e) { saving = false; throw e; }
 close(host);
-Remit.ui.toast(money.fmt(amt, c) + (editing ? ' payment updated.' : ' payment recorded.'));
+Remit.ui.toast(money.fmt(amt, c) + (editing ? ' payment updated.' : ' payment recorded.') +
+(tickIds.length ? ' Ticked ' + tickIds.length + (tickIds.length === 1 ? ' line.' : ' lines.') : ''));
+try { for (var i = 0; i < tickIds.length; i++) await store.updateItem(tickIds[i], { status: 'paid' }); }
+catch (e) { Remit.ui.toast('Payment recorded — the lines could not be ticked; tick them by hand.'); }
 });
 redraw();
 requestAnimationFrame(() => { scrim.classList.add('open'); sheet.classList.add('open'); });
