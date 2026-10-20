@@ -4,6 +4,17 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-10-20 — arc/chrome-route-press (quiet-night agent-watch + Chrome route expect rows)
+
+Council arc/chrome-keeper (PR #59, merge 940bf96) STAGED its press half; the chat's verify found the press full gauntlet
+incomplete (tenants-check could not reach the tenant repos). S1 applied `council/docs/evidence/chrome-keeper-staged-press.patch`
+verbatim: `watch-core.mjs` gains `chicagoMinutes` / `inQuietNight` / `nightPriority` (22:00–07:00 America/Chicago ⇒ push priority
+−1, never louder demoted by day; DST-tested), `index.ts` applies it to the one push per tick (email untouched); migration
+`db/20261020_chrome_route_expect.sql` registers `chrome-preflight` (The Council · browser-task · checkin · daily 01:10 · grace 180)
+and moves amazon-memos to Mon 01:20 and card-scout-weekly-store-check to Wed 01:35. Full gauntlet with all eight tenant repos +
+council cloned as siblings: unit 152/0, inline ✓, tenants-check 76 pass / 0 fail / 24 skip (by-design skips only), Playwright 150,
+ui-audit GREEN on WebKit. Sentry: diff secrets scan 0 hits.
+
 ## 2026-10-19 — arc/amazon-memos-monitor (Agent Monitor: Amazon memos + night-window times)
 
 Mark asked to schedule the press half of council arc/night-window-amazon-memos. S1 applied council's staged patch

@@ -33,12 +33,13 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #52 415c826 on 2026-10-19; main checkout on main @ 415c826
-**arc/amazon-memos-monitor (2026-10-19) — Agent Monitor registers the weekly Amazon memos task + night-window times.**
-`db/20261019_amazon_memos_expect.sql` (staged by council PR #56, applied verbatim): `press_agent_expect` row `amazon-memos`
-(The Money · browser-task · checkin · Mon 01:43 CT · grace 1440) + five check-in rows moved to their night-window times
-(card-scout Wed 03:41, cowork-popup Mon 02:52, snag-train 2nd 02:13, steward-audit 1st 04:14, steward-watch Mon 04:24).
-Applied live after merge. No page or publish change. Before it: tenants-check-siblings. Narrative: `docs/history.md`.
+Merge state: PR pending (branch arc/chrome-route-press)
+**arc/chrome-route-press (2026-10-20) — quiet-night agent-watch + Chrome route expect rows** (press half of council
+arc/chrome-keeper, PR #59 940bf96; staged patch applied verbatim). `agent-watch` sends any push 22:00–07:00 America/Chicago
+at Pushover priority −1 (`nightPriority`, byte-identical with council `tools/quiet-night.mjs`; email unchanged).
+`db/20261020_chrome_route_expect.sql`: new `chrome-preflight` check-in (daily 01:10, grace 180) + amazon-memos → Mon 01:20,
+card-scout-weekly-store-check → Wed 01:35. Gauntlet GREEN with all 8 tenant repos + council as siblings (tenants-check 76/0/24).
+Migration + agent-watch deploy run after merge. Before it: amazon-memos-monitor. Narrative: `docs/history.md`.
 
 ## Project rules
 

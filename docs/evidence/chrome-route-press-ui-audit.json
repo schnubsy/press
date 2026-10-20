@@ -1,0 +1,1447 @@
+{
+  "name": "press",
+  "engine": "webkit",
+  "fallback": null,
+  "widths": [
+    320,
+    375,
+    390,
+    393,
+    430
+  ],
+  "schemes": [
+    "dark",
+    "light"
+  ],
+  "states": [
+    "(initial)",
+    "lobby-ready",
+    "archive",
+    "private-first-time",
+    "private-locked",
+    "private-unlocked",
+    "private-devices",
+    "private-recovery-kit",
+    "family-signin",
+    "family-code",
+    "family-signed-in",
+    "steward-locked",
+    "steward-report",
+    "steward-denied",
+    "monitor",
+    "monitor-detail",
+    "monitor-admin",
+    "access-locked",
+    "access-signin",
+    "access-admin"
+  ],
+  "exceptions": [
+    ".row .line (agent-health.html) — an agent row is one <button> (tap to expand), so the probe reads its status line as a button label; it is server copy of variable length (\"Missed the run due Wed Oct 7, 12:00 PM CT · last real work 9 days ago\") that must wrap at phone width — truncating it would hide the reason the agent needs attention. The row title (.name) stays gated."
+  ],
+  "defects": 0,
+  "undriven": 0,
+  "verdict": "GREEN",
+  "code": 0,
+  "results": [
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "steward-denied",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "steward-denied",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "steward-denied",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "steward-denied",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "steward-denied",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "steward-denied",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "steward-denied",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "steward-denied",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "steward-denied",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "archive",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "private-first-time",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "private-locked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "private-devices",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "family-signin",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "family-code",
+      "surface": "div#family-gate \"Sign in to the Family Wing\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "family-signed-in",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "steward-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "steward-report",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "steward-denied",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "monitor",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "monitor-detail",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "monitor-admin",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "access-locked",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "access-signin",
+      "surface": "body",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "access-admin",
+      "surface": "body",
+      "defects": []
+    }
+  ]
+}

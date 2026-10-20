@@ -393,3 +393,9 @@ around the scope.
   sets them in the task's Edit dialog under the collapsed **Advanced settings**. [tag: council] (2026-10-13)
 - **Compare paths a script prints about itself against `realpath`.** Node resolves the main module symlink-free, so a test built
   on `mkdtemp` passes on Linux and fails on macOS (`/var` → `/private/var`). [tag: testing] (2026-10-14)
+
+## arc/chrome-route-press (2026-10-20)
+
+- **A press full gauntlet needs every tenant repo + council as a sibling clone.** Without them tenants-check T2/T4/T8 report
+  missing-repo FAILs that say nothing about the change; with them (8 tenants + council) it ran 76/0/24. Dispatch press arcs
+  with the tenant repos attached. [tag: testing] (2026-10-20)
