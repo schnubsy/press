@@ -1,0 +1,118 @@
+TAP version 13
+# Subtest: CT day keys: 03:00 UTC on Oct 13 is still Oct 12 in Chicago
+ok 1 - CT day keys: 03:00 UTC on Oct 13 is still Oct 12 in Chicago
+  ---
+  duration_ms: 43.712001
+  type: 'test'
+  ...
+# Subtest: CT midnight handles CDT and CST
+ok 2 - CT midnight handles CDT and CST
+  ---
+  duration_ms: 1.490233
+  type: 'test'
+  ...
+# Subtest: last 7 complete CT days exclude today
+ok 3 - last 7 complete CT days exclude today
+  ---
+  duration_ms: 3.480635
+  type: 'test'
+  ...
+# Subtest: remaining days are fractional to the next CT month start
+ok 4 - remaining days are fractional to the next CT month start
+  ---
+  duration_ms: 0.878068
+  type: 'test'
+  ...
+# Subtest: projection = MTD + avg(last 7 complete days) × remaining days
+ok 5 - projection = MTD + avg(last 7 complete days) × remaining days
+  ---
+  duration_ms: 0.966385
+  type: 'test'
+  ...
+# Subtest: projection: a quiet week projects only what is already spent
+ok 6 - projection: a quiet week projects only what is already spent
+  ---
+  duration_ms: 0.707108
+  type: 'test'
+  ...
+# Subtest: status mapping: server status → dot; unknown never shows green
+ok 7 - status mapping: server status → dot; unknown never shows green
+  ---
+  duration_ms: 0.878289
+  type: 'test'
+  ...
+# Subtest: overall verdict: failed → red, late → amber, otherwise green; off rows ignored
+ok 8 - overall verdict: failed → red, late → amber, otherwise green; off rows ignored
+  ---
+  duration_ms: 1.282927
+  type: 'test'
+  ...
+# Subtest: groupByApp: worst app first, off rows set aside
+ok 9 - groupByApp: worst app first, off rows set aside
+  ---
+  duration_ms: 1.232344
+  type: 'test'
+  ...
+# Subtest: schedule words
+ok 10 - schedule words
+  ---
+  duration_ms: 3.637064
+  type: 'test'
+  ...
+# Subtest: admin session: reads press:family:v1, rejects junk
+ok 11 - admin session: reads press:family:v1, rejects junk
+  ---
+  duration_ms: 0.960242
+  type: 'test'
+  ...
+# Subtest: watcher (quiet-alerts): a blip under 24h is stored silently, never alerted
+ok 12 - watcher (quiet-alerts): a blip under 24h is stored silently, never alerted
+  ---
+  duration_ms: 0.993642
+  type: 'test'
+  ...
+# Subtest: watcher (quiet-alerts): down 24h+ alerts once, then one "working again" note
+ok 13 - watcher (quiet-alerts): down 24h+ alerts once, then one "working again" note
+  ---
+  duration_ms: 1.18252
+  type: 'test'
+  ...
+# Subtest: watcher (quiet nights): a push 22:00–07:00 America/Chicago goes out at -1; daytime unchanged; DST-safe
+ok 14 - watcher (quiet nights): a push 22:00–07:00 America/Chicago goes out at -1; daytime unchanged; DST-safe
+  ---
+  duration_ms: 3.852663
+  type: 'test'
+  ...
+# Subtest: watcher: notices its own gap only after a day
+ok 15 - watcher: notices its own gap only after a day
+  ---
+  duration_ms: 0.380068
+  type: 'test'
+  ...
+# Subtest: GH notifier runs: a run that flagged a problem still did its job
+ok 16 - GH notifier runs: a run that flagged a problem still did its job
+  ---
+  duration_ms: 0.325985
+  type: 'test'
+  ...
+# Subtest: GH watcher-of-the-watcher: a watcher silent for a day (or missing) fails the job
+ok 17 - GH watcher-of-the-watcher: a watcher silent for a day (or missing) fails the job
+  ---
+  duration_ms: 0.705339
+  type: 'test'
+  ...
+# Subtest: GH watcher: late/failed agents only warn (the watcher alerts after a day); STRICT fails all
+ok 18 - GH watcher: late/failed agents only warn (the watcher alerts after a day); STRICT fails all
+  ---
+  duration_ms: 0.461599
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 285.473648
