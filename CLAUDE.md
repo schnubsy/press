@@ -33,7 +33,7 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: PR pending (branch arc/publish-vantage-onboarding-tour)
+Merge state: Merged: PR #55 14b8d4c on 2026-10-21; main checkout on main @ 14b8d4c
 **arc/publish-vantage-onboarding-tour (2026-10-21) — Vantage App Lab (training tour) + catalog row.** S1 rebuilt
 `app-lab/vantage/` from vantage main (9ef418c; web/ == 8f70424) — index.html M + 5 hashed assets swapped, == vantage's staged
 patch; S2 moved the `press_catalog` row 86ec7381 → 58a476c7 (council main 094544a: Vantage live + Rebate Radar web) via the

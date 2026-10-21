@@ -10,7 +10,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 
 ## Current state
 
-- Merge state: PR pending (branch arc/publish-vantage-onboarding-tour)
+- Merge state: Merged: PR #55 14b8d4c on 2026-10-21; main checkout on main @ 14b8d4c
 - Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
 - Agent alerting rule (Mark, 2026-10-13): nothing running is SLA-critical — one push + email only when an item has been
   down (late/failed) for 24h+, one quiet "working again" after. Contract: `docs/spec.md` → Agent Monitor · Alerting.
