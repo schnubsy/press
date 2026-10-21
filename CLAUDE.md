@@ -33,13 +33,12 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #53 0837afa on 2026-10-20; main checkout on main @ 0837afa
-**arc/chrome-route-press (2026-10-20) — quiet-night agent-watch + Chrome route expect rows** (press half of council
-arc/chrome-keeper, PR #59 940bf96; staged patch applied verbatim). `agent-watch` sends any push 22:00–07:00 America/Chicago
-at Pushover priority −1 (`nightPriority`, byte-identical with council `tools/quiet-night.mjs`; email unchanged).
-`db/20261020_chrome_route_expect.sql`: new `chrome-preflight` check-in (daily 01:10, grace 180) + amazon-memos → Mon 01:20,
-card-scout-weekly-store-check → Wed 01:35. Gauntlet GREEN with all 8 tenant repos + council as siblings (tenants-check 76/0/24).
-Migration + agent-watch deploy run after merge. Before it: amazon-memos-monitor. Narrative: `docs/history.md`.
+Merge state: PR pending (branch arc/publish-thrift-shop-iphone-compact)
+**arc/publish-thrift-shop-iphone-compact (2026-10-21) — Thrift Shop iPhone-compact page, live on merge** (rebuilt by
+thrift-shop `tools/release.js` from its merged main 9fec8b0 ⊇ PR #33 95c72e1). Only `thrift-shop.html` changed: blob
+d8818498 → 2403c3bb (== thrift-shop main). Gauntlet: unit 152/0 · inline ✓ · Playwright 150 · ui-audit GREEN (WebKit) ·
+tenants-check 55/21/24 — the 21 FAILs are 7 tenant repos outside this session's scope (identical on main) ⇒ BLOCKED (scope);
+merge waits on the chat's verify. Before it: chrome-route-press (2026-10-20). Narrative: `docs/history.md`.
 
 ## Project rules
 

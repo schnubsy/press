@@ -1,6 +1,6 @@
 # press — HANDOFF
 
-_Last updated: 2026-10-20. arc/chrome-route-press — quiet-night agent-watch + Chrome route expect rows (cloud Builder)._
+_Last updated: 2026-10-21. arc/publish-thrift-shop-iphone-compact — Thrift Shop iPhone-compact publish (cloud Builder)._
 
 ## Standing rule: publish auto-close (do NOT re-litigate)
 
@@ -10,7 +10,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 
 ## Current state
 
-- Merge state: Merged: PR #53 0837afa on 2026-10-20; main checkout on main @ 0837afa
+- Merge state: PR pending (branch arc/publish-thrift-shop-iphone-compact)
 - Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
 - Agent alerting rule (Mark, 2026-10-13): nothing running is SLA-critical — one push + email only when an item has been
   down (late/failed) for 24h+, one quiet "working again" after. Contract: `docs/spec.md` → Agent Monitor · Alerting.
@@ -21,13 +21,14 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 - Ship gate: `bash scripts/gauntlet.sh` (verify skill) — 0 webkit · 1 unit · 2 inline · 3 tenants-check · 4 Playwright · 5 ui-audit.
 
 ## Shipped this arc
-- **S1** (`a4758d3`): council `docs/evidence/chrome-keeper-staged-press.patch` (council 940bf96) applied verbatim —
-  `agent-watch` quiet nights (`nightPriority` in `watch-core.mjs`, applied in `index.ts`; DST tests) +
-  `db/20261020_chrome_route_expect.sql` (`chrome-preflight` daily 01:10 grace 180 · amazon-memos Mon 01:20 ·
-  card-scout-weekly-store-check Wed 01:35).
-- Gauntlet GREEN with the 8 tenant repos + council as siblings: unit 152/0 · inline ✓ · tenants-check 76/0/24 · Playwright 150 ·
-  ui-audit GREEN (WebKit). Sentry 0 hits. Evidence `docs/evidence/chrome-route-press-*`. No page or publish change.
-- Earlier (amazon-memos-monitor, 2026-10-19): amazon-memos expect row + five night-window times.
+- **S1**: `thrift-shop.html` rebuilt by thrift-shop `tools/release.js` (`--check` clean, no SKIPPED) from thrift-shop main
+  9fec8b0 (⊇ PR #33 95c72e1, iphone-compact). Only that file changed: blob d8818498 → **2403c3bb** == `git hash-object` at
+  thrift-shop main; stub, pages.json, favicons.md unchanged. One-row header tabs Feed · Sales · Gift cards · Sources · Settings.
+- Gauntlet: webkit 26.6 · unit 152/0 · inline ✓ · Playwright 150 · ui-audit GREEN (200 surfaces) · **tenants-check 55/21/24
+  RED — BLOCKED (scope)**: the 21 FAILs are T2/T3/T4 for 7 tenant repos not in this session's scope (retirement,
+  giving-tracker, fsa-claims, remit, optimo, cardsharp, vantage); identical on origin/main; all thrift-shop rows PASS.
+  Sentry: 0 hits. Evidence `docs/evidence/publish-thrift-shop-iphone-compact-*`. Live only once the PR merges (Pages serves main).
+- Earlier (chrome-route-press, 2026-10-20): agent-watch quiet nights + Chrome route expect rows (PR #53).
 
 ## Open / blockers
 - **snag-train `kind` is still `mac-task`** while its `what` now says "Cloud scheduled task" (from council's patch) — confirm
@@ -44,6 +45,9 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
   safe to delete.
 
 ## Exact next steps
+0. **Chat verify of this PR:** re-run press tenants-check with the 7 tenant repos attached (expect 76/0/24), review the diff,
+   merge, then reconcile + post-merge stamp, and confirm live `thrift-shop.html` (cache-bypassed) shows the one-row header and
+   the press blob == 2403c3bb.
 1. **Tenant wave — shared-gate tap targets** (one arc per tenant, or one wave): move the page-level overrides into
    `src/gate.js` + `src/family-gate.js` (min-height 44 on `.pg-btn`; inline-flex 44px `.pg-back` / `.fg-back` / `.fg-link`),
    then every tenant re-vendors (card-scout, retirement, giving, fsa, cardsharp; remit, optimo) and re-publishes; drop the

@@ -28,6 +28,7 @@
     /* live-measured sticky offsets (JS: --stick = header height; --stick2 = Rules search bar) so
        jump-to-category anchors land BELOW the sticky stack, not buried under it. Seeded generously. */
     --stick:150px; --stick2:0px;
+    color-scheme:light;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
@@ -41,6 +42,7 @@
       --danger:#ff8a80;
       --k-card-bg:rgba(79,195,138,.18); --k-card-fg:#7ee0ad; --k-sale-bg:rgba(110,168,255,.18); --k-sale-fg:#a9c9ff; --k-offer-bg:rgba(190,150,255,.18); --k-offer-fg:#d6c0ff;
       --on-accent:#0b1210; --on-danger:#0b1210; /* white on #4fc38a→#e0bd8f / #ff8a80 was ≈2:1; this ink clears 7:1 */
+      color-scheme:dark;
     }
   }
   *{box-sizing:border-box}
@@ -52,65 +54,74 @@
   }
   header{
     position:sticky;top:0;z-index:20;background:var(--bg);
-    padding:calc(env(safe-area-inset-top) + 10px) 16px 8px;border-bottom:1px solid var(--line);
+    padding:calc(env(safe-area-inset-top) + 2px) 16px 4px;border-bottom:1px solid var(--line);
   }
-  .brand{display:flex;align-items:center;gap:10px}
-  .brand h1{font-size:20px;margin:0;letter-spacing:-.02em}
-  .brand .logo{width:26px;height:26px;flex:0 0 auto}
-  #sync{margin-left:auto;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--chip);color:var(--muted)}
+  /* iphone-compact S1: the header is ONE 44px row — back · logo · [name, wide screens] · the five tabs · sync — ≈ 51px
+     (was back chip + brand row + 3+2 tab rows ≈ 200px). On a phone the name is screen-reader only (the logo + the browser
+     title carry it) and the sync state is a dot on the logo; a sync ERROR still shows its words (floating pill). */
+  .brand{display:flex;align-items:center;gap:8px;min-height:var(--tap);position:relative}
+  .brand h1{font-size:17px;margin:0;letter-spacing:-.02em;white-space:nowrap;flex:0 0 auto}
+  .brand .logo{width:24px;height:24px;flex:0 0 auto}
+  #sync{margin-left:auto;flex:0 0 auto;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--chip);color:var(--muted);white-space:nowrap}
+  @media (max-width:520px){
+    .brand h1{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+    #sync{position:absolute;left:44px;top:6px;width:10px;height:10px;padding:0;margin:0;font-size:0;line-height:0;overflow:hidden;border:2px solid var(--bg);box-sizing:content-box}
+    .brand #sync.ok{background:var(--hit)} .brand #sync.busy{background:var(--accentB)} .brand #sync.locked{background:var(--muted)}
+    .brand #sync.err{position:fixed;left:50%;top:calc(var(--stick) + 6px);transform:translateX(-50%);width:auto;height:auto;font-size:12px;line-height:1.4;padding:4px 10px;
+      border:1px solid var(--danger);background:var(--card);z-index:40;box-shadow:var(--shadow)}
+  }
+  @media (max-width:360px){ .brand .logo{display:none} #sync{left:14px;top:4px} }
   /* Slice 4 (Eye P1): the Synced/Saved state is a FILLED green pill (its own tinted background),
      distinct from the app's plain accent text; badge-hit-fg over the .18 tint clears WCAG 4.5:1 in
      both themes (light 5.90:1, dark 7.28:1 — verified by blending, docs/evidence/truthup-slice-4). */
   #sync.ok{color:var(--badge-hit-fg);background:rgba(15,122,77,.18)}
   #sync.err{color:var(--danger)} #sync.busy{color:var(--accentB)} #sync.locked{color:var(--muted)}
   /* back chip to the marquee's Private Wing */
-  .tw-back{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 10px 6px 4px;margin:-7px 0 -4px;min-height:var(--tap)} /* safari-ui: 44px hit, same visual rhythm */
+  .tw-back{display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;line-height:1;color:var(--muted);text-decoration:none;min-height:var(--tap);min-width:var(--tap);margin:0 -10px 0 -12px} /* iphone-compact S1: icon-only back, 44px hit */
   .tw-back:hover{color:var(--ink)}
-  nav{display:flex;gap:6px;margin-top:10px}
+  /* iphone-compact S1: the five tabs are ONE segmented row, in the header row itself (was 3 + 2 rows on a phone). */
+  nav{display:flex;flex:1 1 auto;min-width:0;gap:2px;padding:0;border-radius:12px;background:var(--chip)}
   nav button{
-    flex:1;min-height:var(--tap);border:1px solid var(--line);background:var(--card);color:var(--muted);
-    border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;
+    flex:1 1 auto;min-width:0;min-height:var(--tap);border:1px solid transparent;background:transparent;color:var(--muted);
+    border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;padding:0 6px;
   }
-  nav{flex-wrap:wrap}
-  nav button{white-space:nowrap;padding:0 6px}
-  @media (max-width:520px){ nav button{flex:1 1 calc(33.333% - 4px)} nav button:nth-child(n+4){flex:1 1 calc(50% - 3px)} } /* Thrift Shop S4: 5 tabs → 3 + 2 on a phone */
+  nav button{position:relative;min-width:var(--tap)}
+  @media (max-width:520px){ nav button{font-size:13px;padding:0 4px} nav .tabbadge{position:absolute;top:1px;right:0;margin:0;min-width:16px;height:16px;font-size:10px;padding:0 4px} }
+  @media (max-width:360px){ .brand{gap:4px} nav{gap:1px} nav button{font-size:12px;padding:0 2px;letter-spacing:-.1px} }
   nav button[aria-selected="true"]{color:var(--on-accent);background:linear-gradient(135deg,var(--accentA),var(--accentB));border-color:transparent}
-  main{max-width:640px;margin:0 auto;padding:14px 16px}
+  main{max-width:640px;margin:0 auto;padding:0 16px 14px}
   section[hidden]{display:none}
-  /* quick nav — a horizontally scrollable chip row, one per visible group */
-  /* Slice 6 (fixes arc): nav-style JUMP buttons — a CSS grid of N equal (1fr) columns that spans the
-     content column edge-to-edge (first button left == column left, last button right == column right).
-     Distinct from the Feed filter pills: squared 10px radius, card background, accent label, a trailing
-     ↓, a subtle shadow. Labels ellipsize (min-width:0) so N buttons never cause horizontal scroll; the
-     count is always kept. --qn-cols is set inline per container = number of groups. */
-  .quicknav{display:flex;flex-wrap:wrap;gap:8px;
-    padding:4px 0 8px;margin:0;scroll-margin-top:calc(var(--stick) + var(--stick2) + 16px)}
-  .quicknav:empty{display:none}
-  /* Each button flexes to an equal share; on a wide screen all N sit in ONE full-width row. On a
-     phone they wrap to 2 across so the category word stays legible (Eye P0), and a lone last item
-     flex-grows to fill the row so the grid still spans the column edge-to-edge on odd counts. */
-  .qchip{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;min-height:var(--tap);
-    text-decoration:none;font-size:13px;font-weight:600;color:var(--link);
-    background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:8px 10px}
-  @media (max-width:480px){ .qchip{flex:1 1 calc(50% - 4px)} } /* 2-across on the phone — full labels fit */
-  @media (max-width:360px){ .qchip{padding:8px 6px;gap:4px} .qdown{display:none} } /* safari-ui: the SE width keeps the whole label */
-  .qchip:hover{border-color:var(--accentA)}
-  .qchip:focus-visible{outline:2px solid var(--accentA);outline-offset:2px}
-  .qlabel{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .qcount{flex:0 0 auto;color:var(--muted);font-weight:700}
-  .qdown{flex:0 0 auto;color:var(--accentA);font-weight:700}
+  /* iphone-compact S1: every tab's controls live in ONE sticky toolbar row (.tbar) under the header — search (filters
+     every list on the tab) + a "Jump to…" select (was a 2-across grid of jump chips, up to 3 rows). */
+  .tbar{display:flex;align-items:center;gap:8px;position:sticky;top:var(--stick);z-index:5;background:var(--bg);
+    padding:6px 0;margin:0 0 2px;min-height:56px;scroll-margin-top:var(--stick)}
+  .tbar input[type=search]{flex:1 1 auto;min-width:0;min-height:var(--tap)}
+  .tbar .tbx{flex:0 0 auto;min-width:var(--tap);min-height:var(--tap);border-radius:999px;border:1px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer;font-size:15px}
+  .tbar .tbx[hidden]{display:none}
+  .tbar .tally{flex:1 1 auto;min-width:0;font-size:13px;color:var(--muted);line-height:1.3}
+  .tbar .tally strong{color:var(--ink)}
+  select.jump{flex:0 0 auto;min-width:0;max-width:50%;width:auto;font-weight:600;color:var(--link)}
+  .tbar select.jump:only-child{flex:1 1 auto;max-width:100%}
+  input[type=search]{min-height:var(--tap);border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);padding:0 10px;font-size:16px;-webkit-appearance:none;appearance:none}
+  input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none;display:none}
   /* consistent section heading — full-width rule above, count, and a Top link */
   /* Slice 5: a subtle full-width accent band behind each heading; 48px gap from the previous section.
      scroll-margin-top is unchanged so every jump still lands the heading below the sticky stack. */
-  .grouphead{display:flex;align-items:center;gap:10px;background:var(--band);border-radius:12px;
-    padding:10px 14px;margin:48px 0 14px;scroll-margin-top:calc(var(--stick) + var(--stick2) + 16px)}
-  .grouphead:first-child{margin-top:8px}
-  .grouphead h2{font-size:24px;font-weight:800;letter-spacing:-.015em;margin:0;flex:1;min-width:0}
+  /* iphone-compact S1/S2: a slim section bar (was 24px type, 10px padding, 48px gap) — the tab's sticky toolbar
+     replaces every "↑ Top" link; jumps land just below the header + toolbar (scroll-margin from the measured stack). */
+  .grouphead{display:flex;align-items:center;gap:8px;background:var(--band);border-radius:10px;min-height:var(--tap);
+    padding:0 12px;margin:22px 0 8px;scroll-margin-top:calc(var(--stick) + var(--stick2) + 6px)}
+  .grouphead:first-child,.tbar+.grouphead{margin-top:4px}
+  .grouphead h2{font-size:18px;font-weight:800;letter-spacing:-.01em;margin:0;flex:1;min-width:0;white-space:nowrap}
+  .ghlink{font-size:13px;font-weight:600;color:var(--link);text-decoration:none;cursor:pointer;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-height:var(--tap);min-width:var(--tap);padding:0 4px}
+  .ghlink[hidden]{display:none}
+  .ghmeta{font-size:13px;color:var(--muted);flex:0 0 auto;white-space:nowrap}
+  .ghmeta:empty{display:none}
   .grouphead .gcount,.badgroup .gcount{display:inline-block;font-size:14px;font-weight:600;color:var(--muted);background:var(--chip);border-radius:999px;padding:1px 9px;margin-left:6px;vertical-align:middle}
   /* Inbox arc Slice 5: the Processed section is a collapsible heading (button inside the h2).
      Multi-brand arc Slice 4: the bar is EXACTLY as tall as every other .grouphead — the ≥44px tap target is an
      absolutely-positioned ::before hit area spanning the bar, so it never grows the bar; content centred. */
-  .proc-toggle{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:6px;width:calc(100% + 28px);min-height:var(--tap);margin:-5px -14px;padding:0 14px;font:inherit;color:inherit;position:relative}
+  .proc-toggle{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:6px;width:calc(100% + 24px);min-height:var(--tap);margin:0 -12px;padding:0 12px;font:inherit;color:inherit;position:relative}
   .proc-toggle .gcount{margin-left:0}
   .proc-toggle:focus-visible{outline:2px solid var(--accentA);outline-offset:3px;border-radius:8px}
   .proc-toggle .caret{margin-left:auto;font-size:16px;color:var(--muted);transition:transform .15s}
@@ -150,12 +161,7 @@
     max-width:calc(100% - 32px);box-sizing:border-box;background:var(--ink);color:var(--card);border-radius:12px;padding:8px 8px 8px 14px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:14px}
   .toast[hidden]{display:none}
   .toast .btn{min-height:44px;background:transparent;color:inherit;border-color:currentColor}
-  .grouphead .toplink{font-size:13px;font-weight:600;color:var(--link);text-decoration:none;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-height:var(--tap);min-width:var(--tap);margin:-6px -6px -6px 0}
   /* rules search */
-  .searchbar{display:flex;gap:8px;position:sticky;top:var(--stick);z-index:5;
-    background:var(--bg);padding:8px 0 6px}
-  .searchbar input{flex:1;min-width:0;min-height:44px} /* safari-ui: min-width:0 keeps Clear inside the 16px gutter at 320 */
-  .searchbar .btn{min-height:44px}
   /* per-rule controls: the % and min-denomination steppers, stacked on narrow screens */
   .ctrls{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
   /* bad-flag-learning S4 — Settings → What I've learned */
@@ -212,18 +218,22 @@
   /* Inbox arc Slice 7: iOS zooms into any field under 16px and the page stays zoomed, drifting sideways.
      Every field is ≥16px; nothing may be wider than the screen. User zoom stays allowed (viewport meta). */
   input,select,textarea{font-size:16px;max-width:100%}
+  /* iphone-compact (Eye P0): :root declares color-scheme (light / dark), so iOS Safari draws its native selects in the
+     page's theme — the dark-mode "Jump to…" was a near-white control with mint text (≈1.8:1). The jump select gets the
+     chip fill on top. */
+  select.jump{background-color:var(--chip);color:var(--link);border-radius:10px}
   html,body{overflow-x:hidden}
   @supports (overflow:clip){ html,body{overflow-x:clip} } /* clip: no scroll container, so sticky keeps working */
   img,svg,video,table,pre{max-width:100%}
-  main,section,.card,.feedbar,.ftoolbar,.fsearch,.addrow,.searchbar,.row{min-width:0;max-width:100%}
+  main,section,.card,.feedbar,.ftoolbar,.fsearch,.addrow,.tbar,.row{min-width:0;max-width:100%}
   .empty{color:var(--muted);text-align:center;padding:26px 10px}
   .addrow{display:flex;gap:8px;margin-top:6px}
   .addrow input{flex:1;min-width:0}
   footer{max-width:640px;margin:6px auto 0;padding:14px 16px 24px;color:var(--muted);font-size:13px;text-align:center}
   footer a{color:var(--hit);display:inline-flex;align-items:center;min-height:var(--tap)} /* a11y: --accentA #149b6b is only 3.3:1 on --bg at 13px; --hit #0f7a4d is 4.94:1 (WCAG AA), and 8.4:1 in dark mode */
   /* feed filter bar — one compact row (When / Type / Sort / Search) + a status line */
-  .feedbar{margin:2px 0 8px}
-  .ftoolbar{display:flex;align-items:center;gap:8px;min-height:44px}
+  .feedbar{display:block}
+  .ftoolbar{display:flex;align-items:center;gap:8px;min-height:44px;flex:1 1 auto;min-width:0}
   .ftrigs{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
   .ftoolbar[data-searching="true"] .ftrigs{display:none}
   .fsearch{display:none;align-items:center;gap:8px;flex:1;min-width:0}
@@ -392,9 +402,9 @@
   .segbtn{min-height:var(--tap);min-width:var(--tap);padding:0 12px;border:0;background:var(--card);color:var(--ink);font-weight:600;font-size:14px;cursor:pointer}
   .segbtn+.segbtn{border-left:1px solid var(--line)}
   .segbtn.on{background:linear-gradient(135deg,var(--accentA),var(--accentB));color:var(--on-accent)}
-  .brandrow{padding:6px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+  .brandrow{padding:0;border-top:1px solid var(--line);flex-wrap:nowrap;gap:6px}
   .brandrow:first-child{border-top:0}
-  .brandrow .title{min-width:8ch}
+  .brandrow .title{min-width:0;flex:1 1 0}
   .brandrow .fchip{min-width:var(--tap);display:inline-flex;align-items:center;justify-content:center}
   #brand-card .addrow{flex-wrap:wrap}
   #brand-card .addrow input{flex:1 1 180px}
@@ -424,23 +434,80 @@
   .bykind{margin:-4px 0 10px;font-size:13px;color:var(--muted)}
   .vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
   @media (max-width:520px){ .testbtns{flex-direction:row;flex-wrap:wrap;width:100%} .testbtns .btn{flex:1 1 auto} }
+  /* ---------- iphone-compact S2 — compact cards and lists, universally ----------
+     Every title and note is ONE line (ellipsis; the full text rides in title="…" and the accessible name). Buttons are
+     vertically tight: a 44px box (the tap target) that DRAWS ~32px — 6px transparent top/bottom borders, the fill clipped
+     to the padding box and the outline an inset shadow (so axe still reads a real background). Cards: 8px 12px. */
+  .one{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .card{padding:8px 12px;margin-bottom:8px;border-radius:12px}
+  .sub{margin-top:0;line-height:1.35}
+  .btn.small,.btn.tight{min-height:var(--tap);padding:0 12px;border:0;border-top:6px solid transparent;border-bottom:6px solid transparent;background-clip:padding-box;
+    box-shadow:inset 0 0 0 1px var(--line);border-radius:14px;font-size:14px}
+  .btn.small.primary,.btn.tight.primary{box-shadow:none}
+  .toast .btn.small{box-shadow:inset 0 0 0 1px currentColor;background-color:transparent}
+  .dactrow{margin-top:0;row-gap:0}
+  .dacts{gap:6px}
+  .dactrow a.deal{font-size:15px}
+  .card.deal>.row:first-child{align-items:flex-start;gap:8px}
+  .dleft{display:flex;flex-direction:column;align-items:flex-start;gap:3px;flex:0 0 auto;max-width:112px;padding-top:2px}
+  .dtop{display:inline-flex;align-items:center;gap:6px}
+  .dleft .badge,.dleft .ktag{margin:0}
+  .dleft .dot.alerted{margin:0}
+  .card.deal .title{line-height:1.3}
+  .card.deal .rulehead-actions .ovf{width:44px;height:44px;margin:-6px -6px -6px 0;border-color:transparent;background:transparent}
+  .row .sw{margin:-4px 0}
+  .watchrow{padding:4px 0}
+  .wrow{gap:6px}
+  .wterm-wrap{flex:1 1 0;min-width:var(--tap)}
+  .wterm-wrap .wterm{min-width:var(--tap)}
+  select.wmin{flex:0 0 auto;padding:0 8px;font-weight:600;min-width:76px}
+  @media (max-width:400px){ .brandrow .segbtn{padding:0 8px;font-size:13px} }
+  .wterm-wrap .wterm{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;line-height:44px}
+  .wctl{display:flex;align-items:center;gap:4px;flex:0 0 auto;margin-left:auto}
+  .watchrow a.deal.wmatch{display:flex;align-items:center;min-height:var(--tap);width:100%;font-size:14px;margin-top:-6px}
+  .watchrow .wline{margin-top:-4px}
+  #sales .card>.sub.help,#rules .card>.sub.help{margin-bottom:4px}
+  .grouphead+.helper{margin:-4px 2px 6px}
+  .offer-type .ctrls,#bday-card .ctrls{margin-top:0;gap:8px}
+  #bday-card[hidden]{display:none}
+  .offer-type .stepper button{padding:6px;background-clip:content-box;font-size:16px}
+  .offer-type .stepper output{min-width:44px;font-size:14px}
+  .offer-type .ctrl-lab,#bday-card .ctrl-lab{font-size:12px}
+  /* Settings: savings hero on one line; the six tiles as label · value rows, 2 across (notes in title="…"); the glance
+     facts one line each; learned rules ≤ 2 lines; form labels one line */
+  .metrics .hero{display:flex;align-items:baseline;gap:10px;margin:0 0 4px}
+  .herovalue{font-size:30px}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .tile{display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding:6px 8px}
+  .tile .tlabel{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .tvalue{font-size:17px;margin:0;flex:0 0 auto}
+  .tile .tnote{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .tile{position:relative}
+  .glance li{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  ol.learned li{padding:6px 0;font-size:14px}
+  ol.learned li .grow{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .field{margin:4px 0;row-gap:0}
+  .field label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1 1 auto}
+  .field select{flex:0 0 auto;max-width:100%}
+  #offercadence,#feedcadence{min-width:min(100%,220px)}
+  .sumtitle{margin:0 0 4px;font-size:15px}
 </style>
 </head>
 <body>
 <header>
-  <a class="tw-back" href="index.html?view=personal">&larr; Private Wing</a>
   <div class="brand">
+    <a class="tw-back" href="index.html?view=personal"><span aria-hidden="true">&lsaquo;</span><span class="vh">Private Wing</span></a>
     <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="14" y1="52" x2="50" y2="12" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4fc38a"/><stop offset="1" stop-color="#e0bd8f"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="#0E1220"/><g fill="none" stroke="url(#lg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M24 23v-3a8 8 0 0 1 16 0v3"/><path d="M15 23h34l-2.5 28h-29z"/><path d="M25 34l7 7 7-7"/></g></svg>
     <h1>Thrift Shop</h1>
+    <nav role="tablist" aria-label="Sections">
+      <button role="tab" id="tab-feed" aria-selected="true" aria-controls="panel-feed">Feed<span id="feed-badge" class="tabbadge" hidden aria-label="new deals"></span></button>
+      <button role="tab" id="tab-sales" aria-selected="false" aria-controls="panel-sales">Sales</button>
+      <button role="tab" id="tab-rules" aria-selected="false" aria-controls="panel-rules">Gift cards</button>
+      <button role="tab" id="tab-sources" aria-selected="false" aria-controls="panel-sources">Sources</button>
+      <button role="tab" id="tab-alerts" aria-selected="false" aria-controls="panel-alerts">Settings</button>
+    </nav>
     <span id="sync" role="status" aria-live="polite">…</span>
   </div>
-  <nav role="tablist" aria-label="Sections">
-    <button role="tab" id="tab-feed" aria-selected="true" aria-controls="panel-feed">Feed<span id="feed-badge" class="tabbadge" hidden aria-label="new deals"></span></button>
-    <button role="tab" id="tab-sales" aria-selected="false" aria-controls="panel-sales">Sales</button>
-    <button role="tab" id="tab-rules" aria-selected="false" aria-controls="panel-rules">Gift cards</button>
-    <button role="tab" id="tab-sources" aria-selected="false" aria-controls="panel-sources">Sources</button>
-    <button role="tab" id="tab-alerts" aria-selected="false" aria-controls="panel-alerts">Settings</button>
-  </nav>
 </header>
 
 <main>
@@ -1230,6 +1297,8 @@
   var el = function(id){ return document.getElementById(id); };
   var esc = function(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); };
   function sync(cls,txt){ var s=el("sync"); s.className=cls; s.textContent=txt; }
+  // iphone-compact S2: the full text of a one-line (ellipsised) note for its title="…" — tags dropped, entities kept escaped
+  function plain(html){ return String(html==null?"":html).replace(/<[^>]*>/g,"").replace(/"/g,"&quot;"); }
 
   // The card-scout sync_id is a capability (sent as x-plan-id), read ONLY from the live private-wing
   // vault session (press:vault:v1) — never cached. Sourcing it from the session alone means "Lock
@@ -1344,25 +1413,35 @@
   function fmtDate(s){ if(!s) return ""; var t=new Date(s); return isNaN(t)?"":t.toLocaleDateString(undefined,{month:"short",day:"numeric"}); }
   function normBrand(s){ return String(s==null?"":s).normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/['’ʼ`]/g,"").replace(/[^a-z0-9]+/g," ").trim(); }
 
-  // The one heading + quick-nav pair used on ALL four tabs. groups: [{slug,label,count}].
+  // The one heading + jump pair used on every tab. groups: [{slug,label,count,short?}].
+  // iphone-compact S1: the jump chips became ONE native "Jump to…" select in the tab's sticky toolbar (.tbar) — a row
+  // instead of up to three; picking a section scrolls its heading just below the header + toolbar, then resets.
   // ids are prefixed by tab so the same slug (e.g. "other") can live on two tabs at once.
-  function quickNav(tab, groups){
-    if(!groups.length) return '<div class="quicknav" id="qn-'+tab+'"></div>';
-    var chips=groups.map(function(g){
-      // Slice 6: label may shorten (e.g. "Warehouse / retailer" → "Warehouse") but the count is kept.
-      // The accessible name STARTS with the visible text (WCAG 2.5.3 label-in-name), then names the full section.
-      var short=g.short||String(g.label).split(" / ")[0];
-      return '<a class="qchip" href="#grp-'+tab+'-'+g.slug+'" data-full="'+esc(g.label)+'" aria-label="'+chipName(short,g.count,g.label)+'">'
-        +'<span class="qlabel">'+esc(short)+'</span> '   // the space keeps "What counts 5" one phrase for label-in-name
-        +'<span class="qcount">'+g.count+'</span>'
-        +'<span class="qdown" aria-hidden="true">↓</span></a>';
+  function jumpOpts(tab, groups){
+    return '<option value="">Jump to…</option>'+groups.map(function(g){
+      return '<option value="grp-'+tab+'-'+g.slug+'" data-jslug="'+esc(g.slug)+'">'+esc(g.short||String(g.label).split(" / ")[0])+' ('+g.count+')</option>';
     }).join("");
-    return '<div class="quicknav" id="qn-'+tab+'" role="navigation" aria-label="Jump to a section" style="--qn-cols:'+groups.length+'">'+chips+'</div>';
   }
-  function chipName(short,count,label){ return esc(short)+' '+count+', jump to '+esc(label); }
-  function groupHead(tab, slug, label, count){
-    return '<div class="grouphead" id="grp-'+tab+'-'+slug+'"><h2>'+esc(label)+'<span class="gcount">'+count+'</span></h2>'
-      +'<a class="toplink" href="#qn-'+tab+'">&uarr; Top</a></div>';
+  function quickNav(tab, groups){
+    return '<select class="jump" id="jump-'+tab+'" data-jump="'+tab+'" aria-label="Jump to a section">'+jumpOpts(tab,groups)+'</select>';
+  }
+  // the toolbar row: [left] + the jump select. id qn-<tab> (the toolbar is the "top" of the tab).
+  function tbar(tab, left, groups){
+    return '<div class="tbar" id="qn-'+tab+'" role="toolbar" aria-label="'+esc({feed:"Feed",sales:"Sales",rules:"Gift cards",sources:"Sources",alerts:"Settings"}[tab]||tab)+' controls">'
+      +(left||"")+(groups&&groups.length?quickNav(tab,groups):"")+'</div>';
+  }
+  function setJumpCount(tab, slug, count){
+    var o=document.querySelector('#jump-'+tab+' option[data-jslug="'+slug+'"]'); if(o) o.textContent=o.textContent.replace(/\(\d+\)$/,"("+count+")");
+  }
+  function jumpTo(sel){
+    var id=sel.value; sel.value=""; if(!id) return;
+    var h=el(id); if(!h) return;
+    measureSticky();
+    h.scrollIntoView({block:"start"});
+    var f=h.querySelector("h2"); if(f){ f.setAttribute("tabindex","-1"); try{ f.focus({preventScroll:true}); }catch(e){ f.focus(); } }
+  }
+  function groupHead(tab, slug, label, count, extra){
+    return '<div class="grouphead" id="grp-'+tab+'-'+slug+'"><h2>'+esc(label)+'<span class="gcount">'+count+'</span></h2>'+(extra||"")+'</div>';
   }
 
   // ---------- deal kind (Thrift Shop Slice 1) ----------
@@ -1574,12 +1653,14 @@
     // Slice 2: build the sub from the parts that exist, joined by ' · ' — no leading separator when
     // the price line is empty (an unpriced card).
     var parts=[];
+    if(d.status==="bad") parts.push('<span class="reasonchip">Bad · '+esc(badReasonLabel(d.extras&&d.extras.bad_reason))+'</span>');
     var pl=priceLine(d); if(pl) parts.push(pl);
+    // iphone-compact S2: a sale-watch find leads with its listing title (one line), never the watch-term slug
+    if(dealKind(d)==="sale"&&d.title) parts.push(esc(d.title));
     if(retailer) parts.push('at '+esc(retailer));
     if(covers&&covers.length) parts.push('covers '+esc(covers.slice(0,3).map(coverLabel).join(", "))+(covers.length>3?' +'+(covers.length-3):''));
     if(reason&&d.status!=="bad") parts.push(esc(reason));
-    if(d.status==="bad") parts.push('<span class="reasonchip">Bad · '+esc(badReasonLabel(d.extras&&d.extras.bad_reason))+'</span>');
-    if(d.source) parts.push(esc(String(d.source).replace(/^src-/,"")));
+    if(d.source&&dealKind(d)!=="sale") parts.push(esc(String(d.source).replace(/^src-/,"")));
     if(rt) parts.push(esc(rt));
     if(d.expiry) parts.push('exp '+esc(d.expiry));
     var sub=parts.join(' · ');
@@ -1599,10 +1680,11 @@
       +'</div></div>';
     return '<div class="swipe" data-swipe="'+esc(d.item_id)+'">'
       +'<button class="swipe-del" data-deldeal="'+esc(d.item_id)+'" tabindex="-1" aria-hidden="true">Delete</button>'
-      +'<div class="card deal"><div class="row"><span class="badge '+badgeClass+'">'+esc(badgeText)+'</span>'
-      +(isHit?'<span class="dot alerted" role="img" title="Alerted" aria-label="Alerted"></span>':"")
-      +'<div class="grow"><div class="title">'+(isNew?'<span class="newtag">NEW</span>':"")+kindTag(d)+label+'</div>'
-      +'<div class="sub">'+sub+'</div></div>'+menu+'</div>'
+      // iphone-compact S2: the offer pill on the left with the coloured kind pill UNDER it; title + note one line each
+      +'<div class="card deal"><div class="row"><div class="dleft"><span class="dtop"><span class="badge '+badgeClass+'">'+esc(badgeText)+'</span>'
+      +(isHit?'<span class="dot alerted" role="img" title="Alerted" aria-label="Alerted"></span>':"")+'</span>'+kindTag(d)+'</div>'
+      +'<div class="grow"><div class="title one" title="'+label+'">'+(isNew?'<span class="newtag">NEW</span>':"")+label+'</div>'
+      +'<div class="sub one" title="'+plain(sub)+'">'+sub+'</div></div>'+menu+'</div>'
       +'<div class="row dactrow">'
       +(d.url?'<a class="deal" href="'+esc(d.url)+'" target="_blank" rel="noopener">Open deal &rarr;</a>':'<span class="sub">no link</span>')
       // safari-ui: the three decisions are ONE group — on the narrowest phone it wraps whole under the link
@@ -1613,16 +1695,17 @@
       +'</span></div></div></div>';
   }
   // Thrift Shop Slice 5 — the email-offer card: kind tag, brand, the headline as the badge, the summary, the expiry
-  // countdown (red ≤ 48 h), "Open in Outlook" (the webLink, new tab) and Used / Skip / Bad; swipe/⋯ Delete as today.
+  // countdown (red ≤ 48 h), "Open deal" (the webLink, new tab) and Used / Skip / Bad; swipe/⋯ Delete as today.
   function offerDealCard(d){
     var e=d.extras||{}; var used=d.status==="bought", skip=d.status==="skip", isBad=isFlagged(d), isHit=d.verdict==="hit";
     var isNew=!isDecided(d)&&isUnseen(d); var rt=relTime(d.created_at); var label=esc(d.brand||"Offer");
     var el_=expiryLabel(d), n=daysLeft(d);
     var parts=[];
-    if(d.title) parts.push(esc(d.title));
-    if(el_) parts.push('<span class="expiry'+(n!=null&&n<=2?' soon':'')+'">'+esc(el_)+'</span>');
-    if(e.value_unknown&&d.status!=="bad") parts.push({expiry_unknown:"Check the email — expiry date unknown",pct_unknown:"Check the email — discount unknown"}[e.verdict_reason]||"Check the email — value unknown");
+    // iphone-compact S2: one line — the Bad chip and the expiry lead, then the offer summary, then the rest
     if(d.status==="bad") parts.push('<span class="reasonchip">Bad · '+esc(badReasonLabel(e.bad_reason))+'</span>');
+    if(el_) parts.push('<span class="expiry'+(n!=null&&n<=2?' soon':'')+'">'+esc(el_)+'</span>');
+    if(d.title) parts.push(esc(d.title));
+    if(e.value_unknown&&d.status!=="bad") parts.push({expiry_unknown:"Check the email — expiry date unknown",pct_unknown:"Check the email — discount unknown"}[e.verdict_reason]||"Check the email — value unknown");
     if(Number(e.also_seen)>1) parts.push("seen in "+Number(e.also_seen)+" emails");
     if(rt) parts.push(esc(rt));
     var menu='<div class="rulehead-actions">'
@@ -1633,12 +1716,13 @@
       +'</div></div>';
     return '<div class="swipe" data-swipe="'+esc(d.item_id)+'">'
       +'<button class="swipe-del" data-deldeal="'+esc(d.item_id)+'" tabindex="-1" aria-hidden="true">Delete</button>'
-      +'<div class="card deal offer"><div class="row"><span class="badge '+(isHit?"hit":"near")+'">'+esc(offerHeadline(d))+'</span>'
-      +(isHit?'<span class="dot alerted" role="img" title="Alerted" aria-label="Alerted"></span>':"")
-      +'<div class="grow"><div class="title">'+(isNew?'<span class="newtag">NEW</span>':"")+kindTag(d)+label+'</div>'
-      +'<div class="sub">'+parts.join(' · ')+'</div></div>'+menu+'</div>'
+      +'<div class="card deal offer"><div class="row"><div class="dleft"><span class="dtop"><span class="badge '+(isHit?"hit":"near")+'">'+esc(offerHeadline(d))+'</span>'
+      +(isHit?'<span class="dot alerted" role="img" title="Alerted" aria-label="Alerted"></span>':"")+'</span>'+kindTag(d)+'</div>'
+      +'<div class="grow"><div class="title one" title="'+label+'">'+(isNew?'<span class="newtag">NEW</span>':"")+label+'</div>'
+      +'<div class="sub one" title="'+plain(parts.join(' · '))+'">'+parts.join(' · ')+'</div></div>'+menu+'</div>'
       +'<div class="row dactrow">'
-      +(d.url?'<a class="deal" href="'+esc(d.url)+'" target="_blank" rel="noopener">Open in Outlook &rarr;</a>':'<span class="sub">open it in Outlook</span>')
+      // iphone-compact S2: the link reads "Open deal" on every card (the email's webLink opens Outlook)
+      +(d.url?'<a class="deal" href="'+esc(d.url)+'" target="_blank" rel="noopener">Open deal &rarr;</a>':'<span class="sub">no link</span>')
       +'<span class="dacts">'
       +'<button class="btn small'+(used?" primary":"")+'" data-buy="'+esc(d.item_id)+'" aria-pressed="'+used+'">Used</button>'
       +'<button class="btn small'+(skip?" primary":"")+'" data-skip="'+esc(d.item_id)+'" aria-pressed="'+skip+'">Skip</button>'
@@ -1746,7 +1830,9 @@
         +(icon?'<span aria-hidden="true">'+icon+'</span>':"")+'<span class="ftrig-label">'+esc(label)+'</span><span class="caret" aria-hidden="true">▾</span></button>'
         +'<div class="fpop" id="'+pop+'" role="menu" aria-label="'+esc(label)+'" data-open="false">';
     }
-    return '<div class="feedbar">'
+    // iphone-compact S1: the filter row IS the Feed's sticky toolbar (.tbar); the old status row is gone — the count,
+    // "Clear" and "Mark seen" ride on the Inbox heading.
+    return '<div class="tbar feedbar" id="feed-tbar">'
       +'<div class="ftoolbar" role="toolbar" aria-label="Feed filters" data-searching="false">'
         +'<div class="ftrigs">'
           +trig("when-trig","when-pop",whenTriggerLabel(),"")+whenMenu+'</div></div>'
@@ -1760,9 +1846,6 @@
           +'<button class="fx" id="feed-search-close" type="button" aria-label="Close search">✕</button>'
         +'</div>'
       +'</div>'
-      +'<div class="fstatus"><span id="feed-count"></span><span class="fgrow"></span>'
-        +'<a id="feed-clear" role="button" tabindex="0" hidden>Clear</a>'
-        +'<a id="feed-markseen" role="button" tabindex="0" hidden>Mark seen</a></div>'
       +'</div>';
   }
   // Update trigger labels, active fills, type counts, and the status line WITHOUT rebuilding the bar
@@ -1788,7 +1871,12 @@
       var on=!!feedTypes[v]; it.setAttribute("aria-checked",on?"true":"false");
       var ck=it.querySelector(".fcheck"); if(ck) ck.textContent=on?"✓":"";
     }); }
-    var cnt=el("feed-count"); if(cnt) cnt.textContent=filtered.length+" deal"+(filtered.length===1?"":"s")+" · "+newN+" new";
+    syncFeedStatus();
+  }
+  // the Inbox heading's status: "N new", Clear (any filter on) and Mark seen (anything new)
+  function syncFeedStatus(){
+    var filtered=capOffers(feedFiltered()).list, newN=filtered.filter(isUnseen).length;
+    var cnt=el("feed-count"); if(cnt) cnt.textContent=newN?newN+" new":"";
     var clr=el("feed-clear"); if(clr) clr.hidden=!filtersActive();
     var ms=el("feed-markseen"); if(ms) ms.hidden=!(newN>0);
   }
@@ -1810,15 +1898,19 @@
     // Inbox arc Slice 5: ONE flat inbox, newest first by default (Mark's call — the card-type headings are
     // gone from the inbox; the Type filter + Sort still apply), then the collapsible Processed section.
     var capped=capOffers(feedFiltered()), deals=sortFeed(capped.list);
-    var html='<div class="grouphead" id="grp-feed-inbox"><h2>Inbox<span class="gcount">'+deals.length+'</span></h2></div>';
+    var html='<div class="grouphead" id="grp-feed-inbox"><h2>Inbox<span class="gcount">'+deals.length+'</span></h2>'
+      +'<span class="ghmeta" id="feed-count"></span>'
+      +'<a class="ghlink" id="feed-clear" role="button" tabindex="0" hidden>Clear</a>'
+      +'<a class="ghlink" id="feed-markseen" role="button" tabindex="0" hidden>Mark seen</a></div>';
     if(deals.length) deals.forEach(function(d){ html+=dealCard(d); var f=capped.folded[d.item_id]; if(f) html+=moreFromHtml(d,f); });
     else html+='<div class="empty">'+(inboxDeals().length?"No deals match these filters.":"Inbox clear — nothing waiting for you.")+'</div>';
-    var proc=processedDeals(), open=procOpen();
+    var proc=processedDeals().filter(matchesBrand), open=procOpen(); // iphone-compact S1: the search filters Processed too
     html+='<div class="grouphead proc-head" id="grp-feed-processed"><h2><button class="proc-toggle" id="proc-toggle" type="button" aria-expanded="'+open+'" aria-controls="proc-list">'
       +'Processed<span class="gcount">'+proc.length+'</span><span class="caret" aria-hidden="true">▾</span></button></h2></div>'
       +'<div id="proc-list"'+(open?'':' hidden')+'>'
-      +(proc.length?proc.map(dealCard).join(""):'<div class="empty">Nothing processed yet — Bought, Skip and Bad land here.</div>')+'</div>';
+      +(proc.length?proc.map(dealCard).join(""):'<div class="empty">'+((feedBrand||"").trim()&&processedDeals().length?"No processed deals match.":"Nothing processed yet — Bought, Skip and Bad land here.")+'</div>')+'</div>';
     listEl.innerHTML=html;
+    syncFeedStatus();
   }
   function toggleProcessed(btn){
     var open=btn.getAttribute("aria-expanded")!=="true";
@@ -1951,9 +2043,8 @@
     var disabled=st==="coming";
     return '<div class="card'+(st==="coming"?" coming":"")+'"><div class="row">'
       +'<span class="dot '+dot+'" title="'+esc(label)+'"></span>'
-      +'<div class="grow"><div class="title">'+esc(s.title)+' <span class="badge'+lbcls+'">'+label+'</span></div>'
-      +'<div class="sub">'+esc(laneStr)+' · '+esc(checked)+'</div>'
-      +(reason?'<div class="sub">'+esc(reason)+'</div>':"")+'</div>'
+      +'<div class="grow"><div class="title one" title="'+esc(s.title)+'">'+esc(s.title)+' <span class="badge'+lbcls+'">'+label+'</span></div>'
+      +'<div class="sub one" title="'+esc(laneStr+' · '+checked+(reason?' · '+reason:''))+'">'+(reason?esc(reason)+' · ':'')+esc(checked)+' · '+esc(laneStr)+'</div></div>'
       +'<button class="sw" role="switch" aria-checked="'+on+'" '
         +(disabled?'disabled aria-disabled="true" title="Coming soon — nothing checks this yet" ':'')
         +'aria-label="Enable '+esc(s.title)+'" data-src="'+esc(s.item_id)+'"></button>'
@@ -2001,7 +2092,7 @@
     var cad=(state.settings&&state.settings.offer_cadence)||x.cadence||"2x-day";
     var t=scanTotals(x.scan_log);
     var lines=[];
-    if(st==="not_connected") lines.push("Reads your Outlook “"+esc(x.folder_name||x.folder||"offers")+"” folder (read-only) and keeps only the deals that count.");
+    if(st==="not_connected") lines.push("Reads your “"+esc(x.folder_name||x.folder||"offers")+"” folder, read-only.");
     else lines.push("Scans "+esc(offerCadencePhrase(cad))+" · "+(x.last_checked?"last scan "+esc(relTime(x.last_checked)):"Not yet scanned"));
     if(x.oauth==="connected"||x.last_checked) lines.push(t.read+" email"+(t.read===1?"":"s")+" read · "+t.offers+" offer"+(t.offers===1?"":"s")+" found (30 d)"+(x.delta_next?" · catching up…":""));
     if(st==="error"||(x.health==="error"&&x.last_error)) lines.push('<span class="warntext">'+esc(x.last_error||"Sign-in expired — reconnect")+'</span>');
@@ -2015,7 +2106,7 @@
     return '<div class="card" id="outlook-card"><div class="row">'
       +'<span class="dot '+dot+'" title="'+esc(OUTLOOK_LABEL[st])+'"></span>'
       +'<div class="grow"><div class="title">'+esc(s.title||"Outlook offers")+' <span class="badge'+lbcls+'" id="outlook-state">'+OUTLOOK_LABEL[st]+'</span></div>'
-      +lines.map(function(l){ return '<div class="sub">'+l+'</div>'; }).join("")+'</div>'
+      +lines.map(function(l){ return '<div class="sub one" title="'+plain(l)+'">'+l+'</div>'; }).join("")+'</div>' // iphone-compact (Eye P0): one line each
       +'<button class="sw" role="switch" aria-checked="'+on+'" aria-label="Enable '+esc(s.title||"Outlook offers")+'" data-src="'+esc(s.item_id)+'"></button>'
       +'</div>'
       +'<div class="oacts">'+btns+'</div>'
@@ -2135,9 +2226,10 @@
         coming=all.filter(function(s){return sourceState(s)==="coming";}).length,
         stale=all.filter(function(s){return sourceState(s)==="stale";}).length,
         awaiting=all.filter(function(s){return sourceState(s)==="awaiting";}).length;
-    var tally='<div class="card summary"><p><strong>'+live+'</strong> live · '+(awaiting?'<strong>'+awaiting+'</strong> awaiting first run · ':'')+'<strong>'+stale+'</strong> stale · <strong>'+coming+'</strong> coming soon. '
-      +'A source only shows <em>Live</em> when something actually checked it within its schedule.</p></div>';
-    var html=tally+quickNav("sources",groups);
+    // iphone-compact S1: the tally rides in the toolbar beside the jump (was its own card + a chip grid). "Live" still
+    // means something actually checked the source within its schedule (the title says so).
+    var tally='<span class="tally one" id="src-tally" title="A source only shows Live when something actually checked it within its schedule."><strong>'+live+'</strong> live · '+(awaiting?'<strong>'+awaiting+'</strong> waiting · ':'')+'<strong>'+stale+'</strong> stale · <strong>'+coming+'</strong> soon</span>';
+    var html=tbar("sources",tally,groups);
     groups.forEach(function(g){
       html+=groupHead("sources",g.slug,g.label,g.count);
       g.list.forEach(function(s){ html+=((s.extras||{}).lane==='email'?outlookCard(s):sourceCard(s)); });
@@ -2203,10 +2295,10 @@
     // Slice 10: HEB is a bonus booster — a free HEB card adds to the discount on the card you buy,
     // judged against THAT brand's rule. Show that instead of hunting HEB itself.
     var modeBadge=mode==="stack"?"stack only":mode==="bonus-booster"?"bonus booster":mode==="bonus"?"bonus":"";
-    var head='<div class="row"><div class="grow"><div class="title">'+esc(r.title)+'</div>'
-      +(x.note?'<div class="sub">'+esc(x.note)+'</div>':"")
-      +(modeBadge?'<div class="sub"><span class="badge">'+modeBadge+'</span>'
-        +(mode==="bonus-booster"?' A free HEB card adds to the discount on the brand you buy — judged against that brand.':"")+'</div>':"")
+    var head='<div class="row"><div class="grow"><div class="title one" title="'+esc(r.title)+'">'+esc(r.title)+'</div>'
+      +(x.note?'<div class="sub one" title="'+esc(x.note)+'">'+esc(x.note)+'</div>':"")
+      +(modeBadge?'<div class="sub one"'+(mode==="bonus-booster"?' title="A free HEB card adds to the discount on the brand you buy — judged against that brand."':'')+'><span class="badge">'+modeBadge+'</span>'
+        +(mode==="bonus-booster"?' adds to the card you buy':"")+'</div>':"")
       +'</div>'
       +'<button class="sw" role="switch" aria-checked="'+on+'" aria-label="Enable '+esc(r.title)+'" data-rule="'+esc(r.item_id)+'"></button>'
       +overflowMenu(r)+'</div>';
@@ -2225,25 +2317,20 @@
   }
   function renderRules(){
     var host=el("rules");
+    // iphone-compact S1: ONE sticky toolbar — search (filters the rules AND the blocked stores) + ✕ + Jump.
     host.innerHTML=''
-      +'<div class="searchbar"><input id="rulesearch" type="text" placeholder="Search brands…" aria-label="Search rules by brand name" value="'+esc(ruleQuery)+'">'
-        +'<button class="btn small" id="ruleclear">Clear</button></div>'
-      +'<div id="rules-nav"></div>'
+      +'<div class="tbar" id="qn-rules" role="toolbar" aria-label="Gift cards controls"><input id="rulesearch" type="search" placeholder="Search" aria-label="Search gift-card brands and blocked stores" value="'+esc(ruleQuery)+'">'
+        +'<button class="tbx" type="button" id="ruleclear" aria-label="Clear search"'+(ruleQuery?'':' hidden')+'>✕</button><span id="rules-nav"></span></div>'
       +'<div id="rules-list"></div>'
       +'<div class="grouphead"><h2>Add a brand</h2></div>'
       +'<div class="card"><div class="addrow">'
         +'<input id="newbrand" type="text" placeholder="Brand name" aria-label="New brand name">'
         +'<button class="btn primary" id="addbrand">Add</button></div>'
-        +'<div class="sub" style="margin-top:6px">Adds a 20%-off, $25-minimum rule. The category is guessed from the name — change it on the row.</div>'
+        +'<div class="sub one" style="margin-top:2px" title="Adds a 20%-off, $25-minimum rule. The category is guessed from the name — change it on the row.">Adds 20% off · $25 min · category guessed.</div>'
         +'<div id="addnote" class="helper" role="status" aria-live="polite"></div></div>'
       // Slice 3: blocked stores — deals from these are never shown or alerted, even if they beat a rule.
-      +'<div class="grouphead"><h2>Blocked stores</h2></div>'
-      +'<div class="card">'
-        +'<div class="sub">Deals from these stores and brands are never shown or alerted — even at a big discount. '
-        +'Applies to every deal type: gift cards, sales and email offers (the same list as Sales → Blocked brands).</div>'
-        +'<div id="blocklist" class="chiprow" style="flex-wrap:wrap;margin-top:8px"></div>'
-        +'<div class="addrow" style="margin-top:8px"><input id="newblock" type="text" placeholder="e.g. Dollar General" aria-label="Block a store">'
-        +'<button class="btn primary" id="addblock">Block</button></div></div>'
+      +groupHead("rules","blocked","Blocked stores",blocklist().length)
+      +blockCard("")
       ;
     renderRulesList();
     renderBlockList();
@@ -2252,17 +2339,15 @@
   // (a) Email offers — "What counts as a deal" (one row per offer type: switch + threshold steppers), brand
   // overrides (Always / Never), the "Also count…" note, and the Outlook connection line; (b) Sale watch (moved here
   // from Rules, now with an on/off switch per term). Every control writes the same press_tasks rows the agent reads.
+  // iphone-compact S3: Sales shows ONLY the eight kept types — new_item, everyday_sale, free_shipping, sweepstakes, other,
+  // bogo_discount, bundle_price, points_multiplier and recurring_promo are gone for good (offers.mjs RETIRED_OFFER_TYPES
+  // never lets them alert, whatever their stored row says). Their rows stay in the DB (set off), never rendered.
   var OFFER_DEFAULTS=[["free_meal","Free meal or entrée"],["bogo_free","Buy one, get one free"],["expiring_reward","Rewards, points or credits expiring"],
     ["dollar_off","$ off with no or low minimum"],["pct_off","Big % off"],["birthday_reward","Birthday reward"],["bonus_gift_card","Bonus gift card with purchase"],
-    ["free_small_item","Free drink, side, cookie or dessert"],["new_item","New menu item or flavor"],["everyday_sale","Everyday sale"],
-    ["free_shipping","Free shipping"],["sweepstakes","Sweepstakes or newsletter"],["other","Anything else"],
-    ["bogo_discount","Buy one, get one % off"],["bundle_price","Bundle price (N for $X)"],["points_multiplier","Double or bonus points"],["recurring_promo","Weekly or daily standing deal"]];
-  var OFFER_HELP={free_meal:"A free meal, entrée or main.",bogo_free:"Buy one, get one FREE — an equal item. Buy 2 get 1 is only 33%.",expiring_reward:"Your own reward or credit, $10 or more, about to expire. Points never count.",
-    dollar_off:"Dollars off with no minimum. With a minimum it’s a percent ($5 off $25 = 20%) held to Big % off.",pct_off:"Any offer at least this many percent off.",birthday_reward:"Your birthday freebies — only within 30 days of your birthday.",
-    bonus_gift_card:"Judged by your Gift cards rules (Min %, Min $, blocked stores).",free_small_item:"Small freebies — usually not worth a trip.",
-    new_item:"Launch announcements.",everyday_sale:"Routine sales — counts at or above this %.",free_shipping:"Shipping deals.",sweepstakes:"Contests, newsletters and content.",other:"Anything that fits nowhere else.",
-    bogo_discount:"BOGO where the second item is only discounted.",bundle_price:"“3 for $15” — a bundle price, not dollars off.",
-    points_multiplier:"Double or bonus points days.",recurring_promo:"Standing weekly deals — “every Wednesday”, happy hour."};
+    ["free_small_item","Free drink, side, cookie or dessert"]];
+  var OFFER_HELP={free_meal:"A free meal, entrée or main.",bogo_free:"Second item free (buy 2 get 1 = 33%).",expiring_reward:"Your $10+ reward, about to expire.",
+    dollar_off:"With a minimum: $5 off $25 = 20%.",pct_off:"Any offer at least this % off.",birthday_reward:"Only within 30 days of your birthday.",
+    bonus_gift_card:"Judged by your Gift cards rules.",free_small_item:"A free drink, side or dessert."};
   function offerType(r){ var e=r&&r.extras||{}; return e.type||String(r&&r.item_id||"").replace(/^offer-/,"").replace(/-/g,"_"); }
   function offerRows(){
     var by={}; (state.offers||[]).forEach(function(r){ by[offerType(r)]=r; });
@@ -2286,8 +2371,8 @@
     // bad-flag-learning R5: a $-off WITH a minimum is judged as a percent against the Big-% bar, so "Max spend" is retired
     else if(t==="dollar_off") ctrls=stepperHtml(r.item_id,"min_value","Min $",OSTEP.min_value.fmt(oval(r,"min_value")),"minimum dollars off");
     else if(t==="expiring_reward") ctrls=stepperHtml(r.item_id,"window_days","Within",OSTEP.window_days.fmt(oval(r,"window_days")),"expiry window");
-    return '<div class="card offer-type" data-otype="'+esc(t)+'"><div class="row"><div class="grow"><div class="title">'+esc(r.title)+'</div>'
-      +'<div class="sub">'+esc(OFFER_HELP[t]||"")+'</div></div>'
+    return '<div class="card offer-type" data-otype="'+esc(t)+'"><div class="row"><div class="grow"><div class="title one">'+esc(r.title)+'</div>'
+      +'<div class="sub one" title="'+esc(OFFER_HELP[t]||"")+'">'+esc(OFFER_HELP[t]||"")+'</div></div>'
       +'<button class="sw" role="switch" aria-checked="'+on+'" aria-label="Count '+esc(r.title)+' as a deal" data-offer="'+esc(r.item_id)+'"></button></div>'
       +(ctrls?'<div class="ctrls">'+ctrls+'</div>':'')+'</div>';
   }
@@ -2300,7 +2385,7 @@
     for(var i=1;i<=12;i++) mo+='<option value="'+i+'"'+(i===p[0]?" selected":"")+'>'+MONTHS[i-1]+'</option>';
     for(var d=1;d<=31;d++) dd+='<option value="'+d+'"'+(d===p[1]?" selected":"")+'>'+d+'</option>';
     return '<div class="card" id="bday-card"><div class="row"><div class="grow"><div class="title">Your birthday</div>'
-      +'<div class="sub">Birthday rewards count only within 30 days of it. A brand’s own birthday sale is judged like any offer.</div></div></div>'
+      +'<div class="sub one" title="Birthday rewards count only within 30 days of it. A brand’s own birthday sale is judged like any offer.">Birthday rewards count within 30 days of it.</div></div></div>'
       +'<div class="ctrls"><label class="ctrl"><span class="ctrl-lab">Month</span><select id="bday-month" aria-label="Birthday month">'+mo+'</select></label>'
       +'<label class="ctrl"><span class="ctrl-lab">Day</span><select id="bday-day" aria-label="Birthday day">'+dd+'</select></label></div></div>';
   }
@@ -2309,57 +2394,59 @@
     var dim=[31,29,31,30,31,30,31,31,30,31,30,31][m-1]; if(d>dim){ d=dim; var ds=el("bday-day"); if(ds) ds.value=String(d); }
     state.settings.birthday=(m<10?"0":"")+m+"-"+(d<10?"0":"")+d; saveSettings();
   }
-  function outlookLine(){
-    var s=outlookSource(); var x=outlookExtras(s); var st=s?outlookState(x,Date.now()):"not_connected";
-    var txt={not_connected:"Outlook isn’t connected yet — offers start after you connect.",connecting:"Connecting to Outlook…",
-      live:"Outlook connected — "+(x.last_checked?"last scan "+relTime(x.last_checked):"waiting for the first scan")+".",
-      stale:"Outlook connected, but no recent scan.",error:"Outlook needs reconnecting — email offers are paused."}[st];
-    return '<div class="card summary" id="sales-outlook"><p><span class="badge'+(st==="live"?" hit":((st==="error"||st==="stale")?" warn":""))+'">'+esc(OUTLOOK_LABEL[st])+'</span> '
-      +esc(txt)+' <button class="btn small" type="button" id="goto-sources">'+(st==="live"||st==="stale"?"Sources":(st==="error"?"Reconnect":"Connect"))+' &rarr;</button></p></div>';
-  }
-  var brandQuery="";
   function brandRows(){ return (state.offerBrands||[]).slice().sort(function(a,b){ return String(a.title||"").localeCompare(String(b.title||"")); }); }
   function renderBrandList(){
     var host=el("brandlist"); if(!host) return;
-    var q=normBrand(brandQuery);
-    var rows=brandRows().filter(function(b){ return !q||normBrand(b.title).indexOf(q)>=0; });
+    var rows=brandRows().filter(function(b){ return salesMatch(b.title); });
     if(!brandRows().length){ host.innerHTML='<div class="sub">No brand overrides yet. <strong>Always</strong> counts every offer from a brand; <strong>Never</strong> mutes it.</div>'; return; }
-    if(!rows.length){ host.innerHTML='<div class="sub">No overrides match “'+esc(brandQuery)+'”.</div>'; return; }
+    if(!rows.length){ host.innerHTML='<div class="sub">No overrides match “'+esc(salesQuery)+'”.</div>'; return; }
     host.innerHTML=rows.map(function(b){
       var m=(b.extras&&b.extras.mode)==="never"?"never":"always";
-      return '<div class="row brandrow" data-bid="'+esc(b.item_id)+'"><div class="grow title">'+esc(b.title)+'</div>'
+      return '<div class="row brandrow" data-bid="'+esc(b.item_id)+'"><div class="grow title one" title="'+esc(b.title)+'">'+esc(b.title)+'</div>'
         +'<div class="seg" role="group" aria-label="'+esc(b.title)+' override">'
         +'<button type="button" class="segbtn'+(m==="always"?" on":"")+'" aria-pressed="'+(m==="always")+'" data-bmode="always" data-brand="'+esc(b.item_id)+'">Always</button>'
         +'<button type="button" class="segbtn'+(m==="never"?" on":"")+'" aria-pressed="'+(m==="never")+'" data-bmode="never" data-brand="'+esc(b.item_id)+'">Never</button></div>'
         +'<button class="fchip" type="button" data-unbrand="'+esc(b.item_id)+'" aria-label="Remove override '+esc(b.title)+'">✕</button></div>';
     }).join("");
   }
+  // iphone-compact S1: the Sales toolbar — ONE search that filters every list on the tab (offer types, brand overrides,
+  // sale watches, blocked stores) + Jump. The Outlook card is gone from Sales (its status lives on Sources only).
+  var salesQuery="";
+  function salesMatch(t){ var q=normBrand(salesQuery); return !q || normBrand(t).indexOf(q)>=0; }
+  function salesGroups(){
+    var onN=offerRows().filter(function(r){ return r.status==="on"; }).length;
+    return [{slug:"counts",label:"What counts as a deal",short:"What counts",count:onN},{slug:"brands",label:"Brand overrides",short:"Brands",count:brandRows().length},
+      {slug:"note",label:"Also count…",short:"Also count",count:(state.settings&&state.settings.offer_note)?1:0},{slug:"watch",label:"Sale watch",count:(state.watch||[]).length},
+      {slug:"blocked",label:"Blocked stores",short:"Blocked",count:blocklist().length}];
+  }
   function renderSales(){
     var host=el("sales"); if(!host) return;
+    host.innerHTML='<div class="tbar" id="qn-sales" role="toolbar" aria-label="Sales controls">'
+      +'<input id="salessearch" type="search" placeholder="Search" aria-label="Search offer types, brands, watches and blocked stores" value="'+esc(salesQuery)+'">'
+      +'<button class="tbx" type="button" id="salesclear" aria-label="Clear search"'+(salesQuery?'':' hidden')+'>✕</button>'
+      +quickNav("sales",salesGroups())+'</div><div id="sales-body"></div>';
+    renderSalesBody();
+  }
+  function renderSalesBody(){
+    var host=el("sales-body"); if(!host) return;
     var rows=offerRows();
     var onN=rows.filter(function(r){ return r.status==="on"; }).length;
-    var groups=[{slug:"counts",label:"What counts as a deal",short:"What counts",count:onN},{slug:"brands",label:"Brand overrides",short:"Brands",count:brandRows().length},
-      {slug:"note",label:"Also count…",short:"Also count",count:(state.settings&&state.settings.offer_note)?1:0},{slug:"watch",label:"Sale watch",count:(state.watch||[]).length},
-      {slug:"blocked",label:"Blocked brands",short:"Blocked",count:blocklist().length}];
     var note=String((state.settings&&state.settings.offer_note)||"");
-    var html=outlookLine()+quickNav("sales",groups);
-    html+=groupHead("sales","counts","What counts as a deal",onN);
-    html+='<div class="helper" style="margin:-6px 2px 10px">Email offers from your Outlook “offers” folder. Only the ones switched on reach your Feed and alerts.</div>';
-    html+=rows.length?rows.map(offerCard).join(""):'<div class="card"><div class="empty">Offer types load from your settings — none found yet.</div></div>';
+    var html=groupHead("sales","counts","What counts as a deal",onN);
+    html+='<div id="offer-types"></div>';
     html+=birthdayCard();
     html+=groupHead("sales","brands","Brand overrides",brandRows().length);
-    html+='<div class="card" id="brand-card"><div class="searchrow addrow"><input id="brandsearch" type="text" placeholder="Search overrides…" aria-label="Search brand overrides" value="'+esc(brandQuery)+'">'
-      +'<button class="btn primary" type="button" id="addbrandov">Add brand</button></div>'
-      +'<div id="brandlist" style="margin-top:8px"></div></div>';
+    html+='<div class="card" id="brand-card"><div id="brandlist"></div>'
+      +'<div class="addrow"><button class="btn primary" type="button" id="addbrandov">Add brand</button></div></div>';
     html+=groupHead("sales","note","Also count…",note?1:0);
-    html+='<div class="card"><label class="sub" for="offernote" style="display:block;margin:0 0 6px">Describe anything else that should count — Thrift Shop reads this when it judges each email.</label>'
-      +'<textarea id="offernote" maxlength="300" rows="3" placeholder="e.g. any free kids meal, or 2-for-1 movie tickets">'+esc(note)+'</textarea>'
+    html+='<div class="card"><label class="sub" for="offernote" style="display:block;margin:0 0 4px">Anything else that should count (read with each email).</label>'
+      +'<textarea id="offernote" maxlength="300" rows="2" placeholder="e.g. any free kids meal">'+esc(note)+'</textarea>'
       +'<div class="row" style="margin-top:6px"><span class="sub grow" id="offernote-count">'+note.length+' / 300</span>'
       +'<button class="btn small" type="button" id="saveofnote">Save</button></div></div>';
     html+=groupHead("sales","watch","Sale watch",(state.watch||[]).length)
       +'<div class="card">'
-        +'<div class="sub">Get alerted when a term is on sale — not just gift cards. One search per term, up to 10.</div>'
-        +'<div id="watchlist" role="list" aria-label="Sale watches — long-press or Alt+Arrow keys to reorder" style="margin-top:8px"></div>'
+        +'<div class="sub help one">Each term is searched 3×/day · up to 10 · hold to reorder.</div>'
+        +'<div id="watchlist" role="list" aria-label="Sale watches — long-press or Alt+Arrow keys to reorder"></div>'
         +'<div id="watch-live" class="vh" role="status" aria-live="polite"></div>'
         // Slice 2 (pushover arc): the add row is ONE line under a divider — [term][compact Min % off
         // stepper][Watch]. On a phone the term takes the full first row and the stepper + Watch share
@@ -2372,13 +2459,23 @@
             +'<output id="newwatchmin">'+pctMinLabel(newWatchMin)+'</output>'
             +'<button data-wnewinc aria-label="Increase minimum percent">+</button></div></div>'
           +'<button class="btn primary" id="addwatch">Watch</button></div></div>';
-    html+=groupHead("sales","blocked","Blocked brands",blocklist().length)
-      +'<div class="card"><div class="sub">Never shown or alerted — email offers, sales and gift cards. Block a brand from any card’s ⋯ menu; tap one here to unblock it.</div>'
-      +'<div id="sales-blocklist" class="chiprow" style="flex-wrap:wrap;margin-top:8px"></div></div>';
+    // iphone-compact S4: Blocked stores on Sales too — the SAME list (settings.retailer_blocklist) as Gift cards, with
+    // its own add row; it mutes gift cards, sale-watch finds and email offers alike.
+    html+=groupHead("sales","blocked","Blocked stores",blocklist().length)+blockCard("sales-");
     host.innerHTML=html;
+    renderSalesLists();
+  }
+  // D1 review: the search re-renders ONLY the four filtered lists — never the body — so a half-typed "Also count…" note,
+  // watch term or blocked store survives typing in the search box.
+  function renderSalesLists(){
+    var ot=el("offer-types");
+    if(ot){ var rows=offerRows(), shown=rows.filter(function(r){ return salesMatch(r.title); });
+      ot.innerHTML=rows.length?(shown.length?shown.map(offerCard).join(""):'<div class="sub">No offer types match “'+esc(salesQuery)+'”.</div>'):'<div class="card"><div class="empty">Offer types load from your settings — none found yet.</div></div>'; }
+    var bc=el("bday-card"); if(bc) bc.hidden=!!salesQuery&&!salesMatch("Your birthday"); // filtered like the lists
     renderBrandList();
     renderWatchList();
     renderBlockList();
+    var sc=el("salesclear"); if(sc) sc.hidden=!salesQuery;
   }
   // The sale-watch terms (press_tasks category='watch') as removable chips + an add row (cap 10).
   // Inbox arc Slice 10: Mark's own order — press_tasks.position first, then created_at for rows never
@@ -2395,45 +2492,44 @@
   // never-checked reads "Not yet checked" (not "last never"); and the "0 matches in 30 days" clause is
   // dropped when there are none, because the line below already shows "No matches yet" (no redundancy).
   function watchStatusLine(w){
+    // iphone-compact S2: no per-row "Checked 3×/day · last …" boilerplate (the card says it once) — only what differs
     var e=w.extras||{};
     if(w.status==="off") return "Paused — not checked";
+    if(!e.last_checked) return "Not yet checked";
     var n=Number(e.matches_30d)||0;
-    if(!e.last_checked) return "Not yet checked · checks 3×/day";
-    var s="Checked 3×/day · last "+esc(relTime(e.last_checked));
-    if(n>0) s+=" · "+n+" match"+(n===1?"":"es")+" in 30 days";
-    return s;
+    return n>0 ? n+" match"+(n===1?"":"es")+" in 30 days" : "No matches yet";
   }
   // Slice 4: "Any" for 0, else "N%". Shared by the per-row and add-row watch steppers.
   function pctMinLabel(v){ return (Number(v)||0)<=0 ? "Any" : (Number(v)||0)+"%"; }
   // Slice 4: per-watch "Min % off" stepper — only alert when the term is at least this much off.
+  // iphone-compact S2: the per-watch Min % off is a compact select (Any, ≥5% … ≥90%) on the term's own row — the
+  // three-part stepper took a row of its own. Writes extras.min_pct exactly as the stepper did.
   function watchMinStepper(w){
-    var v=Number(w.extras&&w.extras.min_pct)||0;
-    return '<div class="ctrls"><div class="ctrl"><span class="ctrl-lab">Min % off</span>'
-      +'<div class="stepper" role="group" aria-label="Minimum percent off for '+esc(w.title)+'">'
-      +'<button data-wdec="'+esc(w.item_id)+'" aria-label="Decrease minimum percent">&minus;</button>'
-      +'<output>'+pctMinLabel(v)+'</output>'
-      +'<button data-winc="'+esc(w.item_id)+'" aria-label="Increase minimum percent">+</button></div></div></div>';
+    var v=Number(w.extras&&w.extras.min_pct)||0, o="";
+    for(var i=0;i<=90;i+=5) o+='<option value="'+i+'"'+(i===v?" selected":"")+'>'+(i?"≥"+i+"%":"Any")+'</option>';
+    if(v%5||v>90) o+='<option value="'+v+'" selected>≥'+v+'%</option>';
+    return '<select class="wmin" data-wmin="'+esc(w.item_id)+'" aria-label="Minimum percent off for '+esc(w.title)+'">'+o+'</select>';
   }
   function renderWatchList(){
     var host=el("watchlist"); if(!host) return;
-    var items=watchTerms();
-    if(!items.length){ host.innerHTML='<span class="sub">No sale watches.</span>'; return; }
+    var all=watchTerms(), items=all.filter(function(w){ return salesMatch(w.title); });
+    if(!all.length){ host.innerHTML='<span class="sub">No sale watches.</span>'; return; }
+    if(!items.length){ host.innerHTML='<span class="sub">No watches match “'+esc(salesQuery)+'”.</span>'; return; }
     host.innerHTML=items.map(function(w){
       var e=w.extras||{};
-      var match=e.last_match_url
-        ? '<div class="sub"><a class="deal" href="'+esc(e.last_match_url)+'" target="_blank" rel="noopener">Last match: '+esc(e.last_match_title||"view")+' &rarr;</a></div>'
-        : '<div class="sub">No matches yet</div>';
-      return '<div class="watchrow" role="listitem" tabindex="0" data-wid="'+esc(w.item_id)+'" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown" aria-label="'+esc(w.title)+' — sale watch"><div class="row">'
-        +'<div class="grow"><div class="title"><button class="wterm" data-editwatch="'+esc(w.item_id)+'" aria-label="Edit watch term '+esc(w.title)+'">'+esc(w.title)+'</button></div>'
-        +'<div class="sub wstatus">'+watchStatusLine(w)+'</div>'
-        +match
-        +watchMinStepper(w)
-        +'</div>'
+      // iphone-compact S2: row 1 = term · Min % stepper · switch · ✕ (wraps under the term on a narrow phone);
+      // row 2 = the last match, ONE line across the FULL card width (or the term's status when there is none)
+      var line=(w.status!=="off"&&e.last_match_url)
+        ? '<a class="deal wmatch" href="'+esc(e.last_match_url)+'" target="_blank" rel="noopener" title="'+esc(e.last_match_title||"")+'"><span class="one">Last match: '+esc(e.last_match_title||"view")+' &rarr;</span></a>'
+        : '<div class="sub wline one"><span class="wstatus">'+watchStatusLine(w)+'</span></div>';
+      return '<div class="watchrow" role="listitem" tabindex="0" data-wid="'+esc(w.item_id)+'" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown" aria-label="'+esc(w.title)+' — sale watch"><div class="row wrow">'
+        +'<div class="grow wterm-wrap"><div class="title one"><button class="wterm" data-editwatch="'+esc(w.item_id)+'" aria-label="Edit watch term '+esc(w.title)+'">'+esc(w.title)+'</button></div></div>'
+        +'<div class="wctl">'+watchMinStepper(w)
         +'<button class="sw wsw" role="switch" aria-checked="'+(w.status!=="off")+'" aria-label="Watch '+esc(w.title)+'" data-watchsw="'+esc(w.item_id)+'"></button>'
-        +'<button class="fchip" data-unwatch="'+esc(w.item_id)+'" aria-label="Remove watch '+esc(w.title)+'">✕</button>'
-        +'</div></div>';
+        +'<button class="fchip" data-unwatch="'+esc(w.item_id)+'" aria-label="Remove watch '+esc(w.title)+'">✕</button></div>'
+        +'</div>'+line+'</div>';
     }).join("");
-    wireWatchDrag(host);
+    if(!salesQuery) wireWatchDrag(host); // reorder only the whole list — never a filtered subset
   }
   // Inbox arc Slice 10 — the marquee's long-press drag (press/index.html wireDrag, R3.3), ported: hold ~400ms
   // to lift (a move >10px first = a scroll, never a drag); a ghost follows the pointer while the row in the
@@ -2517,14 +2613,24 @@
       });
     });
   }
-  // The retailer blocklist (settings.extras.retailer_blocklist) as removable chips + an add row.
+  // The retailer blocklist (settings.extras.retailer_blocklist) as removable chips + an add row — ONE list, rendered on
+  // Gift cards (prefix "") and Sales (prefix "sales-"); ids: #<p>blocklist, #<p>newblock, #<p>addblock.
+  function blockCard(px){
+    return '<div class="card" id="'+px+'block-card"><div class="sub help one" title="Deals from these stores and brands are never shown or alerted — gift cards, sale finds and email offers. The same list is on '+(px?"Gift cards":"Sales")+'. Block one from any card’s ⋯ menu too.">Never shown or alerted — gift cards, sales and email offers. Same list on '+(px?"Gift cards":"Sales")+'.</div>'
+      +'<div id="'+px+'blocklist" class="chiprow" style="flex-wrap:wrap;margin-top:6px"></div>'
+      +'<div class="addrow" style="margin-top:6px"><input id="'+px+'newblock" type="text" placeholder="e.g. Dollar General" aria-label="Block a store">'
+      +'<button class="btn primary" type="button" id="'+px+'addblock">Block</button></div></div>';
+  }
   function blocklist(){ var b=state.settings&&state.settings.retailer_blocklist; return Array.isArray(b)?b:[]; }
   // S2: the SAME list renders on the Gift cards tab (#blocklist) and the Sales tab (#sales-blocklist) — one source.
   function renderBlockList(){
-    var items=blocklist();
-    ["blocklist","sales-blocklist"].forEach(function(id){
-      var host=el(id); if(!host) return;
-      if(!items.length){ host.innerHTML='<span class="sub">Nothing blocked.</span>'; return; }
+    var all=blocklist();
+    [["blocklist",ruleQuery],["sales-blocklist",salesQuery]].forEach(function(p){
+      var host=el(p[0]); if(!host) return;
+      // iphone-compact S1: each tab's search filters its blocked-stores list too
+      var q=normBrand(p[1]), items=all.filter(function(e){ return !q||normBrand(e).indexOf(q)>=0; });
+      if(!all.length){ host.innerHTML='<span class="sub">Nothing blocked.</span>'; return; }
+      if(!items.length){ host.innerHTML='<span class="sub">No blocked stores match “'+esc(p[1])+'”.</span>'; return; }
       host.innerHTML=items.map(function(e){
         return '<button class="fchip" data-unblock="'+esc(e)+'" aria-label="Unblock '+esc(e)+'">'+esc(e)+' ✕</button>';
       }).join("");
@@ -2540,7 +2646,8 @@
       });
       if(items.length) groups.push({slug:g[0],label:g[1],count:items.length,list:items});
     });
-    if(nav) nav.innerHTML=quickNav("rules",groups);
+    if(nav) nav.innerHTML=groups.length?quickNav("rules",groups):"";
+    var rc=el("ruleclear"); if(rc) rc.hidden=!ruleQuery;
     var html="";
     if(!groups.length){ html='<div class="empty">No rules match “'+esc(ruleQuery)+'”.</div>'; }
     groups.forEach(function(g){
@@ -2573,7 +2680,7 @@
     return t?new Date(t).toISOString():null;
   }
   function emailOffersGlance(){
-    var on=(state.offers||[]).filter(function(r){ return r.status==="on"; }).length;
+    var on=offerRows().filter(function(r){ return r.status==="on"; }).length; // the kept types only (iphone-compact S3)
     var s=outlookSource(); var st=s?outlookState(outlookExtras(s),Date.now()):"not_connected";
     var ov=(state.offerBrands||[]).length;
     return on+" type"+(on===1?"":"s")+" count · Outlook "+OUTLOOK_LABEL[st].toLowerCase().replace("…","")+(ov?" · "+ov+" brand override"+(ov===1?"":"s"):"");
@@ -2605,9 +2712,9 @@
     var noChan=!chans.length;
     return '<div class="card summary" id="setup-summary"><h3 class="sumtitle">Current setup — at a glance</h3><ul class="glance">'
       +items.map(function(i){
-        if(noChan&&i[0]==="Alerts") return '<li id="glance-alerts"><strong>'+esc(i[0])+':</strong> <span class="warntext"><span aria-hidden="true">⚠ </span>no channel on</span>'
+        if(noChan&&i[0]==="Alerts") return '<li id="glance-alerts" class="one"><strong>'+esc(i[0])+':</strong> <span class="warntext"><span aria-hidden="true">⚠ </span>no channel on</span>'
           +esc(String(i[1]).replace(/^no channel on/,""))+' — turn on iPhone or Email below</li>';
-        return '<li><strong>'+esc(i[0])+':</strong> '+esc(i[1])+'</li>'; }).join("")
+        return '<li class="one" title="'+esc(i[0]+': '+i[1])+'"><strong>'+esc(i[0])+':</strong> '+esc(i[1])+'</li>'; }).join("")
       +'</ul></div>';
   }
   // Enhancements Slice 7 — metrics from the permanent savings log (press_tasks category='savings', D1)
@@ -2639,17 +2746,17 @@
   }
   function metricsCard(){
     var m=metrics(Date.now());
-    function tile(id,label,value,note){ return '<div class="tile" id="m-'+id+'"><div class="tlabel">'+esc(label)+'</div><div class="tvalue">'+esc(value)+'</div>'+(note?'<div class="tnote">'+esc(note)+'</div>':'')+'</div>'; }
+    function tile(id,label,value,note){ return '<div class="tile" id="m-'+id+'"'+(note?' title="'+esc(note)+'"':'')+'><div class="tlabel one">'+esc(label)+'</div><div class="tvalue">'+esc(value)+'</div>'+(note?'<div class="tnote">'+esc(note)+'</div>':'')+'</div>'; }
     return '<div class="card metrics" id="metrics"><h3 class="sumtitle">Savings &amp; activity</h3>'
       +'<div class="hero"><div class="tlabel">Total saved, all time</div><div class="herovalue" id="m-total">'+esc(money(m.total))+'</div></div>'
       +'<div class="bykind" id="m-bykind">Gift cards '+esc(money(m.byKind.card))+' · Sales '+esc(money(m.byKind.sale))+' · Offers '+esc(money(m.byKind.offer))+'</div>'
       +'<div class="tiles">'
-      +tile("month","Saved this month",money(m.month))
+      +tile("month","This month",money(m.month))
       +tile("bought","Deals used",String(m.bought))
       +tile("skipped","Skipped",String(m.skipped))
-      +tile("alerts","Alerts sent (30 d)",String(m.alerts30))
-      +tile("rate","Hit-to-used rate",m.rate==null?"—":m.rate+"%",m.decided?m.bought+" of "+m.decided+" decided":"nothing decided yet")
-      +tile("flagged","Too-good flags (30 d)",String(m.flagged),"60%+ off — double-check")
+      +tile("alerts","Alerts (30 d)",String(m.alerts30))
+      +tile("rate","Used rate",m.rate==null?"—":m.rate+"%",m.decided?m.bought+" of "+m.decided+" decided":"nothing decided yet")
+      +tile("flagged","Too-good (30 d)",String(m.flagged),"60%+ off — double-check")
       // polish Slice 5 (Eye P2 "backlog shown twice"): the judge backlog lives ONLY in the Agent health card.
       +'</div></div>';
   }
@@ -2706,9 +2813,8 @@
     return '<div class="card"><div class="title">Agent health</div>'
       +'<div class="sub" id="backlog-line">'+backlogLine()+'</div>'
       +'<div class="sub" id="outlook-health">'+outlookHealthLine()+'</div>'
-      +'<div class="helper">Browser-lane finds waiting to be judged. Red (over 6 h) is also flagged in the daily digest.</div>'
       // offer-accuracy S3: run the fixed golden set through the current model — read-only, ≤ 5¢, 1 per minute.
-      +'<div class="row testrow judgerow"><div class="grow"><div class="sub">Check the model against the golden set — writes nothing, costs under 5¢.</div></div>'
+      +'<div class="row testrow judgerow"><div class="grow"><div class="sub">Test the model on the golden set (read-only, under 5¢).</div></div>'
       +'<button class="btn" id="check-judging" style="min-height:44px;min-width:44px">Check judging</button></div>'
       +'<div class="sub" id="check-judging-result" role="status" aria-live="polite"></div></div>';
   }
@@ -2749,13 +2855,12 @@
   function renderAlerts(){
     var host=el("alerts"); var s=state.settings||{}; var t=state.toggles||{};
     function tog(id,label,desc){
-      return '<div class="card"><div class="row"><div class="grow"><div class="title">'+label+'</div><div class="sub">'+desc+'</div></div>'
+      return '<div class="card"><div class="row"><div class="grow"><div class="title one">'+label+'</div><div class="sub one">'+desc+'</div></div>'
         +'<button class="sw" role="switch" aria-checked="'+(t[id]===true)+'" aria-label="'+label+'" data-toggle="'+id+'"></button></div></div>';
     }
-    var groups=[{slug:"channels",label:"Channels",count:2},{slug:"howoften",label:"How often",count:3},{slug:"timing",label:"Timing",count:4},{slug:"bad",label:"Bad backlog",count:(state.bad||[]).length},
+    var groups=[{slug:"channels",label:"Channels",count:2},{slug:"howoften",label:"How often",count:3},{slug:"timing",label:"Timing",count:4},{slug:"bad",label:"Bad backlog",count:unprocessedBad().length},
       {slug:"learned",label:"What I’ve learned",short:"Learned",count:LEARNED.length}];
-    var html=metricsCard()+alertsSummary();
-    html+=quickNav("alerts",groups);
+    var html=tbar("alerts","",groups)+metricsCard()+alertsSummary();
     html+=groupHead("alerts","channels","Channels",2);
     html+=tog("alert-iphone","iPhone push (Pushover)","Instant Pushover alert on a hit.");
     html+=pushHealthCard();
@@ -2764,24 +2869,21 @@
     html+=groupHead("alerts","howoften","How often",3);
     var fc=s.feed_cadence||"3x-day";
     html+='<div class="card">'
-      +'<div class="field"><label for="feedcadence">Feed frequency</label>'
+      +'<div class="field"><label for="feedcadence" title="More often = more AI spend.">Feed frequency</label>'
         +'<select id="feedcadence" data-set="feed_cadence">'
-        +'<option value="3x-day"'+(fc==="3x-day"?" selected":"")+'>3× a day (recommended)</option>'
-        +'<option value="30m"'+(fc==="30m"?" selected":"")+'>Every 30 min (most AI cost)</option>'
-        +'<option value="1x-day"'+(fc==="1x-day"?" selected":"")+'>Once a day, 7am (least cost)</option>'
+        +'<option value="3x-day"'+(fc==="3x-day"?" selected":"")+'>3× a day (best)</option>'
+        +'<option value="30m"'+(fc==="30m"?" selected":"")+'>Every 30 min ($$)</option>'
+        +'<option value="1x-day"'+(fc==="1x-day"?" selected":"")+'>Once a day, 7am</option>'
         +'</select></div>'
-      +'<div class="helper">More often = more AI spend.</div>'
       +'<div class="field" style="margin-top:12px"><label for="weeklyday">Weekly web check day</label>'
         +'<select id="weeklyday" data-set="weekly_day">'
         +WEEKDAYS.map(function(w){ return '<option value="'+w[0]+'"'+((s.weekly_day||"wed")===w[0]?" selected":"")+'>'+w[1]+'</option>'; }).join("")
         +'</select></div>'
-      +'<div class="helper">Your bookmarked shops are checked on this day.</div>'
       // Thrift Shop Slice 4: when the Outlook "offers" folder is scanned (the agent reads settings.offer_cadence).
       +'<div class="field" style="margin-top:12px"><label for="offercadence">Email offer scans</label>'
         +'<select id="offercadence" data-set="offer_cadence">'
-        +[["2x-day","Twice a day, 7am + 5pm"],["3x-day","3× a day, 7am, noon, 6pm"],["1x-day","Once a day, 7am"]].map(function(o){ return '<option value="'+o[0]+'"'+((s.offer_cadence||"2x-day")===o[0]?" selected":"")+'>'+o[1]+'</option>'; }).join("")
+        +[["2x-day","2× a day, 7am + 5pm"],["3x-day","3×, 7am · noon · 6pm"],["1x-day","Once a day, 7am"]].map(function(o){ return '<option value="'+o[0]+'"'+((s.offer_cadence||"2x-day")===o[0]?" selected":"")+'>'+o[1]+'</option>'; }).join("")
         +'</select></div>'
-      +'<div class="helper">How often your Outlook “offers” folder is read.</div>'
       +'</div>';
     html+=groupHead("alerts","timing","Timing",4);
     html+=tog("digest-daily","Daily near-miss digest","One email of the day’s near misses.");
@@ -2792,7 +2894,7 @@
       +'<div class="field"><label for="dt">Digest time</label><input type="time" id="dt" value="'+esc(s.digest_time||"07:30")+'" data-set="digest_time"></div>'
       +'<div class="field"><label for="md">Alert mode</label><select id="md" data-set="mode"><option value="instant"'+((s.mode||"instant")==="instant"?" selected":"")+'>Instant</option><option value="digest"'+(s.mode==="digest"?" selected":"")+'>Digest only</option></select></div>'
       +'</div>';
-    html+=groupHead("alerts","bad","Bad backlog",(state.bad||[]).length);
+    html+=groupHead("alerts","bad","Bad backlog",unprocessedBad().length);
     html+=badBacklogCard();
     html+=groupHead("alerts","learned","What I’ve learned",LEARNED.length);
     html+=learnedCard();
@@ -2805,9 +2907,9 @@
   /* LEARNED:END */
   function learnedCard(){
     var total=0; LEARNED.forEach(function(r){ total+=r.flags; });
-    return '<div class="card" id="learned-card"><div class="sub">From your '+total+' Bad flag'+(total===1?"":"s")+' — the rules every email offer, sale and gift card is now judged by. “Check judging” re-tests them.</div>'
+    return '<div class="card" id="learned-card"><div class="sub">From your '+total+' Bad flag'+(total===1?"":"s")+' — the rules every deal is now judged by.</div>'
       +'<ol class="learned">'+LEARNED.map(function(r){
-        return '<li data-rule="'+esc(r.rule)+'"><span class="grow">'+esc(r.text)+'</span>'
+        return '<li data-rule="'+esc(r.rule)+'"><span class="grow" title="'+esc(r.text)+'">'+esc(r.text)+'</span>'
           +'<span class="learned-n" aria-label="'+r.flags+' flag'+(r.flags===1?"":"s")+'">'+(r.flags?r.flags+' flag'+(r.flags===1?"":"s"):"rule")+'</span></li>';
       }).join("")+'</ol></div>';
   }
@@ -2854,7 +2956,8 @@
     var dinc=b.getAttribute("data-dinc"), ddec=b.getAttribute("data-ddec");
     if(dinc||ddec){ stepDenom(dinc||ddec, dinc?5:-5, b); return; }
     // rules search clear
-    if(b.id==="ruleclear"){ ruleQuery=""; var ri=el("rulesearch"); if(ri){ ri.value=""; ri.focus(); } renderRulesList(); return; }
+    if(b.id==="ruleclear"){ ruleQuery=""; var ri=el("rulesearch"); if(ri){ ri.value=""; ri.focus(); } renderRulesList(); renderBlockList(); return; }
+    if(b.id==="salesclear"){ salesQuery=""; var si=el("salessearch"); if(si){ si.value=""; si.focus(); } renderSalesLists(); return; }
     // alert toggle — re-render the summary so it reflects the change live
     var tg=b.getAttribute("data-toggle");
     if(tg){ var on3=state.toggles[tg]!==true; state.toggles[tg]=on3; setSwitch(b,on3); withSave(upsertState(tg,on3)); renderAlerts(); return; }
@@ -2883,7 +2986,8 @@
     // add brand
     if(b.id==="addbrand"){ addBrand(); return; }
     // blocked stores (Slice 3)
-    if(b.id==="addblock"){ addBlock(); return; }
+    if(b.id==="addblock"){ addBlock(""); return; }
+    if(b.id==="sales-addblock"){ addBlock("sales-"); return; }
     var ub=b.getAttribute("data-unblock"); if(ub){ removeBlock(ub); return; }
     // recategorize a rule (Slice 4)
     var grp=b.getAttribute("data-grp"); if(grp){ setRuleGroup(grp,b.getAttribute("data-grpval")); return; }
@@ -2909,7 +3013,6 @@
     var bm=b.getAttribute("data-bmode"); if(bm){ setBrandMode(b.getAttribute("data-brand"),bm); return; }
     var ubr=b.getAttribute("data-unbrand"); if(ubr){ removeBrand(ubr); return; }
     if(b.id==="saveofnote"){ saveOfferNote(); return; }
-    if(b.id==="goto-sources"){ selectTab("tab-sources"); var oc=el("outlook-card"); if(oc&&oc.scrollIntoView) oc.scrollIntoView({block:"center"}); var cb=el("outlook-connect"); if(cb) cb.focus(); return; }
     var wsw=b.getAttribute("data-watchsw"); if(wsw){ toggleWatchTerm(wsw,b); return; }
     // Thrift Shop Slice 2: Outlook connect / device-code panel / disconnect
     if(b.id==="outlook-connect"){ startOutlookConnect(); return; }
@@ -3058,7 +3161,11 @@
     }
   });
   document.addEventListener("change", function(ev){
+    if(ev.target && ev.target.classList && ev.target.classList.contains("jump")){ jumpTo(ev.target); return; }
     if(ev.target && (ev.target.id==="bday-month"||ev.target.id==="bday-day")){ saveBirthday(); return; }
+    var wm=ev.target && ev.target.getAttribute && ev.target.getAttribute("data-wmin");
+    if(wm){ var ww=find(state.watch||[],wm); if(!ww) return; ww.extras=ww.extras||{}; ww.extras.min_pct=Math.max(0,Math.min(90,Number(ev.target.value)||0));
+      withSave(patchTask(wm,{extras:ww.extras,updated_at:new Date().toISOString()})); return; }
     var f=ev.target.getAttribute && ev.target.getAttribute("data-set");
     if(!f) return;
     state.settings[f]=ev.target.value;
@@ -3068,8 +3175,8 @@
     renderAlerts(); renderFooter(); if(f==="offer_cadence") renderSources();
   });
   document.addEventListener("input", function(ev){
-    if(ev.target && ev.target.id==="rulesearch"){ ruleQuery=ev.target.value||""; renderRulesList(); }
-    else if(ev.target && ev.target.id==="brandsearch"){ brandQuery=ev.target.value||""; renderBrandList(); }
+    if(ev.target && ev.target.id==="rulesearch"){ ruleQuery=ev.target.value||""; renderRulesList(); renderBlockList(); }
+    else if(ev.target && ev.target.id==="salessearch"){ salesQuery=ev.target.value||""; renderSalesLists(); }
     else if(ev.target && ev.target.id==="offernote"){ var c=el("offernote-count"); if(c) c.textContent=String(ev.target.value||"").length+" / 300"; }
     // feed brand search: re-render only the list + status so the input keeps focus (badge unaffected).
     else if(ev.target && ev.target.id==="feedbrand"){ feedBrand=ev.target.value||""; renderFeedList(); syncFilterUI(); }
@@ -3364,10 +3471,17 @@
   }
   // Inbox arc Slice 6 — the Bad backlog on Alerts: count + list grouped by reason, newest first. Cowork reads
   // the same rows by SQL (press_tasks category='bad').
+  // iphone-compact S5: the Backlog shows ONLY the flags the Monday feedback loop has NOT applied yet. When the loop
+  // learns from a flag it stamps extras.processed_at on the row (the loop never deletes a row — the golden fixtures keep
+  // every applied flag) and the flag drops out of here into "What I've learned". Re-flagging a deal writes a fresh row
+  // (new feedback → unprocessed); Mark un-flagging or re-deciding a deal still removes his own flag, as before.
+  function isProcessedBad(r){ return !!(r&&r.extras&&r.extras.processed_at); }
+  function unprocessedBad(){ return (state.bad||[]).filter(function(r){ return !isProcessedBad(r); }); }
   function badBacklogCard(){
-    var rows=(state.bad||[]).slice().sort(function(a,b){ return new Date((b.extras&&b.extras.at)||b.updated_at||0)-new Date((a.extras&&a.extras.at)||a.updated_at||0); });
-    if(!rows.length) return '<div class="card" id="bad-backlog"><div class="sub">Nothing flagged Bad yet. Tap <strong>Bad</strong> on a deal that fails your expectations — it lands here for review.</div></div>';
-    var html='<div class="card" id="bad-backlog"><div class="sub">'+rows.length+' flagged — newest first, grouped by reason.</div>';
+    var rows=unprocessedBad().sort(function(a,b){ return new Date((b.extras&&b.extras.at)||b.updated_at||0)-new Date((a.extras&&a.extras.at)||a.updated_at||0); });
+    var done=(state.bad||[]).length-rows.length;
+    if(!rows.length) return '<div class="card" id="bad-backlog"><div class="sub">'+(done?'Nothing waiting — the Monday loop has learned from all '+done+' flag'+(done===1?"":"s")+'.':'Nothing flagged Bad yet. Tap <strong>Bad</strong> on a deal that misses — it lands here.')+'</div></div>';
+    var html='<div class="card" id="bad-backlog"><div class="sub">'+rows.length+' waiting for the Monday loop'+(done?' · '+done+' learned':'')+'.</div>';
     ALL_BAD_REASONS.forEach(function(r){
       var list=rows.filter(function(x){ return ((x.extras&&x.extras.reason)||"other")===r[0]; }); if(!list.length) return;
       html+='<div class="badgroup" data-reason="'+r[0]+'"><h4>'+esc(r[1])+' <span class="gcount">'+list.length+'</span></h4><ul class="badlist">';
@@ -3440,9 +3554,9 @@
   // review fix (slice 7): the Sales jump chips' counts follow every change (not only the group heading).
   function syncSalesNav(){
     var c={counts:offerRows().filter(function(x){ return x.status==="on"; }).length,brands:brandRows().length,note:(state.settings&&state.settings.offer_note)?1:0,watch:(state.watch||[]).length,blocked:blocklist().length};
-    Object.keys(c).forEach(function(k){ var a=document.querySelector('#qn-sales a[href="#grp-sales-'+k+'"]'), q=a&&a.querySelector('.qcount'); if(q){ q.textContent=String(c[k]);
-      a.setAttribute('aria-label',a.querySelector('.qlabel').textContent+' '+c[k]+', jump to '+a.getAttribute('data-full')); }
+    Object.keys(c).forEach(function(k){ setJumpCount("sales",k,c[k]);
       var g=document.querySelector('#grp-sales-'+k+' .gcount'); if(g) g.textContent=String(c[k]); });
+    var bg=document.querySelector('#grp-rules-blocked .gcount'); if(bg) bg.textContent=String(blocklist().length);
   }
   function toggleOffer(id,btn){
     var r=find(state.offers||[],id); if(!r) return; var on=r.status!=="on"; r.status=on?"on":"off"; setSwitch(btn,on);
@@ -3484,7 +3598,7 @@
   }
   function openBrandSheet(opener){
     var sh=ensureBrandSheet(); brandSheetOpener=opener||null;
-    el("brand-name").value=brandQuery||""; el("brand-sheet-msg").textContent="";
+    el("brand-name").value=salesQuery||""; el("brand-sheet-msg").textContent="";
     setBrandSheetMode("always"); sh.hidden=false; el("brand-name").focus();
   }
   function setBrandSheetMode(m){ var sh=el("brand-sheet"); if(!sh) return; sh.querySelectorAll("[data-bsmode]").forEach(function(b){ var on=b.getAttribute("data-bsmode")===m; b.classList.toggle("on",on); b.setAttribute("aria-pressed",String(on)); }); }
@@ -3537,7 +3651,7 @@
       state.offerBrands=(state.offerBrands||[]).concat([row]);
       withSave(api("press_tasks?on_conflict=page,item_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(row)}));
     }
-    var sh=el("brand-sheet"); if(sh) sh.hidden=true; brandQuery=""; var bs=el("brandsearch"); if(bs) bs.value="";
+    var sh=el("brand-sheet"); if(sh) sh.hidden=true;
     renderBrandList(); syncSalesNav();
     showToast((mode==="never"?"Muted ":"Always counting ")+name);
     var ab=el("addbrandov"); if(ab) ab.focus();
@@ -3556,7 +3670,7 @@
   function toggleWatchTerm(id,btn){
     var w=find(state.watch||[],id); if(!w) return; var on=w.status!=="on"; w.status=on?"on":"off"; setSwitch(btn,on);
     withSave(patchTask(id,{status:w.status,updated_at:new Date().toISOString()}));
-    var line=document.querySelector('.watchrow[data-wid="'+id+'"] .wstatus'); if(line) line.innerHTML=watchStatusLine(w);
+    renderWatchList(); var nb=document.querySelector('[data-watchsw="'+id+'"]'); if(nb) nb.focus(); // the status / last-match line follows the switch
   }
   // ---------- delete a rule (Slice 3) ----------
   // "Delete rule…" swaps the ⋯ menu contents to an inline "Delete <Brand>? [Delete] [Cancel]" confirm.
@@ -3585,12 +3699,13 @@
   }
   // ---------- blocked stores (Slice 3) ----------
   function saveSettings(){ return withSave(patchTask("settings",{extras:state.settings,updated_at:new Date().toISOString()})); }
-  function addBlock(){
-    var inp=el("newblock"); var name=normBrand(inp&&inp.value); if(!name) return; // normalized to match the judge
+  function addBlock(px){
+    var inp=el((px||"")+"newblock"); var name=normBrand(inp&&inp.value); if(!name) return; // normalized to match the judge
     var list=blocklist().slice();
     if(list.indexOf(name)<0) list.push(name);
     state.settings.retailer_blocklist=list;
     if(inp) inp.value=""; blockChanged(); saveSettings();
+    var again=el((px||"")+"newblock"); if(again) again.focus();
   }
   function removeBlock(entry,opts){
     state.settings.retailer_blocklist=blocklist().filter(function(e){ return e!==entry; });
@@ -3676,7 +3791,8 @@
     var root=document.documentElement;
     var header=document.querySelector("header");
     if(header) root.style.setProperty("--stick", Math.round(header.getBoundingClientRect().height)+"px");
-    var sb=document.querySelector("#panel-rules:not([hidden]) .searchbar");
+    // iphone-compact S1: --stick2 = the showing tab's sticky toolbar (.tbar)
+    var sb=document.querySelector("main section:not([hidden]) .tbar");
     root.style.setProperty("--stick2", (sb?Math.round(sb.getBoundingClientRect().height):0)+"px");
   }
   // keyboard: arrow between tabs

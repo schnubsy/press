@@ -4,6 +4,16 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-10-21 — arc/publish-thrift-shop-iphone-compact (Thrift Shop iPhone-compact publish)
+
+thrift-shop PR #33 (iphone-compact, 95c72e1) merged and its card-scout v44 deploy verified; its press publish was STAGED
+because that Builder could not run press's gauntlet. S1 rebuilt `thrift-shop.html` with thrift-shop `tools/release.js`
+from its merged main (9fec8b0): only that file changed, blob d8818498 → 2403c3bb (== thrift-shop main). Gauntlet green on
+every stage except tenants-check, whose 21 FAILs are the 7 tenant repos outside this session's scope (same on main) —
+BLOCKED (scope); merge left to the chat's verify per D1.
+
+---
+
 ## 2026-10-20 — arc/chrome-route-press (quiet-night agent-watch + Chrome route expect rows)
 
 Council arc/chrome-keeper (PR #59, merge 940bf96) STAGED its press half; the chat's verify found the press full gauntlet

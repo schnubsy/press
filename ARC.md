@@ -14,7 +14,7 @@ Why: thrift-shop PR #33 (arc/iphone-compact) merged 95c72e1 (stamp cf1b6fa) and 
 c9f1dce7…, verified by the chat 2026-10-21). Its press publish was STAGED but the Builder could not run press's gauntlet
 (press was outside its scope) — verify 3a step 4 ⇒ dispatched here. Mark asked for verify 2026-10-21 00:00 CT.
 
-=== SLICE 1 — publish thrift-shop.html from thrift-shop merged main ===
+=== SLICE 1 — publish thrift-shop.html from thrift-shop merged main === [x] done 2026-10-21 (blob 2403c3bb; merge BLOCKED: tenants-check scope)
 Rebuild from thrift-shop's MERGED main (never pre-merge bytes): clone schnubsy/thrift-shop as a sibling, checkout main
 (must contain 95c72e1), `npm install`, `PRESS_DIR=<this clone> node tools/release.js --check` (must print no SKIPPED),
 then `PRESS_DIR=<this clone> node tools/release.js`. Expected change: ONLY thrift-shop.html (card-scout.html stub,
