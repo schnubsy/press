@@ -1,0 +1,13 @@
+ui-audit press · webkit
+matrix: 20 states × 320/375/390/393/430 × dark+light = 200 surfaces
+🟢 overflow 0
+🟢 clip     0
+🟢 wrap     0
+🟢 touch    0
+🟢 safearea 0
+🟢 font16   0
+designed exceptions: 1 named in the evidence
+VERDICT: GREEN
+
+exceptions:
+- .row .line (agent-health.html) — an agent row is one <button> (tap to expand), so the probe reads its status line as a button label; it is server copy of variable length ("Missed the run due Wed Oct 7, 12:00 PM CT · last real work 9 days ago") that must wrap at phone width — truncating it would hide the reason the agent needs attention. The row title (.name) stays gated.

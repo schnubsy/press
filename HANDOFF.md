@@ -1,6 +1,6 @@
 # press — HANDOFF
 
-_Last updated: 2026-10-21. arc/publish-thrift-shop-iphone-compact — Thrift Shop iPhone-compact publish (cloud Builder)._
+_Last updated: 2026-10-21. arc/publish-vantage-onboarding-tour — Vantage App Lab training tour + catalog row (cloud Builder)._
 
 ## Standing rule: publish auto-close (do NOT re-litigate)
 
@@ -10,7 +10,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 
 ## Current state
 
-- Merge state: Merged: PR #54 aa28393 on 2026-10-21; main checkout on main @ aa28393
+- Merge state: PR pending (branch arc/publish-vantage-onboarding-tour)
 - Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
 - Agent alerting rule (Mark, 2026-10-13): nothing running is SLA-critical — one push + email only when an item has been
   down (late/failed) for 24h+, one quiet "working again" after. Contract: `docs/spec.md` → Agent Monitor · Alerting.
@@ -21,14 +21,16 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 - Ship gate: `bash scripts/gauntlet.sh` (verify skill) — 0 webkit · 1 unit · 2 inline · 3 tenants-check · 4 Playwright · 5 ui-audit.
 
 ## Shipped this arc
-- **S1**: `thrift-shop.html` rebuilt by thrift-shop `tools/release.js` (`--check` clean, no SKIPPED) from thrift-shop main
-  9fec8b0 (⊇ PR #33 95c72e1, iphone-compact). Only that file changed: blob d8818498 → **2403c3bb** == `git hash-object` at
-  thrift-shop main; stub, pages.json, favicons.md unchanged. One-row header tabs Feed · Sales · Gift cards · Sources · Settings.
-- Gauntlet: webkit 26.6 · unit 152/0 · inline ✓ · Playwright 150 · ui-audit GREEN (200 surfaces) · **tenants-check 55/21/24
-  RED — BLOCKED (scope)**: the 21 FAILs are T2/T3/T4 for 7 tenant repos not in this session's scope (retirement,
-  giving-tracker, fsa-claims, remit, optimo, cardsharp, vantage); identical on origin/main; all thrift-shop rows PASS.
-  Sentry: 0 hits. Evidence `docs/evidence/publish-thrift-shop-iphone-compact-*`. Live only once the PR merges (Pages serves main).
-- Earlier (chrome-route-press, 2026-10-20): agent-watch quiet nights + Chrome route expect rows (PR #53).
+- **S1**: `app-lab/vantage/` rebuilt by vantage `web/tools/build-app-lab.mjs` from vantage main (merge 9ef418c; web/ == 8f70424):
+  index.html M (blob 24399f71) + 5 hashed assets A / 5 old D — byte-identical to vantage's staged patch; app-lab.html,
+  frame.html, prototypes.json, pages.json unchanged. Bundle `index-PzQikWRp.js` carries "Take the tour".
+- **S2**: `press_catalog` row `catalog` 86ec7381 → **58a476c7** (101919 B) = council main 094544a's press-content.sql (⊇ the
+  ordered 76a3a6c Vantage change + the new Rebate Radar (web) entry), via the connector as one sha-guarded UPDATE; read-back match.
+- Gauntlet: webkit 26.6 · unit 152/0 · inline ✓ · Playwright 150 · ui-audit GREEN (200 surfaces) · **tenants-check 62/24/26
+  RED — BLOCKED (scope)**: 24 FAILs = T2/T3/T4 for 8 tenant repos outside scope (thrift-shop, retirement, giving-tracker,
+  fsa-claims, remit, optimo, cardsharp, rebate-radar); identical on origin/main; every App Lab row (T1–T4, T8, T9) PASS.
+  Sentry: publishable key only. Evidence `docs/evidence/publish-vantage-onboarding-tour-*`.
+- Earlier (publish-thrift-shop-iphone-compact, PR #54): `thrift-shop.html` 2403c3bb.
 
 ## Open / blockers
 - **snag-train `kind` is still `mac-task`** while its `what` now says "Cloud scheduled task" (from council's patch) — confirm
@@ -45,9 +47,9 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
   safe to delete.
 
 ## Exact next steps
-0. **Chat verify of this PR:** re-run press tenants-check with the 7 tenant repos attached (expect 76/0/24), review the diff,
-   merge, then reconcile + post-merge stamp, and confirm live `thrift-shop.html` (cache-bypassed) shows the one-row header and
-   the press blob == 2403c3bb.
+0. **Chat verify of this PR:** confirm `https://schnubsy.github.io/press/app-lab/vantage/` serves `index-PzQikWRp.js` containing
+   "Take the tour" and blob == 24399f71 for index.html; catalog row sha 58a476c7. Rebate Radar (web) catalog entry is still
+   "To confirm" until rebate-radar's own verify flips it live (council).
 1. **Tenant wave — shared-gate tap targets** (one arc per tenant, or one wave): move the page-level overrides into
    `src/gate.js` + `src/family-gate.js` (min-height 44 on `.pg-btn`; inline-flex 44px `.pg-back` / `.fg-back` / `.fg-link`),
    then every tenant re-vendors (card-scout, retirement, giving, fsa, cardsharp; remit, optimo) and re-publishes; drop the

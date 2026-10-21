@@ -1,0 +1,17 @@
+arc/publish-vantage-onboarding-tour — S2 catalog marquee row (press_catalog) — 2026-10-21, cloud Builder via the Supabase connector
+
+Before (execute_sql, project eepjhpyziczrxvirczio):
+  sha256 86ec7381cbaf413dd675d8ba18f0d4790651b458bc83f3e88f2719caaa305a43 · 100296 bytes · computed == stored · = council c115819's press-content.sql
+
+Deviation from the order (stated): the order named council 76a3a6c (cc7780e9…, 100529). Council main has since moved to 094544a
+(rebate-radar web-lookup, regenerated with tools/catalog/build.mjs; `--check` current), which carries 76a3a6c's Vantage change
+PLUS the new "Rebate Radar (web)" entry (status unverified/To confirm). Applying 76a3a6c would have written a row already stale vs
+council main, so the row was moved straight to council main's press-content.sql:
+  expected 58a476c72e200f4bab79ab7f79f220cfcf715bee000393f354bc238d571d8799 · 101919 bytes.
+
+Method: one guarded UPDATE built as 13 replace() hunks (old → new body, each anchor unique, replay-verified in node == new body),
+precondition stored sha == 86ec7381…, postcondition computed sha of the new body == 58a476c7… inside the same statement
+(SQL: publish-vantage-onboarding-tour-catalog-apply.sql). No destructive pop-up (a no-op guarded UPDATE probe ran first).
+
+After (fresh read-back): sha256 58a476c72e200f4bab79ab7f79f220cfcf715bee000393f354bc238d571d8799 · 101919 bytes · computed == stored ·
+updated_at 2026-10-21 20:56:30Z · body contains "A calm Mac task system" (Vantage described, badge Live). DONE.

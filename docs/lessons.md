@@ -399,3 +399,13 @@ around the scope.
 - **A press full gauntlet needs every tenant repo + council as a sibling clone.** Without them tenants-check T2/T4/T8 report
   missing-repo FAILs that say nothing about the change; with them (8 tenants + council) it ran 76/0/24. Dispatch press arcs
   with the tenant repos attached. [tag: testing] (2026-10-20)
+
+## arc/publish-vantage-onboarding-tour (2026-10-21)
+
+- **Apply a big generated row as a diff, not a re-paste.** A ~100 KB `press_catalog` body went through `execute_sql` as 13
+  `replace()` hunks computed from the live version's source (each anchor unique, replayed locally to the exact target), inside
+  one UPDATE guarded by the stored before-sha AND the computed after-sha — a transcription slip cannot land. Probe with a
+  no-op guarded UPDATE first to see whether the connector's destructive pop-up will fire. [tag: supabase] (2026-10-21)
+- **A generated catalog row tracks council MAIN, not the order's commit.** When council main has moved past the order's
+  `press-content.sql` commit (and `build.mjs --check` is current), apply main's version — it carries the ordered change and
+  nothing stale; say the deviation in the evidence. [tag: publish] (2026-10-21)
