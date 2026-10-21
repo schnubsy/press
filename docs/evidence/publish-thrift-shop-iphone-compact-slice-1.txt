@@ -1,0 +1,13 @@
+arc/publish-thrift-shop-iphone-compact — slice 1 evidence (2026-10-21, cloud Builder)
+thrift-shop main: 9fec8b0 (contains 95c72e1: yes); git hash-object thrift-shop.html = 2403c3bb1bc20093025d21ca96125ddda3b25c9c
+press before: HEAD:thrift-shop.html = d881849846d2ea517b593fa0163685b0cdbad128
+release --check: vendored gate byte-identical · inline in sync · secrets gate passed · redirect stub gate passed · no SKIPPED
+release: personal-space gate passed; pages.json + favicons.md already registered (left as is); staged thrift-shop.html only
+press after: git hash-object thrift-shop.html = 2403c3bb1bc20093025d21ca96125ddda3b25c9c (changed; == thrift-shop main)
+diff vs origin/main: thrift-shop.html only (card-scout.html, pages.json, docs/favicons.md unchanged); +349 / -233
+header tabs present: Feed · Sales · Gift cards · Sources · Settings (1 each)
+sentry: regex secrets scan of the staged diff (sk-ant, sb_secret, service_role, JWT, ghp_/github_pat_, AKIA, Pushover) = 0 hits
+gauntlet: 0 webkit 26.6 🟢 · 1 unit 152/0 🟢 · 2 inline 🟢 · 3 tenants-check 55 pass/21 fail/24 skip 🔴 · 4 playwright 150 🟢 · 5 ui-audit GREEN 200 surfaces 🟢
+tenants-check 21 FAILs = T2/T3/T4 × {retirement, giving-tracker, fsa-claims, remit, optimo, cardsharp, vantage}: "source repo missing"
+  — repos outside this session's GitHub scope; baseline origin/main (page unstashed) = identical 55/21/24. All thrift-shop rows PASS.
+  ⇒ BLOCKED (scope), not routed around. docs/lessons.md 2026-10-20: dispatch press arcs with the tenant repos attached.
