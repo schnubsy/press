@@ -33,7 +33,7 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: PR pending (branch arc/publish-thrift-shop-iphone-compact)
+Merge state: Merged: PR #54 aa28393 on 2026-10-21; main checkout on main @ aa28393
 **arc/publish-thrift-shop-iphone-compact (2026-10-21) — Thrift Shop iPhone-compact page, live on merge** (rebuilt by
 thrift-shop `tools/release.js` from its merged main 9fec8b0 ⊇ PR #33 95c72e1). Only `thrift-shop.html` changed: blob
 d8818498 → 2403c3bb (== thrift-shop main). Gauntlet: unit 152/0 · inline ✓ · Playwright 150 · ui-audit GREEN (WebKit) ·
