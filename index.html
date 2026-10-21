@@ -1548,7 +1548,9 @@ const ICONS={
   'heart':          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>',
   'stethoscope':    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 2v2"/><path d="M5 2v2"/><path d="M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"/><path d="M8 15a6 6 0 0 0 12 0v-3"/><circle cx="20" cy="10" r="2"/></svg>',
   // steward — a wrench (Feather "tool"): the Steward's environment-maintenance reports.
-  'tool':           '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>'
+  'tool':           '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+  // catalog — Feather "map": the one plain map of everything Mark runs (council ecosystem catalog).
+  'map':            '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>',
 };
 const iconFor=k=>ICONS[k]||ICONS['Page'];
 
@@ -1576,6 +1578,7 @@ const LABELS = {
   'eagle-path.html':    { kicker:'Checklist',                       title:"Brandon's Eagle Path · Saturday Check-In", icon:'mountain' },
   'agent-health.html':  { kicker:'System Health',                   title:'Agent Monitor',                            icon:'activity' },
   'steward.html':       { kicker:'Environment Reports',             title:'Steward',                                  icon:'tool' },
+  'catalog.html':       { kicker:'Everything Mark runs',            title:'Ecosystem catalog',                        icon:'map' },
 };
 // The card wording for a page: its LABELS entry, else a neutral fallback (pages.json title, generic glyph).
 function labelFor(f, man){ return LABELS[f] || { kicker:'Page', title:titleOf(f, man), icon:'Page' }; }

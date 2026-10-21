@@ -21,6 +21,7 @@ const SPACES = JSON.parse(readFileSync(join(ROOT, 'spaces.json'), 'utf8'));
 const WANT = {
   'optimo.html':        ['Day planner', 'Optimo'],
   'app-lab.html':       ['Prototypes', 'App Lab'],
+  'catalog.html':       ['Everything Mark runs', 'Ecosystem catalog'],
   'perth.html':         ['Moving to Perth', 'The Runway'],
   'halvsies.html':      ['Splitting the Bill', 'Halvsies'],
   'cardsharp.html':     ['Gift Card Tracker', 'Cardsharp'],
