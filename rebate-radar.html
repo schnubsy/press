@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#100C1E" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F4F1FA" media="(prefers-color-scheme: light)">
+<title>Rebate Radar</title>
+<meta name="page-title" content="Rebate Radar">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSI2NCIgeTI9IjY0IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjRkY3QTVDIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRTdBNkM3Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxMDBDMUUiLz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg4IDgpIHNjYWxlKDIpIiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjZykiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjAuNTkgMTMuNDFsLTcuMTcgNy4xN2EyIDIgMCAwIDEtMi44MyAwTDIgMTJWMmgxMGw4LjU5IDguNTlhMiAyIDAgMCAxIDAgMi44MnoiLz48bGluZSB4MT0iNyIgeTE9IjciIHgyPSI3LjAxIiB5Mj0iNyIvPjwvZz48L3N2Zz4=">
+<!-- BUILT from schnubsy/rebate-radar web/rebate-radar.html by `node web/build.js` (family gate inlined from src/family-gate.js,
+     byte-identical to press src/family-gate.js) — never hand-edit the press copy; fix the source and re-release. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+/* marquee look — press "tw" twilight tokens, with a light variant */
+:root{
+  --stage:#100C1E; --ink:#EDE7F2; --muted:#B4ACC4; --faint:#8A8399; --icon:#B7A8FF;
+  --card:rgba(255,255,255,.055); --card-2:rgba(255,255,255,.09); --line:rgba(255,255,255,.12);
+  --field:rgba(255,255,255,.07); --focus:#B7A8FF; --warn:#F2C879; --bad:#F29B9B;
+  --grad:linear-gradient(92deg,#B7A8FF,#E7A6C7); --shadow:0 10px 34px rgba(10,7,22,.5);
+  --f-display:'Unbounded','Inter',system-ui,sans-serif; --f-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif; --f-meta:'Space Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --r:18px; color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root{
+  --stage:#F4F1FA; --ink:#1E1830; --muted:#544C66; --faint:#6E6782; --icon:#5B45C9;
+  --card:#FFFFFF; --card-2:#F7F4FC; --line:rgba(30,24,48,.12); --field:#FFFFFF; --focus:#5B45C9; --warn:#8A5A00; --bad:#A3322F;
+  --grad:linear-gradient(92deg,#5B45C9,#A8467A); --shadow:0 6px 22px rgba(40,24,90,.10); color-scheme:light;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--stage);background-image:radial-gradient(620px 380px at 20% -10%,rgba(142,123,232,.28),transparent 62%),radial-gradient(520px 340px at 100% 0%,rgba(231,166,199,.16),transparent 60%);background-repeat:no-repeat;color:var(--ink);font:400 16px/1.5 var(--f-body);-webkit-font-smoothing:antialiased;min-height:100vh}
+main{max-width:640px;margin:0 auto;padding:max(28px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(40px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.eyebrow{font:700 11px/1 var(--f-meta);letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:0 0 10px}
+h1{font:500 clamp(28px,8vw,40px)/1.1 var(--f-display);margin:0 0 8px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{margin:0 0 20px;color:var(--muted)}
+#f{display:flex;gap:8px;margin:0 0 20px}
+#site{flex:1;min-width:0;height:48px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--field);color:var(--ink);font:500 16px/1 var(--f-body)}
+#site::placeholder{color:var(--faint)}
+main :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+#go,.open{display:inline-flex;align-items:center;justify-content:center;height:48px;padding:0 18px;border-radius:14px;border:0;font:600 15px/1 var(--f-body);white-space:nowrap;cursor:pointer;text-decoration:none}
+#go{background:var(--grad);color:#fff}
+#go:disabled{opacity:.55;cursor:default}
+#msg{margin:0 0 14px;color:var(--muted);min-height:1.5em}
+#msg.err{color:var(--bad)}
+#rows{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+#rows li{display:flex;align-items:center;gap:12px;padding:14px;border-radius:var(--r);background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow)}
+#rows li.best{border:2px solid var(--pc);background:linear-gradient(0deg,var(--card),var(--card)),var(--card-2)}
+.dot{flex:none;width:12px;height:12px;border-radius:50%;background:var(--pc)}
+.who{flex:1;min-width:0}
+.name{font:600 15px/1.3 var(--f-body);margin:0;overflow-wrap:anywhere}
+.state{margin:2px 0 0;font-size:14px;color:var(--muted)}
+.state.warn{color:var(--warn)}
+.state.bad{color:var(--bad)}
+.rate{flex:none;font:500 22px/1 var(--f-display);text-align:right}
+.rate small{display:block;font:700 10px/1.2 var(--f-meta);letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
+.chip{display:inline-block;margin-left:6px;white-space:nowrap;padding:3px 8px;border-radius:99px;background:var(--pc);color:#fff;font:700 10px/1.2 var(--f-meta);letter-spacing:.08em;text-transform:uppercase;vertical-align:2px}
+.open{flex:none;height:44px;min-width:72px;padding:0 14px;background:var(--card-2);color:var(--ink);border:1px solid var(--line)}
+#rows li.best .open{background:var(--pc);border-color:var(--pc);color:#fff}
+#rows li.loading .state{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+@media (prefers-reduced-motion: reduce){#rows li.loading .state{animation:none}}
+.foot{margin:22px 0 0;font-size:13px;color:var(--faint)}
+/* 44px tap boxes for the inlined family gate's text controls — the same page-level override press index.html carries
+   (src/family-gate.js stays byte-identical to the press canonical). */
+html #family-gate .fg-back{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;padding:0 6px;border-bottom:0;
+  text-decoration:underline;text-decoration-color:rgba(125,138,156,.4);text-underline-offset:4px}
+html #family-gate .fg-link{min-height:44px;padding:0 6px;margin-top:4px}
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">cashback</p>
+  <h1>Rebate Radar</h1>
+  <p class="lede">Type a website to see every cashback portal's rate, best first.</p>
+  <form id="f" autocomplete="off" novalidate>
+    <input id="site" name="site" type="text" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search" placeholder="nike.com or a link" aria-label="Website" disabled>
+    <button id="go" type="submit" disabled>Check</button>
+  </form>
+  <p id="msg" role="status" aria-live="polite"></p>
+  <ol id="rows" aria-live="polite"></ol>
+  <p class="foot">Rates come straight from each portal's own page. Open goes to the portal, so your cash back is tracked.</p>
+</main>
+<script>
+/* =============================================================================
+ * press family-gate.js — the ONE place the Family Wing sign-in flow is written
+ * (docs/access-framework.md §7). Vendored into each tenant page the same way
+ * src/gate.js is vendored into the personal apps, and guarded byte-for-byte by
+ * the tenant's own `--check` (press's inline:check does not police sibling repos).
+ *
+ *   FamilyGate.require(page)  -> resolves {email,name} when a GRANTED session exists;
+ *                                otherwise renders the full-page sign-in and resolves
+ *                                after a granted sign-in completes.
+ *   FamilyGate.requireSession() -> resolves {email,name} for a live family session; otherwise
+ *                                renders the entrance sign-in (email OTP, NO page grant) and
+ *                                resolves after sign-in. The Family-Wing DOOR uses this; a tenant
+ *                                PAGE uses require(page). One session (press:family:v1) is shared,
+ *                                so signing in at the door opens every tool with no further prompt.
+ *   FamilyGate.session()      -> { email, name } | null   (sync, from local storage)
+ *   FamilyGate.authHeaders()  -> { apikey, Authorization } for the tenant's own REST calls
+ *   FamilyGate.signOut()      -> clears the local session (and best-effort GoTrue logout)
+ *
+ * Blocked → "Request access" (2026-10-12, framework §8a): a signed-in person whose switch for the page
+ * is OFF sees a Request access button; it calls rpc/press_access_request(page) with their own JWT and
+ * shows "Requested — Mark has been notified…". requestAccess() is the call, requestView() the pure
+ * verdict → screen-state map (both unit-tested).
+ *
+ * Design notes:
+ *   - It talks to Supabase Auth (GoTrue) and PostgREST with RAW fetch — NO supabase-js,
+ *     no CDN, no runtime dep, matching the house "no network at boot for public pages"
+ *     rule. persistSession / autoRefreshToken are implemented here (localStorage + a
+ *     refresh timer), which is what the spec's "signed in effectively forever" means.
+ *   - FAIL CLOSED is the whole point: reads of spaces.json and press_access_apps that
+ *     error are treated as "gated". Zero auth calls happen until a page is known gated.
+ *   - A failed token refresh renders the sign-in screen, never an error (spec §8).
+ *   - The gate is courtesy; RLS is the lock (framework §2). Deleting this block yields a
+ *     working app with nothing in it — every row is behind press_access_has('<page>').
+ *
+ * Node-importable: every DOM/browser touch is guarded, so the unit tests load this file
+ * for its pure helpers (normSession, isExpired, sessionFromToken, gatedDecision, …) and
+ * a Playwright spec drives the full flow against mocked GoTrue + PostgREST endpoints.
+ * ========================================================================== */
+(function (root) {
+  'use strict';
+
+  // --- config (all public / embeddable — the publishable anon key, same project) ---
+  var SUPA_URL = 'https://eepjhpyziczrxvirczio.supabase.co';
+  var SUPA_KEY = 'sb_publishable__iv3bI7xDAsOdHUlXzbVZQ_2yyFS4uX';
+  var AUTH = SUPA_URL + '/auth/v1';
+  var REST = SUPA_URL + '/rest/v1';
+  var SESSION_KEY = 'press:family:v1';
+  var REFRESH_SKEW_MS = 60 * 1000;   // treat a token as expired 60s early; refresh this far ahead
+
+  // spaces.json sits beside the tenant page at the press root; a RELATIVE url resolves to
+  // /press/spaces.json on the live site and to the served copy under a test origin. Overridable.
+  var SPACES_URL = 'spaces.json';
+
+  // Injectable seams for the unit tests (browser uses the real globals).
+  var _fetch = (typeof fetch !== 'undefined') ? fetch.bind(globalThis) : null;
+  var _store = (function () { try { return globalThis.localStorage || null; } catch (e) { return null; } })();
+
+  function cfg(opts) {
+    opts = opts || {};
+    if (opts.fetch) _fetch = opts.fetch;
+    if (opts.store) _store = opts.store;
+    if (opts.spacesUrl) SPACES_URL = opts.spacesUrl;
+    if (opts.supaUrl) { SUPA_URL = opts.supaUrl; AUTH = SUPA_URL + '/auth/v1'; REST = SUPA_URL + '/rest/v1'; }
+    if (opts.supaKey) SUPA_KEY = opts.supaKey;
+    return { SUPA_URL: SUPA_URL, SUPA_KEY: SUPA_KEY, AUTH: AUTH, REST: REST, SPACES_URL: SPACES_URL };
+  }
+
+  // ── pure helpers (unit-tested; no I/O) ──────────────────────────────────────
+  // Build a normalised session from a GoTrue token response. GoTrue `expires_at` is epoch
+  // SECONDS; `expires_in` is seconds-from-now. Returns null unless both tokens are present.
+  function sessionFromToken(tok) {
+    if (!tok || typeof tok.access_token !== 'string' || typeof tok.refresh_token !== 'string') return null;
+    var user = tok.user || {};
+    var meta = user.user_metadata || {};
+    var expMs = tok.expires_at ? (tok.expires_at * 1000)
+              : (Date.now() + ((tok.expires_in || 3600) * 1000));
+    return {
+      access_token: tok.access_token,
+      refresh_token: tok.refresh_token,
+      expires_at: expMs,
+      email: String(user.email || '').toLowerCase(),
+      name: meta.name || meta.full_name || null
+    };
+  }
+  function normSession(o) {
+    if (!o || typeof o !== 'object') return null;
+    if (typeof o.access_token !== 'string' || typeof o.refresh_token !== 'string') return null;
+    if (typeof o.expires_at !== 'number') return null;
+    return { access_token: o.access_token, refresh_token: o.refresh_token,
+             expires_at: o.expires_at, email: String(o.email || '').toLowerCase(), name: o.name || null };
+  }
+  // Decode a base64url JSON segment (a JWT payload) in both browser (atob) and Node (Buffer). Returns
+  // null on anything malformed — never throws.
+  function b64urlToJson(seg) {
+    if (typeof seg !== 'string' || !seg) return null;
+    try {
+      var b64 = seg.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      var txt;
+      if (typeof atob === 'function') {
+        var bin = atob(b64);
+        // handle UTF-8 payloads correctly
+        try { txt = decodeURIComponent(bin.split('').map(function (c) { return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); }).join('')); }
+        catch (e) { txt = bin; }
+      } else if (typeof Buffer !== 'undefined') {
+        txt = Buffer.from(b64, 'base64').toString('utf8');
+      } else { return null; }
+      return JSON.parse(txt);
+    } catch (e) { return null; }
+  }
+  // Parse a URL fragment ('#a=1&b=2' or 'a=1&b=2') into a plain object. Empty/garbage -> {}.
+  function parseHashParams(hash) {
+    var out = {};
+    var s = String(hash == null ? '' : hash).replace(/^#/, '');
+    if (!s) return out;
+    s.split('&').forEach(function (pair) {
+      if (!pair) return;
+      var i = pair.indexOf('=');
+      var k = i === -1 ? pair : pair.slice(0, i);
+      var v = i === -1 ? '' : pair.slice(i + 1);
+      try { out[decodeURIComponent(k)] = decodeURIComponent(v); } catch (e) { out[k] = v; }
+    });
+    return out;
+  }
+  // Build a normalised session from a GoTrue magic-link URL fragment. The fragment carries
+  // access_token (a JWT), refresh_token, expires_at/expires_in — the email/name come from the JWT
+  // payload. Returns null unless BOTH tokens are present and the payload decodes (a malformed hash
+  // falls through to the sign-in screen — spec §8, arc slice 2). Never throws.
+  function sessionFromHash(hash, now) {
+    var p = parseHashParams(hash);
+    if (!p.access_token || !p.refresh_token) return null;
+    var payload = b64urlToJson(String(p.access_token).split('.')[1]);
+    if (!payload || !payload.email) return null;   // not a usable Supabase access token
+    now = (typeof now === 'number') ? now : Date.now();
+    var expMs = p.expires_at ? (Number(p.expires_at) * 1000)
+              : (p.expires_in ? (now + Number(p.expires_in) * 1000)
+              : (payload.exp ? (payload.exp * 1000) : (now + 3600 * 1000)));
+    var meta = payload.user_metadata || {};
+    return normSession({
+      access_token: p.access_token, refresh_token: p.refresh_token, expires_at: expMs,
+      email: payload.email, name: meta.name || meta.full_name || null,
+    });
+  }
+  function isExpired(session, now, skewMs) {
+    if (!session) return true;
+    now = (typeof now === 'number') ? now : Date.now();
+    skewMs = (typeof skewMs === 'number') ? skewMs : REFRESH_SKEW_MS;
+    return now >= (session.expires_at - skewMs);
+  }
+  // The fail-closed union, as a pure decision (framework §3). `page` is gated when it is in
+  // spaces.family, OR the DB says so, OR EITHER read failed.
+  function gatedDecision(d) {
+    d = d || {};
+    if (!d.spacesOk) return true;            // spaces.json unreadable -> gate
+    if (d.inSpacesFamily) return true;       // repo-owned gate
+    if (!d.appsOk) return true;              // press_access_apps unreadable -> gate
+    return !!d.appsGated;                     // DB half of the union
+  }
+
+  // ── local session store ─────────────────────────────────────────────────────
+  function loadSession() {
+    if (!_store) return null;
+    try { return normSession(JSON.parse(_store.getItem(SESSION_KEY) || 'null')); }
+    catch (e) { return null; }
+  }
+  function saveSession(s) {
+    if (!_store || !s) return;
+    try { _store.setItem(SESSION_KEY, JSON.stringify(s)); } catch (e) {}
+  }
+  function clearSession() {
+    if (!_store) return;
+    try { _store.removeItem(SESSION_KEY); } catch (e) {}
+  }
+
+  // ── network ─────────────────────────────────────────────────────────────────
+  function authFetch() { if (!_fetch) throw new Error('no fetch available'); return _fetch; }
+  function anonHeaders(extra) {
+    var h = { 'apikey': SUPA_KEY, 'Content-Type': 'application/json' };
+    if (extra) for (var k in extra) h[k] = extra[k];
+    return h;
+  }
+  function bearerHeaders(session, extra) {
+    var h = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + (session ? session.access_token : SUPA_KEY),
+              'Content-Type': 'application/json' };
+    if (extra) for (var k in extra) h[k] = extra[k];
+    return h;
+  }
+
+  async function loadSpaces() {
+    var r = await authFetch()(SPACES_URL, { headers: { 'Accept': 'application/json' } });
+    if (!r || !r.ok) throw new Error('spaces ' + (r && r.status));
+    return await r.json();
+  }
+  async function fetchApp(page, session) {
+    // authenticated read of press_access_apps for one page; anon is revoked, so a signed-out
+    // caller gets a non-2xx here and the caller fails closed.
+    var r = await authFetch()(REST + '/press_access_apps?select=page,gated&page=eq.' + encodeURIComponent(page),
+      { headers: bearerHeaders(session) });
+    if (!r || !r.ok) throw new Error('apps ' + (r && r.status));
+    var rows = await r.json();
+    return (rows && rows[0]) || null;
+  }
+  async function hasGrant(session, page) {
+    var r = await authFetch()(REST + '/rpc/press_access_has',
+      { method: 'POST', headers: bearerHeaders(session), body: JSON.stringify({ page: page }) });
+    if (!r || !r.ok) return false;
+    var v = await r.json();
+    return v === true;
+  }
+  // "Request access" (blocked screen). Calls the security-definer RPC press_access_request(page) with the
+  // caller's OWN JWT — the server takes the email from the token, never from the body. Returns
+  // { ok, status } where status is the RPC's text verdict ('requested' | 'already_requested' |
+  // 'already_granted' | 'not_on_list' | 'not_gated' | 'not_signed_in') or the HTTP status on a non-2xx.
+  // Never throws on an HTTP error (a network failure still rejects; the caller catches it).
+  async function requestAccess(session, page) {
+    var r = await authFetch()(REST + '/rpc/press_access_request',
+      { method: 'POST', headers: bearerHeaders(session), body: JSON.stringify({ page: page }) });
+    if (!r || !r.ok) return { ok: false, status: (r && r.status) || 0 };
+    var v = null; try { v = await r.json(); } catch (e) {}
+    return { ok: true, status: typeof v === 'string' ? v : '' };
+  }
+  // Pure: map a requestAccess result to what the blocked screen shows. { text, err, done, reload }.
+  var REQUESTED_TEXT = 'Requested — Mark has been notified. Try again once he’s switched you on.';
+  function requestView(res) {
+    res = res || {};
+    var s = res.status;
+    if (res.ok && (s === 'requested' || s === 'already_requested')) return { text: REQUESTED_TEXT, err: false, done: true, reload: false };
+    if (res.ok && (s === 'already_granted' || s === 'not_gated')) return { text: 'You’re already switched on — opening…', err: false, done: true, reload: true };
+    if (res.ok && s === 'not_on_list') return { text: 'That address isn’t on the family list — ask Mark directly.', err: true, done: true, reload: false };
+    if (s === 'not_signed_in' || s === 401 || s === 403) return { text: 'Your sign-in has expired — use “Sign in as someone else” to sign in again.', err: true, done: false, reload: false };
+    return { text: 'Couldn’t send the request — try again in a moment.', err: true, done: false, reload: false };
+  }
+  function touch(session) {
+    // fire-and-forget last_seen_at stamp (§6); never blocks sign-in and never throws.
+    try {
+      authFetch()(REST + '/rpc/press_access_touch',
+        { method: 'POST', headers: bearerHeaders(session), body: '{}' }).catch(function () {});
+    } catch (e) {}
+  }
+  async function sendCode(email) {
+    var r = await authFetch()(AUTH + '/otp',
+      { method: 'POST', headers: anonHeaders(), body: JSON.stringify({ email: email, create_user: false }) });
+    return { ok: !!(r && r.ok), status: r && r.status };
+  }
+  // Verify an OTP. Returns { session, status, code } — session is null on any failure, and status +
+  // the GoTrue error_code let the caller phrase the right message (a wrong/expired CODE is NOT an
+  // address-not-on-the-list problem; see verifyErr). Never throws.
+  async function verifyCode(email, token) {
+    var r;
+    try {
+      r = await authFetch()(AUTH + '/verify',
+        { method: 'POST', headers: anonHeaders(), body: JSON.stringify({ email: email, token: token, type: 'email' }) });
+    } catch (e) { return { session: null, status: 0, code: 'network' }; }
+    if (r && r.ok) {
+      var okBody = {}; try { okBody = await r.json(); } catch (e) {}
+      return { session: sessionFromToken(okBody), status: r.status, code: '' };
+    }
+    var code = '';
+    try { var eb = await r.json(); code = String(eb.error_code || eb.code || eb.error || '').toLowerCase(); } catch (e) {}
+    return { session: null, status: (r && r.status) || 0, code: code };
+  }
+  async function refresh(refreshToken) {
+    var r = await authFetch()(AUTH + '/token?grant_type=refresh_token',
+      { method: 'POST', headers: anonHeaders(), body: JSON.stringify({ refresh_token: refreshToken }) });
+    if (!r || !r.ok) return null;
+    return sessionFromToken(await r.json());
+  }
+
+  // Magic-link landing (arc slice 2). A SECOND entry point, not a replacement: if the page loaded
+  // with a GoTrue token fragment (the link flow, which otherwise dead-ends), adopt it as the session
+  // in the gate's normal format, strip the fragment from the URL, and return it. No fragment / a
+  // malformed one -> null, and the normal code path runs unchanged. Browser-only; never throws.
+  function consumeHashLanding() {
+    try {
+      if (typeof location === 'undefined' || !location.hash) return null;
+      var s = sessionFromHash(location.hash);
+      if (!s) return null;
+      saveSession(s);
+      // strip the token fragment so it never lingers in the address bar / history
+      try {
+        if (typeof history !== 'undefined' && history.replaceState) {
+          history.replaceState(null, '', location.pathname + location.search);
+        } else { location.hash = ''; }
+      } catch (e) {}
+      return s;
+    } catch (e) { return null; }
+  }
+
+  // Resolve a usable session from storage, refreshing if needed. Returns a live session or null.
+  async function ensureFresh() {
+    consumeHashLanding();   // a fresh magic-link landing is adopted before we read storage
+
+    var s = loadSession();
+    if (!s) return null;
+    if (!isExpired(s)) return s;
+    var ns = await refresh(s.refresh_token);   // rotation, not expiry, is the usual cause
+    if (!ns) { clearSession(); return null; }   // failed refresh -> sign-in, not an error
+    saveSession(ns);
+    return ns;
+  }
+
+  async function isGated(page) {
+    var spaces;
+    try { spaces = await loadSpaces(); }
+    catch (e) { return gatedDecision({ spacesOk: false }); }
+    var fam = (spaces && Array.isArray(spaces.family)) ? spaces.family : [];
+    if (fam.indexOf(page) !== -1) return true;
+    // not repo-gated — consult the DB half of the union, failing closed
+    try {
+      var s = loadSession();
+      var app = await fetchApp(page, s);
+      return gatedDecision({ spacesOk: true, inSpacesFamily: false, appsOk: true, appsGated: app ? app.gated : false });
+    } catch (e) {
+      return gatedDecision({ spacesOk: true, inSpacesFamily: false, appsOk: false });
+    }
+  }
+
+  // ── auto-refresh timer (autoRefreshToken equivalent) ────────────────────────
+  var _timer = null;
+  function stopAutoRefresh() { if (_timer) { try { clearTimeout(_timer); } catch (e) {} _timer = null; } }
+  function scheduleRefresh(session, onLost) {
+    if (typeof setTimeout !== 'function') return;
+    stopAutoRefresh();
+    var delay = Math.max(5000, session.expires_at - Date.now() - REFRESH_SKEW_MS);
+    _timer = setTimeout(async function () {
+      var ns = await refresh(session.refresh_token);
+      if (!ns) { clearSession(); stopAutoRefresh(); if (onLost) try { onLost(); } catch (e) {} return; }
+      saveSession(ns);
+      scheduleRefresh(ns, onLost);
+    }, delay);
+  }
+
+  // ── the sign-in UI (browser only) ───────────────────────────────────────────
+  var STYLE_ID = 'family-gate-style';
+  var CSS =
+    '#family-gate{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;' +
+    'padding:24px;background:radial-gradient(130% 100% at 50% 0%,#131d2c 0%,#0d1420 72%);' +
+    "font-family:Outfit,system-ui,-apple-system,'Segoe UI',sans-serif;color:#eae4d6}" +
+    /* muted text colour, raised to clear WCAG AA on the card */
+    '#family-gate *{box-sizing:border-box}' +
+    '#family-gate [hidden]{display:none!important}' +
+    '#family-gate .fg-card{width:100%;max-width:400px;text-align:center;padding:34px 26px;border-radius:14px;' +
+    'background:rgba(19,29,44,.82);border:1px solid rgba(201,162,109,.28);box-shadow:0 24px 60px rgba(0,0,0,.5)}' +
+    '#family-gate .fg-icon{width:44px;height:44px;margin:0 auto 14px;color:#c9a26d}' +
+    '#family-gate .fg-icon svg{width:44px;height:44px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}' +
+    '#family-gate h1{font-size:20px;font-weight:600;margin:0 0 8px;letter-spacing:.1px}' +
+    '#family-gate p{font-size:13px;line-height:1.55;color:#8f9bab;margin:0 auto 20px;max-width:320px}' +
+    '#family-gate label{display:block;text-align:left;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#8f9bab;margin:0 0 6px 2px}' +
+    '#family-gate input{width:100%;min-height:48px;background:rgba(13,20,32,.6);border:1px solid rgba(201,162,109,.3);' +
+    'border-radius:8px;padding:12px 14px;color:#eae4d6;font-size:16px;font-family:inherit;margin-bottom:14px}' +
+    '#family-gate input:focus{outline:2px solid #c9a26d;outline-offset:1px}' +
+    '#family-gate input::placeholder{color:#9aa6b6;opacity:1}' +
+    '#family-gate .fg-code{letter-spacing:.4em;text-align:center;font-variant-numeric:tabular-nums}' +
+    '#family-gate .fg-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;' +
+    'font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#1a1205;cursor:pointer;border:0;border-radius:8px;' +
+    'padding:14px 24px;background:#c9a26d;font-weight:600;font-family:inherit}' +
+    '#family-gate .fg-btn:hover{filter:brightness(1.06)}' +
+    '#family-gate .fg-btn[disabled]{opacity:.6;cursor:progress}' +
+    '#family-gate .fg-msg{font-size:12.5px;margin-top:14px;min-height:1em;color:#eae4d6}' +
+    '#family-gate .fg-msg.err{color:#c2686e}' +
+    '#family-gate .fg-back{display:inline-block;margin-top:18px;font-size:12px;color:#8f9bab;text-decoration:none;' +
+    'border-bottom:1px solid rgba(125,138,156,.4)}' +
+    '#family-gate .fg-back:hover{color:#eae4d6}' +
+    '#family-gate .fg-link{background:0;border:0;color:#8f9bab;font:inherit;font-size:12px;text-decoration:underline;' +
+    'text-underline-offset:3px;cursor:pointer;margin-top:14px}';
+  var ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect>' +
+    '<polyline points="3 7 12 13 21 7"></polyline></svg>';
+
+  function injectStyle() {
+    if (typeof document === 'undefined' || document.getElementById(STYLE_ID)) return;
+    var s = document.createElement('style'); s.id = STYLE_ID; s.textContent = CSS;
+    (document.head || document.documentElement).appendChild(s);
+  }
+  function removeGate() {
+    if (typeof document === 'undefined') return;
+    var el = document.getElementById('family-gate');
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }
+  // SEND-CODE path only. An OTP-send rejection can mean the address is not allowed to sign in, so
+  // the family-list wording lives HERE (the UI stays deliberately non-committal to avoid an
+  // enumeration oracle — this is the phrasing for where a send error is surfaced explicitly).
+  function friendlyAuthErr(status) {
+    if (status === 429) return 'Too many attempts just now — wait a minute and try again.';
+    if (status === 403 || status === 422) return 'That address is not on the family list.';
+    return 'That didn’t work. Check the code and try again.';
+  }
+  // VERIFY path. A 403/otp_expired or a 400/422 invalid token means the CODE was wrong or stale — the
+  // address was already accepted at the send step, so this NEVER mentions the family list.
+  function verifyErr(status, code) {
+    if (status === 429) return 'Too many attempts just now — wait a minute and try again.';
+    return 'That code didn’t work — check it or request a new one.';
+  }
+  // Supabase OTP length is configurable (6–10 digits); tolerate the whole range, digits only.
+  function isValidCode(code) { return /^\d{6,10}$/.test(String(code == null ? '' : code).trim()); }
+
+  // Render the sign-in and resolve `done` only on a granted sign-in. `existing` is a valid but
+  // UN-granted session, if any (a signed-in address that lacks a grant for THIS page).
+  function renderSignIn(page, done, existing, opts) {
+    opts = opts || {};
+    if (typeof document === 'undefined') { return; } // nothing to render in Node
+    injectStyle();
+    removeGate();
+    var host = document.createElement('div');
+    host.id = 'family-gate';
+    host.setAttribute('role', 'dialog');
+    host.setAttribute('aria-modal', 'true');
+    host.setAttribute('aria-label', 'Sign in to the Family Wing');
+
+    var MARQUEE = 'index.html?view=family';
+
+    if (existing) {
+      // BLOCKED: a valid family session whose switch for THIS page is off (opt-out). No password, no
+      // form — one "Request access" tap files press_access_request(page) under the caller's own JWT;
+      // Mark is pushed + emailed, flips the switch on, and the next visit simply works.
+      host.innerHTML =
+        '<div class="fg-card">' +
+          '<div class="fg-icon">' + ICON + '</div>' +
+          '<h1>You don’t have access to this yet.</h1>' +
+          '<p>You’re signed in as <b>' + escapeHtml(existing.email) + '</b>. Tap below and Mark will be asked to switch it on for you.</p>' +
+          '<button class="fg-btn" id="fg-request" type="button">Request access</button>' +
+          '<div class="fg-msg" id="fg-msg" aria-live="polite"></div>' +
+          '<button class="fg-link" id="fg-signout" type="button">Sign in as someone else</button>' +
+          '<div><a class="fg-back" href="' + MARQUEE + '">← the family wing</a></div>' +
+        '</div>';
+      document.body.appendChild(host);
+      var reqBtn = host.querySelector('#fg-request');
+      var reqMsg = host.querySelector('#fg-msg');
+      reqBtn.addEventListener('click', async function () {
+        reqBtn.disabled = true; reqMsg.className = 'fg-msg'; reqMsg.textContent = 'Sending your request…';
+        var res;
+        try { res = await requestAccess(existing, page); } catch (e) { res = { ok: false, status: 'network' }; }
+        var view = requestView(res);
+        reqMsg.className = 'fg-msg' + (view.err ? ' err' : '');
+        reqMsg.textContent = view.text;
+        if (view.done) { reqBtn.hidden = true; } else { reqBtn.disabled = false; }
+        if (view.reload && typeof location !== 'undefined') { try { location.reload(); } catch (e) {} }
+      });
+      host.querySelector('#fg-signout').addEventListener('click', function () {
+        clearSession(); renderSignIn(page, done, null);
+      });
+      return;
+    }
+
+    host.innerHTML =
+      '<div class="fg-card">' +
+        '<div class="fg-icon">' + ICON + '</div>' +
+        '<h1>The Family Wing.</h1>' +
+        '<p>Enter your email and we’ll send you a sign-in code. You’ll stay signed in on this device.</p>' +
+        '<form id="fg-email-form">' +
+          '<label for="fg-email">Your email</label>' +
+          '<input id="fg-email" type="email" inputmode="email" autocomplete="email" autofocus placeholder="you@example.com" />' +
+          '<button class="fg-btn" id="fg-send" type="submit">Send me a code</button>' +
+        '</form>' +
+        '<form id="fg-code-form" hidden>' +
+          '<label for="fg-code">Sign-in code</label>' +
+          '<input id="fg-code" class="fg-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="••••••" />' +
+          '<button class="fg-btn" id="fg-verify" type="submit">Verify &amp; sign in</button>' +
+        '</form>' +
+        '<div class="fg-msg" id="fg-msg" aria-live="polite"></div>' +
+        '<a class="fg-back" href="' + MARQUEE + '">← the family wing</a>' +
+      '</div>';
+    document.body.appendChild(host);
+
+    var emailForm = host.querySelector('#fg-email-form');
+    var codeForm = host.querySelector('#fg-code-form');
+    var emailInput = host.querySelector('#fg-email');
+    var codeInput = host.querySelector('#fg-code');
+    var sendBtn = host.querySelector('#fg-send');
+    var verifyBtn = host.querySelector('#fg-verify');
+    var msg = host.querySelector('#fg-msg');
+    var currentEmail = '';
+
+    emailForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var email = String(emailInput.value || '').trim().toLowerCase();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg.className = 'fg-msg err'; msg.textContent = 'Enter a valid email.'; return; }
+      currentEmail = email;
+      sendBtn.disabled = true; msg.className = 'fg-msg'; msg.textContent = 'Sending…';
+      try {
+        await sendCode(email); // deliberately non-committal on the result, to avoid leaking who is on the list
+        emailForm.hidden = true; codeForm.hidden = false;
+        msg.className = 'fg-msg';
+        msg.textContent = 'If ' + email + ' is on the family list, a code is on its way. Enter it above.';
+        if (codeInput.focus) codeInput.focus();
+      } catch (err) {
+        sendBtn.disabled = false; msg.className = 'fg-msg err'; msg.textContent = 'Couldn’t reach the mail service. Try again.';
+      }
+    });
+
+    codeForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var code = String(codeInput.value || '').trim();
+      if (!isValidCode(code)) { msg.className = 'fg-msg err'; msg.textContent = 'Enter the 6–10 digit code from your email.'; return; }
+      verifyBtn.disabled = true; msg.className = 'fg-msg'; msg.textContent = 'Signing you in…';
+      var res;
+      try { res = await verifyCode(currentEmail, code); }
+      catch (err) { res = { session: null, status: 0, code: 'network' }; }
+      if (!res || !res.session) {
+        verifyBtn.disabled = false; msg.className = 'fg-msg err';
+        msg.textContent = verifyErr(res ? res.status : 0, res ? res.code : '');
+        return;
+      }
+      var session = res.session;
+      if (opts.sessionOnly) {              // entrance (Family-Wing door) — a valid family session is
+        saveSession(session);              // enough; each tenant PAGE still gates its own data by grant.
+        touch(session);
+        removeGate();
+        done({ email: session.email, name: session.name });
+        return;
+      }
+      var granted = false;
+      try { granted = await hasGrant(session, page); } catch (err) { granted = false; }
+      if (!granted) {
+        saveSession(session);
+        renderSignIn(page, done, session); // signed in, but no grant for THIS page
+        return;
+      }
+      saveSession(session);
+      touch(session);
+      removeGate();
+      done({ email: session.email, name: session.name });
+    });
+
+    // allow a "resend" by going back to the email step
+    codeForm.addEventListener('click', function () {}, { once: true });
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  }
+
+  // ── public API ──────────────────────────────────────────────────────────────
+  // require(page, opts?) -> Promise<{email,name}>. Resolves when a granted session exists;
+  // otherwise mounts the sign-in and resolves after a granted sign-in. Public pages (a page
+  // vendoring the gate but not gated) resolve immediately with whatever local session exists.
+  function require_(page, opts) {
+    cfg(opts);
+    return (async function () {
+      var gated = await isGated(page);
+      if (!gated) { var s0 = loadSession(); return s0 ? { email: s0.email, name: s0.name } : null; }
+      var s = await ensureFresh();
+      if (s) {
+        var granted = false;
+        try { granted = await hasGrant(s, page); } catch (e) { granted = false; }
+        if (granted) {
+          touch(s);
+          scheduleRefresh(s, function () { renderSignIn(page, function (id) { scheduleRefresh(loadSession(), function () {}); }, null); });
+          return { email: s.email, name: s.name };
+        }
+        // valid session, no grant for this page
+        return await new Promise(function (resolve) { renderSignIn(page, function (id) { var ns = loadSession(); if (ns) scheduleRefresh(ns, function () {}); resolve(id); }, s); });
+      }
+      return await new Promise(function (resolve) {
+        renderSignIn(page, function (id) { var ns = loadSession(); if (ns) scheduleRefresh(ns, function () {}); resolve(id); }, null);
+      });
+    })();
+  }
+
+  // requireSession(opts) -> Promise<{email,name}>. The Family-Wing DOOR gate: resolves for any live
+  // family session, otherwise mounts the entrance sign-in (email OTP, NO page grant) and resolves once
+  // signed in. Makes ZERO network calls until the user acts (ensureFresh with no stored session is a
+  // pure localStorage read). Per-page authorisation stays with require(page) on each tenant.
+  function requireSession(opts) {
+    cfg(opts);
+    return (async function () {
+      var s = await ensureFresh();
+      if (s) { touch(s); scheduleRefresh(s, function () {}); return { email: s.email, name: s.name }; }
+      return await new Promise(function (resolve) {
+        renderSignIn(null, function (id) { var ns = loadSession(); if (ns) scheduleRefresh(ns, function () {}); resolve(id); }, null, { sessionOnly: true });
+      });
+    })();
+  }
+
+  function session() { var s = loadSession(); return s ? { email: s.email, name: s.name } : null; }
+  function authHeaders() { var s = loadSession(); return bearerHeaders(s); }
+  function accessToken() { var s = loadSession(); return s ? s.access_token : null; }
+  async function signOut() {
+    var s = loadSession();
+    stopAutoRefresh();
+    clearSession();
+    if (s) { try { await authFetch()(AUTH + '/logout', { method: 'POST', headers: bearerHeaders(s), body: '{}' }); } catch (e) {} }
+  }
+
+  root.FamilyGate = {
+    // public
+    require: require_, requireSession: requireSession, session: session, signOut: signOut,
+    authHeaders: authHeaders, accessToken: accessToken,
+    // config / seams
+    cfg: cfg, SUPA_URL: SUPA_URL, SUPA_KEY: SUPA_KEY, REST: REST, AUTH: AUTH, SESSION_KEY: SESSION_KEY,
+    // exposed for unit tests
+    sessionFromToken: sessionFromToken, normSession: normSession, isExpired: isExpired,
+    parseHashParams: parseHashParams, b64urlToJson: b64urlToJson, sessionFromHash: sessionFromHash,
+    consumeHashLanding: consumeHashLanding,
+    gatedDecision: gatedDecision, isGated: isGated, ensureFresh: ensureFresh,
+    loadSession: loadSession, saveSession: saveSession, clearSession: clearSession,
+    sendCode: sendCode, verifyCode: verifyCode, refresh: refresh, hasGrant: hasGrant,
+    requestAccess: requestAccess, requestView: requestView, REQUESTED_TEXT: REQUESTED_TEXT,
+    friendlyAuthErr: friendlyAuthErr, verifyErr: verifyErr, isValidCode: isValidCode, escapeHtml: escapeHtml
+  };
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+</script>
+<script>
+(async function () {
+  'use strict';
+  var LOOKUP = 'https://eepjhpyziczrxvirczio.supabase.co/functions/v1/rebate-lookup';
+  // The extension's portals, in its order (portals/registry.js) — shown while a lookup runs.
+  var PORTALS = [
+    { portal: 'rakuten', name: 'Rakuten', color: '#bf0000' },
+    { portal: 'topcashback', name: 'TopCashback', color: '#0d6efd' },
+    { portal: 'retailmenot', name: 'RetailMeNot', color: '#8a2be2' },
+    { portal: 'befrugal', name: 'BeFrugal', color: '#199402' }
+  ];
+  var form = document.getElementById('f'), input = document.getElementById('site'), go = document.getElementById('go');
+  var msg = document.getElementById('msg'), list = document.getElementById('rows');
+  if (!window.FamilyGate) { msg.textContent = 'Sign-in unavailable — the gate did not load.'; msg.className = 'err'; return; }
+  window.FamilyGate.cfg({ spacesUrl: 'spaces.json' });
+  await window.FamilyGate.require('rebate-radar.html');
+  input.disabled = false; go.disabled = false; input.focus();
+
+  // "8%", "2.5%", "$12" — the extension's badge format (lib/winner.js formatRate).
+  function rate(r) {
+    if (r.unit === 'usd') return '$' + Math.round(r.headline);
+    var n = r.headline;
+    return (n >= 10 || n % 1 === 0 ? String(Math.round(n * 10) / 10) : n.toFixed(1)).replace(/\.0$/, '') + '%';
+  }
+  var STATE = {
+    loading: ['Checking…', ''],
+    none: ['No cash back here', ''],
+    blocked: ['Blocked from our server — open the portal to see its rate', 'warn'],
+    error: ['Couldn’t check — open the portal to see its rate', 'bad']
+  };
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function row(r, best) {
+    var li = el('li', (best ? 'best ' : '') + (r.status === 'loading' ? 'loading' : ''));
+    li.style.setProperty('--pc', r.color || '#8A8399');
+    li.dataset.portal = r.portal; li.dataset.status = r.status;
+    li.appendChild(el('span', 'dot'));
+    var who = el('div', 'who'), name = el('p', 'name', r.name);
+    if (best) name.appendChild(el('span', 'chip', 'Best'));
+    who.appendChild(name);
+    if (r.status !== 'ok') { var s = STATE[r.status] || STATE.error; who.appendChild(el('p', 'state ' + s[1], s[0])); }
+    li.appendChild(who);
+    if (r.status === 'ok') {
+      var rt = el('div', 'rate');
+      if (r.upTo) rt.appendChild(el('small', '', 'up to'));
+      rt.appendChild(document.createTextNode(rate(r)));
+      li.appendChild(rt);
+    }
+    if (r.storeUrl && /^https:\/\//.test(r.storeUrl)) {
+      var a = el('a', 'open', 'Open');
+      a.href = r.storeUrl; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      a.setAttribute('aria-label', 'Open ' + r.name);
+      li.appendChild(a);
+    }
+    return li;
+  }
+  function paint(rows, best) {
+    list.textContent = '';
+    rows.forEach(function (r) { list.appendChild(row(r, best && r.portal === best)); });
+  }
+  function say(text, err) { msg.textContent = text; msg.className = err ? 'err' : ''; }
+
+  var seq = 0;
+  form.addEventListener('submit', async function (ev) {
+    ev.preventDefault();
+    var site = input.value.trim();
+    if (!site) { say('Type a website, like nike.com.', true); input.focus(); return; }
+    var mine = ++seq;
+    go.disabled = true; say('Checking ' + site + '…');
+    paint(PORTALS.map(function (p) { return Object.assign({ status: 'loading' }, p); }), null);
+    try {
+      var r = await fetch(LOOKUP, { method: 'POST', cache: 'no-store',
+        headers: Object.assign({ 'content-type': 'application/json' }, window.FamilyGate.authHeaders()),
+        body: JSON.stringify({ site: site }) });
+      var body = await r.json().catch(function () { return null; });
+      if (mine !== seq) return;
+      if (r.status === 401) { list.textContent = ''; say('Your sign-in has expired — reload the page to sign in again.', true); return; }
+      if (r.status === 403) { list.textContent = ''; say('You don’t have access to Rebate Radar yet — ask Mark.', true); return; }
+      if (r.status === 400) { list.textContent = ''; say((body && body.error) ? body.error.charAt(0).toUpperCase() + body.error.slice(1) + '.' : 'That doesn’t look like a website.', true); return; }
+      if (!r.ok || !body || !Array.isArray(body.results)) throw new Error('lookup ' + r.status);
+      paint(body.results, body.best);
+      var top = body.results[0];
+      say(body.best ? 'Best for ' + body.site + ': ' + top.name + ' ' + (top.upTo ? 'up to ' : '') + rate(top) + '.'
+        : 'No portal has a rate for ' + body.site + ' right now.');
+    } catch (e) {
+      if (mine !== seq) return;
+      list.textContent = ''; say('Couldn’t reach the lookup — check your connection and try again.', true);
+    } finally { if (mine === seq) go.disabled = false; }
+  });
+})();
+</script>
+</body>
+</html>

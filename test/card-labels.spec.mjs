@@ -22,6 +22,7 @@ const WANT = {
   'optimo.html':        ['Day planner', 'Optimo'],
   'app-lab.html':       ['Prototypes', 'App Lab'],
   'catalog.html':       ['Everything Mark runs', 'Ecosystem catalog'],
+  'rebate-radar.html':  ['cashback',                        'Rebate Radar'],
   'perth.html':         ['Moving to Perth', 'The Runway'],
   'halvsies.html':      ['Splitting the Bill', 'Halvsies'],
   'cardsharp.html':     ['Gift Card Tracker', 'Cardsharp'],
