@@ -1,0 +1,15 @@
+arc/publish-vantage-onboarding-tour — S1 Vantage App Lab release (2026-10-21, cloud Builder)
+
+Source: schnubsy/vantage origin/main f885ff9 (merge 9ef418c + stamp/verify commits); `git diff --stat 8f70424 origin/main -- web shared` = empty.
+Command: cd vantage/web && npm ci && npm run build:press && PRESS_DIR=<press clone> node tools/build-app-lab.mjs
+Result (git diff --cached --name-status, no rename detection) — equals the staged list in vantage docs/evidence/polish-onboarding-tour-staged-press.md:
+  M app-lab/vantage/index.html                         blob 24399f7124d90dbbf12dfe065f0b2c4b4884051d
+  A app-lab/vantage/assets/index-PzQikWRp.js           (contains "Take the tour": 1 hit)
+  A app-lab/vantage/assets/index-B5UBch43.css
+  A app-lab/vantage/assets/NotesEditor-6PCSNPyu.js
+  A app-lab/vantage/assets/TagPopover-CXe-L0P3.js
+  A app-lab/vantage/assets/Whiteboard-DG6NJ5y3.js
+  D app-lab/vantage/assets/{index-D2jKzXrY.js, index-DP_zM-2Y.css, NotesEditor-Mx1gQpT_.js, TagPopover-BVTLr8tw.js, Whiteboard-DBWIUlRs.js}
+  unchanged: app-lab.html, app-lab/frame.html, app-lab/prototypes.json, pages.json
+Byte check: `git apply --check -R --cached vantage/docs/evidence/polish-onboarding-tour-staged-press.patch` → clean (build == staged patch).
+Commit: 4ea1668. Live only after merge (Pages serves main) — ship proof in the close-out.

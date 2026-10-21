@@ -4,6 +4,18 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-10-21 — arc/publish-vantage-onboarding-tour (Vantage App Lab training tour + catalog row)
+
+Chat verify of vantage PR #29 (polish-onboarding-tour) dispatched its STAGED press half here. S1 rebuilt the App Lab release
+with vantage `tools/build-app-lab.mjs` from merged main (web/ unchanged since 8f70424): `app-lab/vantage/index.html` plus five
+hashed assets replaced — byte-identical to vantage's staged patch; app-lab.html / frame / prototypes.json / pages.json untouched.
+S2 updated the RLS-gated `press_catalog` row through the Supabase connector. The order named council 76a3a6c, but council main
+had moved on (094544a, rebate-radar) carrying the same Vantage change, so the row went straight to main's version (58a476c7,
+101919 bytes) as one guarded replace()-hunk UPDATE — no destructive pop-up this time. Full gauntlet green except
+tenants-check's out-of-scope tenant rows (BLOCKED scope, same on main).
+
+---
+
 ## 2026-10-21 — arc/publish-thrift-shop-iphone-compact (Thrift Shop iPhone-compact publish)
 
 thrift-shop PR #33 (iphone-compact, 95c72e1) merged and its card-scout v44 deploy verified; its press publish was STAGED

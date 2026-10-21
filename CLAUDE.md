@@ -33,12 +33,12 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #54 aa28393 on 2026-10-21; main checkout on main @ aa28393
-**arc/publish-thrift-shop-iphone-compact (2026-10-21) — Thrift Shop iPhone-compact page, live on merge** (rebuilt by
-thrift-shop `tools/release.js` from its merged main 9fec8b0 ⊇ PR #33 95c72e1). Only `thrift-shop.html` changed: blob
-d8818498 → 2403c3bb (== thrift-shop main). Gauntlet: unit 152/0 · inline ✓ · Playwright 150 · ui-audit GREEN (WebKit) ·
-tenants-check 55/21/24 — the 21 FAILs are 7 tenant repos outside this session's scope (identical on main) ⇒ BLOCKED (scope);
-merge waits on the chat's verify. Before it: chrome-route-press (2026-10-20). Narrative: `docs/history.md`.
+Merge state: PR pending (branch arc/publish-vantage-onboarding-tour)
+**arc/publish-vantage-onboarding-tour (2026-10-21) — Vantage App Lab (training tour) + catalog row.** S1 rebuilt
+`app-lab/vantage/` from vantage main (9ef418c; web/ == 8f70424) — index.html M + 5 hashed assets swapped, == vantage's staged
+patch; S2 moved the `press_catalog` row 86ec7381 → 58a476c7 (council main 094544a: Vantage live + Rebate Radar web) via the
+connector, read-back matches. Gauntlet: unit 152/0 · inline ✓ · Playwright 150 · ui-audit GREEN · tenants-check 62/24/26 — the
+24 FAILs are 8 tenant repos outside scope (identical on main), every App Lab row PASS. Before it: publish-thrift-shop-iphone-compact.
 
 ## Project rules
 
