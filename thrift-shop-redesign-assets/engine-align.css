@@ -1,0 +1,7 @@
+/* Alignment pins for the mock engine (loaded after engine.css).
+   Control always sits in the LAST column and the label in the first, so a row with no value never shifts its switch. */
+.ts .rw>.rl{grid-column:1}
+.ts .rw>.rc{grid-column:-2/-1}
+.ts .rw>.rc:empty{display:none}
+.ts .rw>.rv:empty{visibility:hidden}
+.ts.hero-cup .hero.wrap{padding:0}

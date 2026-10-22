@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thrift Shop Redesign</title>
+<meta name="page-title" content="Thrift Shop Redesign">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTIiIGZpbGw9IiNFMTI1MUIiLz48cmVjdCB4PSIxNCIgeT0iMTgiIHdpZHRoPSIzNiIgaGVpZ2h0PSI1IiBmaWxsPSIjZmZmIi8+PHJlY3QgeD0iMTQiIHk9IjMwIiB3aWR0aD0iMzYiIGhlaWdodD0iNSIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjE0IiB5PSI0MiIgd2lkdGg9IjI0IiBoZWlnaHQ9IjUiIGZpbGw9IiNmZmYiLz48L3N2Zz4=">
+
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link id="gf" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Inter:wght@400;500;600&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Chivo:wght@400;500;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&family=Sora:wght@400;500;600;700&family=Chakra+Petch:wght@500;600&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="thrift-shop-redesign-assets/engine.css">
+<style>
+/* Deck chrome — Marlowe's house style (neutral so the six directions carry the colour). */
+:root{--pg:#F6F5F2;--pk:#1B1B1B;--pk2:#5B5B5B;--pl:#DEDBD4;--pc:#FFFFFF;--pa:#2F5D50}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--pg);color:var(--pk);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+#prog{position:fixed;top:0;left:0;height:3px;background:var(--pa);width:0;z-index:50}
+.pg{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{padding-block:40px 24px}
+header.top h1{font-size:44px;line-height:1.1;margin:0 0 10px;letter-spacing:-.01em}
+header.top p{max-width:820px;color:var(--pk2);margin:0}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:rgba(246,245,242,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--pl)}
+nav.toc .pg{display:flex;gap:4px;flex-wrap:wrap;padding-top:6px;padding-bottom:6px}
+nav.toc a{color:var(--pk2);text-decoration:none;font-size:14px;padding:8px 10px;border-radius:6px}
+nav.toc a:hover{background:#ECEAE4;color:var(--pk)}
+section.part{padding:56px 0 24px;border-bottom:1px solid var(--pl)}
+section.part>.pg>h2{font-size:30px;margin:0 0 6px}
+.lede{color:var(--pk2);max-width:860px}
+.story{background:var(--pc);border:1px solid var(--pl);border-radius:10px;padding:20px 24px;margin:18px 0;max-width:900px;font-size:17px}
+table{border-collapse:collapse;width:100%;background:var(--pc);font-size:14px}
+th,td{border-bottom:1px solid var(--pl);padding:8px 10px;text-align:left;vertical-align:top}
+th{font-weight:600;background:#F0EEE9}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.win td{background:#EAF1EE;font-weight:600}
+.dir{padding:48px 0 32px;border-top:1px solid var(--pl)}
+.dhead{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline}
+.dhead h3{font-size:32px;margin:0}
+.dhead .mv{font-size:15px;font-weight:600;color:var(--pa)}
+.dhead .by{color:var(--pk2);font-size:15px}
+.dgrid{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:32px;margin-top:18px}
+@media (max-width:1000px){.dgrid{grid-template-columns:minmax(0,1fr)}.dgrid>*{min-width:0;overflow-x:auto}}
+.pitch{font-size:18px;margin:0 0 14px}
+.sw5{display:flex;gap:6px;margin:10px 0}
+.sw5 span{width:42px;height:42px;border-radius:6px;border:1px solid rgba(0,0,0,.12);display:flex;align-items:flex-end;justify-content:center;font-size:9px;color:#333;padding-bottom:2px}
+.tsample{background:var(--pc);border:1px solid var(--pl);border-radius:8px;padding:12px 16px;margin:10px 0}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pc h4,.flowbox h4{margin:14px 0 4px;font-size:14px}
+.pc ul{margin:0;padding-left:18px;font-size:14px}
+.flowbox{background:#EEF3F1;border:1px solid #CFE0D9;border-radius:8px;padding:6px 16px 12px;margin-top:14px}
+.flowbox ol{margin:0;padding-left:18px;font-size:14px}
+.flowbox li{margin:6px 0}
+.flowbox .fb{color:#2C4A41}
+.a11y{font-size:13px;color:var(--pk2)}
+.stage{display:flex;flex-direction:column;gap:10px;position:sticky;top:60px}
+.ctrls{display:flex;flex-wrap:wrap;gap:4px}
+.ctrls button,.bl button,.tn button{font:inherit;font-size:13px;min-height:34px;padding:0 10px;border:1px solid var(--pl);background:var(--pc);border-radius:6px;cursor:pointer;color:var(--pk)}
+.ctrls button[aria-pressed="true"],.bl button[aria-pressed="true"]{background:var(--pk);color:#fff;border-color:var(--pk)}
+.phone{width:410px;height:800px;border-radius:44px;padding:10px;background:#111;box-shadow:0 20px 50px rgba(0,0,0,.18)}
+.phone>.host{width:390px;height:780px;border-radius:34px;overflow:hidden}
+.deskf{border:1px solid var(--pl);border-radius:10px;overflow:hidden;background:#ddd;box-shadow:0 20px 50px rgba(0,0,0,.12)}
+.deskf .bar{height:28px;background:#E8E6E1;display:flex;align-items:center;gap:6px;padding:0 10px}
+.deskf .bar i{width:11px;height:11px;border-radius:50%;background:#C9C6BF;display:block}
+.deskf .scaler{transform-origin:top left}
+.stage.isdesk{position:static}
+.dir.desk .dgrid{grid-template-columns:1fr}
+@media (max-width:500px){table{display:block;overflow-x:auto;max-width:100%}.phone{zoom:.84}.stage{position:static}.dir.desk .dgrid{grid-template-columns:minmax(0,1fr)}.pc{grid-template-columns:1fr}}
+.tn{background:var(--pc);border:1px solid var(--pl);border-radius:8px;padding:10px 12px;font-size:13px}
+.tn label{display:grid;grid-template-columns:110px 1fr 54px;gap:8px;align-items:center;min-height:30px}
+.tn output{font-variant-numeric:tabular-nums;text-align:right}
+.tn .vals{font-family:ui-monospace,monospace;font-size:12px;color:var(--pk2);margin-top:6px;word-break:break-all}
+.scores{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.scores span{font-size:12px;background:#ECEAE4;border-radius:4px;padding:2px 8px}
+.scores b{font-variant-numeric:tabular-nums}
+.bl{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:32px;margin-top:20px}
+@media (max-width:1000px){.bl{grid-template-columns:minmax(0,1fr)}.bl>*{min-width:0;overflow-x:auto}}
+.bl .asp{display:grid;grid-template-columns:110px 1fr;gap:6px 10px;align-items:center;margin-bottom:8px}
+.bl .asp div{display:flex;flex-wrap:wrap;gap:4px}
+.bl .asp b{font-size:14px}
+.rank{counter-reset:r;list-style:none;padding:0}
+.rank li{counter-increment:r;background:var(--pc);border:1px solid var(--pl);border-radius:8px;padding:10px 14px;margin:6px 0;display:flex;gap:14px;align-items:baseline}
+.rank li::before{content:counter(r);font-weight:700;font-size:20px;width:20px}
+.rank li .t{font-variant-numeric:tabular-nums;margin-left:auto;font-weight:600}
+.tag{font-size:12px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--pa);color:#fff;margin-left:8px}
+.tag.ru{background:#8A8A8A}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+pre{background:#1E1E1E;color:#EEE;padding:14px;border-radius:8px;overflow:auto}
+footer{padding:40px 0 80px;color:var(--pk2);font-size:13px}
+.fade{opacity:1}
+.fade.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.fade{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div id="prog" aria-hidden="true"></div>
+<div class="pg"><header class="top">
+  <p style="font-weight:600;color:var(--pa)">The Eye, full review, 22 Oct 2026, Marlowe Holm presenting</p>
+  <h1>Thrift Shop: a config-first redesign</h1>
+  <p>Six directions, each anchored to a named movement and Flow-reviewed, scored on a weighting built for this project. Every mockup is live: tap the tabs, open and close sections (state is remembered per section), toggle switches, tap values to cycle them, search, switch light and dark, and switch phone and desktop.</p>
+</header></div>
+<nav class="toc" aria-label="Sections"><div class="pg">
+  <a href="#a">A. Story & rubric</a><a href="#b">B. Directions</a><a href="#blend">Blend</a><a href="#c">C. Scoring</a><a href="#d">D. Recommendation</a><a href="#e">E. Handoff</a>
+</div></nav>
+
+<section class="part" id="a"><div class="pg fade">
+  <h2>A. The project story</h2>
+  <div class="story">Thrift Shop promises Mark one thing: it watches gift-card feeds, store pages, his Outlook offers folder and a handful of product searches, and speaks up only when a deal beats <em>his</em> rules. The feed is the reward, but the job Mark actually does in the app is <strong>operating the agent</strong>: about 60 brand rules, 20 sources with five health states, sale-watch terms, eight email-offer types, alert timing, and lists of cash-like and blocked stores. The app grew into a configuration console without ever being designed as one. So this review designs a console first, keeps the Feed as home, and treats every value Mark reads (a last-match title, a % threshold, a source's state) as content that must be fully visible and never truncated.</div>
+  <p class="lede"><strong>Detected:</strong> vanilla HTML/CSS/JS single page (<code>thrift-shop.html</code>, press Lane A, no build step), iPhone-first with desktop. Tokens below are emitted as CSS custom properties; no Tailwind. <strong>Functional inventory</strong> came from <code>docs/spec.md</code> and the page's labels and controls only. The current CSS, layout and nav were deliberately not consulted.</p>
+  <p class="lede"><strong>Steer used</strong> (from the brief, standing in for the intake meeting): collapsible sections with remembered state, dense label/value/control rows, help only on demand, few top-level destinations with the Feed as home, nothing truncated, a tight grid, compact controls on 44px targets, health readable at a glance, 390px first plus desktop, light and dark.</p>
+  <h3 style="margin-top:28px">Rubric (project-weighted)</h3>
+  <p class="lede">Thrift Shop is a personal daily-driver, which the default table would weight 50% on aesthetics. That would reward exactly the problem Mark described. Here the four complaints carry 80% of the weight, and aesthetics drops to 10%.</p>
+  <table id="wtab"><thead><tr><th>Criterion</th><th class="n">Weight</th><th>What scores a 10</th></tr></thead><tbody></tbody></table>
+</div></section>
+
+<section class="part" id="b"><div class="pg"><h2 class="fade">B. Six directions</h2>
+  <p class="lede fade">All six share one functional model, so they can be compared like for like and blended: Feed (Inbox and Processed), Gift-card rules (defaults, four brand groups, cash-like, blocked), Sales (sale watch, email offer types, brand overrides, also-count), Sources (Email, Feeds, Retailers, Marketplaces, five health states) and Alerts/Settings (channels, quiet hours and digest, agent health, schedule, savings, Bad backlog, learned rules). Every section header collapses its section. Help is behind a <strong>?</strong> on each header.</p>
+  <div id="dirs"></div>
+</div></section>
+
+<section class="part" id="blend"><div class="pg fade">
+  <h2>Blend</h2>
+  <p class="lede">Choose, aspect by aspect, which direction each part comes from. The composite re-renders instantly. Screenshot your picks and the value string below; that becomes the build spec.</p>
+  <div class="bl"><div id="blendctl"></div><div class="stage"><div class="ctrls" id="blendscr"></div><div class="phone"><div class="host" id="blendhost"></div></div></div></div>
+</div></section>
+
+<section class="part" id="c"><div class="pg fade">
+  <h2>C. Scoring</h2>
+  <h3>Side by side</h3>
+  <table><thead><tr><th>Direction</th><th>Movement</th><th>Metaphor</th><th>Mode</th><th>Accent</th><th>Row</th><th>Destinations</th><th>Platform proximity</th><th>Eng. risk</th></tr></thead><tbody>
+    <tr><td>Price Index (Grid)</td><td>Swiss / International</td><td>A price list / ruled index</td><td>Light</td><td>Markdown red #E1251B</td><td>40px</td><td>3 top tabs</td><td>Medium</td><td>Low</td></tr>
+    <tr><td>The Bargain Edition (Vogue)</td><td>Editorial / Magazine</td><td>Daily issue + contents page</td><td>Light</td><td>Indigo #2B2F7A</td><td>46px</td><td>2</td><td>Low</td><td>Medium</td></tr>
+    <tr><td>Control Room (Steel)</td><td>Brutalist / Systems-first</td><td>The agent's own panel</td><td>Dark</td><td>Hazard yellow #F5D90A</td><td>36px</td><td>2 + Go box</td><td>Low</td><td>Low</td></tr>
+    <tr><td>Still Water (Calm)</td><td>Organic / Calm-tech</td><td>Closed sections that still say what they hold</td><td>Light</td><td>Sage #3F6E57</td><td>48px</td><td>3 bottom tabs</td><td>Medium</td><td>Medium (summaries)</td></tr>
+    <tr><td>Night Market (Neon)</td><td>Glassmorphism / Futurist</td><td>Savings HUD</td><td>Dark</td><td>Cyan to violet</td><td>44px</td><td>4 capsule</td><td>Low</td><td>High (blur, contrast)</td></tr>
+    <tr><td>Native Ledger (Cupertino)</td><td>Apple HIG / iOS-native</td><td>The Settings app for Thrift Shop</td><td>Adaptive</td><td>System blue #007AFF</td><td>44px</td><td>4 tab bar + segment</td><td>Very high</td><td>Low</td></tr>
+  </tbody></table>
+  <h3 style="margin-top:28px">Weighted matrix</h3>
+  <table id="mtab"></table>
+  <h3 style="margin-top:28px">Why each criterion scored as it did</h3>
+  <table><thead><tr><th>Criterion</th><th>Justification</th></tr></thead><tbody>
+    <tr><td>Density & scannability</td><td>Steel (10) and Grid (9) fit sixty brand rules into a single aligned table of 36–40px rows, and Grid's column header lets the eye run straight down Min %. Cupertino (7) pays for iOS insets. Calm (5) and Vogue (4) trade density for calm and drama by design.</td></tr>
+    <tr><td>Navigation clarity</td><td>Grid's three nouns (Feed, Rules, System) and Cupertino's tab bar (9 each) give every destination one job. Calm's labelled bottom bar scores 8. Steel (7) relies on Go for depth, which is slower one-handed. Neon's capsule (7) floats over content. Vogue's single Index (6) brings back the scrolling Mark complained about.</td></tr>
+    <tr><td>Readability of key values</td><td>Grid and Calm (9) wrap last-match text in full in proportional type and right-align values in tabular figures. Cupertino (8) sets values in secondary grey. Steel's mono values (7) are crisp but wide. Neon's glass (6) costs contrast at the edges.</td></tr>
+    <tr><td>Config ergonomics</td><td>Grid and Cupertino (9): tap a value to change it in place, switch at the edge, search plus collapse on every tab. Steel (8) adds the Go jump. Calm (7) adds an extra open step. Neon and Vogue (6, 5) put more travel between Mark and a value.</td></tr>
+    <tr><td>Aesthetics</td><td>Vogue (9) has the strongest moment. Neon and Calm (8) are distinctive. Grid and Cupertino (7) are disciplined but quiet. Steel (6) is honest and cold.</td></tr>
+    <tr><td>Accessibility</td><td>Calm and Cupertino (9) have the highest contrast and the most forgiving targets. Grid (8). Neon (5): glass and glow need careful work.</td></tr>
+    <tr><td>Feasibility</td><td>Every direction ships as vanilla CSS. Neon's backdrop-filter is the only real performance risk on older iPhone WebKit. Vogue's cover needs its own empty and quiet states.</td></tr>
+  </tbody></table>
+</div></section>
+
+<section class="part" id="d"><div class="pg fade">
+  <h2>D. Recommendation</h2>
+  <ol class="rank" id="rank"></ol>
+  <p><strong>Winner: Price Index (Grid, Swiss/International).</strong> It answers every one of Mark's complaints directly rather than by mood. Sixty rules become one ruled table whose columns line up across every section. Values sit in the same right-hand column on every screen, so his eye learns one path. There are three nouns in the nav. Section headers are numbered addresses that fold and stay folded. Last-match text wraps in full. Red appears only when something needs him, so a red row always means act. It is the direction where the screen stops talking and starts listing.</p>
+  <p><strong>Runner-up: Native Ledger (Cupertino, iOS-native)</strong>, at 0.65 behind. It is the one I would choose if Mark wants Thrift Shop to feel like part of the phone instead of a page on it: zero learning, adaptive light and dark for free, and a segmented Rules screen that cuts the longest scroll in half. It loses to Grid on density (iOS insets) and on identity. There is a real tension here: Grid wins on the rubric, while Cupertino is the more platform-native of the two. That is Mark's call, and the scores do not hide it.</p>
+  <p><strong>Optional hybrid: Grid's index over Calm's closed-section summaries.</strong> Keep Price Index's rows, three tabs and red signal, and borrow Still Water's one idea that no other direction has: a collapsed header that still states its values ("Restaurants 29, 20% min, except Starbucks 15%"). Mark could then audit his whole configuration with every section closed. Steel's Go jump is worth a later pass on desktop, where a keyboard is always to hand.</p>
+</div></section>
+
+<section class="part" id="e"><div class="pg fade">
+  <h2>E. Developer handoff (recommended winner)</h2>
+  <p class="lede">Build-ready files sit next to this deck: <code>tokens-PriceIndex.css</code>, <code>DESIGN-SYSTEM-PriceIndex.md</code>, <code>design-system-prompt-PriceIndex.md</code>, the runner-up's <code>tokens-NativeLedger.css</code> and <code>DESIGN-SYSTEM-NativeLedger.md</code>, and <code>RECOMMENDATION.md</code>. They are provisional until Mark confirms the pick.</p>
+  <h3>Components to build</h3>
+  <table><thead><tr><th>Component</th><th>Notes</th></tr></thead><tbody>
+    <tr><td>TopNav (3 destinations) + SubTabs</td><td>Feed, Rules (Gift cards, Sales), System (Sources, Alerts). The count badge on Feed is new deals; the "!" on System is sources needing Mark.</td></tr>
+    <tr><td>Section (collapsible)</td><td>A button with aria-expanded, numbered, count, optional flag, ? help toggle. State stored in <code>localStorage["thrift:sec:&lt;screen&gt;:&lt;id&gt;"]</code>, separate from the infra key <code>press:card-scout</code>.</td></tr>
+    <tr><td>SettingRow (3 or 4 column)</td><td>label | value | value2 | control on a CSS grid with fixed value columns of 52px, min height 40px, hairline rule below.</td></tr>
+    <tr><td>ValueButton</td><td>A compact tabular value that opens a menu or popover; 28px visual, 44px hit area via ::before.</td></tr>
+    <tr><td>Switch</td><td>34×20 visual in a 44×44 hit area, role="switch".</td></tr>
+    <tr><td>HealthGlyph + word</td><td>Five shapes: solid, outline, half, red with ×, outline with !. Never colour alone.</td></tr>
+    <tr><td>DealRow</td><td>Badge column of 56px, then brand + kind, the full line, meta, actions (Open, Bought/Used, Skip, Bad), ⋯ menu, swipe to delete.</td></tr>
+    <tr><td>WatchRow</td><td>Term | min | switch | ⋯ on one line; the last match wraps in full below it.</td></tr>
+    <tr><td>ChipList + AddRow</td><td>Cash-like and blocked stores.</td></tr>
+  </tbody></table>
+</div></section>
+
+<div class="pg"><footer>Mock UI is a presentation artifact, not production code. Fonts from Google Fonts. Data is illustrative and shaped on Thrift Shop's real inventory (docs/spec.md). The Eye, The Council.</footer></div>
+
+<script src="thrift-shop-redesign-assets/data.js"></script>
+<script src="thrift-shop-redesign-assets/directions.js"></script>
+<script src="thrift-shop-redesign-assets/engine.js"></script>
+<script>
+(function(){
+  var D=TS_DIRS, O=TS_ORDER, W=TS_WEIGHTS;
+  var SCR=[["feed","Feed"],["rules","Gift-card rules"],["sources","Sources"],["watch","Sale watch"],["alerts","Alerts & settings"]];
+  function total(id){ var s=D[id].scores, t=0; W.forEach(function(w){ t+=s[w[0]]*w[2]; }); return t/100; }
+  var ranked=O.slice().sort(function(a,b){ return total(b)-total(a); });
+  // A. weights
+  var WHAT={density:"Many settings per screen, aligned columns, outliers visible",nav:"Few destinations, each with one job; nothing crowded",read:"Last-match text and values shown in full, tabular figures, high contrast",config:"Change a value in one tap without hunting; search plus collapse",aesthetics:"A coherent, distinctive visual language",a11y:"WCAG AA+, shape-plus-word states, 44px targets",feas:"Ships as vanilla CSS/JS on iPhone WebKit"};
+  document.querySelector("#wtab tbody").innerHTML=W.map(function(w){ return "<tr><td>"+w[1]+"</td><td class=n>"+w[2]+"%</td><td>"+WHAT[w[0]]+"</td></tr>"; }).join("");
+  // C. matrix
+  document.getElementById("mtab").innerHTML="<thead><tr><th>Direction</th>"+W.map(function(w){ return "<th class=n>"+w[1].split(" (")[0]+"<br><small>"+w[2]+"%</small></th>"; }).join("")+"<th class=n>Weighted</th></tr></thead><tbody>"
+    +ranked.map(function(id,i){ var d=D[id]; return "<tr"+(i===0?" class=win":"")+"><td>"+d.name+" ("+d.seat+")</td>"+W.map(function(w){ return "<td class=n>"+d.scores[w[0]]+"</td>"; }).join("")+"<td class=n>"+total(id).toFixed(2)+"</td></tr>"; }).join("")+"</tbody>";
+  document.getElementById("rank").innerHTML=ranked.map(function(id,i){ var d=D[id]; return "<li><span><strong>"+d.name+"</strong>, "+d.movement+" ("+d.seat+", "+d.designer+")"+(i===0?'<span class="tag">Winner</span>':i===1?'<span class="tag ru">Runner-up</span>':"")+"</span><span class=t>"+total(id).toFixed(2)+"</span></li>"; }).join("");
+
+  // B. directions
+  function frame(id){ return '<div class="stage" id="st-'+id+'"><div class="ctrls" data-scr></div><div class="ctrls" data-opt>'
+      +'<button data-mode="light">Light</button><button data-mode="dark">Dark</button><button data-dev="phone">Phone</button><button data-dev="desk">Desktop</button></div>'
+      +'<div class="phone"><div class="host"></div></div><div class="tn" data-tune></div></div>'; }
+  var html="";
+  O.forEach(function(id){ var d=D[id];
+    html+='<article class="dir fade" id="dir-'+id+'"><div class="dhead"><h3>'+d.name+'</h3><span class="mv">'+d.movement+'</span><span class="by">'+d.seat+' · '+d.designer+'</span></div>'
+      +'<div class="scores">'+W.map(function(w){ return '<span>'+w[1].split(" (")[0]+' <b>'+d.scores[w[0]]+'</b></span>'; }).join("")+'<span>Weighted <b>'+total(id).toFixed(2)+'</b></span></div>'
+      +'<div class="dgrid"><div><p class="pitch">'+d.pitch+'</p>'
+      +'<div class="sw5">'+d.swatches.map(function(c){ return '<span style="background:'+c+'">'+c+'</span>'; }).join("")+'</div>'
+      +'<div class="tsample" style="font-family:'+d.type.ui+'"><div style="font-family:'+d.type.head+';font-size:24px;font-weight:'+d.type.hw+'">Restaurants 29</div><div>Starbucks <span style="font-family:'+d.type.num+';font-variant-numeric:tabular-nums">15% · $10</span>. Nintendo Switch 2 + Mario Kart World Bundle, $449.99</div></div>'
+      +d.rationale.map(function(p){ return "<p>"+p+"</p>"; }).join("")
+      +'<div class="pc"><div><h4>Pros</h4><ul>'+d.pros.map(function(x){return "<li>"+x+"</li>";}).join("")+'</ul></div><div><h4>Cons</h4><ul>'+d.cons.map(function(x){return "<li>"+x+"</li>";}).join("")+'</ul></div></div>'
+      +'<p class="a11y"><strong>Accessibility.</strong> '+d.a11y+'</p>'
+      +'<div class="flowbox"><h4>Flow review (Ingrid Falk)</h4><ol>'+d.flow.map(function(f){ return '<li>'+f[0]+' <span class="fb">'+f[1]+'</span></li>'; }).join("")+'</ol></div>'
+      +'</div>'+frame(id)+'</div></article>';
+  });
+  document.getElementById("dirs").innerHTML=html;
+
+  var TUNE=[["row","Row height",32,56,1,"px"],["u","Spacing unit",4,14,1,"px"],["fs","Body size",13,18,1,"px"],["r","Corner radius",0,18,1,"px"],["ctl","Control scale",.8,1.2,.05,"×"]];
+  function mount(id){
+    var d=D[id], st=document.getElementById("st-"+id), host=st.querySelector(".host"), state={mode:d.palette.light&&id!=="steel"&&id!=="neon"?"light":"dark",desk:false,screen:"feed",tune:{}};
+    function cfg(){ return {key:id,nav:id,pal:id,type:id,rows:id,hd:id,hl:id,hero:id,mode:state.mode,desk:state.desk,screen:state.screen,tune:state.tune}; }
+    function draw(){
+      var ph=st.querySelector(".phone, .deskf");
+      if(state.desk&&ph.classList.contains("phone")){ ph.outerHTML='<div class="deskf"><div class="bar"><i></i><i></i><i></i></div><div class="scaler"><div class="host"></div></div></div>'; host=st.querySelector(".host"); host._wired=false; }
+      if(!state.desk&&ph.classList.contains("deskf")){ ph.outerHTML='<div class="phone"><div class="host"></div></div>'; host=st.querySelector(".host"); }
+      host._st=host._st||null;
+      TSMock.render(host,cfg());
+      st.classList.toggle("isdesk",state.desk); document.getElementById("dir-"+id).classList.toggle("desk",state.desk);
+      if(state.desk){ var w=st.clientWidth, s=Math.min(1,w/1180), sc=st.querySelector(".scaler"); sc.style.transform="scale("+s+")"; sc.style.width="1180px"; sc.parentNode.style.height=(760*s+28)+"px"; }
+      st.querySelectorAll("[data-scr] button").forEach(function(b){ b.setAttribute("aria-pressed",b.getAttribute("data-s")===state.screen); });
+      st.querySelectorAll("[data-mode]").forEach(function(b){ b.setAttribute("aria-pressed",b.getAttribute("data-mode")===state.mode); });
+      st.querySelectorAll("[data-dev]").forEach(function(b){ b.setAttribute("aria-pressed",(b.getAttribute("data-dev")==="desk")===state.desk); });
+      var M=d.metrics,T=d.type; var cur={row:state.tune.row||M.row,u:state.tune.u||M.u,fs:state.tune.fs||T.fs,r:state.tune.r!=null?state.tune.r:M.r,ctl:state.tune.ctl||M.ctl};
+      st.querySelector("[data-tune]").querySelectorAll("input[type=range]").forEach(function(i){ i.value=cur[i.name]; i.nextElementSibling.value=cur[i.name]+(i.dataset.u||""); });
+      var ac=st.querySelector("input[type=color]"); if(ac&&!state.tune.acc) ac.value=d.palette[state.mode].acc.length===7?d.palette[state.mode].acc:"#3EE6F0";
+      st.querySelector(".vals").textContent=id+" "+JSON.stringify(Object.assign({},cur,{acc:state.tune.acc||d.palette[state.mode].acc,mode:state.mode}));
+    }
+    st.querySelector("[data-scr]").innerHTML=SCR.map(function(s){ return '<button data-s="'+s[0]+'">'+s[1]+'</button>'; }).join("");
+    st.querySelector("[data-tune]").innerHTML='<strong>Tune</strong>'+TUNE.map(function(t){ return '<label>'+t[1]+'<input type="range" name="'+t[0]+'" min="'+t[2]+'" max="'+t[3]+'" step="'+t[4]+'" data-u="'+t[5]+'"><output></output></label>'; }).join("")
+      +'<label>Accent<input type="color"><output></output></label><button data-reset>Reset</button><div class="vals"></div>';
+    st.addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b||b.closest(".host")) return;
+      if(b.dataset.s){ state.screen=b.dataset.s; if(host._st) host._st.screen=b.dataset.s; draw(); }
+      if(b.dataset.mode){ state.mode=b.dataset.mode; draw(); }
+      if(b.dataset.dev){ state.desk=b.dataset.dev==="desk"; draw(); }
+      if(b.hasAttribute("data-reset")){ state.tune={}; draw(); } });
+    st.addEventListener("input",function(e){ var i=e.target; if(i.closest(".host")) return; if(i.type==="range"){ state.tune[i.name]=Number(i.value); draw(); } if(i.type==="color"){ state.tune.acc=i.value; draw(); } });
+    host.addEventListener("tsscreen",function(e){ state.screen=e.detail; draw(); });
+    st.addEventListener("tsscreen",function(e){ state.screen=e.detail; draw(); });
+    draw();
+  }
+  O.forEach(mount);
+
+  // Blend
+  var ASP=[["nav","Navigation"],["pal","Colour"],["type","Type"],["rows","Rows & controls"],["hd","Section headers"],["hl","Health glyphs"],["hero","Feed hero"]];
+  var bl={nav:"grid",pal:"grid",type:"grid",rows:"grid",hd:"calm",hl:"grid",hero:"grid",mode:"light",screen:"rules"};
+  var bc=document.getElementById("blendctl"), bh=document.getElementById("blendhost");
+  bc.innerHTML=ASP.map(function(a){ return '<div class="asp"><b>'+a[1]+'</b><div>'+O.map(function(id){ return '<button data-a="'+a[0]+'" data-v="'+id+'">'+D[id].seat+'</button>'; }).join("")+'</div></div>'; }).join("")
+    +'<div class="asp"><b>Mode</b><div><button data-a="mode" data-v="light">Light</button><button data-a="mode" data-v="dark">Dark</button></div></div><div class="tn"><strong>Your blend</strong><div class="vals" id="blendvals"></div></div>';
+  document.getElementById("blendscr").innerHTML=SCR.map(function(s){ return '<button data-bs="'+s[0]+'">'+s[1]+'</button>'; }).join("");
+  function drawBlend(){ if(bh._st) bh._st.screen=bl.screen; TSMock.render(bh,{key:"blend",nav:bl.nav,pal:bl.pal,type:bl.type,rows:bl.rows,hd:bl.hd,hl:bl.hl,hero:bl.hero,mode:bl.mode,screen:bl.screen});
+    bc.querySelectorAll("button[data-a]").forEach(function(b){ b.setAttribute("aria-pressed",bl[b.dataset.a]===b.dataset.v); });
+    document.querySelectorAll("#blendscr button").forEach(function(b){ b.setAttribute("aria-pressed",b.dataset.bs===bl.screen); });
+    document.getElementById("blendvals").textContent=JSON.stringify(bl); }
+  bc.addEventListener("click",function(e){ var b=e.target.closest("button[data-a]"); if(!b) return; bl[b.dataset.a]=b.dataset.v; drawBlend(); });
+  document.getElementById("blendscr").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b) return; bl.screen=b.dataset.bs; drawBlend(); });
+  bh.addEventListener("tsscreen",function(e){ bl.screen=e.detail; drawBlend(); });
+  drawBlend();
+
+  // scroll progress + fade-in
+  var pr=document.getElementById("prog");
+  addEventListener("scroll",function(){ var h=document.documentElement; pr.style.width=(100*h.scrollTop/(h.scrollHeight-h.clientHeight))+"%"; },{passive:true});
+  var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } }); },{rootMargin:"0px 0px -10% 0px"});
+  document.querySelectorAll(".fade").forEach(function(el){ io.observe(el); });
+})();
+</script>
+</body>
+</html>
