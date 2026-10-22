@@ -2,7 +2,7 @@
    Functional inventory taken from docs/spec.md + thrift-shop.html labels/controls. */
 (function(){
   // Load the alignment pins (engine-align.css) next to engine.css on every page that uses the mock.
-  try{ var s=document.currentScript&&document.currentScript.src; if(s){ var l=document.createElement("link"); l.rel="stylesheet"; l.href=s.replace(/data\.js(\?.*)?$/,"engine-align.css"); document.head.appendChild(l); } }catch(e){}
+  try{ var s=document.currentScript&&document.currentScript.src; if(s){ var l=document.createElement("link"); l.rel="stylesheet"; l.href=s.replace(/data\.js(\?.*)?$/,"engine-align.css?v=4"); document.head.appendChild(l); } }catch(e){}
   var R=[ // [brand, group, min_pct, min_denom, on, mode]
     ["BJ's","restaurant"],["Burger King","restaurant"],["Cheesecake Factory","restaurant"],["Chipotle","restaurant"],["Dickey's","restaurant"],
     ["DoorDash","restaurant"],["Dunkin'","restaurant"],["Fogo de Chao","restaurant"],["Grimaldi's","restaurant"],["Gringo's","restaurant"],
