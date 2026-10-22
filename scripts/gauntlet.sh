@@ -11,10 +11,13 @@
 #         4 Playwright smoke (all test/*.spec.mjs: `chromium` project + the `iphone-webkit` project on REAL WebKit) ·
 #         5 ui-audit — the iPhone UI audit (council instruments/ui-audit, vendored in test/ui-audit/): every press-native
 #           state × 320/375/390/393/430 × dark+light on WebKit; summary + JSON in docs/evidence/<stem>-ui-audit.*
-# WebKit (arc/safari-ui, 2026-10-12): `npx playwright install webkit` runs first (idempotent; needs cdn.playwright.dev +
-# playwright.download.prss.microsoft.com — docs/secrets-map.md "Egress"). If it cannot install, the Playwright stage
-# runs the chromium project alone, the ui-audit falls back to labelled Chromium (exit 2) and the gauntlet reports
-# GAUNTLET PARTIAL (egress) — a Chromium run is never Safari-green.
+# WebKit (arc/safari-ui, 2026-10-12; --with-deps council arc/webkit-with-deps, 2026-10-22):
+# `npx playwright install --with-deps webkit` runs first (idempotent; downloads from cdn.playwright.dev +
+# playwright.download.prss.microsoft.com — docs/secrets-map.md "Egress" — and, on Linux, apt-installs WebKit's system
+# libraries; a no-op extra on macOS). If WebKit still cannot launch, the Playwright stage runs the chromium project
+# alone, the ui-audit falls back to labelled Chromium (exit 2) and the gauntlet reports GAUNTLET PARTIAL (<reason>) —
+# the REAL reason read from the log: deps (missing system libraries) · egress (download refused / never downloaded) ·
+# other — never egress by default. A Chromium run is never Safari-green.
 # Cloud mode: when /opt/pw-browsers/chromium exists and PW_CHROMIUM is unset, PW_CHROMIUM is set to it (the chromium
 # project launches it).
 # Exit 0 = GAUNTLET GREEN; 1 = a stage failed (RED); 2 = every stage passed but WebKit was unavailable (PARTIAL).
@@ -33,6 +36,7 @@ say() { echo "$*" | tee -a "$LOG"; }
 if [ -z "${PW_CHROMIUM:-}" ] && [ -x /opt/pw-browsers/chromium ]; then export PW_CHROMIUM=/opt/pw-browsers/chromium; fi
 [ -n "${PW_CHROMIUM:-}" ] && summary+=("ℹ️ cloud mode: chromium project = $("$PW_CHROMIUM" --version 2>/dev/null | head -1)")
 partial=0
+partial_reason=""
 
 # Sibling clones of this press clone (the tools' own defaults too) feed tenants-check's T4/T8.
 PARENT="$(dirname "$ROOT")"
@@ -44,14 +48,26 @@ dirty_before="$(git diff --name-only -- docs/evidence | grep -vE "$KEEP_RE" || t
 
 [ -d node_modules ] || { say "npm ci"; npm ci >>"$LOG" 2>&1 || { say "✗ FAILED: npm ci"; exit 1; }; }
 
-# 0 — WebKit (the iPhone engine of record) — idempotent install; failure ⇒ PARTIAL (egress), never a silent skip
-say "== 0 playwright install webkit"
-if npx playwright install webkit >>"$LOG" 2>&1 && node -e "require('playwright').webkit.launch().then(b=>b.close())" >>"$LOG" 2>&1; then
+# 0 — WebKit (the iPhone engine of record) — idempotent install + its system libraries; failure ⇒ PARTIAL (<reason>),
+# never a silent skip. The reason comes from this stage's own output (council ui-audit run.mjs classifyWebkitFailure).
+say "== 0 playwright install --with-deps webkit"
+WKLOG="$(mktemp)"
+if npx playwright install --with-deps webkit >"$WKLOG" 2>&1 && node -e "require('playwright').webkit.launch().then(b=>b.close())" >>"$WKLOG" 2>&1; then
+  cat "$WKLOG" >>"$LOG"
   summary+=("🟢 0 webkit: installed ($(node -e "require('playwright').webkit.launch().then(async b=>{console.log(b.version());await b.close()})" 2>/dev/null))")
 else
+  cat "$WKLOG" >>"$LOG"
   export PW_NO_WEBKIT=1; partial=1
-  summary+=("🟡 0 webkit: UNAVAILABLE — install failed (egress: cdn.playwright.dev + playwright.download.prss.microsoft.com) → PARTIAL")
+  if grep -qiE 'missing dependencies|missing libraries|lib[[:alnum:]._+-]+\.so' "$WKLOG"; then
+    partial_reason=deps; why="missing system libraries — the --with-deps install did not complete (apt refused?)"
+  elif grep -qiE "Executable doesn't exist|connect_rejected|ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|HTTP 40[37]|Download failed|failed to download" "$WKLOG"; then
+    partial_reason=egress; why="download refused (egress: cdn.playwright.dev + playwright.download.prss.microsoft.com)"
+  else
+    partial_reason=other; why="$(grep -m1 -iE 'error' "$WKLOG" | cut -c1-120)"
+  fi
+  summary+=("🟡 0 webkit: UNAVAILABLE [$partial_reason] — $why → PARTIAL")
 fi
+rm -f "$WKLOG"
 
 # 1 — unit
 say "== 1 node --test"
@@ -89,7 +105,8 @@ node test/ui-audit/run.mjs test/ui-audit.config.mjs --evidence "$UISTEM" >>"$LOG
 ualine="$(grep -E '^matrix:' "$UISTEM.txt" 2>/dev/null | head -1)"
 case $ua in
   0) summary+=("🟢 5 ui-audit: GREEN on WebKit — $ualine") ;;
-  2) summary+=("🟡 5 ui-audit: PARTIAL (not WebKit) — $ualine"); partial=1 ;;
+  2) summary+=("🟡 5 ui-audit: PARTIAL (not WebKit) — $ualine — $(grep -E '^VERDICT:' "$UISTEM.txt" 2>/dev/null | head -1)"); partial=1
+     [ -z "$partial_reason" ] && partial_reason=other ;;
   *) summary+=("🔴 5 ui-audit: RED — $ualine — ✗ FAILED: ui-audit (defects in $UISTEM.txt)"); fail=1
      while IFS= read -r l; do summary+=("   $l"); done <<< "$(grep -E '^(✗)' "$UISTEM.txt" 2>/dev/null | head -8)" ;;
 esac
@@ -107,5 +124,5 @@ say ""
 say "── summary ──"
 for l in "${summary[@]}"; do say "$l"; done
 if [ $fail -ne 0 ]; then say "GAUNTLET RED — exit 1 — log $LOG"; exit 1
-elif [ $partial -ne 0 ]; then say "GAUNTLET PARTIAL (egress) — exit 2 — WebKit unavailable; log $LOG"; exit 2
+elif [ $partial -ne 0 ]; then say "GAUNTLET PARTIAL (${partial_reason:-other}) — exit 2 — WebKit unavailable; log $LOG"; exit 2
 else say "GAUNTLET GREEN — exit 0 — log $LOG"; exit 0; fi

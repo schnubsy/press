@@ -1,4 +1,4 @@
-// council-ui-audit@1.0.0 — instruments/ui-audit/ui-probe.mjs (canonical; projects vendor a stamped copy)
+// council-ui-audit@1.1.0 — instruments/ui-audit/ui-probe.mjs (canonical; projects vendor a stamped copy)
 //
 // The browser-side probe of the iPhone UI audit. `uiProbe(cfg)` runs INSIDE the page (Playwright
 // `page.evaluate(uiProbe, cfg)`) — it is serialised, so it must stay self-contained: no imports, no

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// council-ui-audit@1.0.0 — instruments/ui-audit/run.mjs (canonical; projects vendor a stamped copy)
+// council-ui-audit@1.1.0 — instruments/ui-audit/run.mjs (canonical; projects vendor a stamped copy)
 //
 // The iPhone UI audit runner: every state in the project's config × widths 320/375/390/393/430 × dark + light,
 // on WebKit (the iPhone engine of record), running the six gated checks of ui-probe.mjs on each surface.
@@ -9,7 +9,7 @@
 // Exit codes (the gauntlet reads them):
 //   0  GREEN    WebKit, every state driven, zero defects
 //   1  RED      any defect, or a state the driver could not reach (an undriven state is never green)
-//   2  PARTIAL  zero defects but NOT on WebKit (WebKit missing → labelled Chromium fallback) — not Safari-equivalent
+//   2  PARTIAL  zero defects but NOT on WebKit (WebKit missing → labelled Chromium fallback, reason deps|egress|other) — not Safari-equivalent
 //
 // The config module default-exports:
 //   { name, url: string | ({ width, scheme }) => string,      // the BUILT page (file:// or the preview URL)
@@ -28,17 +28,36 @@ export const HEIGHTS = { 320: 568, 375: 812, 390: 844, 393: 852, 430: 932 };
 export const SCHEMES = ['dark', 'light'];
 const IPHONE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
 
-// WebKit first. Chromium only when asked or when WebKit cannot launch — and then the verdict is PARTIAL.
+// Why WebKit would not launch — the REAL cause, never a default (arc/webkit-with-deps, 2026-10-22): the 2026-10-21 press
+// run downloaded WebKit fine and then failed on missing Linux system libraries, but the old message blamed egress.
+//   deps    the launch names missing shared libraries ("Host system is missing dependencies", "lib….so")
+//   egress  the download / executable is absent ("Executable doesn't exist", "Looks like Playwright … just installed")
+//           or the network refused it (connect_rejected, ENOTFOUND, 403/407)
+//   other   anything else — the first line of the error is printed as-is
+export function classifyWebkitFailure(message) {
+  const m = String(message || '');
+  if (/missing dependencies|missing libraries|lib[\w.+-]+\.so(?:\.\d+)*\b|install-deps|--with-deps/i.test(m)) {
+    return { reason: 'deps', fix: 'missing system libraries — run `npx playwright install --with-deps webkit` (Linux: installs them via apt)' };
+  }
+  if (/Executable doesn't exist|browserType\.launch: .*not found|just installed or updated|connect_rejected|ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|\b40[37]\b|egress|download/i.test(m)) {
+    return { reason: 'egress', fix: 'WebKit not downloaded — run `npx playwright install --with-deps webkit`; if the download is refused, add cdn.playwright.dev + playwright.download.prss.microsoft.com to the egress allowlist' };
+  }
+  return { reason: 'other', fix: 'WebKit failed to launch — see the error; `npx playwright install --with-deps webkit` is the standard install' };
+}
+
+// WebKit first. Chromium only when asked or when WebKit cannot launch — and then the verdict is PARTIAL (reason named).
 export async function launch(pw, want = 'webkit') {
   if (want === 'webkit') {
-    try { return { browser: await pw.webkit.launch(), engine: 'webkit', fallback: null }; }
+    try { return { browser: await pw.webkit.launch(), engine: 'webkit', fallback: null, reason: null }; }
     catch (e) {
-      const why = String(e && e.message || e).split('\n')[0].slice(0, 160);
+      const msg = String(e && e.message || e);
+      const why = msg.split('\n')[0].slice(0, 160);
+      const { reason, fix } = classifyWebkitFailure(msg);
       const browser = await pw.chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {});
-      return { browser, engine: 'chromium', fallback: 'WebKit unavailable (' + why + ') — run `npx playwright install webkit`; needs cdn.playwright.dev + playwright.download.prss.microsoft.com in the egress allowlist' };
+      return { browser, engine: 'chromium', reason, fallback: `WebKit unavailable [${reason}] (${why}) — ${fix}` };
     }
   }
-  return { browser: await pw.chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {}), engine: 'chromium', fallback: 'Chromium requested (--engine chromium)' };
+  return { browser: await pw.chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {}), engine: 'chromium', reason: 'requested', fallback: 'Chromium requested (--engine chromium)' };
 }
 
 export function verdict({ engine, defects, undriven }) {
@@ -50,7 +69,7 @@ export function verdict({ engine, defects, undriven }) {
 export async function runUiAudit(cfg, { pw, engine: want = 'webkit' } = {}) {
   const widths = cfg.widths || WIDTHS, schemes = cfg.schemes || SCHEMES;
   const states = [{ name: '(initial)', run: async () => {} }, ...(cfg.states || [])];
-  const { browser, engine, fallback } = await launch(pw, want);
+  const { browser, engine, fallback, reason } = await launch(pw, want);
   const results = [];
   let defects = 0, undriven = 0;
   // one context per width × scheme, run CONCURRENTLY (states stay sequential inside a context); row order kept
@@ -96,7 +115,7 @@ export async function runUiAudit(cfg, { pw, engine: want = 'webkit' } = {}) {
     }
   } finally { await browser.close(); }
   const v = verdict({ engine, defects, undriven });
-  return { name: cfg.name || 'ui-audit', engine, fallback, widths, schemes, states: states.map((s) => s.name),
+  return { name: cfg.name || 'ui-audit', engine, fallback, reason, widths, schemes, states: states.map((s) => s.name),
     exceptions: cfg.exceptions || [], defects, undriven, verdict: v.label, code: v.code, results };
 }
 
@@ -113,7 +132,7 @@ export function summary(rep) {
   }
   for (const r of rep.results.filter((x) => x.error).slice(0, 6)) out.push(`✗ undriven ${r.state}@${r.width}/${r.scheme}: ${r.error.slice(0, 100)}`);
   out.push(`designed exceptions: ${rep.exceptions.length ? rep.exceptions.length + ' named in the evidence' : 'none'}`);
-  out.push(`VERDICT: ${rep.verdict}${rep.verdict === 'PARTIAL' ? ' — not Safari-equivalent; the WebKit run is the gate' : ''}`);
+  out.push(`VERDICT: ${rep.verdict}${rep.verdict === 'PARTIAL' ? ` (${rep.reason || 'other'}) — not Safari-equivalent; the WebKit run is the gate` : ''}`);
   return out.slice(0, 30).join('\n');
 }
 
