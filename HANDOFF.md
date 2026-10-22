@@ -21,7 +21,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 - Ship gate: `bash scripts/gauntlet.sh` (verify skill) — 0 webkit · 1 unit · 2 inline · 3 tenants-check · 4 Playwright · 5 ui-audit.
 
 ## Shipped this arc
-- **S1**: `app-lab/vantage/` rebuilt by vantage `web/tools/build-app-lab.mjs` from vantage main 76da0c2: 54 paths (50 A · 3 D ·
+- **S1**: `app-lab/vantage/` rebuilt by vantage `web/tools/build-app-lab.mjs` from vantage main 76da0c2: 54 paths (48 A · 2 R · 3 D ·
   index.html M) — byte-identical to vantage `docs/evidence/whiteboard-tour-fonts-staged-press.patch`; app-lab.html, frame.html,
   prototypes.json, pages.json unchanged. index.html → `index-BsNeUenB.js` ("Take the tour"); `Whiteboard-C4E02ABj.js`
   ("Stroke smoothing").
