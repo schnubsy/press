@@ -33,8 +33,8 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: PR pending (branch arc/thrift-shop-redesign-card-label)
-**arc/thrift-shop-redesign-card-label (2026-10-22) — the redesign card gets its own glyph + test label; gauntlet back to green.**
+Merge state: Merged: PR #57 217ed8c on 2026-10-22; main checkout on main @ 217ed8c
+**arc/thrift-shop-redesign-card-label (2026-10-22) — the redesign card gets its own glyph + test label; Playwright + ui-audit back to green (tenants-check BLOCKED access).**
 S1: index.html ICONS += `layers` (Feather) and LABELS `thrift-shop-redesign.html` → `layers` (was Thrift Shop's `drop-bag`);
 `test/card-labels.spec.mjs` WANT += `['Design review', 'Thrift Shop Redesign']`. Page, pages.json, spaces.json untouched.
 Gauntlet: WebKit 26.6 · unit 152/0 · inline ✓ · Playwright 150/0 · ui-audit GREEN on WebKit · tenants-check 60/27/26 — the
