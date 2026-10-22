@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Native Ledger — refined</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="engine.css">
+<link rel="stylesheet" href="_sheet.css">
+<style>
+body{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.chg{max-width:900px;margin:8px 0 0;padding-left:18px;font-size:14px}
+.chg li{margin:3px 0}
+.dkw{overflow-x:auto}
+@media (max-width:500px){body{padding-block:20px}header h1{font-size:28px}.phone{zoom:.84}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Native Ledger — refined</h1>
+  <p><strong>Your pick, with your six changes.</strong> Every screen is live: tap tabs, values, switches and section headers.</p>
+  <ul class="chg">
+    <li>Spacing unit down to 6px</li>
+    <li>Feed: the deal value is the focal point — large, centred top to bottom in its column</li>
+    <li>Feed hero: Still Water ripple with the new-deal count, over a Price Index “by the numbers” split</li>
+    <li>Floating nav bar (Night Market shape) with Native Ledger’s icons and page names</li>
+    <li>Tap a % to step 5% at a time up to 50%</li>
+    <li>Tap a $ to step through Any · $10 · $25 · $50 · $75 · $100 · $150 · $200</li>
+  </ul>
+  <p><a href="../thrift-shop-redesign.html">Back to the full review</a></p>
+</header>
+<div id="out"></div>
+<footer>Mock UI with example data. Not production code.</footer>
+<script src="data.js"></script>
+<script src="directions.js"></script>
+<script src="engine.js"></script>
+<script>
+(function(){
+  var SCR=[["feed","Feed"],["rules","Gift-card rules"],["watch","Sales & offers"],["sources","Sources"],["alerts","Settings"]];
+  var h="";
+  ["light","dark"].forEach(function(m){
+    h+='<h2>'+(m==="light"?"Light":"Dark")+'</h2><div class="row">'+SCR.map(function(s){ return '<figure><figcaption>'+s[1]+'</figcaption><div class="phone"><div class="host" data-s="'+s[0]+'" data-m="'+m+'"></div></div></figure>'; }).join("")+'</div>';
+  });
+  h+='<h2>Desktop</h2><div class="dkw"><div class="dk"><div class="host" data-s="feed" data-m="light" data-desk="1"></div></div><div class="dk"><div class="host" data-s="rules" data-m="light" data-desk="1"></div></div></div>';
+  document.getElementById("out").innerHTML=h;
+  document.querySelectorAll(".host").forEach(function(el,i){
+    TSMock.render(el,{key:"ledger-"+i,uid:"lg"+i,nav:"ledger",pal:"cup",type:"cup",rows:"cup",hd:"cup",hl:"cup",hero:"ledger",
+      mode:el.dataset.m,screen:el.dataset.s,desk:!!el.dataset.desk,tune:{u:6}});
+  });
+})();
+</script>
+</body>
+</html>

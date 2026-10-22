@@ -14,6 +14,7 @@
     neon:[{id:"feed",l:"Feed",cnt:3,subs:[["Feed","feed"]]},{id:"rules",l:"Rules",subs:[["Gift cards","rules"],["Sales","watch"]]},{id:"sources",l:"Sources",cnt:3,subs:[["Sources","sources"]]},{id:"settings",l:"Settings",subs:[["Settings","alerts"]]}],
     cup:[{id:"feed",l:"Feed",cnt:3,ic:"tray",subs:[["Feed","feed"]]},{id:"rules",l:"Rules",ic:"sliders",subs:[["Gift cards","rules"],["Sales & offers","watch"]]},{id:"sources",l:"Sources",ic:"antenna",cnt:3,subs:[["Sources","sources"]]},{id:"settings",l:"Settings",ic:"gear",subs:[["Settings","alerts"]]}]
   };
+  NAVS.ledger=NAVS.cup;
   var TITLES={feed:"Feed",rules:"Gift-card rules",watch:"Sales & offers",sources:"Sources",alerts:"Settings"};
   var ICONS={
     tray:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1 3h6l1-3h5"/></svg>',
@@ -55,7 +56,7 @@
   function row(lb,opt){ opt=opt||{};
     return '<div class="rw'+(opt.c4?" c4":"")+(opt.off?" off":"")+(opt.full?" full":"")+'" data-q="'+esc((opt.q||lb).toLowerCase())+'"><div class="rl"><span class="lb">'+lb+'</span>'+(opt.sb?'<span class="sb">'+opt.sb+'</span>':"")+'</div><span class="ld" aria-hidden="true"></span>'
       +(opt.v!=null?'<span class="rv">'+opt.v+'</span>':"")+(opt.v2!=null?'<span class="rv">'+opt.v2+'</span>':"")+(opt.c!=null?'<span class="rc">'+opt.c+'</span>':"")+'</div>'; }
-  var PCTS=["5%","10%","15%","20%","25%","30%","40%"], DENOMS=["Any","$10","$25","$50","$100"], MINS=["Any","≥5%","≥10%","≥15%","≥20%","≥25%","≥30%"];
+  var PCTS=["5%","10%","15%","20%","25%","30%","35%","40%","45%","50%"], DENOMS=["Any","$10","$25","$50","$75","$100","$150","$200"], MINS=["Any","≥5%","≥10%","≥15%","≥20%","≥25%","≥30%","≥35%","≥40%","≥45%","≥50%"];
 
   /* ---------- sections ---------- */
   var DEFAULT_OPEN={inbox:1,processed:0,run:1,gcdefaults:1,restaurant:1,retail:0,other:0,retailer:0,cashlike:0,blocked:0,watch:1,counts:0,overrides:0,also:0,
@@ -168,6 +169,8 @@
     if(hv==="neon"){ var pts=d.metrics.spark, w=360, hgt=80, mx=Math.max.apply(null,pts);
       var path=pts.map(function(v,i){ return (i?"L":"M")+(i*(w/(pts.length-1))).toFixed(1)+" "+(hgt-6-(v/mx)*(hgt-20)).toFixed(1); }).join(" ");
       return '<div class="hero"><span>Saved this month</span><b>$96</b><span>3 new, 5 hits, last run 12 min ago</span><svg viewBox="0 0 360 80" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="ng'+cfg.uid+'" x1="0" x2="1"><stop offset="0" stop-color="var(--acc)"/><stop offset="1" stop-color="var(--acc2)"/></linearGradient><linearGradient id="nf'+cfg.uid+'" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--acc2)" stop-opacity=".35"/><stop offset="1" stop-color="var(--acc2)" stop-opacity="0"/></linearGradient></defs><path d="'+path+' L360 80 L0 80Z" fill="url(#nf'+cfg.uid+')"/><path d="'+path+'" fill="none" stroke="url(#ng'+cfg.uid+')" stroke-width="2.5"/></svg></div>'; }
+    if(hv==="ledger") return '<div class="hero"><div class="top"><svg viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="46" fill="none" stroke="var(--acc)" stroke-opacity=".12" stroke-width="1.5"/><circle cx="48" cy="48" r="36" fill="none" stroke="var(--acc)" stroke-opacity=".24" stroke-width="1.5"/><circle cx="48" cy="48" r="26" fill="var(--accS)" stroke="var(--acc)" stroke-opacity=".5" stroke-width="1.5"/><text x="48" y="58" text-anchor="middle" font-size="30" font-weight="700" fill="var(--accT)">3</text></svg><div><b>3 new deals</b><span>Last check 12 min ago · next at noon</span></div></div>'
+      +'<div class="split"><div><b>5</b><span>Hits</span></div><div><b>$96</b><span>Saved Oct</span></div><div><b>$1,284</b><span>Saved total</span></div><div class="al"><b>3</b><span>Need you</span></div></div></div>';
     if(hv==="cup") return '<div class="hero wrap"><b>3 new</b>, last checked 12 min ago</div>';
     return "";
   }
@@ -181,7 +184,7 @@
   function navHtml(cfg,st){
     var nav=NAVS[cfg.nav], curDest=destOf(cfg.nav,st.screen);
     var ds=nav.map(function(n){ var cur=n.id===curDest.id;
-      return '<button class="d" data-dest="'+n.id+'"'+(cur?' aria-current="true"':"")+'>'+(n.ic&&(cfg.nav==="calm"||cfg.nav==="cup")?ICONS[n.ic]:"")+'<span>'+esc(n.l)+'</span>'+(n.cnt&&cfg.nav!=="vogue"&&cfg.nav!=="steel"?'<span class="cnt">'+n.cnt+'</span>':"")+'</button>'; }).join("");
+      return '<button class="d" data-dest="'+n.id+'"'+(cur?' aria-current="true"':"")+'>'+(n.ic&&(cfg.nav==="calm"||cfg.nav==="cup"||cfg.nav==="ledger")?ICONS[n.ic]:"")+'<span>'+esc(n.l)+'</span>'+(n.cnt&&cfg.nav!=="vogue"&&cfg.nav!=="steel"?'<span class="cnt">'+n.cnt+'</span>':"")+'</button>'; }).join("");
     if(cfg.nav==="vogue") return '<nav class="nav" aria-label="Main"><span class="brand">Thrift Shop</span><span class="ds">'+ds+'</span></nav>';
     if(cfg.nav==="steel") return '<nav class="nav" aria-label="Main">'+ds+'<label class="go"><span aria-hidden="true">go</span><input type="search" placeholder="any setting" aria-label="Go to any setting" data-go></label></nav>';
     return '<nav class="nav" aria-label="Main">'+ds+'</nav>';
@@ -190,7 +193,7 @@
   function subHtml(cfg,st){
     var dd=destOf(cfg.nav,st.screen).n; if(dd.subs.length<2) return "";
     var b=dd.subs.map(function(s){ return '<button data-scr="'+s[1]+'"'+(s[1]===st.screen?' aria-current="true"':"")+'>'+esc(s[0])+'</button>'; }).join("");
-    if(cfg.nav==="cup") return '<div class="sub"><div class="seg" role="tablist">'+b+'</div></div>';
+    if(cfg.nav==="cup"||cfg.nav==="ledger") return '<div class="sub"><div class="seg" role="tablist">'+b+'</div></div>';
     return '<div class="sub" role="tablist">'+b+'</div>';
   }
 
@@ -207,7 +210,7 @@
     var d=st.data, secs=SECS(d,cfg), ids=SCREEN_SECS[st.screen];
     var cls="ts nav-"+cfg.nav+" rs-"+cfg.rows+" hd-"+cfg.hd+" hl-"+cfg.hl+" hero-"+cfg.hero+" pal-"+cfg.pal+" m-"+cfg.mode+(cfg.desk?" desk":"");
     var main="";
-    if(cfg.nav==="cup") main+='<div class="ltitle">'+esc(TITLES[st.screen])+'</div>';
+    if(cfg.nav==="cup"||cfg.nav==="ledger") main+='<div class="ltitle">'+esc(TITLES[st.screen])+'</div>';
     main+=subHtml(cfg,st);
     var tools=(st.screen!=="alerts")?'<div class="tools"><label class="search"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6"/></svg><input type="search" data-filter placeholder="'+({feed:"Search deals",rules:"Search 63 brands and lists",watch:"Search watches, types, brands",sources:"Search sources"}[st.screen])+'" aria-label="Search this screen" value="'+esc(st.q||"")+'"></label>'+(st.screen==="feed"?'<button class="tbtn" aria-label="Filter and sort">Filter</button>':'<button class="tbtn" data-collapse>Collapse</button>')+'</div>':"";
     var secsHtml=ids.map(function(id,i){ return secHtml(cfg,st,id,secs[id],i); }).join("");
