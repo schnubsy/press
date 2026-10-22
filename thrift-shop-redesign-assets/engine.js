@@ -184,7 +184,7 @@
   function navHtml(cfg,st){
     var nav=NAVS[cfg.nav], curDest=destOf(cfg.nav,st.screen);
     var ds=nav.map(function(n){ var cur=n.id===curDest.id;
-      return '<button class="d" data-dest="'+n.id+'"'+(cur?' aria-current="true"':"")+'>'+(n.ic&&(cfg.nav==="calm"||cfg.nav==="cup"||cfg.nav==="ledger")?ICONS[n.ic]:"")+'<span>'+esc(n.l)+'</span>'+(n.cnt&&cfg.nav!=="vogue"&&cfg.nav!=="steel"?'<span class="cnt">'+n.cnt+'</span>':"")+'</button>'; }).join("");
+      return '<button class="d" data-dest="'+n.id+'"'+(cur?' aria-current="true"':"")+'>'+(n.ic&&(cfg.nav==="calm"||cfg.nav==="cup")?ICONS[n.ic]:"")+'<span>'+esc(n.l)+'</span>'+(n.cnt&&cfg.nav!=="vogue"&&cfg.nav!=="steel"?'<span class="cnt">'+n.cnt+'</span>':"")+'</button>'; }).join("");
     if(cfg.nav==="vogue") return '<nav class="nav" aria-label="Main"><span class="brand">Thrift Shop</span><span class="ds">'+ds+'</span></nav>';
     if(cfg.nav==="steel") return '<nav class="nav" aria-label="Main">'+ds+'<label class="go"><span aria-hidden="true">go</span><input type="search" placeholder="any setting" aria-label="Go to any setting" data-go></label></nav>';
     return '<nav class="nav" aria-label="Main">'+ds+'</nav>';
