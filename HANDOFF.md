@@ -1,6 +1,6 @@
 # press — HANDOFF
 
-_Last updated: 2026-10-22. arc/vantage-app-lab-tour-fonts — Vantage App Lab release: whiteboard, colours, tour, fonts (cloud Builder)._
+_Last updated: 2026-10-22. arc/thrift-shop-redesign-card-label — redesign card: own icon + test label (cloud Builder)._
 
 ## Standing rule: publish auto-close (do NOT re-litigate)
 
@@ -10,7 +10,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 
 ## Current state
 
-- Merge state: Merged: PR #56 f341bea on 2026-10-22; main checkout on main @ f341bea
+- Merge state: PR pending (branch arc/thrift-shop-redesign-card-label)
 - Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
 - Agent alerting rule (Mark, 2026-10-13): nothing running is SLA-critical — one push + email only when an item has been
   down (late/failed) for 24h+, one quiet "working again" after. Contract: `docs/spec.md` → Agent Monitor · Alerting.
@@ -21,14 +21,16 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 - Ship gate: `bash scripts/gauntlet.sh` (verify skill) — 0 webkit · 1 unit · 2 inline · 3 tenants-check · 4 Playwright · 5 ui-audit.
 
 ## Shipped this arc
-- **S1**: `app-lab/vantage/` rebuilt by vantage `web/tools/build-app-lab.mjs` from vantage main 76da0c2: 54 paths (48 A · 2 R · 3 D ·
-  index.html M) — byte-identical to vantage `docs/evidence/whiteboard-tour-fonts-staged-press.patch`; app-lab.html, frame.html,
-  prototypes.json, pages.json unchanged. index.html → `index-BsNeUenB.js` ("Take the tour"); `Whiteboard-C4E02ABj.js`
-  ("Stroke smoothing").
-- Gauntlet: unit 152/0 · inline ✓ · Playwright 116 (+1 WebKit-only skip) · **WebKit + ui-audit PARTIAL (egress)** this run ·
-  **tenants-check 43/25/27 — BLOCKED (access)**: 25 FAILs = T2/T3/T4 for 8 tenant repos + T8 council, none in this session;
-  every App Lab row PASS. Sentry: publishable key only. Evidence `docs/evidence/vantage-app-lab-tour-fonts*`.
-- Earlier (publish-vantage-onboarding-tour, PR #55): training tour + `press_catalog` row 58a476c7.
+- **S1** (22a51c6): index.html ICONS += `layers` (Feather, 24×24 stroke, aria-hidden); LABELS `thrift-shop-redesign.html` →
+  `icon:'layers'` (was `drop-bag`, Thrift Shop's glyph); `test/card-labels.spec.mjs` WANT += `'thrift-shop-redesign.html':
+  ['Design review', 'Thrift Shop Redesign']`. Page, pages.json, spaces.json untouched; inline:check in sync.
+- Gauntlet: WebKit 26.6 · unit 152/0 · inline ✓ · **Playwright 150/0** (card-labels green on chromium + iphone-webkit) ·
+  **ui-audit GREEN on WebKit** (200 surfaces) · **tenants-check 60/27/26 — BLOCKED (access)**: the 27 FAILs are T2/T3/T4 for 9
+  tenant repos not in this session, identical to origin/main. Sentry: diff clean. Evidence
+  `docs/evidence/thrift-shop-redesign-card-label-slice-1-icon-label.txt`.
+- Close-out manifest: merge: READY → Mark taps at verify · merge review: BLOCKED (no reviewer) → chat reviews at verify ·
+  reconcile: → chat after merge · stage stamp: → chat after merge · publish: N/A (no targets).
+- Earlier (vantage-app-lab-tour-fonts, PR #56): App Lab vantage release rebuilt from vantage 76da0c2.
 
 ## Open / blockers
 - **snag-train `kind` is still `mac-task`** while its `what` now says "Cloud scheduled task" (from council's patch) — confirm
@@ -37,7 +39,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 - **The shared gates still carry sub-44px controls.** `src/gate.js` (`.pg-back`, `.pg-btn`) and `src/family-gate.js`
   (`.fg-back`, `.fg-link`) are fixed on press pages by page-level overrides only; editing the modules drifts 7 tenants (T3).
 - **press_deals anon INSERT (and TRUNCATE/REFERENCES/TRIGGER) grants**: pre-existing. Steward no longer depends on them.
-- **Cloud gauntlet stage 3**: tenants-check defaults to sibling clones; with all 8 tenants + council attached it is GREEN
+- **Cloud gauntlet stage 3**: tenants-check defaults to sibling clones; with all tenant repos (9 now, incl. rebate-radar) + council attached it is GREEN
   (76/0/24, this arc). A tenant repo left out still FAILs T2 (by design) — dispatch press arcs with the tenant repos in scope. council-guide's `repoPath`
   (`~/Documents/Claude/council-hub/council`, tenants.json) SKIPs T2 in the cloud.
 - Carried: on-demand AI functions record no runs ("No data") · optimo's cloud Playwright baseline RED (env) · flow
@@ -45,9 +47,8 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
   safe to delete.
 
 ## Exact next steps
-0. **Chat verify of this PR:** confirm `https://schnubsy.github.io/press/app-lab/vantage/` serves index.html referencing
-   `index-BsNeUenB.js` (contains "Take the tour") and `Whiteboard-C4E02ABj.js` contains "Stroke smoothing"; blobs == main.
-   WebKit/ui-audit ran PARTIAL (egress) here — re-run the gauntlet with WebKit reachable if verify can.
+0. **Chat verify of this PR:** review the 3-line index.html + 1-line test diff (no reviewer subagent, EFFORT S); on merge, the
+   portal's Design review card shows the layers glyph (distinct from Thrift Shop's drop bag).
 1. **Tenant wave — shared-gate tap targets** (one arc per tenant, or one wave): move the page-level overrides into
    `src/gate.js` + `src/family-gate.js` (min-height 44 on `.pg-btn`; inline-flex 44px `.pg-back` / `.fg-back` / `.fg-link`),
    then every tenant re-vendors (card-scout, retirement, giving, fsa, cardsharp; remit, optimo) and re-publishes; drop the

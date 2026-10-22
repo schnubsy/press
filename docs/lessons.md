@@ -412,3 +412,6 @@ around the scope.
 - **Trust a staged patch over its prose.** vantage's staged-press .md named NotesEditor/TagPopover hashes that the patch (and
   a fresh rebuild) did not carry — compare the rebuild to the patch file byte-for-byte, and note stale prose in evidence.
   [tag: publish] (2026-10-22)
+- **A publish that adds a page also adds its card-labels WANT pair and its own ICONS glyph** in the same press change —
+  LABELS alone leaves `test/card-labels.spec.mjs` red ("exactly the served set"), and reusing a sibling's glyph trips "two
+  cards share an icon". [tag: press] (2026-10-22)

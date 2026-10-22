@@ -4,6 +4,13 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-10-22 — arc/thrift-shop-redesign-card-label (redesign card: own icon + test label)
+
+The thrift-shop-redesign publishes added `thrift-shop-redesign.html` to pages.json + LABELS but left `test/card-labels.spec.mjs`
+red on both projects (no WANT entry) and gave the card Thrift Shop's `drop-bag` glyph (the next "two cards share an icon" failure).
+S1 added a Feather `layers` glyph to ICONS, pointed the redesign's LABELS entry at it, and added the WANT pair. Full gauntlet:
+Playwright 150/0, ui-audit GREEN on WebKit; tenants-check fails only on the 9 out-of-scope tenant repos, byte-identical to main.
+
 ## 2026-10-22 — arc/vantage-app-lab-tour-fonts (Vantage App Lab release: whiteboard, colours, tour, fonts)
 
 Chat verify of vantage PR #30 dispatched its STAGED press half here. S1 rebuilt the App Lab release from vantage main 76da0c2
