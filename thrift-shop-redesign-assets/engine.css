@@ -326,7 +326,7 @@
 .ts.pal-neon::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(60% 40% at 15% 0%,rgba(62,230,240,.20),transparent 70%),radial-gradient(60% 45% at 100% 35%,rgba(154,107,255,.22),transparent 70%)}
 .ts.pal-neon.m-light::before{opacity:.5}
 .ts.pal-neon>*{position:relative}
-.ts.pal-neon.nav-neon>.nav{position:absolute}
+.ts.pal-neon.nav-neon>.nav,.ts.pal-neon.nav-ledger>.nav{position:absolute}
 
 /* ---------- desktop ---------- */
 .ts.desk{width:1180px;height:760px;flex-direction:row;flex-wrap:nowrap}
@@ -355,22 +355,22 @@
 
 /* ---------- Native Ledger refined (Mark 2026-10-22): floating capsule nav with icons, big focal badge, ripple + split hero ---------- */
 .ts.nav-ledger .nav{position:absolute;z-index:5;left:50%;bottom:16px;transform:translateX(-50%);padding:4px;border-radius:999px;
-  background:color-mix(in srgb,var(--sf) 90%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);
-  border:.5px solid var(--line);box-shadow:0 8px 30px rgba(0,0,0,.22)}
+  background:var(--sf2);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);
+  border:1px solid var(--line);box-shadow:0 8px 30px rgba(0,0,0,.35)}
 .ts.nav-ledger.m-dark .nav{box-shadow:0 8px 30px rgba(0,0,0,.6)}
 .ts.nav-ledger .nav .d{padding:0 14px;border-radius:999px;font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap}
-.ts.nav-ledger .nav .d[aria-current="true"]{background:var(--acc);color:var(--accI)}
-.ts.nav-ledger .nav .d .cnt{margin-left:5px;font-size:11px;background:#FF3B30;color:#fff;border-radius:9px;padding:0 5px;line-height:17px}
+.ts.nav-ledger .nav .d[aria-current="true"]{background:linear-gradient(90deg,var(--acc),var(--acc2));color:var(--accI)}
+.ts.nav-ledger .nav .d .cnt{margin-left:5px;font-size:11px}
 .ts.nav-ledger .ts-main{padding-bottom:96px}
 .ts.nav-ledger .ltitle{font-family:var(--hd);font-size:30px;font-weight:700;letter-spacing:-.01em;padding:2px calc(var(--u)*2) 4px}
 .ts.nav-ledger .sub{padding:0 calc(var(--u)*2) var(--u);background:none}
 .ts.nav-ledger .seg{display:flex;flex:1;background:var(--sf2);border-radius:9px;padding:2px;min-height:32px}
 .ts.nav-ledger .seg button{flex:1;min-height:30px;justify-content:center;border-radius:7px;font-size:13px;font-weight:600;color:var(--ink);padding:0 6px}
 .ts.nav-ledger .seg button[aria-current="true"]{background:var(--sf);box-shadow:0 1px 3px rgba(0,0,0,.15)}
-.ts.nav-ledger.m-light .seg,.ts.nav-ledger.m-light .search{background:#E3E3E8}
-.ts.nav-ledger.m-dark .seg{background:#2C2C2E}.ts.nav-ledger.m-dark .seg button[aria-current="true"]{background:#636366}
+.ts.nav-ledger .search{background:var(--sf2)}
+.ts.nav-ledger .seg button[aria-current="true"]{background:var(--accS);color:var(--accT);box-shadow:inset 0 0 0 1px var(--accT)}
 
-.ts.hero-ledger .hero{margin:0 calc(var(--u)*2) var(--u);background:var(--sf);border-radius:14px;overflow:hidden}
+.ts.hero-ledger .hero{margin:0 calc(var(--u)*2) var(--u);background:var(--sf);border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .ts.hero-ledger .hero .top{display:flex;align-items:center;gap:12px;padding:8px 14px 6px}
 .ts.hero-ledger .hero .top svg{width:58px;height:58px;flex:0 0 58px;font-family:var(--num)}
 .ts.hero-ledger .hero .top b{display:block;font-family:var(--hd);font-size:20px;font-weight:700;letter-spacing:-.01em;line-height:1.15}
