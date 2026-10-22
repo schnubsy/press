@@ -1,6 +1,6 @@
 # press — HANDOFF
 
-_Last updated: 2026-10-21. arc/publish-vantage-onboarding-tour — Vantage App Lab training tour + catalog row (cloud Builder)._
+_Last updated: 2026-10-22. arc/vantage-app-lab-tour-fonts — Vantage App Lab release: whiteboard, colours, tour, fonts (cloud Builder)._
 
 ## Standing rule: publish auto-close (do NOT re-litigate)
 
@@ -10,7 +10,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 
 ## Current state
 
-- Merge state: Merged: PR #55 14b8d4c on 2026-10-21; main checkout on main @ 14b8d4c
+- Merge state: PR pending (branch arc/vantage-app-lab-tour-fonts)
 - Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
 - Agent alerting rule (Mark, 2026-10-13): nothing running is SLA-critical — one push + email only when an item has been
   down (late/failed) for 24h+, one quiet "working again" after. Contract: `docs/spec.md` → Agent Monitor · Alerting.
@@ -21,16 +21,14 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 - Ship gate: `bash scripts/gauntlet.sh` (verify skill) — 0 webkit · 1 unit · 2 inline · 3 tenants-check · 4 Playwright · 5 ui-audit.
 
 ## Shipped this arc
-- **S1**: `app-lab/vantage/` rebuilt by vantage `web/tools/build-app-lab.mjs` from vantage main (merge 9ef418c; web/ == 8f70424):
-  index.html M (blob 24399f71) + 5 hashed assets A / 5 old D — byte-identical to vantage's staged patch; app-lab.html,
-  frame.html, prototypes.json, pages.json unchanged. Bundle `index-PzQikWRp.js` carries "Take the tour".
-- **S2**: `press_catalog` row `catalog` 86ec7381 → **58a476c7** (101919 B) = council main 094544a's press-content.sql (⊇ the
-  ordered 76a3a6c Vantage change + the new Rebate Radar (web) entry), via the connector as one sha-guarded UPDATE; read-back match.
-- Gauntlet: webkit 26.6 · unit 152/0 · inline ✓ · Playwright 150 · ui-audit GREEN (200 surfaces) · **tenants-check 62/24/26
-  RED — BLOCKED (scope)**: 24 FAILs = T2/T3/T4 for 8 tenant repos outside scope (thrift-shop, retirement, giving-tracker,
-  fsa-claims, remit, optimo, cardsharp, rebate-radar); identical on origin/main; every App Lab row (T1–T4, T8, T9) PASS.
-  Sentry: publishable key only. Evidence `docs/evidence/publish-vantage-onboarding-tour-*`.
-- Earlier (publish-thrift-shop-iphone-compact, PR #54): `thrift-shop.html` 2403c3bb.
+- **S1**: `app-lab/vantage/` rebuilt by vantage `web/tools/build-app-lab.mjs` from vantage main 76da0c2: 54 paths (48 A · 2 R · 3 D ·
+  index.html M) — byte-identical to vantage `docs/evidence/whiteboard-tour-fonts-staged-press.patch`; app-lab.html, frame.html,
+  prototypes.json, pages.json unchanged. index.html → `index-BsNeUenB.js` ("Take the tour"); `Whiteboard-C4E02ABj.js`
+  ("Stroke smoothing").
+- Gauntlet: unit 152/0 · inline ✓ · Playwright 116 (+1 WebKit-only skip) · **WebKit + ui-audit PARTIAL (egress)** this run ·
+  **tenants-check 43/25/27 — BLOCKED (access)**: 25 FAILs = T2/T3/T4 for 8 tenant repos + T8 council, none in this session;
+  every App Lab row PASS. Sentry: publishable key only. Evidence `docs/evidence/vantage-app-lab-tour-fonts*`.
+- Earlier (publish-vantage-onboarding-tour, PR #55): training tour + `press_catalog` row 58a476c7.
 
 ## Open / blockers
 - **snag-train `kind` is still `mac-task`** while its `what` now says "Cloud scheduled task" (from council's patch) — confirm
@@ -47,9 +45,9 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
   safe to delete.
 
 ## Exact next steps
-0. **Chat verify of this PR:** confirm `https://schnubsy.github.io/press/app-lab/vantage/` serves `index-PzQikWRp.js` containing
-   "Take the tour" and blob == 24399f71 for index.html; catalog row sha 58a476c7. Rebate Radar (web) catalog entry is still
-   "To confirm" until rebate-radar's own verify flips it live (council).
+0. **Chat verify of this PR:** confirm `https://schnubsy.github.io/press/app-lab/vantage/` serves index.html referencing
+   `index-BsNeUenB.js` (contains "Take the tour") and `Whiteboard-C4E02ABj.js` contains "Stroke smoothing"; blobs == main.
+   WebKit/ui-audit ran PARTIAL (egress) here — re-run the gauntlet with WebKit reachable if verify can.
 1. **Tenant wave — shared-gate tap targets** (one arc per tenant, or one wave): move the page-level overrides into
    `src/gate.js` + `src/family-gate.js` (min-height 44 on `.pg-btn`; inline-flex 44px `.pg-back` / `.fg-back` / `.fg-link`),
    then every tenant re-vendors (card-scout, retirement, giving, fsa, cardsharp; remit, optimo) and re-publishes; drop the

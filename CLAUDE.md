@@ -33,12 +33,12 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #55 14b8d4c on 2026-10-21; main checkout on main @ 14b8d4c
-**arc/publish-vantage-onboarding-tour (2026-10-21) — Vantage App Lab (training tour) + catalog row.** S1 rebuilt
-`app-lab/vantage/` from vantage main (9ef418c; web/ == 8f70424) — index.html M + 5 hashed assets swapped, == vantage's staged
-patch; S2 moved the `press_catalog` row 86ec7381 → 58a476c7 (council main 094544a: Vantage live + Rebate Radar web) via the
-connector, read-back matches. Gauntlet: unit 152/0 · inline ✓ · Playwright 150 · ui-audit GREEN · tenants-check 62/24/26 — the
-24 FAILs are 8 tenant repos outside scope (identical on main), every App Lab row PASS. Before it: publish-thrift-shop-iphone-compact.
+Merge state: PR pending (branch arc/vantage-app-lab-tour-fonts)
+**arc/vantage-app-lab-tour-fonts (2026-10-22) — Vantage App Lab release (whiteboard, colours, tour, fonts).** S1 rebuilt
+`app-lab/vantage/` from vantage main 76da0c2 — 54 paths (48 A · 2 R · 3 D · index.html M), byte-identical to vantage's staged patch;
+app-lab.html / frame / prototypes.json / pages.json untouched. Gauntlet: unit 152/0 · inline ✓ · Playwright 116 (+1 WebKit skip)
+· WebKit + ui-audit PARTIAL (egress) · tenants-check 43/25/27 — the 25 FAILs are 8 tenant repos + council outside scope
+(BLOCKED access), every App Lab row PASS. Before it: publish-vantage-onboarding-tour.
 
 ## Project rules
 
