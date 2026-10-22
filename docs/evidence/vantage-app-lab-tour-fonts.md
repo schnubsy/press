@@ -5,7 +5,7 @@ Date: 2026-10-22 · cloud Builder (press home) · EFFORT S · PUBLISH TARGETS: n
 ## Build
 - Source: schnubsy/vantage main `76da0c2` (fresh shallow clone at /home/user/vantage).
 - `cd web && npm ci && npm run build:press` then `PRESS_DIR=<press clone> node tools/build-app-lab.mjs`.
-- Changed: only `app-lab/vantage/**` — 54 paths (50 A · 3 D · 1 M). app-lab.html, app-lab/frame.html,
+- Changed: only `app-lab/vantage/**` — 54 paths (48 A · 2 R · 3 D · 1 M). app-lab.html, app-lab/frame.html,
   app-lab/prototypes.json, pages.json: unchanged (git status clean outside app-lab/vantage/).
 
 ## Compare with vantage `docs/evidence/whiteboard-tour-fonts-staged-press.patch` (base press 96ad977)

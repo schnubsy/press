@@ -35,7 +35,7 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 Home: github:schnubsy/press
 Merge state: PR pending (branch arc/vantage-app-lab-tour-fonts)
 **arc/vantage-app-lab-tour-fonts (2026-10-22) — Vantage App Lab release (whiteboard, colours, tour, fonts).** S1 rebuilt
-`app-lab/vantage/` from vantage main 76da0c2 — 54 paths (50 A · 3 D · index.html M), byte-identical to vantage's staged patch;
+`app-lab/vantage/` from vantage main 76da0c2 — 54 paths (48 A · 2 R · 3 D · index.html M), byte-identical to vantage's staged patch;
 app-lab.html / frame / prototypes.json / pages.json untouched. Gauntlet: unit 152/0 · inline ✓ · Playwright 116 (+1 WebKit skip)
 · WebKit + ui-audit PARTIAL (egress) · tenants-check 43/25/27 — the 25 FAILs are 8 tenant repos + council outside scope
 (BLOCKED access), every App Lab row PASS. Before it: publish-vantage-onboarding-tour.
