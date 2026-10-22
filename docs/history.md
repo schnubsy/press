@@ -4,6 +4,16 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-10-22 — arc/vantage-app-lab-tour-fonts (Vantage App Lab release: whiteboard, colours, tour, fonts)
+
+Chat verify of vantage PR #30 dispatched its STAGED press half here. S1 rebuilt the App Lab release from vantage main 76da0c2
+with `tools/build-app-lab.mjs`: 54 paths under `app-lab/vantage/` (new bundle `index-BsNeUenB.js`, Whiteboard chunk, the
+self-hosted board/marker fonts), byte-identical to vantage's staged patch; nothing outside the folder moved. Gauntlet green
+on unit / inline / Playwright; WebKit + ui-audit PARTIAL (egress this run); tenants-check fails only on the out-of-scope tenant
+repos and council (BLOCKED access), every App Lab row PASS.
+
+---
+
 ## 2026-10-21 — arc/publish-vantage-onboarding-tour (Vantage App Lab training tour + catalog row)
 
 Chat verify of vantage PR #29 (polish-onboarding-tour) dispatched its STAGED press half here. S1 rebuilt the App Lab release

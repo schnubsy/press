@@ -409,3 +409,6 @@ around the scope.
 - **A generated catalog row tracks council MAIN, not the order's commit.** When council main has moved past the order's
   `press-content.sql` commit (and `build.mjs --check` is current), apply main's version — it carries the ordered change and
   nothing stale; say the deviation in the evidence. [tag: publish] (2026-10-21)
+- **Trust a staged patch over its prose.** vantage's staged-press .md named NotesEditor/TagPopover hashes that the patch (and
+  a fresh rebuild) did not carry — compare the rebuild to the patch file byte-for-byte, and note stale prose in evidence.
+  [tag: publish] (2026-10-22)
