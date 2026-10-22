@@ -37,6 +37,7 @@ const WANT = {
   'eagle-path.html':    ['Checklist', "Brandon's Eagle Path · Saturday Check-In"],
   'agent-health.html':  ['System Health', 'Agent Monitor'],
   'steward.html':       ['Environment Reports', 'Steward'],   // arc/steward-report (2026-10-12)
+  'thrift-shop-redesign.html': ['Design review', 'Thrift Shop Redesign'],   // arc/thrift-shop-redesign-card-label (2026-10-22)
 };
 const personal = SPACES.personal || [], family = SPACES.family || [];
 // a pages.json entry with `parent` (optimo.html → app-lab.html, arc app-lab 2026-10-14) gets NO card on any surface

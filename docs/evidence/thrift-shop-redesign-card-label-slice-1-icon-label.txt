@@ -1,0 +1,11 @@
+arc/thrift-shop-redesign-card-label — slice 1 (2026-10-22)
+Change: index.html ICONS += 'layers' (Feather layers, 24x24 stroke, aria-hidden); LABELS thrift-shop-redesign.html icon drop-bag -> layers.
+        test/card-labels.spec.mjs WANT += 'thrift-shop-redesign.html': ['Design review', 'Thrift Shop Redesign'].
+        Untouched: thrift-shop-redesign.html, pages.json, spaces.json. Test titles ("eleven renamed pairs") left as-is (already stale before this arc; wording only).
+inline:check (node tools/inline-vault.mjs --check): in sync.
+Full gauntlet (HEAD c7ffb34 + working tree):
+  webkit installed (26.6) · unit 152/0 · inline in sync · playwright 150 passed (card-labels green on chromium + iphone-webkit)
+  ui-audit GREEN on WebKit (20 states x 5 widths x dark+light = 200 surfaces)
+  tenants-check 60 pass / 27 fail / 26 skip — the 27 FAILs are byte-identical to origin/main (T2/T3/T4 for 9 tenant source repos
+  not cloned in this session: thrift-shop retirement giving-tracker fsa-claims remit optimo cardsharp vantage rebate-radar) => BLOCKED (access), no regression.
+Sentry: diff secrets scan clean (no key/token/credential values).
