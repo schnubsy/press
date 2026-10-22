@@ -33,12 +33,12 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #56 f341bea on 2026-10-22; main checkout on main @ f341bea
-**arc/vantage-app-lab-tour-fonts (2026-10-22) — Vantage App Lab release (whiteboard, colours, tour, fonts).** S1 rebuilt
-`app-lab/vantage/` from vantage main 76da0c2 — 54 paths (48 A · 2 R · 3 D · index.html M), byte-identical to vantage's staged patch;
-app-lab.html / frame / prototypes.json / pages.json untouched. Gauntlet: unit 152/0 · inline ✓ · Playwright 116 (+1 WebKit skip)
-· WebKit + ui-audit PARTIAL (egress) · tenants-check 43/25/27 — the 25 FAILs are 8 tenant repos + council outside scope
-(BLOCKED access), every App Lab row PASS. Before it: publish-vantage-onboarding-tour.
+Merge state: PR pending (branch arc/thrift-shop-redesign-card-label)
+**arc/thrift-shop-redesign-card-label (2026-10-22) — the redesign card gets its own glyph + test label; gauntlet back to green.**
+S1: index.html ICONS += `layers` (Feather) and LABELS `thrift-shop-redesign.html` → `layers` (was Thrift Shop's `drop-bag`);
+`test/card-labels.spec.mjs` WANT += `['Design review', 'Thrift Shop Redesign']`. Page, pages.json, spaces.json untouched.
+Gauntlet: WebKit 26.6 · unit 152/0 · inline ✓ · Playwright 150/0 · ui-audit GREEN on WebKit · tenants-check 60/27/26 — the
+27 FAILs = T2/T3/T4 for 9 tenant repos outside scope, identical to main (BLOCKED access). Before it: thrift-shop-redesign publishes.
 
 ## Project rules
 
