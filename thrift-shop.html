@@ -9,6 +9,27 @@
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJ0cy1nIiB4MT0iMTQiIHkxPSI1MiIgeDI9IjUwIiB5Mj0iMTIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM0ZmMzOGEiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNlMGJkOGYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9IiMwRTEyMjAiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9InVybCgjdHMtZykiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjQgMjN2LTNhOCA4IDAgMCAxIDE2IDB2MyIvPjxwYXRoIGQ9Ik0xNSAyM2gzNGwtMi41IDI4aC0yOXoiLz48cGF0aCBkPSJNMjUgMzRsNyA3IDctNyIvPjwvZz48L3N2Zz4=">
 <meta name="theme-color" content="#0B0D1A" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#E9ECFA" media="(prefers-color-scheme: light)">
+<script>
+  /* Appearance switch (arc appearance-switch, 2026-10-22): Settings › Appearance › Theme = System · Dark · Light, kept per
+     device in localStorage["thrift:theme"] (missing / blocked ⇒ System). Applied HERE, before the stylesheet and first paint,
+     so a forced theme never flashes the other one. System clears [data-theme]; Dark/Light set it (the CSS already honours
+     it both ways) and point both theme-color metas at that theme's bg so the iPhone status bar matches. */
+  window.thriftTheme=(function(){
+    var KEY="thrift:theme", BG={dark:"#0B0D1A",light:"#E9ECFA"}, cur=null; // cur = this session's pick (survives blocked storage)
+    function norm(t){ return t==="dark"||t==="light"?t:"system"; }
+    function get(){ if(cur) return cur; try{ return norm(localStorage.getItem(KEY)); }catch(e){ return "system"; } }
+    function apply(t){
+      t=norm(t); var root=document.documentElement;
+      if(t==="system") root.removeAttribute("data-theme"); else root.setAttribute("data-theme",t);
+      var m=document.querySelectorAll('meta[name="theme-color"]');
+      for(var i=0;i<m.length;i++){ var own=/light/.test(m[i].getAttribute("media")||"")?"light":"dark"; m[i].setAttribute("content",BG[t==="system"?own:t]); }
+      return t;
+    }
+    function set(t){ t=norm(t); cur=t; try{ if(t==="system") localStorage.removeItem(KEY); else localStorage.setItem(KEY,t); }catch(e){} return apply(t); }
+    apply(get());
+    return {get:get,set:set,apply:apply};
+  })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600&display=swap" media="print" onload="this.media='all'">
@@ -63,10 +84,10 @@
   /* A1: under reduced transparency every surface is solid */
   @media (prefers-reduced-transparency: reduce){
     :root{ --surface:#161A2C; --surface-2:#1E2338; --glow-a:transparent; --glow-b:transparent; }
-    :root[data-theme="light"]{ --surface:#FFFFFF; --surface-2:#FFFFFF; }
+    :root[data-theme="light"]{ --surface:#FFFFFF; --surface-2:#FFFFFF; --glow-a:transparent; --glow-b:transparent; }
   }
   @media (prefers-reduced-transparency: reduce) and (prefers-color-scheme: light){
-    :root:not([data-theme="dark"]){ --surface:#FFFFFF; --surface-2:#FFFFFF; }
+    :root:not([data-theme="dark"]){ --surface:#FFFFFF; --surface-2:#FFFFFF; --glow-a:transparent; --glow-b:transparent; }
   }
   *{box-sizing:border-box}
   [hidden]{display:none!important} /* a component's display must never beat the hidden attribute */
@@ -1438,6 +1459,7 @@
     "sources:feed":"Deal feeds the cloud agent reads on its schedule. OK = read within its schedule · Empty = read, nothing new · Stale = overdue.",
     "sources:direct":"Store pages. The weekly store check runs in Chrome on your Mac with your existing sign-ins (never a password): OK · Empty · Blocked (bot check / no listing) · Sign in (a sign-in lapsed — sign in again in Chrome) · Partial (some items unreadable).",
     "sources:marketplace":"Gift-card marketplaces, read on their schedule.",
+    "alerts:appearance":"Theme is kept on this device only. System follows your phone’s light / dark setting; Dark or Light keeps Thrift Shop that way whatever the phone is set to.",
     "alerts:alerts":"iPhone push uses Pushover; Email sends a copy to your inbox. Instant alerts on a hit; Digest only holds them for the daily email.",
     "alerts:quiet":"Quiet hours hold hit alerts overnight — they arrive when quiet hours end. The near-miss digest is one email of the day’s near misses.",
     "alerts:schedule":"More often = more AI spend. The weekly web check runs in Chrome on your Mac; email offers are scanned on their own schedule.",
@@ -2964,6 +2986,9 @@
     function opt(v,cur,txt){ return '<option value="'+v+'"'+(cur===v?" selected":"")+'>'+txt+'</option>'; }
     var noChan=!t["alert-iphone"]&&!t["alert-gmail"];
     var html=tbar("alerts","");
+    // appearance-switch: the first group — a per-device System · Dark · Light radiogroup (window.thriftTheme, in <head>).
+    html+=groupHead("alerts","appearance","Appearance",null)
+      +'<div class="group">'+themeRow()+'</div>'+secEnd();
     html+=groupHead("alerts","alerts","Alerts",null,"",{flag:noChan?"No channel on":"",flagWarn:true})
       +'<div class="group">'
       +tog("alert-iphone","iPhone push",{id:"push-health-line",html:pushHealthLine()},'<button class="btn small" type="button" id="send-test-push" aria-label="Send test push">Test</button>')
@@ -3009,6 +3034,33 @@
     host.innerHTML=html;
     syncCollapse("alerts");
   }
+  // appearance-switch — Settings › Appearance › Theme: a 3-way segmented radiogroup (44px targets, roving tabindex, arrows).
+  var THEMES=[["system","System"],["dark","Dark"],["light","Light"]];
+  function themeNow(){ return window.thriftTheme?window.thriftTheme.get():"system"; }
+  function themeRow(){
+    var cur=themeNow();
+    return '<div class="lrow field themerow"><div class="rl"><span class="lab" id="theme-lab">Theme</span></div>'
+      +'<div class="seg" role="radiogroup" aria-labelledby="theme-lab" id="theme-seg">'
+      +THEMES.map(function(o){ var on=o[0]===cur;
+        return '<button type="button" role="radio" class="segbtn'+(on?" on":"")+'" id="theme-'+o[0]+'" data-theme-pick="'+o[0]+'" aria-checked="'+on+'" tabindex="'+(on?0:-1)+'">'+o[1]+'</button>'; }).join("")
+      +'</div></div>';
+  }
+  function pickTheme(t){
+    var cur=window.thriftTheme?window.thriftTheme.set(t):"system";
+    [].slice.call(document.querySelectorAll("[data-theme-pick]")).forEach(function(b){
+      var on=b.getAttribute("data-theme-pick")===cur; b.classList.toggle("on",on); b.setAttribute("aria-checked",String(on)); b.tabIndex=on?0:-1;
+    });
+    return cur;
+  }
+  document.addEventListener("keydown", function(ev){
+    var b=ev.target&&ev.target.closest&&ev.target.closest("[data-theme-pick]"); if(!b||ev.altKey||ev.metaKey||ev.ctrlKey) return;
+    var ids=THEMES.map(function(o){ return o[0]; }), i=ids.indexOf(b.getAttribute("data-theme-pick")), n=null;
+    if(ev.key==="ArrowRight"||ev.key==="ArrowDown") n=ids[(i+1)%ids.length];
+    else if(ev.key==="ArrowLeft"||ev.key==="ArrowUp") n=ids[(i-1+ids.length)%ids.length];
+    else if(ev.key==="Home") n=ids[0]; else if(ev.key==="End") n=ids[ids.length-1];
+    else if(ev.key===" "||ev.key==="Enter"){ ev.preventDefault(); pickTheme(ids[i]); return; }
+    if(n){ ev.preventDefault(); pickTheme(n); el("theme-"+n).focus(); }
+  });
   // bad-flag-learning S4 — Settings → "What I've learned": the rules Thrift Shop now judges by, in plain words, with how
   // many of Mark's Bad flags taught each. LEARNED is generated from the flags by tools/bad-to-fixtures.mjs.
   /* LEARNED:BEGIN — generated by tools/bad-to-fixtures.mjs */
@@ -3042,6 +3094,7 @@
     // Slice 5: the ⋯ overflow menu (Move to…) — toggle; any other button click closes open menus.
     var ovf=b.getAttribute("data-ovf"); if(ovf){ toggleOverflowMenu(ovf,b); return; }
     if(!b.closest(".ovfmenu")) closeOverflowMenus();
+    var thp=b.getAttribute("data-theme-pick"); if(thp){ pickTheme(thp); return; } // appearance-switch
     // tabs — opening the Feed tab is Mark "looking", so it clears the NEW badge (Slice 2).
     if(b.getAttribute("role")==="tab"){ selectTab(b.id,{look:true}); return; } // a tap on Feed is Mark looking
     // Native Ledger S3: section headers collapse their section; `?` shows its help; Collapse/Expand all per screen
