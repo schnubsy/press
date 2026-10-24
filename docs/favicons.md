@@ -49,7 +49,7 @@ has no page-title meta). No external asset — the single-file rule holds.
 | `fsa.html` | FSA Claims | `#14161A` | `#00A3E0` (cyan) + `#E6E9ED` needle | gauge dial + needle | inline (flat, no gradient — Apparatus Gauge) |
 | `thrift-shop.html` | Thrift Shop | `#0E1220` | `#4FC38A → #E0BD8F` | shopping bag + price-drop chevron | inline |
 | `cardsharp.html` | Cardsharp | `#12132A` | `#2EC5E8` (cyan) + `#F4F6FB` chip | gift card: stripe + chip | inline (flat, rounded-square ground) |
-| `perth.html` | Perth · The Runway | `#22312F` | `#6B7F6A → #D8C6A3` + `#E08B4E` | pin on a horizon | inline |
+| `perth.html` | Brandon · Australia | `#1A1D1E` | `#4FB08C → #D9A857` | tick | inline |
 | `steward.html` | Steward | `#0F1513` | `#7BC8A4 → #E0C271` | wrench (Feather "tool") | inline |
 | `rebate-radar.html` | Rebate Radar | `#100C1E` | `#FF7A5C → #E7A6C7` (the extension's coral → marquee rose) | price tag (Feather "tag") | inline (source `rebate-radar:web/favicon.svg`) |
 
@@ -66,7 +66,7 @@ has no page-title meta). No external asset — the single-file rule holds.
 | `retirement.html` | `<polyline points="3 18 9.5 11.5 13.5 15.5 21 6"/>` | 2.8 |
 | `thrift-shop.html` | `<path d="M24 23v-3a8 8 0 0 1 16 0v3"/><path d="M15 23h34l-2.5 28h-29z"/><path d="M25 34l7 7 7-7"/>` (64 viewBox) | 5 |
 | `cardsharp.html` | `<rect x="9" y="17" width="46" height="30" rx="5"/>` (filled; 64 viewBox) | fill |
-| `perth.html` | `<path d="M10 45H54"/><path d="M41 45V30"/><circle cx="41" cy="25" r="7.5"/>` | 5 |
+| `perth.html` | `<path d="M17 33.5 27.5 44 47 21"/>` | 7.5 |
 | `steward.html` | `<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>` | 2.8 |
 | `rebate-radar.html` | `<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>` | 3.0 |
 
