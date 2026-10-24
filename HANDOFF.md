@@ -1,6 +1,6 @@
 # press — HANDOFF
 
-_Last updated: 2026-10-22. arc/thrift-shop-redesign-card-label — redesign card: own icon + test label (cloud Builder)._
+_Last updated: 2026-10-24. perth rebuild publish — new Perth list + records catch-up (cloud)._
 
 ## Standing rule: publish auto-close (do NOT re-litigate)
 
@@ -10,7 +10,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 
 ## Current state
 
-- Merge state: PR pending (branch arc/thrift-shop-redesign-card-label)
+- Merge state: Merged: PR #58 1729c4b on 2026-10-24; main checkout on main @ 28c789b
 - Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
 - Agent alerting rule (Mark, 2026-10-13): nothing running is SLA-critical — one push + email only when an item has been
   down (late/failed) for 24h+, one quiet "working again" after. Contract: `docs/spec.md` → Agent Monitor · Alerting.
@@ -21,18 +21,19 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 - Ship gate: `bash scripts/gauntlet.sh` (verify skill) — 0 webkit · 1 unit · 2 inline · 3 tenants-check · 4 Playwright · 5 ui-audit.
 
 ## Shipped this arc
-- **S1** (22a51c6): index.html ICONS += `layers` (Feather, 24×24 stroke, aria-hidden); LABELS `thrift-shop-redesign.html` →
-  `icon:'layers'` (was `drop-bag`, Thrift Shop's glyph); `test/card-labels.spec.mjs` WANT += `'thrift-shop-redesign.html':
-  ['Design review', 'Thrift Shop Redesign']`. Page, pages.json, spaces.json untouched; inline:check in sync.
-- Gauntlet: WebKit 26.6 · unit 152/0 · inline ✓ · **Playwright 150/0** (card-labels green on chromium + iphone-webkit) ·
-  **ui-audit GREEN on WebKit** (200 surfaces) · **tenants-check 60/27/26 — BLOCKED (access)**: the 27 FAILs are T2/T3/T4 for 9
-  tenant repos not in this session, identical to origin/main. Sentry: diff clean. Evidence
-  `docs/evidence/thrift-shop-redesign-card-label-slice-1-icon-label.txt`.
-- Close-out manifest: merge: READY → Mark taps at verify · merge review: BLOCKED (no reviewer) → chat reviews at verify ·
-  reconcile: → chat after merge · stage stamp: → chat after merge · publish: N/A (no targets).
-- Earlier (vantage-app-lab-tour-fonts, PR #56): App Lab vantage release rebuilt from vantage 76da0c2.
+- **PR #58** (1729c4b, Mark's upload on `inbox/perth-rebuild`): perth.html replaced wholesale — blob `edbb696e`, 72,910 B;
+  one list, three states, "Handy to know" tab, light/dark, FamilyGate preserved. Served live (Mark confirmed raw + Pages).
+- **28c789b**: pages.json perth title → "Brandon · Australia" (confirmed on GitHub main); docs/favicons.md perth rows → tick,
+  `#1A1D1E`, `#4FB08C → #D9A857`, glyph `M17 33.5 27.5 44 47 21` at 7.5. spaces.json, perth.html, SQL untouched.
+- Gauntlet: not run (records-only change; the page was merged by Mark). Known red: `test/perth-title.spec.mjs` (below).
+- Close-out manifest: merge: done (PR #58 + direct push 28c789b) · publish: done · reconcile/stage stamp: N/A (on main).
+- Earlier (thrift-shop-redesign-card-label, PR #57): redesign card got its own `layers` glyph + test label.
 
 ## Open / blockers
+- 🔴 **`test/perth-title.spec.mjs` is red on main** since PR #58: it asserts title "The Runway — Perth", `<h1>The Runway</h1>`
+  and the "Moving to Perth / The Runway" card. Rewrite it to the new title (next steps 0).
+- 🟡 **Portal card wording is stale:** index.html LABELS `perth.html` still reads kicker "Moving to Perth", title "The Runway",
+  icon `send` — so the family-wing card does not yet say "Brandon · Australia".
 - **snag-train `kind` is still `mac-task`** while its `what` now says "Cloud scheduled task" (from council's patch) — confirm
   where it runs and fix `kind` in a follow-up if it moved to the cloud (D1 🟡).
 - **FSA receipt inlet** is off on the monitor until it actually reports in; switch `press_agent_expect.enabled` back on then.
@@ -44,11 +45,12 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
   (`~/Documents/Claude/council-hub/council`, tenants.json) SKIPs T2 in the cloud.
 - Carried: on-demand AI functions record no runs ("No data") · optimo's cloud Playwright baseline RED (env) · flow
   `kayley.html` compare BLOCKED (flow out of scope) · Issues #28–#32 · remote branch `claude/perth-phase-2-security-c7a88b`
-  safe to delete.
+  and merged `inbox/perth-rebuild` (if still present) safe to delete.
 
 ## Exact next steps
-0. **Chat verify of this PR:** review the 3-line index.html + 1-line test diff (no reviewer subagent, EFFORT S); on merge, the
-   portal's Design review card shows the layers glyph (distinct from Thrift Shop's drop bag).
+0. **perth-records arc** (HOME github:schnubsy/press · BRANCH arc/perth-records): index.html LABELS `perth.html` → the
+   wording Mark picks (e.g. kicker "Moving to Australia", title "Brandon · Australia") + an icon matching the tick favicon;
+   rewrite `test/perth-title.spec.mjs` to the new title/card; check `test/access-admin.spec.mjs` fixtures; full gauntlet.
 1. **Tenant wave — shared-gate tap targets** (one arc per tenant, or one wave): move the page-level overrides into
    `src/gate.js` + `src/family-gate.js` (min-height 44 on `.pg-btn`; inline-flex 44px `.pg-back` / `.fg-back` / `.fg-link`),
    then every tenant re-vendors (card-scout, retirement, giving, fsa, cardsharp; remit, optimo) and re-publishes; drop the

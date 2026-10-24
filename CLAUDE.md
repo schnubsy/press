@@ -33,12 +33,12 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #57 217ed8c on 2026-10-22; main checkout on main @ 217ed8c
-**arc/thrift-shop-redesign-card-label (2026-10-22) — the redesign card gets its own glyph + test label; Playwright + ui-audit back to green (tenants-check BLOCKED access).**
-S1: index.html ICONS += `layers` (Feather) and LABELS `thrift-shop-redesign.html` → `layers` (was Thrift Shop's `drop-bag`);
-`test/card-labels.spec.mjs` WANT += `['Design review', 'Thrift Shop Redesign']`. Page, pages.json, spaces.json untouched.
-Gauntlet: WebKit 26.6 · unit 152/0 · inline ✓ · Playwright 150/0 · ui-audit GREEN on WebKit · tenants-check 60/27/26 — the
-27 FAILs = T2/T3/T4 for 9 tenant repos outside scope, identical to main (BLOCKED access). Before it: thrift-shop-redesign publishes.
+Merge state: Merged: PR #58 1729c4b on 2026-10-24; main checkout on main @ 28c789b
+**perth rebuild publish (2026-10-24) — perth.html replaced wholesale (one list, 18 cards, tips tab, FamilyGate kept); records caught up.**
+perth.html blob `edbb696e` (72,910 B) landed via PR #58 (`inbox/perth-rebuild`, uploaded by Mark); 28c789b set pages.json
+perth title → "Brandon · Australia" and docs/favicons.md perth rows → tick on `#1A1D1E`. spaces.json + Supabase untouched.
+Stale: `test/perth-title.spec.mjs` still asserts "The Runway — Perth" (red since #58); index.html LABELS perth card still
+reads "Moving to Perth / The Runway" — both are the next arc's slice. Gauntlet not run this close (records-only change).
 
 ## Project rules
 

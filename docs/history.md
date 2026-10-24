@@ -4,6 +4,16 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-10-24 — perth rebuild publish (one list, 18 cards, tips tab)
+
+Mark rebuilt the Perth board as a single three-state list with a "Handy to know" tab, light/dark themes and a tick favicon,
+keeping the 33 KB FamilyGate auth gate byte-for-byte; the 18 cards were already re-seeded under page='perth'. The cloud
+session could not see the Mac's Downloads or the chat attachment, so the file came in through PR #58 (`inbox/perth-rebuild`,
+blob `edbb696e`, 72,910 B). 28c789b then caught up the records: pages.json title "Brandon · Australia" and the favicon
+register rows. Left stale for the next arc: `test/perth-title.spec.mjs` and the portal's LABELS card wording.
+
+---
+
 ## 2026-10-22 — arc/thrift-shop-redesign-card-label (redesign card: own icon + test label)
 
 The thrift-shop-redesign publishes added `thrift-shop-redesign.html` to pages.json + LABELS but left `test/card-labels.spec.mjs`

@@ -415,3 +415,12 @@ around the scope.
 - **A publish that adds a page also adds its card-labels WANT pair and its own ICONS glyph** in the same press change —
   LABELS alone leaves `test/card-labels.spec.mjs` red ("exactly the served set"), and reusing a sibling's glyph trips "two
   cards share an icon". [tag: press] (2026-10-22)
+
+## perth rebuild publish (2026-10-24)
+
+- **A cloud session cannot see Mac files or chat attachments.** `~/Downloads` and `/mnt/user-data/uploads` were both empty;
+  deliver an inbox file to a cloud press session by pushing it to a branch (or PR) and verifying the blob by `git hash-object`.
+  [tag: press] (2026-10-24)
+- **A page rename touches three places, not one.** pages.json (tab title), index.html LABELS (card wording) and any spec that
+  pins the old title (`test/perth-title.spec.mjs`) — an order that names only pages.json leaves the portal card and a test stale.
+  [tag: press] (2026-10-24)
