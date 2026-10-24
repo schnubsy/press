@@ -1,8 +1,8 @@
-// arc/wings-polish slice 3 — the perth page's title becomes "The Runway — Perth".
-// Hermetic. Proves the renamed title (pages.json + perth.html) surfaces where perth is shown:
-//   • the family-wing directory card (index.html ?view=family) — perth's card label; and
+// perth rebuild (2026-10-24) — the perth page is "Brandon · Australia"; its portal card reads "Brandon’s List".
+// Hermetic. Proves the tab title (pages.json + perth.html) and the portal card wording surface where perth is shown:
+//   • the family-wing directory card (index.html ?view=family) — perth's LABELS entry; and
 //   • the shared title resolver man[page].title that access.html's titleFor() also uses.
-// perth is a FAMILY page, so it never appears in the public lobby; its title shows behind the
+// perth is a FAMILY page, so it never appears in the public lobby; its card shows behind the
 // family gate. A future-dated family session is seeded so requireSession resolves without network.
 import { test, expect } from '@playwright/test';
 import { createServer } from 'node:http';
@@ -14,8 +14,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const INDEX = readFileSync(join(ROOT, 'index.html'), 'utf8');
 const PAGES = JSON.parse(readFileSync(join(ROOT, 'pages.json'), 'utf8'));   // the REAL manifest
 
-const NEW_TITLE = 'The Runway — Perth';
-const OLD_TITLE = 'Perth · The Runway';
+const TITLE = 'Brandon · Australia';     // tab title (pages.json, <title>, meta, h1)
+const CARD = 'Brandon’s List';          // card title (index.html LABELS) — never the tab title
+const OLD_TITLES = ['Perth · The Runway', 'The Runway — Perth'];
 const FAMILY_FILES = ['remit.html', 'perth.html'];
 const SPACES = { v: 2, personal: ['fsa.html'], family: FAMILY_FILES };
 
@@ -38,18 +39,26 @@ test.beforeAll(async () => {
 });
 test.afterAll(async () => { await new Promise(r => server.close(r)); });
 
-test('pages.json + perth.html carry the renamed title; old title is gone', () => {
-  expect(PAGES['perth.html'].title).toBe(NEW_TITLE);
+test('pages.json + perth.html carry the title; both old titles are absent', () => {
+  expect(PAGES['perth.html'].title).toBe(TITLE);
   const perthHtml = readFileSync(join(ROOT, 'perth.html'), 'utf8');
-  expect(perthHtml).toContain(`<title>${NEW_TITLE}</title>`);
-  expect(perthHtml).toContain(`content="${NEW_TITLE}"`);
-  expect(perthHtml).not.toContain(OLD_TITLE);
-  expect(perthHtml).toContain('<h1>The Runway</h1>');   // the h1 is deliberately left alone
+  expect(perthHtml).toContain(`<title>${TITLE}</title>`);
+  expect(perthHtml).toContain(`<meta name="page-title" content="${TITLE}">`);
+  for (const old of OLD_TITLES) expect(perthHtml).not.toContain(old);
 });
 
-// marquee-wings slice 1: the marquee label map owns CARD wording — the card reads kicker "Moving to Perth"
-// + title "The Runway"; pages.json's "The Runway — Perth" stays the page's tab title only.
-test('the family-wing directory card shows kicker "Moving to Perth" + title "The Runway" (portal surface)', async ({ page, context }) => {
+test('perth.html h1 reads "Brandon · Australia" (text, not markup)', async ({ page }) => {
+  // the h1 is <h1>Brandon <em>· Australia</em></h1>; render the static file offline and read its text
+  await page.route('**/*', r => r.request().url().startsWith('data:') ? r.continue() : r.abort());
+  await page.setContent(readFileSync(join(ROOT, 'perth.html'), 'utf8').replace(/<script[\s\S]*?<\/script>/g, ''));
+  const h1 = page.locator('h1').filter({ hasText: 'Brandon' });
+  await expect(h1).toHaveCount(1);
+  await expect(h1).toContainText('Brandon');
+  await expect(h1).toContainText('Australia');
+});
+
+// the marquee label map owns CARD wording — kicker "Moving to Perth" + title "Brandon’s List", icon send (the plane).
+test('the family-wing directory card shows kicker "Moving to Perth" + title "Brandon’s List" (portal surface)', async ({ page, context }) => {
   await context.route('https://api.github.com/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
   await context.route('https://raw.githubusercontent.com/**', route => {
     const url = route.request().url();
@@ -64,14 +73,15 @@ test('the family-wing directory card shows kicker "Moving to Perth" + title "The
 
   await page.goto(base + '/?view=family');
   const perthCard = page.locator('a[href="perth.html"], a[href$="/perth.html"]').first();
-  await expect(perthCard.locator('h3')).toHaveText('The Runway');
+  await expect(perthCard.locator('h3')).toHaveText(CARD);
   await expect(perthCard.locator('.k')).toHaveText('Moving to Perth');
-  await expect(perthCard.locator('svg polygon[points="22 2 15 22 11 13 2 9 22 2"]')).toHaveCount(1);   // the plane, kept
-  await expect(page.locator('body')).not.toContainText(OLD_TITLE);
-  await expect(page.locator('body')).not.toContainText(NEW_TITLE);   // the tab title never leaks onto the card
+  await expect(perthCard.locator('svg polygon[points="22 2 15 22 11 13 2 9 22 2"]')).toHaveCount(1);   // send — the plane
+  for (const old of OLD_TITLES) await expect(page.locator('body')).not.toContainText(old);
+  await expect(page.locator('body')).not.toContainText('The Runway');
+  await expect(page.locator('body')).not.toContainText(TITLE);   // the tab title never leaks onto the card
 });
 
-test('access.html titleFor() resolves perth to the new title (same man[page].title source)', async ({ page }) => {
+test('access.html titleFor() resolves perth to the title (same man[page].title source)', async ({ page }) => {
   // titleFor(page, pages) === (pages[page] && pages[page].title) || stem — access.html §render.
   // Evaluate that exact resolver against the REAL pages.json in a browser context.
   await page.goto(base + '/');
@@ -79,5 +89,5 @@ test('access.html titleFor() resolves perth to the new title (same man[page].tit
     const titleFor = (p, m) => (m[p] && m[p].title) || p.replace(/\.html$/, '');
     return titleFor('perth.html', pages);
   }, PAGES);
-  expect(resolved).toBe(NEW_TITLE);
+  expect(resolved).toBe(TITLE);
 });

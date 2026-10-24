@@ -121,7 +121,7 @@ test('People are cards with a switch per family tool, ON by default; the "gate a
   await expect(card).toContainText('Mark');
   await expect(card.locator('.prow')).toHaveCount(2);                 // remit + perth
   await expect(card.locator('.sw2.on')).toHaveCount(2);               // both ON by default (opt-out)
-  await expect(card).toContainText('The Runway');
+  await expect(card).toContainText('Brandon’s List');
   await expect(page.locator('body')).not.toContainText('Which tools are gated');   // removed section
   await page.screenshot({ path: join(ROOT, 'docs', 'evidence', 'wings-polish-slice-4-access-admin.png'), fullPage: true });
 });
@@ -181,7 +181,7 @@ for (const vp of [{ name: 'desktop', size: { width: 1280, height: 900 } }, { nam
     const strip = page.locator('#reqs');
     await expect(strip).toBeVisible();
     await expect(strip.locator('.rq')).toHaveCount(1);
-    await expect(strip).toContainText('Kayley wants The Runway');
+    await expect(strip).toContainText('Kayley wants Brandon’s List');
     const kcard = page.locator('.pcard', { hasText: 'Kayley' });
     await expect(kcard.locator('.badge')).toHaveText('Requested');
     await expect(kcard.locator('.sw2[data-grant="kayley@fam.test|perth.html"]')).not.toHaveClass(/on/);

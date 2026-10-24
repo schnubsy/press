@@ -23,7 +23,7 @@ const WANT = {
   'app-lab.html':       ['Prototypes', 'App Lab'],
   'catalog.html':       ['Everything Mark runs', 'Ecosystem catalog'],
   'rebate-radar.html':  ['cashback',                        'Rebate Radar'],
-  'perth.html':         ['Moving to Perth', 'The Runway'],
+  'perth.html':         ['Moving to Perth', 'Brandon’s List'],
   'halvsies.html':      ['Splitting the Bill', 'Halvsies'],
   'cardsharp.html':     ['Gift Card Tracker', 'Cardsharp'],
   'thrift-shop.html':   ['Deals', 'Thrift Shop'],          // thrift-shop rename (2026-10-14)
@@ -120,7 +120,7 @@ test('pages.json titles stay tab titles — they never reach a card the label ma
   await page.goto(base + '/?view=family');
   await expect(page.locator('.tw-card[data-file="app-lab.html"] h3')).toHaveText('App Lab');
   await expect(page.locator('body')).not.toContainText(PAGES['optimo.html'].title);   // "optimo · Day planner"
-  await expect(page.locator('body')).not.toContainText(PAGES['perth.html'].title);    // "The Runway — Perth"
+  await expect(page.locator('body')).not.toContainText(PAGES['perth.html'].title);    // "Brandon · Australia"
 });
 
 test('family wing (signed in): optimo is listed in App Lab — no optimo card, the App Lab card is present', async ({ page, context }) => {
