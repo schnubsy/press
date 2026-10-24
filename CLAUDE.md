@@ -33,12 +33,13 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #58 1729c4b on 2026-10-24; main checkout on main @ 28c789b
-**perth rebuild publish (2026-10-24) — perth.html replaced wholesale (one list, 18 cards, tips tab, FamilyGate kept); records caught up.**
-perth.html blob `edbb696e` (72,910 B) landed via PR #58 (`inbox/perth-rebuild`, uploaded by Mark); 28c789b set pages.json
-perth title → "Brandon · Australia" and docs/favicons.md perth rows → tick on `#1A1D1E`. spaces.json + Supabase untouched.
-Stale: `test/perth-title.spec.mjs` still asserts "The Runway — Perth" (red since #58); index.html LABELS perth card still
-reads "Moving to Perth / The Runway" — both are the next arc's slice. Gauntlet not run this close (records-only change).
+Merge state: Merged: direct push 11ff790 on 2026-10-24; main checkout on main @ 11ff790
+**perth rebuild + card (2026-10-24) — new Perth list live (PR #58, blob `edbb696e`); tab title vs card wording now split.**
+Tab title "Brandon · Australia" (pages.json, <title>, meta, h1); card (index.html LABELS) kicker "Moving to Perth", title
+"Brandon’s List" (typographic ’ — a straight ' breaks the access-names parser), icon `send` (unique); access.html APP_NAMES
+matches the card. `test/perth-title.spec.mjs` → `test/perth-card.spec.mjs` (rewritten); card-labels + access-admin updated.
+Gauntlet: WebKit 26.6 · unit 152/0 · inline ✓ · Playwright 151/0 · ui-audit GREEN · tenants-check 41/28/27 — the 28 FAILs =
+T2/T3/T4 for out-of-scope tenant repos + T8 (no council clone), pre-existing, out of scope.
 
 ## Project rules
 

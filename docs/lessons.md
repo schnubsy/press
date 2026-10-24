@@ -424,3 +424,9 @@ around the scope.
 - **A page rename touches three places, not one.** pages.json (tab title), index.html LABELS (card wording) and any spec that
   pins the old title (`test/perth-title.spec.mjs`) — an order that names only pages.json leaves the portal card and a test stale.
   [tag: press] (2026-10-24)
+- **Card title must differ from the tab title, and the icon must be unique.** card-labels enforces both; reusing a sibling's
+  glyph or copying pages.json's title onto the card is red. access.html APP_NAMES must equal the LABELS card title
+  (access-names unit) and access-admin asserts it too — a card rename touches index.html, access.html and three specs.
+  [tag: press] (2026-10-24)
+- **No straight apostrophe in LABELS / APP_NAMES titles.** Both parsers read single-quoted strings (`title:'…'`, and
+  APP_NAMES via `'`→`"` JSON); use the typographic ’. [tag: press] (2026-10-24)

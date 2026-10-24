@@ -4,6 +4,17 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-10-24 — perth card wording, icon and title spec
+
+Follow-up to the rebuild. The portal card first took the tab title and kayley's check-square glyph; the gauntlet caught both
+(card-labels: "two cards share an icon" and "tab titles never reach a card"). Mark chose to satisfy the rules, not exempt
+perth: card title "Brandon’s List", icon back to `send`, tab title stays "Brandon · Australia". There was no exemption
+list — kayley simply isn't covered by the tab-title check (it only spot-checks family pages). access.html APP_NAMES follows
+the card; the old perth-title spec was rewritten as `perth-card.spec.mjs`. No spec referenced the old board's markup.
+Gauntlet green except pre-existing out-of-scope tenants-check. Squash-merged to main as 11ff790.
+
+---
+
 ## 2026-10-24 — perth rebuild publish (one list, 18 cards, tips tab)
 
 Mark rebuilt the Perth board as a single three-state list with a "Handy to know" tab, light/dark themes and a tick favicon,
