@@ -257,6 +257,7 @@
     background:var(--surface-2);color:var(--ink);font-size:14px;cursor:pointer;max-width:100%;text-align:left;overflow-wrap:anywhere;border-top:7px solid transparent;border-bottom:7px solid transparent;background-clip:padding-box}
   .fchip .x{color:var(--ink-3);font-size:13px}
   .badge{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;background:var(--surface-2);color:var(--ink-2);vertical-align:1px}
+  .dline .credit{font-weight:700} /* capital-one-shopping S5: a portal credit is labelled, never hidden in the price */
   .reasonchip{display:inline-block;font-size:12px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--surface-2);color:var(--danger)}
 
   /* ---------- Feed: A4 hero ---------- */
@@ -1584,8 +1585,18 @@
   // the price when net_cost is absent. An unpriced row returns "" — the badge already says "Price
   // unknown", so there is no price line to show.
   function netForFace(d){ return (d.extras&&d.extras.net_cost!=null)?d.extras.net_cost:d.price; }
+  // arc capital-one-shopping S5 (Mark D2): a portal credit is a STACK labelled on the card, never hidden in the price —
+  // the price line shows what the store charges ("$100 for $100"), then "+ 20% back (Capital One Shopping)", then the
+  // honest net ("net $80"). credit_extra = the $ the agent folded into net_cost (judge.mjs withCredit).
+  function creditOf(d){ var e=(d&&d.extras)||{}, p=Number(e.credit_pct); return p>0?e:null; }
+  function creditLine(d){
+    var e=creditOf(d); if(!e) return "";
+    return "+ "+(Math.round(Number(e.credit_pct)*10)/10)+"% back ("+(e.credit_via||"credit")+")"+(e.credit_capped&&e.credit_cap!=null?" · max $"+e.credit_cap:"");
+  }
   function priceLine(d){
-    var face=d.face_value, net=netForFace(d);
+    var face=d.face_value, net=netForFace(d), ce=creditOf(d), cx=ce?Number(ce.credit_extra):0;
+    if(ce&&cx>0&&d.extras.net_cost!=null){ var pre=Math.round((Number(d.extras.net_cost)+cx)*100)/100;
+      return (face!=null?"$"+pre+" for $"+face:"$"+pre); }
     if(net!=null&&face!=null) return "$"+net+" for $"+face;
     if(net!=null) return "$"+net;
     return "";
@@ -1787,9 +1798,10 @@
       if(rt) meta.push(esc(rt));
       if(exl) meta.push('<span class="expiry'+(n!=null&&n<=2?' soon':'')+'">'+esc(exl)+'</span>');
     } else {
-      var reason=nearReason(d), covers=e.container_for, pl=priceLine(d);
+      var reason=nearReason(d), covers=e.container_for, pl=priceLine(d), cl=creditLine(d);
       if(pl) line.push(pl);
       if(k==="sale"&&d.title) line.push(esc(d.title)); // a sale-watch find leads with its listing title, never the term slug
+      if(cl){ line.push('<span class="credit">'+esc(cl)+'</span>'); if(e.credit_extra>0&&e.net_cost!=null) line.push('net $'+esc(String(e.net_cost))); }
       if(covers&&covers.length) line.push('covers '+esc(covers.slice(0,3).map(coverLabel).join(", "))+(covers.length>3?' +'+(covers.length-3):''));
       if(reason&&d.status!=="bad") line.push(esc(reason));
       if(e.retailer) meta.push('at '+esc(e.retailer));
