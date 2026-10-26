@@ -57,6 +57,7 @@ main :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .state.bad{color:var(--bad)}
 .rate{flex:none;font:500 22px/1 var(--f-display);text-align:right}
 .rate small{display:block;font:700 10px/1.2 var(--f-meta);letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
+.chip.kind{background:none;color:var(--muted);box-shadow:inset 0 0 0 1px var(--faint)}
 .chip{display:inline-block;margin-left:6px;white-space:nowrap;padding:3px 8px;border-radius:99px;background:var(--pc);color:#fff;font:700 10px/1.2 var(--f-meta);letter-spacing:.08em;text-transform:uppercase;vertical-align:2px}
 .open{flex:none;height:44px;min-width:72px;padding:0 14px;background:var(--card-2);color:var(--ink);border:1px solid var(--line)}
 #rows li.best .open{background:var(--pc);border-color:var(--pc);color:#fff}
@@ -698,7 +699,8 @@ html #family-gate .fg-link{min-height:44px;padding:0 6px;margin-top:4px}
     { portal: 'rakuten', name: 'Rakuten', color: '#bf0000' },
     { portal: 'topcashback', name: 'TopCashback', color: '#0d6efd' },
     { portal: 'retailmenot', name: 'RetailMeNot', color: '#8a2be2' },
-    { portal: 'befrugal', name: 'BeFrugal', color: '#199402' }
+    { portal: 'befrugal', name: 'BeFrugal', color: '#199402' },
+    { portal: 'capitalone', name: 'Capital One Shopping', color: '#004977', kind: 'rewards' }
   ];
   var form = document.getElementById('f'), input = document.getElementById('site'), go = document.getElementById('go');
   var msg = document.getElementById('msg'), list = document.getElementById('rows'), main = document.querySelector('main');
@@ -734,6 +736,7 @@ html #family-gate .fg-link{min-height:44px;padding:0 6px;margin-top:4px}
     li.appendChild(el('span', 'dot'));
     var who = el('div', 'who'), name = el('p', 'name', r.name);
     if (best) name.appendChild(el('span', 'chip', 'Best'));
+    if (r.kind === 'rewards') name.appendChild(el('span', 'chip kind', 'rewards')); // pays in rewards, not cash (C2)
     who.appendChild(name);
     if (r.status !== 'ok') { var s = STATE[r.status] || STATE.error; who.appendChild(el('p', 'state ' + s[1], s[0])); }
     li.appendChild(who);
