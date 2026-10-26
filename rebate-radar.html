@@ -72,7 +72,8 @@ html #family-gate .fg-link{min-height:44px;padding:0 6px;margin-top:4px}
 </style>
 </head>
 <body>
-<main>
+<!-- hidden until the family gate resolves (as remit/perth mount nothing first): a signed-out load sees the sign-in only -->
+<main hidden>
   <p class="eyebrow">cashback</p>
   <h1>Rebate Radar</h1>
   <p class="lede">Type a website to see every cashback portal's rate, best first.</p>
@@ -700,11 +701,18 @@ html #family-gate .fg-link{min-height:44px;padding:0 6px;margin-top:4px}
     { portal: 'befrugal', name: 'BeFrugal', color: '#199402' }
   ];
   var form = document.getElementById('f'), input = document.getElementById('site'), go = document.getElementById('go');
-  var msg = document.getElementById('msg'), list = document.getElementById('rows');
-  if (!window.FamilyGate) { msg.textContent = 'Sign-in unavailable — the gate did not load.'; msg.className = 'err'; return; }
+  var msg = document.getElementById('msg'), list = document.getElementById('rows'), main = document.querySelector('main');
+  if (!window.FamilyGate) { main.hidden = false; msg.textContent = 'Sign-in unavailable — the gate did not load.'; msg.className = 'err'; return; }
   window.FamilyGate.cfg({ spacesUrl: 'spaces.json' });
-  await window.FamilyGate.require('rebate-radar.html');
-  input.disabled = false; go.disabled = false; input.focus();
+  // Gate on load. require() resolves null when it reads the page as public (e.g. a stale cached spaces.json and an anon
+  // read that cannot see the access row) — this page is always family-only, so fail closed to the Family Wing sign-in.
+  async function signIn() {
+    main.hidden = true; input.disabled = true; go.disabled = true;
+    var who = await window.FamilyGate.require('rebate-radar.html');
+    if (!who) await window.FamilyGate.requireSession();
+    main.hidden = false; input.disabled = false; go.disabled = false; input.focus();
+  }
+  await signIn();
 
   // "8%", "2.5%", "$12" — the extension's badge format (lib/winner.js formatRate).
   function rate(r) {
@@ -763,7 +771,13 @@ html #family-gate .fg-link{min-height:44px;padding:0 6px;margin-top:4px}
         body: JSON.stringify({ site: site }) });
       var body = await r.json().catch(function () { return null; });
       if (mine !== seq) return;
-      if (r.status === 401) { list.textContent = ''; say('Your sign-in has expired — reload the page to sign in again.', true); return; }
+      if (r.status === 401) {               // expired / revoked session → back to the sign-in, then re-run this lookup
+        list.textContent = ''; say('');
+        await window.FamilyGate.signOut();
+        await signIn();
+        if (mine === seq) { input.value = site; form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit', { cancelable: true })); }
+        return;
+      }
       if (r.status === 403) { list.textContent = ''; say('You don’t have access to Rebate Radar yet — ask Mark.', true); return; }
       if (r.status === 400) { list.textContent = ''; say((body && body.error) ? body.error.charAt(0).toUpperCase() + body.error.slice(1) + '.' : 'That doesn’t look like a website.', true); return; }
       if (!r.ok || !body || !Array.isArray(body.results)) throw new Error('lookup ' + r.status);
