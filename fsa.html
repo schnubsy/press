@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#131916" media="(prefers-color-scheme: dark)">
   <title>FSA Claims</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMTQxNjFBIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJBMkYzNiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIyIDQ5LjMyIEEyMCAyMCAwIDAgMSAxNC42OCAyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDBBM0UwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIzMiIgeTE9IjMyIiB4Mj0iNDAiIHkyPSIxOC4xNCIgc3Ryb2tlPSIjRTZFOUVEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
-  <meta name="build" content="2026-10-13T00:06:40.937Z 76b677e">
+  <meta name="build" content="2026-10-28T03:09:47.384Z 28c5c36">
   <link rel="preload" as="font" type="font/woff2" href="fsa-assets/fonts/nunito-sans-latin.woff2" crossorigin>
   <link rel="manifest" href="fsa-assets/manifest.webmanifest">
   <link rel="apple-touch-icon" href="fsa-assets/apple-touch-icon.png">
@@ -461,13 +461,14 @@ select {
 #overflow-menu {
   position: absolute; right: 0; top: calc(100% + 6px); z-index: 20;
   background: var(--surface); border-radius: var(--radius-button); box-shadow: var(--shadow-raised);
-  min-width: 14rem; padding: 6px; display: flex; flex-direction: column; gap: 2px;
+  min-width: 14rem; max-width: calc(100vw - 16px); padding: 6px; display: flex; flex-direction: column; gap: 2px;
 }
 #overflow-menu > * {
   border: 0; text-align: left; justify-content: flex-start; padding: 10px 12px; background: transparent;
   color: var(--ink); font-weight: 600; border-radius: var(--radius-input);
 }
 #overflow-menu > button:hover { background: var(--primary-tint); }
+#overflow-menu > button { white-space: nowrap; } /* menu grows to fit its label in any font (fallback included) — never wraps */
 #overflow-menu #agents { display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap; }
 #overflow-menu #agents:empty { display: none; } /* demo / signed-out: no control → no empty menuitem */
 #topbar #theme-toggle { margin-left: 0; }
