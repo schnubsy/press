@@ -1,0 +1,125 @@
+tenants-check — press root: /home/claude/press
+  source repos: /home/claude
+
+  [PASS] T1 registry          thrift-shop.html     tier personal
+  [FAIL] T2 source            thrift-shop.html     source repo missing at /home/claude/thrift-shop
+  [FAIL] T3 gate              thrift-shop.html     vendored gate MISSING at /home/claude/thrift-shop/src/vendor/press-gate.js
+  [FAIL] T4 release           thrift-shop.html     release script MISSING at /home/claude/thrift-shop/tools/release.js
+  [PASS] T1 registry          kayley.html          tier public
+  [SKIP] T2 source            kayley.html          press-native (repo: null)
+  [SKIP] T3 gate              kayley.html          no vendored gate
+  [SKIP] T4 release           kayley.html          no release script
+  [PASS] T1 registry          council-guide.html   tier public
+  [SKIP] T2 source            council-guide.html   provenance-only repo "council" not on disk at /root/Documents/Claude/council-hub/council
+  [SKIP] T3 gate              council-guide.html   no vendored gate
+  [SKIP] T4 release           council-guide.html   no release script
+  [PASS] T1 registry          eagle-path.html      tier public
+  [SKIP] T2 source            eagle-path.html      press-native (repo: null)
+  [SKIP] T3 gate              eagle-path.html      no vendored gate
+  [SKIP] T4 release           eagle-path.html      no release script
+  [PASS] T1 registry          halvsies.html        tier public
+  [SKIP] T2 source            halvsies.html        press-native (repo: null)
+  [SKIP] T3 gate              halvsies.html        no vendored gate
+  [SKIP] T4 release           halvsies.html        no release script
+  [PASS] T1 registry          retirement.html      tier personal
+  [FAIL] T2 source            retirement.html      source repo missing at /home/claude/retirement
+  [FAIL] T3 gate              retirement.html      vendored gate MISSING at /home/claude/retirement/src/vendor/press-gate.js
+  [FAIL] T4 release           retirement.html      release script MISSING at /home/claude/retirement/tools/release.js
+  [PASS] T1 registry          giving.html          tier personal
+  [FAIL] T2 source            giving.html          source repo missing at /home/claude/giving-tracker
+  [FAIL] T3 gate              giving.html          vendored gate MISSING at /home/claude/giving-tracker/src/vendor/press-gate.js
+  [FAIL] T4 release           giving.html          release script MISSING at /home/claude/giving-tracker/tools/release.js
+  [PASS] T1 registry          agent-health.html    tier public
+  [SKIP] T2 source            agent-health.html    press-native (repo: null)
+  [SKIP] T3 gate              agent-health.html    no vendored gate
+  [SKIP] T4 release           agent-health.html    no release script
+  [PASS] T1 registry          fsa.html             tier personal
+  [FAIL] T2 source            fsa.html             source repo missing at /home/claude/fsa-claims
+  [FAIL] T3 gate              fsa.html             vendored gate MISSING at /home/claude/fsa-claims/src/vendor/press-gate.js
+  [FAIL] T4 release           fsa.html             release script MISSING at /home/claude/fsa-claims/tools/release.js
+  [PASS] T1 registry          perth.html           tier family
+  [SKIP] T2 source            perth.html           press-native (repo: null)
+  [SKIP] T3 gate              perth.html           no vendored gate
+  [SKIP] T4 release           perth.html           no release script
+  [PASS] T1 registry          access.html          tier personal
+  [SKIP] T2 source            access.html          press-native (repo: null)
+  [SKIP] T3 gate              access.html          no vendored gate
+  [SKIP] T4 release           access.html          no release script
+  [PASS] T1 registry          remit.html           tier family
+  [FAIL] T2 source            remit.html           source repo missing at /home/claude/remit
+  [FAIL] T3 gate              remit.html           vendored gate MISSING at /home/claude/remit/src/vendor/family-gate.js
+  [FAIL] T4 release           remit.html           release script MISSING at /home/claude/remit/tools/release.js
+  [PASS] T1 registry          optimo.html          tier family
+  [FAIL] T2 source            optimo.html          source repo missing at /home/claude/optimo
+  [FAIL] T3 gate              optimo.html          vendored gate MISSING at /home/claude/optimo/web/src/vendor/family-gate.js
+  [FAIL] T4 release           optimo.html          release script MISSING at /home/claude/optimo/web/tools/release.js
+  [PASS] T1 registry          cardsharp.html       tier personal
+  [FAIL] T2 source            cardsharp.html       source repo missing at /home/claude/cardsharp
+  [FAIL] T3 gate              cardsharp.html       vendored gate MISSING at /home/claude/cardsharp/src/vendor/press-gate.js
+  [FAIL] T4 release           cardsharp.html       release script MISSING at /home/claude/cardsharp/tools/release.js
+  [PASS] T1 registry          steward.html         tier personal
+  [SKIP] T2 source            steward.html         press-native (repo: null)
+  [SKIP] T3 gate              steward.html         no vendored gate
+  [SKIP] T4 release           steward.html         no release script
+  [PASS] T1 registry          app-lab.html         tier family
+  [FAIL] T2 source            app-lab.html         source repo missing at /home/claude/vantage
+  [FAIL] T3 gate              app-lab.html         vendored gate MISSING at /home/claude/vantage/web/press/vendor/family-gate.js
+  [FAIL] T4 release           app-lab.html         release script MISSING at /home/claude/vantage/web/tools/build-app-lab.mjs
+  [PASS] T1 registry          catalog.html         tier family
+  [PASS] T2 source            catalog.html         council present
+  [SKIP] T3 gate              catalog.html         no vendored gate
+  [SKIP] T4 release           catalog.html         no release script
+  [PASS] T1 registry          rebate-radar.html    tier family
+  [FAIL] T2 source            rebate-radar.html    source repo missing at /home/claude/rebate-radar
+  [FAIL] T3 gate              rebate-radar.html    vendored gate MISSING at /home/claude/rebate-radar/src/family-gate.js
+  [FAIL] T4 release           rebate-radar.html    release script MISSING at /home/claude/rebate-radar/tools/release.js
+  [PASS] T1 parent            optimo.html          → app-lab.html (family; no card — listed in the parent)
+  [PASS] T7 tool-cfg          (marquee)            4 personal data page(s) all present in TOOL_CFG
+  [PASS] T8 registry-parity   thrift-shop.html     card-scout → schnubsy/card-scout (FORMER name card-scout.html; council registry update pending → page thrift-shop.html, repo schnubsy/thrift-shop)
+  [PASS] T8 registry-parity   kayley.html          kayley → schnubsy/press
+  [PASS] T8 registry-parity   council-guide.html   council-guide → schnubsy/council
+  [PASS] T8 registry-parity   eagle-path.html      eagle-path → schnubsy/press
+  [PASS] T8 registry-parity   halvsies.html        halvsies → schnubsy/press
+  [PASS] T8 registry-parity   retirement.html      retirement → schnubsy/retirement
+  [PASS] T8 registry-parity   giving.html          giving-tracker → schnubsy/giving-tracker
+  [PASS] T8 registry-parity   agent-health.html    agent-health → schnubsy/press
+  [PASS] T8 registry-parity   fsa.html             fsa-claims → schnubsy/fsa-claims
+  [PASS] T8 registry-parity   perth.html           perth → schnubsy/press
+  [PASS] T8 registry-parity   access.html          access → schnubsy/press
+  [PASS] T8 registry-parity   remit.html           remit → schnubsy/remit
+  [PASS] T8 registry-parity   optimo.html          optimo → schnubsy/optimo
+  [PASS] T8 registry-parity   cardsharp.html       cardsharp → schnubsy/cardsharp
+  [PASS] T8 registry-parity   steward.html         steward → schnubsy/press
+  [PASS] T8 registry-parity   app-lab.html         app-lab → schnubsy/vantage
+  [PASS] T8 registry-parity   catalog.html         catalog → schnubsy/council
+  [PASS] T8 registry-parity   rebate-radar.html    rebate-radar → schnubsy/rebate-radar
+  [PASS] T9 labels            thrift-shop.html     Deals / Thrift Shop · drop-bag
+  [PASS] T9 labels            kayley.html          Checklist / Kayley · 2-Week Upskilling Plan · check-square
+  [PASS] T9 labels            council-guide.html   Agentic Capabilities Prospectus / The Council · landmark
+  [PASS] T9 labels            eagle-path.html      Checklist / Brandon's Eagle Path · Saturday Check-In · mountain
+  [PASS] T9 labels            halvsies.html        Splitting the Bill / Halvsies · receipt
+  [PASS] T9 labels            retirement.html      Financial Planning / Retirement Projector · trending-up
+  [PASS] T9 labels            giving.html          Charitable Donations / Giving Tracker · heart
+  [PASS] T9 labels            agent-health.html    System Health / Agent Monitor · activity
+  [PASS] T9 labels            fsa.html             Medical Expenses / FSA Claims Tracker · stethoscope
+  [PASS] T9 labels            perth.html           Moving to Perth / Brandon’s List · send
+  [PASS] T9 labels            access.html          User Access Management / Family Wing Access · user-check
+  [PASS] T9 labels            remit.html           Family Transfers / Remit · banknote
+  [PASS] T9 labels            optimo.html          Day planner / Optimo · calendar-check
+  [PASS] T9 labels            cardsharp.html       Gift Card Tracker / Cardsharp · gift
+  [PASS] T9 labels            steward.html         Environment Reports / Steward · tool
+  [PASS] T9 labels            app-lab.html         Prototypes / App Lab · flask
+  [PASS] T9 labels            catalog.html         Everything Mark runs / Ecosystem catalog · map
+  [PASS] T9 labels            rebate-radar.html    cashback / Rebate Radar · tag
+  [PASS] T9 labels            thrift-shop-redesign.html Design review / Thrift Shop Redesign · layers
+  [PASS] T10 redirects        card-scout.html      → thrift-shop.html (named exception: not a page)
+  [PASS] T10 redirects        (root)               21 root .html = pages.json + redirects + index.html
+
+  [EMIT] T6 family-grants     (run via the Supabase MCP; expect >=1 active grant per page)
+        select a.page, count(g.*) filter (where g.active) as active_grants
+        from press_access_apps a
+        left join press_access_grants g on g.page = a.page
+        where a.page in ('remit.html', 'perth.html', 'optimo.html', 'app-lab.html', 'catalog.html', 'rebate-radar.html')
+        group by a.page;
+
+tenants-check: 60 pass, 27 fail, 26 skip, 1 emitted

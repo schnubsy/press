@@ -1,6 +1,6 @@
 # press — HANDOFF
 
-_Last updated: 2026-10-24. perth rebuild + card wording/icon/title spec (cloud)._
+_Last updated: 2026-11-01. family-wing-invites — one-tap Invite built on `arc/family-wing-invites` (cloud); PR open, not merged._
 
 ## Standing rule: publish auto-close (do NOT re-litigate)
 
@@ -10,7 +10,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 
 ## Current state
 
-- Merge state: Merged: direct push 11ff790 on 2026-10-24; main checkout on main @ 11ff790
+- Merge state: Pending: arc/family-wing-invites (PR open; merge → Mark's button at verify)
 - Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
 - Agent alerting rule (Mark, 2026-10-13): nothing running is SLA-critical — one push + email only when an item has been
   down (late/failed) for 24h+, one quiet "working again" after. Contract: `docs/spec.md` → Agent Monitor · Alerting.
@@ -20,7 +20,16 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
   (delivered, no sound); email unchanged. `nightPriority` stays byte-identical with council `tools/quiet-night.mjs`.
 - Ship gate: `bash scripts/gauntlet.sh` (verify skill) — 0 webkit · 1 unit · 2 inline · 3 tenants-check · 4 Playwright · 5 ui-audit.
 
-## Shipped this arc
+## Shipped this arc (family-wing-invites, 2026-11-01 — on the branch, NOT yet merged or deployed)
+- **Why:** Barb had a `press_access_people` row but no `auth.users` row ⇒ `create_user:false` ⇒ 422 "Signups not allowed for otp".
+- **Slice 1** `db/20261101_press_access_invited_at.sql` (additive column). **Slice 2** `supabase/functions/access-invite/` +
+  `_shared/invite.mjs` + `test/access-invite.test.mjs` (13 tests). **Slice 3** access.html Invite / Resend / "invited <date>",
+  `test/access-admin.spec.mjs` (+8), ui-audit states `access-invite-error` / `access-invite-mail-failed`, docs (§5/§6/§8a, spec, lessons).
+- **Waiting on verify (chat):** apply migration → deploy `access-invite` (verify_jwt false) → apply the council patch
+  (`docs/evidence/family-wing-invites-staged-council.patch`) → Mark taps Invite for Barb → read back `auth.users` + `last_seen_at`.
+  Full list + rollback: `docs/evidence/family-wing-invites-staged-deploy.md`. Brandon is NOT in this arc.
+
+## Shipped earlier (perth rebuild + card, 2026-10-24)
 - **PR #58** (1729c4b, Mark's upload on `inbox/perth-rebuild`): perth.html replaced wholesale — blob `edbb696e`, 72,910 B;
   one list, three states, "Handy to know" tab, light/dark, FamilyGate preserved. Served live (Mark confirmed raw + Pages).
 - **28c789b**: pages.json perth title → "Brandon · Australia" (confirmed on GitHub main); docs/favicons.md perth rows → tick,

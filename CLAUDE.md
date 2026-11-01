@@ -33,13 +33,13 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: direct push 11ff790 on 2026-10-24; main checkout on main @ 11ff790
-**perth rebuild + card (2026-10-24) — new Perth list live (PR #58, blob `edbb696e`); tab title vs card wording now split.**
-Tab title "Brandon · Australia" (pages.json, <title>, meta, h1); card (index.html LABELS) kicker "Moving to Perth", title
-"Brandon’s List" (typographic ’ — a straight ' breaks the access-names parser), icon `send` (unique); access.html APP_NAMES
-matches the card. `test/perth-title.spec.mjs` → `test/perth-card.spec.mjs` (rewritten); card-labels + access-admin updated.
-Gauntlet: WebKit 26.6 · unit 152/0 · inline ✓ · Playwright 151/0 · ui-audit GREEN · tenants-check 41/28/27 — the 28 FAILs =
-T2/T3/T4 for out-of-scope tenant repos + T8 (no council clone), pre-existing, out of scope.
+Merge state: Pending: arc/family-wing-invites (PR open; merge → Mark's button at verify); reconcile + stamp → chat after merge
+**family-wing-invites (2026-11-01) — one-tap Invite in the Access Manager (Full lane, 3 slices; built, NOT yet merged/deployed).**
+A person needs a sign-in ACCOUNT, not just a `press_access_people` row (the wing sends `create_user:false` ⇒ GoTrue 422 "Signups not
+allowed for otp"). New Edge Function `access-invite` (+ `_shared/invite.mjs`) = the only path that creates one: admin-gated, row first,
+account, Winston email (Mark CC'd), `invited_at` stamp; access.html **Invite** / **Resend invite** / "invited <date>".
+STAGED for verify: `db/20261101_press_access_invited_at.sql`, function deploy, council `deploy/targets.json` row
+(`docs/evidence/family-wing-invites-staged-{council.patch,deploy.md}`). Gauntlet: `docs/evidence/family-wing-invites-gauntlet.txt`.
 
 ## Project rules
 

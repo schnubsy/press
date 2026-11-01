@@ -68,7 +68,7 @@ a.back{display:inline-flex;align-items:center;min-height:44px;margin:-14px 0 0;f
 label{display:block;text-align:left;font:400 10px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px 2px}
 input{width:100%;min-height:46px;background:rgba(13,20,32,.6);border:1px solid var(--brass-dim);border-radius:8px;padding:11px 13px;color:var(--ink);font-size:16px;font-family:inherit}
 input:focus{outline:2px solid var(--brass);outline-offset:1px}
-.btn{display:block;width:100%;margin-top:14px;padding:14px;border-radius:8px;border:1px solid var(--brass);background:var(--brass);color:#1a1205;font:600 13.5px/1 var(--sans);letter-spacing:.04em;cursor:pointer}
+.btn{display:block;width:100%;margin-top:14px;min-height:46px;padding:14px;border-radius:8px;border:1px solid var(--brass);background:var(--brass);color:#1a1205;font:600 13.5px/1 var(--sans);letter-spacing:.04em;cursor:pointer}
 .btn.ghost{background:transparent;color:var(--brass)}
 .btn[disabled]{opacity:.6;cursor:progress}
 .msg{font-size:12.5px;margin-top:12px;min-height:1em;color:var(--ink)}
@@ -88,6 +88,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
 .pnm{min-width:0}
 .pnm b{font-weight:400;font-size:15.5px}
 .pnm em{display:block;font-style:normal;font-size:11.5px;color:var(--faint);margin-top:3px}
+.pbtns{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.pmsg{margin-top:6px;font-size:11.5px;min-height:0}
 .pbtn{flex:none;background:transparent;border:1px solid var(--brass-dim);color:var(--brass);border-radius:6px;
   font:500 10px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;padding:8px 10px;cursor:pointer;white-space:nowrap;min-height:44px}
 .pbtn:hover{border-color:var(--brass)}
@@ -119,6 +121,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
   var G = window.FamilyGate;
   var app = document.getElementById('app');
   var REST = G.REST, KEY = G.SUPA_KEY;
+  var pendingNote = null;     // the last invite result, shown once after the re-render
   var GATED_BY_SPACES = [];   // pages gated by spaces.json.family (can't be un-gated here)
 
   function esc(s){ return G.escapeHtml(s); }
@@ -180,7 +183,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
     h('<div class="center"><p>Loading the access grid…</p></div>');
     var people, apps, grants, pages, spaces;
     try{
-      people = await rest('/press_access_people?select=email,name,is_admin,active,last_seen_at&order=is_admin.desc,name.asc');
+      people = await rest('/press_access_people?select=email,name,is_admin,active,last_seen_at,invited_at&order=is_admin.desc,name.asc');
       apps   = await rest('/press_access_apps?select=page,label,gated');
       grants = await rest('/press_access_grants?select=email,page,active');
     }catch(e){
@@ -243,6 +246,30 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
       headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
       body: JSON.stringify({ email:email, page:page, active:on, revoked_at: on?null:new Date().toISOString() }) });
   }
+  // Invite = ONE call to the access-invite Edge Function with the admin's own session token. It creates the person's
+  // sign-in account (the row alone is not enough — create_user:false ⇒ 422 for a first-time address), keeps every tool
+  // ON, and emails the wing link from Winston. The function re-checks admin; this page is courtesy.
+  var INVITE_URL = REST.replace(/\/rest\/v1$/, '/functions/v1/access-invite');
+  async function sendInvite(email, name){
+    var r = await fetch(INVITE_URL, { method:'POST', headers: headers({'Content-Type':'application/json'}), body: JSON.stringify({ email:email, name:name||undefined }) });
+    var j = {}; try{ j = await r.json(); }catch(_){}
+    return { status:r.status, body:j };
+  }
+  function inviteNote(res, email){
+    var s = res.status, b = res.body||{};
+    if(s===200 && b.emailed) return { cls:'ok', text:'Invited — we emailed '+email+' (you’re copied).' };
+    if(s===200) return { cls:'err', text:'Account ready, but the email didn’t send — copy the link below and send it yourself.' };
+    if(s===401) return { cls:'err', text:'Sign in again.' };
+    if(s===403) return { cls:'err', text:'Only an admin can invite people.' };
+    if(s===429) return { cls:'err', text:'Already invited a moment ago.' };
+    if(s===400) return { cls:'err', text:'Enter a valid email.' };
+    return { cls:'err', text:'Couldn’t invite — try again.' };
+  }
+  function invitedOn(ts){
+    if(!ts) return '';
+    var d=new Date(ts); if(isNaN(d)) return '';
+    return 'invited '+d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  }
   function lastSeen(ts){
     if(!ts) return 'never signed in';
     var d=(Date.now()-new Date(ts).getTime())/86400000;
@@ -263,7 +290,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
     // Deactivate. There is no separate "which tools are gated" screen: the tools shown here ARE the
     // gated family tools, and a new one is granted to everyone the moment it is gated.
     var grid = '<section class="zone"><div class="zone-hd"><h2>People</h2><span class="tt"><em>on = can open · tap to opt out</em></span></div>';
-    if(!people.length){ grid += '<p class="note" style="margin-top:10px">No one added yet — add someone below.</p>'; }
+    if(!people.length){ grid += '<p class="note" style="margin-top:10px">No one invited yet — invite someone below.</p>'; }
     else if(!famApps.length){ grid += '<p class="note" style="margin-top:10px">No family tools are gated yet, so there is nothing to switch. Gate a page from <code>spaces.json</code> (or its app row) and it appears for everyone here.</p>'; }
     else{
       grid += people.map(function(pn){
@@ -281,8 +308,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
         }).join('');
         return '<div class="pcard'+(off?' off':'')+'">'+
           '<div class="phd"><span class="pnm"><b>'+esc(pn.name||pn.email)+'</b>'+
-            '<em>'+(pn.is_admin?'admin · ':'')+esc(lastSeen(pn.last_seen_at))+(off?' · deactivated':'')+'</em></span>'+
-            '<button class="pbtn" data-person="'+esc(pn.email)+'" data-next="'+(off?'true':'false')+'">'+(off?'Reactivate':'Deactivate')+'</button></div>'+
+            '<em>'+(pn.is_admin?'admin · ':'')+esc(lastSeen(pn.last_seen_at))+(pn.invited_at?' · '+esc(invitedOn(pn.invited_at)):'')+(off?' · deactivated':'')+'</em>'+
+            '<span class="pmsg msg" data-pmsg="'+esc(pn.email)+'" role="status"></span></span>'+
+            '<span class="pbtns">'+
+            (!off && !pn.last_seen_at ? '<button class="pbtn" data-resend="'+esc(pn.email)+'" data-name="'+esc(pn.name||'')+'">Resend invite</button>' : '')+
+            '<button class="pbtn" data-person="'+esc(pn.email)+'" data-next="'+(off?'true':'false')+'">'+(off?'Reactivate':'Deactivate')+'</button></span></div>'+
           '<div class="pgrid">'+switches+'</div></div>';
       }).join('');
     }
@@ -290,13 +320,13 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
 
     // 2) add someone — the sign-in link is the SAME for everyone, so it is shown permanently.
     var signInLink = location.origin + location.pathname.replace(/access\.html$/, '') + 'index.html?view=family';
-    var add = '<section class="zone"><div class="zone-hd"><h2>Add someone</h2></div>'+
+    var add = '<section class="zone"><div class="zone-hd"><h2>Invite someone</h2></div>'+
       '<label for="an">Name</label><input id="an" type="text" placeholder="Their name">'+
       '<label for="ae">Email</label><input id="ae" type="email" inputmode="email" placeholder="them@example.com">'+
-      '<p class="note" style="margin-top:10px">Adding them lets that address request a code, and grants every family tool by default. Opt them out of any tool from their card above.</p>'+
-      '<button class="btn ghost" id="addBtn">Add &amp; grant every tool</button>'+
+      '<p class="note" style="margin-top:10px">One tap sets up their sign-in, turns every family tool on, and emails them the link (you’re copied). Opt them out of any tool from their card above.</p>'+
+      '<button class="btn" id="addBtn">Invite</button>'+
       '<div class="msg" id="addMsg"></div>'+
-      '<label style="margin-top:16px">Sign-in link — send to anyone you add</label>'+
+      '<label style="margin-top:16px">Sign-in link — copy it if an email doesn’t arrive</label>'+
       '<div class="linkrow"><input id="lk" readonly value="'+esc(signInLink)+'"><button class="btn ghost" id="cp" style="margin:0;width:auto;white-space:nowrap">Copy</button></div>'+
       '</section>';
 
@@ -317,6 +347,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
       }).join('')+'</section>';
 
     h(head + strip + grid + add);
+    if(pendingNote){ var pm=document.getElementById('addMsg'); if(pm){ pm.className='msg '+pendingNote.cls; pm.textContent=pendingNote.text; } pendingNote=null; }
     wire(session, people, apps, grants, pages);
   }
 
@@ -373,22 +404,33 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
       });
     });
 
-    // add a person
+    // Invite: name + email → access-invite (creates the account, every tool ON, emails the link)
     var addBtn = document.getElementById('addBtn');
     if(addBtn) addBtn.addEventListener('click', async function(){
       var name=(document.getElementById('an').value||'').trim();
       var email=(document.getElementById('ae').value||'').trim().toLowerCase();
       var m=document.getElementById('addMsg');
-      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ m.className='msg err'; m.textContent='Enter a valid email.'; return; }
-      addBtn.disabled=true; m.className='msg'; m.textContent='Adding…';
-      try{
-        await rest('/press_access_people?on_conflict=email', { method:'POST',
-          headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
-          body: JSON.stringify({ email:email, name:name||null, active:true }) });
-        // re-render from fresh state: the new person appears as a card with every family tool ON
-        // (opt-out default). The sign-in link is a permanent part of the Add section.
-        loadAdmin(session);
-      }catch(e){ addBtn.disabled=false; m.className='msg err'; m.textContent=(e.body&&e.body.message)||'Couldn’t add — are you signed in as an admin?'; }
+      if(!/^[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/.test(email)){ m.className='msg err'; m.textContent='Enter a valid email.'; return; }
+      addBtn.disabled=true; m.className='msg'; m.textContent='Inviting…';
+      var res; try{ res=await sendInvite(email, name); }catch(_){ res={status:0,body:{}}; }
+      var note=inviteNote(res, email);
+      if(res.status===200){ pendingNote=note; loadAdmin(session); }   // re-render: the new person appears with every tool ON
+      else{ addBtn.disabled=false; m.className='msg '+note.cls; m.textContent=note.text; }
+    });
+
+    // Resend invite (same call) on a card whose person has never signed in
+    Array.prototype.forEach.call(document.querySelectorAll('[data-resend]'), function(btn){
+      btn.addEventListener('click', async function(){
+        if(btn.disabled) return;
+        var email=btn.getAttribute('data-resend'), name=btn.getAttribute('data-name');
+        var pm=Array.prototype.filter.call(document.querySelectorAll('[data-pmsg]'), function(x){ return x.getAttribute('data-pmsg')===email; })[0];
+        btn.disabled=true; var was=btn.textContent; btn.textContent='Sending…';
+        var res; try{ res=await sendInvite(email, name); }catch(_){ res={status:0,body:{}}; }
+        var note=inviteNote(res, email);
+        if(res.status===200 && res.body.emailed){ pendingNote=note; loadAdmin(session); return; }
+        btn.disabled=false; btn.textContent=was;
+        if(pm){ pm.className='pmsg msg '+note.cls; pm.textContent=note.text; }
+      });
     });
 
     // copy the (constant) sign-in link
