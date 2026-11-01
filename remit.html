@@ -543,7 +543,44 @@ text-align:center;top:3px;font:500 15px/18px var(--sans);color:var(--brass)}
 grid-template-areas:"grip what cur amt del" "grip note cur amt del" "grip . . sgn ."}
 .erow:focus-within .amt{grid-row:1/3;height:48px;padding-top:12px;padding-bottom:12px}
 .erow:focus-within .sgn{margin:2px 0 6px}
-.erow:focus-within .grip{grid-row:1/4}</style>
+.erow:focus-within .grip{grid-row:1/4}
+.f2 .v.fxpair{display:flex;gap:8px;align-items:flex-start}
+.f2 .v.fxpair>input,.f2 .v.fxpair .fxrate{flex:1 1 0;min-width:0}
+.f2 .v.fxpair input{padding-left:9px;padding-right:9px}
+.fxrate{display:flex;flex-direction:column;gap:3px}
+.fxrate input{width:100%}
+.fxrate small{font:500 11px/1.2 var(--sans);letter-spacing:.04em;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:374px){.sheet .f2 label{flex-basis:92px}.f2 + .amterr{padding-left:104px}}
+.markrow{display:flex;flex-wrap:wrap;column-gap:16px;row-gap:0;margin:0;font:400 14px/1.6 var(--sans)}
+.markrow .linkbtn{display:inline-flex;align-items:center;min-height:44px;padding:0 2px;white-space:nowrap}
+.linkrow + .markrow{margin-top:-6px}
+.markrow.folded [data-marksec]{display:none}
+.markrow .markmenu[hidden]{display:none}
+.curmenu.markmenu-pop{min-width:200px}
+.curmenu.markmenu-pop button{grid-template-columns:1fr}
+.cpy{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;border-radius:4px;cursor:default;transition:color .15s,background .15s}
+.cpy.armed{color:var(--brass);background:var(--brass-faint)}
+.cpy:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.erow .grip,.erow:focus-within .grip{grid-row:1/3;align-self:start;height:44px;min-height:44px;margin-top:2px;touch-action:pan-y}
+.erow .grip::before{top:14px}
+.erow .grip .pmark{top:13px}
+.erow.addrow .grip::before{top:13px}
+.erow.lifted{background:rgba(201,162,109,.12);border-radius:6px;box-shadow:inset 0 0 0 1px var(--brass)}
+.erow.lifted .grip::before{opacity:1;background-image:radial-gradient(circle,var(--brass) 1.3px,transparent 1.7px)}
+:root{--fs-line:16px;--fs-head:calc(var(--fs-line) + 2px);--fs-total:var(--fs-line)}
+.erow .what,.erow .amt{font-size:var(--fs-line)}
+.bk,.bk.custom .secname,.zone-hd h2,.addsec .linkbtn{font-size:var(--fs-head);font-weight:600;letter-spacing:.08em}
+.zone-hd h2{white-space:normal;line-height:1.15}
+.bk .num,.subbk,.subbk .num,.zone-hd .tt{font-size:var(--fs-total)}
+.bk .num,.subbk .num{letter-spacing:.01em}
+.zone-hd .tt{font-weight:600}
+.erow.addrow:not(:focus-within) .what{grid-row:1/3;align-self:center}
+.erow.addrow:not(:focus-within) .note{display:none}
+.addsec{margin-bottom:0}
+.riding{margin-top:22px}
+.bk.custom .secname{min-width:0;width:0}
+.cpy{display:inline-flex;align-items:center;justify-content:flex-end;min-height:24px;min-width:44px;vertical-align:middle}
+.bk,.subbk{display:flow-root}</style>
 </head>
 <body>
 <main class="app" id="remit-root">
@@ -1298,7 +1335,42 @@ if (!open.length) return [];
 var sum = open.reduce(function (a, it) { return a + cents(it.amount); }, 0);
 return sum === pay ? open.map(function (it) { return it.id; }) : [];
 }
+function openLines(rows, cur) {
+return (rows || []).filter(function (it) { return it && alive(it) && !isPaidTick(it) && it.currency === cur; });
+}
+function sectionUnpaid(rows, cur) {
+return fromCents(openLines(rows, cur).reduce(function (a, it) { return a + cents(it.amount || 0); }, 0));
+}
+function paymentBases(model, cur) {
+if (!model || !model.recurring || !cur) return [];
+var secs = [
+{ key: 'recurring', label: 'Recurring', rows: model.recurring.rows },
+{ key: 'extras', label: 'Extras', rows: model.extras.rows },
+{ key: 'mine', label: 'Riding along', rows: model.mine.rows },
+].concat((model.custom || []).map(function (c) { return { key: 'custom:' + c.section.id, label: c.section.name || 'Section', rows: c.rows }; }));
+var all = [].concat.apply([], secs.map(function (s) { return s.rows || []; }));
+var out = [{ key: 'total', label: 'Total outstanding', amount: fromCents(cents((model.remaining || {})[cur] || 0)),
+ids: openLines(all, cur).map(function (it) { return it.id; }) }];
+secs.forEach(function (s) {
+out.push({ key: s.key, label: s.label, amount: sectionUnpaid(s.rows, cur), ids: openLines(s.rows, cur).map(function (it) { return it.id; }) });
+});
+return out.filter(function (o) { return cents(o.amount) > 0; });
+}
+function extraFor(amount, basis, opts) {
+var d = cents(amount) - cents(basis || 0);
+if (opts && opts.manual && d < 0) return 0;
+return fromCents(d);
+}
+function extraLine(diff, cur) {
+return { bucket: 'mine', description: 'Extra', note: 'Additional cash transferred', amount: fromCents(cents(diff)),
+currency: cur, settle: 'transfer', status: 'requested' };
+}
+function copyText(amount) {
+var c = cents(amount), abs = Math.abs(c);
+return (c < 0 ? '-' : '') + Math.floor(abs / 100) + '.' + String(abs % 100).padStart(2, '0');
+}
 Remit.money = {
+copyText: copyText, sectionUnpaid: sectionUnpaid, paymentBases: paymentBases, extraFor: extraFor, extraLine: extraLine,
 SYMBOLS: SYMBOLS, symbol: symbol, cents: cents, fromCents: fromCents, fmt: fmt,
 alive: alive, isTransferLine: isTransferLine, isPaidTick: isPaidTick,
 sumByCurrency: sumByCurrency, addMaps: addMaps, subMaps: subMaps,
@@ -1406,7 +1478,21 @@ estimateUsd: (estimateUsd == null) ? null : Math.round(estimateUsd * 100) / 100,
 diffVsEstimate: (diffVsEstimate == null) ? null : Math.round(diffVsEstimate * 100) / 100,
 };
 }
-Remit.fx = { paymentUsd: paymentUsd, rateDayLabel: rateDayLabel, rateFor: rateFor, estimateLine: estimateLine, fetchRates: fetchRates,
+function fmtRate(x) { return String(Math.round(x * 10000) / 10000); }
+function parseRate(v) {
+var s = String(v == null ? '' : v).trim();
+if (!/^(\d+\.?\d*|\.\d+)$/.test(s)) return null;
+var n = Number(s); return n > 0 ? n : null;
+}
+function positive(v) { var p = money.parseAmount(v); return (p.ok && p.value != null && p.value > 0) ? p.value : null; }
+function fxPair(o) {
+o = o || {};
+var amt = positive(o.amount), usd = String(o.usd == null ? '' : o.usd), rate = String(o.rate == null ? '' : o.rate);
+if (o.anchor === 'usd') { var u = positive(usd); return { usd: usd, rate: (amt && u) ? fmtRate(amt / u) : '' }; }
+if (o.anchor === 'rate') { var r = parseRate(rate); return { usd: (amt && r) ? (Math.round(amt / r * 100) / 100).toFixed(2) : '', rate: rate }; }
+return { usd: usd, rate: rate };
+}
+Remit.fx = { fxPair: fxPair, fmtRate: fmtRate, parseRate: parseRate, paymentUsd: paymentUsd, rateDayLabel: rateDayLabel, rateFor: rateFor, estimateLine: estimateLine, fetchRates: fetchRates,
 transferMetrics: transferMetrics, latestWorkingDay: latestWorkingDay, monthEndWorkingDay: monthEndWorkingDay,
 planRateFetches: planRateFetches };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
@@ -1957,7 +2043,7 @@ opts = opts || {};
 return new Promise(function (resolve) {
 var old = document.querySelector('.curmenu'); if (old) old.__close(null);
 var m = document.createElement('div');
-m.className = 'curmenu delconfirm'; m.setAttribute('role', 'alertdialog'); m.setAttribute('aria-label', 'Confirm delete');
+m.className = 'curmenu delconfirm'; m.setAttribute('role', 'alertdialog'); m.setAttribute('aria-label', opts.label || 'Confirm delete');
 m.innerHTML = '<p>' + (opts.q || ('Delete “' + esc(name || 'this line') + '”?')) + '</p><div class="acts2"><button type="button" data-no>No</button><button type="button" data-yes>' + esc(opts.yes || 'Yes, delete') + '</button></div>';
 document.body.appendChild(m);
 var r = btn.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
@@ -1998,6 +2084,13 @@ signBtn() +
 (isAdd ? '<span class="del" aria-hidden="true"></span>' : '<button type="button" class="del" data-del="' + esc(id) + '" aria-label="Delete ' + esc(desc) + '">×</button>') +
 '</div>';
 }
+function copyNums(map) {
+return Object.keys(map).map(function (k) {
+var t = money.copyText(map[k]);
+return '<span class="cpy" data-copy="' + esc(t) + '" tabindex="0" role="button" aria-label="' + esc(money.fmt(map[k], k)) + ' — press and hold, or Enter, to copy ' + esc(t) + '">' +
+symHTML(esc(money.fmt(map[k], k))) + '</span>';
+}).join(' · ');
+}
 function sectionBlock(label, items, person, addCtx, sel, opts) {
 opts = opts || {};
 var homeCur = person && person.home_currency || 'GBP';
@@ -2009,10 +2102,10 @@ var body = order.map((cur) => {
 var rows = byCur[cur].map((it) => erow(it, homeCur, null, sel.has(it.id))).join('');
 if (cur === homeCur) return rows;
 var s = {}; s[cur] = money.sumByCurrency(byCur[cur])[cur];
-return '<div class="subbk">In ' + esc(cur) + '<span class="num">' + symHTML(esc(money.fmtByCurrency(s))) + '</span></div>' + rows;
+return '<div class="subbk">In ' + esc(cur) + '<span class="num">' + copyNums(s) + '</span></div>' + rows;
 }).join('');
 var headSub = sub; if (sub[homeCur] != null && Object.keys(sub).length > 1) { headSub = {}; headSub[homeCur] = sub[homeCur]; }
-var subNum = '<span class="num">' + symHTML(esc(money.fmtByCurrency(headSub))) + '</span>';
+var subNum = '<span class="num">' + (Object.keys(headSub).length ? copyNums(headSub) : '') + '</span>';
 var head;
 if (opts.customSection) {
 var s = opts.customSection;
@@ -2062,10 +2155,22 @@ model.custom.map((c) => sectionBlock(c.section.name, c.rows, person, { bucket: '
 '</section>';
 var riding =
 '<section class="riding"><div class="zone-hd"><h2>Riding along — Dad’s own</h2>' +
-'<span class="tt"><em>subtotal</em> <span class="num">' + symHTML(esc(money.fmtByCurrency(model.mine.subtotal) || money.fmt(0, homeCur))) + '</span></span></div>' +
+'<span class="tt"><em>subtotal</em> <span class="num">' + copyNums(Object.keys(model.mine.subtotal).length ? model.mine.subtotal : (function () { var z = {}; z[homeCur] = 0; return z; })()) + '</span></span></div>' +
 '<p class="why">Nothing to do with ' + esc(person ? person.name : 'the kid') + '. Bundled into the same transfer to pay one fee instead of two.</p>' +
 sectionBlock('Riding along', model.mine.rows, person, { bucket: 'mine' }, sel) + '</section>';
-var addBar = '<p class="note linkrow" style="margin-top:26px"><button type="button" class="linkbtn" id="reportsBtn">Reports</button>' + (markAll ? ' · ' + markAll : '') + '</p>';
+var secMarks = [
+{ key: 'recurring', label: 'recurring', rows: model.recurring.rows },
+{ key: 'extras', label: 'extras', rows: model.extras.rows },
+{ key: 'mine', label: 'riding along', rows: model.mine.rows },
+].concat(model.custom.map(function (c) { return { key: 'custom:' + c.section.id, label: c.section.name || 'section', rows: c.rows }; }))
+.filter(function (m) { return m.rows.length; })
+.map(function (m) {
+var done = m.rows.every(function (r) { return r.status === 'paid'; });
+return '<button type="button" class="linkbtn" data-marksec="' + esc(m.key) + '" data-to="' + (done ? 'requested' : 'paid') + '">Mark ' + esc(m.label) + (done ? ' unpaid' : ' paid') + '</button>';
+}).join('');
+var addBar = '<p class="note linkrow" style="margin-top:26px"><button type="button" class="linkbtn" id="reportsBtn">Reports</button></p>' +
+(markAll ? '<div class="markrow" role="group" aria-label="Mark paid">' + markAll + secMarks +
+(secMarks ? '<button type="button" class="linkbtn markmenu" id="markMenu" aria-haspopup="menu" hidden>Mark a section ▾</button>' : '') + '</div>' : '');
 root.innerHTML = head + seg + strip + kid + riding + settledHTML(ctrl) + addBar + selbarHTML(ctrl) + footerHTML(ctrl);
 wire(ctrl);
 }
@@ -2186,6 +2291,31 @@ if (await confirmDel(b, label)) ctrl.deleteTransfer(xid);
 }));
 var rec = root.querySelector('#recordTransfer'); if (rec) rec.addEventListener('click', () => ctrl.recordTransfer());
 var mall = root.querySelector('#markAllPaid'); if (mall) mall.addEventListener('click', () => ctrl.markAllPaid(mall.getAttribute('data-to')));
+root.querySelectorAll('[data-marksec]').forEach((b) => b.addEventListener('click', () => ctrl.markSectionPaid(b.getAttribute('data-marksec'), b.getAttribute('data-to'))));
+var mrow = root.querySelector('.markrow'), mmenu = root.querySelector('#markMenu');
+if (mrow && mmenu) {
+var line = (mall && mall.offsetHeight) || 44;
+if (mrow.offsetHeight > line * 2 + 4) { mrow.classList.add('folded'); mmenu.hidden = false; }
+mmenu.addEventListener('click', () => {
+var old = document.querySelector('.curmenu'); if (old) { var was = old.__owner === mmenu; old.__close(null); if (was) return; }
+var m = document.createElement('div'); m.className = 'curmenu markmenu-pop'; m.setAttribute('role', 'menu'); m.__owner = mmenu;
+m.innerHTML = Array.from(mrow.querySelectorAll('[data-marksec]')).map((b) =>
+'<button type="button" role="menuitem" data-pickmark="' + esc(b.getAttribute('data-marksec')) + '">' + esc(b.textContent) + '</button>').join('');
+document.body.appendChild(m);
+var r = mmenu.getBoundingClientRect(), mh = m.offsetHeight, mw = m.offsetWidth;
+m.style.left = Math.max(12, Math.min(r.left, innerWidth - mw - 12)) + 'px';
+m.style.top = Math.max(12, r.top - 6 - mh) + 'px';
+var close = function () { m.remove(); document.removeEventListener('pointerdown', outside, true); document.removeEventListener('keydown', onKey, true); mmenu.setAttribute('aria-expanded', 'false'); };
+var outside = function (e) { if (!m.contains(e.target) && !mmenu.contains(e.target)) close(); };
+var onKey = function (e) { if (e.key === 'Escape') { close(); mmenu.focus(); } };
+m.__close = close;
+m.querySelectorAll('[data-pickmark]').forEach((b) => b.addEventListener('click', () => {
+close(); var src = mrow.querySelector('[data-marksec="' + b.getAttribute('data-pickmark') + '"]'); if (src) src.click();
+}));
+mmenu.setAttribute('aria-expanded', 'true');
+setTimeout(() => { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); var f = m.querySelector('button'); if (f) f.focus(); }, 0);
+});
+}
 root.querySelectorAll('.selbar [data-sel]').forEach((b) => b.addEventListener('click', () => {
 var a = b.getAttribute('data-sel');
 if (a === 'paid') ctrl.markSelected('paid');
@@ -2193,6 +2323,7 @@ else if (a === 'unpaid') ctrl.markSelected('requested');
 else if (a === 'delete') ctrl.deleteSelected();
 else ctrl.clearSelect();
 }));
+root.querySelectorAll('.cpy[data-copy]').forEach(wireCopy);
 root.querySelectorAll('.erow').forEach((rowEl) => wireRow(ctrl, rowEl));
 if (Remit.ui.wireDrag) Remit.ui.wireDrag(ctrl);
 if (ctrl._focusAdd) {
@@ -2207,6 +2338,44 @@ var last = names[names.length - 1];
 if (last && last.focus) { last.focus(); if (last.select) last.select(); }
 ctrl._focusSection = false;
 }
+}
+var COPY_HOLD = 500, COPY_SLOP = 10;
+function copyNow(text) {
+var done = function () { toast('Copied ' + text); };
+var fallback = function () {
+try {
+var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+document.body.appendChild(ta); ta.select(); var ok = document.execCommand('copy'); ta.remove();
+if (ok) done(); else toast('Could not copy ' + text);
+} catch (e) { toast('Could not copy ' + text); }
+};
+try {
+if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+else fallback();
+} catch (e) { fallback(); }
+}
+function wireCopy(el) {
+var st = null;
+function clear() {
+if (!st) return;
+clearTimeout(st.timer); el.classList.remove('armed');
+document.removeEventListener('pointermove', onMove, true); document.removeEventListener('pointerup', onUp, true);
+document.removeEventListener('pointercancel', clear, true); window.removeEventListener('scroll', onScroll, true);
+st = null;
+}
+function onScroll(e) { var t = e.target; if (t === document || t === document.documentElement || (t.contains && t.contains(el))) clear(); }
+function onMove(e) { if (st && e.pointerId === st.id && Math.abs(e.clientX - st.x) + Math.abs(e.clientY - st.y) > COPY_SLOP) clear(); }
+function onUp(e) { if (!st || e.pointerId !== st.id) return; var armed = st.armed; clear(); if (armed) { e.preventDefault(); copyNow(el.getAttribute('data-copy')); } }
+el.addEventListener('pointerdown', function (e) {
+if (e.button != null && e.button !== 0) return;
+clear();
+st = { id: e.pointerId, x: e.clientX, y: e.clientY, armed: false };
+st.timer = setTimeout(function () { if (st) { st.armed = true; el.classList.add('armed'); } }, COPY_HOLD);
+document.addEventListener('pointermove', onMove, true); document.addEventListener('pointerup', onUp, true);
+document.addEventListener('pointercancel', clear, true); window.addEventListener('scroll', onScroll, true);
+});
+el.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); copyNow(el.getAttribute('data-copy')); } });
 }
 function num(v) { return money.parseAmount(v).value; }
 function amtError(anchor, input, msg) {
@@ -2384,6 +2553,18 @@ var ids = ctrl.allRows().filter(function (r) { return r.status !== status; }).ma
 for (var i = 0; i < ids.length; i++) await store.updateItem(ids[i], { status: status });
 ctrl.refresh();
 };
+ctrl.sectionRows = function (key) {
+var m = ctrl.model; if (!m || !m.recurring) return [];
+if (key === 'recurring' || key === 'extras' || key === 'mine') return m[key].rows;
+var c = (m.custom || []).find(function (x) { return 'custom:' + x.section.id === key; });
+return c ? c.rows : [];
+};
+ctrl.markSectionPaid = async function (key, status) {
+status = status || 'paid';
+var ids = ctrl.sectionRows(key).filter(function (r) { return r.status !== status; }).map(function (r) { return r.id; });
+for (var i = 0; i < ids.length; i++) await store.updateItem(ids[i], { status: status });
+ctrl.refresh();
+};
 ctrl.moveItem = async function (draggedId, targetId) {
 var d = ctrl.itemById(draggedId), t = ctrl.itemById(targetId);
 if (!d || !t || d.id === t.id) return;
@@ -2411,6 +2592,7 @@ Remit.ui.fitAmt = fitAmt;
 Remit.ui.lockScroll = lockScroll;
 Remit.ui.unlockScroll = unlockScroll;
 Remit.ui.swallow = swallow;
+Remit.ui.confirm = confirmDel;   // arc/payment-sheet-and-polish S1: the in-app Yes/No (never window.confirm)
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 </script>
 <!-- src/ui/drag.js -->
@@ -2421,9 +2603,11 @@ Remit.ui.swallow = swallow;
 var Remit = root.Remit = root.Remit || {};
 var MOVE_THRESHOLD = 6;         // px (|dx|+|dy|) before a mouse/pen press becomes a drag
 var TOUCH_MOVE_THRESHOLD = 12;  // a finger tap drifts — a sloppy tap must stay a tap (a drag clears the selection)
+var TOUCH_HOLD_MS = 350;
 function wireDrag(ctrl) {
 ctrl.root.querySelectorAll('.grip[data-grip]').forEach(function (grip) {
-grip.style.touchAction = 'none';
+grip.style.touchAction = 'pan-y';
+grip.addEventListener('touchmove', function (e) { if (grip.__armed && e.cancelable) e.preventDefault(); }, { passive: false });
 grip.addEventListener('pointerdown', function (e) { onDown(ctrl, grip, e); });
 grip.addEventListener('contextmenu', function (e) { e.preventDefault(); });   // no press-and-hold menu
 grip.addEventListener('keydown', function (e) {
@@ -2443,12 +2627,28 @@ if (!row) return;
 e.preventDefault();
 if (e.shiftKey) { ctrl.toggleSelect(id); return; }   // desktop multi-select
 var startX = e.clientX, startY = e.clientY;
-var threshold = e.pointerType === 'touch' ? TOUCH_MOVE_THRESHOLD : MOVE_THRESHOLD;
+var touch = e.pointerType === 'touch';
+var threshold = touch ? TOUCH_MOVE_THRESHOLD : MOVE_THRESHOLD;
 var dragging = false, clearedSel = false, clone = null;
+var armed = !touch, holdTimer = null, done = false;   // mouse/pen: armed at once (move threshold only)
 try { grip.setPointerCapture(e.pointerId); } catch (x) {}
 document.addEventListener('pointermove', onMove, true);
 document.addEventListener('pointerup', onUp, true);
 document.addEventListener('pointercancel', onCancel, true);
+if (touch) {
+grip.__armed = false;
+holdTimer = setTimeout(function () {
+holdTimer = null; if (done) return;
+armed = true; grip.__armed = true; row.classList.add('lifted');
+try { if (navigator.vibrate) navigator.vibrate(10); } catch (x) {}
+}, TOUCH_HOLD_MS);
+window.addEventListener('scroll', onScroll, true);
+}
+function onScroll(ev) {
+var t = ev && ev.target;
+if (t && t !== document && t !== document.documentElement && !(t.contains && t.contains(row))) return;
+if (!armed && !dragging) { detach(); }
+}
 function beginDrag() {
 dragging = true;
 if (ctrl.selection && ctrl.selection.size) {
@@ -2477,13 +2677,18 @@ if (t && t !== row) t.classList.add('dropzone');
 }
 function onMove(ev) {
 if (!dragging) {
-if (Math.abs(ev.clientX - startX) + Math.abs(ev.clientY - startY) > threshold) beginDrag();
-else return;
+if (Math.abs(ev.clientX - startX) + Math.abs(ev.clientY - startY) <= threshold) return;
+if (!armed) { detach(); return; }   // moved before the hold: a scroll, never a drag (and not a tap)
+beginDrag();
 }
 position(ev.clientX, ev.clientY);
 highlight(targetAt(ev.clientX, ev.clientY));
 }
 function detach() {
+done = true;
+if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+grip.__armed = false; if (row) row.classList.remove('lifted');
+window.removeEventListener('scroll', onScroll, true);
 document.removeEventListener('pointermove', onMove, true);
 document.removeEventListener('pointerup', onUp, true);
 document.removeEventListener('pointercancel', onCancel, true);
@@ -2664,18 +2869,39 @@ sheet.innerHTML =   // arc/sheet-and-speed S2: no grab bar (it did nothing on iP
 '<div class="f2" style="border-bottom-width:2px"><label>' + (editing ? 'Edit payment' : 'Record a payment') + '</label><div class="v">' + esc(monthName) + ' · ' + esc((store.getPerson(ctrl.personId) || {}).name || '') + '</div></div>' +
 '<div class="f2"><label>Currency</label><div class="v"><select id="t-cur">' + curOptions.map((c) => '<option value="' + esc(c) + '"' + (c === cur ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select></div></div>' +
 '<div class="f2"><label>Remaining</label><div class="v"><b class="num" style="font-size:18px" id="t-remain">' + money.fmt(remain, cur) + '</b></div></div>' +
-'<div class="f2"><label>Amount</label><div class="v"><input id="t-amt" inputmode="decimal" value="' + esc(initAmt) + '" placeholder="0.00"></div></div>' +
+(editing ? '' : '<div class="f2" id="t-basis-row"><label for="t-basis">Pay for</label><div class="v"><select id="t-basis" aria-label="Pay for"></select></div></div>') +
+'<div class="f2"><label for="t-amt">Amount</label><div class="v"><input id="t-amt" inputmode="decimal" value="' + esc(initAmt) + '" placeholder="0.00"></div></div>' +
 '<div class="f2"><label>Sent on</label><div class="v"><input id="t-date" type="date" value="' + esc(editing && existing.sent_on ? existing.sent_on : todayISO()) + '"></div></div>' +
 '<div class="f2"><label>Provider</label><div class="v"><input id="t-prov" type="text" value="' + esc(editing ? (existing.provider || '') : (cur === 'USD' ? '' : 'Wise')) + '" placeholder="optional"></div></div>' +
-'<div class="f2" id="t-sent-row"><label>USD cost</label><div class="v"><input id="t-sent" inputmode="decimal" value="' + esc(editing && existing.amount_sent_usd != null ? existing.amount_sent_usd : '') + '" placeholder="optional"></div></div>' +
+'<div class="f2" id="t-sent-row"><label for="t-sent">USD cost</label><div class="v fxpair"><input id="t-sent" inputmode="decimal" value="' + esc(editing && existing.amount_sent_usd != null ? existing.amount_sent_usd : '') + '" placeholder="optional">' +
+'<span class="fxrate"><input id="t-rate" inputmode="decimal" value="" placeholder="FX rate" aria-describedby="t-rate-unit" aria-label="FX rate"><small id="t-rate-unit">' + esc(cur) + ' per USD</small></span></div></div>' +
 '<div class="f2"><label>Note</label><div class="v"><input id="t-note" type="text" value="' + esc(editing ? (existing.note || '') : '') + '" placeholder="optional"></div></div>' +
 '<div class="derived" id="t-derived"><h4>Worked out for you</h4><div class="dl"><span>Enter the amount (and USD cost) above</span><b>—</b></div></div>' +
 '<div class="acts"><button class="btn ghost" data-act="cancel">Cancel</button><button class="btn" data-act="save">' + (editing ? 'Save changes' : 'Save the payment') + '</button></div>';
 var $ = (id) => sheet.querySelector(id);
 function selCur() { return $('#t-cur').value; }
+var bases = [], basisKey = null;
+function fillBases() {
+var sel = $('#t-basis'); if (!sel) return;
+var c = selCur();
+bases = money.paymentBases(model, c); basisKey = null;
+sel.innerHTML = '<option value="">Manual amount</option>' + bases.map(function (b) {
+return '<option value="' + esc(b.key) + '">' + esc(b.label + ' · ' + money.fmt(b.amount, c)) + '</option>';
+}).join('');
+sel.value = '';
+}
+var fxAnchor = (editing && existing.amount_sent_usd != null) ? 'usd' : null;
+function syncFx() {
+var p = fx.fxPair({ amount: $('#t-amt').value, usd: $('#t-sent').value, rate: $('#t-rate').value, anchor: fxAnchor });
+if (fxAnchor === 'usd') $('#t-rate').value = p.rate;
+else if (fxAnchor === 'rate') { $('#t-sent').value = p.usd; if (money.parseAmount(p.usd).ok) Remit.ui.amtError($('#t-sent').closest('.f2'), $('#t-sent'), null); }
+}
+function chosenBasis() { return basisKey ? bases.find(function (b) { return b.key === basisKey; }) || null : null; }
 function redraw() {
 var c = selCur();
 $('#t-sent-row').hidden = (c === 'USD'); $('#t-derived').hidden = (c === 'USD');
+$('#t-rate-unit').textContent = c + ' per USD'; $('#t-rate').setAttribute('aria-label', 'FX rate, ' + c + ' per USD');
+syncFx();
 var rr = fx.rateFor(store.getRates ? store.getRates() : [], c); mid = rr ? rr.rate : null;
 $('#t-remain').textContent = money.fmt(remaining[c] || 0, c);
 var amt = Number(($('#t-amt').value || '').trim()), sent = Number(($('#t-sent').value || '').trim());
@@ -2687,13 +2913,23 @@ d.innerHTML = '<h4>Worked out for you</h4>' +
 (mid ? '<div class="dl"><span>ECB mid, ' + esc(fx.rateDayLabel(rr.day)) + '</span><b class="num">' + mid + '</b></div>' : '') +
 (m.costPct != null ? '<div class="dl"><span>All-in cost vs mid</span><b class="num">' + m.costPct.toFixed(2) + '%</b></div>' : '');
 }
+if ($('#t-basis')) $('#t-basis').addEventListener('change', function () {
+var b = bases.find(function (x) { return x.key === $('#t-basis').value; }) || null;
+basisKey = b ? b.key : null;
+if (b) { $('#t-amt').value = Number(b.amount).toFixed(2); Remit.ui.amtError($('#t-amt').closest('.f2'), $('#t-amt'), null); }
+redraw();
+});
 $('#t-cur').addEventListener('change', function () {
 var c = selCur(); var r = remaining[c] || 0; $('#t-amt').value = money.cents(r) > 0 ? Number(r).toFixed(2) : '';
+fillBases();
 var pv = $('#t-prov'); if (!editing && (pv.value === 'Wise' || pv.value === '')) pv.value = c === 'USD' ? '' : 'Wise';
 redraw();
 });
+$('#t-sent').addEventListener('input', () => { fxAnchor = 'usd'; });
+$('#t-rate').addEventListener('input', () => { fxAnchor = 'rate'; redraw(); });
 ['#t-amt', '#t-sent'].forEach((id) => $(id).addEventListener('input', () => {
 if (money.parseAmount($(id).value).ok) Remit.ui.amtError($(id).closest('.f2'), $(id), null);
+if (id === '#t-amt' && !($(id).value || '').trim() && basisKey) { basisKey = null; if ($('#t-basis')) $('#t-basis').value = ''; }
 redraw();
 }));
 $('[data-act="cancel"]').addEventListener('click', () => close(host));
@@ -2714,7 +2950,24 @@ person_id: ctrl.personId, period_year: ctrl.year, period_month: ctrl.month, curr
 sent_on: $('#t-date').value || todayISO(), amount_delivered: amt, amount_sent_usd: sent || null,
 provider: ($('#t-prov').value || '').trim() || null, note: ($('#t-note').value || '').trim() || null,
 };
-var tickIds = editing ? [] : money.autoTickIds(ctrl.allRows ? ctrl.allRows() : [], fields);
+var basis = editing ? null : chosenBasis(), extra = 0, tickIds = [];
+if (!editing) {
+if (basis) {
+extra = money.extraFor(amt, basis.amount);
+tickIds = basis.ids.slice();
+} else {
+extra = money.extraFor(amt, Math.max(0, Number(remaining[c] || 0)), { manual: true });
+tickIds = money.autoTickIds(ctrl.allRows ? ctrl.allRows() : [], fields);
+}
+}
+if (basis && money.cents(extra) < 0) {
+saving = true;   // no second Save while the question is open
+var ok = await Remit.ui.confirm($('[data-act="save"]'), '', {
+q: esc(money.fmt(amt, c)) + ' is ' + esc(money.fmt(-extra, c)) + ' short of ' + esc(basis.label) + ' (' + esc(money.fmt(basis.amount, c)) +
+'). Save it and add a ' + esc(money.fmt(extra, c)) + ' “Extra” line?', yes: 'Yes, save', label: 'Confirm short payment' });
+saving = false;
+if (!ok) return;   // cancel ⇒ nothing saved, the sheet stays open
+}
 saving = true;
 try {
 if (editing) await store.updateTransfer(existing.id, fields);
@@ -2722,10 +2975,16 @@ else await store.createTransfer(fields);
 } catch (e) { saving = false; throw e; }
 close(host);
 Remit.ui.toast(money.fmt(amt, c) + (editing ? ' payment updated.' : ' payment recorded.') +
+(money.cents(extra) ? ' Added an Extra line of ' + money.fmt(extra, c) + '.' : '') +
 (tickIds.length ? ' Ticked ' + tickIds.length + (tickIds.length === 1 ? ' line.' : ' lines.') : ''));
+if (money.cents(extra)) {
+try { var period = await ctrl.ensurePeriod(); await store.addItem(period.id, money.extraLine(extra, c)); }
+catch (e) { Remit.ui.toast('Payment recorded — the ' + money.fmt(extra, c) + ' Extra line could not be added; add it by hand.'); }
+}
 try { for (var i = 0; i < tickIds.length; i++) await store.updateItem(tickIds[i], { status: 'paid' }); }
 catch (e) { Remit.ui.toast('Payment recorded — the lines could not be ticked; tick them by hand.'); }
 });
+fillBases();
 redraw();
 requestAnimationFrame(() => { scrim.classList.add('open'); sheet.classList.add('open'); });
 }
