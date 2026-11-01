@@ -410,7 +410,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
       var name=(document.getElementById('an').value||'').trim();
       var email=(document.getElementById('ae').value||'').trim().toLowerCase();
       var m=document.getElementById('addMsg');
-      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ m.className='msg err'; m.textContent='Enter a valid email.'; return; }
+      if(!/^[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/.test(email)){ m.className='msg err'; m.textContent='Enter a valid email.'; return; }
       addBtn.disabled=true; m.className='msg'; m.textContent='Inviting…';
       var res; try{ res=await sendInvite(email, name); }catch(_){ res={status:0,body:{}}; }
       var note=inviteNote(res, email);
@@ -423,7 +423,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;col
       btn.addEventListener('click', async function(){
         if(btn.disabled) return;
         var email=btn.getAttribute('data-resend'), name=btn.getAttribute('data-name');
-        var pm=document.querySelector('[data-pmsg="'+email.replace(/"/g,'')+'"]');
+        var pm=Array.prototype.filter.call(document.querySelectorAll('[data-pmsg]'), function(x){ return x.getAttribute('data-pmsg')===email; })[0];
         btn.disabled=true; var was=btn.textContent; btn.textContent='Sending…';
         var res; try{ res=await sendInvite(email, name); }catch(_){ res={status:0,body:{}}; }
         var note=inviteNote(res, email);

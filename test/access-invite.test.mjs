@@ -30,7 +30,7 @@ const secretFree = (r) => assert.ok(!/svc-role-fixture|mailer-key-fixture|mailer
 
 test('cleanEmail / cleanName', () => {
   assert.equal(cleanEmail('  Barb@Example.COM '), 'barb@example.com');
-  for (const bad of [null, '', 'nope', 'a@b', 'a b@c.de', 'x'.repeat(250) + '@a.bc']) assert.equal(cleanEmail(bad), null, String(bad));
+  for (const bad of [null, '', 'nope', 'a@b', 'a b@c.de', 'a,evil@x.com', 'a;b@x.com', '<a>@x.com', 'a"b@x.com', 'x'.repeat(250) + '@a.bc']) assert.equal(cleanEmail(bad), null, String(bad));
   assert.equal(cleanName('  Barb\n'), 'Barb'); assert.equal(cleanName('   '), null); assert.equal(cleanName(null), null);
 });
 
@@ -114,6 +114,26 @@ test('mailer failure (not ok / throws) → ok:true emailed:false, account + row 
 test('row upsert failure → 502 before any account is made', async () => {
   const w = world({ upFail: true }); const r = await w.run('Bearer a.b.c', { email: 'b@x.co' });
   assert.equal(r.status, 502); assert.equal(adminCalls(w.calls).length, 0);
+});
+
+test('an existing ADMIN row is never rewritten by an invite (no upsert), the rest still runs', async () => {
+  const w = world({ existing: { is_admin: true, invited_at: null, name: 'Mark' } });
+  const r = await w.run('Bearer a.b.c', { email: 'mark@fam.test', name: 'Hacked' });
+  assert.equal(r.status, 200);
+  assert.ok(w.calls.every((c) => !c.url.includes('on_conflict')), 'no upsert on an admin row');
+});
+
+test('rate-limit lookup failure fails CLOSED (502), nothing created or sent', async () => {
+  const calls = []; const f = async (url, init = {}) => { calls.push(url);
+    if (url.endsWith('/auth/v1/user')) return res(200, {}); if (url.endsWith('/rpc/press_access_is_admin')) return res(200, true);
+    if (url.includes('select=invited_at')) return res(500, {}); return res(200, {}); };
+  const r = await invite({ token: 'Bearer a.b.c', body: { email: 'b@x.co' } }, { cfg: CFG, fetchImpl: f, now: () => NOW });
+  assert.equal(r.status, 502); assert.ok(calls.every((u) => !u.endsWith('/admin/users') && u !== CFG.mailerUrl));
+});
+
+test('a network throw anywhere → clean 502, never an uncaught error', async () => {
+  const r = await invite({ token: 'Bearer a.b.c', body: { email: 'b@x.co' } }, { cfg: CFG, fetchImpl: async () => { throw new Error('net'); }, now: () => NOW });
+  assert.equal(r.status, 502);
 });
 
 test('inviteText: plain, friendly, no app names, no secrets', () => {

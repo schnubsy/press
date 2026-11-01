@@ -10,7 +10,7 @@
 export const RATE_MIN = 10;
 export const SIGN_IN_URL = 'https://schnubsy.github.io/press/index.html?view=family';
 export const SUBJECT = "You're invited to the Family Wing";
-const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const EMAIL_RE = /^[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/;   // no , ; < > " \ — never two recipients
 
 export function cleanEmail(v) {
   const e = String(v == null ? '' : v).trim().toLowerCase();
@@ -36,7 +36,11 @@ function mailerReason(e) { return String((e && e.message) || e || 'err').replace
 
 // invite({token, body}, {cfg, fetchImpl, now}) → { status, body }
 //   cfg: { sbUrl, service, anon, mailerUrl, mailerKey }
-export async function invite({ token, body }, { cfg, fetchImpl, now = () => Date.now() }) {
+export async function invite(req, deps) {
+  try { return await run(req, deps); }
+  catch { return { status: 502, body: { error: 'Could not reach the service — try again.' } }; }   // a network throw is a clean 502 (CORS headers ride on it)
+}
+async function run({ token, body }, { cfg, fetchImpl, now = () => Date.now() }) {
   const f = fetchImpl;
   const tok = String(token || '').replace(/^Bearer\s+/i, '').trim();
   if (!tok || tok === cfg.anon) return { status: 401, body: { error: 'Sign in as the admin first.' } };
@@ -61,8 +65,9 @@ export async function invite({ token, body }, { cfg, fetchImpl, now = () => Date
     headers: { apikey: cfg.service, Authorization: `Bearer ${cfg.service}`, 'content-type': 'application/json', ...(init.headers || {}) } });
 
   // 4 — rate limit: no second invite EMAIL to the same address inside RATE_MIN minutes
-  const er = await svc(`/rest/v1/press_access_people?email=eq.${encodeURIComponent(email)}&select=invited_at,name`);
-  const existing = er.ok ? ((await er.json().catch(() => [])) || [])[0] : null;
+  const er = await svc(`/rest/v1/press_access_people?email=eq.${encodeURIComponent(email)}&select=invited_at,name,is_admin`);
+  if (!er.ok) return { status: 502, body: { error: 'Could not check the list — try again.' } };   // fail closed: the rate limit never skips
+  const existing = ((await er.json().catch(() => [])) || [])[0] || null;
   if (existing && existing.invited_at && now() - new Date(existing.invited_at).getTime() < RATE_MIN * 60000) {
     return { status: 429, body: { error: `Already invited in the last ${RATE_MIN} minutes — give it a moment.` } };
   }
@@ -70,7 +75,8 @@ export async function invite({ token, body }, { cfg, fetchImpl, now = () => Date
   // 5 — the allow-list row FIRST (the Before-User-Created hook requires it). active=true; name only if given;
   //     is_admin is NEVER sent (a merge-upsert leaves it alone); no grant rows (opt-out default = every tool ON).
   const row = { email, active: true }; if (name) row.name = name;
-  const up = await svc('/rest/v1/press_access_people?on_conflict=email', {
+  //     An existing ADMIN row is left exactly as it is (Deactivate/Reactivate stays the only way to change an admin).
+  const up = existing && existing.is_admin ? { ok: true } : await svc('/rest/v1/press_access_people?on_conflict=email', {
     method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(row) });
   if (!up.ok) return { status: 502, body: { error: 'Could not save that person — try again.' } };
 
