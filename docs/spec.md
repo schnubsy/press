@@ -247,6 +247,15 @@ the shared DB shapes (`press_<shape>`, every row keyed by a `page` column = file
 
 **Hotfix rule:** source repo first, then release — never patch `press/<page>.html` by hand.
 
+## Family Wing invites (`access.html` → Edge Function `access-invite`)
+
+Invite is ONE tap in the Access Manager (Mark, 2026-11-01): the function creates the person's sign-in account (the
+`press_access_people` row alone is not enough — the wing sends `create_user:false`), keeps every family tool ON (opt-out,
+no grant rows) and emails them the wing link from Winston (Mark CC'd). Contract + error table: `docs/access-framework.md`
+§5/§6. `press_access_people.invited_at` (`db/20261101_press_access_invited_at.sql`) drives the 10-minute rate limit and the
+"invited <date>" label. Tests: `test/access-invite.test.mjs` (stub-fetch core) · `test/access-admin.spec.mjs` (route-mocked
+function) · ui-audit states `access-invite-error`, `access-invite-mail-failed`.
+
 ## Agent Monitor (`agent-health.html`)
 
 Arc marquee-wings-monitor slice 4 (2026-10-12). One page answers, for every agent, AI function, pg_cron job and

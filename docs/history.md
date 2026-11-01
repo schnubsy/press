@@ -4,6 +4,18 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-11-01 — arc/family-wing-invites (one-tap Invite; Full lane)
+
+Barb was added to `press_access_people` on 10/31 but had no `auth.users` row; the wing sends `create_user:false`, so GoTrue
+answered 422 "Signups not allowed for otp" and she could never get a code (Kayley only worked because her account was made by
+hand on 9/28). Fix, per Mark: the Access Manager's **Invite** is ONE tap. Slice 1: additive `invited_at` column. Slice 2: Edge
+Function `access-invite` (JWT → `press_access_is_admin()` as the caller → row first → create account → Winston email, Mark
+CC'd → stamp), logic in `_shared/invite.mjs`, 13 stub-fetch unit tests incl. "a non-admin never reaches admin-users". Slice 3:
+access.html Invite / Resend invite / "invited <date>", Playwright + ui-audit states, access-framework §5/§6/§8a corrected.
+Council registry row + deploy + migration are STAGED for verify. Brandon is not part of this arc.
+
+---
+
 ## 2026-10-24 — perth card wording, icon and title spec
 
 Follow-up to the rebuild. The portal card first took the tab title and kayley's check-square glyph; the gauntlet caught both

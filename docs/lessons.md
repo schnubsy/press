@@ -430,3 +430,15 @@ around the scope.
   [tag: press] (2026-10-24)
 - **No straight apostrophe in LABELS / APP_NAMES titles.** Both parsers read single-quoted strings (`title:'…'`, and
   APP_NAMES via `'`→`"` JSON); use the typographic ’. [tag: press] (2026-10-24)
+
+## family-wing-invites (2026-11-01)
+
+- **`create_user:false` + no `auth.users` row ⇒ GoTrue 422 "Signups not allowed for otp".** An allow-list row
+  (`press_access_people`) is not an account: a first-time person can never get a code until something creates their auth
+  user. The only path is the admin-gated `access-invite` function; doc §5 used to say "add the row, then send the link" —
+  wrong for anyone new. [tag: press] (2026-11-01)
+- **Put the lock before the first service-role call and test that order.** `invite.mjs` verifies the JWT, then
+  `press_access_is_admin()` as the caller, and only then touches the service role; the stub-fetch test asserts a
+  non-admin's call log contains no service key and no admin-users request. [tag: press] (2026-11-01)
+- **Stamp `invited_at` only when the mail went.** Stamping on a failed send would 429 the very retry the page offers.
+  [tag: press] (2026-11-01)

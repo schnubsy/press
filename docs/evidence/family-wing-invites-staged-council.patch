@@ -1,0 +1,52 @@
+diff --git a/deploy/targets.json b/deploy/targets.json
+index 0eac6ee..fa6c313 100644
+--- a/deploy/targets.json
++++ b/deploy/targets.json
+@@ -40,6 +40,10 @@
+     },
+     "schnubsy/press": {
+       "functions": {
++        "access-invite": {
++          "project_ref": "eepjhpyziczrxvirczio",
++          "verify_jwt": false
++        },
+         "access-notify": {
+           "project_ref": "eepjhpyziczrxvirczio",
+           "verify_jwt": false
+diff --git a/test/deployer-registry.test.mjs b/test/deployer-registry.test.mjs
+index b490a0f..73a3ee3 100644
+--- a/test/deployer-registry.test.mjs
++++ b/test/deployer-registry.test.mjs
+@@ -16,12 +16,12 @@ const PRESS = 'eepjhpyziczrxvirczio';
+ const ELEVATE = 'btvrnlmtdnpycczzfufd';
+ const refuses = (fn, re) => assert.throws(fn, (e) => e instanceof Refusal && re.test(e.message));
+ 
+-// The live inventory, read 2026-10-22 with the Supabase connector (list_edge_functions on press: 22 functions;
++// The live inventory, read 2026-10-22 with the Supabase connector (list_edge_functions on press: 22 functions; access-invite added 2026-11-01 (family-wing-invites) → 23;
+ // elevate-ops: 0) + each repo's git tree. `true` = verify_jwt on. Changing a live function means changing this table.
+ const LIVE = {
+   'schnubsy/cardsharp': { 'cardsharp-ynab': false, 'cardsharp-receipt': false },
+   'schnubsy/council': { 'snag-inlet': false },
+-  'schnubsy/press': { 'access-notify': false, 'agent-fix': false, 'agent-watch': false, 'mailer-check': false, 'steward-reports': false, 'winston-mail': false },
++  'schnubsy/press': { 'access-invite': false, 'access-notify': false, 'agent-fix': false, 'agent-watch': false, 'mailer-check': false, 'steward-reports': false, 'winston-mail': false },
+   'schnubsy/fsa-claims': { 'fsa-capture': false, 'fsa-ynab-sync': false },
+   'schnubsy/giving-tracker': { capture: false, 'capture-status': false, 'import-extract': false, propublica: false, 'ynab-sync': false },
+   'schnubsy/thrift-shop': { 'card-scout': false },
+@@ -35,7 +35,7 @@ const SQL = {
+   'schnubsy/retirement': ['db/'],
+ };
+ 
+-test('registry = the live inventory: 22 functions, exact verify_jwt, all on press; nothing extra', () => {
++test('registry = the live inventory: 23 functions, exact verify_jwt, all on press; nothing extra', () => {
+   let n = 0;
+   for (const [repo, fns] of Object.entries(LIVE)) {
+     const got = TARGETS.targets[repo].functions;
+@@ -46,7 +46,7 @@ test('registry = the live inventory: 22 functions, exact verify_jwt, all on pres
+       n++;
+     }
+   }
+-  assert.equal(n, 22);
++  assert.equal(n, 23);
+   for (const [repo, cfg] of Object.entries(TARGETS.targets))
+     if (cfg.functions) assert.ok(LIVE[repo], `${repo} lists functions not in the live inventory`);
+ });

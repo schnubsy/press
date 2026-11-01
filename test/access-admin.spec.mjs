@@ -42,6 +42,8 @@ async function backend(context, seed) {
     grants: seed?.grants ? JSON.parse(JSON.stringify(seed.grants)) : [],
     requests: seed?.requests ? JSON.parse(JSON.stringify(seed.requests)) : [],
     grantWrites: [],
+    inviteCalls: [],
+    invite: seed?.invite || { status: 200, body: { ok: true, created: true, emailed: true } },   // what the access-invite function answers
     apps: [{ page: 'remit.html', label: 'Remit', gated: true }, { page: 'perth.html', label: 'The Runway — Perth', gated: true }],
   };
   // src/gate.js stub: a public (never-enrolled) browser -> no passkey belt -> straight to admin OTP.
@@ -53,6 +55,23 @@ async function backend(context, seed) {
     body: JSON.stringify({ access_token: 'aaa.bbb.ccc', refresh_token: 'refresh-1', expires_in: 3600, user: { email: 'mark@fam.test', user_metadata: { name: 'Mark' } } }) }));
   await context.route('**/auth/v1/token**', route => route.fulfill({ status: 200, contentType: 'application/json',
     body: JSON.stringify({ access_token: 'aaa.bbb.ccc', refresh_token: 'refresh-1', expires_in: 3600, user: { email: 'mark@fam.test', user_metadata: { name: 'Mark' } } }) }));
+
+  // The access-invite Edge Function (family-wing-invites): mirrors what the real one does on success — the people row
+  // exists afterwards, invited_at is stamped when an email went. No grant rows are ever written.
+  await context.route('**/functions/v1/access-invite', route => {
+    const req = route.request();
+    const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': 'POST, OPTIONS' };
+    if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors, body: '' });
+    const body = JSON.parse(req.postData() || '{}');
+    state.inviteCalls.push({ body, auth: req.headers()['authorization'] || '' });
+    if (state.invite.status === 200) {
+      const ex = state.people.find(p => p.email === body.email);
+      const stamp = state.invite.body.emailed ? '2026-11-01T12:00:00Z' : null;
+      if (ex) { if (body.name) ex.name = body.name; if (stamp) ex.invited_at = stamp; }
+      else state.people.push({ email: body.email, name: body.name || null, is_admin: false, active: true, last_seen_at: null, invited_at: stamp });
+    }
+    return route.fulfill({ status: state.invite.status, headers: cors, contentType: 'application/json', body: JSON.stringify(state.invite.body) });
+  });
 
   await context.route('**/rest/v1/**', route => {
     const req = route.request();
@@ -126,7 +145,7 @@ test('People are cards with a switch per family tool, ON by default; the "gate a
   await page.screenshot({ path: join(ROOT, 'docs', 'evidence', 'wings-polish-slice-4-access-admin.png'), fullPage: true });
 });
 
-test('adding a person shows their card with every family tool ON', async ({ page, context }) => {
+test('inviting a person shows their card with every family tool ON', async ({ page, context }) => {
   await backend(context);
   await page.goto(base + '/access.html');
   await signIn(page);
@@ -135,6 +154,7 @@ test('adding a person shows their card with every family tool ON', async ({ page
   await page.locator('#addBtn').click();
   const barb = page.locator('.pcard', { hasText: 'Barbara' });
   await expect(barb).toBeVisible();
+  await expect(page.locator('#addMsg')).toContainText('Invited — we emailed barbara@fam.test (you’re copied)');
   await expect(barb.locator('.sw2.on')).toHaveCount(2);               // granted every tool by default
 });
 
@@ -210,7 +230,7 @@ test('flipping the person’s switch ON also resolves their pending request', as
   expect(state.requests[0].handled_at).toBeTruthy();
 });
 
-test('adding a person writes ONLY a people row — no grant rows (opt-out: no row = on)', async ({ page, context }) => {
+test('inviting a person writes NO grant rows from the page (opt-out: no row = on)', async ({ page, context }) => {
   const state = await backend(context);
   await page.goto(base + '/access.html');
   await signIn(page);
@@ -229,4 +249,96 @@ test('an unreadable requests table never breaks the manager (no strip, grid stil
   await signIn(page);
   await expect(page.locator('.pcard')).toHaveCount(2);
   await expect(page.locator('#reqs')).toHaveCount(0);
+});
+
+// ── family-wing-invites: Invite / Resend (the function is route-mocked) ─────────────────────────────────────────────
+const INVITED = { people: [
+  { email: 'mark@fam.test', name: 'Mark', is_admin: true, active: true, last_seen_at: '2026-10-31T10:00:00Z', invited_at: null },
+  { email: 'barb@fam.test', name: 'Barb', is_admin: false, active: true, last_seen_at: null, invited_at: '2026-10-31T15:24:00Z' },
+  { email: 'kayley@fam.test', name: 'Kayley', is_admin: false, active: true, last_seen_at: '2026-10-30T10:00:00Z', invited_at: null },
+] };
+
+test('Invite sends the admin session token + name + email to access-invite', async ({ page, context }) => {
+  const state = await backend(context);
+  await page.goto(base + '/access.html');
+  await signIn(page);
+  await page.locator('#an').fill('Barbara');
+  await page.locator('#ae').fill('  Barbara@Fam.test ');
+  await page.locator('#addBtn').click();
+  await expect(page.locator('.pcard', { hasText: 'Barbara' })).toBeVisible();
+  expect(state.inviteCalls).toHaveLength(1);
+  expect(state.inviteCalls[0].body).toEqual({ email: 'barbara@fam.test', name: 'Barbara' });
+  expect(state.inviteCalls[0].auth).toMatch(/^Bearer aaa\.bbb\.ccc$/);
+});
+
+test('Invite: account ready but mail failed → copy-link message, the person still appears', async ({ page, context }) => {
+  await backend(context, { invite: { status: 200, body: { ok: true, created: true, emailed: false } } });
+  await page.goto(base + '/access.html');
+  await signIn(page);
+  await page.locator('#ae').fill('barbara@fam.test');
+  await page.locator('#addBtn').click();
+  await expect(page.locator('#addMsg')).toContainText('Account ready, but the email didn’t send — copy the link below');
+  await expect(page.locator('#lk')).toBeVisible();                       // the copy-link row stays
+  await expect(page.locator('.pcard', { hasText: 'barbara@fam.test' })).toBeVisible();
+});
+
+for (const [status, text] of [[401, 'Sign in again'], [403, 'Only an admin'], [429, 'Already invited a moment ago']]) {
+  test(`Invite: HTTP ${status} → "${text}" and the button is usable again`, async ({ page, context }) => {
+    await backend(context, { invite: { status, body: { error: 'x' } } });
+    await page.goto(base + '/access.html');
+    await signIn(page);
+    await page.locator('#ae').fill('barbara@fam.test');
+    await page.locator('#addBtn').click();
+    await expect(page.locator('#addMsg')).toContainText(text);
+    await expect(page.locator('#addBtn')).toBeEnabled();
+    await expect(page.locator('.pcard')).toHaveCount(1);                 // nobody added client-side
+  });
+}
+
+test('Invite: a bad address never calls the function', async ({ page, context }) => {
+  const state = await backend(context);
+  await page.goto(base + '/access.html');
+  await signIn(page);
+  await page.locator('#ae').fill('nope');
+  await page.locator('#addBtn').click();
+  await expect(page.locator('#addMsg')).toContainText('Enter a valid email');
+  expect(state.inviteCalls).toHaveLength(0);
+});
+
+test('cards show "invited <date>"; Resend invite only while last_seen_at is empty, and it re-calls the function', async ({ page, context }) => {
+  const state = await backend(context, INVITED);
+  await page.goto(base + '/access.html');
+  await signIn(page);
+  const barb = page.locator('.pcard', { hasText: 'Barb' });
+  await expect(barb).toContainText('never signed in');
+  await expect(barb).toContainText('invited Oct 31');
+  await expect(page.locator('[data-resend]')).toHaveCount(1);            // Barb only — Mark and Kayley have signed in
+  await expect(page.locator('.pcard', { hasText: 'Kayley' }).locator('[data-resend]')).toHaveCount(0);
+  await barb.locator('[data-resend]').click();
+  await expect(page.locator('#addMsg')).toContainText('Invited — we emailed barb@fam.test');
+  expect(state.inviteCalls).toEqual([{ body: { email: 'barb@fam.test', name: 'Barb' }, auth: 'Bearer aaa.bbb.ccc' }]);
+  expect(state.grantWrites).toHaveLength(0);
+});
+
+test('Resend: a 429 shows the message on that card, no re-render', async ({ page, context }) => {
+  await backend(context, Object.assign({}, INVITED, { invite: { status: 429, body: { error: 'x' } } }));
+  await page.goto(base + '/access.html');
+  await signIn(page);
+  const barb = page.locator('.pcard', { hasText: 'Barb' });
+  await barb.locator('[data-resend]').click();
+  await expect(barb).toContainText('Already invited a moment ago');
+  await expect(barb.locator('[data-resend]')).toBeEnabled();
+});
+
+test('tap targets ≥44px and switches keep keyboard support', async ({ page, context }) => {
+  await backend(context, INVITED);
+  await page.goto(base + '/access.html');
+  await signIn(page);
+  for (const sel of ['#addBtn', '[data-resend]', '[data-person]']) {
+    const box = await page.locator(sel).first().boundingBox();
+    expect(box.height, sel).toBeGreaterThanOrEqual(44);
+  }
+  const sw = page.locator('.pcard').first().locator('.sw2[data-grant]').first();
+  await sw.focus(); await page.keyboard.press('Space');
+  await expect(sw).not.toHaveClass(/on/);
 });

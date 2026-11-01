@@ -83,7 +83,7 @@ for (let i = 0; i < 14; i++) {
 const PEOPLE = [
   { email: 'mark@fam.test', name: 'Mark', is_admin: true, active: true, last_seen_at: iso(30) },
   { email: 'kayley.longer.address@family.test', name: 'Kayley', is_admin: false, active: true, last_seen_at: iso(60 * 24 * 3) },
-  { email: 'brandon@family.test', name: 'Brandon', is_admin: false, active: true, last_seen_at: null },
+  { email: 'brandon@family.test', name: 'Brandon', is_admin: false, active: true, last_seen_at: null, invited_at: iso(60 * 24) },
 ];
 const APPS = (SPACES.family || []).map((p) => ({ page: p, label: (PAGES[p] && PAGES[p].title) || p, gated: true }));
 const REQUESTS = [{ id: 1, email: 'brandon@family.test', page: 'remit.html', requested_at: iso(90), handled_at: null }];
@@ -192,6 +192,22 @@ export default {
     { name: 'access-locked', run: (p) => open(p, '/access.html', { enrolled: true }, '#pk') },
     { name: 'access-signin', run: (p) => open(p, '/access.html', { enrolled: true, vault: true }, '#em') },
     { name: 'access-admin', run: (p) => open(p, '/access.html', { enrolled: true, vault: true, family: true }, '#reqs') },
+    // family-wing-invites: the Invite result messages (function answers are route-mocked) + Resend on a never-signed-in card
+    { name: 'access-invite-error', run: async (p) => {   // 429 on a card's Resend invite → the message sits on that card
+      await p.route('**/functions/v1/access-invite', (r) => r.request().method() === 'OPTIONS'
+        ? r.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': 'POST, OPTIONS' } })
+        : r.fulfill({ status: 429, headers: { 'access-control-allow-origin': '*' }, contentType: 'application/json', body: '{"error":"x"}' }));
+      await open(p, '/access.html', { enrolled: true, vault: true, family: true }, '[data-resend]');
+      await p.click('[data-resend]'); await p.waitForSelector('.pcard .pmsg.err:not(:empty)');
+    } },
+    { name: 'access-invite-mail-failed', run: async (p) => {   // account ready, mail failed → copy-link message on the form
+      await p.route('**/functions/v1/access-invite', (r) => r.request().method() === 'OPTIONS'
+        ? r.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': 'POST, OPTIONS' } })
+        : r.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*' }, contentType: 'application/json', body: '{"ok":true,"created":true,"emailed":false}' }));
+      await open(p, '/access.html', { enrolled: true, vault: true, family: true }, '#ae');
+      await p.fill('#an', 'Barbara'); await p.fill('#ae', 'barbara.with.a.long.address@family.test'); await p.click('#addBtn');
+      await p.waitForSelector('#addMsg.err:not(:empty)');
+    } },
   ],
   probe: {
     surfaces: '#family-gate, #recoveryKit:not([hidden]), dialog[open], [aria-modal="true"]:not([hidden])',

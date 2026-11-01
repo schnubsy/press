@@ -150,8 +150,26 @@ begin
 end; $$;
 ```
 
-**Inviting is therefore: add the row, then send them the link.** No service-role key, no Edge
-Function, no invite email infrastructure. They open the link, type their address, get a code.
+**Inviting is: the row AND a sign-in account — and the row alone is not enough** (corrected 2026-11-01). The
+wing's code request sends `create_user:false`, so an address with a `press_access_people` row but **no `auth.users`
+row** gets GoTrue `422 "Signups not allowed for otp"` and can never receive a code (that is how Barb got stuck on
+10/31; Kayley only worked because her account was made by hand on 9/28). The Edge Function **`access-invite`**
+(`supabase/functions/access-invite/`, logic in `_shared/invite.mjs`, `verify_jwt` off) is the ONE server path that
+creates a family sign-in account:
+
+1. the caller's JWT is verified by GoTrue, then `press_access_is_admin()` is called **as that user** — no token → 401,
+   expired → 401, not an active admin → 403 (a non-admin never reaches the service role);
+2. the `press_access_people` row is upserted FIRST (`active=true`; name only if given; `is_admin` never touched; **no
+   grant rows** — opt-out default, every tool ON) because the Before-User-Created hook requires it;
+3. the account is created (`POST /auth/v1/admin/users`, `email_confirm:true`); "already exists" is fine (`created:false`);
+4. one invite email per address per 10 minutes (`invited_at`; 429 otherwise) from **Winston** (`MAILER_ENDPOINT` /
+   `MAILER_KEY`, `to` = the invitee ⇒ Mark is CC'd and Reply-To) with the wing sign-in link
+   (`index.html?view=family`) and "type this email address, we'll send a 6-digit code" — wing-level wording, no app named;
+5. `invited_at` is stamped only when an email actually went; the reply is `{ok, created, emailed}` — a failed mail
+   leaves the account and row standing (`emailed:false` ⇒ the page offers the copy-link fallback). Never a key, URL
+   or mailer body.
+
+No extra passwords: sign-in stays "type your email, get a 6-digit code".
 
 **Revoking is: flip `active` to false.** Their existing JWT stays technically valid for up to an
 hour, but every query it makes returns nothing, because `press_access_has()` is evaluated per query.
@@ -177,8 +195,11 @@ Four things, and nothing else:
    `press_access_apps.gated = true` and the page is gated on its next load. A note under it says
    which pages are gated by `spaces.json` instead, and that those cannot be ungated from here —
    because the union is deliberately one-directional.
-3. **Add someone.** Name and email. Writes `press_access_people`, then offers the page link to copy
-   and send however Mark likes. Optionally pre-ticks grants for chosen apps in the same action.
+3. **Invite someone.** Name and email, ONE tap (2026-11-01): calls `access-invite` with the admin's own session
+   token — it creates their sign-in account, leaves every tool ON and emails the wing link (Mark copied). The copy-link
+   row stays as the fallback when the mail fails. Each person's card shows *invited <date>* and, while `last_seen_at` is
+   empty, a **Resend invite** button (same call). Results: 401 "Sign in again" · 403 not an admin · 429 "Already
+   invited a moment ago" · mail failed "Account ready, but the email didn't send — copy the link below".
 4. **Who is in.** Per person: which apps, when granted, when last seen. Last-seen comes from a
    `last_seen_at` stamp the shared gate writes on successful sign-in — one column, no telemetry.
 
@@ -255,7 +276,7 @@ When a person's switch for an app is off:
 5. **Next visit works.** `press_access_has` now returns true; nothing else to do.
 
 Requests are admin-read/update only (RLS on `press_access_is_admin()`); `anon` has no grant on the table
-and no EXECUTE on the RPC. Adding a person writes ONLY a `press_access_people` row — no grant rows — so a
+and no EXECUTE on the RPC. Inviting a person writes ONLY a `press_access_people` row (+ their sign-in account) — no grant rows — so a
 new person starts with every switch on.
 
 ---
