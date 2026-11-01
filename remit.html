@@ -580,7 +580,125 @@ grid-template-areas:"grip what cur amt del" "grip note cur amt del" "grip . . sg
 .riding{margin-top:22px}
 .bk.custom .secname{min-width:0;width:0}
 .cpy{display:inline-flex;align-items:center;justify-content:flex-end;min-height:24px;min-width:44px;vertical-align:middle}
-.bk,.subbk{display:flow-root}</style>
+.bk,.subbk{display:flow-root}
+.erow{--menu-w:4px;position:relative;overflow:hidden;touch-action:pan-y;
+grid-template-columns:44px minmax(0,1fr) auto max-content var(--menu-w);grid-template-rows:24px 24px;
+grid-template-areas:"chk what cur amt menu" "chk note cur amt menu"}
+@media (hover:hover) and (pointer:fine){.erow{--menu-w:32px}}
+.erow:focus-within{grid-template-rows:24px 24px auto;
+grid-template-areas:"chk what cur amt menu" "chk note cur amt menu" "chk . . sgn ."}
+.erow .chk{grid-area:chk;grid-row:1/3;align-self:start;justify-self:start;position:relative;width:44px;height:44px;margin:2px 0 0;
+padding:0;border:0;background:transparent;border-radius:6px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:pan-y}
+.erow:focus-within .chk{grid-row:1/3}
+.erow .chk::before{content:"";position:absolute;left:8px;top:11px;width:20px;height:20px;box-sizing:border-box;
+border:1.5px solid var(--muted);border-radius:5px;transition:background .12s,border-color .12s}
+.erow .chk[aria-checked=true]::before{background:var(--paid);border-color:var(--paid)}
+.erow .chk[aria-checked=true]::after{content:"";position:absolute;left:15px;top:14px;width:6px;height:11px;
+border:solid var(--stage);border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.erow .chk:focus-visible{outline:2px solid var(--brass);outline-offset:-2px}
+.erow.addrow .chk::before{content:"＋";border:0;left:0;right:0;width:auto;height:auto;top:13px;text-align:center;
+font:500 15px/18px var(--sans);color:var(--brass)}
+.erow.sel .chk::before{border-color:var(--brass);box-shadow:0 0 0 2px var(--brass-faint)}
+.erow .rowmenu{grid-area:menu;grid-row:1/3;display:none}
+@media (hover:hover) and (pointer:fine){
+.erow button.rowmenu{display:flex;align-items:center;justify-content:center;align-self:stretch;width:32px;height:48px;padding:0 0 2px;
+border:0;background:transparent;color:var(--faint);font:600 18px/1 var(--sans);border-radius:5px;cursor:pointer}
+.erow button.rowmenu:hover,.erow button.rowmenu:focus-visible{color:var(--ink)}
+.erow button.rowmenu:focus-visible{outline:2px solid var(--brass);outline-offset:-2px}
+}
+.curmenu.rowmenu-pop{min-width:170px}
+.curmenu.rowmenu-pop button{grid-template-columns:1fr}
+.curmenu.rowmenu-pop button.danger{color:#e58b90}
+.erow > :not(.swacts),.erow > .nm > *{transform:translateX(var(--sx,0px));transition:transform .18s ease-out}
+.erow.swiping > :not(.swacts),.erow.swiping > .nm > *{transition:none}
+.erow .swacts{position:absolute;top:0;right:0;bottom:0;width:152px;display:flex;
+transform:translateX(calc(152px + var(--sx,0px)));transition:transform .18s ease-out;pointer-events:none}
+.erow.swiping .swacts{transition:none}
+.erow.swiped .swacts{pointer-events:auto}
+.erow .swacts button{flex:1 1 0;min-height:44px;border:0;margin:0;padding:0;font:600 15px/1 var(--sans);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.erow .swacts .swmove{background:var(--raised);color:var(--brass);box-shadow:inset 1px 0 0 var(--brass-dim)}
+.erow .swacts .swdel{background:#b8454d;color:#fff}
+.erow.lp{background:rgba(201,162,109,.12);border-radius:6px;box-shadow:inset 0 0 0 1px var(--brass)}
+.erow.moving{touch-action:none;background:rgba(201,162,109,.14);border-radius:6px;box-shadow:inset 0 0 0 1.5px var(--brass);cursor:grab}
+.moving-mode .erow:not(.moving){cursor:copy}
+.dragclone .swacts,.dragclone .rowmenu{display:none}
+.erow .amt{min-width:0}
+.erow.addrow:not(:focus-within) .curpill{visibility:hidden}
+.erow.hasnote{grid-template-areas:"chk what cur amt menu" "chk note note note menu"}
+.erow.hasnote .curpill,.erow.hasnote .amt,.erow.hasnote:focus-within .amt{grid-row:1;height:24px;padding-top:0;padding-bottom:0;line-height:24px;align-self:start}
+.erow.hasnote .curpill{display:flex;align-items:center;justify-content:flex-end}
+.erow.hasnote .note{grid-row:2;min-width:0;width:100%}
+.erow.hasnote:focus-within{grid-template-areas:"chk what cur amt menu" "chk note note note menu" "chk . . sgn ."}
+.erow .curpill{display:flex;align-items:center;justify-content:flex-end;text-align:right}
+.erow:not(.swiped):not(.swiping) .swacts{visibility:hidden}
+.morerow{display:flex;align-items:center;min-height:44px;margin:22px 0 0}
+.morerow .morebtn{display:inline-flex;align-items:center;min-height:44px;min-width:44px;padding:0 4px;font:500 15px/1 var(--sans)}
+.morerow .caret{font-size:12px;margin-left:2px}
+.curmenu.moremenu{min-width:230px}
+.curmenu.moremenu button{grid-template-columns:1fr}
+.tl .amts .cpy,.tl .amts .cpy span{font:inherit;letter-spacing:inherit;text-transform:none;color:inherit}
+.tl .amts .cpy .cpx{font-size:.7em}
+.tl .amts .cpy{justify-content:flex-end}
+.erow.tagrow{grid-template-columns:44px minmax(0,1fr) auto auto max-content var(--menu-w);
+grid-template-areas:"chk what tag cur amt menu" "chk note tag cur amt menu"}
+.erow.tagrow:focus-within{grid-template-areas:"chk what tag cur amt menu" "chk note tag cur amt menu" "chk . . . sgn ."}
+.erow.tagrow.hasnote{grid-template-areas:"chk what tag cur amt menu" "chk note note note note menu"}
+.erow.tagrow.hasnote:focus-within{grid-template-areas:"chk what tag cur amt menu" "chk note note note note menu" "chk . . . sgn ."}
+.erow .tagchip{grid-area:tag;grid-row:1;align-self:start;margin:0 2px 0 4px;min-height:24px;min-width:44px;max-width:96px;padding:0 7px;
+border:1px dashed var(--brass-dim);border-radius:12px;background:transparent;color:var(--muted);font:500 12px/22px var(--sans);
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.erow:not(.hasnote) .tagchip{grid-row:1/3;align-self:center}
+.erow .tagchip.on{border-style:solid;border-color:var(--brass-dim);color:var(--brass);background:var(--brass-faint)}
+.erow .tagchip:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+.tagbk{color:var(--brass)}
+.curmenu.tagmenu{min-width:180px}
+.curmenu.tagmenu button{grid-template-columns:1fr}
+@media(max-width:374px){.erow .tagchip{max-width:72px;padding:0 5px}}
+.erow .tagchip:not(.on),.tagbk ~ .erow .tagchip{min-width:32px;padding:0 4px;font-size:11px}
+@media(max-width:374px){.erow .tagchip{max-width:62px;margin-left:2px}}
+.toast.top{top:calc(env(safe-area-inset-top) + 12px);bottom:auto;transform:translateX(-50%) translateY(-20px)}
+.toast.top.show{transform:translateX(-50%) translateY(0)}
+.logsheet .forrow{align-items:flex-start}
+.chkline{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer;font:500 15px/1.25 var(--sans);color:var(--ink)}
+.chkline input{width:22px;height:22px;flex:0 0 22px;margin:0;accent-color:var(--brass)}
+.chkline span{flex:1;min-width:0}
+.chkline b{font:600 15px/1 var(--sans);color:var(--muted);white-space:nowrap}
+.chkline.all{border-bottom:1px dotted var(--brass-faint)}
+.logsheet .hint{display:block;margin-top:4px;font:500 12.5px/1.35 var(--sans);color:var(--brass)}
+.logsheet .hint:empty{display:none}
+.untagged{margin-top:14px;padding:10px 12px;border:1px solid var(--brass-dim);border-radius:8px;background:var(--brass-faint)}
+.untagged[hidden]{display:none}
+.untagged p{margin:0 0 4px;font:600 14px/1.3 var(--sans);color:var(--ink)}
+.untagged .f2 label{text-transform:none;letter-spacing:0;font:500 14px/1.3 var(--sans);color:var(--ink)}
+.receipt-preview .dl span small{display:block;margin-top:3px;font:400 12.5px/1.35 var(--sans);color:var(--muted)}
+.receipt-preview .dl.tot{border-top:1px solid var(--brass-dim);padding-top:8px}
+.receipt-preview .dl.rate span,.receipt-preview .dl.rate b{color:var(--muted);font-weight:500}
+.receipt-preview .dl.muted span{color:var(--faint);font-size:12.5px}
+.f2 .v label.chkline{flex:none;text-transform:none;letter-spacing:0;font:500 15px/1.25 var(--sans);color:var(--ink)}
+.ynabpill{grid-column:1/-1;grid-row:3;justify-self:start;min-height:44px;margin:2px 0 0;padding:0 10px;border:1px solid var(--brass-dim);border-radius:8px;
+background:var(--brass-faint);color:var(--brass);font:600 13px/1 var(--sans);cursor:pointer}
+.ynabok{grid-column:1/-1;grid-row:3;justify-self:start;margin-top:2px;font:600 12.5px/1.4 var(--sans);color:var(--paid)}
+.ynabnote{margin:10px 0 4px;font:400 13px/1.45 var(--sans);color:var(--muted)}
+.ynabkid{margin:16px 0 0;font:600 13px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+.receipt.srow{display:block;padding:12px 0 10px}
+.receipt .rchead{display:flex;align-items:flex-start;gap:8px}
+.receipt .rt{flex:1;min-width:0;font:600 15px/1.4 var(--sans);color:var(--ink);padding-top:12px}
+.receipt .rrate{font-weight:500;color:var(--muted);white-space:nowrap}
+.receipt .rchead .del{flex:0 0 44px;width:44px;min-height:44px}
+.receipt .rl{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px dotted var(--brass-faint)}
+.receipt .rk{flex:1;min-width:0;font:500 15px/1.35 var(--sans);color:var(--ink)}
+.receipt .rk small{display:block;margin-top:2px;font:400 13px/1.4 var(--sans);color:var(--muted)}
+.receipt .rv{flex:0 0 auto;font:600 16px/1.2 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink);text-align:right}
+.receipt .rl.tot{border-top:1px solid var(--brass-dim);padding-top:8px}
+.receipt .rl.tot .rk{font-weight:600}
+.receipt .rfoot{display:flex;justify-content:flex-end;margin-top:4px}
+.receipt .rstate{grid-row:auto;grid-column:auto;margin:0}
+.receipt .rstate.ok{margin-left:8px;font:600 13.5px/1.2 var(--sans);color:var(--paid);white-space:nowrap}
+.receipt .rstate.muted{font:500 13px/1.4 var(--sans);color:var(--faint);padding:6px 0}
+.receipt .snote{display:block;margin-top:6px}
+.srow.credit .nm b{color:var(--brass)}
+.logsheet .f2.forrow{flex-direction:column;align-items:stretch;gap:2px}
+.logsheet .f2.forrow > label{flex:none}</style>
 </head>
 <body>
 <main class="app" id="remit-root">
@@ -1270,6 +1388,19 @@ var seen = {};
 for (var i = 0; i < arguments.length; i++) Object.keys(arguments[i] || {}).forEach(function (k) { seen[k] = true; });
 return Object.keys(seen);
 }
+var TAGS = ['kid_card', 'tuition', 'dad', 'sent_ahead'];
+function tagLabel(tag, kidName) {
+if (tag === 'kid_card') return (kidName ? kidName + ' card' : 'Kid card');
+return { tuition: 'Tuition', dad: 'Dad', sent_ahead: 'Sent ahead' }[tag] || 'Not tagged';
+}
+function tagGroups(rows) {
+rows = rows || [];
+if (!rows.some(function (it) { return it.tag && TAGS.indexOf(it.tag) !== -1; })) return null;
+return ['kid_card', 'tuition', 'dad', null, 'sent_ahead'].map(function (t) {
+var rs = rows.filter(function (it) { return (TAGS.indexOf(it.tag) === -1 ? null : it.tag) === t; });
+return { tag: t, rows: rs, subtotal: sumByCurrency(rs) };
+}).filter(function (g) { return g.rows.length; });
+}
 var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 function monthLabel(year, month) { return MONTHS[month - 1] + ' ' + year; }
 function monthShort(year, month) { return MONTHS[month - 1].slice(0, 3); }
@@ -1302,7 +1433,7 @@ return {
 period: period,
 recurring: { rows: recurring, subtotal: sumByCurrency(recurring) },
 extras:    { rows: extras,    subtotal: sumByCurrency(extras) },
-mine:      { rows: mine,      subtotal: sumByCurrency(mine) },
+mine:      { rows: mine,      subtotal: sumByCurrency(mine), groups: tagGroups(mine) },
 custom: custom,
 sections: sectionRows,
 total: total,
@@ -1361,15 +1492,117 @@ var d = cents(amount) - cents(basis || 0);
 if (opts && opts.manual && d < 0) return 0;
 return fromCents(d);
 }
-function extraLine(diff, cur) {
-return { bucket: 'mine', description: 'Extra', note: 'Additional cash transferred', amount: fromCents(cents(diff)),
-currency: cur, settle: 'transfer', status: 'requested' };
+function extraLine(diff, cur, sortAfter) {
+var o = { bucket: 'mine', description: 'Extra', note: 'Additional cash transferred', amount: fromCents(cents(diff)),
+currency: cur, settle: 'transfer', status: 'requested', tag: 'sent_ahead' };
+if (sortAfter != null) o.sort_order = Number(sortAfter) + 10;
+return o;
+}
+function logScopes(model, cur, kid) {
+if (!model || !model.recurring || !cur) return [];
+var mine = (model.mine && model.mine.rows) || [];
+var tagOf = function (it) { return TAGS.indexOf(it.tag) === -1 ? null : it.tag; };
+var out = [
+{ key: 'recurring', label: 'Recurring', rows: model.recurring.rows },
+{ key: 'extras', label: 'Extras', rows: model.extras.rows },
+].concat((model.custom || []).map(function (c) { return { key: 'custom:' + c.section.id, label: c.section.name || 'Section', rows: c.rows }; }))
+.concat(['kid_card', 'tuition', 'dad', 'sent_ahead', null].map(function (t) {
+return { key: 'tag:' + (t || 'none'), label: t ? tagLabel(t, kid) : 'Riding along, not tagged', rows: mine.filter(function (it) { return tagOf(it) === t; }) };
+}));
+return out.map(function (s) { return { key: s.key, label: s.label, amount: sectionUnpaid(s.rows, cur), ids: openLines(s.rows, cur).map(function (it) { return it.id; }) }; })
+.filter(function (o) { return cents(o.amount) > 0; });
+}
+function splitCents(total, parts, base) {
+base = base == null ? parts.reduce(function (a, b) { return a + b; }, 0) : base;
+if (!base) return parts.map(function () { return 0; });
+var out = parts.map(function (p) { return Math.round(p * total / base); });
+var diff = total - out.reduce(function (a, b) { return a + b; }, 0);
+if (diff) {
+var big = 0; parts.forEach(function (p, i) { if (Math.abs(p) > Math.abs(parts[big])) big = i; });
+out[big] += diff;
+}
+return out;
+}
+function sentAheadLedger(lines, credits) {
+var src = (lines || []).map(function (l) { return { year: l.year, month: l.month, left: cents(l.amount) }; })
+.sort(function (a, b) { return (a.year * 12 + a.month) - (b.year * 12 + b.month); });
+var used = (credits || []).reduce(function (a, t) { return a + cents(t.amount_delivered || 0); }, 0);
+var debt = 0;
+src.forEach(function (s) { if (s.left < 0) { debt += -s.left; s.left = 0; } });   // a shortfall (a −Extra) is owed back first
+used += debt;
+src.forEach(function (s) { var take = Math.min(s.left, used); s.left -= take; used -= take; });
+var bal = src.reduce(function (a, s) { return a + s.left; }, 0) - used;
+return { balance: fromCents(bal), sources: src.filter(function (s) { return s.left > 0; }).map(function (s) { return { year: s.year, month: s.month, left: fromCents(s.left) }; }) };
+}
+function creditSources(ledger, amount) {
+var need = cents(amount), out = [];
+(ledger && ledger.sources || []).forEach(function (s) { if (need > 0) { var t = Math.min(need, cents(s.left)); need -= t; out.push({ year: s.year, month: s.month, amount: fromCents(t) }); } });
+return out;
+}
+function logPlan(model, input) {
+var c = input.currency, A = cents(input.arrived), U = c === 'USD' ? cents(input.arrived) : (input.usd == null || input.usd === '' ? null : cents(input.usd));
+var errors = [];
+if (!(A > 0)) errors.push('arrived');
+if (U != null && !(U > 0)) errors.push('usd');
+var all = input.scope === 'all' || !input.scope || !input.scope.length;
+var scopes = logScopes(model, c, input.kid);
+var chosen = all ? scopes : scopes.filter(function (s) { return input.scope.indexOf(s.key) !== -1; });
+var allRows = [].concat(model.recurring.rows, model.extras.rows, model.mine.rows, [].concat.apply([], (model.custom || []).map(function (x) { return x.rows; })));
+var byId = {}; allRows.forEach(function (it) { byId[it.id] = it; });
+var lineIds = all ? allRows.filter(function (it) { return alive(it) && it.currency === c; }).map(function (it) { return it.id; })
+: [].concat.apply([], chosen.map(function (s) { return s.ids; }));
+var tickIds = all ? lineIds.filter(function (id) { return !isPaidTick(byId[id]); }) : lineIds;
+var part = { recurring: 0, extras: 0, kid_card: 0, tuition: 0, dad: 0, sent_ahead: 0, untagged: 0, adjust: 0, extra: 0, credit: 0 };
+var untagged = [];
+lineIds.forEach(function (id) {
+var it = byId[id], k;
+if (it.bucket === 'recurring') k = 'recurring';
+else if (it.bucket === 'extras' || it.bucket === 'custom') k = 'extras';
+else { k = TAGS.indexOf(it.tag) === -1 ? 'untagged' : it.tag; if (k === 'untagged') untagged.push(id); }
+part[k] += cents(it.amount);
+});
+var linesSum = lineIds.reduce(function (a, id) { return a + cents(byId[id].amount); }, 0);
+var due = all ? cents((model.remaining || {})[c] || 0) : linesSum;
+if (all) part.adjust = due - linesSum;   // = − this month's earlier payments in the currency — kept in Living, visible
+var credit = input.useCredit ? Math.max(0, Math.min(cents(input.credit || 0), due)) : 0;
+part.credit = credit ? -credit : 0;
+var cashDue = due - credit;
+part.extra = A - cashDue;
+var partial = all && part.extra < 0 && A > 0;
+if (partial) {
+var pk = ['recurring', 'extras', 'kid_card', 'tuition', 'dad', 'sent_ahead', 'untagged', 'adjust', 'credit'];
+var scaled = splitCents(A, pk.map(function (k) { return part[k]; }), cashDue);
+pk.forEach(function (k, i) { part[k] = scaled[i]; });
+part.extra = 0;
+}
+var cat = { living: part.recurring + part.extras + part.kid_card + part.sent_ahead + part.untagged + part.adjust + part.extra + part.credit, tuition: part.tuition, dad: part.dad };
+var plan = {
+ok: !errors.length, errors: errors, currency: c, arrived: fromCents(A), usd: U == null ? null : fromCents(U), all: all,
+scope: all ? 'all' : chosen.map(function (s) { return s.key; }), lines: partial ? [] : tickIds, split: lineIds, untagged: untagged,
+partial: partial, shortBy: partial ? fromCents(cashDue - A) : 0,
+due: fromCents(due), creditUsed: fromCents(credit), cashDue: fromCents(cashDue), extra: fromCents(part.extra),
+parts: {}, cur: { living: fromCents(cat.living), tuition: fromCents(cat.tuition), dad: fromCents(cat.dad) },
+rate: (U && A) ? Number((A / U).toFixed(4)) : null,   // <cur> per $ (D7: "£0.7436 per $")
+usdSplit: null,
+};
+Object.keys(part).forEach(function (k) { plan.parts[k] = fromCents(part[k]); });
+if (U != null && A > 0) {
+var keys = ['living', 'tuition', 'dad'], d = splitCents(U, keys.map(function (k) { return cat[k]; }), A);
+var lk = ['recurring', 'extras', 'kid_card', 'sent_ahead', 'untagged', 'adjust', 'extra', 'credit'];
+var ld = splitCents(d[0], lk.map(function (k) { return part[k]; }), cat.living || 1);
+if (!cat.living) ld = lk.map(function () { return 0; });
+plan.usdSplit = { living: fromCents(d[0]), tuition: fromCents(d[1]), dad: fromCents(d[2]), livingParts: {} };
+lk.forEach(function (k, i) { plan.usdSplit.livingParts[k] = fromCents(ld[i]); });
+}
+return plan;
 }
 function copyText(amount) {
 var c = cents(amount), abs = Math.abs(c);
 return (c < 0 ? '-' : '') + Math.floor(abs / 100) + '.' + String(abs % 100).padStart(2, '0');
 }
 Remit.money = {
+TAGS: TAGS, tagLabel: tagLabel, tagGroups: tagGroups,
+logScopes: logScopes, logPlan: logPlan, splitCents: splitCents, sentAheadLedger: sentAheadLedger, creditSources: creditSources,
 copyText: copyText, sectionUnpaid: sectionUnpaid, paymentBases: paymentBases, extraFor: extraFor, extraLine: extraLine,
 SYMBOLS: SYMBOLS, symbol: symbol, cents: cents, fromCents: fromCents, fmt: fmt,
 alive: alive, isTransferLine: isTransferLine, isPaidTick: isPaidTick,
@@ -1558,11 +1791,14 @@ this.state = {
 people: d.people || [], periods: d.periods || [], budgets: d.budgets || [],
 items: readItems(d.items), messages: d.messages || [], transfers: d.transfers || [], rates: d.rates || [],
 commitments: d.commitments || [], sections: d.sections || [],
+ynab_settings: d.ynab_settings || [], ynab_outbox: d.ynab_outbox || [], ynab_mode: d.ynab_mode, ynab_config: d.ynab_config,
 };
 this._viewer = d.viewer || (this.state.people[0] && this.state.people[0].email) || 'unknown';
+if (d.caps) this.caps = Object.assign({}, FixtureStore.prototype.caps, d.caps);   // a test can pose as the pre-S6 schema
 }
 FixtureStore.prototype = Object.create(Emitter.prototype);
 FixtureStore.prototype.mode = 'fixture';
+FixtureStore.prototype.caps = { tag: true, breakdown: true, ynab: true };
 FixtureStore.prototype.load = async function () { return this; };
 FixtureStore.prototype.viewer = function () { return this._viewer; };
 FixtureStore.prototype.getPeople = function () { return this.state.people.filter((p) => p.active !== false); };
@@ -1624,9 +1860,9 @@ budget_id: null, transfer_id: null, created_by: this._viewer, created_at: nowISO
 }, fields);
 this.state.items.push(it); this._emit(); return clone(it);
 };
-FixtureStore.prototype.updateItem = async function (id, patch) {
+FixtureStore.prototype.updateItem = async function (id, patch, opts) {
 var it = this._item(id); if (!it) return null;
-Object.assign(it, patch, { updated_at: nowISO() }); this._emit(); return clone(it);
+Object.assign(it, patch, { updated_at: nowISO() }); if (!(opts && opts.quiet)) this._emit(); return clone(it);
 };
 FixtureStore.prototype.setStatus = function (id, status) { return this.updateItem(id, { status: status }); };
 FixtureStore.prototype.setSort = async function (id, sort_order, bucket) {
@@ -1725,6 +1961,42 @@ return this.state.transfers.filter((t) =>
 (currency == null || t.currency === currency));
 };
 FixtureStore.prototype.getCommitments = function () { return clone(this.state.commitments); };
+FixtureStore.prototype.getSentAhead = async function (personId) {
+var ps = {}; this.state.periods.filter((p) => p.person_id === personId).forEach((p) => { ps[p.id] = p; });
+var lines = this.state.items.filter((it) => ps[it.period_id] && it.tag === 'sent_ahead' && !it.deleted_at)
+.map((it) => ({ year: ps[it.period_id].year, month: ps[it.period_id].month, amount: it.amount, currency: it.currency }));
+var credits = this.state.transfers.filter((t) => t.person_id === personId && t.kind === 'sent_ahead_credit');
+return { lines: clone(lines), credits: clone(credits) };
+};
+FixtureStore.prototype.callYnab = async function (action, body) {
+var d = this.state, mode = d.ynab_mode || 'dry_run';
+if (action === 'config') return { status: 200, json: Object.assign({ ok: true, posting: mode !== 'dry_run', configured: true }, d.ynab_config || { accounts: [], categories: [] }) };
+var t = d.transfers.find((x) => x.id === body.transfer_id);
+if (!t) return { status: 404, json: { ok: false, error: 'transfer not found' } };
+if (!t.breakdown || !t.breakdown.usd_split) { await this.upsertOutbox({ transfer_id: t.id, status: 'failed', last_error: 'no $' }); return { status: 409, json: { ok: false, error: 'no $' } }; }
+if (mode === 'ambiguous' && body.search) mode = d.ynab_mode = 'posted';   // the search finds the one that landed
+if (mode === 'posted') { await this.upsertOutbox({ transfer_id: t.id, status: 'posted', ynab_txn_id: 'ynab-' + t.id, last_error: null }); return { status: 200, json: { ok: true, status: 'posted', transaction_id: 'ynab-' + t.id } }; }
+if (mode === 'fail' || mode === 'ambiguous') { await this.upsertOutbox({ transfer_id: t.id, status: mode === 'fail' ? 'failed' : 'ambiguous', last_error: 'ynab unavailable' }); return { status: 503, json: { ok: false, error: 'ynab unavailable', retryable: true, ambiguous: mode === 'ambiguous' } }; }
+await this.upsertOutbox({ transfer_id: t.id, status: 'dry_run', last_error: null }); return { status: 200, json: { ok: true, status: 'dry_run', dry_run: true } };
+};
+FixtureStore.prototype.getYnabSettings = async function () { return clone(this.state.ynab_settings || []); };
+FixtureStore.prototype.saveYnabSettings = async function (row) {
+var all = this.state.ynab_settings = this.state.ynab_settings || [];
+var i = all.findIndex((r) => (r.person_id || null) === (row.person_id || null));
+if (i === -1) all.push(Object.assign({}, row)); else Object.assign(all[i], row);
+this._emit(); return clone(row);
+};
+FixtureStore.prototype.getOutbox = async function (transferIds) {
+var ob = this.state.ynab_outbox || [];
+return clone(ob.filter((o) => !transferIds || transferIds.indexOf(o.transfer_id) !== -1));
+};
+FixtureStore.prototype.upsertOutbox = async function (row) {
+var ob = this.state.ynab_outbox = this.state.ynab_outbox || [];
+var i = ob.findIndex((o) => o.transfer_id === row.transfer_id && (o.kind || 'post') === (row.kind || 'post'));
+var r = Object.assign({ id: uid('ob'), kind: 'post', status: 'pending', attempts: 0, created_at: nowISO() }, i === -1 ? {} : ob[i], row, { updated_at: nowISO() });
+if (i === -1) ob.push(r); else ob[i] = r;
+this._emit(); return clone(r);
+};
 FixtureStore.prototype.getReportData = async function () {
 return {
 people: clone(this.state.people), periods: clone(this.state.periods),
@@ -1740,6 +2012,18 @@ this._rateFetchInFlight = {};   // day -> true, so a refresh never double-fetche
 }
 SupabaseStore.prototype = Object.create(Emitter.prototype);
 SupabaseStore.prototype.mode = 'live';
+SupabaseStore.prototype.caps = { tag: false, breakdown: false, ynab: false };
+SupabaseStore.prototype._probeCaps = async function () {
+var self = this, ok = function (p) { return self._get(p).then(function () { return true; }, function () { return false; }); };
+var got = await Promise.all([ok('/remit_items?select=tag&limit=1'), ok('/remit_transfers?select=breakdown,kind&limit=1'), ok('/remit_ynab_settings?select=person_id&limit=1')]);
+this.caps = { tag: got[0], breakdown: got[1], ynab: got[2] };
+};
+SupabaseStore.prototype._strip = function (fields, table) {
+var o = Object.assign({}, fields);
+if (table === 'items' && !this.caps.tag) delete o.tag;
+if (table === 'transfers' && !this.caps.breakdown) { delete o.breakdown; delete o.kind; }
+return o;
+};
 SupabaseStore.prototype._h = function (extra) { return Object.assign({}, this.gate.authHeaders(), extra || {}); };
 SupabaseStore.prototype._get = async function (path) {
 var r = await fetch(this.REST + path, { headers: this._h() });
@@ -1751,14 +2035,14 @@ var r = await fetch(this.REST + path, { method: 'POST', headers: this._h({ 'Cont
 if (!r.ok) throw new Error('remit rest ' + r.status);
 var t = await r.text(); return t ? JSON.parse(t) : null;
 };
-SupabaseStore.prototype._patch = async function (path, body) {
-var r = await fetch(this.REST + path, { method: 'PATCH', headers: this._h({ 'Content-Type': 'application/json', 'Prefer': 'return=representation' }), body: JSON.stringify(body) });
+SupabaseStore.prototype._patch = async function (path, body, prefer) {
+var r = await fetch(this.REST + path, { method: 'PATCH', headers: this._h({ 'Content-Type': 'application/json', 'Prefer': prefer || 'return=representation' }), body: JSON.stringify(body) });
 if (!r.ok) throw new Error('remit rest ' + r.status);
 var t = await r.text(); return t ? JSON.parse(t) : null;
 };
 SupabaseStore.prototype.load = async function () {
 var got = await Promise.all([this._get('/remit_people?select=*&order=is_kid.desc,name.asc'),
-this._get('/remit_rates?select=*').catch(function () { return []; })]);
+this._get('/remit_rates?select=*').catch(function () { return []; }), this._probeCaps()]);
 this._people = got[0]; this._rates = got[1];
 this._refreshRates([Remit.fx.latestWorkingDay()]);
 return this;
@@ -1833,10 +2117,19 @@ SupabaseStore.prototype.getBudgets = async function (personId, year) {
 return effectiveSet(await this._get('/remit_budgets?select=*&person_id=eq.' + personId + '&year=lte.' + year + '&active=is.true&order=year.desc,created_at.asc'), year);
 };
 SupabaseStore.prototype.addItem = async function (periodId, fields) {
-var body = Object.assign({ period_id: periodId, settle: 'transfer', status: 'requested', created_by: this.viewer() }, fields);
+var body = Object.assign({ period_id: periodId, settle: 'transfer', status: 'requested', created_by: this.viewer() }, this._strip(fields, 'items'));
+if (body.sort_order == null) {
+var q = '/remit_items?select=sort_order&period_id=eq.' + periodId + '&bucket=eq.' + (body.bucket || 'extras') + '&deleted_at=is.null' +
+(body.section_id ? '&section_id=eq.' + body.section_id : '') + '&order=sort_order.desc&limit=1';
+try { var top = await this._get(q); body.sort_order = ((top[0] && Number(top[0].sort_order)) || 0) + 10; } catch (e) {}
+}
 var rows = await this._post('/remit_items', body); this._emit(); return rows && rows[0];
 };
-SupabaseStore.prototype.updateItem = async function (id, patch) { var rows = await this._patch('/remit_items?id=eq.' + id, patch); this._emit(); return rows && rows[0]; };
+SupabaseStore.prototype.updateItem = async function (id, patch, opts) {
+patch = this._strip(patch, 'items'); if (!Object.keys(patch).length) return null;
+var rows = await this._patch('/remit_items?id=eq.' + id, patch, opts && opts.quiet ? 'return=minimal' : null);
+if (!(opts && opts.quiet)) this._emit(); return rows && rows[0];
+};
 SupabaseStore.prototype.setStatus = function (id, status) { return this.updateItem(id, { status: status }); };
 SupabaseStore.prototype.setSort = function (id, sort_order, bucket) { var p = { sort_order: sort_order }; if (bucket) p.bucket = bucket; return this.updateItem(id, p); };
 SupabaseStore.prototype.reorder = async function (id, dir) {
@@ -1916,16 +2209,49 @@ this._emit();
 return { period: period, added: lines.length };
 };
 SupabaseStore.prototype.createTransfer = async function (fields) {
-var t = (await this._post('/remit_transfers', fields))[0];
+var t = (await this._post('/remit_transfers', this._strip(fields, 'transfers')))[0];
 this._emit(); return t;
 };
-SupabaseStore.prototype.updateTransfer = async function (id, patch) { var r = await this._patch('/remit_transfers?id=eq.' + id, patch); this._emit(); return r && r[0]; };
+SupabaseStore.prototype.updateTransfer = async function (id, patch) { var r = await this._patch('/remit_transfers?id=eq.' + id, this._strip(patch, 'transfers')); this._emit(); return r && r[0]; };
 SupabaseStore.prototype.deleteTransfer = async function (id) { var r = await fetch(this.REST + '/remit_transfers?id=eq.' + id, { method: 'DELETE', headers: this._h() }); this._emit(); return r.ok; };
 SupabaseStore.prototype.getTransfers = async function (personId, year, month, currency) {
 var q = '/remit_transfers?select=*'; if (personId != null) q += '&person_id=eq.' + personId; if (year != null) q += '&period_year=eq.' + year; if (month != null) q += '&period_month=eq.' + month; if (currency) q += '&currency=eq.' + currency;
 return this._get(q);
 };
 SupabaseStore.prototype.getCommitments = async function () { return this._get('/remit_commitments?select=*'); };
+SupabaseStore.prototype.getSentAhead = async function (personId) {
+if (!this.caps.tag) return { lines: [], credits: [] };
+var ps = await this._get('/remit_periods?select=id,year,month&person_id=eq.' + personId), by = {};
+ps.forEach((p) => { by[p.id] = p; });
+var lines = ps.length ? await this._get('/remit_items?select=period_id,amount,currency&tag=eq.sent_ahead&deleted_at=is.null&period_id=in.(' + ps.map((p) => p.id).join(',') + ')') : [];
+var credits = this.caps.breakdown ? await this._get('/remit_transfers?select=amount_delivered,currency&kind=eq.sent_ahead_credit&person_id=eq.' + personId) : [];
+return { lines: lines.map((it) => ({ year: by[it.period_id].year, month: by[it.period_id].month, amount: Number(it.amount), currency: it.currency })), credits: credits };
+};
+SupabaseStore.prototype.callYnab = async function (action, body) {
+var url = String(this.REST || '').replace(/\/rest\/v1\/?$/, '') + '/functions/v1/remit-ynab';
+try {
+var r = await fetch(url, { method: 'POST', headers: this._h({ 'Content-Type': 'application/json' }), body: JSON.stringify(Object.assign({ action: action }, body || {})) });
+var j = null; try { j = await r.json(); } catch (e) {}
+return { status: r.status, json: j || {} };
+} catch (e) { return { status: 0, json: { ok: false, error: 'network error', retryable: true, ambiguous: true } }; }
+};
+SupabaseStore.prototype.getYnabSettings = async function () { return this.caps.ynab ? this._get('/remit_ynab_settings?select=*') : []; };
+SupabaseStore.prototype.saveYnabSettings = async function (row) {
+var q = '/remit_ynab_settings?' + (row.person_id ? 'person_id=eq.' + row.person_id : 'person_id=is.null');
+var have = await this._get(q.replace('?', '?select=id&'));
+var r = have.length ? await this._patch(q, row) : await this._post('/remit_ynab_settings', row);
+this._emit(); return r && r[0];
+};
+SupabaseStore.prototype.getOutbox = async function (transferIds) {
+if (!this.caps.ynab || (transferIds && !transferIds.length)) return [];
+return this._get('/remit_ynab_outbox?select=*' + (transferIds ? '&transfer_id=in.(' + transferIds.join(',') + ')' : ''));
+};
+SupabaseStore.prototype.upsertOutbox = async function (row) {
+var q = '/remit_ynab_outbox?transfer_id=eq.' + row.transfer_id + '&kind=eq.' + (row.kind || 'post');
+var have = await this._get(q.replace('?', '?select=id&'));
+var r = have.length ? await this._patch(q, row) : await this._post('/remit_ynab_outbox', Object.assign({ kind: 'post' }, row));
+this._emit(); return r && r[0];
+};
 SupabaseStore.prototype.getReportData = async function () {
 var periods = await this._get('/remit_periods?select=*');
 var items = readItems(await this._get('/remit_items?select=*&deleted_at=is.null&order=sort_order.asc'));
@@ -1977,7 +2303,7 @@ el.addEventListener('wheel', stop, { passive: false });
 function toast(msg, opts) {
 opts = opts || {};
 var t = document.createElement('div');
-t.className = 'toast'; t.setAttribute('role', 'status');
+t.className = 'toast' + (opts.top ? ' top' : ''); t.setAttribute('role', 'status');
 t.innerHTML = '<span>' + esc(msg) + '</span>' + (opts.actionLabel ? '<button type="button">' + esc(opts.actionLabel) + '</button>' : '');
 document.body.appendChild(t);
 requestAnimationFrame(() => t.classList.add('show'));
@@ -1990,6 +2316,10 @@ var CURSYM = { GBP: '£', USD: 'US$', AUD: 'A$', EUR: '€' };
 var CURNAME = { GBP: 'British pound', USD: 'US dollar', AUD: 'Australian dollar', EUR: 'Euro' };
 function curSym(c) { return CURSYM[c] || c; }
 function symHTML(s) { return String(s == null ? '' : s).replace(/\b(US|A)\$/g, '<span class="cpx">$1</span>$'); }
+function fitLineAmt(inp) {
+var n = String(inp.value || '').length, w = Math.max(+inp.getAttribute('data-w') || 0, n, 4);
+inp.style.width = (w + 0.3) + 'ch'; inp.classList.toggle('neg', /^\s*[-\u2212]/.test(inp.value));
+}
 function fitAmt(inp) { var n = String(inp.value || inp.placeholder || '').length; inp.style.width = Math.max(6, n + 1.5) + 'ch'; inp.classList.toggle('neg', /^\s*[-\u2212]/.test(inp.value)); }
 function signBtn() { return '<button type="button" class="sgn" data-sgn aria-label="Make this amount negative or positive">+/−</button>'; }
 function flipSign(inp) {
@@ -2037,6 +2367,32 @@ btn.setAttribute('aria-expanded', 'true');
 setTimeout(function () { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); }, 0);
 });
 }
+function pickTag(btn, cur, kid) {
+return new Promise(function (resolve) {
+var old = document.querySelector('.curmenu'); if (old) old.__close(undefined);
+var opts = ['kid_card', 'tuition', 'dad'].concat(cur === 'sent_ahead' ? ['sent_ahead'] : []).concat([null]);
+var m = document.createElement('div'); m.className = 'curmenu tagmenu'; m.setAttribute('role', 'menu'); m.setAttribute('aria-label', 'Tag');
+m.innerHTML = opts.map(function (t) {
+return '<button type="button" role="menuitemradio" aria-checked="' + (t === cur) + '" data-picktag="' + (t || '') + '">' + esc(t ? money.tagLabel(t, kid) : 'No tag') + '</button>';
+}).join('');
+document.body.appendChild(m);
+var r = btn.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
+var foot = document.querySelector('.foot'), floor = foot ? foot.getBoundingClientRect().top : innerHeight;
+m.style.left = Math.max(12, Math.min(r.left, innerWidth - mw - 12)) + 'px';
+m.style.top = ((r.bottom + 6 + mh < floor) ? r.bottom + 6 : Math.max(12, r.top - 6 - mh)) + 'px';
+function close(v) { m.remove(); document.removeEventListener('pointerdown', outside, true); document.removeEventListener('keydown', onKey, true); btn.setAttribute('aria-expanded', 'false'); resolve(v); }
+function outside(e) { if (!m.contains(e.target)) { if (btn.contains(e.target)) e.stopPropagation(); close(undefined); } }
+function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); close(undefined); btn.focus(); } }
+m.__close = close;
+m.querySelectorAll('[data-picktag]').forEach(function (b) {
+b.addEventListener('pointerdown', function (e) { e.preventDefault(); });
+b.addEventListener('mousedown', function (e) { e.preventDefault(); });
+b.addEventListener('click', function () { close(b.getAttribute('data-picktag') || null); });
+});
+btn.setAttribute('aria-expanded', 'true');
+setTimeout(function () { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); var c = m.querySelector('[aria-checked=true]') || m.querySelector('button'); if (c) c.focus(); }, 0);
+});
+}
 window.RemitCur = { pick: pickCur, sym: curSym, symHTML: symHTML, fitAmt: fitAmt, name: CURNAME, signBtn: signBtn, wireSign: wireSign, flipSign: flipSign };
 function confirmDel(btn, name, opts) {
 opts = opts || {};
@@ -2060,7 +2416,13 @@ m.querySelector('[data-yes]').addEventListener('click', function () { close(true
 setTimeout(function () { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); m.querySelector('[data-no]').focus(); }, 0);
 });
 }
-function erow(it, homeCur, addCtx, selected) {
+function tagChip(it, tagCtx) {
+if (!tagCtx || !it || it.bucket !== 'mine') return '';
+var t = money.TAGS.indexOf(it.tag) === -1 ? null : it.tag;
+return '<button type="button" class="tagchip' + (t ? ' on' : '') + '" data-tagof="' + esc(it.id) + '" data-tag="' + esc(t || '') + '" aria-haspopup="menu" aria-label="Tag: ' +
+esc(t ? money.tagLabel(t, tagCtx.kid) : 'none') + ' — change">' + esc(t && !tagCtx.grouped ? money.tagLabel(t, tagCtx.kid) : 'Tag') + '</button>';
+}
+function erow(it, homeCur, addCtx, selected, amtW, tagCtx) {
 var isAdd = !it;
 var id = isAdd ? '' : it.id;
 var desc = isAdd ? '' : (it.description || '');
@@ -2069,19 +2431,22 @@ var amt = isAdd ? '' : (it.amount != null ? Number(it.amount).toFixed(2) : '');
 var cur = isAdd ? (addCtx.currency || homeCur) : it.currency;
 var paid = !isAdd && it.status === 'paid';
 var ctxAttr = isAdd ? (' data-add data-bucket="' + esc(addCtx.bucket) + '"' + (addCtx.section_id ? ' data-section="' + esc(addCtx.section_id) + '"' : '') + ' data-cur="' + esc(cur) + '"') : (' data-item="' + esc(id) + '"');
-var grip = isAdd ? '<span class="grip addmark" aria-hidden="true"></span>'
-: '<button type="button" class="grip" data-grip="' + esc(id) + '" aria-pressed="' + (!!selected) + '" aria-label="Select or move ' + esc(it.description || 'line') + (paid ? ' (paid)' : '') + '">' +
-(paid ? '<span class="pmark" aria-hidden="true">✓</span>' : '') + '</button>';
-return '<div class="row erow' + (paid ? ' paid' : '') + (isAdd ? ' addrow' : '') + (selected ? ' sel' : '') + '"' + ctxAttr + '>' +
-grip +
+var chk = isAdd ? '<span class="chk addmark" aria-hidden="true"></span>'
+: '<button type="button" class="chk" role="checkbox" data-chk="' + esc(id) + '" aria-checked="' + paid + '" aria-label="Paid: ' + esc(it.description || 'line') + '"></button>';
+var menu = isAdd ? '<span class="rowmenu" aria-hidden="true"></span>'
+: '<button type="button" class="rowmenu" data-rowmenu="' + esc(id) + '" aria-haspopup="menu" aria-label="Actions for ' + esc(desc || 'line') + '">⋯</button>' +
+'<span class="swacts" aria-hidden="true"><button type="button" class="swmove" data-swmove="' + esc(id) + '" tabindex="-1">Move</button>' +
+'<button type="button" class="swdel" data-swdel="' + esc(id) + '" tabindex="-1">Delete</button></span>';
+var chip = tagChip(it, tagCtx);
+return '<div class="row erow' + (paid ? ' paid' : '') + (isAdd ? ' addrow' : '') + (selected ? ' sel' : '') + (note ? ' hasnote' : '') + (chip ? ' tagrow' : '') + '"' + ctxAttr + '>' +
+chk + chip +
 '<span class="nm">' +
 '<input class="what" data-f="description" value="' + esc(desc) + '" placeholder="' + (isAdd ? 'Add item' : 'What is it?') + '" aria-label="What" autocomplete="off">' +
 '<input class="note" data-f="note" value="' + esc(note) + '" placeholder="note" aria-label="Note" autocomplete="off">' +
 '</span>' +
 curPill(cur, homeCur) +
-'<input class="amt num" data-f="amount" inputmode="decimal" value="' + esc(amt === '' ? '' : amt) + '" placeholder="0.00" aria-label="Amount" autocomplete="off">' +
-signBtn() +
-(isAdd ? '<span class="del" aria-hidden="true"></span>' : '<button type="button" class="del" data-del="' + esc(id) + '" aria-label="Delete ' + esc(desc) + '">×</button>') +
+'<input class="amt num" data-f="amount" inputmode="decimal" value="' + esc(amt === '' ? '' : amt) + '" placeholder="' + (isAdd ? '' : '0.00') + '" data-w="' + (amtW || 0) + '" aria-label="Amount" autocomplete="off">' +
+signBtn() + menu +
 '</div>';
 }
 function copyNums(map) {
@@ -2098,8 +2463,12 @@ sel = sel || new Set();
 var sub = money.sumByCurrency(items);
 var byCur = {}; items.forEach((it) => { (byCur[it.currency] = byCur[it.currency] || []).push(it); });
 var order = Object.keys(byCur).sort((a, b) => (a === homeCur ? -1 : b === homeCur ? 1 : a.localeCompare(b)));
-var body = order.map((cur) => {
-var rows = byCur[cur].map((it) => erow(it, homeCur, null, sel.has(it.id))).join('');
+var amtW = items.reduce((m, it) => Math.max(m, it.amount != null ? Number(it.amount).toFixed(2).length : 0), 4);
+var tagCtx = opts.tags || null;
+var body = opts.groups ? opts.groups.map((g) =>   // S5: grouped by tag (only when a tag is used) — a subtotal per group, per currency
+'<div class="subbk tagbk" data-taggroup="' + esc(g.tag || 'none') + '">' + esc(money.tagLabel(g.tag, tagCtx && tagCtx.kid)) + '<span class="num">' + copyNums(g.subtotal) + '</span></div>' +
+g.rows.map((it) => erow(it, homeCur, null, sel.has(it.id), amtW, tagCtx)).join('')).join('') : order.map((cur) => {
+var rows = byCur[cur].map((it) => erow(it, homeCur, null, sel.has(it.id), amtW, tagCtx)).join('');
 if (cur === homeCur) return rows;
 var s = {}; s[cur] = money.sumByCurrency(byCur[cur])[cur];
 return '<div class="subbk">In ' + esc(cur) + '<span class="num">' + copyNums(s) + '</span></div>' + rows;
@@ -2116,7 +2485,7 @@ head = '<div class="bk">' + esc(label) + ' <button type="button" class="linkbtn 
 } else {
 head = '<div class="bk">' + esc(label) + subNum + '</div>';
 }
-return head + body + erow(null, homeCur, addCtx, false);
+return head + body + erow(null, homeCur, addCtx, false, amtW);
 }
 function render(ctrl) {
 var store = ctrl.store, root = ctrl.root;
@@ -2144,33 +2513,16 @@ wire(ctrl);
 return;
 }
 var sel = ctrl.selection || new Set();
-var allPaid = model.anyLines && ctrl.allRows().every(function (r) { return r.status === 'paid'; });
-var markAll = model.anyLines ? '<button type="button" class="linkbtn" id="markAllPaid" data-to="' + (allPaid ? 'requested' : 'paid') + '">' + (allPaid ? 'Mark all unpaid' : 'Mark all paid') + '</button>' : '';
-var kid = '<section class="zone"><div class="zone-hd"><h2>' + esc(title) + '</h2>' +
-'<span class="tt"><em>total</em> <span class="num">' + symHTML(esc(money.fmtByCurrency(model.total) || money.fmt(0, homeCur))) + '</span></span></div>' +
+var kid = '<section class="zone"><div class="zone-hd"><h2>' + esc(title) + '</h2></div>' +
 sectionBlock('Recurring', model.recurring.rows, person, { bucket: 'recurring' }, sel, { defaults: true }) +
 sectionBlock('Extras', model.extras.rows, person, { bucket: 'extras' }, sel) +
 model.custom.map((c) => sectionBlock(c.section.name, c.rows, person, { bucket: 'custom', section_id: c.section.id }, sel, { customSection: c.section })).join('') +
-'<p class="addsec"><button type="button" class="linkbtn" id="addSection">＋ Add section</button></p>' +
 '</section>';
 var riding =
-'<section class="riding"><div class="zone-hd"><h2>Riding along — Dad’s own</h2>' +
-'<span class="tt"><em>subtotal</em> <span class="num">' + copyNums(Object.keys(model.mine.subtotal).length ? model.mine.subtotal : (function () { var z = {}; z[homeCur] = 0; return z; })()) + '</span></span></div>' +
-'<p class="why">Nothing to do with ' + esc(person ? person.name : 'the kid') + '. Bundled into the same transfer to pay one fee instead of two.</p>' +
-sectionBlock('Riding along', model.mine.rows, person, { bucket: 'mine' }, sel) + '</section>';
-var secMarks = [
-{ key: 'recurring', label: 'recurring', rows: model.recurring.rows },
-{ key: 'extras', label: 'extras', rows: model.extras.rows },
-{ key: 'mine', label: 'riding along', rows: model.mine.rows },
-].concat(model.custom.map(function (c) { return { key: 'custom:' + c.section.id, label: c.section.name || 'section', rows: c.rows }; }))
-.filter(function (m) { return m.rows.length; })
-.map(function (m) {
-var done = m.rows.every(function (r) { return r.status === 'paid'; });
-return '<button type="button" class="linkbtn" data-marksec="' + esc(m.key) + '" data-to="' + (done ? 'requested' : 'paid') + '">Mark ' + esc(m.label) + (done ? ' unpaid' : ' paid') + '</button>';
-}).join('');
-var addBar = '<p class="note linkrow" style="margin-top:26px"><button type="button" class="linkbtn" id="reportsBtn">Reports</button></p>' +
-(markAll ? '<div class="markrow" role="group" aria-label="Mark paid">' + markAll + secMarks +
-(secMarks ? '<button type="button" class="linkbtn markmenu" id="markMenu" aria-haspopup="menu" hidden>Mark a section ▾</button>' : '') + '</div>' : '');
+'<section class="riding"><div class="zone-hd"><h2>Riding along — Dad’s own</h2></div>' +
+sectionBlock('Riding along', model.mine.rows, person, { bucket: 'mine' }, sel,
+store.caps && store.caps.tag ? { tags: { kid: person ? person.name : '', grouped: !!model.mine.groups }, groups: model.mine.groups } : {}) + '</section>';
+var addBar = '<div class="morerow"><button type="button" class="linkbtn morebtn" id="moreBtn" aria-haspopup="menu" aria-expanded="false">More<span class="caret" aria-hidden="true"> ▾</span></button></div>';
 root.innerHTML = head + seg + strip + kid + riding + settledHTML(ctrl) + addBar + selbarHTML(ctrl) + footerHTML(ctrl);
 wire(ctrl);
 }
@@ -2184,18 +2536,63 @@ var tx = transfers.filter(function (t) { return t.currency === c; });
 if (!tx.length) return '';
 var sub = {}; sub[c] = (model.settled[c] || 0);
 var rows = tx.map(function (t) {
+if (t.breakdown && t.breakdown.kind === 'log') return receiptHTML(ctrl, t);   // arc/line-ux S9 (D7)
 var when = t.sent_on ? fx.rateDayLabel(t.sent_on) : 'date unknown';
 var meta = [when, t.provider].filter(Boolean).map(esc).join(' · ');
 var usd = fx.paymentUsd(t, ctrl.store.getRates ? ctrl.store.getRates() : []);
-return '<div class="srow" data-xfer="' + esc(t.id) + '"><span class="nm"><b>Payment</b><em>' + meta + '</em></span>' +
+var title = t.kind === 'sent_ahead_credit' ? 'Sent ahead' : 'Payment';   // D4: a non-cash settlement, no YNAB
+return '<div class="srow' + (t.kind === 'sent_ahead_credit' ? ' credit' : '') + '" data-xfer="' + esc(t.id) + '"><span class="nm"><b>' + title + '</b><em>' + meta + '</em></span>' +
 (usd ? '<small class="usd num" data-usd="' + usd.kind + '">' + symHTML(esc(usd.text)) + '</small>' : '') +
-'<span class="am num">' + symHTML(esc(money.fmt(t.amount_delivered || 0, c))) + '</span>' +
+'<span class="am num">' + symHTML(esc(money.fmt(t.amount_delivered || 0, c))) + '</span>' + ynabPill(ctrl, t) +
 '<button type="button" class="del" data-delxfer="' + esc(t.id) + '" aria-label="Delete payment">×</button>' +
 (t.note ? '<span class="snote">' + esc(t.note) + '</span>' : '') + '</div>';
 }).join('');
 return '<section class="settled"><div class="zone-hd"><h2>Settled in ' + esc(WHERE[c] || c) + '</h2>' +
-'<span class="tt"><span class="num">' + symHTML(esc(money.fmtByCurrency(sub))) + '</span></span></div>' + rows + '</section>';
+'<span class="tt"><span class="num">' + copyNums(sub) + '</span></span></div>' + rows + '</section>';
 }).join('');
+}
+function receiptHTML(ctrl, t) {
+var b = t.breakdown, c = t.currency, u = b.usd_split, kid = (ctrl.store.getPerson(t.person_id) || {}).name || 'Kid';
+var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+var day = t.sent_on ? (+t.sent_on.slice(8, 10)) + ' ' + MON[+t.sent_on.slice(5, 7) - 1] : 'date unknown';
+var inUsd = !!u, F = function (v) { return symHTML(esc(money.fmt(v, inUsd ? 'USD' : c))); };
+var head = [esc(t.provider || 'Transfer'), esc(day)].join(' · ') + ' · ' + symHTML(esc(money.fmt(t.amount_delivered, c))) +
+(inUsd && c !== 'USD' ? ' = ' + symHTML(esc(money.fmt(t.amount_sent_usd != null ? t.amount_sent_usd : b.usd, 'USD'))) + ' <span class="rrate">(' + esc(money.symbol(c) + Number(b.rate).toFixed(4)) + ' per $)</span>' : '');
+var lp = inUsd ? u.livingParts : b.parts, val = function (k) { return lp && lp[k] ? lp[k] : 0; };
+var subs = [];
+if (money.cents(val('recurring'))) subs.push('Recurring ' + F(val('recurring')));
+if (money.cents(val('extras'))) subs.push('Extras ' + F(val('extras')));
+if (money.cents(val('kid_card'))) subs.push(esc(money.tagLabel('kid_card', kid)) + ' ' + F(val('kid_card')));
+if (money.cents(val('untagged'))) subs.push('not tagged ' + F(val('untagged')));
+var sa = val('sent_ahead') + val('extra'); if (money.cents(sa)) subs.push('sent ahead ' + F(sa));
+if (money.cents(val('adjust'))) subs.push('paid earlier this month ' + F(val('adjust')));
+if (money.cents(val('credit'))) {
+var from = (b.credit_from || []).map(function (x) { return MON[x.month - 1]; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(' + ');
+subs.push('covered by ' + esc(from || 'earlier') + '’s extra ' + F(val('credit')));
+}
+var line = function (label, v, sub, cls) {
+var m = {}; m[inUsd ? 'USD' : c] = v;
+return '<div class="rl' + (cls ? ' ' + cls : '') + '"><span class="rk">' + esc(label) + (sub ? '<small>' + sub + '</small>' : '') + '</span><span class="rv num">' + copyNums(m) + '</span></div>';
+};
+var cats = inUsd ? u : b.cur;
+var body = line(kid + '’s Living', cats.living, subs.join(' · ')) +
+(money.cents(cats.tuition) ? line(kid + '’s Tuition', cats.tuition) : '') +
+(money.cents(cats.dad) ? line('Dad', cats.dad) : '');
+var st = Remit.ui.ynabState ? Remit.ui.ynabState(ctrl, t) : null;
+var tail = !inUsd ? (c === 'USD' ? '' : '<span class="rstate muted">Add the $ that left the bank to send it to YNAB</span>')
+: !st ? '' : st.posted ? ''
+: '<button type="button" class="ynabpill rstate" data-ynabretry="' + esc(t.id) + '" aria-label="Not in YNAB yet (' + esc(st.why) + ') — retry">Not in YNAB yet · Retry</button>';
+var totM = {}; totM[inUsd ? 'USD' : c] = inUsd ? (t.amount_sent_usd != null ? t.amount_sent_usd : b.usd) : t.amount_delivered;
+return '<div class="receipt srow" data-xfer="' + esc(t.id) + '">' +
+'<div class="rchead"><span class="rt">' + head + '</span><button type="button" class="del" data-delxfer="' + esc(t.id) + '" aria-label="Delete transfer">×</button></div>' +
+body + '<div class="rl tot"><span class="rk">Total' + (st && st.posted && inUsd ? ' <span class="rstate ok" data-ynab="posted">✓ matches YNAB</span>' : '') + '</span><span class="rv num">' + copyNums(totM) + '</span></div>' +
+(tail ? '<div class="rfoot">' + tail + '</div>' : '') + (t.note ? '<span class="snote">' + esc(t.note) + '</span>' : '') + '</div>';
+}
+function ynabPill(ctrl, t) {
+var st = Remit.ui.ynabState ? Remit.ui.ynabState(ctrl, t) : null;
+if (!st) return '';
+if (st.posted) return '<span class="ynabok" data-ynab="posted">✓ in YNAB</span>';
+return '<button type="button" class="ynabpill" data-ynabretry="' + esc(t.id) + '" aria-label="Not in YNAB yet (' + esc(st.why) + ') — retry">Not in YNAB yet · Retry</button>';
 }
 function selbarHTML(ctrl) {
 var n = ctrl.selection ? ctrl.selection.size : 0;
@@ -2217,11 +2614,12 @@ var rows = curs.length ? curs.map(function (c) {
 var rem = model.remaining[c] || 0;
 var neg = money.cents(rem) < 0;
 var label = neg ? ('Overpaid · ' + c) : ('To transfer · ' + c);
-return '<div class="tl"><span>' + esc(label) + '</span><div class="amts"><b class="num">' + symHTML(esc(money.fmt(Math.abs(rem), c))) + '</b>' +
-'<small class="num">/ ' + symHTML(esc(money.fmt(total[c] || 0, c))) + ' total</small></div></div>';
+var one = function (v) { var m = {}; m[c] = v; return copyNums(m); };
+return '<div class="tl"><span>' + esc(label) + '</span><div class="amts"><b class="num">' + one(Math.abs(rem)) + '</b>' +
+'<small class="num">/ ' + one(total[c] || 0) + ' total</small></div></div>';
 }).join('') : '<div class="tl"><span>Settled</span><b class="num">Nothing to transfer</b></div>';
 var title = curs.length ? '<div class="foot-t">Remaining transfers required</div>' : '';
-var btn = '<button class="btn" id="recordTransfer">Record a payment</button>';
+var btn = '<button class="btn" id="recordTransfer">Log a transfer</button>';   // arc/line-ux S7 (D3)
 return '<div class="foot"><div class="in">' + title + rows + btn + '</div></div>';
 }
 var _footRO = null, _footH = -1;
@@ -2266,8 +2664,6 @@ setTimeout(() => { document.addEventListener('pointerdown', outside, true); docu
 });
 root.querySelectorAll('[data-ym]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); var p = a.getAttribute('data-ym').split('-'); ctrl.setMonth(+p[0], +p[1]); }));
 var edef = root.querySelector('#editDefaults'); if (edef) edef.addEventListener('click', () => ctrl.openBudgets());
-var addsec = root.querySelector('#addSection'); if (addsec) addsec.addEventListener('click', () => ctrl.addSection());
-var rep = root.querySelector('#reportsBtn'); if (rep) rep.addEventListener('click', () => ctrl.openReports());
 root.querySelectorAll('[data-secname]').forEach((inp) => {
 inp.setAttribute('data-orig', inp.value);
 var save = () => { var v = (inp.value || '').trim(); if (v && v !== inp.getAttribute('data-orig')) ctrl.renameSection(inp.getAttribute('data-secname'), v); };
@@ -2281,8 +2677,9 @@ if (await confirmDel(b, secName, { q: 'Delete section “' + esc(secName) + '”
 }));
 root.querySelectorAll('.srow[data-xfer]').forEach((rowEl) => {
 var xid = rowEl.getAttribute('data-xfer');
-rowEl.addEventListener('click', (e) => { if (e.target.closest('[data-delxfer]')) return; ctrl.editTransfer(xid); });
+rowEl.addEventListener('click', (e) => { if (e.target.closest('[data-delxfer], [data-ynabretry]')) return; ctrl.editTransfer(xid); });
 });
+root.querySelectorAll('[data-ynabretry]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); if (Remit.ui.retryYnab) Remit.ui.retryYnab(ctrl, b.getAttribute('data-ynabretry')); }));
 root.querySelectorAll('[data-delxfer]').forEach((b) => b.addEventListener('click', async (e) => {
 e.stopPropagation();
 var xid = b.getAttribute('data-delxfer'), t = (ctrl.model.transfers || []).find((x) => x.id === xid);
@@ -2290,32 +2687,8 @@ var label = t ? money.fmt(t.amount_delivered || 0, t.currency) + ' payment' : 't
 if (await confirmDel(b, label)) ctrl.deleteTransfer(xid);
 }));
 var rec = root.querySelector('#recordTransfer'); if (rec) rec.addEventListener('click', () => ctrl.recordTransfer());
-var mall = root.querySelector('#markAllPaid'); if (mall) mall.addEventListener('click', () => ctrl.markAllPaid(mall.getAttribute('data-to')));
-root.querySelectorAll('[data-marksec]').forEach((b) => b.addEventListener('click', () => ctrl.markSectionPaid(b.getAttribute('data-marksec'), b.getAttribute('data-to'))));
-var mrow = root.querySelector('.markrow'), mmenu = root.querySelector('#markMenu');
-if (mrow && mmenu) {
-var line = (mall && mall.offsetHeight) || 44;
-if (mrow.offsetHeight > line * 2 + 4) { mrow.classList.add('folded'); mmenu.hidden = false; }
-mmenu.addEventListener('click', () => {
-var old = document.querySelector('.curmenu'); if (old) { var was = old.__owner === mmenu; old.__close(null); if (was) return; }
-var m = document.createElement('div'); m.className = 'curmenu markmenu-pop'; m.setAttribute('role', 'menu'); m.__owner = mmenu;
-m.innerHTML = Array.from(mrow.querySelectorAll('[data-marksec]')).map((b) =>
-'<button type="button" role="menuitem" data-pickmark="' + esc(b.getAttribute('data-marksec')) + '">' + esc(b.textContent) + '</button>').join('');
-document.body.appendChild(m);
-var r = mmenu.getBoundingClientRect(), mh = m.offsetHeight, mw = m.offsetWidth;
-m.style.left = Math.max(12, Math.min(r.left, innerWidth - mw - 12)) + 'px';
-m.style.top = Math.max(12, r.top - 6 - mh) + 'px';
-var close = function () { m.remove(); document.removeEventListener('pointerdown', outside, true); document.removeEventListener('keydown', onKey, true); mmenu.setAttribute('aria-expanded', 'false'); };
-var outside = function (e) { if (!m.contains(e.target) && !mmenu.contains(e.target)) close(); };
-var onKey = function (e) { if (e.key === 'Escape') { close(); mmenu.focus(); } };
-m.__close = close;
-m.querySelectorAll('[data-pickmark]').forEach((b) => b.addEventListener('click', () => {
-close(); var src = mrow.querySelector('[data-marksec="' + b.getAttribute('data-pickmark') + '"]'); if (src) src.click();
-}));
-mmenu.setAttribute('aria-expanded', 'true');
-setTimeout(() => { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); var f = m.querySelector('button'); if (f) f.focus(); }, 0);
-});
-}
+var more = root.querySelector('#moreBtn');
+if (more) more.addEventListener('click', () => openMore(ctrl, more));
 root.querySelectorAll('.selbar [data-sel]').forEach((b) => b.addEventListener('click', () => {
 var a = b.getAttribute('data-sel');
 if (a === 'paid') ctrl.markSelected('paid');
@@ -2323,8 +2696,9 @@ else if (a === 'unpaid') ctrl.markSelected('requested');
 else if (a === 'delete') ctrl.deleteSelected();
 else ctrl.clearSelect();
 }));
-root.querySelectorAll('.cpy[data-copy]').forEach(wireCopy);
+root.querySelectorAll('.cpy[data-copy]').forEach(wireCopy);   // the foot is inside root too
 root.querySelectorAll('.erow').forEach((rowEl) => wireRow(ctrl, rowEl));
+if (Remit.ui.wireRows) Remit.ui.wireRows(ctrl);
 if (Remit.ui.wireDrag) Remit.ui.wireDrag(ctrl);
 if (ctrl._focusAdd) {
 var sel = '.addrow[data-bucket="' + ctrl._focusAdd.bucket + '"]' + (ctrl._focusAdd.section_id ? '[data-section="' + ctrl._focusAdd.section_id + '"]' : ':not([data-section])');
@@ -2332,27 +2706,86 @@ var target = root.querySelector(sel);
 if (target) { var w = target.querySelector('.what'); if (w && w.focus) w.focus(); }
 ctrl._focusAdd = null;
 }
-if (ctrl._focusSection) {
-var names = root.querySelectorAll('[data-secname]');
-var last = names[names.length - 1];
-if (last && last.focus) { last.focus(); if (last.select) last.select(); }
-ctrl._focusSection = false;
 }
+function moreItems(ctrl) {
+var model = ctrl.model, store = ctrl.store;
+if (!model || !model.recurring) return '<button type="button" role="menuitem" id="reportsBtn" data-more="reports">Reports</button>';
+var allPaid = model.anyLines && ctrl.allRows().every(function (r) { return r.status === 'paid'; });
+var markAll = model.anyLines ? '<button type="button" class="linkbtn" id="markAllPaid" data-to="' + (allPaid ? 'requested' : 'paid') + '">' + (allPaid ? 'Mark all unpaid' : 'Mark all paid') + '</button>' : '';
+var secMarks = [
+{ key: 'recurring', label: 'recurring', rows: model.recurring.rows },
+{ key: 'extras', label: 'extras', rows: model.extras.rows },
+{ key: 'mine', label: 'riding along', rows: model.mine.rows },
+].concat(model.custom.map(function (c) { return { key: 'custom:' + c.section.id, label: c.section.name || 'section', rows: c.rows }; }))
+.filter(function (m) { return m.rows.length; })
+.map(function (m) {
+var done = m.rows.every(function (r) { return r.status === 'paid'; });
+return '<button type="button" class="linkbtn" data-marksec="' + esc(m.key) + '" data-to="' + (done ? 'requested' : 'paid') + '">Mark ' + esc(m.label) + (done ? ' unpaid' : ' paid') + '</button>';
+}).join('');
+return '<button type="button" role="menuitem" id="reportsBtn" data-more="reports">Reports</button>' +
+(markAll ? markAll.replace('class="linkbtn"', 'role="menuitem" data-more="all"') : '') +
+secMarks.replace(/class="linkbtn" data-marksec/g, 'role="menuitem" data-more="sec" data-marksec') +
+(Remit.ui.openYnabSettings && store.caps && store.caps.ynab ? '<button type="button" role="menuitem" id="ynabSettings" data-more="ynab">YNAB settings</button>' : '');
+}
+function openMore(ctrl, btn) {
+var old = document.querySelector('.curmenu'); if (old) { var was = old.__owner === btn; old.__close(null); if (was) return; }
+var m = document.createElement('div'); m.className = 'curmenu moremenu'; m.setAttribute('role', 'menu'); m.setAttribute('aria-label', 'More'); m.__owner = btn;
+m.innerHTML = moreItems(ctrl);
+document.body.appendChild(m);
+var r = btn.getBoundingClientRect(), mh = m.offsetHeight, mw = m.offsetWidth;
+var foot = document.querySelector('.foot'), floor = foot ? foot.getBoundingClientRect().top : innerHeight;
+m.style.left = Math.max(12, Math.min(r.left, innerWidth - mw - 12)) + 'px';
+if (r.bottom + 6 + mh < floor) m.style.top = (r.bottom + 6) + 'px';
+else { m.style.top = 'max(calc(env(safe-area-inset-top) + 12px), ' + (r.top - 6 - mh) + 'px)'; m.style.maxHeight = 'calc(' + (r.top - 6) + 'px - env(safe-area-inset-top) - 12px)'; }
+function close() { m.remove(); document.removeEventListener('pointerdown', outside, true); document.removeEventListener('keydown', onKey, true); btn.setAttribute('aria-expanded', 'false'); }
+function outside(e) { if (!m.contains(e.target) && !btn.contains(e.target)) close(); }
+function onKey(e) {
+if (e.key === 'Escape') { e.preventDefault(); close(); btn.focus(); return; }
+if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+e.preventDefault(); var bs = Array.from(m.querySelectorAll('button')), i = bs.indexOf(document.activeElement);
+bs[(i + (e.key === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length].focus();
+}
+}
+m.__close = close;
+m.querySelectorAll('[data-more]').forEach(function (b) {
+b.addEventListener('click', function () {
+var a = b.getAttribute('data-more'); close();
+if (a === 'reports') ctrl.openReports();
+else if (a === 'all') ctrl.markAllPaid(b.getAttribute('data-to'));
+else if (a === 'sec') ctrl.markSectionPaid(b.getAttribute('data-marksec'), b.getAttribute('data-to'));
+else if (a === 'ynab' && Remit.ui.openYnabSettings) Remit.ui.openYnabSettings(ctrl);
+});
+});
+btn.setAttribute('aria-expanded', 'true');
+setTimeout(function () { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); var f = m.querySelector('button'); if (f) f.focus(); }, 0);
 }
 var COPY_HOLD = 500, COPY_SLOP = 10;
+function copySync(text) {
+var ok = false, sel = document.getSelection ? document.getSelection() : null, saved = [];
+var span = document.createElement('span');
+span.textContent = text;
+span.style.cssText = 'position:fixed;left:0;top:0;opacity:0;white-space:pre;-webkit-user-select:text;user-select:text;pointer-events:none';
+var onCopy = function (e) { if (e.clipboardData) { e.clipboardData.setData('text/plain', text); e.preventDefault(); ok = true; } };
+try {
+for (var i = 0; sel && i < sel.rangeCount; i++) saved.push(sel.getRangeAt(i));
+document.body.appendChild(span);
+document.addEventListener('copy', onCopy, true);
+if (sel) { var r = document.createRange(); r.selectNodeContents(span); sel.removeAllRanges(); sel.addRange(r); }
+var cmd = document.execCommand && document.execCommand('copy');
+ok = ok || !!cmd;
+} catch (e) { ok = false; }
+document.removeEventListener('copy', onCopy, true);
+span.remove();
+try { if (sel) { sel.removeAllRanges(); saved.forEach(function (r) { sel.addRange(r); }); } } catch (e) {}
+return ok;
+}
 function copyNow(text) {
-var done = function () { toast('Copied ' + text); };
-var fallback = function () {
+var done = function (via) { try { document.dispatchEvent(new CustomEvent('remit:copied', { detail: { text: text, via: via } })); } catch (e) {} toast('Copied ' + text); };
+if (copySync(text)) { done('sync'); return; }
 try {
-var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
-document.body.appendChild(ta); ta.select(); var ok = document.execCommand('copy'); ta.remove();
-if (ok) done(); else toast('Could not copy ' + text);
-} catch (e) { toast('Could not copy ' + text); }
-};
-try {
-if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
-else fallback();
-} catch (e) { fallback(); }
+if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(function () { done('api'); }, function () { toast('Could not copy ' + text); }); return; }
+} catch (e) {}
+toast('Could not copy ' + text);
 }
 function wireCopy(el) {
 var st = null;
@@ -2360,19 +2793,25 @@ function clear() {
 if (!st) return;
 clearTimeout(st.timer); el.classList.remove('armed');
 document.removeEventListener('pointermove', onMove, true); document.removeEventListener('pointerup', onUp, true);
-document.removeEventListener('pointercancel', clear, true); window.removeEventListener('scroll', onScroll, true);
+document.removeEventListener('pointercancel', onCancel, true); window.removeEventListener('scroll', onScroll, true);
 st = null;
 }
 function onScroll(e) { var t = e.target; if (t === document || t === document.documentElement || (t.contains && t.contains(el))) clear(); }
 function onMove(e) { if (st && e.pointerId === st.id && Math.abs(e.clientX - st.x) + Math.abs(e.clientY - st.y) > COPY_SLOP) clear(); }
-function onUp(e) { if (!st || e.pointerId !== st.id) return; var armed = st.armed; clear(); if (armed) { e.preventDefault(); copyNow(el.getAttribute('data-copy')); } }
+function onUp(e) { if (!st || e.pointerId !== st.id) return; var armed = st.armed; clear(); if (armed) { e.preventDefault(); el.__copied = Date.now(); copyNow(el.getAttribute('data-copy')); } }
+function onCancel() { if (st && st.armed && st.touch) el.__pending = Date.now(); clear(); }
+el.addEventListener('touchend', function (e) {
+if (el.__pending && Date.now() - el.__pending < 1500 && !(el.__copied && Date.now() - el.__copied < 1500)) {
+el.__pending = 0; if (e.cancelable) e.preventDefault(); el.__copied = Date.now(); copyNow(el.getAttribute('data-copy'));
+}
+});
 el.addEventListener('pointerdown', function (e) {
 if (e.button != null && e.button !== 0) return;
-clear();
-st = { id: e.pointerId, x: e.clientX, y: e.clientY, armed: false };
+clear(); el.__pending = 0;
+st = { id: e.pointerId, x: e.clientX, y: e.clientY, armed: false, touch: e.pointerType === 'touch' };
 st.timer = setTimeout(function () { if (st) { st.armed = true; el.classList.add('armed'); } }, COPY_HOLD);
 document.addEventListener('pointermove', onMove, true); document.addEventListener('pointerup', onUp, true);
-document.addEventListener('pointercancel', clear, true); window.addEventListener('scroll', onScroll, true);
+document.addEventListener('pointercancel', onCancel, true); window.addEventListener('scroll', onScroll, true);
 });
 el.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); copyNow(el.getAttribute('data-copy')); } });
@@ -2395,14 +2834,14 @@ var homeCur = (store.getPerson(ctrl.personId) || {}).home_currency || 'GBP';
 var fields = rowEl.querySelectorAll('input[data-f]');
 fields.forEach((inp) => {
 inp.setAttribute('data-orig', inp.value);
-if (inp.classList.contains('amt')) { fitAmt(inp); inp.addEventListener('input', () => { fitAmt(inp); if (money.parseAmount(inp.value).ok) amtError(rowEl, inp, null); }); }
+if (inp.classList.contains('amt')) { fitLineAmt(inp); inp.addEventListener('input', () => { fitLineAmt(inp); if (money.parseAmount(inp.value).ok) amtError(rowEl, inp, null); }); }
 inp.addEventListener('keydown', (e) => {
 if (e.key === 'Enter') { e.preventDefault(); commit(true); }
 else if (e.key === 'Escape') { e.preventDefault(); inp.value = inp.getAttribute('data-orig') || ''; inp.blur(); }
 });
 inp.addEventListener('blur', () => { setTimeout(() => { if (!rowEl.contains(document.activeElement)) commit(false); }, 0); });
 });
-rowEl.querySelectorAll('[data-curbtn],[data-del]').forEach((btn) => {
+rowEl.querySelectorAll('[data-curbtn],[data-chk]').forEach((btn) => {
 btn.addEventListener('pointerdown', (e) => e.preventDefault());
 btn.addEventListener('mousedown', (e) => e.preventDefault());
 });
@@ -2417,13 +2856,17 @@ curBtn.setAttribute('aria-label', 'Currency: ' + CURNAME[next] + ' — change');
 } else { await store.updateItem(id, { currency: next }); }
 });
 wireSign(rowEl.querySelector('[data-sgn]'), rowEl.querySelector('[data-f="amount"]'));
-var delBtn = rowEl.querySelector('[data-del]');
-if (delBtn) delBtn.addEventListener('click', async () => {
-var it = ctrl.itemById(id);
-if (!(await confirmDel(delBtn, it && it.description))) return;
-await store.softDelete(id);
-Remit.ui.toast('Deleted “' + ((it && it.description) || 'item') + '”.', { actionLabel: 'Undo', onAction: () => store.undoDelete(id) });
+var chip = rowEl.querySelector('[data-tagof]');
+if (chip) {
+chip.addEventListener('pointerdown', (e) => e.preventDefault());
+chip.addEventListener('mousedown', (e) => e.preventDefault());
+chip.addEventListener('click', async () => {
+var kid = (store.getPerson(ctrl.personId) || {}).name || '';
+var t = await pickTag(chip, chip.getAttribute('data-tag') || null, kid);
+if (t === undefined || t === (chip.getAttribute('data-tag') || null)) return;
+await store.updateItem(id, { tag: t });
 });
+}
 function read() {
 var o = {};
 fields.forEach((inp) => { o[inp.getAttribute('data-f')] = inp.value; });
@@ -2499,6 +2942,21 @@ data = await store.getMonthData(ctrl.personId, ctrl.year, ctrl.month);
 }
 }
 ctrl._data = data;
+ctrl.outbox = {};
+if (store.caps && store.caps.ynab && store.getOutbox && (data.transfers || []).length) {
+try {
+(await store.getOutbox(data.transfers.map(function (t) { return t.id; }))).forEach(function (o) {
+var have = ctrl.outbox[o.transfer_id];
+if (!have || (o.kind || 'post') === 'post') ctrl.outbox[o.transfer_id] = o;   // a transfer's own post wins over a re-split
+});
+} catch (e) {}
+Object.keys(ctrl.outbox).forEach(function (tid) {
+var o = ctrl.outbox[tid];
+if (o.kind === 'resplit' && o.status === 'pending' && !(ctrl._resplitTried || (ctrl._resplitTried = {}))[tid] && store.callYnab) {
+ctrl._resplitTried[tid] = true; store.callYnab('resplit', { transfer_id: tid }).then(function () { ctrl.refresh(); }, function () {});
+}
+});
+}
 ctrl.model = money.monthModel(data.period || { id: '__none' }, data.items, { transfers: data.transfers, sections: data.sections });
 render(ctrl);
 }
@@ -2525,7 +2983,6 @@ await store.deleteTransfer(id);
 Remit.ui.toast('Payment deleted.', { actionLabel: 'Undo', onAction: function () { if (snap) { delete snap.id; store.createTransfer(snap); } } });
 };
 ctrl.openBudgets = function () { if (Remit.ui.openBudgets) Remit.ui.openBudgets(ctrl); };
-ctrl.addSection = async function () { var period = await ctrl.ensurePeriod(); ctrl._focusSection = true; await store.addSection(period.id, 'New section'); };
 ctrl.renameSection = function (id, name) { return store.updateSection(id, { name: name }); };
 ctrl.deleteSection = async function (id) { await store.deleteSection(id); Remit.ui.toast('Section deleted — its lines moved to Extras.'); };
 ctrl.openReports = function () { if (Remit.ui.openReports) Remit.ui.openReports(ctrl); };
@@ -2537,10 +2994,34 @@ ctrl.itemById = function (id) { return ctrl.allRows().find((it) => it.id === id)
 ctrl.selection = new Set();
 ctrl.toggleSelect = function (id) { if (ctrl.selection.has(id)) ctrl.selection.delete(id); else ctrl.selection.add(id); render(ctrl); };
 ctrl.clearSelect = function () { ctrl.selection.clear(); render(ctrl); };
-ctrl.markSelected = async function (status) {
+ctrl.localPatch = function (ids, patch) {
+var items = (ctrl._data && ctrl._data.items) || [];
+[].concat(ids).forEach(function (id) { var it = items.find(function (x) { return x.id === id; }); if (it) Object.assign(it, typeof patch === 'function' ? patch(it) : patch); });
+ctrl.model = money.monthModel(ctrl._data.period || { id: '__none' }, items, { transfers: ctrl._data.transfers, sections: ctrl._data.sections });
+};
+ctrl.writeQuiet = function (ids, patch) {
+return Promise.all([].concat(ids).map(function (id) { return store.updateItem(id, patch, { quiet: true }); }))
+.catch(function () { Remit.ui.toast('Could not save that change — showing the saved state.'); ctrl.refresh(); });
+};
+ctrl.markMany = function (ids, status) {
+if (!ids.length) return Promise.resolve();
+ctrl.localPatch(ids, { status: status }); render(ctrl);
+return ctrl.writeQuiet(ids, { status: status });
+};
+ctrl.markSelected = function (status) {
 var ids = Array.from(ctrl.selection); ctrl.selection.clear();
-for (var i = 0; i < ids.length; i++) await store.updateItem(ids[i], { status: status });
-ctrl.refresh();
+if (!ids.length) { render(ctrl); return Promise.resolve(); }
+return ctrl.markMany(ids, status);
+};
+ctrl.setPaid = function (id, paid) {
+var p = { status: paid ? 'paid' : 'requested' }, row = ctrl.root.querySelector('.erow[data-item="' + id + '"]');
+if (row) { row.classList.toggle('paid', paid); var c = row.querySelector('[data-chk]'); if (c) c.setAttribute('aria-checked', String(paid)); }
+ctrl.localPatch(id, p); return ctrl.writeQuiet(id, p);
+};
+ctrl.deleteLine = async function (id) {
+var it = ctrl.itemById(id);
+await store.softDelete(id);
+Remit.ui.toast('Deleted “' + ((it && it.description) || 'item') + '”.', { actionLabel: 'Undo', onAction: () => store.undoDelete(id) });
 };
 ctrl.deleteSelected = async function () {
 var ids = Array.from(ctrl.selection); ctrl.selection.clear();
@@ -2550,8 +3031,7 @@ Remit.ui.toast(ids.length + ' deleted.', { actionLabel: 'Undo', onAction: functi
 ctrl.markAllPaid = async function (status) {
 status = status || 'paid';
 var ids = ctrl.allRows().filter(function (r) { return r.status !== status; }).map(function (r) { return r.id; });
-for (var i = 0; i < ids.length; i++) await store.updateItem(ids[i], { status: status });
-ctrl.refresh();
+return ctrl.markMany(ids, status);
 };
 ctrl.sectionRows = function (key) {
 var m = ctrl.model; if (!m || !m.recurring) return [];
@@ -2562,22 +3042,38 @@ return c ? c.rows : [];
 ctrl.markSectionPaid = async function (key, status) {
 status = status || 'paid';
 var ids = ctrl.sectionRows(key).filter(function (r) { return r.status !== status; }).map(function (r) { return r.id; });
-for (var i = 0; i < ids.length; i++) await store.updateItem(ids[i], { status: status });
-ctrl.refresh();
+return ctrl.markMany(ids, status);
+};
+ctrl.reorder = async function (id, dir) {
+var it = ctrl.itemById(id); if (!it) return;
+var key = it.bucket === 'custom' ? 'custom:' + it.section_id : it.bucket;
+var rows = ctrl.sectionRows(key), i = rows.findIndex(function (r) { return r.id === id; }), j = i + dir;
+if (i < 0 || j < 0 || j >= rows.length) return;
+var a = rows[i].sort_order || 0, b = rows[j].sort_order || 0;
+if (a === b) b = a + dir;
+await store.updateItem(rows[i].id, { sort_order: b });
+await store.updateItem(rows[j].id, { sort_order: a });
 };
 ctrl.moveItem = async function (draggedId, targetId) {
 var d = ctrl.itemById(draggedId), t = ctrl.itemById(targetId);
 if (!d || !t || d.id === t.id) return;
 var patch = { sort_order: (t.sort_order || 0) - 0.5, bucket: t.bucket };
 patch.section_id = (t.bucket === 'custom') ? (t.section_id || null) : null;
-await store.updateItem(d.id, patch);
+var same = d.bucket === t.bucket && (d.section_id || null) === (patch.section_id || null) &&
+(d.bucket !== 'mine' || !ctrl.model.mine.groups || (d.tag || null) === (t.tag || null)) &&
+(Number(d.amount) < 0) === (Number(t.amount) < 0);
+var rowEl = ctrl.root.querySelector('.erow[data-item="' + d.id + '"]'), tEl = ctrl.root.querySelector('.erow[data-item="' + t.id + '"]');
+ctrl.localPatch(d.id, patch);
+if (same && rowEl && tEl) tEl.parentNode.insertBefore(rowEl, tEl); else render(ctrl);
+return ctrl.writeQuiet(d.id, patch);
 };
 ctrl.moveToSection = async function (draggedId, bucket, sectionId) {
 var d = ctrl.itemById(draggedId); if (!d || !bucket) return;
 var peers = ctrl.allRows().filter((r) => r.bucket === bucket && (bucket !== 'custom' || r.section_id === (sectionId || null)));
 var maxOrder = peers.reduce((m, r) => Math.max(m, r.sort_order || 0), 0);
 var patch = { bucket: bucket, sort_order: maxOrder + 10, section_id: bucket === 'custom' ? (sectionId || null) : null };
-await store.updateItem(draggedId, patch);
+ctrl.localPatch(draggedId, patch); render(ctrl);   // S10: from memory, no refetch
+return ctrl.writeQuiet(draggedId, patch);
 };
 store.subscribe(() => ctrl.refresh());
 ctrl.refresh();
@@ -2588,11 +3084,181 @@ Remit.ui.mountMonth = mountMonth;
 Remit.ui.esc = esc;
 Remit.ui.toast = toast;
 Remit.ui.symHTML = symHTML;
+Remit.ui.copyNums = copyNums;
+Remit.ui.wireCopy = wireCopy;
 Remit.ui.fitAmt = fitAmt;
 Remit.ui.lockScroll = lockScroll;
 Remit.ui.unlockScroll = unlockScroll;
 Remit.ui.swallow = swallow;
 Remit.ui.confirm = confirmDel;   // arc/payment-sheet-and-polish S1: the in-app Yes/No (never window.confirm)
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+</script>
+<!-- src/ui/rows.js -->
+<script>
+/* eslint-disable */
+(function (root) {
+'use strict';
+var Remit = root.Remit = root.Remit || {};
+var HOLD_MS = 500, SLOP = 10, OPEN_W = 152, OPEN_AT = 56;
+var openRow = null;   // the one swiped-open line (DOM node)
+function setX(row, x) { row.style.setProperty('--sx', x + 'px'); }
+function closeSwipe(row, instant) {
+row = row || openRow; if (!row) return;
+if (instant) { row.classList.add('swiping'); setX(row, 0); void row.offsetWidth; }   // no slide back: Move lifts the line at once
+row.classList.remove('swiping', 'swiped'); setX(row, 0);
+row.querySelectorAll('.swacts button').forEach(function (b) { b.tabIndex = -1; });
+var a = row.querySelector('.swacts'); if (a) a.setAttribute('aria-hidden', 'true');
+if (openRow === row) openRow = null;
+}
+function openSwipe(row) {
+if (openRow && openRow !== row) closeSwipe(openRow);
+row.classList.remove('swiping'); row.classList.add('swiped'); setX(row, -OPEN_W); openRow = row;
+var a = row.querySelector('.swacts'); if (a) a.setAttribute('aria-hidden', 'false');
+row.querySelectorAll('.swacts button').forEach(function (b) { b.tabIndex = 0; });
+}
+function afterBlur(ctrl, fn) {
+var act = document.activeElement;
+if (act && act !== document.body && ctrl.root.contains(act) && act.blur) {
+act.blur();
+setTimeout(function () { if (!ctrl.root.querySelector('.amterr')) fn(); }, 0);
+} else fn();
+}
+function rowMenu(ctrl, btn) {
+var id = btn.getAttribute('data-rowmenu'), it = ctrl.itemById(id); if (!it) return;
+var old = document.querySelector('.curmenu'); if (old) { var was = old.__owner === btn; old.__close(null); if (was) return; }
+var paid = it.status === 'paid';
+var m = document.createElement('div'); m.className = 'curmenu rowmenu-pop'; m.setAttribute('role', 'menu'); m.__owner = btn;
+var items = [['paid', paid ? 'Mark unpaid' : 'Mark paid'], ['select', ctrl.selection.has(id) ? 'Deselect' : 'Select'],
+['up', 'Move up'], ['down', 'Move down'], ['move', 'Move…'], ['delete', 'Delete']];
+m.innerHTML = items.map(function (x) { return '<button type="button" role="menuitem" data-rm="' + x[0] + '"' + (x[0] === 'delete' ? ' class="danger"' : '') + '>' + x[1] + '</button>'; }).join('');
+document.body.appendChild(m);
+var r = btn.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
+var foot = document.querySelector('.foot'), floor = foot ? foot.getBoundingClientRect().top : innerHeight;
+m.style.left = Math.max(12, Math.min(r.right - mw, innerWidth - mw - 12)) + 'px';
+m.style.top = ((r.bottom + 6 + mh < floor) ? r.bottom + 6 : Math.max(12, r.top - 6 - mh)) + 'px';
+function close() { m.remove(); document.removeEventListener('pointerdown', outside, true); document.removeEventListener('keydown', onKey, true); btn.setAttribute('aria-expanded', 'false'); }
+function outside(e) { if (!m.contains(e.target) && !btn.contains(e.target)) close(); }
+function onKey(e) {
+if (e.key === 'Escape') { e.preventDefault(); close(); btn.focus(); return; }
+if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+e.preventDefault(); var bs = Array.from(m.querySelectorAll('button')), i = bs.indexOf(document.activeElement);
+bs[(i + (e.key === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length].focus();
+}
+}
+m.__close = close;
+m.querySelectorAll('[data-rm]').forEach(function (b) {
+b.addEventListener('mousedown', function (e) { e.preventDefault(); });
+b.addEventListener('click', function () {
+var a = b.getAttribute('data-rm'); close();
+if (a === 'paid') ctrl.setPaid(id, !paid);
+else if (a === 'select') ctrl.toggleSelect(id);
+else if (a === 'up' || a === 'down') ctrl.reorder(id, a === 'up' ? -1 : 1);
+else if (a === 'move') { if (Remit.ui.beginMove) Remit.ui.beginMove(ctrl, id); }
+else if (a === 'delete') ctrl.deleteLine(id);
+});
+});
+btn.setAttribute('aria-expanded', 'true');
+setTimeout(function () { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); var f = m.querySelector('button'); if (f) f.focus(); }, 0);
+}
+function wireLine(ctrl, row) {
+var id = row.getAttribute('data-item');
+var chk = row.querySelector('[data-chk]');
+var suppressClick = false;   // a long-press / swipe ends with a click the browser still sends — eat it once
+if (chk) {
+chk.addEventListener('click', function (e) {
+if (suppressClick) { suppressClick = false; e.preventDefault(); return; }
+if (row.classList.contains('swiped')) { closeSwipe(row); return; }
+if (e.shiftKey || (ctrl.selection && ctrl.selection.size)) { afterBlur(ctrl, function () { ctrl.toggleSelect(id); }); return; }
+var paid = chk.getAttribute('aria-checked') !== 'true';
+chk.setAttribute('aria-checked', String(paid)); row.classList.toggle('paid', paid);   // instant; the store re-render confirms it
+afterBlur(ctrl, function () { ctrl.setPaid(id, paid); });
+});
+}
+var mb = row.querySelector('[data-rowmenu]'); if (mb) mb.addEventListener('click', function () { rowMenu(ctrl, mb); });
+var del = row.querySelector('[data-swdel]'); if (del) del.addEventListener('click', function (e) { e.stopPropagation(); closeSwipe(row); ctrl.deleteLine(id); });
+var mv = row.querySelector('[data-swmove]'); if (mv) mv.addEventListener('click', function (e) { e.stopPropagation(); closeSwipe(row, true); if (Remit.ui.beginMove) Remit.ui.beginMove(ctrl, id); });
+row.addEventListener('click', function (e) {
+if (e.target.closest('.swacts')) return;
+if (suppressClick) { suppressClick = false; e.preventDefault(); e.stopPropagation(); return; }
+if (row.classList.contains('swiped') && !e.target.closest('.swacts')) { e.preventDefault(); e.stopPropagation(); closeSwipe(row); }
+}, true);
+var st = null;
+function clear() {
+if (!st) return;
+clearTimeout(st.timer); row.classList.remove('lp');
+document.removeEventListener('pointermove', onMove, true); document.removeEventListener('pointerup', onUp, true);
+document.removeEventListener('pointercancel', onCancel, true); window.removeEventListener('scroll', onScroll, true);
+st = null;
+}
+function onScroll(e) { var t = e.target; if (t === document || t === document.documentElement || (t.contains && t.contains(row))) onCancel(); }
+function onCancel() {
+if (st && st.mode === 'swipe') { if (st.base + st.dx < -OPEN_AT) openSwipe(row); else closeSwipe(row); }
+clear();
+}
+function onMove(e) {
+if (!st || e.pointerId !== st.id) return;
+var dx = e.clientX - st.x, dy = e.clientY - st.y;
+if (!st.mode) {
+if (Math.abs(dx) + Math.abs(dy) <= SLOP) return;
+clearTimeout(st.timer); row.classList.remove('lp');
+if (st.swipeable && Math.abs(dx) > Math.abs(dy) * 1.2 && (dx < 0 || st.base < 0)) {
+st.mode = 'swipe'; row.classList.add('swiping');
+if (openRow && openRow !== row) closeSwipe(openRow);
+var act = document.activeElement; if (act && row.contains(act) && act.blur) act.blur();
+} else { clear(); return; }
+}
+if (st.mode === 'swipe') {
+if (e.cancelable) e.preventDefault();
+st.dx = dx; setX(row, Math.max(-OPEN_W - 24, Math.min(0, st.base + dx)));
+}
+}
+function onUp(e) {
+if (!st || e.pointerId !== st.id) return;
+if (st.mode === 'swipe') {
+suppressClick = true; setTimeout(function () { suppressClick = false; }, 400);
+if (st.base + st.dx < -OPEN_AT) openSwipe(row); else closeSwipe(row);
+clear(); return;
+}
+var armed = st.armed; clear();
+if (armed) {
+e.preventDefault();
+suppressClick = true; setTimeout(function () { suppressClick = false; }, 400);
+var act = document.activeElement; if (act && row.contains(act) && act.blur) act.blur();
+afterBlur(ctrl, function () { ctrl.toggleSelect(id); });
+}
+}
+row.addEventListener('pointerdown', function (e) {
+if (e.button != null && e.button !== 0) return;
+if (row.classList.contains('moving') || (ctrl.moving)) return;           // move mode: drag.js owns the press
+if (e.target.closest('.swacts, [data-rowmenu], [data-sgn], [data-curbtn], [data-tagof]')) return;
+var act = document.activeElement;
+var editing = act && row.contains(act) && act.tagName === 'INPUT' && e.target === act;   // pressing in the field being typed in = caret / text selection
+clear();
+var touchish = e.pointerType === 'touch' || e.pointerType === 'pen';
+st = { id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, mode: null, armed: false, swipeable: touchish && !editing,
+base: row.classList.contains('swiped') ? -OPEN_W : 0 };
+if (touchish && !editing) st.timer = setTimeout(function () {
+if (!st || st.mode) return;
+st.armed = true; row.classList.add('lp');
+try { if (navigator.vibrate) navigator.vibrate(10); } catch (x) {}
+}, HOLD_MS);
+document.addEventListener('pointermove', onMove, true); document.addEventListener('pointerup', onUp, true);
+document.addEventListener('pointercancel', onCancel, true); window.addEventListener('scroll', onScroll, true);
+});
+row.addEventListener('contextmenu', function (e) { if (!e.target.closest('input')) e.preventDefault(); });
+}
+function wireRows(ctrl) {
+openRow = null;
+ctrl.root.querySelectorAll('.erow[data-item]').forEach(function (row) { wireLine(ctrl, row); });
+if (!ctrl.__rowsDoc) {
+ctrl.__rowsDoc = true;
+document.addEventListener('pointerdown', function (e) { if (openRow && !openRow.contains(e.target)) closeSwipe(openRow); }, true);
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && openRow) closeSwipe(openRow); });
+}
+}
+Remit.ui = Remit.ui || {};
+Remit.ui.wireRows = wireRows;
+Remit.ui.closeSwipe = closeSwipe;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 </script>
 <!-- src/ui/drag.js -->
@@ -2601,64 +3267,71 @@ Remit.ui.confirm = confirmDel;   // arc/payment-sheet-and-polish S1: the in-app 
 (function (root) {
 'use strict';
 var Remit = root.Remit = root.Remit || {};
-var MOVE_THRESHOLD = 6;         // px (|dx|+|dy|) before a mouse/pen press becomes a drag
-var TOUCH_MOVE_THRESHOLD = 12;  // a finger tap drifts — a sloppy tap must stay a tap (a drag clears the selection)
-var TOUCH_HOLD_MS = 350;
+var MOVE_THRESHOLD = 6;
+var hint = null;
+function endMove(ctrl) {
+ctrl.moving = null;
+ctrl.root.classList.remove('moving-mode');
+ctrl.root.querySelectorAll('.erow.moving').forEach(function (r) { r.classList.remove('moving'); });
+ctrl.root.querySelectorAll('.dropzone').forEach(function (r) { r.classList.remove('dropzone'); });
+if (hint) { hint(); hint = null; }
+}
+function dropOn(ctrl, id, t) {
+if (!t || t.getAttribute('data-item') === id) return false;
+var tid = t.getAttribute('data-item');
+if (tid) { ctrl.moveItem(id, tid); return true; }
+if (t.classList.contains('addrow')) { ctrl.moveToSection(id, t.getAttribute('data-bucket'), t.getAttribute('data-section')); return true; }
+return false;
+}
+function beginMove(ctrl, id) {
+if (ctrl.moving) endMove(ctrl);
+var row = ctrl.root.querySelector('.erow[data-item="' + id + '"]'); if (!row) return;
+var act = document.activeElement; if (act && ctrl.root.contains(act) && act.blur) act.blur();
+if (ctrl.selection && ctrl.selection.size) ctrl.clearSelect();   // a move is never a selection gesture
+row = ctrl.root.querySelector('.erow[data-item="' + id + '"]'); if (!row) return;
+ctrl.moving = id;
+armRow(ctrl, row);
+hint = Remit.ui.toast('Drag the line — or tap where it should go.', { actionLabel: 'Cancel', onAction: function () { hint = null; endMove(ctrl); }, duration: 15000, top: true });
+}
 function wireDrag(ctrl) {
-ctrl.root.querySelectorAll('.grip[data-grip]').forEach(function (grip) {
-grip.style.touchAction = 'pan-y';
-grip.addEventListener('touchmove', function (e) { if (grip.__armed && e.cancelable) e.preventDefault(); }, { passive: false });
-grip.addEventListener('pointerdown', function (e) { onDown(ctrl, grip, e); });
-grip.addEventListener('contextmenu', function (e) { e.preventDefault(); });   // no press-and-hold menu
-grip.addEventListener('keydown', function (e) {
-if (e.key !== 'Enter' && e.key !== ' ') return;
-e.preventDefault();
-var gid = grip.getAttribute('data-grip');
-ctrl.toggleSelect(gid);
-var again = ctrl.root.querySelector('.grip[data-grip="' + gid + '"]'); if (again) again.focus();   // keep focus across the re-render
-});
+if (!ctrl.__dragDoc) {
+ctrl.__dragDoc = true;
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ctrl.moving) endMove(ctrl); });
+ctrl.root.addEventListener('click', function (e) {
+if (!ctrl.moving || ctrl.__dragging) return;
+var t = e.target.closest('.row[data-item], .addrow');
+if (!t || t.getAttribute('data-item') === ctrl.moving) return;
+e.preventDefault(); e.stopPropagation();
+var id = ctrl.moving; endMove(ctrl); dropOn(ctrl, id, t);
+}, true);
+ctrl.root.addEventListener('focusin', function (e) {   // the tapped field must not open for editing mid-move
+if (ctrl.moving && e.target.closest('.erow') && e.target.blur) e.target.blur();
 });
 }
-function onDown(ctrl, grip, e) {
-if (e.button != null && e.button !== 0) return;   // primary only
-var id = grip.getAttribute('data-grip');
-var row = grip.closest('.row');
-if (!row) return;
+if (!ctrl.moving) { ctrl.root.classList.remove('moving-mode'); return; }
+var row = ctrl.root.querySelector('.erow[data-item="' + ctrl.moving + '"]');
+if (!row) { endMove(ctrl); return; }
+armRow(ctrl, row);
+}
+function armRow(ctrl, row) {
+ctrl.root.classList.add('moving-mode'); row.classList.add('moving');
+if (row.__mv) return; row.__mv = true;
+row.addEventListener('pointerdown', function (e) { onDown(ctrl, row, e); });
+}
+function onDown(ctrl, row, e) {
+if (e.button != null && e.button !== 0) return;
+if (row.getAttribute('data-item') !== ctrl.moving) return;
 e.preventDefault();
-if (e.shiftKey) { ctrl.toggleSelect(id); return; }   // desktop multi-select
-var startX = e.clientX, startY = e.clientY;
-var touch = e.pointerType === 'touch';
-var threshold = touch ? TOUCH_MOVE_THRESHOLD : MOVE_THRESHOLD;
-var dragging = false, clearedSel = false, clone = null;
-var armed = !touch, holdTimer = null, done = false;   // mouse/pen: armed at once (move threshold only)
-try { grip.setPointerCapture(e.pointerId); } catch (x) {}
+var id = ctrl.moving;
+var startX = e.clientX, startY = e.clientY, dragging = false, clone = null;
+try { row.setPointerCapture(e.pointerId); } catch (x) {}
 document.addEventListener('pointermove', onMove, true);
 document.addEventListener('pointerup', onUp, true);
 document.addEventListener('pointercancel', onCancel, true);
-if (touch) {
-grip.__armed = false;
-holdTimer = setTimeout(function () {
-holdTimer = null; if (done) return;
-armed = true; grip.__armed = true; row.classList.add('lifted');
-try { if (navigator.vibrate) navigator.vibrate(10); } catch (x) {}
-}, TOUCH_HOLD_MS);
-window.addEventListener('scroll', onScroll, true);
-}
-function onScroll(ev) {
-var t = ev && ev.target;
-if (t && t !== document && t !== document.documentElement && !(t.contains && t.contains(row))) return;
-if (!armed && !dragging) { detach(); }
-}
 function beginDrag() {
-dragging = true;
-if (ctrl.selection && ctrl.selection.size) {
-ctrl.selection.clear(); clearedSel = true;
-ctrl.root.querySelectorAll('.row.sel').forEach(function (r) { r.classList.remove('sel'); });
-ctrl.root.querySelectorAll('.grip[aria-pressed="true"]').forEach(function (g) { g.setAttribute('aria-pressed', 'false'); });
-var bar = ctrl.root.querySelector('.selbar'); if (bar) bar.remove();
-}
+dragging = true; ctrl.__dragging = true;
 clone = row.cloneNode(true);
-clone.classList.add('dragclone');
+clone.classList.add('dragclone'); clone.classList.remove('moving');
 clone.style.width = row.offsetWidth + 'px';
 document.body.appendChild(clone);
 row.classList.add('dragging');
@@ -2666,10 +3339,14 @@ position(startX, startY);
 }
 function position(x, y) { if (clone) { clone.style.left = (x - 18) + 'px'; clone.style.top = (y - 18) + 'px'; } }
 function targetAt(x, y) {
-if (clone) clone.style.display = 'none';
-var el = document.elementFromPoint(x, y);
-if (clone) clone.style.display = '';
-return el && el.closest ? el.closest('.row[data-item], .addrow') : null;
+var els = document.elementsFromPoint ? document.elementsFromPoint(x, y) : [document.elementFromPoint(x, y)];
+for (var i = 0; i < els.length; i++) {
+var el = els[i]; if (!el || !el.closest || (clone && clone.contains(el)) || el.closest('.toast')) continue;
+if (el.closest('.foot, .selbar')) return null;   // over the fixed foot: no line is in reach
+var r = el.closest('.row[data-item], .addrow'); if (r) return r;
+if (el === document.body || el === document.documentElement) break;
+}
+return null;
 }
 function highlight(t) {
 ctrl.root.querySelectorAll('.dropzone').forEach(function (r) { r.classList.remove('dropzone'); });
@@ -2677,50 +3354,36 @@ if (t && t !== row) t.classList.add('dropzone');
 }
 function onMove(ev) {
 if (!dragging) {
-if (Math.abs(ev.clientX - startX) + Math.abs(ev.clientY - startY) <= threshold) return;
-if (!armed) { detach(); return; }   // moved before the hold: a scroll, never a drag (and not a tap)
+if (Math.abs(ev.clientX - startX) + Math.abs(ev.clientY - startY) <= MOVE_THRESHOLD) return;
 beginDrag();
 }
+if (ev.cancelable) ev.preventDefault();
 position(ev.clientX, ev.clientY);
 highlight(targetAt(ev.clientX, ev.clientY));
 }
 function detach() {
-done = true;
-if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-grip.__armed = false; if (row) row.classList.remove('lifted');
-window.removeEventListener('scroll', onScroll, true);
 document.removeEventListener('pointermove', onMove, true);
 document.removeEventListener('pointerup', onUp, true);
 document.removeEventListener('pointercancel', onCancel, true);
-try { grip.releasePointerCapture(e.pointerId); } catch (x) {}
+try { row.releasePointerCapture(e.pointerId); } catch (x) {}
 ctrl.root.querySelectorAll('.dropzone').forEach(function (r) { r.classList.remove('dropzone'); });
 if (clone) { clone.remove(); clone = null; }
-if (row) row.classList.remove('dragging');
+row.classList.remove('dragging');
+setTimeout(function () { ctrl.__dragging = false; }, 0);
 }
-function onCancel() { detach(); if (clearedSel) ctrl.clearSelect(); }
+function onCancel() { detach(); }
 function onUp(ev) {
-var moved = false;
-if (dragging) {
+if (!dragging) { detach(); return; }   // a tap on the lifted line itself: stay in move mode
 var t = targetAt(ev.clientX, ev.clientY);
 detach();
-if (t && t !== row) {
-var tid = t.getAttribute('data-item');
-if (tid) { moved = true; ctrl.moveItem(id, tid); }
-else if (t.classList.contains('addrow')) { moved = true; ctrl.moveToSection(id, t.getAttribute('data-bucket'), t.getAttribute('data-section')); }
-}
-if (clearedSel && !moved) ctrl.clearSelect();
-return;
-}
-detach();
-var act = document.activeElement;
-if (act && act !== document.body && ctrl.root.contains(act) && act.blur) {
-act.blur();
-setTimeout(function () { if (!ctrl.root.querySelector('.amterr')) ctrl.toggleSelect(id); }, 0);
-} else ctrl.toggleSelect(id);
+endMove(ctrl);
+dropOn(ctrl, id, t);
 }
 }
 Remit.ui = Remit.ui || {};
 Remit.ui.wireDrag = wireDrag;
+Remit.ui.beginMove = beginMove;
+Remit.ui.endMove = endMove;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 </script>
 <!-- src/ui/budgets.js -->
@@ -2978,7 +3641,7 @@ Remit.ui.toast(money.fmt(amt, c) + (editing ? ' payment updated.' : ' payment re
 (money.cents(extra) ? ' Added an Extra line of ' + money.fmt(extra, c) + '.' : '') +
 (tickIds.length ? ' Ticked ' + tickIds.length + (tickIds.length === 1 ? ' line.' : ' lines.') : ''));
 if (money.cents(extra)) {
-try { var period = await ctrl.ensurePeriod(); await store.addItem(period.id, money.extraLine(extra, c)); }
+try { var period = await ctrl.ensurePeriod(); var mineMax = (ctrl.model.mine.rows || []).reduce(function (m, r) { return Math.max(m, Number(r.sort_order) || 0); }, 0); await store.addItem(period.id, money.extraLine(extra, c, mineMax)); }
 catch (e) { Remit.ui.toast('Payment recorded — the ' + money.fmt(extra, c) + ' Extra line could not be added; add it by hand.'); }
 }
 try { for (var i = 0; i < tickIds.length; i++) await store.updateItem(tickIds[i], { status: 'paid' }); }
@@ -2988,8 +3651,308 @@ fillBases();
 redraw();
 requestAnimationFrame(() => { scrim.classList.add('open'); sheet.classList.add('open'); });
 }
+var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function openLog(ctrl, currency) {
+var store = ctrl.store, model = ctrl.model, person = store.getPerson(ctrl.personId) || {}, kid = person.name || '';
+var remaining = model.remaining || {};
+var cur = currency || defaultCurrency(remaining) || model.currencies[0] || person.home_currency || 'GBP';
+var tagsOn = !!(store.caps && store.caps.tag), bdOn = !!(store.caps && store.caps.breakdown);
+var ledger = { lines: [], credits: [] };
+var wrap = document.createElement('div');
+var scrim = document.createElement('div'); scrim.className = 'scrim';
+var sheet = document.createElement('div'); sheet.className = 'sheet logsheet'; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true'); sheet.setAttribute('aria-label', 'Log transfer');
+Remit.ui.lockScroll();
+wrap.appendChild(scrim); wrap.appendChild(sheet); document.body.appendChild(wrap);
+var host = { wrap: wrap, scrim: scrim, sheet: sheet, onKey: function (e) { if (e.key === 'Escape') close(host); } };
+document.addEventListener('keydown', host.onKey); scrim.addEventListener('click', () => close(host));
+Remit.ui.swallow(scrim);
+var curOptions = model.currencies.slice();
+['GBP', 'USD', 'AUD', 'EUR', cur].forEach(function (c) { if (c && curOptions.indexOf(c) === -1) curOptions.push(c); });
+sheet.innerHTML =
+'<div class="f2" style="border-bottom-width:2px"><label>Log transfer</label><div class="v">' + esc(money.monthName(ctrl.month)) + ' · ' + esc(kid) + '</div></div>' +
+'<div class="f2"><label for="t-cur">Currency</label><div class="v"><select id="t-cur">' + curOptions.map((c) => '<option value="' + esc(c) + '"' + (c === cur ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select></div></div>' +
+'<div class="f2"><label>Remaining</label><div class="v"><b class="num" style="font-size:18px" id="t-remain"></b></div></div>' +
+'<div class="f2 forrow"><label>For</label><div class="v" id="t-for" role="group" aria-label="For"></div></div>' +
+'<div class="f2" id="t-credit-row" hidden><label>Sent ahead</label><div class="v"><label class="chkline"><input type="checkbox" id="t-credit" checked> <span id="t-credit-label"></span></label></div></div>' +
+'<div class="f2"><label for="t-amt" id="t-amt-label">Arrived</label><div class="v"><input id="t-amt" inputmode="decimal" placeholder="0.00" aria-describedby="t-amt-hint"><small class="hint" id="t-amt-hint"></small></div></div>' +
+'<div class="f2" id="t-sent-row"><label for="t-sent">$ left the bank</label><div class="v fxpair"><input id="t-sent" inputmode="decimal" placeholder="optional">' +
+'<span class="fxrate"><input id="t-rate" inputmode="decimal" value="" placeholder="FX rate" aria-describedby="t-rate-unit" aria-label="FX rate"><small id="t-rate-unit"></small></span></div></div>' +
+'<div class="f2"><label for="t-date">Sent on</label><div class="v"><input id="t-date" type="date" value="' + esc(todayISO()) + '"></div></div>' +
+'<div class="f2"><label for="t-prov">Provider</label><div class="v"><input id="t-prov" type="text" value="' + (cur === 'USD' ? '' : 'Wise') + '" placeholder="optional"></div></div>' +
+'<div class="f2"><label for="t-note">Note</label><div class="v"><input id="t-note" type="text" value="" placeholder="optional"></div></div>' +
+'<div class="untagged" id="t-untagged" hidden></div>' +
+'<div class="derived receipt-preview" id="t-derived"></div>' +
+'<div class="acts"><button class="btn ghost" data-act="cancel">Cancel</button><button class="btn" data-act="save">Save the transfer</button></div>';
+var $ = (id) => sheet.querySelector(id);
+var selCur = function () { return $('#t-cur').value; };
+var scope = 'all', amtTouched = false, fxAnchor = null, scopes = [];
+var creditAvail = function () {
+var here = ctrl.year * 12 + ctrl.month;
+var L = money.sentAheadLedger(ledger.lines.filter(function (l) { return l.currency === selCur() && (l.year * 12 + l.month) < here; }),
+ledger.credits.filter(function (t) { return t.currency === selCur(); }));
+return L;
+};
+function input() {
+var c = selCur(), L = creditAvail();
+return { currency: c, arrived: money.parseAmount($('#t-amt').value).value || 0, usd: c === 'USD' ? null : money.parseAmount($('#t-sent').value).value,
+scope: scope, credit: L.balance > 0 ? L.balance : 0, useCredit: !$('#t-credit-row').hidden && $('#t-credit').checked, kid: kid };
+}
+function fillFor() {
+var c = selCur(); scopes = money.logScopes(model, c, kid);
+if (!tagsOn) scopes = scopes.filter(function (s) { return s.key.indexOf('tag:') !== 0; }).concat((function () {
+var a = money.sectionUnpaid(model.mine.rows, c); return a > 0 ? [{ key: 'mine', label: 'Riding along', amount: a }] : []; })());
+var everything = Math.max(0, Number(remaining[c] || 0));
+$('#t-for').innerHTML =
+'<label class="chkline all"><input type="checkbox" data-scope="all"' + (scope === 'all' ? ' checked' : '') + '> <span>Everything outstanding</span><b class="num">' + esc(money.fmt(everything, c)) + '</b></label>' +
+scopes.map(function (s) {
+return '<label class="chkline"><input type="checkbox" data-scope="' + esc(s.key) + '"' + (scope !== 'all' && scope.indexOf(s.key) !== -1 ? ' checked' : '') + '> <span>' + esc(s.label) + '</span><b class="num">' + esc(money.fmt(s.amount, c)) + '</b></label>';
+}).join('');
+$('#t-for').querySelectorAll('[data-scope]').forEach(function (b) {
+b.addEventListener('change', function () {
+var k = b.getAttribute('data-scope');
+if (k === 'all') scope = 'all';
+else {
+var cur = scope === 'all' ? [] : scope.slice();
+if (b.checked) cur.push(k); else cur = cur.filter(function (x) { return x !== k; });
+scope = cur.length ? cur : 'all';
+}
+fillFor(); if (!amtTouched) setDefaultAmount(); redraw();
+});
+});
+}
+function setDefaultAmount() {
+var p = money.logPlan(model, Object.assign(input(), { arrived: 0.01 }));
+$('#t-amt').value = money.cents(p.cashDue) > 0 ? Number(p.cashDue).toFixed(2) : '';
+}
+function syncFx() {
+var p = fx.fxPair({ amount: $('#t-amt').value, usd: $('#t-sent').value, rate: $('#t-rate').value, anchor: fxAnchor });
+if (fxAnchor === 'usd') $('#t-rate').value = p.rate;
+else if (fxAnchor === 'rate') $('#t-sent').value = p.usd;
+}
+function receiptHTML(p, c) {
+var row = function (label, usd, curAmt, sub, cls) {
+return '<div class="dl' + (cls ? ' ' + cls : '') + '"><span>' + esc(label) + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span><b class="num">' +
+(usd != null ? Remit.ui.symHTML(esc(money.fmt(usd, 'USD'))) : Remit.ui.symHTML(esc(money.fmt(curAmt, c)))) + '</b></div>';
+};
+var u = p.usdSplit, lp = u ? u.livingParts : p.parts, inUsd = !!u;
+var amt = function (k) { return inUsd ? lp[k] : p.parts[k]; }, fmtv = function (v) { return inUsd ? money.fmt(v, 'USD') : money.fmt(v, c); };
+var subs = [];
+if (money.cents(amt('recurring'))) subs.push('Recurring ' + fmtv(amt('recurring')));
+if (money.cents(amt('extras'))) subs.push('Extras ' + fmtv(amt('extras')));
+if (money.cents(amt('kid_card'))) subs.push(money.tagLabel('kid_card', kid) + ' ' + fmtv(amt('kid_card')));
+if (money.cents(amt('untagged'))) subs.push('Not tagged ' + fmtv(amt('untagged')));
+var sa = (inUsd ? lp.sent_ahead + lp.extra : p.parts.sent_ahead + p.parts.extra);
+if (money.cents(sa)) subs.push('sent ahead ' + fmtv(sa));
+if (money.cents(amt('adjust'))) subs.push('paid earlier this month ' + fmtv(amt('adjust')));
+if (money.cents(amt('credit'))) subs.push('covered by sent ahead ' + fmtv(amt('credit')));
+var h = '<h4>' + (inUsd ? 'Goes into YNAB as' : 'Splits as') + '</h4>' +
+row(kid + '’s Living', inUsd ? u.living : null, p.cur.living, subs.join(' · '));
+if (money.cents(p.cur.tuition)) h += row(kid + '’s Tuition', inUsd ? u.tuition : null, p.cur.tuition);
+if (money.cents(p.cur.dad)) h += row('Dad', inUsd ? u.dad : null, p.cur.dad);
+h += row('Total', inUsd ? p.usd : null, p.arrived, null, 'tot');
+if (p.rate && c !== 'USD') {
+h += '<div class="dl rate"><span>Effective rate</span><b class="num">' + esc(money.symbol(c) + p.rate.toFixed(4)) + ' per $</b></div>';
+var rr = fx.rateFor(store.getRates ? store.getRates() : [], c), mm = rr ? fx.transferMetrics({ amount_sent_usd: p.usd, amount_delivered: p.arrived }, rr.rate) : null;
+if (rr) h += '<div class="dl rate"><span>ECB mid, ' + esc(fx.rateDayLabel(rr.day)) + '</span><b class="num">' + rr.rate + '</b></div>';
+if (mm && mm.costPct != null) h += '<div class="dl rate"><span>All-in cost vs mid</span><b class="num">' + mm.costPct.toFixed(2) + '%</b></div>';
+}
+if (!inUsd && c !== 'USD') h += '<div class="dl muted"><span>Add the $ that left the bank to send it to YNAB</span></div>';
+return h;
+}
+function redraw() {
+var c = selCur();
+$('#t-sent-row').hidden = (c === 'USD');
+$('#t-amt-label').textContent = 'Arrived (' + c + ')';
+$('#t-rate-unit').textContent = c + ' per USD'; $('#t-rate').setAttribute('aria-label', 'FX rate, ' + c + ' per USD');
+syncFx();
+$('#t-remain').textContent = money.fmt(remaining[c] || 0, c);
+var L = creditAvail();
+$('#t-credit-row').hidden = !(bdOn && L.balance > 0);
+if (L.balance > 0) $('#t-credit-label').textContent = 'Use ' + money.fmt(L.balance, c) + ' sent ahead';
+var p = money.logPlan(model, input());
+$('#t-amt-hint').textContent = p.partial ? 'A part payment — ' + money.fmt(p.shortBy, c) + ' stays to transfer'
+: money.cents(p.cashDue) !== money.cents(p.arrived) && p.arrived > 0
+? (money.cents(p.extra) > 0 ? money.fmt(p.extra, c) + ' over — kept as sent ahead' : money.fmt(-p.extra, c) + ' short of ' + money.fmt(p.cashDue, c)) : '';
+var un = tagsOn && p.usd != null ? p.untagged : [];
+var box = $('#t-untagged'); box.hidden = !un.length;
+if (un.length) {
+var keep = {}; box.querySelectorAll('select[data-tagline]').forEach(function (s) { keep[s.getAttribute('data-tagline')] = s.value; });
+box.innerHTML = '<p>Tag ' + (un.length === 1 ? 'this riding-along line' : 'these ' + un.length + ' riding-along lines') + ' first:</p>' + un.map(function (id) {
+var it = ctrl.itemById(id) || {};
+return '<div class="f2"><label for="tg-' + esc(id) + '">' + esc(it.description || 'line') + ' · ' + esc(money.fmt(it.amount, it.currency)) + '</label><div class="v"><select id="tg-' + esc(id) + '" data-tagline="' + esc(id) + '">' +
+'<option value="">Pick a tag</option>' + ['kid_card', 'tuition', 'dad'].map(function (t) { return '<option value="' + t + '"' + (keep[id] === t ? ' selected' : '') + '>' + esc(money.tagLabel(t, kid)) + '</option>'; }).join('') + '</select></div></div>';
+}).join('');
+box.querySelectorAll('select[data-tagline]').forEach(function (s) { s.addEventListener('change', redrawPreviewOnly); });
+}
+redrawPreviewOnly();
+}
+function pendingTags() { var o = {}; sheet.querySelectorAll('select[data-tagline]').forEach(function (s) { o[s.getAttribute('data-tagline')] = s.value || null; }); return o; }
+function redrawPreviewOnly() {
+var c = selCur(), inp = input();
+var tg = pendingTags(), m2 = model;
+if (Object.keys(tg).length) {
+var patch = function (rows) { return rows.map(function (r) { return tg[r.id] ? Object.assign({}, r, { tag: tg[r.id] }) : r; }); };
+m2 = Object.assign({}, model, { mine: Object.assign({}, model.mine, { rows: patch(model.mine.rows) }) });
+}
+var p = money.logPlan(m2, inp);
+$('#t-derived').innerHTML = p.arrived > 0 ? receiptHTML(p, c) : '<h4>Splits as</h4><div class="dl"><span>Enter what arrived</span><b>—</b></div>';
+}
+$('#t-cur').addEventListener('change', function () {
+var c = selCur(); scope = 'all'; amtTouched = false; fillFor(); setDefaultAmount();
+var pv = $('#t-prov'); if (pv.value === 'Wise' || pv.value === '') pv.value = c === 'USD' ? '' : 'Wise';
+redraw();
+});
+$('#t-credit').addEventListener('change', function () { if (!amtTouched) setDefaultAmount(); redraw(); });
+$('#t-sent').addEventListener('input', function () { fxAnchor = 'usd'; if (money.parseAmount($('#t-sent').value).ok) Remit.ui.amtError($('#t-sent').closest('.f2'), $('#t-sent'), null); redraw(); });
+$('#t-rate').addEventListener('input', function () { fxAnchor = 'rate'; redraw(); });
+$('#t-amt').addEventListener('input', function () { amtTouched = true; if (money.parseAmount($('#t-amt').value).ok) Remit.ui.amtError($('#t-amt').closest('.f2'), $('#t-amt'), null); redraw(); });
+$('[data-act="cancel"]').addEventListener('click', () => close(host));
+var saving = false;
+$('[data-act="save"]').addEventListener('click', async function () {
+if (saving) return;
+var c = selCur();
+var pa = money.parseAmount($('#t-amt').value), ps = c === 'USD' ? { ok: true, value: null } : money.parseAmount($('#t-sent').value);
+Remit.ui.amtError($('#t-amt').closest('.f2'), $('#t-amt'), pa.ok ? null : pa.error);
+Remit.ui.amtError($('#t-sent').closest('.f2'), $('#t-sent'), ps.ok ? null : ps.error);
+if (!pa.ok || !pa.value) { $('#t-amt').focus(); return; }
+if (!ps.ok) { $('#t-sent').focus(); return; }
+var tg = pendingTags(), missing = Object.keys(tg).filter(function (k) { return !tg[k]; });
+if (missing.length) { var s0 = sheet.querySelector('[data-tagline="' + missing[0] + '"]'); if (s0) s0.focus(); Remit.ui.toast('Tag the riding-along line' + (missing.length > 1 ? 's' : '') + ' first.'); return; }
+var m2 = model;
+if (Object.keys(tg).length) m2 = Object.assign({}, model, { mine: Object.assign({}, model.mine, { rows: model.mine.rows.map(function (r) { return tg[r.id] ? Object.assign({}, r, { tag: tg[r.id] }) : r; }) }) });
+var p = money.logPlan(m2, input());
+if (money.cents(p.extra) < 0) {
+saving = true;
+var ok = await Remit.ui.confirm($('[data-act="save"]'), '', {
+q: esc(money.fmt(p.arrived, c)) + ' is ' + esc(money.fmt(-p.extra, c)) + ' short of ' + esc(money.fmt(p.cashDue, c)) + '. Save it and add a ' + esc(money.fmt(p.extra, c)) + ' “Extra” line?',
+yes: 'Yes, save', label: 'Confirm short payment' });
+saving = false;
+if (!ok) return;
+}
+saving = true;
+var L = creditAvail(), from = money.creditSources(L, p.creditUsed).map(function (x) { return { year: x.year, month: x.month, amount: x.amount }; });
+var breakdown = { v: 1, kind: 'log', currency: c, arrived: p.arrived, usd: p.usd, rate: p.rate, scope: p.scope, lines: p.lines,
+due: p.due, credit_used: p.creditUsed, credit_from: from, extra: p.extra, parts: p.parts, cur: p.cur, usd_split: p.usdSplit };
+var fields = { person_id: ctrl.personId, period_year: ctrl.year, period_month: ctrl.month, currency: c, sent_on: $('#t-date').value || todayISO(),
+amount_delivered: p.arrived, amount_sent_usd: p.usd != null && c !== 'USD' ? p.usd : (c === 'USD' ? p.arrived : null),
+provider: ($('#t-prov').value || '').trim() || null, note: ($('#t-note').value || '').trim() || null, kind: 'cash', breakdown: breakdown };
+var t;
+try { t = await store.createTransfer(fields); } catch (e) { saving = false; throw e; }
+close(host);
+var monthsOf = function (xs) { return xs.map(function (x) { return MONTHS[x.month - 1]; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(' + '); };
+Remit.ui.toast(money.fmt(p.arrived, c) + ' transfer logged.' + (money.cents(p.extra) ? ' Added an Extra line of ' + money.fmt(p.extra, c) + '.' : '') +
+(p.lines.length ? ' Ticked ' + p.lines.length + (p.lines.length === 1 ? ' line.' : ' lines.') : ''));
+try {
+if (money.cents(p.creditUsed) > 0) await store.createTransfer({ person_id: ctrl.personId, period_year: ctrl.year, period_month: ctrl.month, currency: c,
+sent_on: fields.sent_on, amount_delivered: p.creditUsed, amount_sent_usd: null, provider: 'Sent ahead', kind: 'sent_ahead_credit',
+note: 'covered by ' + monthsOf(from) + '’s extra', breakdown: { v: 1, kind: 'credit', for: t && t.id, credit_from: from } });
+} catch (e) { Remit.ui.toast('Transfer logged — the sent-ahead credit could not be saved; log it again.'); }
+try { for (var k in tg) await store.updateItem(k, { tag: tg[k] }); } catch (e) {}
+if (money.cents(p.extra)) {
+try { var period = await ctrl.ensurePeriod(); var mineMax = (model.mine.rows || []).reduce(function (m, r) { return Math.max(m, Number(r.sort_order) || 0); }, 0);
+await store.addItem(period.id, money.extraLine(p.extra, c, mineMax)); }
+catch (e) { Remit.ui.toast('Transfer logged — the ' + money.fmt(p.extra, c) + ' Extra line could not be added; add it by hand.'); }
+}
+try { for (var i = 0; i < p.lines.length; i++) await store.updateItem(p.lines[i], { status: 'paid' }); }
+catch (e) { Remit.ui.toast('Transfer logged — the lines could not be ticked; tick them by hand.'); }
+if (t && Remit.ui.queueYnab) Remit.ui.queueYnab(ctrl, t);
+});
+fillFor(); setDefaultAmount(); redraw();
+requestAnimationFrame(() => { scrim.classList.add('open'); sheet.classList.add('open'); });
+Promise.resolve(store.getSentAhead ? store.getSentAhead(ctrl.personId) : null).then(function (x) {
+if (!x || host.closed) return; ledger = x; redraw(); if (!amtTouched) { setDefaultAmount(); redraw(); }
+}, function () {});
+}
 Remit.ui = Remit.ui || {};
-Remit.ui.openTransfer = openTransfer;
+Remit.ui.openTransfer = function (ctrl, currency, existing) { return existing ? openTransfer(ctrl, currency, existing) : openLog(ctrl, currency); };
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+</script>
+<!-- src/ui/ynab.js -->
+<script>
+/* eslint-disable */
+(function (root) {
+'use strict';
+var Remit = root.Remit = root.Remit || {};
+var esc = function (s) { return Remit.ui.esc(s); };
+function ynabBound(t) { return !!(t && t.kind !== 'sent_ahead_credit' && t.breakdown && t.breakdown.usd_split); }
+async function post(ctrl, t, search) {
+var store = ctrl.store;
+if (!store.caps || !store.caps.ynab || !store.callYnab || !ynabBound(t)) return null;
+var r = await store.callYnab('post', { transfer_id: t.id, search: !!search });
+if (r.status === 0) { try { await store.upsertOutbox({ transfer_id: t.id, status: 'ambiguous', last_error: 'network error' }); } catch (e) {} }
+if (ctrl.refresh) ctrl.refresh();
+return r;
+}
+async function queueYnab(ctrl, t) {
+if (!ctrl.store.caps || !ctrl.store.caps.ynab || !ynabBound(t)) return;
+try { await ctrl.store.upsertOutbox({ transfer_id: t.id, status: 'pending' }); } catch (e) { return; }
+await post(ctrl, t, false);
+}
+async function retryYnab(ctrl, tid) {
+var t = (ctrl.model.transfers || []).find(function (x) { return x.id === tid; }); if (!t) return;
+var ob = (ctrl.outbox || {})[tid], r;
+if (ob && ob.kind === 'resplit') {   // D6: a re-split of an EXISTING YNAB transaction — never posted as a new one
+r = await ctrl.store.callYnab('resplit', { transfer_id: tid }); if (ctrl.refresh) ctrl.refresh();
+} else r = await post(ctrl, t, !!(ob && (ob.status === 'ambiguous' || ob.status === 'pending')));
+if (r && r.json) Remit.ui.toast(r.json.status === 'posted' ? 'Sent to YNAB.' : r.json.status === 'dry_run' ? 'Ready for YNAB — posting is off for now.' : 'Not in YNAB yet: ' + (r.json.error || 'try again later') + '.');
+}
+function ynabState(ctrl, t) {
+if (!ctrl.store.caps || !ctrl.store.caps.ynab || !ynabBound(t)) return null;
+var ob = (ctrl.outbox || {})[t.id];
+if (ob && ob.status === 'posted') return { posted: true };
+return { posted: false, why: !ob ? 'not sent' : ob.status === 'dry_run' ? 'posting is off' : ob.status === 'pending' ? 'sending' : (ob.last_error || ob.status) };
+}
+function close(host) { if (host.closed) return; host.closed = true; Remit.ui.unlockScroll(); host.scrim.classList.remove('open'); host.sheet.classList.remove('open'); setTimeout(function () { host.wrap.remove(); }, 240); document.removeEventListener('keydown', host.onKey); }
+async function openYnabSettings(ctrl) {
+var store = ctrl.store;
+var wrap = document.createElement('div'), scrim = document.createElement('div'), sheet = document.createElement('div');
+scrim.className = 'scrim'; sheet.className = 'sheet ynabsheet'; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true'); sheet.setAttribute('aria-label', 'YNAB settings');
+Remit.ui.lockScroll(); wrap.appendChild(scrim); wrap.appendChild(sheet); document.body.appendChild(wrap);
+var host = { wrap: wrap, scrim: scrim, sheet: sheet, onKey: function (e) { if (e.key === 'Escape') close(host); } };
+document.addEventListener('keydown', host.onKey); scrim.addEventListener('click', function () { close(host); }); Remit.ui.swallow(scrim);
+sheet.innerHTML = '<div class="f2" style="border-bottom-width:2px"><label>YNAB settings</label><div class="v">Loading YNAB’s categories…</div></div>';
+requestAnimationFrame(function () { scrim.classList.add('open'); sheet.classList.add('open'); });
+var got = await Promise.all([store.callYnab('config', {}), store.getYnabSettings()]);
+if (host.closed) return;
+var cfg = (got[0] && got[0].json) || {}, rows = got[1] || [];
+var cats = cfg.categories || [], accts = cfg.accounts || [];
+var kids = store.getPeople().filter(function (p) { return p.is_kid; });
+var rowOf = function (pid) { return rows.find(function (r) { return (r.person_id || null) === pid; }) || {}; };
+var home = rowOf(null);
+var byName = function (list, name) { var x = list.find(function (c) { return c.name === name; }); return x ? x.id : ''; };
+var sel = function (id, list, value, label) {
+return '<div class="f2"><label for="' + id + '">' + esc(label) + '</label><div class="v"><select id="' + id + '"><option value="">Choose…</option>' +
+list.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === value ? ' selected' : '') + '>' + esc((c.group ? c.group + ' › ' : '') + c.name) + '</option>'; }).join('') + '</select></div></div>';
+};
+var html = '<div class="f2" style="border-bottom-width:2px"><label>YNAB settings</label><div class="v">' +
+(cfg.configured === false ? 'YNAB is not connected yet (the token is missing).' : cfg.posting ? 'Posting is ON.' : 'Posting is off — Remit prepares each transfer but sends nothing yet.') + '</div></div>' +
+'<p class="ynabnote">Remit writes ONE split per transfer into these categories. It never creates a YNAB category or account, and a category here is not a bank balance.</p>';
+kids.forEach(function (k) {
+var r = rowOf(k.id);
+html += '<h4 class="ynabkid">' + esc(k.name) + '</h4>' + sel('y-l-' + k.id, cats, r.living_category_id, k.name + '’s Living') + sel('y-t-' + k.id, cats, r.tuition_category_id, k.name + '’s Tuition');
+});
+html += '<h4 class="ynabkid">Dad + the account</h4>' + sel('y-dad', cats, home.dad_category_id || byName(cats, 'Spending'), 'Dad’s category') +
+sel('y-acct', accts, home.account_id || byName(accts, 'HSBC Checking'), 'Account');
+html += '<div class="acts"><button class="btn ghost" data-act="cancel">Cancel</button><button class="btn" data-act="save">Save</button></div>';
+sheet.innerHTML = html;
+var $ = function (q) { return sheet.querySelector(q); };
+var nameOf = function (list, id) { var x = list.find(function (c) { return c.id === id; }); return x ? x.name : null; };
+$('[data-act="cancel"]').addEventListener('click', function () { close(host); });
+$('[data-act="save"]').addEventListener('click', async function () {
+for (var i = 0; i < kids.length; i++) {
+var k = kids[i], l = $('#y-l-' + k.id).value || null, t = $('#y-t-' + k.id).value || null;
+await store.saveYnabSettings({ person_id: k.id, living_category_id: l, living_category_name: nameOf(cats, l), tuition_category_id: t, tuition_category_name: nameOf(cats, t) });
+}
+var d = $('#y-dad').value || null, a = $('#y-acct').value || null;
+await store.saveYnabSettings({ person_id: null, dad_category_id: d, dad_category_name: nameOf(cats, d), account_id: a, account_name: nameOf(accts, a), payee_name: 'Wise' });
+close(host); Remit.ui.toast('YNAB settings saved.');
+});
+}
+Remit.ui = Remit.ui || {};
+Remit.ui.queueYnab = queueYnab;
+Remit.ui.retryYnab = retryYnab;
+Remit.ui.ynabState = ynabState;
+Remit.ui.openYnabSettings = function (ctrl) { if (ctrl.store.caps && ctrl.store.caps.ynab) return openYnabSettings(ctrl); Remit.ui.toast('YNAB settings arrive with the next database update.'); };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 </script>
 <!-- src/ui/reports.js -->
@@ -3237,6 +4200,7 @@ var view = landingView();
 var store;
 if (fx) {
 store = Remit.store.createStore(null);          // fixture — the seam is injected, gate skipped
+window.__REMIT_STORE__ = store;                  // fixture only: the specs read what was saved (never in live mode)
 } else {
 if (!window.FamilyGate) { mount.innerHTML = '<p style="padding:24px;color:var(--muted)">Sign-in unavailable — the gate did not load.</p>'; return; }
 window.FamilyGate.cfg({ spacesUrl: 'spaces.json' });
