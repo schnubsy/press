@@ -10,7 +10,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 
 ## Current state
 
-- Merge state: Pending: arc/family-wing-invites (PR open; merge → Mark's button at verify)
+- Merge state: Merged: PR #59 e4cea28 on 2026-11-01; main checkout on main @ e4cea28. Live: invited_at column + access-invite function (v1, verify_jwt false) + new Access Manager. Still open: council deploy/targets.json row (STAGED patch docs/evidence/family-wing-invites-staged-council.patch) and Barb's live invite proof.
 - Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
 - Agent alerting rule (Mark, 2026-10-13): nothing running is SLA-critical — one push + email only when an item has been
   down (late/failed) for 24h+, one quiet "working again" after. Contract: `docs/spec.md` → Agent Monitor · Alerting.

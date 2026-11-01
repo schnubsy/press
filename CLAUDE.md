@@ -33,7 +33,7 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Pending: arc/family-wing-invites (PR open; merge → Mark's button at verify); reconcile + stamp → chat after merge
+Merge state: Merged: PR #59 e4cea28 on 2026-11-01; main checkout on main @ e4cea28; deployed + live: migration invited_at, access-invite function (v1, verify_jwt false); council targets row STAGED
 **family-wing-invites (2026-11-01) — one-tap Invite in the Access Manager (Full lane, 3 slices; built, NOT yet merged/deployed).**
 A person needs a sign-in ACCOUNT, not just a `press_access_people` row (the wing sends `create_user:false` ⇒ GoTrue 422 "Signups not
 allowed for otp"). New Edge Function `access-invite` (+ `_shared/invite.mjs`) = the only path that creates one: admin-gated, row first,
