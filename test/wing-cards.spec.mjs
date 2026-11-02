@@ -116,3 +116,22 @@ test('desktop: heading words are inline (layout unchanged); screenshot captured'
   await expect(page.locator('.tw-family .lockline')).toHaveText('1 tool');
   await page.locator('.tw-wings').screenshot({ path: join(EVID, 'wings-polish-slice-2-cards-desktop.png') });
 });
+
+// snag-train-2026-11 slice 1 (#28) — ONE kicker convention on the two wing cards: the small kicker is a lowercase
+// tagline that never repeats the wing's name, and the big h3 IS the name ("The <X> Wing"). The family tagline is Mark's
+// own copy ("a safe space") and stays as written.
+test('#28 both wing kickers follow one convention (tagline kicker, name in the h3)', async ({ page, context }) => {
+  await harness(page, context, { enrolled: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(base + '/');
+  const cards = { '.tw-family': ['a safe space', 'The Family Wing'], '.tw-secure': ['behind the passkey', 'The Private Wing'] };
+  for (const [card, [kicker, name]] of Object.entries(cards)) {
+    const k = (await page.locator(`${card} .k`).textContent()).replace(/^\s*⬤\s*/, '').trim();
+    expect(k, `${card}: kicker is the tagline`).toBe(kicker);
+    expect(k, `${card}: kicker is lowercase source copy (CSS uppercases it)`).toBe(k.toLowerCase());
+    expect(k.toLowerCase(), `${card}: kicker never names the wing`).not.toMatch(/\bwing\b|\bfamily\b|\bprivate\b|\bpersonal\b/);
+    await expect(page.locator(`${card} h3`)).toHaveText(name);
+    expect(await page.$eval(`${card} .k`, el => getComputedStyle(el).textTransform), `${card}: same eyebrow styling`).toBe('uppercase');
+  }
+  await page.locator('.tw-wings').screenshot({ path: join(EVID, 'snag-train-2026-11-slice-1-kickers-390.png') });
+});
