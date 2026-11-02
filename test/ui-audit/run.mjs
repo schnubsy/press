@@ -1,27 +1,36 @@
 #!/usr/bin/env node
-// council-ui-audit@1.1.0 — instruments/ui-audit/run.mjs (canonical; projects vendor a stamped copy)
+// council-ui-audit@1.2.1 — instruments/ui-audit/run.mjs (canonical; projects vendor a stamped copy)
 //
 // The iPhone UI audit runner: every state in the project's config × widths 320/375/390/393/430 × dark + light,
 // on WebKit (the iPhone engine of record), running the six gated checks of ui-probe.mjs on each surface.
 //
-//   node test/ui-audit/run.mjs test/ui-audit.config.mjs [--engine webkit|chromium] [--evidence <stem>]
+//   node test/ui-audit/run.mjs test/ui-audit.config.mjs [--engine webkit|chromium] [--evidence <stem>] [--views <ids>]
+//
+// --views a,b (or env UI_AUDIT_VIEWS) — a Standard-lane arc audits ONLY the views it changed (council arc.md "Lanes",
+// 2026-10-22). A state matches by its `view` id (several states may share one view) or its `name`; `initial` names the
+// implicit '(initial)' state. An unknown id is an error (exit 64) — a typo must never audit nothing and call it green.
+// No --views = every state (the Full lane + the monthly Steward sweep).
 //
 // Exit codes (the gauntlet reads them):
 //   0  GREEN    WebKit, every state driven, zero defects
 //   1  RED      any defect, or a state the driver could not reach (an undriven state is never green)
 //   2  PARTIAL  zero defects but NOT on WebKit (WebKit missing → labelled Chromium fallback, reason deps|egress|other) — not Safari-equivalent
+//  64  USAGE    no config, or an unknown --views id (also --views=<ids> is accepted)
 //
 // The config module default-exports:
 //   { name, url: string | ({ width, scheme }) => string,      // the BUILT page (file:// or the preview URL)
-//     states: [{ name, run: async (page) => {} }],           // each starts from a fresh load; '(initial)' is implicit
+//     states: [{ name, view?, run: async (page) => {} }],    // each starts from a fresh load; '(initial)' is implicit
 //     probe: { surfaces, main, extraRoots, clipOk, wrapOk, hscrollOk, touchOk, oneLine },  // ui-probe.mjs cfg
 //     exceptions: ['<selector> — why it is designed that way', …],   // named in the evidence, never silent
 //     setup: async (page, { width, scheme }) => {},          // optional: seed storage / stub network before load
 //     widths: [...], schemes: [...], concurrency: 4 }        // optional overrides (standard: all five × both)
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, realpathSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { uiProbe } from './ui-probe.mjs';
+// isMain is inlined (same logic as council tools/is-main.mjs) so a vendored copy is self-contained in any repo.
+const real = (p) => { try { return realpathSync(p); } catch { return resolve(p); } };
+const isMain = (metaUrl, argv1 = process.argv[1]) => !!argv1 && real(argv1) === real(fileURLToPath(metaUrl));
 
 export const WIDTHS = [320, 375, 390, 393, 430];
 export const HEIGHTS = { 320: 568, 375: 812, 390: 844, 393: 852, 430: 932 };
@@ -60,15 +69,30 @@ export async function launch(pw, want = 'webkit') {
   return { browser: await pw.chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {}), engine: 'chromium', reason: 'requested', fallback: 'Chromium requested (--engine chromium)' };
 }
 
+// The lane filter: keep only the states whose view id or name is listed. Throws on an unknown id or an empty result.
+export function parseViews(v) {
+  if (v == null || v === '' || v === true) return null;
+  const ids = String(v).split(/[\s,]+/).map((x) => x.trim()).filter(Boolean);
+  return ids.length ? ids : null;
+}
+export function filterStates(states, views) {
+  const all = [{ name: '(initial)', view: 'initial', run: async () => {} }, ...(states || [])];
+  if (!views) return all;
+  const known = new Set(all.flatMap((s) => [s.name, s.view].filter(Boolean)));
+  const unknown = views.filter((id) => !known.has(id));
+  if (unknown.length) throw Object.assign(new Error(`ui-audit --views: unknown view id(s) ${unknown.join(', ')} — known: ${[...known].join(', ')}`), { code: 64 });
+  return all.filter((s) => views.includes(s.name) || (s.view && views.includes(s.view)));
+}
+
 export function verdict({ engine, defects, undriven }) {
   if (defects > 0 || undriven > 0) return { label: 'RED', code: 1 };
   if (engine !== 'webkit') return { label: 'PARTIAL', code: 2 };
   return { label: 'GREEN', code: 0 };
 }
 
-export async function runUiAudit(cfg, { pw, engine: want = 'webkit' } = {}) {
+export async function runUiAudit(cfg, { pw, engine: want = 'webkit', views = null } = {}) {
   const widths = cfg.widths || WIDTHS, schemes = cfg.schemes || SCHEMES;
-  const states = [{ name: '(initial)', run: async () => {} }, ...(cfg.states || [])];
+  const states = filterStates(cfg.states, views);
   const { browser, engine, fallback, reason } = await launch(pw, want);
   const results = [];
   let defects = 0, undriven = 0;
@@ -115,7 +139,7 @@ export async function runUiAudit(cfg, { pw, engine: want = 'webkit' } = {}) {
     }
   } finally { await browser.close(); }
   const v = verdict({ engine, defects, undriven });
-  return { name: cfg.name || 'ui-audit', engine, fallback, reason, widths, schemes, states: states.map((s) => s.name),
+  return { name: cfg.name || 'ui-audit', engine, fallback, reason, widths, schemes, states: states.map((s) => s.name), views,
     exceptions: cfg.exceptions || [], defects, undriven, verdict: v.label, code: v.code, results };
 }
 
@@ -123,7 +147,7 @@ export async function runUiAudit(cfg, { pw, engine: want = 'webkit' } = {}) {
 export function summary(rep) {
   const out = [];
   out.push(`ui-audit ${rep.name} · ${rep.engine}${rep.fallback ? ' (FALLBACK: ' + rep.fallback + ')' : ''}`);
-  out.push(`matrix: ${rep.states.length} states × ${rep.widths.join('/')} × ${rep.schemes.join('+')} = ${rep.results.length} surfaces`);
+  out.push(`matrix: ${rep.states.length} states × ${rep.widths.join('/')} × ${rep.schemes.join('+')} = ${rep.results.length} surfaces${rep.views ? ` · views: ${rep.views.join(',')} (Standard lane — changed views only)` : ''}`);
   const by = {};
   for (const r of rep.results) for (const d of r.defects || []) (by[d.check] = by[d.check] || []).push(`${r.state}@${r.width}/${r.scheme}: ${d.el} — ${d.detail}`);
   for (const c of ['overflow', 'clip', 'wrap', 'touch', 'safearea', 'font16']) {
@@ -136,17 +160,19 @@ export function summary(rep) {
   return out.slice(0, 30).join('\n');
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (isMain(import.meta.url)) {
   const a = process.argv.slice(2);
-  const val = (k) => { const i = a.indexOf(k); return i >= 0 ? a[i + 1] : undefined; };
-  const pos = a.filter((x, i) => !x.startsWith('--') && !(i > 0 && ['--engine', '--evidence'].includes(a[i - 1])));
+  const val = (k) => { const eq = a.find((x) => x.startsWith(k + '=')); if (eq) return eq.slice(k.length + 1); const i = a.indexOf(k); return i >= 0 ? a[i + 1] : undefined; };
+  const pos = a.filter((x, i) => !x.startsWith('--') && !(i > 0 && ['--engine', '--evidence', '--views'].includes(a[i - 1])));
   const cfgPath = pos[0];
-  if (!cfgPath) { console.error('usage: node run.mjs <ui-audit.config.mjs> [--engine webkit|chromium] [--evidence <stem>]'); process.exit(64); }
+  if (!cfgPath) { console.error('usage: node run.mjs <ui-audit.config.mjs> [--engine webkit|chromium] [--evidence <stem>] [--views <ids>]'); process.exit(64); }
   let pw;
   try { pw = await import('playwright'); } catch { console.error('ui-audit: playwright is not installed (npm i -D playwright)'); process.exit(1); }
   pw = pw.default || pw;
   const cfg = (await import(pathToFileURL(resolve(cfgPath)).href)).default;
-  const rep = await runUiAudit(cfg, { pw, engine: val('--engine') || 'webkit' });
+  const views = parseViews(val('--views') ?? process.env.UI_AUDIT_VIEWS);
+  try { filterStates(cfg.states, views); } catch (e) { console.error(e.message); process.exit(e.code || 64); }
+  const rep = await runUiAudit(cfg, { pw, engine: val('--engine') || 'webkit', views });
   const stem = val('--evidence') || 'docs/evidence/ui-audit';
   mkdirSync(dirname(resolve(stem)), { recursive: true });
   writeFileSync(resolve(stem + '.json'), JSON.stringify(rep, null, 2) + '\n');
