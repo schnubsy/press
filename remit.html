@@ -2104,6 +2104,11 @@ var r = Object.assign({ id: uid('ob'), kind: 'post', status: 'pending', attempts
 if (i === -1) ob.push(r); else ob[i] = r;
 this._emit(); return clone(r);
 };
+FixtureStore.prototype.insertOutbox = async function (row) {
+var ob = this.state.ynab_outbox = this.state.ynab_outbox || [];
+if (ob.some((o) => o.transfer_id === row.transfer_id && (o.kind || 'post') === (row.kind || 'post'))) return null;
+return this.upsertOutbox(row);
+};
 FixtureStore.prototype.getReportData = async function () {
 return {
 people: clone(this.state.people), periods: clone(this.state.periods),
@@ -2342,10 +2347,22 @@ this._emit(); return t;
 };
 SupabaseStore.prototype.setTransferOrder = async function (ids, current) {
 if (!this.caps.xsort) throw new Error('remit: no sort_order column yet');
+var done = [];
+try {
 for (var i = 0; i < ids.length; i++) {
 var want = (i + 1) * 10;
 if (current && current[ids[i]] === want) continue;
 await this._patch('/remit_transfers?id=eq.' + ids[i], { sort_order: want });
+done.push(ids[i]);
+}
+} catch (e) {
+var partial = false;
+for (var j = done.length - 1; j >= 0; j--) {
+var was = current && current[done[j]] != null ? current[done[j]] : null;
+try { await this._patch('/remit_transfers?id=eq.' + done[j], { sort_order: was }); } catch (e2) { partial = true; }
+}
+this._emit();
+throw Object.assign(new Error('remit: the order was not saved'), { partial: partial, cause: e });
 }
 this._emit(); return true;
 };
@@ -2380,6 +2397,13 @@ var q = '/remit_ynab_outbox?transfer_id=eq.' + row.transfer_id + '&kind=eq.' + (
 var have = await this._get(q.replace('?', '?select=id&'));
 var r = have.length ? await this._patch(q, row) : await this._post('/remit_ynab_outbox', Object.assign({ kind: 'post' }, row));
 this._emit(); return r && r[0];
+};
+SupabaseStore.prototype.insertOutbox = async function (row) {
+var r = await fetch(this.REST + '/remit_ynab_outbox', { method: 'POST', headers: this._h({ 'Content-Type': 'application/json', 'Prefer': 'return=representation' }), body: JSON.stringify(Object.assign({ kind: 'post' }, row)) });
+if (r.status === 409) return null;
+if (!r.ok) throw new Error('remit rest ' + r.status);
+var t = await r.text(), rows = t ? JSON.parse(t) : null;
+this._emit(); return (rows && rows[0]) || Object.assign({ kind: 'post' }, row);
 };
 SupabaseStore.prototype.getReportData = async function () {
 var periods = await this._get('/remit_periods?select=*');
@@ -2682,8 +2706,9 @@ var ca = a.created_at || '', cb = b.created_at || '';
 return ca < cb ? -1 : ca > cb ? 1 : 0;
 }
 function orderTransfers(ctrl, cur, tx) {
-var shared = tx.some(function (t) { return t.sort_order != null; });
-var placed = shared ? [] : (readXOrder()[xKey(ctrl, cur)] || []);
+var local = readXOrder()[xKey(ctrl, cur)];
+var placed = Array.isArray(local) ? local : [];
+var shared = !placed.length && tx.some(function (t) { return t.sort_order != null; });
 var rank = function (t) {
 if (shared) return t.sort_order == null ? Infinity : Number(t.sort_order);
 var i = placed.indexOf(t.id); return i === -1 ? Infinity : i;
@@ -3110,7 +3135,10 @@ var kid = (store.getPerson(ctrl.personId) || {}).name || '';
 var t = await pickTag(addTag, addTag.getAttribute('data-tag') || null, kid);
 if (t === undefined) {
 if (addTag.__dismissedBy === 'esc') { var li = rowEl.__lastInp || rowEl.querySelector('.what'); if (li && li.isConnected) li.focus(); return; }
-afterFocusSettles(function () { if (rowEl.isConnected && !rowEl.contains(document.activeElement)) commit(false); });
+afterFocusSettles(function () {
+var a = document.activeElement;
+if (rowEl.isConnected && !rowEl.contains(a) && !(a && a.closest && a.closest('.tagmenu'))) commit(false);
+});
 return;
 }
 addTag.setAttribute('data-tag', t || ''); addTag.classList.toggle('on', !!t);
@@ -3279,7 +3307,10 @@ var now = {}; (ctrl.model.transfers || []).forEach(function (t) { if (t.sort_ord
 (ctrl.model.transfers || []).forEach(function (t) { var i = ids.indexOf(t.id); if (i !== -1) t.sort_order = (i + 1) * 10; });
 render(ctrl);
 try { await store.setTransferOrder(ids, now); var all = readXOrder(); if (all[xKey(ctrl, cur)]) { delete all[xKey(ctrl, cur)]; writeXOrder(all); } return; }
-catch (e) { toast('Could not save the order for everyone — kept on this device.'); }
+catch (e) {
+(ctrl.model.transfers || []).forEach(function (t) { if (ids.indexOf(t.id) !== -1) t.sort_order = now[t.id] != null ? now[t.id] : null; });
+toast('Could not save the order for everyone — kept on this device.');
+}
 }
 keepHere();
 }
@@ -4324,8 +4355,9 @@ return r;
 }
 async function queueYnab(ctrl, t) {
 if (!ynabOn(ctrl.store) || !ynabBound(t)) return;
-try { await ctrl.store.upsertOutbox({ transfer_id: t.id, status: 'pending' }); } catch (e) { return; }
-await post(ctrl, t, false);
+var made;
+try { made = await ctrl.store.insertOutbox({ transfer_id: t.id, status: 'pending' }); } catch (e) { return; }
+return post(ctrl, t, !made);
 }
 async function requeueYnab(ctrl, t) {
 if (!ynabOn(ctrl.store) || !ynabBound(t)) return null;
