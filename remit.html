@@ -748,7 +748,8 @@ font:600 18px/1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:-.0
 @media (prefers-reduced-motion:reduce){.foot,.foot:not(.open):not(.dragging) .footpanel{transition:none}}
 @media(max-width:374px){.foot .fbl{letter-spacing:.12em}.foot .fbvals{font-size:16px}.foot .fbvals.many{font-size:13px}}
 .ynabok.sending{color:var(--muted);font-weight:500}
-.ynabok.warn{color:var(--asked)}</style>
+.ynabok.warn{color:var(--asked)}
+.ynabpill.warn{color:var(--asked)}</style>
 </head>
 <body>
 <main class="app" id="remit-root">
@@ -2776,6 +2777,7 @@ var ok = st && st.posted && inUsd ? (st.differs
 var tail = derived ? '' : !inUsd ? (c === 'USD' ? '' : '<span class="rstate muted">Add the $ that left the bank to send it to YNAB</span>')
 : !st ? '' : st.posted ? ''
 : st.sending ? '<span class="rstate muted" data-ynab="sending">Sending to YNAB…</span>'
+: st.manual ? '<span class="rstate warn" data-ynab="manual">' + symHTML(esc(st.manual)) + '</span> <button type="button" class="ynabpill rstate" data-ynabretry="' + esc(t.id) + '" aria-label="Check YNAB again">Check again</button>'
 : '<button type="button" class="ynabpill rstate" data-ynabretry="' + esc(t.id) + '" aria-label="Not in YNAB yet (' + esc(st.why) + ') — retry">Not in YNAB yet · Retry</button>';
 var totM = {}; totM[inUsd ? 'USD' : c] = inUsd ? usdTot : t.amount_delivered;
 var note = t.note && !/^remit:/.test(String(t.reference || '')) ? '<span class="snote">' + esc(t.note) + '</span>' : '';
@@ -2790,6 +2792,7 @@ if (!st) return '';
 if (st.posted && st.differs) return '<span class="ynabok warn" data-ynab="differs">In YNAB at ' + symHTML(esc(money.fmt(st.ynabAmount, 'USD'))) + '</span>';   // S4 Y4
 if (st.posted) return '<span class="ynabok" data-ynab="posted">✓ in YNAB</span>';
 if (st.sending) return '<span class="ynabok sending" data-ynab="sending">Sending to YNAB…</span>';   // S4: another call holds it
+if (st.manual) return '<button type="button" class="ynabpill warn" data-ynab="manual" data-ynabretry="' + esc(t.id) + '" aria-label="' + esc(st.manual) + ' — check again">YNAB needs a hand edit · Check again</button>';
 return '<button type="button" class="ynabpill" data-ynabretry="' + esc(t.id) + '" aria-label="Not in YNAB yet (' + esc(st.why) + ') — retry">Not in YNAB yet · Retry</button>';
 }
 function selbarHTML(ctrl) {
@@ -4374,7 +4377,7 @@ var ob = (ctrl.outbox || {})[tid], r;
 if (ob && ob.kind === 'resplit') {   // D6: a re-split of an EXISTING YNAB transaction — never posted as a new one
 r = await ctrl.store.callYnab('resplit', { transfer_id: tid }); if (ctrl.refresh) ctrl.refresh();
 } else r = await post(ctrl, t, !!(ob && (ob.status === 'ambiguous' || ob.status === 'pending')));
-if (r && r.json) Remit.ui.toast(r.json.status === 'posted' ? 'Sent to YNAB.' : r.json.status === 'dry_run' ? 'Ready for YNAB — posting is off for now.' : r.json.in_progress ? 'Sending to YNAB… (already under way)' : 'Not in YNAB yet: ' + (r.json.error || 'try again later') + '.');
+if (r && r.json) Remit.ui.toast(r.json.status === 'posted' ? 'Sent to YNAB.' : r.json.status === 'needs_manual' ? r.json.error + '.' : r.json.status === 'dry_run' ? 'Ready for YNAB — posting is off for now.' : r.json.in_progress ? 'Sending to YNAB… (already under way)' : 'Not in YNAB yet: ' + (r.json.error || 'try again later') + '.');
 }
 var LEASE = 'in_flight until ';
 function sending(ob) {
@@ -4397,6 +4400,8 @@ if (p.amount_differs && typeof p.ynab_amount === 'number') return { posted: true
 return { posted: true };
 }
 if (sending(ob)) return { posted: false, sending: true, why: 'sending' };
+var pm = (ob && ob.payload) || {};
+if (ob && ob.status === 'failed' && /needs_manual$/.test(String(pm.mode || '')) && pm.manual && pm.manual.text) return { posted: false, manual: pm.manual.text, why: 'needs a hand edit in YNAB' };
 var err = String((ob && ob.last_error) || '');
 if (err.indexOf(LEASE) === 0) err = 'the last send did not finish';
 return { posted: false, why: !ob ? 'not sent' : ob.status === 'dry_run' ? 'posting is off' : ob.status === 'pending' && !err ? 'sending' : (err || ob.status) };
