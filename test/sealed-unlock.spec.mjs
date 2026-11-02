@@ -157,7 +157,7 @@ test('the app\'s own lock → every tab re-gates and the seal is deleted', async
   await two.close();
 });
 
-test('a new session (re-unlocked in the wing) invalidates the old seal; an open app tab reseals onto a wing re-save', async ({ page, context }) => {
+test('a new session (re-unlocked in the wing) replaces the old seal with its own; an open app tab reseals onto a wing re-save', async ({ page, context }) => {
   await unlockOnce(page, context);
   const before = JSON.parse((await lsDump(page))['press:vault:v1']);
   const two = await context.newPage();
@@ -166,13 +166,13 @@ test('a new session (re-unlocked in the wing) invalidates the old seal; an open 
   await page.locator('#lockBtn').click(); await gated(two);
   await page.locator('#unlockBtn').click(); // a NEW wing unlock (new unlockedAt)
   await expect(page.locator('#lockBtn')).toBeVisible();
-  await two.reload(); await gated(two); // the old seal died with the old session: the app asks once more
-  await expect.poll(() => sealKey(two)).toBeNull(); // …and its stale key is removed
-  await page.goto(base + '/cardsharp.html'); await gated(page);
-  await page.locator('#pg-unlock').click(); await open(page);
+  // quick-fixes S3: the wing's unlock sealed Cardsharp onto the NEW session — the old seal is dead, the app opens
+  // with no second tap (before S3 it asked once more here: Mark's double prompt)
   const sealAt = async () => { const s = JSON.parse((await lsDump(page))['press:vault:v1']); const x = s.seal && s.seal['cardsharp.html']; return x && x.at === s.unlockedAt ? x.at : null; };
   await expect.poll(sealAt).not.toBeNull();
   expect(await sealAt()).not.toBe(before.unlockedAt);
+  await two.reload(); await open(two);
+  await page.goto(base + '/cardsharp.html'); await open(page);
   // a wing re-save (Connect's updateKeyring / another unlock) writes a NEW session without a seal → the open app
   // tab reseals onto it silently, so the next reload still needs no prompt
   const first = await sealAt();
@@ -182,8 +182,42 @@ test('a new session (re-unlocked in the wing) invalidates the old seal; an open 
   await open(page);
   await page.reload(); await open(page);
   await two.reload(); await open(two);
-  expect(await prompts(page)).toBe(3); // unlockOnce + wing + app — never on a reload
+  expect(await prompts(page)).toBe(2); // unlockOnce + the wing — never the app after a wing unlock, never on a reload
   await two.close();
+});
+
+// cardsharp quick-fixes S3 (Mark 2026-11-02): logged out → ONE passkey unlock in the private wing → open Cardsharp → NO
+// second prompt. The wing's unlock holds the FULL keyring in memory, so it seals every MEMORY_ONLY page's creds then
+// (same non-extractable IDB key + session ciphertext, AAD-bound to that session). Reproduced red before the fix.
+test('one wing unlock (logged out) → Cardsharp opens with no second passkey tap; reload and a second tab too', async ({ page, context }) => {
+  await routes(context);
+  await authenticator(context, page);
+  await page.goto(base + '/cardsharp.html');
+  await page.evaluate(async (kr) => { await PressVault.enrol({ label: 't', keyring: kr }); PressVault.lock(); },
+    { v: 1, apps: { 'cardsharp.html': { sync_id: SYNC, pass: PASS }, 'fsa.html': { sync_id: 'a'.repeat(32), pass: 'fsa-test-pass' } } });
+  await expect.poll(() => sealKey(page)).toBeNull(); // logged out: no seal, no key
+  await page.goto(base + '/index.html?view=personal');
+  await page.evaluate(() => localStorage.setItem('test:prompts', '0'));
+  await page.locator('#unlockBtn').click(); // the private wing's passkey login
+  await expect(page.locator('#lockBtn')).toBeVisible();
+  await page.goto(base + '/cardsharp.html');
+  await open(page); // no gate: the wing sealed Cardsharp's creds at its unlock
+  expect(await prompts(page)).toBe(1);
+  await page.reload(); await open(page);
+  const two = await context.newPage();
+  await two.goto(base + '/cardsharp.html'); await open(two);
+  expect(await prompts(page)).toBe(1);
+  // still sealed, never plaintext; the wing's Lock now kills it atomically
+  const ls = await lsDump(page), dump = JSON.stringify({ ls, key: await sealKey(page) });
+  expect(dump).not.toContain(SYNC); expect(dump).not.toContain(PASS);
+  expect(await sealKey(page)).toEqual({ type: 'secret', extractable: false, alg: 'AES-GCM', usages: ['encrypt', 'decrypt'], exportable: false });
+  const wing = await context.newPage();
+  await wing.goto(base + '/index.html?view=personal');
+  await wing.locator('#lockBtn').click();
+  await gated(page); await gated(two);
+  await expect.poll(() => sealKey(page)).toBeNull();
+  await page.reload(); await gated(page);
+  await two.close(); await wing.close();
 });
 
 test('localStorage + IndexedDB hold no plaintext sync id / pass; the key is a non-extractable AES-GCM key', async ({ page, context }) => {

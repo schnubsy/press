@@ -47,7 +47,8 @@
  * (Cardsharp: gift-card numbers + PINs) never has its {sync_id, pass} in localStorage — the persisted
  * session carries a REDACTED stub for it; the full keyring lives only in this tab's memory (`_mem`) after a
  * passkey unlock in this tab. A Connect / add-device re-seal restores redacted entries from the decrypted
- * vault row, so redaction never erases a credential from the vault. Cost: one passkey tap per Cardsharp tab.
+ * vault row, so redaction never erases a credential from the vault. A passkey unlock seals each MEMORY_ONLY page's
+ * creds for the session's 7 days (quick-fixes S3), so one tap — in the wing or any gate — opens Cardsharp too.
  * ========================================================================== */
 (function (root) {
   'use strict';
@@ -269,6 +270,56 @@
   }
   function everEnrolled() { var s = store(); if (!s) return false; try { return s.getItem(ENROLLED_FLAG) === '1'; } catch (e) { return false; } }
 
+  // --- SEALED 7-day unlock for MEMORY_ONLY pages (cardsharp Arc 7 slice 6; moved here from gate.js, quick-fixes S3) --
+  // A page's {sync_id, pass} are AES-GCM sealed under a fresh NON-EXTRACTABLE key kept in IndexedDB (`press:vault:seal`);
+  // the ciphertext rides INSIDE the session (`press:vault:v1`.seal), AAD-bound to its unlockedAt/expiresAt/vaultId, so
+  // any lock, expiry or new session kills it atomically. The gate unseals it on load (no prompt). No IndexedDB → none.
+  var SEAL_DB = 'press:vault:seal';
+  function hasIdb() { try { return !!globalThis.indexedDB && !!subtle; } catch (e) { return false; } }
+  function sealIdb(mode, fn) {
+    return new Promise(function (ok, no) {
+      var o = globalThis.indexedDB.open(SEAL_DB, 1);
+      o.onupgradeneeded = function () { o.result.createObjectStore('keys'); };
+      o.onerror = o.onblocked = function () { no(o.error); };
+      o.onsuccess = function () {
+        var db = o.result, t = db.transaction('keys', mode), r = fn(t.objectStore('keys'));
+        t.oncomplete = function () { db.close(); ok(r.result); };
+        t.onerror = t.onabort = function () { db.close(); no(t.error); };
+      };
+    });
+  }
+  function sealAad(page, s) { return new TextEncoder().encode(JSON.stringify([page, s.unlockedAt, s.expiresAt, s.vaultId || ''])); }
+  // seal `creds` ({syncId, passphrase}) for `page` onto the CURRENT session. true = a new session appeared meanwhile
+  // (the caller seals again); a lock meanwhile drops the key, so none is ever left behind.
+  async function sealPage(page, creds) {
+    var s = loadSession(); if (!s) return false;
+    var key = await subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    var iv = randomBytes(12);
+    var ct = await subtle.encrypt({ name: 'AES-GCM', iv: iv, additionalData: sealAad(page, s) }, key,
+      new TextEncoder().encode(JSON.stringify([creds.syncId, creds.passphrase])));
+    await sealIdb('readwrite', function (st) { return st.put({ key: key, at: s.unlockedAt }, page); });
+    var cur = loadSession();
+    if (!cur) { await sealIdb('readwrite', function (st) { return st.delete(page); }).catch(function () {}); return false; }
+    if (cur.unlockedAt !== s.unlockedAt) return true;
+    cur.seal = cur.seal || {};
+    cur.seal[page] = { ct: b64(ct), iv: b64(iv), at: cur.unlockedAt, exp: cur.expiresAt };
+    store().setItem(SESSION_KEY, JSON.stringify(cur));
+    return false;
+  }
+  // quick-fixes S3 (Mark 2026-11-02): a passkey unlock ANYWHERE (the private wing, any gate) holds the FULL keyring —
+  // seal every MEMORY_ONLY page's creds right then, so opening Cardsharp next needs no second tap. Nothing new in clear
+  // storage. Best effort: a failure only means that page's own gate asks, as before.
+  async function sealMemoryOnly(keyring) {
+    if (!hasIdb() || !keyring || !keyring.apps) return;
+    for (var i = 0; i < MEMORY_ONLY.length; i++) {
+      var p = MEMORY_ONLY[i], v = keyring.apps[p];
+      if (!v || v.redacted || !v.sync_id || !v.pass) continue;
+      for (var n = 0; n < 3; n++) {
+        try { if (!(await sealPage(p, { syncId: v.sync_id, passphrase: v.pass }))) break; } catch (e) { break; }
+      }
+    }
+  }
+
   // --- REST helpers (header-gated on x-vault-id) -----------------------------
   function headers(vaultId, extra) {
     var h = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'x-vault-id': vaultId };
@@ -439,6 +490,7 @@
     if (!keyring) throw new Error('Could not open the personal space with this passkey.');
     _live = { key: key, vaultId: vaultId };
     saveSession(keyring, vaultId);
+    await sealMemoryOnly(keyring); // quick-fixes S3: one tap opens every MEMORY_ONLY page too
     return { vaultId: vaultId, keyring: keyring, record: record };
   }
 
@@ -507,6 +559,8 @@
     saveSession: saveSession, loadSession: loadSession, lock: lock, everEnrolled: everEnrolled,
     // MEMORY_ONLY redaction (cardsharp S1)
     MEMORY_ONLY: MEMORY_ONLY, memCreds: memCreds, fullKeyring: fullKeyring, redact: redact, restoreRedacted: restoreRedacted,
+    // the sealed 7-day unlock (cardsharp Arc 7 slice 6; quick-fixes S3 — sealed at every passkey unlock)
+    SEAL_DB: SEAL_DB, hasIdb: hasIdb, sealIdb: sealIdb, sealAad: sealAad, sealPage: sealPage, sealMemoryOnly: sealMemoryOnly,
     // webauthn + rest
     enrol: enrol, unlock: unlock, addPasskey: addPasskey, revoke: revoke, fetchRow: fetchRow,
     updateKeyring: updateKeyring,
@@ -595,37 +649,13 @@
   // IndexedDB (`press:vault:seal`); the ciphertext rides INSIDE the session (`press:vault:v1`.seal), AAD-bound to its
   // unlockedAt/expiresAt/vaultId, so any lock (the wing's only removes the session), expiry or new session kills it
   // atomically; an orphaned key is deleted when a gate next sees it. Reloads unseal, no prompt. No IndexedDB → memory only.
-  var SEAL_DB = 'press:vault:seal', _un = null, _sealing = 0, _timer = null;
-  function sealable(page) { try { return V.MEMORY_ONLY.indexOf(page) >= 0 && !!root.indexedDB; } catch (e) { return false; } }
-  function idb(mode, fn) {
-    return new Promise(function (ok, no) {
-      var o = root.indexedDB.open(SEAL_DB, 1);
-      o.onupgradeneeded = function () { o.result.createObjectStore('keys'); };
-      o.onerror = o.onblocked = function () { no(o.error); };
-      o.onsuccess = function () {
-        var db = o.result, t = db.transaction('keys', mode), r = fn(t.objectStore('keys'));
-        t.oncomplete = function () { db.close(); ok(r.result); };
-        t.onerror = t.onabort = function () { db.close(); no(t.error); };
-      };
-    });
-  }
-  function aad(page, s) { return new TextEncoder().encode(JSON.stringify([page, s.unlockedAt, s.expiresAt, s.vaultId || ''])); }
+  // quick-fixes S3: seal / idb / aad are the vault core's (PressVault.sealPage …) — every passkey unlock (the wing's
+  // included) seals there, so a fresh unlock opens a MEMORY_ONLY page with no second tap; this gate reseals + unseals.
+  var SEAL_DB = V.SEAL_DB, _un = null, _sealing = 0, _timer = null; // the seal itself lives in the vault core (S3)
+  function sealable(page) { try { return V.MEMORY_ONLY.indexOf(page) >= 0 && V.hasIdb(); } catch (e) { return false; } }
+  var idb = V.sealIdb, aad = V.sealAad, seal = V.sealPage;
   function sealOf(page) { var s = V.loadSession(), x = s && s.seal && s.seal[page]; return (x && x.at === s.unlockedAt && x.exp === s.expiresAt) ? x : null; }
   function dropKey(page) { if (sealable(page)) idb('readwrite', function (st) { return st.delete(page); }).catch(function () {}); }
-  async function seal(page, creds) {
-    var s = V.loadSession(), c = crypto.subtle;
-    var key = await c.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
-    var iv = V.randomBytes(12);
-    var ct = await c.encrypt({ name: 'AES-GCM', iv: iv, additionalData: aad(page, s) }, key,
-      new TextEncoder().encode(JSON.stringify([creds.syncId, creds.passphrase])));
-    await idb('readwrite', function (st) { return st.put({ key: key, at: s.unlockedAt }, page); });
-    var cur = V.loadSession();
-    if (!cur) return dropKey(page); // locked meanwhile: no key left behind
-    if (cur.unlockedAt !== s.unlockedAt) return true; // a new session meanwhile → seal again
-    cur.seal = cur.seal || {};
-    cur.seal[page] = { ct: V.b64(ct), iv: V.b64(iv), at: cur.unlockedAt, exp: cur.expiresAt };
-    localStorage.setItem(V.SESSION_KEY, JSON.stringify(cur));
-  }
   function maybeSeal(page, creds) {
     if (!sealable(page) || _sealing || sealOf(page)) return;
     _sealing = 1;
