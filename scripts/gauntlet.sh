@@ -23,6 +23,10 @@
 # Exit 0 = GAUNTLET GREEN; 1 = a stage failed (RED); 2 = every stage passed but WebKit was unavailable (PARTIAL).
 set -uo pipefail
 cd "$(dirname "$0")/.."
+# Lane (council testing.md → "Test budget"): one test shape in every lane; LANE only names it. VIEWS = the ui-audit states
+# the diff changed (names or prefixes from test/ui-audit.config.mjs) — unset in an arc ⇒ stage 5 is skipped, not run in full.
+LANE="${LANE:-standard}"
+case "$LANE" in quick|standard|full) ;; *) echo "LANE must be quick|standard|full"; exit 64 ;; esac
 ROOT="$(pwd)"
 LOG="docs/evidence/${EVIDENCE:-gauntlet}-gauntlet.txt"
 UISTEM="docs/evidence/${EVIDENCE:-gauntlet}-ui-audit"   # stage 5 writes $UISTEM.{txt,json} — the gauntlet's own output, never restored
@@ -43,7 +47,7 @@ PARENT="$(dirname "$ROOT")"
 export CODE_ROOT="${CODE_ROOT:-$PARENT}"
 [ -z "${COUNCIL_DIR:-}" ] && [ -d "$PARENT/council" ] && export COUNCIL_DIR="$PARENT/council"
 
-say "press gauntlet — $(date -u +%FT%TZ) — HEAD $(git rev-parse --short HEAD) — node $(node -v)"
+say "press gauntlet — LANE=$LANE${VIEWS:+ VIEWS=$VIEWS} — $(date -u +%FT%TZ) — HEAD $(git rev-parse --short HEAD) — node $(node -v)"
 dirty_before="$(git diff --name-only -- docs/evidence | grep -vE "$KEEP_RE" || true)"
 
 [ -d node_modules ] || { say "npm ci"; npm ci >>"$LOG" 2>&1 || { say "✗ FAILED: npm ci"; exit 1; }; }
@@ -99,11 +103,16 @@ else summary+=("🔴 4 playwright:${pwline}— ✗ FAILED: playwright"); fail=1;
 if [ -z "${PW_NO_WEBKIT:-}" ] && [ -n "$skipped" ]; then summary+=("🔴 4 playwright — ✗ FAILED: skips with WebKit installed"); fail=1; fi
 
 # 5 — the iPhone UI audit (WebKit; exit 0 GREEN · 1 RED · 2 PARTIAL = not on WebKit)
-say "== 5 ui-audit → $UISTEM.{txt,json}"
 rm -f "$UISTEM.txt" "$UISTEM.json"   # a crashed run must never report the previous run's matrix
-node test/ui-audit/run.mjs test/ui-audit.config.mjs --evidence "$UISTEM" >>"$LOG" 2>&1; ua=$?
+if [ -n "${VIEWS:-}" ]; then
+  say "== 5 ui-audit (VIEWS=$VIEWS) → $UISTEM.{txt,json}"
+  VIEWS="$VIEWS" node test/ui-audit/run.mjs test/ui-audit.config.mjs --evidence "$UISTEM" >>"$LOG" 2>&1; ua=$?
+else
+  say "== 5 ui-audit — skipped (no VIEWS: the diff changed no audited view)"; ua=skip
+fi
 ualine="$(grep -E '^matrix:' "$UISTEM.txt" 2>/dev/null | head -1)"
 case $ua in
+  skip) summary+=("⚪ 5 ui-audit: skipped — no VIEWS (lane $LANE)") ;;
   0) summary+=("🟢 5 ui-audit: GREEN on WebKit — $ualine") ;;
   2) summary+=("🟡 5 ui-audit: PARTIAL (not WebKit) — $ualine — $(grep -E '^VERDICT:' "$UISTEM.txt" 2>/dev/null | head -1)"); partial=1
      [ -z "$partial_reason" ] && partial_reason=other ;;

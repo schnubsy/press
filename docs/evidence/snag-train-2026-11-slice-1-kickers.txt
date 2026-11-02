@@ -1,0 +1,8 @@
+slice 1 (#28) — one kicker convention — 2026-11-02T09:13:35Z
+finding: the Issue's 'THE FAMILY WING' vs 'PERSONAL' split was retired by marquee-polish S1 (docs/history.md 2026-09-22);
+both kickers are now lowercase taglines ('a safe space' / 'behind the passkey'), the h3 is the wing name. No copy change (Mark's family text kept).
+$ npx playwright test test/wing-cards.spec.mjs --project=chromium -g '#28'
+  ✓  1 [chromium] › test/wing-cards.spec.mjs:123:1 › #28 both wing kickers follow one convention (tagline kicker, name in the h3) (787ms)
+
+  1 passed (1.6s)
+screenshot: docs/evidence/snag-train-2026-11-slice-1-kickers-390.png

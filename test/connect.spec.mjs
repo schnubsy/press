@@ -197,6 +197,35 @@ test('every tool connected: the section renders COLLAPSED; Manage expands, colla
   await expect(sect.locator('.tw-tool')).toHaveCount(0);            // rows removed from the DOM
 });
 
+// snag-train-2026-11 slice 5 (#32): collapsed, the page ends ≤32px under the Manage row (was the 40px page pad + a void);
+// expanded or with Devices open, the normal 40px bottom pad returns.
+for (const vp of [{ width: 390, height: 600 }, { width: 1280, height: 600 }]) {
+  test(`#32 collapsed Connect your tools leaves no void below Manage (${vp.width})`, async ({ page, context }) => {
+    await harness(page, context);
+    await page.setViewportSize(vp);
+    await page.goto(base + '/?view=personal');
+    await enrolInPage(page, { apps: {
+      'fsa.html': { sync_id: SYNC, pass: PASS }, 'giving.html': { sync_id: SYNC, pass: PASS }, 'retirement.html': { sync_id: SYNC, pass: PASS },
+      'card-scout.html': { sync_id: CARD_SYNC, pass: CARD_SCOUT_GATE_SENTINEL }, 'cardsharp.html': { sync_id: CS_SYNC, pass: CS_PASS },
+    } });
+    await page.reload();
+    const toggle = page.locator('.tw-connect-toggle');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    const below = () => page.evaluate(() => document.documentElement.scrollHeight - (document.querySelector('.tw-connect').getBoundingClientRect().bottom + scrollY));
+    const collapsed = await below();
+    expect(collapsed, 'collapsed: space under the Manage row').toBeLessThanOrEqual(32);
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await page.screenshot({ path: join(ROOT, 'docs', 'evidence', `snag-train-2026-11-slice-5-collapsed-${vp.width}.png`) });
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(await below(), 'expanded: the normal page pad').toBeGreaterThanOrEqual(40);
+    await toggle.click();
+    expect(await below(), 'collapsed again').toBeLessThanOrEqual(32);
+    await page.click('#devBtn');
+    expect(await page.evaluate(() => getComputedStyle(document.querySelector('.tw-in')).paddingBottom), 'Devices open: normal pad').toBe('40px');
+  });
+}
+
 // ── Connect / collapse / Card Scout — run at desktop AND iPhone 15 width ────
 const VIEWPORTS = [
   { name: 'desktop', viewport: { width: 1280, height: 800 } },
@@ -255,6 +284,21 @@ for (const vp of VIEWPORTS) {
       await expect(t.locator('.tw-tool-form')).toBeVisible();
       await expect(t.locator('.tw-sync')).toHaveCount(1);
       await expect(t.locator('.tw-pass')).toHaveCount(0);           // NO passphrase input for card-scout
+    });
+
+    // snag-train-2026-11 slice 4 (#31): the shorter row explains itself — one hint line, on the deals row only.
+    test('#31 Thrift Shop row says it is sync-id-only on purpose; app rows carry no hint', async ({ page, context }) => {
+      const state = await harness(page, context);
+      await enrolEmptyAndOpen(page, state);
+      const t = tool(page, 'thrift-shop.html');
+      const hint = t.locator('.tw-tool-hint');
+      await expect(hint).toHaveCount(1);
+      await expect(hint).toBeVisible();
+      await expect(hint).toHaveText('Sync id only — Thrift Shop has no passphrase and nothing to download.');
+      for (const f of ['fsa.html', 'giving.html', 'retirement.html', 'cardsharp.html']) await expect(tool(page, f).locator('.tw-tool-hint')).toHaveCount(0);
+      const box = await t.boundingBox();
+      expect(box.x + box.width, 'row fits the viewport').toBeLessThanOrEqual(page.viewportSize().width);
+      await t.screenshot({ path: join(ROOT, 'docs', 'evidence', `snag-train-2026-11-slice-4-deals-hint-${page.viewportSize().width}.png`) });
     });
 
     test('Thrift Shop: a WRONG sync id (200 + zero rows) is rejected with the plain-language message; nothing stored', async ({ page, context }) => {

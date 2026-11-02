@@ -1,6 +1,6 @@
 # press — HANDOFF
 
-_Last updated: 2026-11-01. family-wing-invites — one-tap Invite built on `arc/family-wing-invites` (cloud); PR open, not merged._
+_Last updated: 2026-11-02. snag-train-2026-11 — six marquee snags on `arc/snag-train-2026-11` (cloud, SHADOW); PR open, not merged._
 
 ## Standing rule: publish auto-close (do NOT re-litigate)
 
@@ -10,7 +10,9 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
 
 ## Current state
 
-- Merge state: Merged: PR #59 e4cea28 on 2026-11-01; main checkout on main @ e4cea28. Live: invited_at column + access-invite function (v1, verify_jwt false) + new Access Manager. Still open: council deploy/targets.json row (STAGED patch docs/evidence/family-wing-invites-staged-council.patch) and Barb's live invite proof.
+- Merge state: PR pending (branch arc/snag-train-2026-11)
+- Still open from family-wing-invites (merged PR #59): the council `deploy/targets.json` row (STAGED patch
+  `docs/evidence/family-wing-invites-staged-council.patch`) and Barb's live invite proof.
 - Home: `github:schnubsy/press`. Work happens in a cloud clone. The repo is PUBLIC and stays public.
 - Agent alerting rule (Mark, 2026-10-13): nothing running is SLA-critical — one push + email only when an item has been
   down (late/failed) for 24h+, one quiet "working again" after. Contract: `docs/spec.md` → Agent Monitor · Alerting.
@@ -18,28 +20,17 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
   migration `agent_monitor_quiet_alerts` applied; GH `agent-health-notifier` every 6 h.
 - Quiet nights (Mark 2026-10-19): any agent-watch push 22:00–07:00 America/Chicago goes out at Pushover priority −1
   (delivered, no sound); email unchanged. `nightPriority` stays byte-identical with council `tools/quiet-night.mjs`.
-- Ship gate: `bash scripts/gauntlet.sh` (verify skill) — 0 webkit · 1 unit · 2 inline · 3 tenants-check · 4 Playwright · 5 ui-audit.
+- Ship gate: `LANE=standard VIEWS=<changed ui-audit states> bash scripts/gauntlet.sh` (verify skill) — 0 webkit · 1 unit · 2 inline · 3 tenants-check · 4 Playwright · 5 ui-audit.
 
-## Shipped this arc (family-wing-invites, 2026-11-01 — on the branch, NOT yet merged or deployed)
-- **Why:** Barb had a `press_access_people` row but no `auth.users` row ⇒ `create_user:false` ⇒ 422 "Signups not allowed for otp".
-- **Slice 1** `db/20261101_press_access_invited_at.sql` (additive column). **Slice 2** `supabase/functions/access-invite/` +
-  `_shared/invite.mjs` + `test/access-invite.test.mjs` (13 tests). **Slice 3** access.html Invite / Resend / "invited <date>",
-  `test/access-admin.spec.mjs` (+8), ui-audit states `access-invite-error` / `access-invite-mail-failed`, docs (§5/§6/§8a, spec, lessons).
-- **Waiting on verify (chat):** apply migration → deploy `access-invite` (verify_jwt false) → apply the council patch
-  (`docs/evidence/family-wing-invites-staged-council.patch`) → Mark taps Invite for Barb → read back `auth.users` + `last_seen_at`.
-  Full list + rollback: `docs/evidence/family-wing-invites-staged-deploy.md`. Brandon is NOT in this arc.
-
-## Shipped earlier (perth rebuild + card, 2026-10-24)
-- **PR #58** (1729c4b, Mark's upload on `inbox/perth-rebuild`): perth.html replaced wholesale — blob `edbb696e`, 72,910 B;
-  one list, three states, "Handy to know" tab, light/dark, FamilyGate preserved. Served live (Mark confirmed raw + Pages).
-- **28c789b**: pages.json perth title → "Brandon · Australia" (confirmed on GitHub main); docs/favicons.md perth rows → tick,
-  `#1A1D1E`, `#4FB08C → #D9A857`, glyph `M17 33.5 27.5 44 47 21` at 7.5. spaces.json, perth.html, SQL untouched.
-- **11ff790**: perth card → kicker "Moving to Perth", title "Brandon’s List", icon `send`; access.html APP_NAMES to match;
-  `test/perth-card.spec.mjs` (rewrite of perth-title) + card-labels + access-admin updated.
-- Gauntlet (11ff790): WebKit 26.6 · unit 152/0 · inline ✓ · Playwright 151/0 · ui-audit GREEN (200) · tenants-check 41/28/27
-  (28 FAILs pre-existing: out-of-scope tenant repos + T8 no council clone). Evidence `docs/evidence/perth-card-*`.
-- Close-out manifest: merge: done (PR #58 + direct push 28c789b) · publish: done · reconcile/stage stamp: N/A (on main).
-- Earlier (thrift-shop-redesign-card-label, PR #57): redesign card got its own `layers` glyph + test label.
+## Shipped this arc (snag-train-2026-11, 2026-11-02 — on the branch, NOT yet merged or published)
+- Gate-enabling `f462844`: `scripts/gauntlet.sh` reads `LANE` (+ `VIEWS` gates stage 5); `iphone-webkit` states `browserName: 'webkit'`.
+- #28 + #30 already met (kickers are taglines since marquee-polish S1; FSA = stethoscope since the LABELS rework) — specs pin both.
+- #29 phone wing cards: 14px hero→meta. #31 Thrift Shop connect row hint. #32 collapsed Connect: page ends 16px under Manage.
+- #34 recovery kit: "Unlock with passkey to include Cardsharp". Evidence `docs/evidence/snag-train-2026-11-*`.
+- Close-out manifest: push DONE · PR DONE (not draft) · merge review BLOCKED (no reviewer — no Agent tool; the chat reviews the
+  diff before the button) · merge: → Mark's button at verify · reconcile: → chat after merge · stage stamp: → chat after merge ·
+  migrations N/A (no db) · deploy N/A · publish N/A (press-native — Pages serves main on merge; rollback `git revert <merge sha>`,
+  previous index.html blob 973d31635907) · catalog N/A (no new page) · handoff DONE · report-back: the PR's final comment.
 
 ## Open / blockers
 - **snag-train `kind` is still `mac-task`** while its `what` now says "Cloud scheduled task" (from council's patch) — confirm
@@ -52,7 +43,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
   (76/0/24, this arc). A tenant repo left out still FAILs T2 (by design) — dispatch press arcs with the tenant repos in scope. council-guide's `repoPath`
   (`~/Documents/Claude/council-hub/council`, tenants.json) SKIPs T2 in the cloud.
 - Carried: on-demand AI functions record no runs ("No data") · optimo's cloud Playwright baseline RED (env) · flow
-  `kayley.html` compare BLOCKED (flow out of scope) · Issues #28–#32 · remote branch `claude/perth-phase-2-security-c7a88b`
+  `kayley.html` compare BLOCKED (flow out of scope) · remote branch `claude/perth-phase-2-security-c7a88b`
   and merged `inbox/perth-rebuild` (if still present) safe to delete.
 
 ## Exact next steps

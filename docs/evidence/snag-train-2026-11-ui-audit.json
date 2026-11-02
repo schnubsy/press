@@ -1,0 +1,384 @@
+{
+  "name": "press",
+  "engine": "webkit",
+  "fallback": null,
+  "reason": null,
+  "widths": [
+    320,
+    375,
+    390,
+    393,
+    430
+  ],
+  "schemes": [
+    "dark",
+    "light"
+  ],
+  "states": [
+    "(initial)",
+    "lobby-ready",
+    "private-unlocked",
+    "private-recovery-kit",
+    "private-recovery-kit-redacted"
+  ],
+  "exceptions": [
+    "#kitUnlock (index.html recovery kit, snag-train 2026-11 #34) — \"Unlock with passkey to include Cardsharp\" names the tool it restores (the redacted tool names are dynamic); below ~400px it wraps to two centred lines inside the full-width pill by design rather than truncating which tool the unlock brings back. Tap target stays ≥44px.",
+    ".row .line (agent-health.html) — an agent row is one <button> (tap to expand), so the probe reads its status line as a button label; it is server copy of variable length (\"Missed the run due Wed Oct 7, 12:00 PM CT · last real work 9 days ago\") that must wrap at phone width — truncating it would hide the reason the agent needs attention. The row title (.name) stays gated."
+  ],
+  "defects": 0,
+  "undriven": 0,
+  "verdict": "GREEN",
+  "code": 0,
+  "results": [
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 320,
+      "state": "private-recovery-kit-redacted",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 375,
+      "state": "private-recovery-kit-redacted",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "state": "private-recovery-kit-redacted",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 393,
+      "state": "private-recovery-kit-redacted",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "dark",
+      "width": 430,
+      "state": "private-recovery-kit-redacted",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 320,
+      "state": "private-recovery-kit-redacted",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 375,
+      "state": "private-recovery-kit-redacted",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "state": "private-recovery-kit-redacted",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 393,
+      "state": "private-recovery-kit-redacted",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "(initial)",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "lobby-ready",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "private-unlocked",
+      "surface": "body.tw-page",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "private-recovery-kit",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    },
+    {
+      "scheme": "light",
+      "width": 430,
+      "state": "private-recovery-kit-redacted",
+      "surface": "div#recoveryKit.tw-kit \"Private Wing — recovery kitGener\"",
+      "defects": []
+    }
+  ]
+}

@@ -147,3 +147,23 @@ if (process.env.PRESS_SHOT_DIR) {
     });
   }
 }
+
+// snag-train-2026-11 slice 3 (#30) — the FSA card reads as MEDICAL, not "add": its glyph is the stethoscope (LABELS
+// rework, 2026-10-12, replaced the 2026-09-22 medical cross). Pin it: the label names `stethoscope`, the rendered svg IS
+// that glyph (a curved tube + chest-piece circle), and it is not a plus/cross made of two straight strokes.
+test('#30 the FSA card glyph is the stethoscope, not a plus', async ({ page, context }) => {
+  await routes(context);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(base + '/?view=personal');
+  const card = page.locator('.tw-card[data-file="fsa.html"]');
+  await expect(card).toHaveCount(1);
+  expect(await page.evaluate(() => LABELS['fsa.html'].icon)).toBe('stethoscope');
+  const svg = await card.locator('.ticon').innerHTML();
+  const norm = (x) => x.replace(/<(path|circle)([^>]*)\/>/g, '<$1$2></$1>');   // innerHTML serialises self-closing tags
+  expect(svg).toBe(norm(await page.evaluate(() => ICONS['stethoscope'])));
+  expect(svg, 'a chest-piece circle').toMatch(/<circle\b/);
+  expect(svg, 'curved tubing (arc commands)').toMatch(/a\d/i);
+  const plusLike = /M12 5v14|M5 12h14|M12 \d+v\d+.*M\d+ 12h\d+/;
+  expect(svg, 'not a plus / cross').not.toMatch(plusLike);
+  await card.screenshot({ path: join(ROOT, 'docs', 'evidence', 'snag-train-2026-11-slice-3-fsa-glyph-390.png') });
+});

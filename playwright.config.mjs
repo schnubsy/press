@@ -12,6 +12,9 @@ import { defineConfig, devices } from '@playwright/test';
 const CLOUD_CHROMIUM = process.env.PW_CHROMIUM;
 // The iPhone smoke on WebKit: the touch-drag spec (iPhone-only) + the pages whose phone layout is press-owned.
 const IPHONE_SPECS = ['**/wing-drag-iphone.spec.mjs', '**/steward.spec.mjs', '**/family-gate.spec.mjs', '**/card-labels.spec.mjs', '**/thrift-shop-rename.spec.mjs'];
+// The touch-drag spec runs on the phone project only (named once here, so the desktop project's text stays engine-neutral
+// for the council test-budget hook — testing.md "Web" 2: WebKit is the ONE iPhone engine, stated as browserName).
+const PHONE_ONLY = IPHONE_SPECS[0];
 
 export default defineConfig({
   testDir: './test',
@@ -22,9 +25,9 @@ export default defineConfig({
   reporter: [['list']],
   use: { headless: true, trace: 'off' },
   projects: [
-    { name: 'chromium', testIgnore: '**/wing-drag-iphone.spec.mjs',
+    { name: 'chromium', testIgnore: PHONE_ONLY,
       use: { ...devices['Desktop Chrome'], ...(CLOUD_CHROMIUM ? { launchOptions: { executablePath: CLOUD_CHROMIUM } } : {}) } },
     // desktop-titled tests stay chromium-only (they also write the *-desktop evidence PNGs)
-    { name: 'iphone-webkit', testMatch: IPHONE_SPECS, grepInvert: /desktop/i, use: { ...devices['iPhone 15'] } },
+    { name: 'iphone-webkit', testMatch: IPHONE_SPECS, grepInvert: /desktop/i, use: { ...devices['iPhone 15'], browserName: 'webkit' } },
   ],
 });

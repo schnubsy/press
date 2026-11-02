@@ -442,3 +442,12 @@ around the scope.
   non-admin's call log contains no service key and no admin-users request. [tag: press] (2026-11-01)
 - **Stamp `invited_at` only when the mail went.** Stamping on a failed send would 429 the very retry the page offers.
   [tag: press] (2026-11-01)
+
+## snag-train-2026-11 (2026-11-02)
+
+- **The council test-budget hook reads each Playwright project's TEXT.** A project whose literal mentions "iphone" (even a
+  `testIgnore` naming `wing-drag-iphone.spec.mjs`) counts as an iPhone project and, without `browserName: 'webkit'`, blocks every
+  playwright run. Name such globs in a const outside the project; state `browserName` on the iPhone project. [tag: press] (2026-11-02)
+- **A cloud gauntlet's tenants-check needs the `thrift-shop` source at `$CODE_ROOT/thrift-shop`.** The repo answers to its old
+  name `card-scout` (renamed; `thrift-shop` may be unreachable through the session proxy) — clone `card-scout` and link it as
+  `thrift-shop`. [tag: press] (2026-11-02)

@@ -1,0 +1,10 @@
+slice 6 (#34) — recovery kit Unlock button when Cardsharp is redacted — 2026-11-02T09:20:27Z
+change: index.html recoveryKitHTML renders #kitUnlock (tw-noprint) when any keyring entry is redacted, naming the tool(s); showRecoveryKit wires it to PressVault.unlock() in this tab then re-renders the kit; failure → friendlyErr, button re-enabled.
+ui-audit: new state private-recovery-kit-redacted; #kitUnlock named as a designed 2-line wrap below ~400px (wrapOk + exception text).
+red→green: on the base index.html the two #34 button specs FAIL (no #kitUnlock); with the change all pass.
+$ npx playwright test test/recovery-kit.spec.mjs --project=chromium
+  5 passed (6.4s)
+$ npm test
+# pass 168
+# fail 0
+screenshots: docs/evidence/snag-train-2026-11-slice-6-kit-unlock-{before,after,320}.png

@@ -1,0 +1,7 @@
+slice 2 (#29) — phone wing cards breathing room — 2026-11-02T09:14:38Z
+change: index.html @media(max-width:480px) .tw-wings .lockline{padding-top:14px}
+red→green: on the base CSS the #29 spec FAILS (private card hero→meta gap = 0px); with the change it passes.
+$ npx playwright test test/wing-cards.spec.mjs --project=chromium
+
+  5 passed (5.0s)
+screenshot: docs/evidence/snag-train-2026-11-slice-2-breathing-390.png
