@@ -67,7 +67,7 @@ Scope: layout change + behaviour. index.html `recoveryKitHTML` / `showRecoveryKi
 Done-criteria: with a redacted MEMORY_ONLY entry the kit shows "Unlock with passkey to include Cardsharp" (not printed);
 clicking runs `PressVault.unlock()` in this tab and re-renders the kit with Cardsharp's sync ID + passphrase; a failed
 unlock shows the error and keeps the button; no button when nothing is redacted. Spec. Fixes #34.
-Status: open
+Status: done 6827ace
 
 === SLICE 7 — design review + performance (standard UI slices) ===
 Done-criteria: before/after screenshots of every changed surface at 390 + 1280 reviewed against the Issues
