@@ -1,5 +1,3 @@
-Global rules: council arc instrument
-
 # press — Claude instructions
 
 ## Purpose
@@ -24,8 +22,8 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 
 - **Host**: GitHub Pages at https://schnubsy.github.io/press/
 - **No build step** — static HTML files only
-- **Ship gate:** `bash scripts/gauntlet.sh` via `.claude/skills/verify/SKILL.md` (WebKit install · node --test · inline:check ·
-  tenants-check · Playwright chromium + iphone-webkit · ui-audit on WebKit; cloud clone or Mac — exit 2 = PARTIAL (egress))
+- **End check:** `scripts/gauntlet.sh` via `.claude/skills/verify/SKILL.md` — shape per Council `testing.md`; press specifics
+  (inline:check as the build, marquee desktop smoke, `tenant` extra = tenants-check) are in the script header
 - **Publish**: via the council press instrument (Lane A hash-verify → commit → push)
 - `pages.json` must be updated whenever a new page is published
 - `agent-health.html` connects to Supabase all-apps views at runtime (client-side JS)
@@ -42,6 +40,8 @@ STAGED for verify: `db/20261101_press_access_invited_at.sql`, function deploy, c
 (`docs/evidence/family-wing-invites-staged-{council.patch,deploy.md}`). Gauntlet: `docs/evidence/family-wing-invites-gauntlet.txt`.
 
 ## Project rules
+
+Global rules: council arc instrument
 
 - This is a **publishing target** — pages are authored elsewhere and published here by
   the council press instrument (or an app's own `tools/release.js`), not built in-repo

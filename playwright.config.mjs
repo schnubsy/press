@@ -1,17 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// Cloud mode (migrate-home, 2026-10-11; optimo arc 7 precedent): a cloud session has an older Chromium under
-// /opt/pw-browsers than this Playwright pins. When PW_CHROMIUM is set (scripts/gauntlet.sh sets it automatically when
-// it finds /opt/pw-browsers/chromium), the CHROMIUM project launches that binary. Unset (the Mac) = unchanged.
-//
-// arc/safari-ui (2026-10-12): Safari (WebKit) is the iPhone engine of record. scripts/gauntlet.sh runs
-// `npx playwright install webkit` (needs cdn.playwright.dev + playwright.download.prss.microsoft.com — secrets-map
-// "Egress"), so the `iphone-webkit` project runs REAL WebKit with the iPhone 15 profile in the cloud too. Only when
-// that install fails does the gauntlet set PW_NO_WEBKIT=1, run `--project chromium` alone and report
-// GAUNTLET PARTIAL (egress) — never a Chromium run called Safari-green.
+// Test shape: council testing.md → "Web" (projects, engines, retries). press specifics only below.
+// Cloud mode: when PW_CHROMIUM is set (scripts/gauntlet.sh sets it when /opt/pw-browsers/chromium exists), the desktop
+// project launches that binary — a cloud image's Chromium is older than the one this Playwright pins.
 const CLOUD_CHROMIUM = process.env.PW_CHROMIUM;
-// The iPhone smoke on WebKit: the touch-drag spec (iPhone-only) + the pages whose phone layout is press-owned.
-const IPHONE_SPECS = ['**/wing-drag-iphone.spec.mjs', '**/steward.spec.mjs', '**/family-gate.spec.mjs', '**/card-labels.spec.mjs', '**/thrift-shop-rename.spec.mjs'];
+// Phone-only spec (touch drag) — never on desktop.
+const PHONE_ONLY = '**/wing-drag-iphone.spec.mjs';
+// The phone suite: the touch-drag spec + the pages whose phone layout press owns.
+const PHONE_SPECS = [PHONE_ONLY, '**/steward.spec.mjs', '**/family-gate.spec.mjs', '**/card-labels.spec.mjs', '**/thrift-shop-rename.spec.mjs'];
 
 export default defineConfig({
   testDir: './test',
@@ -19,12 +15,15 @@ export default defineConfig({
   timeout: 30000,
   fullyParallel: false,
   workers: 1,
-  reporter: [['list']],
+  retries: 1,
+  failOnFlakyTests: true,
+  reporter: [['line']],
   use: { headless: true, trace: 'off' },
   projects: [
-    { name: 'chromium', testIgnore: '**/wing-drag-iphone.spec.mjs',
+    { name: 'desktop', testIgnore: PHONE_ONLY,
       use: { ...devices['Desktop Chrome'], ...(CLOUD_CHROMIUM ? { launchOptions: { executablePath: CLOUD_CHROMIUM } } : {}) } },
-    // desktop-titled tests stay chromium-only (they also write the *-desktop evidence PNGs)
-    { name: 'iphone-webkit', testMatch: IPHONE_SPECS, grepInvert: /desktop/i, use: { ...devices['iPhone 15'] } },
+    // desktop-titled tests stay on desktop (they also write the *-desktop evidence PNGs)
+    { name: 'iphone-webkit', testMatch: PHONE_SPECS, grepInvert: /desktop/i,
+      use: { ...devices['iPhone 15'], browserName: 'webkit' } },
   ],
 });

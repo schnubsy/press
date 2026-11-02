@@ -2,11 +2,8 @@
 
 _Last updated: 2026-11-01. family-wing-invites — one-tap Invite built on `arc/family-wing-invites` (cloud); PR open, not merged._
 
-## Standing rule: publish auto-close (do NOT re-litigate)
-
-When a **green arc or hotfix** ends in an outward-facing publish, that publish does NOT need a separate merge approval from
-Mark. Once the gauntlet is green, the publish (merge or push to `main`, which GitHub Pages serves) is completed as part of
-the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-18.
+## Merge + publish
+Merge and publish follow the Council (`arc.md`); press facts only here (Lane A hash-verify — CLAUDE.md).
 
 ## Current state
 
@@ -18,7 +15,7 @@ the close. Auto-merge is still never enabled pre-emptively. Set by Mark 2026-09-
   migration `agent_monitor_quiet_alerts` applied; GH `agent-health-notifier` every 6 h.
 - Quiet nights (Mark 2026-10-19): any agent-watch push 22:00–07:00 America/Chicago goes out at Pushover priority −1
   (delivered, no sound); email unchanged. `nightPriority` stays byte-identical with council `tools/quiet-night.mjs`.
-- Ship gate: `bash scripts/gauntlet.sh` (verify skill) — 0 webkit · 1 unit · 2 inline · 3 tenants-check · 4 Playwright · 5 ui-audit.
+- End check: `scripts/gauntlet.sh` (verify skill) — shape per Council `testing.md`; `tenant` extra = tenants-check.
 
 ## Shipped this arc (family-wing-invites, 2026-11-01 — on the branch, NOT yet merged or deployed)
 - **Why:** Barb had a `press_access_people` row but no `auth.users` row ⇒ `create_user:false` ⇒ 422 "Signups not allowed for otp".
