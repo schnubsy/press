@@ -135,3 +135,23 @@ test('#28 both wing kickers follow one convention (tagline kicker, name in the h
   }
   await page.locator('.tw-wings').screenshot({ path: join(EVID, 'snag-train-2026-11-slice-1-kickers-390.png') });
 });
+
+// snag-train-2026-11 slice 2 (#29) — on phone width each wing card keeps ≥14px between its multi-line hero (h3) and its
+// meta line, in both first-run (2-line "Set up the private wing") and enrolled states; desktop squares are unchanged.
+test('#29 phone wing cards: ≥14px between the hero and the meta line', async ({ page, context }) => {
+  for (const enrolled of [false, true]) {
+    await harness(page, context, { enrolled });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(base + '/');
+    await expect(page.locator('.tw-secure')).toBeVisible();
+    for (const card of ['.tw-secure', '.tw-family']) {
+      const gap = await page.$eval(card, c => { const l = c.querySelector('.lockline'); return l.getBoundingClientRect().top + parseFloat(getComputedStyle(l).paddingTop) - c.querySelector('h3').getBoundingClientRect().bottom; });   // the meta TEXT's top
+      expect(gap, `${card} (enrolled=${enrolled}): hero→meta gap`).toBeGreaterThanOrEqual(14);
+    }
+    if (!enrolled) await page.locator('.tw-wings').screenshot({ path: join(EVID, 'snag-train-2026-11-slice-2-breathing-390.png') });
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(base + '/');
+  const r = await page.$eval('.tw-secure', c => { const b = c.getBoundingClientRect(); return b.width / b.height; });
+  expect(Math.abs(r - 1), 'desktop wing card stays square').toBeLessThan(0.02);
+});

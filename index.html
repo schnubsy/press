@@ -298,7 +298,10 @@ body.tw-sorting .tw-card{transition:none}
 @media(max-width:480px){.tw-wings .tw-secure,.tw-wings .tw-family{aspect-ratio:auto}
   /* wings-polish slice 2: each word of the wing heading on its own line at phone width. Explicit
      per-word blocks — not natural wrap. Desktop/tablet keep the words inline (normal flow). */
-  .tw-wings h3.tw-wordlines span{display:block}}
+  .tw-wings h3.tw-wordlines span{display:block}
+  /* snag-train 2026-11 (#29): breathing room between the multi-line hero and the meta line on phones — the grid
+     stretches both cards to the taller one, so margin-top:auto alone left the taller card's lockline flush under it. */
+  .tw-wings .lockline{padding-top:14px}}
 /* private-wing view */
 .tw-unlock{padding:32px 24px;border-radius:var(--tw-radius-card);background:var(--tw-glass-card);
   border:1px solid var(--tw-border-card);text-align:center;box-shadow:var(--tw-shadow-card)}
