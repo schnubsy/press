@@ -48,7 +48,7 @@ Status: done a41fe02
 Scope: layout change (icon). The FSA card already uses the `stethoscope` glyph (LABELS rework, 2026-10-12) — not a plus.
 Done-criteria: a spec pins `fsa.html` → icon `stethoscope` and asserts the rendered FSA card svg is not a plus/cross;
 screenshot. Fixes #30.
-Status: open
+Status: done 581ecff
 
 === SLICE 4 — the Thrift Shop (Card Scout) connect row reads as deliberate (#31) ===
 Scope: layout change (copy). index.html `toolFieldsHTML` for kind:'deals'.
