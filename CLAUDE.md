@@ -33,13 +33,12 @@ Served pages by tier (contract: `docs/spec.md` → Tenants):
 ## Current stage
 
 Home: github:schnubsy/press
-Merge state: Merged: PR #59 e4cea28 on 2026-11-01; main checkout on main @ e4cea28; deployed + live: migration invited_at, access-invite function (v1, verify_jwt false); council targets row STAGED
-**family-wing-invites (2026-11-01) — one-tap Invite in the Access Manager (Full lane, 3 slices; built, NOT yet merged/deployed).**
-A person needs a sign-in ACCOUNT, not just a `press_access_people` row (the wing sends `create_user:false` ⇒ GoTrue 422 "Signups not
-allowed for otp"). New Edge Function `access-invite` (+ `_shared/invite.mjs`) = the only path that creates one: admin-gated, row first,
-account, Winston email (Mark CC'd), `invited_at` stamp; access.html **Invite** / **Resend invite** / "invited <date>".
-STAGED for verify: `db/20261101_press_access_invited_at.sql`, function deploy, council `deploy/targets.json` row
-(`docs/evidence/family-wing-invites-staged-{council.patch,deploy.md}`). Gauntlet: `docs/evidence/family-wing-invites-gauntlet.txt`.
+Merge state: PR pending (branch arc/snag-train-2026-11)
+**snag-train-2026-11 (2026-11-02) — the six `page:index` snags (#28 #29 #30 #31 #32 #34), Standard lane, SHADOW (stops at the open PR).**
+#28 + #30 were already met (marquee-polish S1 / LABELS rework) — now pinned by specs; #29 phone wing-card meta gets 14px; #31 Thrift Shop
+connect row hint; #32 collapsed Connect your tools ends 16px under Manage; #34 recovery kit "Unlock with passkey to include Cardsharp".
+Gate-enabling: gauntlet reads LANE + VIEWS; `iphone-webkit` states `browserName: 'webkit'` (council test-budget hook).
+Page-diff vs live: desktop 0.000 %, mobile 7.707 % (the #29 layout change). Evidence `docs/evidence/snag-train-2026-11-*`.
 
 ## Project rules
 

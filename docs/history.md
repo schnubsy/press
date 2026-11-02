@@ -4,6 +4,13 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-11-02 — arc/snag-train-2026-11 (snag train, SHADOW; Standard lane)
+
+Six `page:index` Issues as one arc. #28 (one kicker convention) and #30 (FSA glyph) were already met by marquee-polish S1 and the
+LABELS rework — pinned by specs. #29: `@media(max-width:480px) .tw-wings .lockline{padding-top:14px}`. #31: a one-line hint on the
+deals (Thrift Shop) connect row. #32: collapsed Connect your tools drops the page's bottom pad 40→16px. #34: the recovery kit offers
+"Unlock with passkey to include Cardsharp" (runs `PressVault.unlock()` in the tab, re-renders). Gate-enabling commit: gauntlet reads LANE/VIEWS.
+
 ## 2026-11-01 — arc/family-wing-invites (one-tap Invite; Full lane)
 
 Barb was added to `press_access_people` on 10/31 but had no `auth.users` row; the wing sends `create_user:false`, so GoTrue
