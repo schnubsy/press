@@ -152,6 +152,11 @@ async function open(page, path, opts, ready) {
   await page.waitForTimeout(150);
 }
 
+// VIEWS (scripts/gauntlet.sh; council testing.md "Test budget"): an arc audits only the states it changed — a comma list
+// of state names or name prefixes (e.g. VIEWS=lobby,private). Unset = every state (the monthly audit).
+const VIEWS = (process.env.VIEWS || '').split(',').map((v) => v.trim()).filter(Boolean);
+const inViews = (s) => !VIEWS.length || VIEWS.some((v) => s.name.startsWith(v));
+
 export default {
   name: 'press',
   url: BASE + '/',                         // (initial) = the public lobby
@@ -208,7 +213,7 @@ export default {
       await p.fill('#an', 'Barbara'); await p.fill('#ae', 'barbara.with.a.long.address@family.test'); await p.click('#addBtn');
       await p.waitForSelector('#addMsg.err:not(:empty)');
     } },
-  ],
+  ].filter(inViews),
   probe: {
     surfaces: '#family-gate, #recoveryKit:not([hidden]), dialog[open], [aria-modal="true"]:not([hidden])',
     main: 'body',
