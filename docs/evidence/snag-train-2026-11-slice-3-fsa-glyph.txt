@@ -1,0 +1,5 @@
+slice 3 (#30) — FSA glyph reads as medical — 2026-11-02T09:15:25Z
+finding: the 2026-09-22 'medical cross' (the plus the Issue describes) was replaced by the Feather-grade 'stethoscope' glyph in the LABELS rework (2026-10-12; index.html LABELS fsa.html icon:'stethoscope'). No icon change; the spec pins it.
+$ npx playwright test test/card-labels.spec.mjs --project=chromium
+  7 passed (5.4s)
+screenshot: docs/evidence/snag-train-2026-11-slice-3-fsa-glyph-390.png
