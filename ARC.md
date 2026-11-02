@@ -42,7 +42,7 @@ Status: done b0d2c5f
 Scope: layout change. index.html CSS, ≤480px only.
 Done-criteria: at 390px the gap from each wing card's h3 bottom to its lockline top is ≥ 14px (was ~0 on the private
 card); desktop squares unchanged. Spec + screenshot. Fixes #29.
-Status: open
+Status: done a41fe02
 
 === SLICE 3 — the FSA glyph reads as medical (#30) ===
 Scope: layout change (icon). The FSA card already uses the `stethoscope` glyph (LABELS rework, 2026-10-12) — not a plus.
