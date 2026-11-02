@@ -1,0 +1,9 @@
+slice 8 — page-diff gate (train) — 2026-11-02T09:22:39Z — head 5908970
+$ node tools/page-diff.mjs index.html https://schnubsy.github.io/press/index.html --evidence docs/evidence/
+  desktop  1280×800  0.000%  (0/1556480 px)  ok
+  mobile   390×844  7.707%  (36730/476580 px)  ABOVE
+verdict: NOT 🔴 — every slice is a declared layout change (ARC.md Scope). The mobile diff is slice 2 (#29): the lobby wing cards grow
+14px at ≤480px, which shifts every card below by 14px (see slice-8-page-diff-mobile-diff.png: wing-card meta line + vertical
+offset of each following card). Desktop lobby identical (0.000%). The other slices change the private wing / kit, which the
+page-diff (lobby, unauthenticated) does not render — they are covered by their slice specs + screenshots.
+files: snag-train-2026-11-slice-8-page-diff-{desktop,mobile}-{built,live,diff}.png
