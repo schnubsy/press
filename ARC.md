@@ -54,7 +54,7 @@ Status: done 581ecff
 Scope: layout change (copy). index.html `toolFieldsHTML` for kind:'deals'.
 Done-criteria: the deals row shows a one-line hint ("Sync id only — Thrift Shop has no passphrase and nothing to
 download.") under its field; the app rows do not; spec + screenshot. Fixes #31.
-Status: open
+Status: done 394f29a
 
 === SLICE 5 — trim the gap under collapsed Connect your tools (#32) ===
 Scope: layout change. index.html CSS + `renderConnect` / toggle (an `is-collapsed` class).
