@@ -316,7 +316,7 @@ editing press; a needed republish is a guarded manual step. apps pull, never pus
 filters on people.active returns empty and reads as a false "gated-but-locked". Verify the schema
 (`information_schema.columns`) before trusting an audit query.
 
-**RULE [press] [cloud] (2026-10-11):** a cloud clone's Playwright must launch the image's Chromium (`PW_CHROMIUM` →
+~~RULE~~ superseded by arc/safari-ui (2026-10-12) — engines live in Council `testing.md`; press fact kept: [press] [cloud] (2026-10-11): a cloud clone's Playwright must launch the image's Chromium (`PW_CHROMIUM` →
 `launchOptions.executablePath`) — the pinned Playwright's own browser is not installed and cannot be downloaded, and
 WebKit does not exist there. Cloud runs are Chromium-only; real-WebKit checks stay on the Mac, where any Playwright
 skip is RED (`scripts/gauntlet.sh`).
