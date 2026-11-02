@@ -40,6 +40,9 @@ const CARD_SYNC = 'c1a2b3d4e5f6a7b8c9d0e1f2a3b4c5d6';   // throwaway capability 
 const SENTINEL = 'not-a-secret:ui-audit-fixture';
 const VAULT = JSON.stringify({ keyring: { v: 1, apps: { 'card-scout.html': { sync_id: CARD_SYNC, pass: SENTINEL } } },
   unlockedAt: NOW, expiresAt: NOW + 7 * 864e5, vaultId: 'ui-audit' });
+// snag-train 2026-11 (#34): an earlier-session wing — Cardsharp (MEMORY_ONLY) redacted, so the kit offers its unlock button
+const VAULT_REDACTED = JSON.stringify({ keyring: { v: 1, apps: { 'card-scout.html': { sync_id: CARD_SYNC, pass: SENTINEL },
+  'cardsharp.html': { sync_id: '', pass: '', redacted: true } } }, unlockedAt: NOW, expiresAt: NOW + 7 * 864e5, vaultId: 'ui-audit' });
 const FAM = JSON.stringify({ access_token: 'admin.jwt.sig', refresh_token: 'r1', expires_at: NOW + 3600e3, email: 'mark@fam.test', name: 'Mark' });
 
 const STEWARD_ROWS = [
@@ -136,14 +139,14 @@ async function backend(page, { stewardAuthorized = true } = {}) {
   });
 }
 // the gate's test hook: seed storage before the page's scripts run (never a real credential)
-async function seed(page, { enrolled = false, vault = false, family = false } = {}) {
+async function seed(page, { enrolled = false, vault = false, family = false, redacted = false } = {}) {
   await page.addInitScript(([e, v, f]) => {
     try {
       if (e) localStorage.setItem('press:vault:enrolled', '1');
       if (v) localStorage.setItem('press:vault:v1', v);
       if (f) localStorage.setItem('press:family:v1', f);
     } catch (err) {}
-  }, [enrolled, vault ? VAULT : null, family ? FAM : null]);
+  }, [enrolled, vault ? (redacted ? VAULT_REDACTED : VAULT) : null, family ? FAM : null]);
 }
 async function open(page, path, opts, ready) {
   await seed(page, opts);
@@ -176,6 +179,7 @@ export default {
     { name: 'private-unlocked', run: (p) => open(p, '/?view=personal', { enrolled: true, vault: true }, '.tw-card') },
     { name: 'private-devices', run: async (p) => { await open(p, '/?view=personal', { enrolled: true, vault: true }, '#devBtn'); await p.click('#devBtn'); await p.waitForSelector('#revBtn'); } },
     { name: 'private-recovery-kit', run: async (p) => { await open(p, '/?view=personal', { enrolled: true, vault: true }, '#kitBtn'); await p.click('#kitBtn'); await p.waitForSelector('#recoveryKit', { state: 'visible' }); } },
+    { name: 'private-recovery-kit-redacted', run: async (p) => { await open(p, '/?view=personal', { enrolled: true, vault: true, redacted: true }, '#kitBtn'); await p.click('#kitBtn'); await p.waitForSelector('#kitUnlock', { state: 'visible' }); } },
     // ── the family wing + its email-code gate ──
     { name: 'family-signin', run: (p) => open(p, '/?view=family', {}, '#fg-email') },
     { name: 'family-code', run: async (p) => { await open(p, '/?view=family', {}, '#fg-email'); await p.fill('#fg-email', 'mark@fam.test'); await p.click('#fg-send'); await p.waitForSelector('#fg-code', { state: 'visible' }); } },
@@ -219,9 +223,12 @@ export default {
     main: 'body',
     // press's pill links + text links are single-line controls too (the default set covers button / [role=button])
     oneLine: '.tw-back, .fg-back, .pg-back, a.back, .lnk',
-    wrapOk: '.row .line',
+    wrapOk: '.row .line, #kitUnlock',
   },
   exceptions: [
+    '#kitUnlock (index.html recovery kit, snag-train 2026-11 #34) — "Unlock with passkey to include Cardsharp" names the tool it '
+      + 'restores (the redacted tool names are dynamic); below ~400px it wraps to two centred lines inside the full-width pill by '
+      + 'design rather than truncating which tool the unlock brings back. Tap target stays ≥44px.',
     '.row .line (agent-health.html) — an agent row is one <button> (tap to expand), so the probe reads its status line as a '
       + 'button label; it is server copy of variable length ("Missed the run due Wed Oct 7, 12:00 PM CT · last real work 9 days ago") '
       + 'that must wrap at phone width — truncating it would hide the reason the agent needs attention. The row title (.name) stays gated.',

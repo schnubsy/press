@@ -346,6 +346,8 @@ body.tw-sorting .tw-card{transition:none}
 .tw-kit-steps h4{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tw-muted);margin:0 0 8px}
 .tw-kit-steps ol{margin:0;padding-left:20px;font-size:13px;line-height:1.7}
 .tw-kit-actions{display:flex;gap:10px;margin-top:18px}
+.tw-kit-unlock{margin-top:14px}
+.tw-kit-unlock .tw-btn{text-align:center;line-height:1.4}
 @media print{
   body *{visibility:hidden}
   #recoveryKit,#recoveryKit *{visibility:visible}
@@ -2317,13 +2319,20 @@ function recoveryKitHTML(man){
     const pass = isDeals ? '<em>no passphrase — sync ID only</em>' : (v.pass ? esc(v.pass) : '—');
     return `<tr><th scope="row">${name}</th><td><code>${sync}</code></td><td><code>${pass}</code></td></tr>`;
   }).join('');
+  // snag-train 2026-11 (#34): a MEMORY_ONLY entry (Cardsharp) is redacted when the wing was unlocked in an earlier
+  // session — offer the passkey unlock right here (this tab), then the kit re-renders with it. Never printed.
+  const redacted = Object.keys(apps).filter(id => apps[id] && apps[id].redacted).map(id => labelFor(linkFile(id), man).title);
+  const unlockRow = redacted.length
+    ? `<div class="tw-kit-unlock tw-noprint"><button type="button" class="tw-btn" id="kitUnlock">Unlock with passkey to include ${esc(redacted.join(' and '))}</button>`+
+      `<div class="tw-secmsg" id="kitUnlockMsg" aria-live="polite"></div></div>`
+    : '';
   const body = rows
     ? `<table class="tw-kit-tbl"><thead><tr><th>Tool</th><th>Sync ID</th><th>Passphrase</th></tr></thead><tbody>${rows}</tbody></table>`
     : `<p class="tw-kit-empty">No tools are connected in this keyring yet — connect a tool, then print the kit.</p>`;
   return `<div class="tw-kit-page">`+
     `<div class="tw-kit-hd"><h3>Private Wing — recovery kit</h3><span class="tw-kit-when">Generated ${esc(stamp)}</span></div>`+
     `<p class="tw-kit-lede">Keep this on paper, somewhere safe. The passkey only unlocks a convenience keyring; each tool's data is encrypted by its own passphrase below. This sheet is the recovery path — there is no email reset by design.</p>`+
-    body+
+    body+unlockRow+
     `<div class="tw-kit-steps"><h4>If you lose the passkey</h4><ol>`+
       `<li>Create a <b>new passkey</b> on a device you control.</li>`+
       `<li>Open the Private Wing and <b>Set up the private wing</b> with that passkey.</li>`+
@@ -2343,6 +2352,12 @@ function showRecoveryKit(root, man){
   const p = document.getElementById('kitPrint'), d = document.getElementById('kitDone');
   if(p) p.addEventListener('click', ()=>{ try{ window.print(); }catch(e){} });
   if(d) d.addEventListener('click', ()=>{ box.hidden = true; box.innerHTML=''; });
+  const u = document.getElementById('kitUnlock'), um = document.getElementById('kitUnlockMsg');
+  if(u) u.addEventListener('click', async ()=>{
+    u.disabled = true; um.style.color=''; um.textContent='Waiting for your passkey…';
+    try{ await PressVault.unlock(); showRecoveryKit(root, man); }   // this tab now holds the full keyring → re-render
+    catch(e){ console.error('[private-wing] kit unlock failed:', e); u.disabled = false; um.style.color='var(--tw-rose)'; um.textContent=friendlyErr(e); }
+  });
   try{ box.scrollIntoView({behavior:'smooth', block:'start'}); }catch(e){}
 }
 
