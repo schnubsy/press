@@ -611,15 +611,13 @@ border:0;background:transparent;color:var(--faint);font:600 18px/1 var(--sans);b
 .curmenu.rowmenu-pop{min-width:170px}
 .curmenu.rowmenu-pop button{grid-template-columns:1fr}
 .curmenu.rowmenu-pop button.danger{color:#e58b90}
-.erow > :not(.swacts),.erow > .nm > *{transform:translateX(var(--sx,0px));transition:transform .18s ease-out}
-.erow.swiping > :not(.swacts),.erow.swiping > .nm > *{transition:none}
-.erow .swacts{position:absolute;top:0;right:0;bottom:0;width:152px;display:flex;
+.erow .swacts,.srow .swacts{position:absolute;top:0;right:0;bottom:0;width:152px;display:flex;z-index:2;
 transform:translateX(calc(152px + var(--sx,0px)));transition:transform .18s ease-out;pointer-events:none}
-.erow.swiping .swacts{transition:none}
-.erow.swiped .swacts{pointer-events:auto}
-.erow .swacts button{flex:1 1 0;min-height:44px;border:0;margin:0;padding:0;font:600 15px/1 var(--sans);cursor:pointer;-webkit-tap-highlight-color:transparent}
-.erow .swacts .swmove{background:var(--raised);color:var(--brass);box-shadow:inset 1px 0 0 var(--brass-dim)}
-.erow .swacts .swdel{background:#b8454d;color:#fff}
+.erow.swiping .swacts,.srow.swiping .swacts{transition:none}
+.erow.swiped .swacts,.srow.swiped .swacts{pointer-events:auto}
+.erow .swacts button,.srow .swacts button{flex:1 1 0;min-height:44px;border:0;margin:0;padding:0;font:600 15px/1 var(--sans);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.erow .swacts .swmove,.srow .swacts .swmove{background:var(--raised);color:var(--brass);box-shadow:inset 1px 0 0 var(--brass-dim)}
+.erow .swacts .swdel,.srow .swacts .swdel{background:#b8454d;color:#fff}
 .erow.lp{background:rgba(201,162,109,.12);border-radius:6px;box-shadow:inset 0 0 0 1px var(--brass)}
 .erow.moving{touch-action:none;background:rgba(201,162,109,.14);border-radius:6px;box-shadow:inset 0 0 0 1.5px var(--brass);cursor:grab}
 .moving-mode .erow:not(.moving){cursor:copy}
@@ -632,7 +630,18 @@ transform:translateX(calc(152px + var(--sx,0px)));transition:transform .18s ease
 .erow.hasnote .note{grid-row:2;min-width:0;width:100%}
 .erow.hasnote:focus-within{grid-template-areas:"chk what cur amt menu" "chk note note note menu" "chk . . sgn ."}
 .erow .curpill{display:flex;align-items:center;justify-content:flex-end;text-align:right}
-.erow:not(.swiped):not(.swiping) .swacts{visibility:hidden}
+.erow:not(.swiped):not(.swiping) .swacts,.srow:not(.swiped):not(.swiping) .swacts{visibility:hidden}
+.srow[data-xfer]{position:relative;overflow:hidden;touch-action:pan-y}
+.srow .xmenu{grid-area:del;display:none}
+@media (hover:hover) and (pointer:fine){
+.srow button.xmenu{display:flex;align-items:center;justify-content:center;align-self:center;width:32px;min-height:44px;padding:0 0 2px;
+border:0;background:transparent;color:var(--faint);font:600 18px/1 var(--sans);border-radius:5px;cursor:pointer}
+.srow button.xmenu:hover,.srow button.xmenu:focus-visible{color:var(--ink)}
+.srow button.xmenu:focus-visible{outline:2px solid var(--brass);outline-offset:-2px}
+.receipt .rchead .xmenu{flex:0 0 32px}
+}
+.srow.moving{background:rgba(201,162,109,.14);border-radius:6px;box-shadow:inset 0 0 0 1.5px var(--brass)}
+.xmoving .settled .srow:not(.moving){cursor:copy}
 .morerow{display:flex;align-items:center;min-height:44px;margin:22px 0 0}
 .morerow .morebtn{display:inline-flex;align-items:center;min-height:44px;min-width:44px;padding:0 4px;font:500 15px/1 var(--sans)}
 .morerow .caret{font-size:12px;margin-left:2px}
@@ -700,7 +709,34 @@ background:var(--brass-faint);color:var(--brass);font:600 13px/1 var(--sans);cur
 .receipt .snote{display:block;margin-top:6px}
 .srow.credit .nm b{color:var(--brass)}
 .logsheet .f2.forrow{flex-direction:column;align-items:stretch;gap:2px}
-.logsheet .f2.forrow > label{flex:none}</style>
+.logsheet .f2.forrow > label{flex:none}
+.erow.addrow .addgo{display:none;grid-row:3;grid-column:2;justify-self:start;align-self:center;min-height:44px;min-width:64px;margin:0 0 4px;
+padding:0 14px;border:1px solid var(--brass-dim);border-radius:8px;background:var(--brass-faint);color:var(--brass);
+font:600 15px/1 var(--sans);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.erow.addrow:focus-within .addgo{display:inline-flex;align-items:center;justify-content:center}
+.erow.addrow .addgo:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+.erow.addrow:focus-within .note::placeholder{color:var(--muted);opacity:.8}
+.erow.addrow .tagchip.addtag{grid-row:1/3;align-self:center}
+.foot{touch-action:none}
+.foot .footbar{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;margin:0;padding:0 2px;border:0;background:transparent;
+color:var(--ink);text-align:left;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent}
+.foot .footbar:focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:4px}
+.foot .fhandle{position:absolute;left:50%;top:-1px;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--brass-dim)}
+.foot .fbl{flex:0 0 auto;font:600 10px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--brass)}
+.foot .fbvals{flex:1 1 auto;min-width:0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+font:600 18px/1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.foot .fbvals.many{font-size:14px}
+.foot .fbv.over{color:var(--paid)}
+.foot .fbv small{font:500 11px/1 var(--sans);color:var(--muted)}
+.foot .fbsep{color:var(--faint);font-weight:400}
+.foot .fbchev{flex:0 0 auto;font-size:12px;color:var(--brass)}
+.foot:not(.open) .in{padding-top:3px;padding-bottom:4px}
+.foot:not(.open) .footpanel{display:none}
+.foot.open .fbvals{display:none}
+.foot.open .fbl{flex:1 1 auto}
+.foot.open .footbar{margin-bottom:6px}
+@media(max-width:374px){.foot .fbl{letter-spacing:.12em}.foot .fbvals{font-size:16px}.foot .fbvals.many{font-size:13px}}
+.ynabok.sending{color:var(--muted);font-weight:500}</style>
 </head>
 <body>
 <main class="app" id="remit-root">
@@ -1392,7 +1428,7 @@ return Object.keys(seen);
 }
 var TAGS = ['kid_card', 'tuition', 'dad', 'sent_ahead'];
 function tagLabel(tag, kidName) {
-if (tag === 'kid_card') return (kidName ? kidName + ' card' : 'Kid card');
+if (tag === 'kid_card') return kidName || 'Kid';   // arc/swipe-tags-notes-and-the-transfer-panel S2 (D3): "Kayley", not "Kayley card"
 return { tuition: 'Tuition', dad: 'Dad', sent_ahead: 'Sent ahead' }[tag] || 'Not tagged';
 }
 function tagGroups(rows) {
@@ -2003,6 +2039,7 @@ var t = d.transfers.find((x) => x.id === body.transfer_id);
 if (!t) return { status: 404, json: { ok: false, error: 'transfer not found' } };
 if (!t.breakdown || !t.breakdown.usd_split) { await this.upsertOutbox({ transfer_id: t.id, status: 'failed', last_error: 'no $' }); return { status: 409, json: { ok: false, error: 'no $' } }; }
 if (mode === 'ambiguous' && body.search) mode = d.ynab_mode = 'posted';   // the search finds the one that landed
+if (mode === 'in_progress') return { status: 409, json: { ok: false, error: 'already in progress', in_progress: true, status: 'in_flight', retryable: true } };
 if (mode === 'posted') { await this.upsertOutbox({ transfer_id: t.id, status: 'posted', ynab_txn_id: 'ynab-' + t.id, last_error: null }); return { status: 200, json: { ok: true, status: 'posted', transaction_id: 'ynab-' + t.id } }; }
 if (mode === 'fail' || mode === 'ambiguous') { await this.upsertOutbox({ transfer_id: t.id, status: mode === 'fail' ? 'failed' : 'ambiguous', last_error: 'ynab unavailable' }); return { status: 503, json: { ok: false, error: 'ynab unavailable', retryable: true, ambiguous: mode === 'ambiguous' } }; }
 await this.upsertOutbox({ transfer_id: t.id, status: 'dry_run', last_error: null }); return { status: 200, json: { ok: true, status: 'dry_run', dry_run: true } };
@@ -2464,7 +2501,10 @@ m.querySelector('[data-yes]').addEventListener('click', function () { close(true
 setTimeout(function () { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); m.querySelector('[data-no]').focus(); }, 0);
 });
 }
-function tagChip(it, tagCtx) {
+function tagChip(it, tagCtx, addCtx) {
+if (tagCtx && !it && addCtx && addCtx.bucket === 'mine') {
+return '<button type="button" class="tagchip addtag" data-addtag data-tag="" aria-haspopup="menu" aria-label="Tag for the new line: none — change">Tag</button>';
+}
 if (!tagCtx || !it || it.bucket !== 'mine') return '';
 var t = money.TAGS.indexOf(it.tag) === -1 ? null : it.tag;
 return '<button type="button" class="tagchip' + (t ? ' on' : '') + '" data-tagof="' + esc(it.id) + '" data-tag="' + esc(t || '') + '" aria-haspopup="menu" aria-label="Tag: ' +
@@ -2485,16 +2525,17 @@ var menu = isAdd ? '<span class="rowmenu" aria-hidden="true"></span>'
 : '<button type="button" class="rowmenu" data-rowmenu="' + esc(id) + '" aria-haspopup="menu" aria-label="Actions for ' + esc(desc || 'line') + '">⋯</button>' +
 '<span class="swacts" aria-hidden="true"><button type="button" class="swmove" data-swmove="' + esc(id) + '" tabindex="-1">Move</button>' +
 '<button type="button" class="swdel" data-swdel="' + esc(id) + '" tabindex="-1">Delete</button></span>';
-var chip = tagChip(it, tagCtx);
+var chip = tagChip(it, tagCtx, addCtx);
+var hint = function (k) { return isAdd ? ' enterkeyhint="' + k + '"' : ''; };
 return '<div class="row erow' + (paid ? ' paid' : '') + (isAdd ? ' addrow' : '') + (selected ? ' sel' : '') + (note ? ' hasnote' : '') + (chip ? ' tagrow' : '') + '"' + ctxAttr + '>' +
 chk + chip +
 '<span class="nm">' +
-'<input class="what" data-f="description" value="' + esc(desc) + '" placeholder="' + (isAdd ? 'Add item' : 'What is it?') + '" aria-label="What" autocomplete="off">' +
-'<input class="note" data-f="note" value="' + esc(note) + '" placeholder="note" aria-label="Note" autocomplete="off">' +
+'<input class="what" data-f="description" value="' + esc(desc) + '" placeholder="' + (isAdd ? 'Add item' : 'What is it?') + '" aria-label="What" autocomplete="off"' + hint('next') + '>' +
+'<input class="note" data-f="note" value="' + esc(note) + '" placeholder="' + (isAdd ? 'note (optional)' : 'note') + '" aria-label="Note" autocomplete="off"' + hint('done') + '>' +
 '</span>' +
 curPill(cur, homeCur) +
-'<input class="amt num" data-f="amount" inputmode="decimal" value="' + esc(amt === '' ? '' : amt) + '" placeholder="' + (isAdd ? '' : '0.00') + '" data-w="' + (amtW || 0) + '" aria-label="Amount" autocomplete="off">' +
-signBtn() + menu +
+'<input class="amt num" data-f="amount" inputmode="decimal" value="' + esc(amt === '' ? '' : amt) + '" placeholder="' + (isAdd ? '' : '0.00') + '" data-w="' + (amtW || 0) + '" aria-label="Amount" autocomplete="off"' + hint('next') + '>' +
+signBtn() + menu + (isAdd ? '<button type="button" class="addgo" data-addgo>Add</button>' : '') +
 '</div>';
 }
 function copyNums(map) {
@@ -2533,7 +2574,7 @@ head = '<div class="bk">' + esc(label) + ' <button type="button" class="linkbtn 
 } else {
 head = '<div class="bk">' + esc(label) + subNum + '</div>';
 }
-return head + body + erow(null, homeCur, addCtx, false, amtW);
+return head + body + erow(null, homeCur, addCtx, false, amtW, tagCtx);
 }
 function render(ctrl) {
 var store = ctrl.store, root = ctrl.root;
@@ -2574,13 +2615,36 @@ var addBar = '<div class="morerow"><button type="button" class="linkbtn morebtn"
 root.innerHTML = head + seg + strip + kid + riding + settledHTML(ctrl) + addBar + selbarHTML(ctrl) + footerHTML(ctrl);
 wire(ctrl);
 }
+function xferActs(t, what) {
+var id = esc(t.id);
+return '<button type="button" class="xmenu" data-xmenu="' + id + '" aria-haspopup="menu" aria-label="Actions for this ' + what + '">⋯</button>' +
+'<span class="swacts" aria-hidden="true"><button type="button" class="swmove" data-xswmove="' + id + '" tabindex="-1">Move</button>' +
+'<button type="button" class="swdel" data-xswdel="' + id + '" tabindex="-1">Delete</button></span>';
+}
+var XORDER = 'remit:xferOrder';
+function xKey(ctrl, cur) { return ctrl.personId + '|' + ctrl.year + '-' + ctrl.month + '|' + cur; }
+function readXOrder() { try { var v = JSON.parse(localStorage.getItem(XORDER) || '{}'); return v && typeof v === 'object' ? v : {}; } catch (e) { return {}; } }
+function writeXOrder(all) { try { localStorage.setItem(XORDER, JSON.stringify(all)); } catch (e) {} }
+function byDate(a, b) {
+var da = a.sent_on || '9999', db = b.sent_on || '9999';
+if (da !== db) return da < db ? -1 : 1;
+var ca = a.created_at || '', cb = b.created_at || '';
+return ca < cb ? -1 : ca > cb ? 1 : 0;
+}
+function orderTransfers(ctrl, cur, tx) {
+var placed = readXOrder()[xKey(ctrl, cur)] || [];
+var rank = function (t) { var i = placed.indexOf(t.id); return i === -1 ? Infinity : i; };
+return tx.slice().sort(function (a, b) { var ra = rank(a), rb = rank(b); return ra !== rb ? (ra < rb ? -1 : 1) : byDate(a, b); });
+}
+Remit.ui = Remit.ui || {};
+Remit.ui.orderTransfers = orderTransfers;
 function settledHTML(ctrl) {
 var model = ctrl.model; if (!model || !model.period) return '';
 var transfers = model.transfers || [];
 var curs = Object.keys(model.transfersDelivered || {});
 if (!curs.length) return '';
 return curs.map(function (c) {
-var tx = transfers.filter(function (t) { return t.currency === c; });
+var tx = orderTransfers(ctrl, c, transfers.filter(function (t) { return t.currency === c; }));
 if (!tx.length) return '';
 var sub = {}; sub[c] = (model.settled[c] || 0);
 var rows = tx.map(function (t) {
@@ -2592,7 +2656,7 @@ var title = t.kind === 'sent_ahead_credit' ? 'Sent ahead' : 'Payment';   // D4: 
 return '<div class="srow' + (t.kind === 'sent_ahead_credit' ? ' credit' : '') + '" data-xfer="' + esc(t.id) + '"><span class="nm"><b>' + title + '</b><em>' + meta + '</em></span>' +
 (usd ? '<small class="usd num" data-usd="' + usd.kind + '">' + symHTML(esc(usd.text)) + '</small>' : '') +
 '<span class="am num">' + symHTML(esc(money.fmt(t.amount_delivered || 0, c))) + '</span>' + ynabPill(ctrl, t) +
-'<button type="button" class="del" data-delxfer="' + esc(t.id) + '" aria-label="Delete payment">×</button>' +
+xferActs(t, 'payment') +
 (t.note ? '<span class="snote">' + esc(t.note) + '</span>' : '') + '</div>';
 }).join('');
 return '<section class="settled"><div class="zone-hd"><h2>Settled in ' + esc(WHERE[c] || c) + '</h2>' +
@@ -2629,10 +2693,11 @@ var body = line(kid + '’s Living', cats.living, subs.join(' · ')) +
 var st = Remit.ui.ynabState ? Remit.ui.ynabState(ctrl, t) : null;
 var tail = !inUsd ? (c === 'USD' ? '' : '<span class="rstate muted">Add the $ that left the bank to send it to YNAB</span>')
 : !st ? '' : st.posted ? ''
+: st.sending ? '<span class="rstate muted" data-ynab="sending">Sending to YNAB…</span>'
 : '<button type="button" class="ynabpill rstate" data-ynabretry="' + esc(t.id) + '" aria-label="Not in YNAB yet (' + esc(st.why) + ') — retry">Not in YNAB yet · Retry</button>';
 var totM = {}; totM[inUsd ? 'USD' : c] = inUsd ? (t.amount_sent_usd != null ? t.amount_sent_usd : b.usd) : t.amount_delivered;
 return '<div class="receipt srow" data-xfer="' + esc(t.id) + '">' +
-'<div class="rchead"><span class="rt">' + head + '</span><button type="button" class="del" data-delxfer="' + esc(t.id) + '" aria-label="Delete transfer">×</button></div>' +
+'<div class="rchead"><span class="rt">' + head + '</span>' + xferActs(t, 'transfer') + '</div>' +
 body + '<div class="rl tot"><span class="rk">Total' + (st && st.posted && inUsd ? ' <span class="rstate ok" data-ynab="posted">✓ matches YNAB</span>' : '') + '</span><span class="rv num">' + copyNums(totM) + '</span></div>' +
 (tail ? '<div class="rfoot">' + tail + '</div>' : '') + (t.note ? '<span class="snote">' + esc(t.note) + '</span>' : '') + '</div>';
 }
@@ -2640,6 +2705,7 @@ function ynabPill(ctrl, t) {
 var st = Remit.ui.ynabState ? Remit.ui.ynabState(ctrl, t) : null;
 if (!st) return '';
 if (st.posted) return '<span class="ynabok" data-ynab="posted">✓ in YNAB</span>';
+if (st.sending) return '<span class="ynabok sending" data-ynab="sending">Sending to YNAB…</span>';   // S4: another call holds it
 return '<button type="button" class="ynabpill" data-ynabretry="' + esc(t.id) + '" aria-label="Not in YNAB yet (' + esc(st.why) + ') — retry">Not in YNAB yet · Retry</button>';
 }
 function selbarHTML(ctrl) {
@@ -2666,9 +2732,54 @@ var one = function (v) { var m = {}; m[c] = v; return copyNums(m); };
 return '<div class="tl"><span>' + esc(label) + '</span><div class="amts"><b class="num">' + one(Math.abs(rem)) + '</b>' +
 '<small class="num">/ ' + one(total[c] || 0) + ' total</small></div></div>';
 }).join('') : '<div class="tl"><span>Settled</span><b class="num">Nothing to transfer</b></div>';
-var title = curs.length ? '<div class="foot-t">Remaining transfers required</div>' : '';
 var btn = '<button class="btn" id="recordTransfer">Log a transfer</button>';   // arc/line-ux S7 (D3)
-return '<div class="foot"><div class="in">' + title + rows + btn + '</div></div>';
+var open = !!ctrl.footOpen;
+var vals = curs.length ? curs.map(function (c) {
+var rem = model.remaining[c] || 0, neg = money.cents(rem) < 0;
+return '<span class="fbv' + (neg ? ' over' : '') + '">' + (neg ? '<small>over </small>' : '') + symHTML(esc(money.fmt(Math.abs(rem), c))) + '</span>';
+}).join('<span class="fbsep" aria-hidden="true"> · </span>') : '<span class="fbv">Nothing to transfer</span>';
+var said = curs.length ? curs.map(function (c) { var rem = model.remaining[c] || 0; return (money.cents(rem) < 0 ? 'overpaid ' : '') + money.fmt(Math.abs(rem), c); }).join(', ') : 'nothing to transfer';
+var bar = '<button type="button" class="footbar" id="footBar" aria-controls="footPanel" aria-expanded="' + open + '" aria-label="' +
+esc((open ? 'Remaining transfers required — fold away' : 'To transfer: ' + said + ' — show the transfer panel')) + '">' +
+'<span class="fhandle" aria-hidden="true"></span>' +
+'<span class="fbl">' + (open ? 'Remaining transfers required' : 'To transfer') + '</span>' +
+(open ? '' : '<span class="fbvals num' + (curs.length > 2 ? ' many' : '') + '">' + vals + '</span>') +   // open: the rows below carry them
+'<span class="fbchev" aria-hidden="true">' + (open ? '▾' : '▴') + '</span></button>';
+return '<div class="foot' + (open ? ' open' : '') + '"><div class="in">' + bar +
+'<div class="footpanel" id="footPanel">' + rows + btn + '</div></div></div>';
+}
+var FOOT_OPEN = 'remit:footOpen';
+function readFootOpen() { try { return localStorage.getItem(FOOT_OPEN) === '1'; } catch (e) { return false; } }
+function writeFootOpen(v) { try { localStorage.setItem(FOOT_OPEN, v ? '1' : '0'); } catch (e) {} }
+function setFoot(ctrl, open) {
+ctrl.footOpen = !!open; writeFootOpen(ctrl.footOpen);
+var foot = ctrl.root.querySelector('.foot'); if (!foot) return;
+var fresh = document.createElement('div'); fresh.innerHTML = footerHTML(ctrl);
+var nb = fresh.querySelector('.footbar'), ob = foot.querySelector('.footbar');
+foot.classList.toggle('open', ctrl.footOpen);
+if (nb && ob) { ob.setAttribute('aria-expanded', nb.getAttribute('aria-expanded')); ob.setAttribute('aria-label', nb.getAttribute('aria-label')); ob.innerHTML = nb.innerHTML; }
+}
+function wireFoot(ctrl) {
+var foot = ctrl.root.querySelector('.foot'); if (!foot) return;
+var bar = foot.querySelector('.footbar'), st = null, eat = false;
+if (bar) bar.addEventListener('click', function (e) { if (eat) { eat = false; e.preventDefault(); return; } setFoot(ctrl, !ctrl.footOpen); });
+function done() { document.removeEventListener('pointermove', onMove, true); document.removeEventListener('pointerup', done, true); document.removeEventListener('pointercancel', done, true); st = null; }
+function onMove(e) {
+if (!st || e.pointerId !== st.id) return;
+var dx = e.clientX - st.x, dy = e.clientY - st.y;
+if (Math.abs(dy) < 24 || Math.abs(dy) < Math.abs(dx) * 1.2) return;
+if (e.cancelable) e.preventDefault();
+if (dy < 0 && !ctrl.footOpen) setFoot(ctrl, true);
+else if (dy > 0 && ctrl.footOpen) setFoot(ctrl, false);
+eat = true; setTimeout(function () { eat = false; }, 400);
+done();
+}
+foot.addEventListener('pointerdown', function (e) {
+if (e.button != null && e.button !== 0) return;
+if (e.target.closest('#recordTransfer')) return;
+st = { id: e.pointerId, x: e.clientX, y: e.clientY };
+document.addEventListener('pointermove', onMove, true); document.addEventListener('pointerup', done, true); document.addEventListener('pointercancel', done, true);
+});
 }
 var _footRO = null, _footH = -1;
 function setFootH(h) {
@@ -2689,6 +2800,7 @@ if (foot) _footRO.observe(foot); else setFootH(0);
 function wire(ctrl) {
 var root = ctrl.root, store = ctrl.store;
 watchFoot(root);
+wireFoot(ctrl);
 root.querySelectorAll('[data-person]').forEach((b) => b.addEventListener('click', () => ctrl.setPerson(b.getAttribute('data-person'))));
 var centreMonth = function () { var mg = root.querySelector('.mgrid'), mc = mg && mg.querySelector('[aria-current=true]'); if (mg && mc && mg.scrollWidth > mg.clientWidth) mg.scrollLeft = mc.offsetLeft - (mg.clientWidth - mc.offsetWidth) / 2; };
 requestAnimationFrame(centreMonth);   // S4: once, at frame time (a sync call forced a second layout)
@@ -2725,16 +2837,9 @@ if (await confirmDel(b, secName, { q: 'Delete section “' + esc(secName) + '”
 }));
 root.querySelectorAll('.srow[data-xfer]').forEach((rowEl) => {
 var xid = rowEl.getAttribute('data-xfer');
-rowEl.addEventListener('click', (e) => { if (e.target.closest('[data-delxfer], [data-ynabretry]')) return; ctrl.editTransfer(xid); });
+rowEl.addEventListener('click', (e) => { if (e.target.closest('.swacts, [data-xmenu], [data-ynabretry]')) return; ctrl.editTransfer(xid); });
 });
 root.querySelectorAll('[data-ynabretry]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); if (Remit.ui.retryYnab) Remit.ui.retryYnab(ctrl, b.getAttribute('data-ynabretry')); }));
-root.querySelectorAll('[data-delxfer]').forEach((b) => b.addEventListener('click', async (e) => {
-e.stopPropagation();
-var xid = b.getAttribute('data-delxfer'), t = (ctrl.model.transfers || []).find((x) => x.id === xid);
-var label = t ? money.fmt(t.amount_delivered || 0, t.currency) + ' payment' : 'this payment';
-var inYnab = t && Remit.ui.ynabPosted && Remit.ui.ynabPosted(ctrl, t);
-if (await confirmDel(b, label, inYnab ? { q: 'This ' + esc(label) + ' is already in YNAB — deleting it here does not remove it there. Delete it from Remit?' } : undefined)) ctrl.deleteTransfer(xid);
-}));
 var rec = root.querySelector('#recordTransfer'); if (rec) rec.addEventListener('click', () => ctrl.recordTransfer());
 var more = root.querySelector('#moreBtn');
 if (more) more.addEventListener('click', () => openMore(ctrl, more));
@@ -2885,10 +2990,19 @@ fields.forEach((inp) => {
 inp.setAttribute('data-orig', inp.value);
 if (inp.classList.contains('amt')) { fitLineAmt(inp); inp.addEventListener('input', () => { fitLineAmt(inp); if (money.parseAmount(inp.value).ok) amtError(rowEl, inp, null); }); }
 inp.addEventListener('keydown', (e) => {
+if (e.key === 'Enter' && isAdd && inp.getAttribute('data-f') !== 'note') {   // S2 (D5): title → amount → note, never a save
+e.preventDefault();
+if (inp.getAttribute('data-f') === 'amount') {   // a non-number stops here, with its message, before the note
+var pv = money.parseAmount(inp.value); amtError(rowEl, inp, pv.ok ? null : pv.error); if (!pv.ok) return;
+}
+var next = rowEl.querySelector(inp.getAttribute('data-f') === 'description' ? '[data-f="amount"]' : '[data-f="note"]');
+if (next) next.focus();
+return;
+}
 if (e.key === 'Enter') { e.preventDefault(); commit(true); }
 else if (e.key === 'Escape') { e.preventDefault(); inp.value = inp.getAttribute('data-orig') || ''; inp.blur(); }
 });
-inp.addEventListener('blur', () => { setTimeout(() => { if (!rowEl.contains(document.activeElement)) commit(false); }, 0); });
+inp.addEventListener('blur', () => { setTimeout(() => { var a = document.activeElement; if (!rowEl.contains(a) && !(isAdd && a && a.closest && a.closest('.tagmenu'))) commit(false); }, 0); });
 });
 var keepFocus = (e) => { if (e.pointerType !== 'touch') e.preventDefault(); };
 rowEl.querySelectorAll('[data-curbtn],[data-chk]').forEach((btn) => {
@@ -2906,6 +3020,29 @@ curBtn.setAttribute('aria-label', 'Currency: ' + CURNAME[next] + ' — change');
 } else { await store.updateItem(id, { currency: next }); }
 });
 wireSign(rowEl.querySelector('[data-sgn]'), rowEl.querySelector('[data-f="amount"]'));
+var addTag = rowEl.querySelector('[data-addtag]');
+if (addTag) {
+addTag.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'touch') e.preventDefault(); });
+addTag.addEventListener('mousedown', (e) => e.preventDefault());
+addTag.addEventListener('click', async () => {
+var kid = (store.getPerson(ctrl.personId) || {}).name || '';
+var t = await pickTag(addTag, addTag.getAttribute('data-tag') || null, kid);
+if (t === undefined) {   // dismissed: if that also took focus out of the row, autosave exactly as a blur would have
+if (!rowEl.contains(document.activeElement)) commit(false);
+return;
+}
+addTag.setAttribute('data-tag', t || ''); addTag.classList.toggle('on', !!t);
+addTag.textContent = t ? money.tagLabel(t, kid) : 'Tag';
+addTag.setAttribute('aria-label', 'Tag for the new line: ' + (t ? money.tagLabel(t, kid) : 'none') + ' — change');
+var w = rowEl.querySelector('.what'); if (w && !rowEl.contains(document.activeElement)) w.focus();
+});
+}
+var addGo = rowEl.querySelector('[data-addgo]');
+if (addGo) {
+addGo.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'touch') e.preventDefault(); });
+addGo.addEventListener('mousedown', (e) => e.preventDefault());
+addGo.addEventListener('click', () => commit(true));
+}
 var chip = rowEl.querySelector('[data-tagof]');
 if (chip) {
 chip.addEventListener('pointerdown', keepFocus);
@@ -2942,6 +3079,7 @@ bucket: rowEl.getAttribute('data-bucket') || 'extras', settle: 'transfer', statu
 note: (vals.note || '').trim() || null,
 };
 var secId = rowEl.getAttribute('data-section'); if (secId) fieldsOut.section_id = secId;
+var tg = rowEl.querySelector('[data-addtag]'); if (tg && tg.getAttribute('data-tag')) fieldsOut.tag = tg.getAttribute('data-tag');
 if (advance) ctrl._focusAdd = { bucket: fieldsOut.bucket, section_id: secId || null };
 await store.addItem(period.id, fieldsOut);
 return;
@@ -2969,7 +3107,7 @@ try { localStorage.setItem(LAST_VIEW, JSON.stringify({ personId: ctrl.personId, 
 }
 function mountMonth(root, store, opts) {
 opts = opts || {};
-var ctrl = { root: root, store: store, personId: null, year: null, month: null, model: null, years: [] };
+var ctrl = { root: root, store: store, personId: null, year: null, month: null, model: null, years: [], footOpen: readFootOpen() };
 var kids = store.getPeople().filter((p) => p.is_kid);
 var last = (opts.fresh || opts.personId) ? null : readLastView();
 if (last && !kids.some((p) => p.id === last.personId)) last = null;
@@ -3042,6 +3180,32 @@ for (var j = 0; j < snaps.length; j++) await store.createTransfer(snaps[j]);   /
 for (var k = 0; k < obSnap.length; k++) { var o = Object.assign({}, obSnap[k]); delete o.updated_at; await store.upsertOutbox(o); }
 } catch (e) { Remit.ui.toast('Could not restore it all — refresh and check the payment.'); ctrl.refresh(); }
 } });
+};
+ctrl.removeTransfer = async function (id, anchor) {
+var t = (ctrl.model.transfers || []).find((x) => x.id === id); if (!t) return;
+var label = money.fmt(t.amount_delivered || 0, t.currency) + ' payment';
+if (Remit.ui.ynabPosted && Remit.ui.ynabPosted(ctrl, t)) {
+var at = (anchor && anchor.isConnected) ? anchor : ctrl.root.querySelector('.srow[data-xfer="' + id + '"]');
+if (!(await confirmDel(at, label, { q: 'This ' + esc(label) + ' is already in YNAB — deleting it here does not remove it there. Delete it from Remit?' }))) return;
+}
+return ctrl.deleteTransfer(id);
+};
+function placeTransfers(cur, ids) {
+var all = readXOrder(); all[xKey(ctrl, cur)] = ids; writeXOrder(all); render(ctrl);
+}
+function sectionIds(cur) { return orderTransfers(ctrl, cur, (ctrl.model.transfers || []).filter((t) => t.currency === cur)).map((t) => t.id); }
+ctrl.moveTransfer = function (id, targetId) {
+var t = (ctrl.model.transfers || []).find((x) => x.id === id), g = (ctrl.model.transfers || []).find((x) => x.id === targetId);
+if (!t || !g || t.id === g.id || t.currency !== g.currency) { if (t && g && t.currency !== g.currency) toast('A payment moves only within its own Settled section.'); return; }
+var ids = sectionIds(t.currency), from = ids.indexOf(id), to = ids.indexOf(targetId);
+ids.splice(from, 1); ids.splice(ids.indexOf(targetId) + (from < to ? 1 : 0), 0, id);   // down ⇒ after it, up ⇒ before it
+placeTransfers(t.currency, ids);
+};
+ctrl.reorderTransfer = function (id, dir) {
+var t = (ctrl.model.transfers || []).find((x) => x.id === id); if (!t) return;
+var ids = sectionIds(t.currency), i = ids.indexOf(id), j = i + dir;
+if (i < 0 || j < 0 || j >= ids.length) return;
+ids[i] = ids[j]; ids[j] = id; placeTransfers(t.currency, ids);
 };
 ctrl.openBudgets = function () { if (Remit.ui.openBudgets) Remit.ui.openBudgets(ctrl); };
 ctrl.renameSection = function (id, name) { return store.updateSection(id, { name: name }); };
@@ -3178,17 +3342,20 @@ var Remit = root.Remit = root.Remit || {};
 var HOLD_MS = 500, SLOP = 10, OPEN_W = 152, OPEN_AT = 56;
 var openRow = null;   // the one swiped-open line (DOM node)
 function setX(row, x) { row.style.setProperty('--sx', x + 'px'); }
+function settleText(row) {
+row.querySelectorAll('input').forEach(function (i) { if (i !== document.activeElement && i.scrollLeft) i.scrollLeft = 0; });
+}
 function closeSwipe(row, instant) {
 row = row || openRow; if (!row) return;
 if (instant) { row.classList.add('swiping'); setX(row, 0); void row.offsetWidth; }   // no slide back: Move lifts the line at once
-row.classList.remove('swiping', 'swiped'); setX(row, 0);
+row.classList.remove('swiping', 'swiped'); setX(row, 0); settleText(row);
 row.querySelectorAll('.swacts button').forEach(function (b) { b.tabIndex = -1; });
 var a = row.querySelector('.swacts'); if (a) a.setAttribute('aria-hidden', 'true');
 if (openRow === row) openRow = null;
 }
 function openSwipe(row) {
 if (openRow && openRow !== row) closeSwipe(openRow);
-row.classList.remove('swiping'); row.classList.add('swiped'); setX(row, -OPEN_W); openRow = row;
+row.classList.remove('swiping'); row.classList.add('swiped'); setX(row, -OPEN_W); openRow = row; settleText(row);
 var a = row.querySelector('.swacts'); if (a) a.setAttribute('aria-hidden', 'false');
 row.querySelectorAll('.swacts button').forEach(function (b) { b.tabIndex = 0; });
 }
@@ -3323,11 +3490,123 @@ document.addEventListener('pointercancel', onCancel, true); window.addEventListe
 });
 row.addEventListener('contextmenu', function (e) { if (!e.target.closest('input')) e.preventDefault(); });
 }
+var xMoving = null, xHint = null;
+function endXMove(ctrl) {
+xMoving = null; ctrl.root.classList.remove('xmoving');
+ctrl.root.querySelectorAll('.srow.moving').forEach(function (r) { r.classList.remove('moving'); });
+if (xHint) { var h = xHint; xHint = null; h(); }
+}
+function beginXMove(ctrl, id) {
+if (xMoving) endXMove(ctrl);
+var row = ctrl.root.querySelector('.srow[data-xfer="' + id + '"]'); if (!row) return;
+xMoving = id; ctrl.root.classList.add('xmoving'); row.classList.add('moving');
+xHint = Remit.ui.toast('Tap the payment it should go next to.', { actionLabel: 'Cancel', onAction: function () { xHint = null; endXMove(ctrl); }, duration: 15000, top: true });
+}
+function xferMenu(ctrl, btn) {
+var id = btn.getAttribute('data-xmenu');
+var old = document.querySelector('.curmenu'); if (old) { var was = old.__owner === btn; old.__close(null); if (was) return; }
+var m = document.createElement('div'); m.className = 'curmenu rowmenu-pop'; m.setAttribute('role', 'menu'); m.__owner = btn;
+m.innerHTML = [['up', 'Move up'], ['down', 'Move down'], ['move', 'Move…'], ['delete', 'Delete']].map(function (x) {
+return '<button type="button" role="menuitem" data-xm="' + x[0] + '"' + (x[0] === 'delete' ? ' class="danger"' : '') + '>' + x[1] + '</button>';
+}).join('');
+document.body.appendChild(m);
+var r = btn.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
+var foot = document.querySelector('.foot'), floor = foot ? foot.getBoundingClientRect().top : innerHeight;
+m.style.left = Math.max(12, Math.min(r.right - mw, innerWidth - mw - 12)) + 'px';
+m.style.top = ((r.bottom + 6 + mh < floor) ? r.bottom + 6 : Math.max(12, r.top - 6 - mh)) + 'px';
+function close() { m.remove(); document.removeEventListener('pointerdown', outside, true); document.removeEventListener('keydown', onKey, true); btn.setAttribute('aria-expanded', 'false'); }
+function outside(e) { if (!m.contains(e.target) && !btn.contains(e.target)) close(); }
+function onKey(e) {
+if (e.key === 'Escape') { e.preventDefault(); close(); btn.focus(); return; }
+if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+e.preventDefault(); var bs = Array.from(m.querySelectorAll('button')), i = bs.indexOf(document.activeElement);
+bs[(i + (e.key === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length].focus();
+}
+}
+m.__close = close;
+m.querySelectorAll('[data-xm]').forEach(function (b) {
+b.addEventListener('mousedown', function (e) { e.preventDefault(); });
+b.addEventListener('click', function () {
+var a = b.getAttribute('data-xm'); close();
+if (a === 'up' || a === 'down') ctrl.reorderTransfer(id, a === 'up' ? -1 : 1);
+else if (a === 'move') beginXMove(ctrl, id);
+else if (a === 'delete') ctrl.removeTransfer(id, btn);
+});
+});
+btn.setAttribute('aria-expanded', 'true');
+setTimeout(function () { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); var f = m.querySelector('button'); if (f) f.focus(); }, 0);
+}
+function wireXfer(ctrl, row) {
+var id = row.getAttribute('data-xfer'), suppressClick = false;
+var mb = row.querySelector('[data-xmenu]'); if (mb) mb.addEventListener('click', function (e) { e.stopPropagation(); xferMenu(ctrl, mb); });
+var del = row.querySelector('[data-xswdel]'); if (del) del.addEventListener('click', function (e) { e.stopPropagation(); closeSwipe(row); ctrl.removeTransfer(id, del); });
+var mv = row.querySelector('[data-xswmove]'); if (mv) mv.addEventListener('click', function (e) { e.stopPropagation(); closeSwipe(row, true); beginXMove(ctrl, id); });
+row.addEventListener('click', function (e) {
+if (e.target.closest('.swacts, [data-xmenu]')) return;
+if (suppressClick) { suppressClick = false; e.preventDefault(); e.stopPropagation(); return; }
+if (row.classList.contains('swiped')) { e.preventDefault(); e.stopPropagation(); closeSwipe(row); return; }
+if (xMoving) {
+e.preventDefault(); e.stopPropagation();
+var from = xMoving; endXMove(ctrl);
+if (from !== id) ctrl.moveTransfer(from, id);
+}
+}, true);
+var st = null;
+function clear() {
+if (!st) return;
+document.removeEventListener('pointermove', onMove, true); document.removeEventListener('pointerup', onUp, true);
+document.removeEventListener('pointercancel', onCancel, true);
+st = null;
+}
+function onCancel() { if (st && st.mode === 'swipe') { if (st.base + st.dx < -OPEN_AT) openSwipe(row); else closeSwipe(row); } clear(); }
+function onMove(e) {
+if (!st || e.pointerId !== st.id) return;
+var dx = e.clientX - st.x, dy = e.clientY - st.y;
+if (!st.mode) {
+if (Math.abs(dx) + Math.abs(dy) <= SLOP) return;
+if (Math.abs(dx) > Math.abs(dy) * 1.2 && (dx < 0 || st.base < 0)) {
+st.mode = 'swipe'; row.classList.add('swiping');
+if (openRow && openRow !== row) closeSwipe(openRow);
+} else { clear(); return; }
+}
+if (e.cancelable) e.preventDefault();
+st.dx = dx; setX(row, Math.max(-OPEN_W - 24, Math.min(0, st.base + dx)));
+}
+function onUp(e) {
+if (!st || e.pointerId !== st.id) return;
+if (st.mode === 'swipe') {
+suppressClick = true; setTimeout(function () { suppressClick = false; }, 400);
+if (st.base + st.dx < -OPEN_AT) openSwipe(row); else closeSwipe(row);
+}
+clear();
+}
+row.addEventListener('pointerdown', function (e) {
+if (e.button != null && e.button !== 0) return;
+if (xMoving) return;
+if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;   // the swipe is a touch gesture; desktop has the ⋯ menu
+if (e.target.closest('.swacts, [data-xmenu], [data-ynabretry], .cpy')) return;
+clear();
+st = { id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, mode: null, base: row.classList.contains('swiped') ? -OPEN_W : 0 };
+document.addEventListener('pointermove', onMove, true); document.addEventListener('pointerup', onUp, true);
+document.addEventListener('pointercancel', onCancel, true);
+});
+}
 function wireRows(ctrl) {
 openRow = null;
 ctrl.root.querySelectorAll('.erow[data-item]').forEach(function (row) { wireLine(ctrl, row); });
+ctrl.root.querySelectorAll('.srow[data-xfer]').forEach(function (row) { wireXfer(ctrl, row); });
+if (xMoving) {   // a render mid-move (a refresh): keep the lifted payment lifted, or end the move if it is gone
+var mr = ctrl.root.querySelector('.srow[data-xfer="' + xMoving + '"]');
+if (mr) { mr.classList.add('moving'); ctrl.root.classList.add('xmoving'); } else endXMove(ctrl);
+}
 if (!ctrl.__rowsDoc) {
 ctrl.__rowsDoc = true;
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && xMoving) endXMove(ctrl); });
+document.addEventListener('click', function (e) {
+if (!xMoving || e.target.closest('.toast')) return;
+var r = e.target.closest('.srow[data-xfer]');
+if (!r) endXMove(ctrl);
+}, true);
 document.addEventListener('pointerdown', function (e) { if (openRow && !openRow.contains(e.target)) closeSwipe(openRow); }, true);
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && openRow) closeSwipe(openRow); });
 }
@@ -3335,6 +3614,7 @@ document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && op
 Remit.ui = Remit.ui || {};
 Remit.ui.wireRows = wireRows;
 Remit.ui.closeSwipe = closeSwipe;
+Remit.ui.beginXMove = beginXMove;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 </script>
 <!-- src/ui/drag.js -->
@@ -3620,12 +3900,15 @@ sheet.innerHTML =   // arc/sheet-and-speed S2: no grab bar (it did nothing on iP
 var $ = (id) => sheet.querySelector(id);
 function selCur() { return $('#t-cur').value; }
 var logged = editing && existing.breakdown && existing.breakdown.kind === 'log';
-var locked = logged && !!(Remit.ui.ynabPosted && Remit.ui.ynabPosted(ctrl, existing));
+var lockWhy = logged && Remit.ui.ynabLock ? Remit.ui.ynabLock(ctrl, existing) : (logged && Remit.ui.ynabPosted && Remit.ui.ynabPosted(ctrl, existing) ? 'posted' : null);
+var locked = !!lockWhy;
 if (logged) $('#t-cur').disabled = true;
 if (locked) {
 ['#t-amt', '#t-sent', '#t-rate', '#t-date'].forEach(function (q) { $(q).disabled = true; });
 var lockNote = document.createElement('p'); lockNote.className = 'ynabnote'; lockNote.id = 't-locked';
-lockNote.textContent = 'Already in YNAB — the amounts and date are fixed here. Change them in YNAB, or delete this payment and log it again.';
+lockNote.textContent = lockWhy === 'posted' ? 'Already in YNAB — the amounts and date are fixed here. Change them in YNAB, or delete this payment and log it again.'
+: lockWhy === 'sending' ? 'Sending to YNAB right now — the amounts and date are fixed until it finishes.'
+: 'This may already be in YNAB (the last send had no clear answer) — the amounts and date are fixed until a Retry settles it. Or delete this payment and log it again.';
 sheet.querySelector('.acts').before(lockNote);
 }
 var bases = [], basisKey = null;
@@ -3700,7 +3983,7 @@ provider: ($('#t-prov').value || '').trim() || null, note: ($('#t-note').value |
 };
 if (locked) {   // in YNAB already: only the words change (the disabled fields cannot, but never trust the DOM)
 if (money.cents(amt) !== money.cents(existing.amount_delivered) || money.cents(sent || 0) !== money.cents(existing.amount_sent_usd || 0) || fields.sent_on !== existing.sent_on || c !== existing.currency) {
-Remit.ui.toast('Already in YNAB — change the amount there, or delete and log it again.'); return;
+Remit.ui.toast(lockWhy === 'posted' ? 'Already in YNAB — change the amount there, or delete and log it again.' : 'Not now — YNAB may already have this amount. Retry first.'); return;
 }
 fields = { provider: fields.provider, note: fields.note };
 } else if (logged) {
@@ -3989,7 +4272,7 @@ async function post(ctrl, t, search) {
 var store = ctrl.store;
 if (!ynabOn(store) || !ynabBound(t)) return null;
 var r = await store.callYnab('post', { transfer_id: t.id, search: !!search });
-if (r.status === 0) { try { await store.upsertOutbox({ transfer_id: t.id, status: 'ambiguous', last_error: 'network error' }); } catch (e) {} }
+if (r.status === 0) { try { await store.upsertOutbox({ transfer_id: t.id, status: 'ambiguous' }); } catch (e) {} }
 if (ctrl.refresh) ctrl.refresh();
 return r;
 }
@@ -4013,12 +4296,25 @@ var ob = (ctrl.outbox || {})[tid], r;
 if (ob && ob.kind === 'resplit') {   // D6: a re-split of an EXISTING YNAB transaction — never posted as a new one
 r = await ctrl.store.callYnab('resplit', { transfer_id: tid }); if (ctrl.refresh) ctrl.refresh();
 } else r = await post(ctrl, t, !!(ob && (ob.status === 'ambiguous' || ob.status === 'pending')));
-if (r && r.json) Remit.ui.toast(r.json.status === 'posted' ? 'Sent to YNAB.' : r.json.status === 'dry_run' ? 'Ready for YNAB — posting is off for now.' : 'Not in YNAB yet: ' + (r.json.error || 'try again later') + '.');
+if (r && r.json) Remit.ui.toast(r.json.status === 'posted' ? 'Sent to YNAB.' : r.json.status === 'dry_run' ? 'Ready for YNAB — posting is off for now.' : r.json.in_progress ? 'Sending to YNAB… (already under way)' : 'Not in YNAB yet: ' + (r.json.error || 'try again later') + '.');
+}
+var LEASE = 'in_flight until ';
+function sending(ob) {
+var e = String((ob && ob.last_error) || ''); if (e.indexOf(LEASE) !== 0) return false;
+var until = Date.parse(e.slice(LEASE.length)); return isFinite(until) && until > Date.now();
+}
+function ynabLock(ctrl, t) {
+var ob = (ctrl.outbox || {})[t && t.id]; if (!ob || ob.kind === 'resplit') return ob && ob.status === 'posted' ? 'posted' : null;
+if (ob.status === 'posted') return 'posted';
+if (sending(ob)) return 'sending';
+if (ob.status === 'ambiguous') return 'ambiguous';
+return null;
 }
 function ynabState(ctrl, t) {
 if (!ynabOn(ctrl.store) || !ynabBound(t)) return null;
 var ob = (ctrl.outbox || {})[t.id];
 if (ob && ob.status === 'posted') return { posted: true };
+if (sending(ob)) return { posted: false, sending: true, why: 'sending' };
 return { posted: false, why: !ob ? 'not sent' : ob.status === 'dry_run' ? 'posting is off' : ob.status === 'pending' ? 'sending' : (ob.last_error || ob.status) };
 }
 function close(host) { if (host.closed) return; host.closed = true; Remit.ui.unlockScroll(); host.scrim.classList.remove('open'); host.sheet.classList.remove('open'); setTimeout(function () { host.wrap.remove(); }, 240); document.removeEventListener('keydown', host.onKey); }
@@ -4085,6 +4381,7 @@ Remit.ui.retryYnab = retryYnab;
 Remit.ui.requeueYnab = requeueYnab;
 Remit.ui.ynabPosted = function (ctrl, t) { var ob = (ctrl.outbox || {})[t && t.id]; return !!(ob && ob.status === 'posted'); };
 Remit.ui.ynabState = ynabState;
+Remit.ui.ynabLock = ynabLock;
 Remit.ui.ynabOn = ynabOn;
 Remit.ui.openYnabSettings = function (ctrl) { if (ynabOn(ctrl.store)) return openYnabSettings(ctrl); Remit.ui.toast(ctrl.store.caps && ctrl.store.caps.ynab ? 'YNAB settings are for Mark and Barbara.' : 'YNAB settings arrive with the next database update.'); };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
