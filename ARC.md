@@ -73,7 +73,7 @@ Status: done 6827ace
 Done-criteria: before/after screenshots of every changed surface at 390 + 1280 reviewed against the Issues
 (docs/evidence/snag-train-2026-11-slice-7-design-review.md); performance = index.html byte delta + lobby/wing load
 timing (no Lighthouse in an arc).
-Status: open
+Status: done 704c4b7
 
 === SLICE 8 — page-diff gate (train) ===
 Done-criteria: `node tools/page-diff.mjs index.html https://schnubsy.github.io/press/index.html --evidence docs/evidence/`
