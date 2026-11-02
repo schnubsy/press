@@ -36,7 +36,7 @@ split was already retired by marquee-polish S1 (2026-09-22): both kickers are no
 "behind the passkey") and the h3 names the wing. Mark's family kicker text is NOT changed.
 Done-criteria: a spec pins ONE convention — each wing kicker is a tagline that does not repeat the wing name, and each
 h3 is "The <X> Wing"; screenshot at 390. Fixes #28.
-Status: open
+Status: done b0d2c5f
 
 === SLICE 2 — mobile wing cards breathing room (#29) ===
 Scope: layout change. index.html CSS, ≤480px only.
