@@ -1,0 +1,10 @@
+sentry — snag-train-2026-11 — 2026-11-02 — tested head bc5e467 (diff origin/main...bc5e467)
+1. Secrets scan of the diff (the one required step):
+   - local pattern scan of every added non-PNG line (sk_live/sk_test, ghp_/github_pat_, xox*, AKIA…, PEM headers,
+     service_role, JWT-shaped tokens, password=/secret= literals): 0 hits.
+   - GitHub run_secret_scanning: unavailable ("Repository does not have GitHub Advanced Security enabled") — recorded, not skipped silently.
+   - Values added are test fixtures only (e.g. 'cardsharp-sync-5555' / 'cardsharp-pass-DELTA' in test/recovery-kit.spec.mjs), never real credentials.
+2. Threat sketch (#34 touches the vault path): the new kit button calls the EXISTING PressVault.unlock() (WebAuthn PRF, this tab);
+   decrypted Cardsharp creds stay in the tab's _mem exactly as after a normal wing unlock — nothing new is persisted, fetched or sent;
+   the button sits in .tw-noprint. No new network endpoint, no new storage key, no DB / RLS / auth change. Dependency audit: N/A (no dependency change).
+VERDICT: 🟢 sentry green.
