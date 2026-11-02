@@ -639,6 +639,7 @@ border:0;background:transparent;color:var(--faint);font:600 18px/1 var(--sans);b
 .srow button.xmenu:hover,.srow button.xmenu:focus-visible{color:var(--ink)}
 .srow button.xmenu:focus-visible{outline:2px solid var(--brass);outline-offset:-2px}
 .receipt .rchead .xmenu{flex:0 0 32px}
+.receipt .rrate{padding-right:40px}
 }
 .srow.moving{background:rgba(201,162,109,.14);border-radius:6px;box-shadow:inset 0 0 0 1.5px var(--brass)}
 .xmoving .settled .srow:not(.moving){cursor:copy}
@@ -692,19 +693,25 @@ background:var(--brass-faint);color:var(--brass);font:600 13px/1 var(--sans);cur
 .ynabnote{margin:10px 0 4px;font:400 13px/1.45 var(--sans);color:var(--muted)}
 .ynabkid{margin:16px 0 0;font:600 13px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
 .receipt.srow{display:block;padding:12px 0 10px}
-.receipt .rchead{display:flex;align-items:flex-start;gap:8px}
-.receipt .rt{flex:1;min-width:0;font:600 15px/1.4 var(--sans);color:var(--ink);padding-top:12px}
-.receipt .rrate{font-weight:500;color:var(--muted);white-space:nowrap}
+.receipt .rchead{display:flex;align-items:center;gap:8px;min-height:44px}
+.receipt .rt{flex:1 1 auto;min-width:0;font:600 15px/1.35 var(--sans);color:var(--ink)}
+.receipt .rhv{flex:0 0 auto;font:600 15px/1.35 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink);text-align:right;white-space:nowrap}
+.receipt .rhv .rsep{color:var(--faint);font-weight:400}
+.receipt .rrate{margin:-6px 0 4px;text-align:right;font:500 13px/1.35 var(--sans);font-variant-numeric:tabular-nums;color:var(--muted)}
+.receipt .rrate .usd{font:inherit;color:inherit}
 .receipt .rchead .del{flex:0 0 44px;width:44px;min-height:44px}
-.receipt .rl{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px dotted var(--brass-faint)}
+.receipt .rl{display:flex;align-items:baseline;gap:12px;padding:6px 0;border-top:1px dotted var(--brass-faint)}
 .receipt .rk{flex:1;min-width:0;font:500 15px/1.35 var(--sans);color:var(--ink)}
-.receipt .rk small{display:block;margin-top:2px;font:400 13px/1.4 var(--sans);color:var(--muted)}
 .receipt .rv{flex:0 0 auto;font:600 16px/1.2 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink);text-align:right}
-.receipt .rl.tot{border-top:1px solid var(--brass-dim);padding-top:8px}
+.receipt .rs{display:flex;align-items:baseline;gap:12px;padding:1px 0 3px 14px}
+.receipt .rs .rk{font:400 13.5px/1.35 var(--sans);color:var(--muted)}
+.receipt .rs .rv{font:500 13.5px/1.35 var(--sans);color:var(--muted)}
+.receipt .rl.tot{border-top:1px solid var(--brass-dim);padding-top:8px;flex-wrap:wrap}
 .receipt .rl.tot .rk{font-weight:600}
 .receipt .rfoot{display:flex;justify-content:flex-end;margin-top:4px}
 .receipt .rstate{grid-row:auto;grid-column:auto;margin:0}
-.receipt .rstate.ok{margin-left:8px;font:600 13.5px/1.2 var(--sans);color:var(--paid);white-space:nowrap}
+.receipt .rstate.ok,.receipt .rstate.warn{flex:0 0 auto;font:600 13.5px/1.2 var(--sans);color:var(--paid);white-space:nowrap}
+.receipt .rstate.warn{color:var(--asked);white-space:normal;text-align:right;flex:1 1 100%}
 .receipt .rstate.muted{font:500 13px/1.4 var(--sans);color:var(--faint);padding:6px 0}
 .receipt .snote{display:block;margin-top:6px}
 .srow.credit .nm b{color:var(--brass)}
@@ -730,13 +737,18 @@ font:600 18px/1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:-.0
 .foot .fbv small{font:500 11px/1 var(--sans);color:var(--muted)}
 .foot .fbsep{color:var(--faint);font-weight:400}
 .foot .fbchev{flex:0 0 auto;font-size:12px;color:var(--brass)}
-.foot:not(.open) .in{padding-top:3px;padding-bottom:4px}
-.foot:not(.open) .footpanel{display:none}
 .foot.open .fbvals{display:none}
 .foot.open .fbl{flex:1 1 auto}
-.foot.open .footbar{margin-bottom:6px}
+.foot{transform:translateY(0);transition:transform .2s cubic-bezier(.22,.8,.3,1);will-change:transform}
+.foot:not(.open){transform:translateY(var(--foot-fold,0px))}
+.foot.dragging,.foot.nofx{transition:none}
+.foot .in,.foot:not(.open) .in{padding-top:3px;padding-bottom:4px}
+.foot .footpanel{padding:6px 0 14px}
+.foot:not(.open):not(.dragging) .footpanel{visibility:hidden;transition:visibility 0s linear .2s}
+@media (prefers-reduced-motion:reduce){.foot,.foot:not(.open):not(.dragging) .footpanel{transition:none}}
 @media(max-width:374px){.foot .fbl{letter-spacing:.12em}.foot .fbvals{font-size:16px}.foot .fbvals.many{font-size:13px}}
-.ynabok.sending{color:var(--muted);font-weight:500}</style>
+.ynabok.sending{color:var(--muted);font-weight:500}
+.ynabok.warn{color:var(--asked)}</style>
 </head>
 <body>
 <main class="app" id="remit-root">
@@ -1532,7 +1544,7 @@ return fromCents(d);
 }
 function extraLine(diff, cur, sortAfter) {
 var o = { bucket: 'mine', description: 'Extra', note: 'Additional cash transferred', amount: fromCents(cents(diff)),
-currency: cur, settle: 'transfer', status: 'requested', tag: 'sent_ahead' };
+currency: cur, settle: 'transfer', status: 'requested', tag: 'kid_card' };
 if (sortAfter != null) o.sort_order = Number(sortAfter) + 10;
 return o;
 }
@@ -1655,13 +1667,47 @@ nb.usd_split = (U != null && A > 0) ? usdSplitOf(part, cat, U, A) : null;
 nb.edited = true;
 return nb;
 }
+function paymentReceipt(model, t) {
+if (!model || !model.recurring || !t || t.kind === 'sent_ahead_credit') return null;
+var c = t.currency, A = cents(t.amount_delivered || 0);
+if (!c || !(A > 0)) return null;
+var rows = [].concat(model.recurring.rows, model.extras.rows, model.mine.rows, [].concat.apply([], (model.custom || []).map(function (x) { return x.rows; })))
+.filter(function (it) { return alive(it) && it.currency === c; });
+var part = {}; PART_KEYS.forEach(function (k) { part[k] = 0; });
+rows.forEach(function (it) {
+var k = it.bucket === 'recurring' ? 'recurring' : (it.bucket === 'extras' || it.bucket === 'custom') ? 'extras' : (TAGS.indexOf(it.tag) === -1 ? 'untagged' : it.tag);
+part[k] += cents(it.amount);
+});
+var base = rows.reduce(function (a, it) { return a + cents(it.amount); }, 0);
+if (!base) return null;
+var scaled = splitCents(A, PART_KEYS.map(function (k) { return part[k]; }), base);
+PART_KEYS.forEach(function (k, i) { part[k] = scaled[i]; });
+var cat = { living: part.recurring + part.extras + part.kid_card + part.sent_ahead + part.untagged + part.adjust + part.extra + part.credit, tuition: part.tuition, dad: part.dad };
+var U = c === 'USD' ? A : (t.amount_sent_usd != null && cents(t.amount_sent_usd) > 0 ? cents(t.amount_sent_usd) : null);
+var out = { v: 1, kind: 'derived', currency: c, arrived: fromCents(A), usd: U == null ? null : fromCents(U), rate: U && c !== 'USD' ? Number((A / U).toFixed(4)) : null,
+parts: {}, cur: { living: fromCents(cat.living), tuition: fromCents(cat.tuition), dad: fromCents(cat.dad) }, usd_split: null };
+PART_KEYS.forEach(function (k) { out.parts[k] = fromCents(part[k]); });
+if (U != null) out.usd_split = usdSplitOf(part, cat, U, A);
+return out;
+}
+function livingSubs(lp, kid) {
+var v = function (k) { return lp && lp[k] ? Number(lp[k]) : 0; }, out = [];
+var add = function (key, label, amount) { if (cents(amount)) out.push({ key: key, label: label, amount: fromCents(cents(amount)) }); };
+add('recurring', 'Recurring', v('recurring'));
+add('extras', 'Extras', v('extras'));
+add('kid_card', tagLabel('kid_card', kid), fromCents(cents(v('kid_card')) + cents(v('sent_ahead')) + cents(v('extra'))));
+add('untagged', 'Not tagged', v('untagged'));
+add('adjust', 'Paid earlier this month', v('adjust'));
+add('credit', 'Covered by an earlier extra', v('credit'));
+return out;
+}
 function copyText(amount) {
 var c = cents(amount), abs = Math.abs(c);
 return (c < 0 ? '-' : '') + Math.floor(abs / 100) + '.' + String(abs % 100).padStart(2, '0');
 }
 Remit.money = {
 TAGS: TAGS, tagLabel: tagLabel, tagGroups: tagGroups,
-logScopes: logScopes, logPlan: logPlan, replanLog: replanLog, splitCents: splitCents, sentAheadLedger: sentAheadLedger, creditSources: creditSources,
+logScopes: logScopes, logPlan: logPlan, replanLog: replanLog, paymentReceipt: paymentReceipt, livingSubs: livingSubs, splitCents: splitCents, sentAheadLedger: sentAheadLedger, creditSources: creditSources,
 copyText: copyText, sectionUnpaid: sectionUnpaid, paymentBases: paymentBases, extraFor: extraFor, extraLine: extraLine,
 SYMBOLS: SYMBOLS, symbol: symbol, cents: cents, fromCents: fromCents, fmt: fmt,
 alive: alive, isTransferLine: isTransferLine, isPaidTick: isPaidTick,
@@ -1851,14 +1897,14 @@ people: d.people || [], periods: d.periods || [], budgets: d.budgets || [],
 items: readItems(d.items), messages: d.messages || [], transfers: d.transfers || [], rates: d.rates || [],
 commitments: d.commitments || [], sections: d.sections || [],
 ynab_settings: d.ynab_settings || [], ynab_outbox: d.ynab_outbox || [], ynab_mode: d.ynab_mode, ynab_config: d.ynab_config,
-is_parent: typeof d.is_parent === 'boolean' ? d.is_parent : null, quiet_write_ms: d.quiet_write_ms || 0, fail_credit_writes: d.fail_credit_writes || 0,
+is_parent: typeof d.is_parent === 'boolean' ? d.is_parent : null, quiet_write_ms: d.quiet_write_ms || 0,
 };
 this._viewer = d.viewer || (this.state.people[0] && this.state.people[0].email) || 'unknown';
 if (d.caps) this.caps = Object.assign({}, FixtureStore.prototype.caps, d.caps);   // a test can pose as the pre-S6 schema
 }
 FixtureStore.prototype = Object.create(Emitter.prototype);
 FixtureStore.prototype.mode = 'fixture';
-FixtureStore.prototype.caps = { tag: true, breakdown: true, ynab: true };
+FixtureStore.prototype.caps = { tag: true, breakdown: true, ynab: true, xsort: true };
 FixtureStore.prototype.load = async function () { return this; };
 FixtureStore.prototype.viewer = function () { return this._viewer; };
 FixtureStore.prototype.isParent = function () { return this.state.is_parent !== false; };
@@ -2006,7 +2052,6 @@ this._emit();
 return { period: period, added: added };
 };
 FixtureStore.prototype.createTransfer = async function (fields) {
-if (fields && fields.kind === 'sent_ahead_credit' && this.state.fail_credit_writes > 0) { this.state.fail_credit_writes--; throw new Error('remit rest 503'); }
 if (fields && fields.id && this.state.transfers.some(function (x) { return x.id === fields.id; })) throw new Error('remit rest 409');
 var t = Object.assign({ id: uid('xfer'), sent_on: (fields && fields.sent_on) || nowISO().slice(0, 10) }, fields);
 this.state.transfers.push(t); this._emit(); return clone(t);
@@ -2014,6 +2059,10 @@ this.state.transfers.push(t); this._emit(); return clone(t);
 FixtureStore.prototype.updateTransfer = async function (id, patch) {
 var t = this.state.transfers.find((x) => x.id === id); if (!t) return null;
 Object.assign(t, patch); this._emit(); return clone(t);
+};
+FixtureStore.prototype.setTransferOrder = async function (ids) {
+var st = this.state; ids.forEach(function (id, i) { var t = st.transfers.find((x) => x.id === id); if (t) t.sort_order = (i + 1) * 10; });
+this._emit(); return true;
 };
 FixtureStore.prototype.deleteTransfer = async function (id) {
 this.state.transfers = this.state.transfers.filter((x) => x.id !== id); this._emit(); return true;
@@ -2025,13 +2074,6 @@ return this.state.transfers.filter((t) =>
 (currency == null || t.currency === currency));
 };
 FixtureStore.prototype.getCommitments = function () { return clone(this.state.commitments); };
-FixtureStore.prototype.getSentAhead = async function (personId) {
-var ps = {}; this.state.periods.filter((p) => p.person_id === personId).forEach((p) => { ps[p.id] = p; });
-var lines = this.state.items.filter((it) => ps[it.period_id] && it.tag === 'sent_ahead' && !it.deleted_at)
-.map((it) => ({ year: ps[it.period_id].year, month: ps[it.period_id].month, amount: it.amount, currency: it.currency }));
-var credits = this.state.transfers.filter((t) => t.person_id === personId && t.kind === 'sent_ahead_credit');
-return { lines: clone(lines), credits: clone(credits) };
-};
 FixtureStore.prototype.callYnab = async function (action, body) {
 var d = this.state, mode = d.ynab_mode || 'dry_run';
 if (action === 'config') return { status: 200, json: Object.assign({ ok: true, posting: mode !== 'dry_run', configured: true }, d.ynab_config || { accounts: [], categories: [] }) };
@@ -2077,7 +2119,7 @@ this._rateFetchInFlight = {};   // day -> true, so a refresh never double-fetche
 }
 SupabaseStore.prototype = Object.create(Emitter.prototype);
 SupabaseStore.prototype.mode = 'live';
-SupabaseStore.prototype.caps = { tag: false, breakdown: false, ynab: false };
+SupabaseStore.prototype.caps = { tag: false, breakdown: false, ynab: false, xsort: false };
 var MISSING = ['42703', '42P01', 'PGRST204', 'PGRST205'];
 SupabaseStore.prototype._probeOne = async function (path) {
 var r = null, j = null;
@@ -2088,8 +2130,8 @@ if ((r.status === 400 || r.status === 404) && j && MISSING.indexOf(String(j.code
 return null;   // undecided
 };
 SupabaseStore.prototype._probeCaps = async function (waits) {
-var self = this, paths = ['/remit_items?select=tag&limit=1', '/remit_transfers?select=breakdown,kind&limit=1', '/remit_ynab_settings?select=person_id&limit=1'];
-var got = [null, null, null];
+var self = this, paths = ['/remit_items?select=tag&limit=1', '/remit_transfers?select=breakdown,kind&limit=1', '/remit_ynab_settings?select=person_id&limit=1', '/remit_transfers?select=sort_order&limit=1'];
+var got = [null, null, null, null];
 waits = waits || [0, 400, 1200];
 for (var a = 0; a < waits.length && got.indexOf(null) !== -1; a++) {
 if (waits[a]) await new Promise(function (res) { setTimeout(res, waits[a]); });
@@ -2097,12 +2139,13 @@ var now = await Promise.all(paths.map(function (p, i) { return got[i] === null ?
 got = now;
 }
 this.capsUndecided = got.some(function (g) { return g === null; });
-this.caps = { tag: got[0] !== false, breakdown: got[1] !== false, ynab: got[2] !== false };
+this.caps = { tag: got[0] !== false, breakdown: got[1] !== false, ynab: got[2] !== false, xsort: got[3] !== false };
 };
 SupabaseStore.prototype._strip = function (fields, table) {
 var o = Object.assign({}, fields);
 if (table === 'items' && !this.caps.tag) delete o.tag;
 if (table === 'transfers' && !this.caps.breakdown) { delete o.breakdown; delete o.kind; }
+if (table === 'transfers' && !this.caps.xsort) delete o.sort_order;
 return o;
 };
 SupabaseStore.prototype._h = function (extra) { return Object.assign({}, this.gate.authHeaders(), extra || {}); };
@@ -2297,6 +2340,15 @@ SupabaseStore.prototype.createTransfer = async function (fields) {
 var t = (await this._post('/remit_transfers', this._strip(fields, 'transfers')))[0];
 this._emit(); return t;
 };
+SupabaseStore.prototype.setTransferOrder = async function (ids, current) {
+if (!this.caps.xsort) throw new Error('remit: no sort_order column yet');
+for (var i = 0; i < ids.length; i++) {
+var want = (i + 1) * 10;
+if (current && current[ids[i]] === want) continue;
+await this._patch('/remit_transfers?id=eq.' + ids[i], { sort_order: want });
+}
+this._emit(); return true;
+};
 SupabaseStore.prototype.updateTransfer = async function (id, patch) { var r = await this._patch('/remit_transfers?id=eq.' + id, this._strip(patch, 'transfers')); this._emit(); return r && r[0]; };
 SupabaseStore.prototype.deleteTransfer = async function (id) { var r = await fetch(this.REST + '/remit_transfers?id=eq.' + id, { method: 'DELETE', headers: this._h() }); this._emit(); return r.ok; };
 SupabaseStore.prototype.getTransfers = async function (personId, year, month, currency) {
@@ -2304,14 +2356,6 @@ var q = '/remit_transfers?select=*'; if (personId != null) q += '&person_id=eq.'
 return this._get(q);
 };
 SupabaseStore.prototype.getCommitments = async function () { return this._get('/remit_commitments?select=*'); };
-SupabaseStore.prototype.getSentAhead = async function (personId) {
-if (!this.caps.tag) return { lines: [], credits: [] };
-var ps = await this._get('/remit_periods?select=id,year,month&person_id=eq.' + personId), by = {};
-ps.forEach((p) => { by[p.id] = p; });
-var lines = ps.length ? await this._get('/remit_items?select=period_id,amount,currency&tag=eq.sent_ahead&deleted_at=is.null&period_id=in.(' + ps.map((p) => p.id).join(',') + ')') : [];
-var credits = this.caps.breakdown ? await this._get('/remit_transfers?select=amount_delivered,currency&kind=eq.sent_ahead_credit&person_id=eq.' + personId) : [];
-return { lines: lines.map((it) => ({ year: by[it.period_id].year, month: by[it.period_id].month, amount: Number(it.amount), currency: it.currency })), credits: credits };
-};
 SupabaseStore.prototype.callYnab = async function (action, body) {
 var url = String(this.REST || '').replace(/\/rest\/v1\/?$/, '') + '/functions/v1/remit-ynab';
 try {
@@ -2452,6 +2496,11 @@ btn.setAttribute('aria-expanded', 'true');
 setTimeout(function () { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); }, 0);
 });
 }
+function afterFocusSettles(fn) {
+var done = false, tm;
+function go() { if (done) return; done = true; document.removeEventListener('focusin', go, true); clearTimeout(tm); setTimeout(fn, 0); }
+document.addEventListener('focusin', go, true); tm = setTimeout(go, 450);
+}
 function pickTag(btn, cur, kid) {
 return new Promise(function (resolve) {
 var old = document.querySelector('.curmenu'); if (old) old.__close(undefined);
@@ -2467,7 +2516,8 @@ m.style.left = Math.max(12, Math.min(r.left, innerWidth - mw - 12)) + 'px';
 m.style.top = ((r.bottom + 6 + mh < floor) ? r.bottom + 6 : Math.max(12, r.top - 6 - mh)) + 'px';
 function close(v) { m.remove(); document.removeEventListener('pointerdown', outside, true); document.removeEventListener('keydown', onKey, true); btn.setAttribute('aria-expanded', 'false'); resolve(v); }
 function outside(e) { if (!m.contains(e.target)) { if (btn.contains(e.target)) e.stopPropagation(); close(undefined); } }
-function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); close(undefined); btn.focus(); } }
+function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); btn.__dismissedBy = 'esc'; close(undefined); btn.focus(); } }
+btn.__dismissedBy = 'outside';
 m.__close = close;
 m.querySelectorAll('[data-picktag]').forEach(function (b) {
 b.addEventListener('pointerdown', function (e) { e.preventDefault(); });
@@ -2632,8 +2682,12 @@ var ca = a.created_at || '', cb = b.created_at || '';
 return ca < cb ? -1 : ca > cb ? 1 : 0;
 }
 function orderTransfers(ctrl, cur, tx) {
-var placed = readXOrder()[xKey(ctrl, cur)] || [];
-var rank = function (t) { var i = placed.indexOf(t.id); return i === -1 ? Infinity : i; };
+var shared = tx.some(function (t) { return t.sort_order != null; });
+var placed = shared ? [] : (readXOrder()[xKey(ctrl, cur)] || []);
+var rank = function (t) {
+if (shared) return t.sort_order == null ? Infinity : Number(t.sort_order);
+var i = placed.indexOf(t.id); return i === -1 ? Infinity : i;
+};
 return tx.slice().sort(function (a, b) { var ra = rank(a), rb = rank(b); return ra !== rb ? (ra < rb ? -1 : 1) : byDate(a, b); });
 }
 Remit.ui = Remit.ui || {};
@@ -2649,6 +2703,8 @@ if (!tx.length) return '';
 var sub = {}; sub[c] = (model.settled[c] || 0);
 var rows = tx.map(function (t) {
 if (t.breakdown && t.breakdown.kind === 'log') return receiptHTML(ctrl, t);   // arc/line-ux S9 (D7)
+var derived = money.paymentReceipt(model, t);                                 // arc/receipt-layout-and-cleanup S1 (D2)
+if (derived) return receiptHTML(ctrl, t, derived);
 var when = t.sent_on ? fx.rateDayLabel(t.sent_on) : 'date unknown';
 var meta = [when, t.provider].filter(Boolean).map(esc).join(' · ');
 var usd = fx.paymentUsd(t, ctrl.store.getRates ? ctrl.store.getRates() : []);
@@ -2663,47 +2719,50 @@ return '<section class="settled"><div class="zone-hd"><h2>Settled in ' + esc(WHE
 '<span class="tt"><span class="num">' + copyNums(sub) + '</span></span></div>' + rows + '</section>';
 }).join('');
 }
-function receiptHTML(ctrl, t) {
-var b = t.breakdown, c = t.currency, u = b.usd_split, kid = (ctrl.store.getPerson(t.person_id) || {}).name || 'Kid';
-var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-var day = t.sent_on ? (+t.sent_on.slice(8, 10)) + ' ' + MON[+t.sent_on.slice(5, 7) - 1] : 'date unknown';
+var MON3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function receiptHTML(ctrl, t, derived) {
+var b = derived || t.breakdown, c = t.currency, u = b.usd_split, kid = (ctrl.store.getPerson(t.person_id) || {}).name || 'Kid';
+var day = t.sent_on ? (+t.sent_on.slice(8, 10)) + ' ' + MON3[+t.sent_on.slice(5, 7) - 1] : 'date unknown';
 var inUsd = !!u, F = function (v) { return symHTML(esc(money.fmt(v, inUsd ? 'USD' : c))); };
-var head = [esc(t.provider || 'Transfer'), esc(day)].join(' · ') + ' · ' + symHTML(esc(money.fmt(t.amount_delivered, c))) +
-(inUsd && c !== 'USD' ? ' = ' + symHTML(esc(money.fmt(t.amount_sent_usd != null ? t.amount_sent_usd : b.usd, 'USD'))) + ' <span class="rrate">(' + esc(money.symbol(c) + Number(b.rate).toFixed(4)) + ' per $)</span>' : '');
-var lp = inUsd ? u.livingParts : b.parts, val = function (k) { return lp && lp[k] ? lp[k] : 0; };
-var subs = [];
-if (money.cents(val('recurring'))) subs.push('Recurring ' + F(val('recurring')));
-if (money.cents(val('extras'))) subs.push('Extras ' + F(val('extras')));
-if (money.cents(val('kid_card'))) subs.push(esc(money.tagLabel('kid_card', kid)) + ' ' + F(val('kid_card')));
-if (money.cents(val('untagged'))) subs.push('not tagged ' + F(val('untagged')));
-var sa = val('sent_ahead') + val('extra'); if (money.cents(sa)) subs.push('sent ahead ' + F(sa));
-if (money.cents(val('adjust'))) subs.push('paid earlier this month ' + F(val('adjust')));
-if (money.cents(val('credit'))) {
-var from = (b.credit_from || []).map(function (x) { return MON[x.month - 1]; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(' + ');
-subs.push('covered by ' + esc(from || 'earlier') + '’s extra ' + F(val('credit')));
-}
-var line = function (label, v, sub, cls) {
+var usdTot = inUsd ? (t.amount_sent_usd != null && c !== 'USD' ? t.amount_sent_usd : b.usd) : null;
+var title = t.provider ? t.provider + (derived ? ' payment' : ' transfer') : (derived ? 'Payment' : 'Transfer');
+var headV = symHTML(esc(money.fmt(t.amount_delivered, c))) + (inUsd && c !== 'USD' ? '<span class="rsep"> · </span>' + symHTML(esc(money.fmt(usdTot, 'USD'))) : '');
+var est = (!inUsd && c !== 'USD') ? fx.paymentUsd(t, ctrl.store.getRates ? ctrl.store.getRates() : []) : null;
+var rate = inUsd && c !== 'USD' && b.rate ? '<div class="rrate num">' + esc(money.symbol(c) + Number(b.rate).toFixed(4)) + ' per $</div>'
+: est ? '<div class="rrate num"><small class="usd num" data-usd="' + est.kind + '">' + symHTML(esc(est.text)) + '</small></div>' : '';
+var lp = inUsd ? u.livingParts : b.parts;
+var subs = money.livingSubs(lp, kid).map(function (x) {
+var label = x.label;
+if (x.key === 'credit' && (b.credit_from || []).length) label = 'Covered by ' + (b.credit_from || []).map(function (y) { return MON3[y.month - 1]; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(' + ') + '’s extra';
+return '<div class="rs" data-sub="' + esc(x.key) + '"><span class="rk">' + esc(label) + '</span><span class="rv num">' + F(x.amount) + '</span></div>';
+}).join('');
+var line = function (label, v) {
 var m = {}; m[inUsd ? 'USD' : c] = v;
-return '<div class="rl' + (cls ? ' ' + cls : '') + '"><span class="rk">' + esc(label) + (sub ? '<small>' + sub + '</small>' : '') + '</span><span class="rv num">' + copyNums(m) + '</span></div>';
+return '<div class="rl"><span class="rk">' + esc(label) + '</span><span class="rv num">' + copyNums(m) + '</span></div>';
 };
 var cats = inUsd ? u : b.cur;
-var body = line(kid + '’s Living', cats.living, subs.join(' · ')) +
+var body = (money.cents(cats.living) ? line(kid + '’s Living', cats.living) + subs : '') +
 (money.cents(cats.tuition) ? line(kid + '’s Tuition', cats.tuition) : '') +
 (money.cents(cats.dad) ? line('Dad', cats.dad) : '');
-var st = Remit.ui.ynabState ? Remit.ui.ynabState(ctrl, t) : null;
-var tail = !inUsd ? (c === 'USD' ? '' : '<span class="rstate muted">Add the $ that left the bank to send it to YNAB</span>')
+var st = !derived && Remit.ui.ynabState ? Remit.ui.ynabState(ctrl, t) : null;
+var ok = st && st.posted && inUsd ? (st.differs
+? ' <span class="rstate warn" data-ynab="differs">In YNAB at ' + symHTML(esc(money.fmt(st.ynabAmount, 'USD'))) + ' — fix it there</span>'
+: ' <span class="rstate ok" data-ynab="posted">✓ matches YNAB</span>') : '';
+var tail = derived ? '' : !inUsd ? (c === 'USD' ? '' : '<span class="rstate muted">Add the $ that left the bank to send it to YNAB</span>')
 : !st ? '' : st.posted ? ''
 : st.sending ? '<span class="rstate muted" data-ynab="sending">Sending to YNAB…</span>'
 : '<button type="button" class="ynabpill rstate" data-ynabretry="' + esc(t.id) + '" aria-label="Not in YNAB yet (' + esc(st.why) + ') — retry">Not in YNAB yet · Retry</button>';
-var totM = {}; totM[inUsd ? 'USD' : c] = inUsd ? (t.amount_sent_usd != null ? t.amount_sent_usd : b.usd) : t.amount_delivered;
-return '<div class="receipt srow" data-xfer="' + esc(t.id) + '">' +
-'<div class="rchead"><span class="rt">' + head + '</span>' + xferActs(t, 'transfer') + '</div>' +
-body + '<div class="rl tot"><span class="rk">Total' + (st && st.posted && inUsd ? ' <span class="rstate ok" data-ynab="posted">✓ matches YNAB</span>' : '') + '</span><span class="rv num">' + copyNums(totM) + '</span></div>' +
-(tail ? '<div class="rfoot">' + tail + '</div>' : '') + (t.note ? '<span class="snote">' + esc(t.note) + '</span>' : '') + '</div>';
+var totM = {}; totM[inUsd ? 'USD' : c] = inUsd ? usdTot : t.amount_delivered;
+var note = t.note && !/^remit:/.test(String(t.reference || '')) ? '<span class="snote">' + esc(t.note) + '</span>' : '';
+return '<div class="receipt srow' + (derived ? ' computed' : '') + '" data-xfer="' + esc(t.id) + '">' +
+'<div class="rchead"><span class="rt nm">' + esc(day) + ' · ' + esc(title) + '</span><span class="rhv num">' + headV + '</span>' + xferActs(t, derived ? 'payment' : 'transfer') + '</div>' +
+rate + body + '<div class="rl tot"><span class="rk">Total</span><span class="rv num">' + copyNums(totM) + '</span>' + ok + '</div>' +
+(tail ? '<div class="rfoot">' + tail + '</div>' : '') + note + '</div>';
 }
 function ynabPill(ctrl, t) {
 var st = Remit.ui.ynabState ? Remit.ui.ynabState(ctrl, t) : null;
 if (!st) return '';
+if (st.posted && st.differs) return '<span class="ynabok warn" data-ynab="differs">In YNAB at ' + symHTML(esc(money.fmt(st.ynabAmount, 'USD'))) + '</span>';   // S4 Y4
 if (st.posted) return '<span class="ynabok" data-ynab="posted">✓ in YNAB</span>';
 if (st.sending) return '<span class="ynabok sending" data-ynab="sending">Sending to YNAB…</span>';   // S4: another call holds it
 return '<button type="button" class="ynabpill" data-ynabretry="' + esc(t.id) + '" aria-label="Not in YNAB yet (' + esc(st.why) + ') — retry">Not in YNAB yet · Retry</button>';
@@ -2746,7 +2805,7 @@ esc((open ? 'Remaining transfers required — fold away' : 'To transfer: ' + sai
 (open ? '' : '<span class="fbvals num' + (curs.length > 2 ? ' many' : '') + '">' + vals + '</span>') +   // open: the rows below carry them
 '<span class="fbchev" aria-hidden="true">' + (open ? '▾' : '▴') + '</span></button>';
 return '<div class="foot' + (open ? ' open' : '') + '"><div class="in">' + bar +
-'<div class="footpanel" id="footPanel">' + rows + btn + '</div></div></div>';
+'<div class="footpanel" id="footPanel"' + (open ? '' : ' inert') + '>' + rows + btn + '</div></div></div>';
 }
 var FOOT_OPEN = 'remit:footOpen';
 function readFootOpen() { try { return localStorage.getItem(FOOT_OPEN) === '1'; } catch (e) { return false; } }
@@ -2758,44 +2817,65 @@ var fresh = document.createElement('div'); fresh.innerHTML = footerHTML(ctrl);
 var nb = fresh.querySelector('.footbar'), ob = foot.querySelector('.footbar');
 foot.classList.toggle('open', ctrl.footOpen);
 if (nb && ob) { ob.setAttribute('aria-expanded', nb.getAttribute('aria-expanded')); ob.setAttribute('aria-label', nb.getAttribute('aria-label')); ob.innerHTML = nb.innerHTML; }
+var panel = foot.querySelector('.footpanel'); if (panel) { if (ctrl.footOpen) panel.removeAttribute('inert'); else panel.setAttribute('inert', ''); }
+measureFoot(foot, false);
 }
+var SWIPE = 24, FOLLOW = 6;
 function wireFoot(ctrl) {
 var foot = ctrl.root.querySelector('.foot'); if (!foot) return;
 var bar = foot.querySelector('.footbar'), st = null, eat = false;
 if (bar) bar.addEventListener('click', function (e) { if (eat) { eat = false; e.preventDefault(); return; } setFoot(ctrl, !ctrl.footOpen); });
-function done() { document.removeEventListener('pointermove', onMove, true); document.removeEventListener('pointerup', done, true); document.removeEventListener('pointercancel', done, true); st = null; }
+function off() { document.removeEventListener('pointermove', onMove, true); document.removeEventListener('pointerup', onUp, true); document.removeEventListener('pointercancel', onUp, true); }
 function onMove(e) {
 if (!st || e.pointerId !== st.id) return;
 var dx = e.clientX - st.x, dy = e.clientY - st.y;
-if (Math.abs(dy) < 24 || Math.abs(dy) < Math.abs(dx) * 1.2) return;
+if (!st.drag) {
+if (Math.abs(dy) < FOLLOW || Math.abs(dy) < Math.abs(dx) * 1.2) return;
+st.drag = true; foot.classList.add('dragging');
+}
 if (e.cancelable) e.preventDefault();
-if (dy < 0 && !ctrl.footOpen) setFoot(ctrl, true);
-else if (dy > 0 && ctrl.footOpen) setFoot(ctrl, false);
+st.dy = dy;
+var y = Math.max(0, Math.min(_fold, st.base + dy));
+foot.style.transform = 'translateY(' + y + 'px)';
+}
+function onUp(e) {
+if (!st || (e && e.pointerId !== st.id)) return;
+var s0 = st; st = null; off();
+if (!s0.drag) return;
+foot.classList.remove('dragging'); foot.style.transform = '';   // the class value takes over → the eased snap from here
 eat = true; setTimeout(function () { eat = false; }, 400);
-done();
+if (s0.dy <= -SWIPE && !ctrl.footOpen) setFoot(ctrl, true);
+else if (s0.dy >= SWIPE && ctrl.footOpen) setFoot(ctrl, false);
 }
 foot.addEventListener('pointerdown', function (e) {
 if (e.button != null && e.button !== 0) return;
 if (e.target.closest('#recordTransfer')) return;
-st = { id: e.pointerId, x: e.clientX, y: e.clientY };
-document.addEventListener('pointermove', onMove, true); document.addEventListener('pointerup', done, true); document.addEventListener('pointercancel', done, true);
+st = { id: e.pointerId, x: e.clientX, y: e.clientY, dy: 0, drag: false, base: ctrl.footOpen ? 0 : _fold };
+document.addEventListener('pointermove', onMove, true); document.addEventListener('pointerup', onUp, true); document.addEventListener('pointercancel', onUp, true);
 });
 }
-var _footRO = null, _footH = -1;
+var _footRO = null, _footH = -1, _fold = 0, _foldSet = false;
 function setFootH(h) {
 h = Math.ceil(h || 0);
 if (h !== _footH) { _footH = h; document.documentElement.style.setProperty('--foot-h', h + 'px'); }
 }
+function measureFoot(foot, snap) {
+if (!foot || !foot.isConnected) { setFootH(0); return; }
+var panel = foot.querySelector('.footpanel'), fold = panel ? Math.round(panel.getBoundingClientRect().height * 100) / 100 : 0;
+if (fold !== _fold || !_foldSet) {
+if (snap) foot.classList.add('nofx');
+_fold = fold; _foldSet = true; document.documentElement.style.setProperty('--foot-fold', fold + 'px');
+if (snap) { void getComputedStyle(foot).transform; foot.classList.remove('nofx'); }
+}
+setFootH(foot.getBoundingClientRect().height - (foot.classList.contains('open') ? 0 : _fold));   // a translate never changes the rect's height
+}
 function watchFoot(root) {
 var foot = root.querySelector('.foot');
-if (typeof ResizeObserver === 'undefined') { setFootH(foot ? foot.getBoundingClientRect().height : 0); return; }
-if (!_footRO) _footRO = new ResizeObserver(function (entries) {
-var e = entries[entries.length - 1], b = e.borderBoxSize && e.borderBoxSize[0];
-setFootH(!e.target.isConnected ? 0 : b ? b.blockSize : e.target.getBoundingClientRect().height);
-});
-_footRO.disconnect();
-if (_footH < 0) setFootH(foot ? foot.getBoundingClientRect().height : 0);
-if (foot) _footRO.observe(foot); else setFootH(0);
+if (typeof ResizeObserver === 'undefined') { measureFoot(foot, true); return; }
+if (!_footRO) _footRO = new ResizeObserver(function () { measureFoot(_footRO._foot, true); });
+_footRO.disconnect(); _footRO._foot = foot;
+if (_footH < 0 || !_foldSet) measureFoot(foot, true);
+if (foot) { _footRO.observe(foot); var p = foot.querySelector('.footpanel'); if (p) _footRO.observe(p); } else setFootH(0);
 }
 function wire(ctrl) {
 var root = ctrl.root, store = ctrl.store;
@@ -3002,6 +3082,7 @@ return;
 if (e.key === 'Enter') { e.preventDefault(); commit(true); }
 else if (e.key === 'Escape') { e.preventDefault(); inp.value = inp.getAttribute('data-orig') || ''; inp.blur(); }
 });
+inp.addEventListener('focus', () => { rowEl.__lastInp = inp; });   // Y3: where Esc from the Tag menu returns to
 inp.addEventListener('blur', () => { setTimeout(() => { var a = document.activeElement; if (!rowEl.contains(a) && !(isAdd && a && a.closest && a.closest('.tagmenu'))) commit(false); }, 0); });
 });
 var keepFocus = (e) => { if (e.pointerType !== 'touch') e.preventDefault(); };
@@ -3027,8 +3108,9 @@ addTag.addEventListener('mousedown', (e) => e.preventDefault());
 addTag.addEventListener('click', async () => {
 var kid = (store.getPerson(ctrl.personId) || {}).name || '';
 var t = await pickTag(addTag, addTag.getAttribute('data-tag') || null, kid);
-if (t === undefined) {   // dismissed: if that also took focus out of the row, autosave exactly as a blur would have
-if (!rowEl.contains(document.activeElement)) commit(false);
+if (t === undefined) {
+if (addTag.__dismissedBy === 'esc') { var li = rowEl.__lastInp || rowEl.querySelector('.what'); if (li && li.isConnected) li.focus(); return; }
+afterFocusSettles(function () { if (rowEl.isConnected && !rowEl.contains(document.activeElement)) commit(false); });
 return;
 }
 addTag.setAttribute('data-tag', t || ''); addTag.classList.toggle('on', !!t);
@@ -3177,7 +3259,7 @@ await store.deleteTransfer(id);
 Remit.ui.toast('Payment deleted' + (credits.length ? ' (with its sent-ahead credit)' : '') + '.', { actionLabel: 'Undo', onAction: async function () {
 try {
 for (var j = 0; j < snaps.length; j++) await store.createTransfer(snaps[j]);   // the same ids
-for (var k = 0; k < obSnap.length; k++) { var o = Object.assign({}, obSnap[k]); delete o.updated_at; await store.upsertOutbox(o); }
+for (var k = 0; k < obSnap.length; k++) { var o = Object.assign({}, obSnap[k]); delete o.updated_at; delete o.attempts; delete o.last_error; await store.upsertOutbox(o); }
 } catch (e) { Remit.ui.toast('Could not restore it all — refresh and check the payment.'); ctrl.refresh(); }
 } });
 };
@@ -3190,8 +3272,16 @@ if (!(await confirmDel(at, label, { q: 'This ' + esc(label) + ' is already in YN
 }
 return ctrl.deleteTransfer(id);
 };
-function placeTransfers(cur, ids) {
-var all = readXOrder(); all[xKey(ctrl, cur)] = ids; writeXOrder(all); render(ctrl);
+async function placeTransfers(cur, ids) {
+var keepHere = function () { var all = readXOrder(); all[xKey(ctrl, cur)] = ids; writeXOrder(all); render(ctrl); };
+if (store.setTransferOrder && store.caps && store.caps.xsort) {
+var now = {}; (ctrl.model.transfers || []).forEach(function (t) { if (t.sort_order != null) now[t.id] = Number(t.sort_order); });
+(ctrl.model.transfers || []).forEach(function (t) { var i = ids.indexOf(t.id); if (i !== -1) t.sort_order = (i + 1) * 10; });
+render(ctrl);
+try { await store.setTransferOrder(ids, now); var all = readXOrder(); if (all[xKey(ctrl, cur)]) { delete all[xKey(ctrl, cur)]; writeXOrder(all); } return; }
+catch (e) { toast('Could not save the order for everyone — kept on this device.'); }
+}
+keepHere();
 }
 function sectionIds(cur) { return orderTransfers(ctrl, cur, (ctrl.model.transfers || []).filter((t) => t.currency === cur)).map((t) => t.id); }
 ctrl.moveTransfer = function (id, targetId) {
@@ -4030,28 +4120,11 @@ fillBases();
 redraw();
 requestAnimationFrame(() => { scrim.classList.add('open'); sheet.classList.add('open'); });
 }
-function newId() {
-try { if (root.crypto && root.crypto.randomUUID) return root.crypto.randomUUID(); } catch (e) {}
-return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (ch) { var r = Math.random() * 16 | 0; return (ch === 'x' ? r : (r & 3 | 8)).toString(16); });
-}
-var CREDIT_WAITS = [0, 1000, 3000];   // the background retries (ms)
-async function saveCredit(ctrl, row) {
-for (var i = 0; i < CREDIT_WAITS.length; i++) {
-if (CREDIT_WAITS[i]) await new Promise(function (res) { setTimeout(res, CREDIT_WAITS[i]); });
-try { await ctrl.store.createTransfer(row); return true; }
-catch (e) { if (/\b409\b/.test(String(e && e.message))) return true; }   // an earlier attempt landed
-}
-Remit.ui.toast('Transfer logged — the ' + money.fmt(row.amount_delivered, row.currency) + ' sent-ahead credit is not saved yet.', {
-duration: 20000, actionLabel: 'Retry', onAction: function () { saveCredit(ctrl, row).then(function (ok) { if (ok) Remit.ui.toast('Sent-ahead credit saved.'); }); } });
-return false;
-}
-var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 function openLog(ctrl, currency) {
 var store = ctrl.store, model = ctrl.model, person = store.getPerson(ctrl.personId) || {}, kid = person.name || '';
 var remaining = model.remaining || {};
 var cur = currency || defaultCurrency(remaining) || model.currencies[0] || person.home_currency || 'GBP';
-var tagsOn = !!(store.caps && store.caps.tag), bdOn = !!(store.caps && store.caps.breakdown);
-var ledger = { lines: [], credits: [] };
+var tagsOn = !!(store.caps && store.caps.tag);
 var wrap = document.createElement('div');
 var scrim = document.createElement('div'); scrim.className = 'scrim';
 var sheet = document.createElement('div'); sheet.className = 'sheet logsheet'; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true'); sheet.setAttribute('aria-label', 'Log transfer');
@@ -4067,7 +4140,6 @@ sheet.innerHTML =
 '<div class="f2"><label for="t-cur">Currency</label><div class="v"><select id="t-cur">' + curOptions.map((c) => '<option value="' + esc(c) + '"' + (c === cur ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select></div></div>' +
 '<div class="f2"><label>Remaining</label><div class="v"><b class="num" style="font-size:18px" id="t-remain"></b></div></div>' +
 '<div class="f2 forrow"><label>For</label><div class="v" id="t-for" role="group" aria-label="For"></div></div>' +
-'<div class="f2" id="t-credit-row" hidden><label>Sent ahead</label><div class="v"><label class="chkline"><input type="checkbox" id="t-credit" checked> <span id="t-credit-label"></span></label></div></div>' +
 '<div class="f2"><label for="t-amt" id="t-amt-label">Arrived</label><div class="v"><input id="t-amt" inputmode="decimal" placeholder="0.00" aria-describedby="t-amt-hint"><small class="hint" id="t-amt-hint"></small></div></div>' +
 '<div class="f2" id="t-sent-row"><label for="t-sent">$ left the bank</label><div class="v fxpair"><input id="t-sent" inputmode="decimal" placeholder="optional">' +
 '<span class="fxrate"><input id="t-rate" inputmode="decimal" value="" placeholder="FX rate" aria-describedby="t-rate-unit" aria-label="FX rate"><small id="t-rate-unit"></small></span></div></div>' +
@@ -4080,16 +4152,10 @@ sheet.innerHTML =
 var $ = (id) => sheet.querySelector(id);
 var selCur = function () { return $('#t-cur').value; };
 var scope = 'all', amtTouched = false, fxAnchor = null, scopes = [];
-var creditAvail = function () {
-var here = ctrl.year * 12 + ctrl.month;
-var L = money.sentAheadLedger(ledger.lines.filter(function (l) { return l.currency === selCur() && (l.year * 12 + l.month) < here; }),
-ledger.credits.filter(function (t) { return t.currency === selCur(); }));
-return L;
-};
 function input() {
-var c = selCur(), L = creditAvail();
+var c = selCur();
 return { currency: c, arrived: money.parseAmount($('#t-amt').value).value || 0, usd: c === 'USD' ? null : money.parseAmount($('#t-sent').value).value,
-scope: scope, credit: L.balance > 0 ? L.balance : 0, useCredit: !$('#t-credit-row').hidden && $('#t-credit').checked, kid: kid };
+scope: scope, credit: 0, useCredit: false, kid: kid };   // D3: no sent-ahead credit is offered or used
 }
 function fillFor() {
 var c = selCur(); scopes = money.logScopes(model, c, kid);
@@ -4130,15 +4196,7 @@ return '<div class="dl' + (cls ? ' ' + cls : '') + '"><span>' + esc(label) + (su
 };
 var u = p.usdSplit, lp = u ? u.livingParts : p.parts, inUsd = !!u;
 var amt = function (k) { return inUsd ? lp[k] : p.parts[k]; }, fmtv = function (v) { return inUsd ? money.fmt(v, 'USD') : money.fmt(v, c); };
-var subs = [];
-if (money.cents(amt('recurring'))) subs.push('Recurring ' + fmtv(amt('recurring')));
-if (money.cents(amt('extras'))) subs.push('Extras ' + fmtv(amt('extras')));
-if (money.cents(amt('kid_card'))) subs.push(money.tagLabel('kid_card', kid) + ' ' + fmtv(amt('kid_card')));
-if (money.cents(amt('untagged'))) subs.push('Not tagged ' + fmtv(amt('untagged')));
-var sa = (inUsd ? lp.sent_ahead + lp.extra : p.parts.sent_ahead + p.parts.extra);
-if (money.cents(sa)) subs.push('sent ahead ' + fmtv(sa));
-if (money.cents(amt('adjust'))) subs.push('paid earlier this month ' + fmtv(amt('adjust')));
-if (money.cents(amt('credit'))) subs.push('covered by sent ahead ' + fmtv(amt('credit')));
+var subs = money.livingSubs(inUsd ? lp : p.parts, kid).map(function (x) { return x.label + ' ' + fmtv(x.amount); });
 var h = '<h4>' + (inUsd ? 'Goes into YNAB as' : 'Splits as') + '</h4>' +
 row(kid + '’s Living', inUsd ? u.living : null, p.cur.living, subs.join(' · '));
 if (money.cents(p.cur.tuition)) h += row(kid + '’s Tuition', inUsd ? u.tuition : null, p.cur.tuition);
@@ -4160,13 +4218,10 @@ $('#t-amt-label').textContent = 'Arrived (' + c + ')';
 $('#t-rate-unit').textContent = c + ' per USD'; $('#t-rate').setAttribute('aria-label', 'FX rate, ' + c + ' per USD');
 syncFx();
 $('#t-remain').textContent = money.fmt(remaining[c] || 0, c);
-var L = creditAvail();
-$('#t-credit-row').hidden = !(bdOn && L.balance > 0);
-if (L.balance > 0) $('#t-credit-label').textContent = 'Use ' + money.fmt(L.balance, c) + ' sent ahead';
 var p = money.logPlan(model, input());
 $('#t-amt-hint').textContent = p.partial ? 'A part payment — ' + money.fmt(p.shortBy, c) + ' stays to transfer'
 : money.cents(p.cashDue) !== money.cents(p.arrived) && p.arrived > 0
-? (money.cents(p.extra) > 0 ? money.fmt(p.extra, c) + ' over — kept as sent ahead' : money.fmt(-p.extra, c) + ' short of ' + money.fmt(p.cashDue, c)) : '';
+? (money.cents(p.extra) > 0 ? money.fmt(p.extra, c) + ' over — added as an Extra (' + money.tagLabel('kid_card', kid) + ')' : money.fmt(-p.extra, c) + ' short of ' + money.fmt(p.cashDue, c)) : '';
 var un = tagsOn && p.usd != null ? p.untagged : [];
 var box = $('#t-untagged'); box.hidden = !un.length;
 if (un.length) {
@@ -4196,7 +4251,6 @@ var c = selCur(); scope = 'all'; amtTouched = false; fillFor(); setDefaultAmount
 var pv = $('#t-prov'); if (pv.value === 'Wise' || pv.value === '') pv.value = c === 'USD' ? '' : 'Wise';
 redraw();
 });
-$('#t-credit').addEventListener('change', function () { if (!amtTouched) setDefaultAmount(); redraw(); });
 $('#t-sent').addEventListener('input', function () { fxAnchor = 'usd'; if (money.parseAmount($('#t-sent').value).ok) Remit.ui.amtError($('#t-sent').closest('.f2'), $('#t-sent'), null); redraw(); });
 $('#t-rate').addEventListener('input', function () { fxAnchor = 'rate'; redraw(); });
 $('#t-amt').addEventListener('input', function () { amtTouched = true; if (money.parseAmount($('#t-amt').value).ok) Remit.ui.amtError($('#t-amt').closest('.f2'), $('#t-amt'), null); redraw(); });
@@ -4224,21 +4278,16 @@ saving = false;
 if (!ok) return;
 }
 saving = true;
-var L = creditAvail(), from = money.creditSources(L, p.creditUsed).map(function (x) { return { year: x.year, month: x.month, amount: x.amount }; });
 var breakdown = { v: 1, kind: 'log', currency: c, arrived: p.arrived, usd: p.usd, rate: p.rate, scope: p.scope, lines: p.lines,
-due: p.due, credit_used: p.creditUsed, credit_from: from, extra: p.extra, parts: p.parts, cur: p.cur, usd_split: p.usdSplit };
+due: p.due, credit_used: 0, credit_from: [], extra: p.extra, parts: p.parts, cur: p.cur, usd_split: p.usdSplit };
 var fields = { person_id: ctrl.personId, period_year: ctrl.year, period_month: ctrl.month, currency: c, sent_on: $('#t-date').value || todayISO(),
 amount_delivered: p.arrived, amount_sent_usd: p.usd != null && c !== 'USD' ? p.usd : (c === 'USD' ? p.arrived : null),
 provider: ($('#t-prov').value || '').trim() || null, note: ($('#t-note').value || '').trim() || null, kind: 'cash', breakdown: breakdown };
 var t;
 try { t = await store.createTransfer(fields); } catch (e) { saving = false; throw e; }
 close(host);
-var monthsOf = function (xs) { return xs.map(function (x) { return MONTHS[x.month - 1]; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(' + '); };
 Remit.ui.toast(money.fmt(p.arrived, c) + ' transfer logged.' + (money.cents(p.extra) ? ' Added an Extra line of ' + money.fmt(p.extra, c) + '.' : '') +
 (p.lines.length ? ' Ticked ' + p.lines.length + (p.lines.length === 1 ? ' line.' : ' lines.') : ''));
-if (money.cents(p.creditUsed) > 0) saveCredit(ctrl, { id: newId(), person_id: ctrl.personId, period_year: ctrl.year, period_month: ctrl.month, currency: c,
-sent_on: fields.sent_on, amount_delivered: p.creditUsed, amount_sent_usd: null, provider: 'Sent ahead', kind: 'sent_ahead_credit',
-note: 'covered by ' + monthsOf(from) + '’s extra', breakdown: { v: 1, kind: 'credit', for: t && t.id, credit_from: from } });
 try { for (var k in tg) await store.updateItem(k, { tag: tg[k] }); } catch (e) {}
 if (money.cents(p.extra)) {
 try { var period = await ctrl.ensurePeriod(); var mineMax = (model.mine.rows || []).reduce(function (m, r) { return Math.max(m, Number(r.sort_order) || 0); }, 0);
@@ -4251,9 +4300,6 @@ if (t && Remit.ui.queueYnab) Remit.ui.queueYnab(ctrl, t);
 });
 fillFor(); setDefaultAmount(); redraw();
 requestAnimationFrame(() => { scrim.classList.add('open'); sheet.classList.add('open'); });
-Promise.resolve(store.getSentAhead ? store.getSentAhead(ctrl.personId) : null).then(function (x) {
-if (!x || host.closed) return; ledger = x; redraw(); if (!amtTouched) { setDefaultAmount(); redraw(); }
-}, function () {});
 }
 Remit.ui = Remit.ui || {};
 Remit.ui.openTransfer = function (ctrl, currency, existing) { return existing ? openTransfer(ctrl, currency, existing) : openLog(ctrl, currency); };
@@ -4313,9 +4359,15 @@ return null;
 function ynabState(ctrl, t) {
 if (!ynabOn(ctrl.store) || !ynabBound(t)) return null;
 var ob = (ctrl.outbox || {})[t.id];
-if (ob && ob.status === 'posted') return { posted: true };
+if (ob && ob.status === 'posted') {
+var p = ob.payload || {};
+if (p.amount_differs && typeof p.ynab_amount === 'number') return { posted: true, differs: true, ynabAmount: Math.abs(p.ynab_amount) / 1000 };
+return { posted: true };
+}
 if (sending(ob)) return { posted: false, sending: true, why: 'sending' };
-return { posted: false, why: !ob ? 'not sent' : ob.status === 'dry_run' ? 'posting is off' : ob.status === 'pending' ? 'sending' : (ob.last_error || ob.status) };
+var err = String((ob && ob.last_error) || '');
+if (err.indexOf(LEASE) === 0) err = 'the last send did not finish';
+return { posted: false, why: !ob ? 'not sent' : ob.status === 'dry_run' ? 'posting is off' : ob.status === 'pending' && !err ? 'sending' : (err || ob.status) };
 }
 function close(host) { if (host.closed) return; host.closed = true; Remit.ui.unlockScroll(); host.scrim.classList.remove('open'); host.sheet.classList.remove('open'); setTimeout(function () { host.wrap.remove(); }, 240); document.removeEventListener('keydown', host.onKey); }
 async function openYnabSettings(ctrl) {
