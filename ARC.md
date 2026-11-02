@@ -60,7 +60,7 @@ Status: done 394f29a
 Scope: layout change. index.html CSS + `renderConnect` / toggle (an `is-collapsed` class).
 Done-criteria: collapsed, the space from the Manage button's bottom to the page bottom is ≤ 32px at 390 and 1280 (was
 ~56px+), expanded unchanged; spec + screenshot. Fixes #32.
-Status: open
+Status: done a82d74e
 
 === SLICE 6 — recovery kit Unlock button when Cardsharp is redacted (#34) ===
 Scope: layout change + behaviour. index.html `recoveryKitHTML` / `showRecoveryKit`.
