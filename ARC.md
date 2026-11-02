@@ -78,6 +78,6 @@ Status: done 704c4b7
 === SLICE 8 — page-diff gate (train) ===
 Done-criteria: `node tools/page-diff.mjs index.html https://schnubsy.github.io/press/index.html --evidence docs/evidence/`
 diff % recorded per viewport; every slice is a layout change, so > 2 % is expected and not 🔴.
-Status: open
+Status: done 9836c7a
 
 RETURN POINTS: arc-complete, or genuinely blocked.
