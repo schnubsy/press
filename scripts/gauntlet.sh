@@ -63,7 +63,7 @@ run_target_gauntlet() { node tools/tenants-check.mjs; }
 
 stage run_unit; stage run_build
 stage npx playwright test --project="$ENGINE"                   # every spec on the primary
-[ "$PRIMARY" != desktop ] && stage npx playwright test test/marquee.spec.mjs --project=desktop
+[ "$PRIMARY" != desktop ] && stage npx playwright test --project=desktop   # press: the vault / gate / access specs are desktop-only (config testIgnore keeps phone-only off) - real coverage, not a smoke
 [ -n "${VIEWS:-}" ] && stage run_ui_audit --views "$VIEWS"
 has db && stage run_db_readback
 full && has tenant && stage run_target_gauntlet
