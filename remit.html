@@ -586,7 +586,6 @@ grid-template-areas:"grip what cur amt del" "grip note cur amt del" "grip . . sg
 .erow{--menu-w:4px;position:relative;overflow:hidden;touch-action:pan-y;
 grid-template-columns:44px minmax(0,1fr) auto max-content var(--menu-w);grid-template-rows:24px 24px;
 grid-template-areas:"chk what cur amt menu" "chk note cur amt menu"}
-@media (hover:hover) and (pointer:fine){.erow{--menu-w:32px}}
 .erow:focus-within{grid-template-rows:24px 24px auto;
 grid-template-areas:"chk what cur amt menu" "chk note cur amt menu" "chk . . sgn ."}
 .erow .chk{grid-area:chk;grid-row:1/3;align-self:start;justify-self:start;position:relative;width:44px;height:44px;margin:2px 0 0;
@@ -602,12 +601,7 @@ border:solid var(--stage);border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
 font:500 15px/18px var(--sans);color:var(--brass)}
 .erow.sel .chk::before{border-color:var(--brass);box-shadow:0 0 0 2px var(--brass-faint)}
 .erow .rowmenu{grid-area:menu;grid-row:1/3;display:none}
-@media (hover:hover) and (pointer:fine){
-.erow button.rowmenu{display:flex;align-items:center;justify-content:center;align-self:stretch;width:32px;height:48px;padding:0 0 2px;
-border:0;background:transparent;color:var(--faint);font:600 18px/1 var(--sans);border-radius:5px;cursor:pointer}
-.erow button.rowmenu:hover,.erow button.rowmenu:focus-visible{color:var(--ink)}
-.erow button.rowmenu:focus-visible{outline:2px solid var(--brass);outline-offset:-2px}
-}
+.srow[data-xfer]:focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:6px}
 .curmenu.rowmenu-pop{min-width:170px}
 .curmenu.rowmenu-pop button{grid-template-columns:1fr}
 .curmenu.rowmenu-pop button.danger{color:#e58b90}
@@ -632,15 +626,6 @@ transform:translateX(calc(152px + var(--sx,0px)));transition:transform .18s ease
 .erow .curpill{display:flex;align-items:center;justify-content:flex-end;text-align:right}
 .erow:not(.swiped):not(.swiping) .swacts,.srow:not(.swiped):not(.swiping) .swacts{visibility:hidden}
 .srow[data-xfer]{position:relative;overflow:hidden;touch-action:pan-y}
-.srow .xmenu{grid-area:del;display:none}
-@media (hover:hover) and (pointer:fine){
-.srow button.xmenu{display:flex;align-items:center;justify-content:center;align-self:center;width:32px;min-height:44px;padding:0 0 2px;
-border:0;background:transparent;color:var(--faint);font:600 18px/1 var(--sans);border-radius:5px;cursor:pointer}
-.srow button.xmenu:hover,.srow button.xmenu:focus-visible{color:var(--ink)}
-.srow button.xmenu:focus-visible{outline:2px solid var(--brass);outline-offset:-2px}
-.receipt .rchead .xmenu{flex:0 0 32px}
-.receipt .rrate{padding-right:40px}
-}
 .srow.moving{background:rgba(201,162,109,.14);border-radius:6px;box-shadow:inset 0 0 0 1.5px var(--brass)}
 .xmoving .settled .srow:not(.moving){cursor:copy}
 .morerow{display:flex;align-items:center;min-height:44px;margin:22px 0 0}
@@ -692,28 +677,38 @@ background:var(--brass-faint);color:var(--brass);font:600 13px/1 var(--sans);cur
 .ynabok{grid-column:1/-1;grid-row:3;justify-self:start;margin-top:2px;font:600 12.5px/1.4 var(--sans);color:var(--paid)}
 .ynabnote{margin:10px 0 4px;font:400 13px/1.45 var(--sans);color:var(--muted)}
 .ynabkid{margin:16px 0 0;font:600 13px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
-.receipt.srow{display:block;padding:12px 0 10px}
-.receipt .rchead{display:flex;align-items:center;gap:8px;min-height:44px}
-.receipt .rt{flex:1 1 auto;min-width:0;font:600 15px/1.35 var(--sans);color:var(--ink)}
-.receipt .rhv{flex:0 0 auto;font:600 15px/1.35 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink);text-align:right;white-space:nowrap}
-.receipt .rhv .rsep{color:var(--faint);font-weight:400}
-.receipt .rrate{margin:-6px 0 4px;text-align:right;font:500 13px/1.35 var(--sans);font-variant-numeric:tabular-nums;color:var(--muted)}
+.receipt.srow{display:grid;grid-template-columns:minmax(0,1fr) max-content max-content;grid-template-areas:none;grid-template-rows:none;column-gap:12px;padding:12px 0 10px}
+.receipt .rchead,.receipt .rl,.receipt .rs{grid-column:1/-1;display:grid;grid-template-columns:subgrid;align-items:baseline}
+.receipt .rchead{min-height:44px;align-items:baseline;row-gap:4px;padding-bottom:4px}
+.receipt .rchead .rt{display:contents}
+.receipt .rchead .rtt{grid-column:1/-1;grid-row:1;min-width:0;font:600 15px/1.35 var(--sans);color:var(--ink)}
+.receipt .rchead .rstate{grid-column:1;grid-row:2;justify-self:end;text-align:right}
+.receipt .rchead .rlc{grid-column:2;grid-row:2}
+.receipt .rchead .rus{grid-column:3;grid-row:2}
+@media(min-width:900px){
+.receipt .rchead{align-items:center;padding-bottom:0}
+.receipt .rchead .rt{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:12px;grid-column:1;grid-row:1;min-width:0}
+.receipt .rchead .rtt{flex:1 1 auto}
+.receipt .rchead .rlc,.receipt .rchead .rus{grid-row:1}
+}
+.receipt .rdot{display:inline-block;margin:0 .5em;color:var(--faint);font-weight:400}
+.receipt .rrate{font:500 13px/1.35 var(--sans);font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
 .receipt .rrate .usd{font:inherit;color:inherit}
-.receipt .rchead .del{flex:0 0 44px;width:44px;min-height:44px}
-.receipt .rl{display:flex;align-items:baseline;gap:12px;padding:6px 0;border-top:1px dotted var(--brass-faint)}
-.receipt .rk{flex:1;min-width:0;font:500 15px/1.35 var(--sans);color:var(--ink)}
-.receipt .rv{flex:0 0 auto;font:600 16px/1.2 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink);text-align:right}
-.receipt .rs{display:flex;align-items:baseline;gap:12px;padding:1px 0 3px 14px}
-.receipt .rs .rk{font:400 13.5px/1.35 var(--sans);color:var(--muted)}
+.receipt .rchead .rv{font:600 15px/1.35 var(--sans)}
+.receipt .rl{padding:6px 0;border-top:1px dotted var(--brass-faint)}
+.receipt .rk{min-width:0;font:500 15px/1.35 var(--sans);color:var(--ink)}
+.receipt .rv{font:600 16px/1.2 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink);text-align:right;white-space:nowrap;justify-self:end}
+.receipt .rs{padding:1px 0 3px}
+.receipt .rs .rk{padding-left:14px;font:400 13.5px/1.35 var(--sans);color:var(--muted)}
 .receipt .rs .rv{font:500 13.5px/1.35 var(--sans);color:var(--muted)}
-.receipt .rl.tot{border-top:1px solid var(--brass-dim);padding-top:8px;flex-wrap:wrap}
-.receipt .rl.tot .rk{font-weight:600}
-.receipt .rfoot{display:flex;justify-content:flex-end;margin-top:4px}
+.receipt .rfoot{grid-column:1/-1;grid-row:auto;display:flex;justify-content:flex-end;margin-top:4px}
+.receipt .snote{grid-column:1/-1;grid-row:auto;display:block;margin-top:6px}
 .receipt .rstate{grid-row:auto;grid-column:auto;margin:0}
-.receipt .rstate.ok,.receipt .rstate.warn{flex:0 0 auto;font:600 13.5px/1.2 var(--sans);color:var(--paid);white-space:nowrap}
-.receipt .rstate.warn{color:var(--asked);white-space:normal;text-align:right;flex:1 1 100%}
+.receipt .rstate.ok,.receipt .rstate.warn{flex:0 0 auto;margin-left:auto;font:600 13.5px/1.2 var(--sans);color:var(--paid);white-space:nowrap}
+.receipt .rchead .rstate.warn{color:var(--asked);white-space:normal;text-align:right}
+.receipt .rfoot .rstate.warn{color:var(--asked);white-space:normal;text-align:right;flex:1 1 100%}
 .receipt .rstate.muted{font:500 13px/1.4 var(--sans);color:var(--faint);padding:6px 0}
-.receipt .snote{display:block;margin-top:6px}
+@media(max-width:374px){.receipt.srow{column-gap:8px}}
 .srow.credit .nm b{color:var(--brass)}
 .logsheet .f2.forrow{flex-direction:column;align-items:stretch;gap:2px}
 .logsheet .f2.forrow > label{flex:none}
@@ -2595,9 +2590,9 @@ var cur = isAdd ? (addCtx.currency || homeCur) : it.currency;
 var paid = !isAdd && it.status === 'paid';
 var ctxAttr = isAdd ? (' data-add data-bucket="' + esc(addCtx.bucket) + '"' + (addCtx.section_id ? ' data-section="' + esc(addCtx.section_id) + '"' : '') + ' data-cur="' + esc(cur) + '"') : (' data-item="' + esc(id) + '"');
 var chk = isAdd ? '<span class="chk addmark" aria-hidden="true"></span>'
-: '<button type="button" class="chk" role="checkbox" data-chk="' + esc(id) + '" aria-checked="' + paid + '" aria-label="Paid: ' + esc(it.description || 'line') + '"></button>';
+: '<button type="button" class="chk" role="checkbox" data-chk="' + esc(id) + '" aria-checked="' + paid + '" aria-label="Paid: ' + esc(it.description || 'line') + '" aria-keyshortcuts="Shift+F10"></button>';
 var menu = isAdd ? '<span class="rowmenu" aria-hidden="true"></span>'
-: '<button type="button" class="rowmenu" data-rowmenu="' + esc(id) + '" aria-haspopup="menu" aria-label="Actions for ' + esc(desc || 'line') + '">⋯</button>' +
+: '<span class="rowmenu" aria-hidden="true"></span>' +
 '<span class="swacts" aria-hidden="true"><button type="button" class="swmove" data-swmove="' + esc(id) + '" tabindex="-1">Move</button>' +
 '<button type="button" class="swdel" data-swdel="' + esc(id) + '" tabindex="-1">Delete</button></span>';
 var chip = tagChip(it, tagCtx, addCtx);
@@ -2690,10 +2685,9 @@ var addBar = '<div class="morerow"><button type="button" class="linkbtn morebtn"
 root.innerHTML = head + seg + strip + kid + riding + settledHTML(ctrl) + addBar + selbarHTML(ctrl) + footerHTML(ctrl);
 wire(ctrl);
 }
-function xferActs(t, what) {
+function xferActs(t) {
 var id = esc(t.id);
-return '<button type="button" class="xmenu" data-xmenu="' + id + '" aria-haspopup="menu" aria-label="Actions for this ' + what + '">⋯</button>' +
-'<span class="swacts" aria-hidden="true"><button type="button" class="swmove" data-xswmove="' + id + '" tabindex="-1">Move</button>' +
+return '<span class="swacts" aria-hidden="true"><button type="button" class="swmove" data-xswmove="' + id + '" tabindex="-1">Move</button>' +
 '<button type="button" class="swdel" data-xswdel="' + id + '" tabindex="-1">Delete</button></span>';
 }
 var XORDER = 'remit:xferOrder';
@@ -2735,10 +2729,10 @@ var when = t.sent_on ? fx.rateDayLabel(t.sent_on) : 'date unknown';
 var meta = [when, t.provider].filter(Boolean).map(esc).join(' · ');
 var usd = fx.paymentUsd(t, ctrl.store.getRates ? ctrl.store.getRates() : []);
 var title = t.kind === 'sent_ahead_credit' ? 'Sent ahead' : 'Payment';   // D4: a non-cash settlement, no YNAB
-return '<div class="srow' + (t.kind === 'sent_ahead_credit' ? ' credit' : '') + '" data-xfer="' + esc(t.id) + '"><span class="nm"><b>' + title + '</b><em>' + meta + '</em></span>' +
+return '<div class="srow' + (t.kind === 'sent_ahead_credit' ? ' credit' : '') + '" data-xfer="' + esc(t.id) + '"' + XFOCUS + '><span class="nm"><b>' + title + '</b><em>' + meta + '</em></span>' +
 (usd ? '<small class="usd num" data-usd="' + usd.kind + '">' + symHTML(esc(usd.text)) + '</small>' : '') +
 '<span class="am num">' + symHTML(esc(money.fmt(t.amount_delivered || 0, c))) + '</span>' + ynabPill(ctrl, t) +
-xferActs(t, 'payment') +
+xferActs(t) +
 (t.note ? '<span class="snote">' + esc(t.note) + '</span>' : '') + '</div>';
 }).join('');
 return '<section class="settled"><div class="zone-hd"><h2>Settled in ' + esc(WHERE[c] || c) + '</h2>' +
@@ -2746,45 +2740,55 @@ return '<section class="settled"><div class="zone-hd"><h2>Settled in ' + esc(WHE
 }).join('');
 }
 var MON3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+var XFOCUS = ' tabindex="0" aria-keyshortcuts="Shift+F10"';   // a payment is a focusable row: Enter edits, Shift+F10 = its menu
+var SUB_ORDER = ['recurring', 'extras', 'kid_card', 'untagged', 'adjust', 'credit'];
 function receiptHTML(ctrl, t, derived) {
 var b = derived || t.breakdown, c = t.currency, u = b.usd_split, kid = (ctrl.store.getPerson(t.person_id) || {}).name || 'Kid';
 var day = t.sent_on ? (+t.sent_on.slice(8, 10)) + ' ' + MON3[+t.sent_on.slice(5, 7) - 1] : 'date unknown';
-var inUsd = !!u, F = function (v) { return symHTML(esc(money.fmt(v, inUsd ? 'USD' : c))); };
-var usdTot = inUsd ? (t.amount_sent_usd != null && c !== 'USD' ? t.amount_sent_usd : b.usd) : null;
+var inUsd = !!u, local = c !== 'USD';
+var usdTot = inUsd ? (t.amount_sent_usd != null && local ? t.amount_sent_usd : b.usd) : null;
 var title = t.provider ? t.provider + (derived ? ' payment' : ' transfer') : (derived ? 'Payment' : 'Transfer');
-var headV = symHTML(esc(money.fmt(t.amount_delivered, c))) + (inUsd && c !== 'USD' ? '<span class="rsep"> · </span>' + symHTML(esc(money.fmt(usdTot, 'USD'))) : '');
-var est = (!inUsd && c !== 'USD') ? fx.paymentUsd(t, ctrl.store.getRates ? ctrl.store.getRates() : []) : null;
-var rate = inUsd && c !== 'USD' && b.rate ? '<div class="rrate num">' + esc(money.symbol(c) + Number(b.rate).toFixed(4)) + ' per $</div>'
-: est ? '<div class="rrate num"><small class="usd num" data-usd="' + est.kind + '">' + symHTML(esc(est.text)) + '</small></div>' : '';
-var lp = inUsd ? u.livingParts : b.parts;
-var subs = money.livingSubs(lp, kid).map(function (x) {
-var label = x.label;
-if (x.key === 'credit' && (b.credit_from || []).length) label = 'Covered by ' + (b.credit_from || []).map(function (y) { return MON3[y.month - 1]; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(' + ') + '’s extra';
-return '<div class="rs" data-sub="' + esc(x.key) + '"><span class="rk">' + esc(label) + '</span><span class="rv num">' + F(x.amount) + '</span></div>';
-}).join('');
-var line = function (label, v) {
-var m = {}; m[inUsd ? 'USD' : c] = v;
-return '<div class="rl"><span class="rk">' + esc(label) + '</span><span class="rv num">' + copyNums(m) + '</span></div>';
+var est = (!inUsd && local) ? fx.paymentUsd(t, ctrl.store.getRates ? ctrl.store.getRates() : []) : null;
+var rate = inUsd && local && b.rate ? '<span class="rrate num">(' + esc(money.symbol(c) + Number(b.rate).toFixed(4)) + ' per $)</span>'
+: est ? '<span class="rrate num">(<small class="usd num" data-usd="' + est.kind + '">' + symHTML(esc(est.text)) + '</small>)</span>' : '';
+var cell = function (col, v, cur, copy) {
+if (v == null) return '<span class="rv r' + col + ' num"></span>';
+if (copy) { var m = {}; m[cur] = v; return '<span class="rv r' + col + ' num">' + copyNums(m) + '</span>'; }
+return '<span class="rv r' + col + ' num">' + symHTML(esc(money.fmt(v, cur))) + '</span>';
 };
-var cats = inUsd ? u : b.cur;
-var body = (money.cents(cats.living) ? line(kid + '’s Living', cats.living) + subs : '') +
-(money.cents(cats.tuition) ? line(kid + '’s Tuition', cats.tuition) : '') +
-(money.cents(cats.dad) ? line('Dad', cats.dad) : '');
+var pair = function (lv, uv, copy) {
+return cell('lc', local ? lv : null, c, copy) + cell('us', inUsd ? uv : (local ? null : lv), 'USD', copy);
+};
+var lsub = {}, usub = {};
+money.livingSubs(b.parts, kid).forEach(function (x) { lsub[x.key] = x; });
+if (inUsd) money.livingSubs(u.livingParts, kid).forEach(function (x) { usub[x.key] = x; });
+var subs = SUB_ORDER.filter(function (k) { return lsub[k] || usub[k]; }).map(function (k) {
+var x = usub[k] || lsub[k], label = x.label;
+if (k === 'credit' && (b.credit_from || []).length) label = 'Covered by ' + (b.credit_from || []).map(function (y) { return MON3[y.month - 1]; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(' + ') + '’s extra';
+return '<div class="rs" data-sub="' + esc(k) + '"><span class="rk">' + esc(label) + '</span>' +
+pair(lsub[k] ? lsub[k].amount : 0, usub[k] ? usub[k].amount : 0, false) + '</div>';
+}).join('');
+var lc = b.cur || {}, uc = u || {};
+var has = function (k) { return money.cents(inUsd ? uc[k] : lc[k]) || money.cents(lc[k]); };
+var line = function (k, label) { return '<div class="rl" data-cat="' + k + '"><span class="rk">' + esc(label) + '</span>' + pair(lc[k] || 0, uc[k] || 0, true) + '</div>'; };
+var body = (has('living') ? line('living', kid + '’s Living') + subs : '') +
+(has('tuition') ? line('tuition', kid + '’s Tuition') : '') +
+(has('dad') ? line('dad', 'Dad') : '');
 var st = !derived && Remit.ui.ynabState ? Remit.ui.ynabState(ctrl, t) : null;
 var ok = st && st.posted && inUsd ? (st.differs
-? ' <span class="rstate warn" data-ynab="differs">In YNAB at ' + symHTML(esc(money.fmt(st.ynabAmount, 'USD'))) + ' — fix it there</span>'
-: ' <span class="rstate ok" data-ynab="posted">✓ matches YNAB</span>') : '';
-var tail = derived ? '' : !inUsd ? (c === 'USD' ? '' : '<span class="rstate muted">Add the $ that left the bank to send it to YNAB</span>')
+? '<span class="rstate warn" data-ynab="differs">In YNAB at ' + symHTML(esc(money.fmt(st.ynabAmount, 'USD'))) + ' — fix it there</span>'
+: '<span class="rstate ok" data-ynab="posted">✓ matches YNAB</span>') : '';
+var tail = derived ? '' : !inUsd ? (local ? '<span class="rstate muted">Add the $ that left the bank to send it to YNAB</span>' : '')
 : !st ? '' : st.posted ? ''
 : st.sending ? '<span class="rstate muted" data-ynab="sending">Sending to YNAB…</span>'
 : st.manual ? '<span class="rstate warn" data-ynab="manual">' + symHTML(esc(st.manual)) + '</span> <button type="button" class="ynabpill rstate" data-ynabretry="' + esc(t.id) + '" aria-label="Check YNAB again">Check again</button>'
 : '<button type="button" class="ynabpill rstate" data-ynabretry="' + esc(t.id) + '" aria-label="Not in YNAB yet (' + esc(st.why) + ') — retry">Not in YNAB yet · Retry</button>';
-var totM = {}; totM[inUsd ? 'USD' : c] = inUsd ? usdTot : t.amount_delivered;
 var note = t.note && !/^remit:/.test(String(t.reference || '')) ? '<span class="snote">' + esc(t.note) + '</span>' : '';
-return '<div class="receipt srow' + (derived ? ' computed' : '') + '" data-xfer="' + esc(t.id) + '">' +
-'<div class="rchead"><span class="rt nm">' + esc(day) + ' · ' + esc(title) + '</span><span class="rhv num">' + headV + '</span>' + xferActs(t, derived ? 'payment' : 'transfer') + '</div>' +
-rate + body + '<div class="rl tot"><span class="rk">Total</span><span class="rv num">' + copyNums(totM) + '</span>' + ok + '</div>' +
-(tail ? '<div class="rfoot">' + tail + '</div>' : '') + note + '</div>';
+var head = '<span class="rk rt"><span class="rtt nm">' + esc(day) + '<span class="rdot"> · </span>' + esc(title) + (rate ? ' ' + rate : '') + '</span>' + ok + '</span>' +
+pair(t.amount_delivered, usdTot, false);
+return '<div class="receipt srow' + (derived ? ' computed' : '') + '" data-xfer="' + esc(t.id) + '"' + XFOCUS + '>' +
+'<div class="rchead">' + head + '</div>' + body +
+(tail ? '<div class="rfoot">' + tail + '</div>' : '') + note + xferActs(t) + '</div>';
 }
 function ynabPill(ctrl, t) {
 var st = Remit.ui.ynabState ? Remit.ui.ynabState(ctrl, t) : null;
@@ -2945,7 +2949,8 @@ if (await confirmDel(b, secName, { q: 'Delete section “' + esc(secName) + '”
 }));
 root.querySelectorAll('.srow[data-xfer]').forEach((rowEl) => {
 var xid = rowEl.getAttribute('data-xfer');
-rowEl.addEventListener('click', (e) => { if (e.target.closest('.swacts, [data-xmenu], [data-ynabretry]')) return; ctrl.editTransfer(xid); });
+rowEl.addEventListener('click', (e) => { if (e.target.closest('.swacts, [data-ynabretry]')) return; ctrl.editTransfer(xid); });
+rowEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target === rowEl) { e.preventDefault(); ctrl.editTransfer(xid); } });
 });
 root.querySelectorAll('[data-ynabretry]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); if (Remit.ui.retryYnab) Remit.ui.retryYnab(ctrl, b.getAttribute('data-ynabretry')); }));
 var rec = root.querySelector('#recordTransfer'); if (rec) rec.addEventListener('click', () => ctrl.recordTransfer());
@@ -3490,33 +3495,70 @@ act.blur();
 setTimeout(function () { if (!ctrl.root.querySelector('.amterr')) fn(); }, 0);
 } else fn();
 }
-function rowMenu(ctrl, btn) {
-var id = btn.getAttribute('data-rowmenu'), it = ctrl.itemById(id); if (!it) return;
-var old = document.querySelector('.curmenu'); if (old) { var was = old.__owner === btn; old.__close(null); if (was) return; }
-var paid = it.status === 'paid';
-var m = document.createElement('div'); m.className = 'curmenu rowmenu-pop'; m.setAttribute('role', 'menu'); m.__owner = btn;
-var items = [['paid', paid ? 'Mark unpaid' : 'Mark paid'], ['select', ctrl.selection.has(id) ? 'Deselect' : 'Select'],
-['up', 'Move up'], ['down', 'Move down'], ['move', 'Move…'], ['delete', 'Delete']];
-m.innerHTML = items.map(function (x) { return '<button type="button" role="menuitem" data-rm="' + x[0] + '"' + (x[0] === 'delete' ? ' class="danger"' : '') + '>' + x[1] + '</button>'; }).join('');
-document.body.appendChild(m);
-var r = btn.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
+function placeMenu(m, row, at) {
+var r = at ? { left: at.x, right: at.x, top: at.y, bottom: at.y } : row.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
 var foot = document.querySelector('.foot'), floor = foot ? foot.getBoundingClientRect().top : innerHeight;
-m.style.left = Math.max(12, Math.min(r.right - mw, innerWidth - mw - 12)) + 'px';
-m.style.top = ((r.bottom + 6 + mh < floor) ? r.bottom + 6 : Math.max(12, r.top - 6 - mh)) + 'px';
-function close() { m.remove(); document.removeEventListener('pointerdown', outside, true); document.removeEventListener('keydown', onKey, true); btn.setAttribute('aria-expanded', 'false'); }
-function outside(e) { if (!m.contains(e.target) && !btn.contains(e.target)) close(); }
+var x = at ? at.x : r.right - mw;
+m.style.left = Math.max(12, Math.min(x, innerWidth - mw - 12)) + 'px';
+var below = at ? r.bottom + 2 : r.bottom + 6;
+m.style.top = ((below + mh < floor) ? below : Math.max(12, r.top - 6 - mh)) + 'px';
+}
+function openMenu(row, at, items, attr, onPick) {
+var old = document.querySelector('.curmenu'); if (old) old.__close(null);
+var back = document.activeElement && row.contains(document.activeElement) ? document.activeElement : row;
+if (back === row && row.tabIndex < 0) back = row.querySelector('[data-chk]') || row;   // a line: focus returns to its checkbox
+var m = document.createElement('div'); m.className = 'curmenu rowmenu-pop'; m.setAttribute('role', 'menu'); m.__owner = row;
+m.setAttribute('aria-label', 'Actions');
+m.innerHTML = items.map(function (x) { return '<button type="button" role="menuitem" ' + attr + '="' + x[0] + '"' + (x[0] === 'delete' ? ' class="danger"' : '') + '>' + x[1] + '</button>'; }).join('');
+document.body.appendChild(m);
+placeMenu(m, row, at);
+function close() { m.remove(); document.removeEventListener('pointerdown', outside, true); document.removeEventListener('keydown', onKey, true); }
+function outside(e) { if (!m.contains(e.target)) close(); }
 function onKey(e) {
-if (e.key === 'Escape') { e.preventDefault(); close(); btn.focus(); return; }
+if (e.key === 'Escape') { e.preventDefault(); close(); if (back && back.focus) back.focus(); return; }
+if (e.key === 'Tab') { close(); return; }
 if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
 e.preventDefault(); var bs = Array.from(m.querySelectorAll('button')), i = bs.indexOf(document.activeElement);
 bs[(i + (e.key === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length].focus();
 }
 }
 m.__close = close;
-m.querySelectorAll('[data-rm]').forEach(function (b) {
+m.querySelectorAll('[' + attr + ']').forEach(function (b) {
 b.addEventListener('mousedown', function (e) { e.preventDefault(); });
-b.addEventListener('click', function () {
-var a = b.getAttribute('data-rm'); close();
+b.addEventListener('click', function () { var a = b.getAttribute(attr); close(); onPick(a); });
+});
+setTimeout(function () { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); var f = m.querySelector('button'); if (f) f.focus(); }, 0);
+return m;
+}
+function wireContext(row, open) {
+var lastPT = 'mouse', kbAt = 0, hadSel = false;
+row.addEventListener('pointerdown', function (e) {
+lastPT = e.pointerType || 'mouse'; kbAt = 0;   // a real press: any contextmenu after it is the pointer's, not a key's
+var a = document.activeElement;
+hadSel = !!(a && a === e.target && /^(INPUT|TEXTAREA)$/.test(a.tagName) && a.selectionStart != null && a.selectionStart !== a.selectionEnd);
+}, true);
+row.addEventListener('keydown', function (e) {
+if (e.key === 'ContextMenu' || (e.key === 'F10' && e.shiftKey)) {
+e.preventDefault(); e.stopPropagation(); kbAt = performance.now(); open(null);
+}
+});
+row.addEventListener('contextmenu', function (e) {
+var inp = e.target.closest('input, textarea');
+if (lastPT === 'touch' || lastPT === 'pen') { if (!inp) e.preventDefault(); lastPT = 'mouse'; return; }
+if (inp && hadSel && !(performance.now() - kbAt < 400)) { hadSel = false; return; }   // the native Copy / Paste menu
+e.preventDefault();
+if (performance.now() - kbAt < 400) return;   // the key that just opened it also fires contextmenu
+var kb = !e.clientX && !e.clientY;     // the ContextMenu key's own event (no pointer position)
+open(kb ? null : { x: e.clientX, y: e.clientY });
+});
+}
+function rowMenu(ctrl, row, at) {
+var id = row.getAttribute('data-item'), it = ctrl.itemById(id); if (!it) return;
+var paid = it.status === 'paid';
+var items = [['paid', paid ? 'Mark unpaid' : 'Mark paid'], ['select', ctrl.selection.has(id) ? 'Deselect' : 'Select'],
+['up', 'Move up'], ['down', 'Move down'], ['move', 'Move…'], ['delete', 'Delete']];
+afterBlur(ctrl, function () {   // a field being edited saves first (its blur), as the old ⋯ click did
+openMenu(row, at, items, 'data-rm', function (a) {
 if (a === 'paid') ctrl.setPaid(id, !paid);
 else if (a === 'select') ctrl.toggleSelect(id);
 else if (a === 'up' || a === 'down') ctrl.reorder(id, a === 'up' ? -1 : 1);
@@ -3524,8 +3566,6 @@ else if (a === 'move') { if (Remit.ui.beginMove) Remit.ui.beginMove(ctrl, id); }
 else if (a === 'delete') ctrl.deleteLine(id);
 });
 });
-btn.setAttribute('aria-expanded', 'true');
-setTimeout(function () { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); var f = m.querySelector('button'); if (f) f.focus(); }, 0);
 }
 function wireLine(ctrl, row) {
 var id = row.getAttribute('data-item');
@@ -3541,7 +3581,7 @@ chk.setAttribute('aria-checked', String(paid)); row.classList.toggle('paid', pai
 afterBlur(ctrl, function () { ctrl.setPaid(id, paid); });
 });
 }
-var mb = row.querySelector('[data-rowmenu]'); if (mb) mb.addEventListener('click', function () { rowMenu(ctrl, mb); });
+wireContext(row, function (at) { if (row.classList.contains('swiped')) closeSwipe(row); rowMenu(ctrl, row, at); });
 var del = row.querySelector('[data-swdel]'); if (del) del.addEventListener('click', function (e) { e.stopPropagation(); closeSwipe(row); ctrl.deleteLine(id); });
 var mv = row.querySelector('[data-swmove]'); if (mv) mv.addEventListener('click', function (e) { e.stopPropagation(); closeSwipe(row, true); if (Remit.ui.beginMove) Remit.ui.beginMove(ctrl, id); });
 row.addEventListener('click', function (e) {
@@ -3612,7 +3652,6 @@ try { if (navigator.vibrate) navigator.vibrate(10); } catch (x) {}
 document.addEventListener('pointermove', onMove, true); document.addEventListener('pointerup', onUp, true);
 document.addEventListener('pointercancel', onCancel, true); window.addEventListener('scroll', onScroll, true);
 });
-row.addEventListener('contextmenu', function (e) { if (!e.target.closest('input')) e.preventDefault(); });
 }
 var xMoving = null, xHint = null;
 function endXMove(ctrl) {
@@ -3626,47 +3665,21 @@ var row = ctrl.root.querySelector('.srow[data-xfer="' + id + '"]'); if (!row) re
 xMoving = id; ctrl.root.classList.add('xmoving'); row.classList.add('moving');
 xHint = Remit.ui.toast('Tap the payment it should go next to.', { actionLabel: 'Cancel', onAction: function () { xHint = null; endXMove(ctrl); }, duration: 15000, top: true });
 }
-function xferMenu(ctrl, btn) {
-var id = btn.getAttribute('data-xmenu');
-var old = document.querySelector('.curmenu'); if (old) { var was = old.__owner === btn; old.__close(null); if (was) return; }
-var m = document.createElement('div'); m.className = 'curmenu rowmenu-pop'; m.setAttribute('role', 'menu'); m.__owner = btn;
-m.innerHTML = [['up', 'Move up'], ['down', 'Move down'], ['move', 'Move…'], ['delete', 'Delete']].map(function (x) {
-return '<button type="button" role="menuitem" data-xm="' + x[0] + '"' + (x[0] === 'delete' ? ' class="danger"' : '') + '>' + x[1] + '</button>';
-}).join('');
-document.body.appendChild(m);
-var r = btn.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
-var foot = document.querySelector('.foot'), floor = foot ? foot.getBoundingClientRect().top : innerHeight;
-m.style.left = Math.max(12, Math.min(r.right - mw, innerWidth - mw - 12)) + 'px';
-m.style.top = ((r.bottom + 6 + mh < floor) ? r.bottom + 6 : Math.max(12, r.top - 6 - mh)) + 'px';
-function close() { m.remove(); document.removeEventListener('pointerdown', outside, true); document.removeEventListener('keydown', onKey, true); btn.setAttribute('aria-expanded', 'false'); }
-function outside(e) { if (!m.contains(e.target) && !btn.contains(e.target)) close(); }
-function onKey(e) {
-if (e.key === 'Escape') { e.preventDefault(); close(); btn.focus(); return; }
-if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-e.preventDefault(); var bs = Array.from(m.querySelectorAll('button')), i = bs.indexOf(document.activeElement);
-bs[(i + (e.key === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length].focus();
-}
-}
-m.__close = close;
-m.querySelectorAll('[data-xm]').forEach(function (b) {
-b.addEventListener('mousedown', function (e) { e.preventDefault(); });
-b.addEventListener('click', function () {
-var a = b.getAttribute('data-xm'); close();
+function xferMenu(ctrl, row, at) {
+var id = row.getAttribute('data-xfer');
+openMenu(row, at, [['up', 'Move up'], ['down', 'Move down'], ['move', 'Move…'], ['delete', 'Delete']], 'data-xm', function (a) {
 if (a === 'up' || a === 'down') ctrl.reorderTransfer(id, a === 'up' ? -1 : 1);
 else if (a === 'move') beginXMove(ctrl, id);
-else if (a === 'delete') ctrl.removeTransfer(id, btn);
+else if (a === 'delete') ctrl.removeTransfer(id, row);
 });
-});
-btn.setAttribute('aria-expanded', 'true');
-setTimeout(function () { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); var f = m.querySelector('button'); if (f) f.focus(); }, 0);
 }
 function wireXfer(ctrl, row) {
 var id = row.getAttribute('data-xfer'), suppressClick = false;
-var mb = row.querySelector('[data-xmenu]'); if (mb) mb.addEventListener('click', function (e) { e.stopPropagation(); xferMenu(ctrl, mb); });
+wireContext(row, function (at) { if (row.classList.contains('swiped')) closeSwipe(row); xferMenu(ctrl, row, at); });
 var del = row.querySelector('[data-xswdel]'); if (del) del.addEventListener('click', function (e) { e.stopPropagation(); closeSwipe(row); ctrl.removeTransfer(id, del); });
 var mv = row.querySelector('[data-xswmove]'); if (mv) mv.addEventListener('click', function (e) { e.stopPropagation(); closeSwipe(row, true); beginXMove(ctrl, id); });
 row.addEventListener('click', function (e) {
-if (e.target.closest('.swacts, [data-xmenu]')) return;
+if (e.target.closest('.swacts')) return;
 if (suppressClick) { suppressClick = false; e.preventDefault(); e.stopPropagation(); return; }
 if (row.classList.contains('swiped')) { e.preventDefault(); e.stopPropagation(); closeSwipe(row); return; }
 if (xMoving) {
@@ -3707,8 +3720,8 @@ clear();
 row.addEventListener('pointerdown', function (e) {
 if (e.button != null && e.button !== 0) return;
 if (xMoving) return;
-if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;   // the swipe is a touch gesture; desktop has the ⋯ menu
-if (e.target.closest('.swacts, [data-xmenu], [data-ynabretry], .cpy')) return;
+if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;   // the swipe is a touch gesture; desktop right-clicks
+if (e.target.closest('.swacts, [data-ynabretry], .cpy')) return;
 clear();
 st = { id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, mode: null, base: row.classList.contains('swiped') ? -OPEN_W : 0 };
 document.addEventListener('pointermove', onMove, true); document.addEventListener('pointerup', onUp, true);
