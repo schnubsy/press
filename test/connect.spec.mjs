@@ -257,6 +257,21 @@ for (const vp of VIEWPORTS) {
       await expect(t.locator('.tw-pass')).toHaveCount(0);           // NO passphrase input for card-scout
     });
 
+    // snag-train-2026-11 slice 4 (#31): the shorter row explains itself — one hint line, on the deals row only.
+    test('#31 Thrift Shop row says it is sync-id-only on purpose; app rows carry no hint', async ({ page, context }) => {
+      const state = await harness(page, context);
+      await enrolEmptyAndOpen(page, state);
+      const t = tool(page, 'thrift-shop.html');
+      const hint = t.locator('.tw-tool-hint');
+      await expect(hint).toHaveCount(1);
+      await expect(hint).toBeVisible();
+      await expect(hint).toHaveText('Sync id only — Thrift Shop has no passphrase and nothing to download.');
+      for (const f of ['fsa.html', 'giving.html', 'retirement.html', 'cardsharp.html']) await expect(tool(page, f).locator('.tw-tool-hint')).toHaveCount(0);
+      const box = await t.boundingBox();
+      expect(box.x + box.width, 'row fits the viewport').toBeLessThanOrEqual(page.viewportSize().width);
+      await t.screenshot({ path: join(ROOT, 'docs', 'evidence', `snag-train-2026-11-slice-4-deals-hint-${page.viewportSize().width}.png`) });
+    });
+
     test('Thrift Shop: a WRONG sync id (200 + zero rows) is rejected with the plain-language message; nothing stored', async ({ page, context }) => {
       const state = await harness(page, context);
       await enrolEmptyAndOpen(page, state);

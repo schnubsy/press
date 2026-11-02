@@ -384,6 +384,7 @@ body.tw-sorting .tw-card{transition:none}
 .tw-dl{font-family:var(--tw-font-meta);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tw-violet);border:1px solid rgba(142,123,232,.4);min-height:44px;display:inline-flex;align-items:center;padding:8px 12px;border-radius:var(--tw-radius-pill);cursor:pointer}
 .tw-dl:hover{border-color:var(--tw-violet);background:rgba(142,123,232,.12)}
 .tw-tool-msg{font-size:12px;min-height:1em;color:var(--tw-muted)}
+.tw-tool-hint{font-size:12px;line-height:1.45;color:var(--tw-muted)}
 .tw-tool-msg.err{color:var(--tw-rose)}
 .tw-tool-msg.ok{color:var(--tw-violet)}
 .tw-setup-alt{margin-top:16px}
@@ -2153,8 +2154,10 @@ function toolFieldsHTML(f){
   const sync=`<input class="tw-cinput tw-sync" type="text" inputmode="latin" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${deals?'Thrift Shop sync id':'sync id (32 hex)'}" aria-label="${esc(toolName(f))} sync id">`;
   const pass=deals?'':`<input class="tw-cinput tw-pass" type="password" autocomplete="off" placeholder="passphrase" aria-label="${esc(toolName(f))} passphrase">`;
   const dl  =deals?'':`<span class="tw-dl" hidden role="button" tabindex="0">Download my data</span>`;
+  // snag-train 2026-11 (#31): say WHY this row is shorter than the others, so sync-id-only reads as deliberate, not broken
+  const hint=deals?`<p class="tw-tool-hint">Sync id only — ${esc(toolName(f))} has no passphrase and nothing to download.</p>`:'';
   return `<div class="tw-tool-form" role="region" aria-label="Connect ${esc(toolName(f))}">`+
-      sync+pass+
+      sync+hint+pass+
       `<div class="tw-tool-actions"><span class="tw-btn tw-verify" role="button" tabindex="0">Verify &amp; connect</span>${dl}</div>`+
       `<div class="tw-tool-msg" aria-live="polite"></div>`+
     `</div>`;

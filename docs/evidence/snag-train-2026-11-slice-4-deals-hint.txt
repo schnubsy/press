@@ -1,0 +1,5 @@
+slice 4 (#31) — Thrift Shop (Card Scout) connect row reads as deliberate — 2026-11-02T09:16:17Z
+change: index.html toolFieldsHTML adds <p class=tw-tool-hint> under the sync field for kind:'deals' only + .tw-tool-hint CSS
+$ npx playwright test test/connect.spec.mjs --project=chromium   (desktop 1280 + iPhone-15 width)
+  25 passed (23.3s)
+screenshots: docs/evidence/snag-train-2026-11-slice-4-deals-hint-{1280,393}.png
