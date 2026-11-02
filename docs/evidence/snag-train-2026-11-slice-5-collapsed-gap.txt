@@ -1,0 +1,6 @@
+slice 5 (#32) — trim the gap under collapsed Connect your tools — 2026-11-02T09:17:59Z
+change: .tw-connect gets is-collapsed while collapsed (render + toggle); .tw-in:has(.tw-connect.is-collapsed):not(:has(open devices/kit)) bottom pad 40px → 16px + safe-area inset.
+red→green: on the base index.html the #32 spec FAILS (space under Manage = 40px at 390 and 1280); with the change: 16px, expanded/devices-open keep 40px.
+$ npx playwright test test/connect.spec.mjs --project=chromium
+  27 passed (27.6s)
+screenshots: docs/evidence/snag-train-2026-11-slice-5-collapsed-{390,1280}.png

@@ -197,6 +197,35 @@ test('every tool connected: the section renders COLLAPSED; Manage expands, colla
   await expect(sect.locator('.tw-tool')).toHaveCount(0);            // rows removed from the DOM
 });
 
+// snag-train-2026-11 slice 5 (#32): collapsed, the page ends ≤32px under the Manage row (was the 40px page pad + a void);
+// expanded or with Devices open, the normal 40px bottom pad returns.
+for (const vp of [{ width: 390, height: 600 }, { width: 1280, height: 600 }]) {
+  test(`#32 collapsed Connect your tools leaves no void below Manage (${vp.width})`, async ({ page, context }) => {
+    await harness(page, context);
+    await page.setViewportSize(vp);
+    await page.goto(base + '/?view=personal');
+    await enrolInPage(page, { apps: {
+      'fsa.html': { sync_id: SYNC, pass: PASS }, 'giving.html': { sync_id: SYNC, pass: PASS }, 'retirement.html': { sync_id: SYNC, pass: PASS },
+      'card-scout.html': { sync_id: CARD_SYNC, pass: CARD_SCOUT_GATE_SENTINEL }, 'cardsharp.html': { sync_id: CS_SYNC, pass: CS_PASS },
+    } });
+    await page.reload();
+    const toggle = page.locator('.tw-connect-toggle');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    const below = () => page.evaluate(() => document.documentElement.scrollHeight - (document.querySelector('.tw-connect').getBoundingClientRect().bottom + scrollY));
+    const collapsed = await below();
+    expect(collapsed, 'collapsed: space under the Manage row').toBeLessThanOrEqual(32);
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await page.screenshot({ path: join(ROOT, 'docs', 'evidence', `snag-train-2026-11-slice-5-collapsed-${vp.width}.png`) });
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(await below(), 'expanded: the normal page pad').toBeGreaterThanOrEqual(40);
+    await toggle.click();
+    expect(await below(), 'collapsed again').toBeLessThanOrEqual(32);
+    await page.click('#devBtn');
+    expect(await page.evaluate(() => getComputedStyle(document.querySelector('.tw-in')).paddingBottom), 'Devices open: normal pad').toBe('40px');
+  });
+}
+
 // ── Connect / collapse / Card Scout — run at desktop AND iPhone 15 width ────
 const VIEWPORTS = [
   { name: 'desktop', viewport: { width: 1280, height: 800 } },

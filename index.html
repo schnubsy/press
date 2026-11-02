@@ -366,6 +366,10 @@ body.tw-sorting .tw-card{transition:none}
 .tw-connect-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .tw-connect-head h4{margin-bottom:0}
 .tw-connect-body:empty{display:none}
+/* snag-train 2026-11 (#32): collapsed (every tool connected, nothing open below it) the section is the page's last
+   line — drop the page's 40px bottom pad to 16px (+ the home-indicator inset) so the wing ends settled, not on a void. */
+.tw-in:has(.tw-connect.is-collapsed):not(:has(#devWrap:not([hidden]), #recoveryKit:not([hidden]))){
+  padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px))}
 .tw-cmeta{font-size:12px;color:var(--tw-muted);margin:0 0 14px;line-height:1.5}
 .tw-tool{border:1px solid var(--tw-border-card);border-radius:var(--tw-radius-card);padding:12px 14px;margin-bottom:10px;background:var(--tw-glass-card)}
 .tw-tool-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -2183,7 +2187,7 @@ function connectToolsHTML(){
 // rebuilt via innerHTML — NOT the weaker hidden-flag devices drawer.
 function renderConnect(){
   const allOn = CONNECT_TOOLS.every(toolConnected);
-  return `<div class="tw-connect">`+
+  return `<div class="tw-connect${allOn?' is-collapsed':''}">`+
     `<div class="tw-connect-head"><h4>Connect your tools</h4>`+
     `<button type="button" class="tw-mini tw-connect-toggle" aria-expanded="${allOn?'false':'true'}" aria-controls="tw-connect-body">${allOn?'Manage':'Hide'}</button></div>`+
     `<div class="tw-connect-body" id="tw-connect-body">${allOn?'':connectToolsHTML()}</div>`+
@@ -2285,8 +2289,8 @@ function wireConnect(root, man){
   const toggle = section ? section.querySelector('.tw-connect-toggle') : null;
   if(toggle && body){
     toggle.addEventListener('click', ()=>{
-      if(toggle.getAttribute('aria-expanded')==='true'){ body.innerHTML=''; toggle.setAttribute('aria-expanded','false'); toggle.textContent='Manage'; }
-      else { body.innerHTML=connectToolsHTML(); toggle.setAttribute('aria-expanded','true'); toggle.textContent='Hide'; wireTools(); }
+      if(toggle.getAttribute('aria-expanded')==='true'){ body.innerHTML=''; toggle.setAttribute('aria-expanded','false'); toggle.textContent='Manage'; section.classList.add('is-collapsed'); }
+      else { body.innerHTML=connectToolsHTML(); toggle.setAttribute('aria-expanded','true'); toggle.textContent='Hide'; section.classList.remove('is-collapsed'); wireTools(); }
     });
   }
   wireTools();
