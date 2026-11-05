@@ -8,13 +8,14 @@
   <title>Macrowise</title>
   <meta name="page-title" content="Macrowise">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-  <script type="module" crossorigin src="./assets/index-BzVveDYE.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-BW1F3XSv.css">
+  <script type="module" crossorigin src="./assets/index-pwTqTFr9.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-D-8DDtEN.css">
 </head>
 <body>
   <main id="app">
     <header class="top">
-      <h1><button id="place" class="place" aria-haspopup="dialog">You're at <strong id="placeName">…</strong> <span aria-hidden="true">▾</span></button></h1>
+      <h1><button id="place" class="place" aria-haspopup="dialog" aria-controls="picker"><span id="placeLead"></span> <strong id="placeName">Finding where you are…</strong> <span aria-hidden="true">▾</span></button></h1>
+      <p id="noMenu" class="no-menu" hidden>Menu coming in the next arc — showing sample orders</p>
       <p id="source" class="source"></p>
       <p id="notice" class="notice" role="status" hidden></p>
       <pre id="received" class="received" hidden></pre>
@@ -22,6 +23,18 @@
     </header>
     <ol id="list" class="list" aria-label="Orders, best golden ratio first"></ol>
   </main>
+  <dialog id="picker" class="picker" aria-labelledby="pickerTitle">
+    <div class="sheet-head">
+      <h2 id="pickerTitle">Where are you eating?</h2>
+      <button id="pickerDone" class="done" type="button">Done</button>
+    </div>
+    <p id="nearMsg" class="msg" role="status"></p>
+    <ul id="nearList" class="rows" aria-label="Nearest restaurants"></ul>
+    <label class="search-label" for="search">Search to plan ahead</label>
+    <input id="search" class="search" type="search" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search" placeholder="Restaurant name">
+    <p id="searchMsg" class="msg" role="status"></p>
+    <ul id="searchList" class="rows" aria-label="Search results"></ul>
+  </dialog>
   <nav class="dock" aria-label="Log"><a id="logIt" class="log-it" href="#" hidden>Log it to MacroFactor</a></nav>
 </body>
 </html>
