@@ -25,6 +25,18 @@
       "views": [
         "desktop"
       ]
+    },
+    {
+      "id": "macrowise",
+      "name": "Macrowise",
+      "line": "The best high-protein order where you are eating — and what is left of today’s macros after it.",
+      "status": "Web prototype · iPhone",
+      "note": "Opens from the Macrowise shortcut with today’s numbers from MacroFactor; Log it sends the order back. Data stays in this browser.",
+      "mark": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%230B4F57%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%229%22%20width%3D%2220%22%20height%3D%225%22%20rx%3D%221.5%22%20fill%3D%22%23FAFAF8%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%2218%22%20width%3D%2213%22%20height%3D%225%22%20rx%3D%221.5%22%20fill%3D%22%235AA3A8%22%2F%3E%3Crect%20x%3D%2214%22%20y%3D%226%22%20width%3D%222%22%20height%3D%2220%22%20fill%3D%22%2316201F%22%20opacity%3D%22.55%22%2F%3E%3C%2Fsvg%3E",
+      "href": "app-lab/macrowise/",
+      "views": [
+        "iphone"
+      ]
     }
   ]
 }
