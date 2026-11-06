@@ -1,0 +1,146 @@
+{
+ "restaurant": "CAVA",
+ "aliases": [
+  "cava",
+  "cava mezze",
+  "cava grill"
+ ],
+ "kind": "chain",
+ "buffer": 0.05,
+ "source": {
+  "url": "https://s3.amazonaws.com/cava-catering-media/media/CAVA_Catering_Nutritional-Guide.pdf",
+  "fetched": "2026-11-06",
+  "sha256": "9daa37f218451ef8ab9f075128bb8223d33d28aec698360cbe5e96a064f37dbb",
+  "hashOf": "rows",
+  "note": "Official CAVA Catering Nutritional Guide (linked from catering.cava.com — cava.com/menu/nutrition was unreadable). Curated bowls and pitas per serving as published; bowl-bar trays are not used."
+ },
+ "items": [
+  {
+   "id": "spicy-lamb-avocado-bowl",
+   "name": "Spicy Lamb + Avocado Bowl",
+   "category": "bowl",
+   "kcal": 800,
+   "protein": 43,
+   "carbs": 49,
+   "fat": 52
+  },
+  {
+   "id": "steak-harissa-bowl",
+   "name": "Steak + Harissa Bowl",
+   "category": "bowl",
+   "kcal": 620,
+   "protein": 36,
+   "carbs": 39,
+   "fat": 36
+  },
+  {
+   "id": "harissa-avocado-bowl",
+   "name": "Harissa Avocado Bowl",
+   "category": "bowl",
+   "kcal": 830,
+   "protein": 41,
+   "carbs": 62,
+   "fat": 49
+  },
+  {
+   "id": "chicken-rice-bowl",
+   "name": "Chicken + Rice Bowl",
+   "category": "bowl",
+   "kcal": 700,
+   "protein": 40,
+   "carbs": 44,
+   "fat": 42
+  },
+  {
+   "id": "greek-salad-bowl",
+   "name": "Greek Salad Bowl",
+   "category": "bowl",
+   "kcal": 580,
+   "protein": 37,
+   "carbs": 19,
+   "fat": 40
+  },
+  {
+   "id": "chicken-roasted-vegetables-bowl",
+   "name": "Chicken + Roasted Vegetables Bowl",
+   "category": "bowl",
+   "kcal": 590,
+   "protein": 23,
+   "carbs": 56,
+   "fat": 32
+  },
+  {
+   "id": "falafel-crunch-bowl",
+   "name": "Falafel Crunch Bowl",
+   "category": "bowl",
+   "kcal": 860,
+   "protein": 24,
+   "carbs": 88,
+   "fat": 56
+  },
+  {
+   "id": "roasted-vegetable-avocado-bowl",
+   "name": "Roasted Vegetable + Avocado Bowl",
+   "category": "bowl",
+   "kcal": 730,
+   "protein": 15,
+   "carbs": 77,
+   "fat": 44
+  },
+  {
+   "id": "garlic-chicken-veggie-pita",
+   "name": "Garlic Chicken + Veggie Pita",
+   "category": "entree",
+   "kcal": 800,
+   "protein": 35,
+   "carbs": 69,
+   "fat": 44
+  },
+  {
+   "id": "steak-feta-pita",
+   "name": "Steak + Feta Pita",
+   "category": "entree",
+   "kcal": 820,
+   "protein": 44,
+   "carbs": 68,
+   "fat": 42
+  },
+  {
+   "id": "greek-chicken-pita",
+   "name": "Greek Chicken Pita",
+   "category": "entree",
+   "kcal": 720,
+   "protein": 48,
+   "carbs": 64,
+   "fat": 30
+  },
+  {
+   "id": "crispy-falafel-pita",
+   "name": "Crispy Falafel Pita",
+   "category": "entree",
+   "kcal": 960,
+   "protein": 22,
+   "carbs": 89,
+   "fat": 58
+  },
+  {
+   "id": "spicy-chicken-avocado-pita",
+   "name": "Spicy Chicken + Avocado Pita",
+   "category": "entree",
+   "kcal": 930,
+   "protein": 48,
+   "carbs": 80,
+   "fat": 48
+  },
+  {
+   "id": "whisked-salted-dark-chocolate-oat-cookie",
+   "name": "Whisked! Salted Dark Chocolate Oat Cookie",
+   "category": "staple",
+   "kcal": 240,
+   "protein": 4,
+   "carbs": 31,
+   "fat": 13
+  }
+ ],
+ "components": []
+}

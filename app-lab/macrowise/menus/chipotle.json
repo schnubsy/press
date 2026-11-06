@@ -1,0 +1,388 @@
+{
+ "restaurant": "Chipotle Mexican Grill",
+ "aliases": [
+  "chipotle",
+  "chipotle mexican grill"
+ ],
+ "kind": "chain",
+ "buffer": 0.05,
+ "source": {
+  "url": "https://www.chipotle.com/content/dam/chipotle/menu/nutrition/US-Nutrition-Facts-Paper-Menu-3-2025.pdf",
+  "fetched": "2026-11-06",
+  "sha256": "8462e62b63bff67293f9fe6b331962db72504f2a85bfc41a4168efa888ae8f0d",
+  "hashOf": "rows"
+ },
+ "items": [
+  {
+   "id": "chicken-burrito-bowl",
+   "name": "Chicken Burrito Bowl",
+   "category": "bowl",
+   "kcal": 655,
+   "protein": 50,
+   "carbs": 67,
+   "fat": 20.5,
+   "components": [
+    "chicken",
+    "white-rice",
+    "black-beans",
+    "fresh-tomato-salsa",
+    "cheese"
+   ],
+   "sum": true
+  },
+  {
+   "id": "chicken-bowl-no-rice",
+   "name": "Chicken Bowl, no rice (fajita veggies + salsas)",
+   "category": "bowl",
+   "kcal": 370,
+   "protein": 41,
+   "carbs": 35,
+   "fat": 8.5,
+   "components": [
+    "chicken",
+    "black-beans",
+    "fajita-veggies",
+    "fresh-tomato-salsa",
+    "green-chili-salsa"
+   ],
+   "sum": true
+  },
+  {
+   "id": "steak-salad",
+   "name": "Steak Salad (Supergreens base, no dressing)",
+   "category": "salad",
+   "kcal": 340,
+   "protein": 31,
+   "carbs": 35,
+   "fat": 7.5,
+   "components": [
+    "supergreens",
+    "steak",
+    "black-beans",
+    "fajita-veggies",
+    "fresh-tomato-salsa"
+   ],
+   "sum": true
+  },
+  {
+   "id": "chicken-burrito",
+   "name": "Chicken Burrito",
+   "category": "entree",
+   "kcal": 1085,
+   "protein": 60,
+   "carbs": 119,
+   "fat": 38.5,
+   "components": [
+    "burrito-tortilla",
+    "chicken",
+    "white-rice",
+    "black-beans",
+    "fresh-tomato-salsa",
+    "cheese",
+    "sour-cream"
+   ],
+   "sum": true
+  },
+  {
+   "id": "barbacoa-burrito-bowl",
+   "name": "Barbacoa Burrito Bowl",
+   "category": "bowl",
+   "kcal": 675,
+   "protein": 42,
+   "carbs": 68,
+   "fat": 22.5,
+   "components": [
+    "barbacoa",
+    "brown-rice",
+    "pinto-beans",
+    "fresh-tomato-salsa",
+    "red-chili-salsa",
+    "cheese"
+   ],
+   "sum": true
+  },
+  {
+   "id": "carnitas-bowl-guac",
+   "name": "Carnitas Bowl with Guacamole",
+   "category": "bowl",
+   "kcal": 860,
+   "protein": 40,
+   "carbs": 86,
+   "fat": 41,
+   "components": [
+    "carnitas",
+    "white-rice",
+    "black-beans",
+    "corn-salsa",
+    "guacamole"
+   ],
+   "sum": true
+  },
+  {
+   "id": "sofritas-bowl",
+   "name": "Sofritas Bowl",
+   "category": "bowl",
+   "kcal": 535,
+   "protein": 21,
+   "carbs": 76,
+   "fat": 17.5,
+   "components": [
+    "sofritas",
+    "brown-rice",
+    "black-beans",
+    "fajita-veggies",
+    "fresh-tomato-salsa"
+   ],
+   "sum": true
+  },
+  {
+   "id": "chips",
+   "name": "Chips (regular)",
+   "category": "staple",
+   "kcal": 540,
+   "protein": 7,
+   "carbs": 73,
+   "fat": 25
+  }
+ ],
+ "components": [
+  {
+   "id": "chicken",
+   "name": "Chicken (4 oz)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 180,
+   "protein": 32,
+   "carbs": 0,
+   "fat": 7
+  },
+  {
+   "id": "steak",
+   "name": "Steak (4 oz)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 150,
+   "protein": 21,
+   "carbs": 1,
+   "fat": 6
+  },
+  {
+   "id": "barbacoa",
+   "name": "Barbacoa (4 oz)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 170,
+   "protein": 24,
+   "carbs": 2,
+   "fat": 7
+  },
+  {
+   "id": "carnitas",
+   "name": "Carnitas (4 oz)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 210,
+   "protein": 23,
+   "carbs": 0,
+   "fat": 12
+  },
+  {
+   "id": "sofritas",
+   "name": "Sofritas (4 oz)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 150,
+   "protein": 8,
+   "carbs": 9,
+   "fat": 10
+  },
+  {
+   "id": "white-rice",
+   "name": "Cilantro-Lime White Rice (4 oz)",
+   "role": "rice",
+   "group": "rice",
+   "kcal": 210,
+   "protein": 4,
+   "carbs": 40,
+   "fat": 4
+  },
+  {
+   "id": "brown-rice",
+   "name": "Cilantro-Lime Brown Rice (4 oz)",
+   "role": "rice",
+   "group": "rice",
+   "kcal": 210,
+   "protein": 4,
+   "carbs": 36,
+   "fat": 6
+  },
+  {
+   "id": "black-beans",
+   "name": "Black Beans (4 oz)",
+   "role": "beans",
+   "group": "beans",
+   "kcal": 130,
+   "protein": 8,
+   "carbs": 22,
+   "fat": 1.5
+  },
+  {
+   "id": "pinto-beans",
+   "name": "Pinto Beans (4 oz)",
+   "role": "beans",
+   "group": "beans",
+   "kcal": 130,
+   "protein": 8,
+   "carbs": 21,
+   "fat": 1.5
+  },
+  {
+   "id": "fajita-veggies",
+   "name": "Fajita Vegetables (2 oz)",
+   "role": "topping",
+   "kcal": 20,
+   "protein": 1,
+   "carbs": 5,
+   "fat": 0
+  },
+  {
+   "id": "fresh-tomato-salsa",
+   "name": "Fresh Tomato Salsa (4 oz)",
+   "role": "sauce",
+   "kcal": 25,
+   "protein": 0,
+   "carbs": 4,
+   "fat": 0
+  },
+  {
+   "id": "corn-salsa",
+   "name": "Roasted Chili-Corn Salsa (4 oz)",
+   "role": "sauce",
+   "kcal": 80,
+   "protein": 3,
+   "carbs": 16,
+   "fat": 1.5
+  },
+  {
+   "id": "green-chili-salsa",
+   "name": "Tomatillo-Green Chili Salsa (2 fl oz)",
+   "role": "sauce",
+   "kcal": 15,
+   "protein": 0,
+   "carbs": 4,
+   "fat": 0
+  },
+  {
+   "id": "red-chili-salsa",
+   "name": "Tomatillo-Red Chili Salsa (2 fl oz)",
+   "role": "sauce",
+   "kcal": 30,
+   "protein": 0,
+   "carbs": 4,
+   "fat": 0,
+   "asPublished": true,
+   "note": "Published 30 kcal / 0 g P / 4 g C / 0 g F (2 fl oz) — copied as published."
+  },
+  {
+   "id": "cheese",
+   "name": "Cheese (1 oz)",
+   "role": "cheese",
+   "kcal": 110,
+   "protein": 6,
+   "carbs": 1,
+   "fat": 8
+  },
+  {
+   "id": "sour-cream",
+   "name": "Sour Cream (2 oz)",
+   "role": "topping",
+   "kcal": 110,
+   "protein": 2,
+   "carbs": 2,
+   "fat": 9
+  },
+  {
+   "id": "guacamole",
+   "name": "Guacamole (4 oz)",
+   "role": "topping",
+   "kcal": 230,
+   "protein": 2,
+   "carbs": 8,
+   "fat": 22
+  },
+  {
+   "id": "queso",
+   "name": "Queso Blanco (entrée, 2 oz)",
+   "role": "topping",
+   "kcal": 120,
+   "protein": 5,
+   "carbs": 4,
+   "fat": 9
+  },
+  {
+   "id": "romaine",
+   "name": "Romaine Lettuce (1 oz)",
+   "role": "topping",
+   "kcal": 5,
+   "protein": 0,
+   "carbs": 1,
+   "fat": 0
+  },
+  {
+   "id": "supergreens",
+   "name": "Supergreens Salad Mix (3 oz)",
+   "role": "base",
+   "kcal": 15,
+   "protein": 1,
+   "carbs": 3,
+   "fat": 0
+  },
+  {
+   "id": "chipotle-honey-vinaigrette",
+   "name": "Chipotle-Honey Vinaigrette (2 fl oz)",
+   "role": "dressing",
+   "kcal": 220,
+   "protein": 1,
+   "carbs": 18,
+   "fat": 16
+  },
+  {
+   "id": "burrito-tortilla",
+   "name": "Flour Tortilla (burrito)",
+   "role": "tortilla",
+   "kcal": 320,
+   "protein": 8,
+   "carbs": 50,
+   "fat": 9
+  },
+  {
+   "id": "taco-flour-tortilla",
+   "name": "Flour Tortilla (taco, 1 ea)",
+   "role": "tortilla",
+   "group": "taco-shell",
+   "kcal": 80,
+   "protein": 2,
+   "carbs": 13,
+   "fat": 2.5
+  },
+  {
+   "id": "crispy-corn-tortilla",
+   "name": "Crispy Corn Tortilla (1 ea)",
+   "role": "tortilla",
+   "group": "taco-shell",
+   "kcal": 70,
+   "protein": 1,
+   "carbs": 10,
+   "fat": 3
+  },
+  {
+   "id": "chips",
+   "name": "Chips (regular, 4 oz)",
+   "role": "side",
+   "kcal": 540,
+   "protein": 7,
+   "carbs": 73,
+   "fat": 25
+  }
+ ]
+}

@@ -1,0 +1,563 @@
+{
+ "restaurant": "Chick-fil-A",
+ "aliases": [
+  "chick-fil-a",
+  "chick fil a",
+  "chickfila",
+  "chick-fil-a restaurant"
+ ],
+ "kind": "chain",
+ "buffer": 0.05,
+ "source": {
+  "url": "https://www.chick-fil-a.com/nutrition-allergens",
+  "fetched": "2026-11-06",
+  "sha256": "d2533e1ea5d500a13fa1b4e4ce7c1a627d04911af114a8623acec8aecd5ba1f6",
+  "hashOf": "rows"
+ },
+ "items": [
+  {
+   "id": "grilled-nuggets-8ct",
+   "name": "Grilled Nuggets (8 ct)",
+   "category": "protein",
+   "kcal": 130,
+   "protein": 25,
+   "carbs": 1,
+   "fat": 3
+  },
+  {
+   "id": "grilled-nuggets-12ct",
+   "name": "Grilled Nuggets (12 ct)",
+   "category": "protein",
+   "kcal": 200,
+   "protein": 38,
+   "carbs": 2,
+   "fat": 4.5
+  },
+  {
+   "id": "nuggets-8ct",
+   "name": "Chick-fil-A Nuggets (8 ct)",
+   "category": "entree",
+   "kcal": 250,
+   "protein": 27,
+   "carbs": 11,
+   "fat": 11
+  },
+  {
+   "id": "nuggets-12ct",
+   "name": "Chick-fil-A Nuggets (12 ct)",
+   "category": "entree",
+   "kcal": 380,
+   "protein": 40,
+   "carbs": 16,
+   "fat": 17
+  },
+  {
+   "id": "chick-n-strips-3ct",
+   "name": "Chick-n-Strips (3 ct)",
+   "category": "entree",
+   "kcal": 310,
+   "protein": 29,
+   "carbs": 16,
+   "fat": 14
+  },
+  {
+   "id": "chick-n-strips-4ct",
+   "name": "Chick-n-Strips (4 ct)",
+   "category": "entree",
+   "kcal": 410,
+   "protein": 39,
+   "carbs": 22,
+   "fat": 19
+  },
+  {
+   "id": "chicken-sandwich",
+   "name": "Chick-fil-A Chicken Sandwich",
+   "category": "entree",
+   "kcal": 420,
+   "protein": 29,
+   "carbs": 41,
+   "fat": 16
+  },
+  {
+   "id": "spicy-chicken-sandwich",
+   "name": "Spicy Chicken Sandwich",
+   "category": "entree",
+   "kcal": 450,
+   "protein": 28,
+   "carbs": 44,
+   "fat": 18
+  },
+  {
+   "id": "deluxe-sandwich",
+   "name": "Chick-fil-A Deluxe Sandwich",
+   "category": "entree",
+   "kcal": 490,
+   "protein": 32,
+   "carbs": 43,
+   "fat": 21
+  },
+  {
+   "id": "deluxe-sandwich-no-cheese",
+   "name": "Deluxe Sandwich, no cheese",
+   "category": "entree",
+   "kcal": 430,
+   "protein": 29,
+   "carbs": 42,
+   "fat": 16
+  },
+  {
+   "id": "spicy-deluxe-sandwich",
+   "name": "Spicy Deluxe Sandwich",
+   "category": "entree",
+   "kcal": 540,
+   "protein": 34,
+   "carbs": 46,
+   "fat": 24
+  },
+  {
+   "id": "grilled-chicken-sandwich",
+   "name": "Grilled Chicken Sandwich",
+   "category": "entree",
+   "kcal": 390,
+   "protein": 28,
+   "carbs": 45,
+   "fat": 11
+  },
+  {
+   "id": "grilled-chicken-club",
+   "name": "Grilled Chicken Club Sandwich",
+   "category": "entree",
+   "kcal": 520,
+   "protein": 37,
+   "carbs": 45,
+   "fat": 22
+  },
+  {
+   "id": "grilled-chicken-club-no-cheese",
+   "name": "Grilled Chicken Club, no cheese",
+   "category": "entree",
+   "kcal": 440,
+   "protein": 31,
+   "carbs": 45,
+   "fat": 15
+  },
+  {
+   "id": "cool-wrap",
+   "name": "Chick-fil-A Cool Wrap",
+   "category": "entree",
+   "kcal": 660,
+   "protein": 43,
+   "carbs": 32,
+   "fat": 45,
+   "components": [
+    "avocado-lime-ranch-dressing"
+   ]
+  },
+  {
+   "id": "market-salad",
+   "name": "Market Salad (grilled filet)",
+   "category": "salad",
+   "kcal": 550,
+   "protein": 28,
+   "carbs": 42,
+   "fat": 31,
+   "components": [
+    "zesty-apple-cider-vinaigrette"
+   ]
+  },
+  {
+   "id": "market-salad-grilled-nuggets",
+   "name": "Market Salad w/ Grilled Nuggets",
+   "category": "salad",
+   "kcal": 570,
+   "protein": 32,
+   "carbs": 41,
+   "fat": 32,
+   "components": [
+    "zesty-apple-cider-vinaigrette"
+   ]
+  },
+  {
+   "id": "cobb-salad",
+   "name": "Cobb Salad (nuggets)",
+   "category": "salad",
+   "kcal": 830,
+   "protein": 41,
+   "carbs": 31,
+   "fat": 60,
+   "components": [
+    "avocado-lime-ranch-dressing"
+   ]
+  },
+  {
+   "id": "cobb-salad-grilled-filet",
+   "name": "Cobb Salad w/ Grilled Filet (warm)",
+   "category": "salad",
+   "kcal": 600,
+   "protein": 35,
+   "carbs": 16,
+   "fat": 44,
+   "components": [
+    "avocado-lime-ranch-dressing"
+   ]
+  },
+  {
+   "id": "cobb-salad-grilled-nuggets",
+   "name": "Cobb Salad w/ Grilled Nuggets",
+   "category": "salad",
+   "kcal": 630,
+   "protein": 39,
+   "carbs": 16,
+   "fat": 45,
+   "components": [
+    "avocado-lime-ranch-dressing"
+   ]
+  },
+  {
+   "id": "spicy-southwest-salad",
+   "name": "Spicy Southwest Salad (spicy grilled filet)",
+   "category": "salad",
+   "kcal": 680,
+   "protein": 33,
+   "carbs": 27,
+   "fat": 49,
+   "components": [
+    "creamy-salsa-dressing"
+   ]
+  },
+  {
+   "id": "spicy-southwest-salad-grilled-filet",
+   "name": "Spicy Southwest Salad w/ Grilled Filet",
+   "category": "salad",
+   "kcal": 680,
+   "protein": 35,
+   "carbs": 26,
+   "fat": 48,
+   "components": [
+    "creamy-salsa-dressing"
+   ]
+  },
+  {
+   "id": "spicy-southwest-salad-grilled-nuggets",
+   "name": "Spicy Southwest Salad w/ Grilled Nuggets",
+   "category": "salad",
+   "kcal": 700,
+   "protein": 39,
+   "carbs": 26,
+   "fat": 49,
+   "components": [
+    "creamy-salsa-dressing"
+   ]
+  },
+  {
+   "id": "egg-white-grill",
+   "name": "Egg White Grill",
+   "category": "entree",
+   "kcal": 300,
+   "protein": 27,
+   "carbs": 29,
+   "fat": 8
+  },
+  {
+   "id": "chicken-egg-cheese-muffin",
+   "name": "Chicken, Egg & Cheese Muffin",
+   "category": "entree",
+   "kcal": 410,
+   "protein": 27,
+   "carbs": 36,
+   "fat": 18
+  },
+  {
+   "id": "hash-brown-scramble-bowl",
+   "name": "Hash Brown Scramble Bowl",
+   "category": "bowl",
+   "kcal": 470,
+   "protein": 29,
+   "carbs": 19,
+   "fat": 30
+  },
+  {
+   "id": "chicken-tortilla-soup",
+   "name": "Chicken Tortilla Soup",
+   "category": "entree",
+   "kcal": 350,
+   "protein": 25,
+   "carbs": 39,
+   "fat": 11
+  },
+  {
+   "id": "chicken-noodle-soup-cup",
+   "name": "Chicken Noodle Soup (cup)",
+   "category": "side",
+   "kcal": 190,
+   "protein": 11,
+   "carbs": 27,
+   "fat": 4.5
+  },
+  {
+   "id": "berry-parfait",
+   "name": "Berry Parfait",
+   "category": "side",
+   "kcal": 270,
+   "protein": 13,
+   "carbs": 35,
+   "fat": 9
+  },
+  {
+   "id": "waffle-fries-medium",
+   "name": "Waffle Potato Fries (medium)",
+   "category": "side",
+   "kcal": 420,
+   "protein": 5,
+   "carbs": 45,
+   "fat": 24
+  },
+  {
+   "id": "kale-crunch-side",
+   "name": "Kale Crunch Side",
+   "category": "side",
+   "kcal": 170,
+   "protein": 4,
+   "carbs": 13,
+   "fat": 12
+  },
+  {
+   "id": "fruit-cup-medium",
+   "name": "Fruit Cup (medium)",
+   "category": "side",
+   "kcal": 70,
+   "protein": 1,
+   "carbs": 16,
+   "fat": 0
+  },
+  {
+   "id": "side-salad",
+   "name": "Side Salad",
+   "category": "side",
+   "kcal": 470,
+   "protein": 6,
+   "carbs": 14,
+   "fat": 42
+  },
+  {
+   "id": "mac-and-cheese-medium",
+   "name": "Mac & Cheese (medium)",
+   "category": "side",
+   "kcal": 450,
+   "protein": 20,
+   "carbs": 28,
+   "fat": 29
+  },
+  {
+   "id": "chocolate-chunk-cookie",
+   "name": "Chocolate Chunk Cookie",
+   "category": "staple",
+   "kcal": 370,
+   "protein": 5,
+   "carbs": 49,
+   "fat": 17
+  }
+ ],
+ "components": [
+  {
+   "id": "side-waffle-fries-small",
+   "name": "Waffle Potato Fries (small)",
+   "role": "side",
+   "group": "side",
+   "kcal": 320,
+   "protein": 4,
+   "carbs": 35,
+   "fat": 19
+  },
+  {
+   "id": "side-waffle-fries-medium",
+   "name": "Waffle Potato Fries (medium)",
+   "role": "side",
+   "group": "side",
+   "kcal": 420,
+   "protein": 5,
+   "carbs": 45,
+   "fat": 24
+  },
+  {
+   "id": "side-fruit-cup-small",
+   "name": "Fruit Cup (small)",
+   "role": "side",
+   "group": "side",
+   "kcal": 60,
+   "protein": 1,
+   "carbs": 14,
+   "fat": 0
+  },
+  {
+   "id": "side-fruit-cup-medium",
+   "name": "Fruit Cup (medium)",
+   "role": "side",
+   "group": "side",
+   "kcal": 70,
+   "protein": 1,
+   "carbs": 16,
+   "fat": 0
+  },
+  {
+   "id": "side-kale-crunch",
+   "name": "Kale Crunch Side",
+   "role": "side",
+   "group": "side",
+   "kcal": 170,
+   "protein": 4,
+   "carbs": 13,
+   "fat": 12
+  },
+  {
+   "id": "side-side-salad",
+   "name": "Side Salad",
+   "role": "side",
+   "group": "side",
+   "kcal": 470,
+   "protein": 6,
+   "carbs": 14,
+   "fat": 42
+  },
+  {
+   "id": "side-mac-and-cheese-medium",
+   "name": "Mac & Cheese (medium)",
+   "role": "side",
+   "group": "side",
+   "kcal": 450,
+   "protein": 20,
+   "carbs": 28,
+   "fat": 29
+  },
+  {
+   "id": "side-chicken-noodle-soup-cup",
+   "name": "Chicken Noodle Soup (cup)",
+   "role": "side",
+   "group": "side",
+   "kcal": 190,
+   "protein": 11,
+   "carbs": 27,
+   "fat": 4.5
+  },
+  {
+   "id": "chick-fil-a-sauce",
+   "name": "Chick-fil-A Sauce",
+   "role": "sauce",
+   "group": "sauce",
+   "kcal": 140,
+   "protein": 0,
+   "carbs": 6,
+   "fat": 13
+  },
+  {
+   "id": "polynesian-sauce",
+   "name": "Polynesian Sauce",
+   "role": "sauce",
+   "group": "sauce",
+   "kcal": 110,
+   "protein": 0,
+   "carbs": 14,
+   "fat": 6
+  },
+  {
+   "id": "honey-mustard-sauce",
+   "name": "Honey Mustard Sauce",
+   "role": "sauce",
+   "group": "sauce",
+   "kcal": 50,
+   "protein": 0,
+   "carbs": 11,
+   "fat": 0
+  },
+  {
+   "id": "barbeque-sauce",
+   "name": "Barbeque Sauce",
+   "role": "sauce",
+   "group": "sauce",
+   "kcal": 45,
+   "protein": 0,
+   "carbs": 11,
+   "fat": 0
+  },
+  {
+   "id": "zesty-buffalo-sauce",
+   "name": "Zesty Buffalo Sauce",
+   "role": "sauce",
+   "group": "sauce",
+   "kcal": 25,
+   "protein": 0,
+   "carbs": 1,
+   "fat": 2.5
+  },
+  {
+   "id": "sweet-spicy-sriracha-sauce",
+   "name": "Sweet & Spicy Sriracha Sauce",
+   "role": "sauce",
+   "group": "sauce",
+   "kcal": 45,
+   "protein": 0,
+   "carbs": 11,
+   "fat": 0
+  },
+  {
+   "id": "garden-herb-ranch-sauce",
+   "name": "Garden Herb Ranch Sauce",
+   "role": "sauce",
+   "group": "sauce",
+   "kcal": 100,
+   "protein": 0,
+   "carbs": 1,
+   "fat": 11
+  },
+  {
+   "id": "avocado-lime-ranch-dressing",
+   "name": "Avocado Lime Ranch Dressing",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 310,
+   "protein": 1,
+   "carbs": 3,
+   "fat": 32
+  },
+  {
+   "id": "creamy-salsa-dressing",
+   "name": "Creamy Salsa Dressing",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 290,
+   "protein": 1,
+   "carbs": 2,
+   "fat": 31
+  },
+  {
+   "id": "fat-free-honey-mustard-dressing",
+   "name": "Fat-Free Honey Mustard Dressing",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 90,
+   "protein": 0,
+   "carbs": 22,
+   "fat": 0
+  },
+  {
+   "id": "light-italian-dressing",
+   "name": "Light Italian Dressing",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 25,
+   "protein": 0,
+   "carbs": 3,
+   "fat": 1
+  },
+  {
+   "id": "zesty-apple-cider-vinaigrette",
+   "name": "Zesty Apple Cider Vinaigrette Dressing",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 230,
+   "protein": 0,
+   "carbs": 16,
+   "fat": 19
+  }
+ ]
+}

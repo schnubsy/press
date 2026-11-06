@@ -1,0 +1,775 @@
+{
+ "restaurant": "Jimmy John's",
+ "aliases": [
+  "jimmy john's",
+  "jimmy johns",
+  "jimmy john's gourmet sandwiches"
+ ],
+ "kind": "chain",
+ "buffer": 0.05,
+ "source": {
+  "url": "https://resources.jimmyjohns.com/downloadable-files/NutritionGuide.pdf",
+  "fetched": "2026-11-06",
+  "sha256": "600d555a78bc621af1ab4e32806512b7f90298dadcd06c6424e7a7ad214450c2",
+  "hashOf": "rows",
+  "note": "Nutrition Guide effective 07.22.2024. Which parts each sub includes comes from the official menu PDF (no numbers taken from it); mayo is listed only where the menu says the sub comes with it (the clubs)."
+ },
+ "items": [
+  {
+   "id": "pepe",
+   "name": "#1 The Pepe® (8\" French)",
+   "category": "entree",
+   "kcal": 600,
+   "protein": 29,
+   "carbs": 50,
+   "fat": 29,
+   "components": [
+    "french-8",
+    "ham",
+    "provolone"
+   ]
+  },
+  {
+   "id": "big-john",
+   "name": "#2 Big John® (8\" French)",
+   "category": "entree",
+   "kcal": 500,
+   "protein": 26,
+   "carbs": 47,
+   "fat": 21,
+   "components": [
+    "french-8",
+    "roast-beef"
+   ]
+  },
+  {
+   "id": "totally-tuna",
+   "name": "#3 Totally Tuna® (8\" French)",
+   "category": "entree",
+   "kcal": 510,
+   "protein": 21,
+   "carbs": 51,
+   "fat": 22,
+   "components": [
+    "french-8",
+    "tuna-salad"
+   ]
+  },
+  {
+   "id": "turkey-tom",
+   "name": "#4 Turkey Tom® (8\" French)",
+   "category": "entree",
+   "kcal": 480,
+   "protein": 23,
+   "carbs": 48,
+   "fat": 19,
+   "components": [
+    "french-8",
+    "turkey"
+   ]
+  },
+  {
+   "id": "vito",
+   "name": "#5 Vito® (8\" French)",
+   "category": "entree",
+   "kcal": 570,
+   "protein": 32,
+   "carbs": 52,
+   "fat": 26,
+   "components": [
+    "french-8",
+    "salami-capocollo",
+    "provolone",
+    "oil-vinegar"
+   ]
+  },
+  {
+   "id": "veggie",
+   "name": "#6 The Veggie (8\" French)",
+   "category": "entree",
+   "kcal": 670,
+   "protein": 27,
+   "carbs": 50,
+   "fat": 38,
+   "components": [
+    "french-8",
+    "provolone",
+    "provolone",
+    "avocado"
+   ]
+  },
+  {
+   "id": "jjblt",
+   "name": "J.J.B.L.T.® (8\" French)",
+   "category": "entree",
+   "kcal": 590,
+   "protein": 24,
+   "carbs": 47,
+   "fat": 32,
+   "components": [
+    "french-8",
+    "bacon"
+   ]
+  },
+  {
+   "id": "spicy-east-coast-italian",
+   "name": "#7 Spicy East Coast Italian (8\" French)",
+   "category": "entree",
+   "kcal": 850,
+   "protein": 46,
+   "carbs": 53,
+   "fat": 49,
+   "components": [
+    "french-8",
+    "salami-capocollo",
+    "salami-capocollo",
+    "provolone",
+    "oil-vinegar",
+    "mayo"
+   ]
+  },
+  {
+   "id": "billy-club",
+   "name": "#8 Billy Club® (8\" French)",
+   "category": "entree",
+   "kcal": 810,
+   "protein": 50,
+   "carbs": 73,
+   "fat": 32,
+   "components": [
+    "french-8-club",
+    "roast-beef",
+    "ham",
+    "provolone",
+    "yellow-mustard",
+    "mayo"
+   ]
+  },
+  {
+   "id": "italian-night-club",
+   "name": "#9 Italian Night Club® (8\" French)",
+   "category": "entree",
+   "kcal": 930,
+   "protein": 48,
+   "carbs": 77,
+   "fat": 46,
+   "components": [
+    "french-8-club",
+    "salami-capocollo",
+    "ham",
+    "provolone",
+    "oil-vinegar",
+    "mayo"
+   ]
+  },
+  {
+   "id": "hunters-club",
+   "name": "#10 Hunter's Club® (8\" French)",
+   "category": "entree",
+   "kcal": 830,
+   "protein": 55,
+   "carbs": 70,
+   "fat": 34,
+   "components": [
+    "french-8-club",
+    "roast-beef",
+    "roast-beef",
+    "provolone",
+    "mayo"
+   ]
+  },
+  {
+   "id": "country-club",
+   "name": "#11 Country Club® (8\" French)",
+   "category": "entree",
+   "kcal": 780,
+   "protein": 48,
+   "carbs": 74,
+   "fat": 30,
+   "components": [
+    "french-8-club",
+    "turkey",
+    "ham",
+    "provolone",
+    "mayo"
+   ]
+  },
+  {
+   "id": "beach-club",
+   "name": "#12 Beach Club® (8\" French)",
+   "category": "entree",
+   "kcal": 850,
+   "protein": 45,
+   "carbs": 75,
+   "fat": 39,
+   "components": [
+    "french-8-club",
+    "turkey",
+    "provolone",
+    "provolone",
+    "avocado",
+    "mayo"
+   ]
+  },
+  {
+   "id": "bootlegger-club",
+   "name": "#14 Bootlegger Club® (8\" French)",
+   "category": "entree",
+   "kcal": 680,
+   "protein": 44,
+   "carbs": 71,
+   "fat": 23,
+   "components": [
+    "french-8-club",
+    "roast-beef",
+    "turkey",
+    "mayo"
+   ]
+  },
+  {
+   "id": "club-tuna",
+   "name": "#15 Club Tuna® (8\" French)",
+   "category": "entree",
+   "kcal": 860,
+   "protein": 42,
+   "carbs": 76,
+   "fat": 40,
+   "components": [
+    "french-8-club",
+    "tuna-salad",
+    "provolone",
+    "provolone",
+    "mayo"
+   ]
+  },
+  {
+   "id": "club-lulu",
+   "name": "#16 Club Lulu® (8\" French)",
+   "category": "entree",
+   "kcal": 690,
+   "protein": 35,
+   "carbs": 71,
+   "fat": 26,
+   "components": [
+    "french-8-club",
+    "turkey",
+    "bacon",
+    "mayo"
+   ]
+  },
+  {
+   "id": "ultimate-porker",
+   "name": "#17 Ultimate Porker® (8\" French)",
+   "category": "entree",
+   "kcal": 690,
+   "protein": 33,
+   "carbs": 72,
+   "fat": 28,
+   "components": [
+    "french-8-club",
+    "ham",
+    "bacon",
+    "mayo"
+   ]
+  },
+  {
+   "id": "slim-1",
+   "name": "Slim 1 (8\" French)",
+   "category": "entree",
+   "kcal": 540,
+   "protein": 33,
+   "carbs": 69,
+   "fat": 13,
+   "components": [
+    "french-8-club"
+   ]
+  },
+  {
+   "id": "slim-2",
+   "name": "Slim 2 (8\" French)",
+   "category": "entree",
+   "kcal": 440,
+   "protein": 30,
+   "carbs": 66,
+   "fat": 5,
+   "components": [
+    "french-8-club"
+   ]
+  },
+  {
+   "id": "slim-3",
+   "name": "Slim 3 (8\" French)",
+   "category": "entree",
+   "kcal": 600,
+   "protein": 24,
+   "carbs": 70,
+   "fat": 23,
+   "components": [
+    "french-8-club"
+   ]
+  },
+  {
+   "id": "slim-4",
+   "name": "Slim 4 (8\" French)",
+   "category": "entree",
+   "kcal": 420,
+   "protein": 27,
+   "carbs": 68,
+   "fat": 3,
+   "components": [
+    "french-8-club"
+   ]
+  },
+  {
+   "id": "slim-5",
+   "name": "Slim 5 (8\" French)",
+   "category": "entree",
+   "kcal": 630,
+   "protein": 35,
+   "carbs": 69,
+   "fat": 23,
+   "components": [
+    "french-8-club"
+   ]
+  },
+  {
+   "id": "slim-6",
+   "name": "Slim 6 (8\" French)",
+   "category": "entree",
+   "kcal": 590,
+   "protein": 30,
+   "carbs": 68,
+   "fat": 21,
+   "components": [
+    "french-8-club"
+   ]
+  },
+  {
+   "id": "slim-1-unwich",
+   "name": "Slim 1 Unwich®",
+   "category": "entree",
+   "kcal": 190,
+   "protein": 20,
+   "carbs": 4,
+   "fat": 11,
+   "components": [
+    "unwich"
+   ]
+  },
+  {
+   "id": "slim-2-unwich",
+   "name": "Slim 2 Unwich®",
+   "category": "entree",
+   "kcal": 90,
+   "protein": 17,
+   "carbs": 0,
+   "fat": 3,
+   "components": [
+    "unwich"
+   ],
+   "note": "carbs published as <1"
+  },
+  {
+   "id": "slim-4-unwich",
+   "name": "Slim 4 Unwich®",
+   "category": "entree",
+   "kcal": 70,
+   "protein": 14,
+   "carbs": 2,
+   "fat": 0.5,
+   "components": [
+    "unwich"
+   ]
+  },
+  {
+   "id": "slim-5-unwich",
+   "name": "Slim 5 Unwich®",
+   "category": "entree",
+   "kcal": 280,
+   "protein": 22,
+   "carbs": 3,
+   "fat": 20,
+   "components": [
+    "unwich"
+   ]
+  },
+  {
+   "id": "big-john-unwich",
+   "name": "#2 Big John® Unwich®",
+   "category": "entree",
+   "kcal": 270,
+   "protein": 17,
+   "carbs": 4,
+   "fat": 20,
+   "components": [
+    "unwich",
+    "roast-beef",
+    "mayo"
+   ]
+  },
+  {
+   "id": "turkey-tom-unwich",
+   "name": "#4 Turkey Tom® Unwich®",
+   "category": "entree",
+   "kcal": 250,
+   "protein": 15,
+   "carbs": 5,
+   "fat": 17,
+   "components": [
+    "unwich",
+    "turkey",
+    "mayo"
+   ]
+  },
+  {
+   "id": "vito-unwich",
+   "name": "#5 Vito® Unwich®",
+   "category": "entree",
+   "kcal": 350,
+   "protein": 24,
+   "carbs": 9,
+   "fat": 25,
+   "components": [
+    "unwich",
+    "salami-capocollo",
+    "provolone",
+    "oil-vinegar"
+   ]
+  },
+  {
+   "id": "billy-club-unwich",
+   "name": "#8 Billy Club® Unwich®",
+   "category": "entree",
+   "kcal": 460,
+   "protein": 37,
+   "carbs": 7,
+   "fat": 30,
+   "components": [
+    "unwich",
+    "roast-beef",
+    "ham",
+    "provolone",
+    "yellow-mustard",
+    "mayo"
+   ]
+  },
+  {
+   "id": "hunters-club-unwich",
+   "name": "#10 Hunter's Club® Unwich®",
+   "category": "entree",
+   "kcal": 480,
+   "protein": 42,
+   "carbs": 5,
+   "fat": 32,
+   "components": [
+    "unwich",
+    "roast-beef",
+    "roast-beef",
+    "provolone",
+    "mayo"
+   ]
+  },
+  {
+   "id": "country-club-unwich",
+   "name": "#11 Country Club® Unwich®",
+   "category": "entree",
+   "kcal": 430,
+   "protein": 35,
+   "carbs": 8,
+   "fat": 28,
+   "components": [
+    "unwich",
+    "turkey",
+    "ham",
+    "provolone",
+    "mayo"
+   ]
+  },
+  {
+   "id": "bootlegger-club-unwich",
+   "name": "#14 Bootlegger Club® Unwich®",
+   "category": "entree",
+   "kcal": 330,
+   "protein": 31,
+   "carbs": 5,
+   "fat": 20,
+   "components": [
+    "unwich",
+    "roast-beef",
+    "turkey",
+    "mayo"
+   ]
+  },
+  {
+   "id": "club-lulu-unwich",
+   "name": "#16 Club Lulu® Unwich®",
+   "category": "entree",
+   "kcal": 340,
+   "protein": 22,
+   "carbs": 5,
+   "fat": 24,
+   "components": [
+    "unwich",
+    "turkey",
+    "bacon",
+    "mayo"
+   ]
+  },
+  {
+   "id": "jimmy-chips",
+   "name": "Regular Jimmy Chips®",
+   "category": "side",
+   "kcal": 300,
+   "protein": 3,
+   "carbs": 33,
+   "fat": 18
+  },
+  {
+   "id": "thinny-chips",
+   "name": "Thinny Chips®",
+   "category": "side",
+   "kcal": 260,
+   "protein": 4,
+   "carbs": 39,
+   "fat": 11
+  },
+  {
+   "id": "dill-pickle",
+   "name": "Jumbo Kosher Dill Pickle",
+   "category": "side",
+   "kcal": 20,
+   "protein": 1,
+   "carbs": 3,
+   "fat": 0
+  },
+  {
+   "id": "potato-salad",
+   "name": "Homestyle Potato Salad",
+   "category": "side",
+   "kcal": 220,
+   "protein": 6,
+   "carbs": 17,
+   "fat": 14
+  },
+  {
+   "id": "pesto-pasta-salad",
+   "name": "Pesto Bowtie Pasta Salad",
+   "category": "side",
+   "kcal": 280,
+   "protein": 6,
+   "carbs": 26,
+   "fat": 16
+  },
+  {
+   "id": "chocolate-chip-cookie",
+   "name": "Chocolate Chip Cookie",
+   "category": "staple",
+   "kcal": 410,
+   "protein": 5,
+   "carbs": 56,
+   "fat": 19
+  }
+ ],
+ "components": [
+  {
+   "id": "french-8",
+   "name": "8\" French bread",
+   "role": "bun",
+   "group": "bun",
+   "kcal": 230,
+   "protein": 9,
+   "carbs": 44,
+   "fat": 1.5,
+   "note": "published as \"8\\\" French TBO\" (standard loaf on #1-#7 and J.J.B.L.T.)"
+  },
+  {
+   "id": "french-8-club",
+   "name": "8\" French bread (club loaf)",
+   "role": "bun",
+   "group": "bun",
+   "kcal": 350,
+   "protein": 13,
+   "carbs": 66,
+   "fat": 2,
+   "note": "published as \"8\\\" French LBI\"; clubs #8-#17 and Slims: 8\" French minus Unwich = 350 exactly"
+  },
+  {
+   "id": "sliced-wheat",
+   "name": "Thick-Sliced Wheat",
+   "role": "bun",
+   "group": "bun",
+   "kcal": 290,
+   "protein": 12,
+   "carbs": 47,
+   "fat": 5
+  },
+  {
+   "id": "unwich",
+   "name": "Unwich® (Lettuce Wrap)",
+   "role": "bun",
+   "kcal": 0,
+   "protein": 0,
+   "carbs": 0,
+   "fat": 0,
+   "note": "carbs published as <1"
+  },
+  {
+   "id": "mayo",
+   "name": "Hellmann's Mayo (regular)",
+   "role": "sauce",
+   "kcal": 160,
+   "protein": 0,
+   "carbs": 0,
+   "fat": 16
+  },
+  {
+   "id": "mayo-ez",
+   "name": "Hellmann's Mayo (easy)",
+   "role": "sauce",
+   "kcal": 110,
+   "protein": 0,
+   "carbs": 0,
+   "fat": 11
+  },
+  {
+   "id": "oil-vinegar",
+   "name": "Oil & Vinegar (regular)",
+   "role": "dressing",
+   "kcal": 40,
+   "protein": 0,
+   "carbs": 0,
+   "fat": 5
+  },
+  {
+   "id": "yellow-mustard",
+   "name": "Yellow Mustard",
+   "role": "sauce",
+   "kcal": 0,
+   "protein": 0,
+   "carbs": 0,
+   "fat": 0
+  },
+  {
+   "id": "provolone",
+   "name": "Provolone Cheese (regular)",
+   "role": "cheese",
+   "kcal": 120,
+   "protein": 8,
+   "carbs": 0,
+   "fat": 9,
+   "note": "carbs published as <1"
+  },
+  {
+   "id": "avocado",
+   "name": "Avocado Spread (regular)",
+   "role": "topping",
+   "kcal": 25,
+   "protein": 0,
+   "carbs": 2,
+   "fat": 2
+  },
+  {
+   "id": "bacon",
+   "name": "Bacon (regular)",
+   "role": "protein",
+   "kcal": 90,
+   "protein": 7,
+   "carbs": 0,
+   "fat": 7
+  },
+  {
+   "id": "turkey",
+   "name": "Turkey (regular)",
+   "role": "protein",
+   "kcal": 60,
+   "protein": 14,
+   "carbs": 1,
+   "fat": 0.5
+  },
+  {
+   "id": "ham",
+   "name": "Ham (regular)",
+   "role": "protein",
+   "kcal": 70,
+   "protein": 11,
+   "carbs": 2,
+   "fat": 1.5
+  },
+  {
+   "id": "roast-beef",
+   "name": "Roast Beef (regular)",
+   "role": "protein",
+   "kcal": 90,
+   "protein": 16,
+   "carbs": 0,
+   "fat": 3
+  },
+  {
+   "id": "tuna-salad",
+   "name": "Tuna Salad (regular)",
+   "role": "protein",
+   "kcal": 260,
+   "protein": 11,
+   "carbs": 4,
+   "fat": 20
+  },
+  {
+   "id": "salami-capocollo",
+   "name": "Salami & Capocollo (regular)",
+   "role": "protein",
+   "kcal": 160,
+   "protein": 14,
+   "carbs": 2,
+   "fat": 11
+  },
+  {
+   "id": "chicken",
+   "name": "All-Natural Chicken (regular)",
+   "role": "protein",
+   "kcal": 110,
+   "protein": 18,
+   "carbs": 1,
+   "fat": 3.5
+  },
+  {
+   "id": "jimmy-chips",
+   "name": "Regular Jimmy Chips®",
+   "role": "side",
+   "group": "side",
+   "kcal": 300,
+   "protein": 3,
+   "carbs": 33,
+   "fat": 18
+  },
+  {
+   "id": "thinny-chips",
+   "name": "Thinny Chips®",
+   "role": "side",
+   "group": "side",
+   "kcal": 260,
+   "protein": 4,
+   "carbs": 39,
+   "fat": 11
+  },
+  {
+   "id": "dill-pickle",
+   "name": "Jumbo Kosher Dill Pickle",
+   "role": "side",
+   "group": "side",
+   "kcal": 20,
+   "protein": 1,
+   "carbs": 3,
+   "fat": 0
+  },
+  {
+   "id": "potato-salad",
+   "name": "Homestyle Potato Salad",
+   "role": "side",
+   "group": "side",
+   "kcal": 220,
+   "protein": 6,
+   "carbs": 17,
+   "fat": 14
+  }
+ ]
+}

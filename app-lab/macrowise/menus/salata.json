@@ -1,0 +1,795 @@
+{
+ "restaurant": "Salata",
+ "aliases": [
+  "salata",
+  "salata salad kitchen",
+  "salata salad"
+ ],
+ "kind": "chain",
+ "buffer": 0.05,
+ "source": {
+  "url": "https://webapi.salata.com/wp-content/uploads/2025/10/Nutrition-Guide_10-25-trifold-sm.pdf",
+  "fetched": "2026-11-06",
+  "sha256": "c505f34fd2b66e16eaf348ace2109de41b2f420365783fbb51eb969ce4c9ae5b",
+  "hashOf": "rows"
+ },
+ "items": [
+  {
+   "id": "chicken-caesar-salad",
+   "name": "Grilled Chicken Caesar, small salad",
+   "category": "salad",
+   "kcal": 640,
+   "protein": 36,
+   "carbs": 28,
+   "fat": 44.5,
+   "components": [
+    "romaine-hearts",
+    "herb-grilled-chicken",
+    "parmesan",
+    "baked-croutons",
+    "classic-caesar"
+   ],
+   "sum": true
+  },
+  {
+   "id": "turkey-egg-salad-ff",
+   "name": "Smoked Turkey & Egg, fat-free dressing, small salad",
+   "category": "salad",
+   "kcal": 215,
+   "protein": 28,
+   "carbs": 14.5,
+   "fat": 4.5,
+   "components": [
+    "salata-mix",
+    "smoked-turkey",
+    "chopped-egg",
+    "tomatoes",
+    "cucumbers",
+    "ff-sun-dried-tomato"
+   ],
+   "sum": true
+  },
+  {
+   "id": "chipotle-shrimp-southwest",
+   "name": "Chipotle Shrimp Southwest, small salad",
+   "category": "salad",
+   "kcal": 325,
+   "protein": 22,
+   "carbs": 20,
+   "fat": 16.5,
+   "components": [
+    "romaine-hearts",
+    "chipotle-shrimp",
+    "black-beans",
+    "corn",
+    "tortilla-strips",
+    "spicy-chipotle-ranch"
+   ],
+   "sum": true
+  },
+  {
+   "id": "salmon-greek-salad",
+   "name": "Baked Salmon Greek, small salad",
+   "category": "salad",
+   "kcal": 510,
+   "protein": 29,
+   "carbs": 9,
+   "fat": 48.5,
+   "components": [
+    "spinach",
+    "baked-salmon",
+    "feta",
+    "cucumbers",
+    "red-onions",
+    "chick-peas",
+    "lemon-vinaigrette"
+   ],
+   "sum": true,
+   "asPublished": true,
+   "note": "Baked Salmon published as 160 kcal / 22 g P / 0 g C / 17 g F — copied as published (macros imply ~240 kcal)."
+  },
+  {
+   "id": "steak-blue-salad",
+   "name": "Steak & Blue Cheese, small salad",
+   "category": "salad",
+   "kcal": 615,
+   "protein": 22,
+   "carbs": 11.5,
+   "fat": 51,
+   "components": [
+    "arugula",
+    "angus-steak",
+    "blue-cheese",
+    "tomatoes",
+    "red-onions",
+    "balsamic-vinaigrette"
+   ],
+   "sum": true
+  },
+  {
+   "id": "tofu-miso-salad",
+   "name": "Grilled Tofu Miso, small salad",
+   "category": "salad",
+   "kcal": 400,
+   "protein": 12,
+   "carbs": 21,
+   "fat": 32,
+   "components": [
+    "baby-kale",
+    "grilled-tofu",
+    "edamame",
+    "mixed-cabbage",
+    "carrots",
+    "white-miso-vinaigrette"
+   ],
+   "sum": true
+  },
+  {
+   "id": "chicken-ranch-wrap",
+   "name": "Grilled Chicken Ranch Wrap",
+   "category": "entree",
+   "kcal": 715,
+   "protein": 30,
+   "carbs": 70,
+   "fat": 36.5,
+   "components": [
+    "whole-wheat-tortilla",
+    "herb-grilled-chicken",
+    "romaine-hearts",
+    "tomatoes",
+    "cheddar-jack",
+    "buttermilk-ranch"
+   ],
+   "sum": true
+  },
+  {
+   "id": "tomato-basil-soup",
+   "name": "Tomato Basil Soup (8 oz cup)",
+   "category": "side",
+   "kcal": 310,
+   "protein": 3,
+   "carbs": 16,
+   "fat": 27
+  },
+  {
+   "id": "baked-pita-chips",
+   "name": "Baked Pita Chips (4-5 pieces)",
+   "category": "side",
+   "kcal": 100,
+   "protein": 5,
+   "carbs": 21,
+   "fat": 0.5
+  },
+  {
+   "id": "multigrain-croissant",
+   "name": "Multigrain Croissant",
+   "category": "side",
+   "kcal": 120,
+   "protein": 3,
+   "carbs": 14,
+   "fat": 5
+  },
+  {
+   "id": "chocolate-chunk-cookie",
+   "name": "Chocolate Chunk Cookie",
+   "category": "staple",
+   "kcal": 180,
+   "protein": 2,
+   "carbs": 27,
+   "fat": 7
+  }
+ ],
+ "components": [
+  {
+   "id": "romaine-hearts",
+   "name": "Romaine Hearts (small)",
+   "role": "base",
+   "group": "greens",
+   "kcal": 15,
+   "protein": 1,
+   "carbs": 3,
+   "fat": 0
+  },
+  {
+   "id": "salata-mix",
+   "name": "Salata Mix (small)",
+   "role": "base",
+   "group": "greens",
+   "kcal": 40,
+   "protein": 3,
+   "carbs": 8,
+   "fat": 0
+  },
+  {
+   "id": "spinach",
+   "name": "Spinach (small)",
+   "role": "base",
+   "group": "greens",
+   "kcal": 10,
+   "protein": 1,
+   "carbs": 2,
+   "fat": 0
+  },
+  {
+   "id": "baby-kale",
+   "name": "Baby Kale (small)",
+   "role": "base",
+   "group": "greens",
+   "kcal": 20,
+   "protein": 2,
+   "carbs": 4,
+   "fat": 0
+  },
+  {
+   "id": "kale",
+   "name": "Kale (small)",
+   "role": "base",
+   "group": "greens",
+   "kcal": 20,
+   "protein": 2,
+   "carbs": 4,
+   "fat": 0
+  },
+  {
+   "id": "arugula",
+   "name": "Arugula (small)",
+   "role": "base",
+   "group": "greens",
+   "kcal": 15,
+   "protein": 1,
+   "carbs": 0.5,
+   "fat": 0,
+   "note": "carbs published as <1 g; stored as 0.5"
+  },
+  {
+   "id": "arcadian-mix",
+   "name": "Arcadian Mix (small)",
+   "role": "base",
+   "group": "greens",
+   "kcal": 10,
+   "protein": 2,
+   "carbs": 3,
+   "fat": 0
+  },
+  {
+   "id": "whole-wheat-tortilla",
+   "name": "Whole Wheat Tortilla (12\")",
+   "role": "tortilla",
+   "group": "tortilla",
+   "kcal": 280,
+   "protein": 8,
+   "carbs": 48,
+   "fat": 8
+  },
+  {
+   "id": "southwest-tortilla",
+   "name": "Southwest Tortilla (12\")",
+   "role": "tortilla",
+   "group": "tortilla",
+   "kcal": 290,
+   "protein": 7,
+   "carbs": 46,
+   "fat": 8
+  },
+  {
+   "id": "cool-cucumber-tortilla",
+   "name": "Cool Cucumber Tortilla (12\")",
+   "role": "tortilla",
+   "group": "tortilla",
+   "kcal": 290,
+   "protein": 9,
+   "carbs": 46,
+   "fat": 8
+  },
+  {
+   "id": "herb-grilled-chicken",
+   "name": "Herb-Marinated Grilled Chicken (4 oz)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 170,
+   "protein": 18,
+   "carbs": 15,
+   "fat": 4.5
+  },
+  {
+   "id": "pesto-chicken",
+   "name": "Pesto Chicken (4 oz)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 230,
+   "protein": 19,
+   "carbs": 14,
+   "fat": 11
+  },
+  {
+   "id": "spicy-chipotle-chicken",
+   "name": "Spicy Chipotle Chicken (4 oz)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 170,
+   "protein": 16,
+   "carbs": 14,
+   "fat": 5
+  },
+  {
+   "id": "smoked-turkey",
+   "name": "Smoked Turkey (4 oz)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 110,
+   "protein": 20,
+   "carbs": 2,
+   "fat": 2
+  },
+  {
+   "id": "angus-steak",
+   "name": "Angus-Certified Beef Steak (4 oz)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 200,
+   "protein": 16,
+   "carbs": 2,
+   "fat": 14
+  },
+  {
+   "id": "herb-shrimp",
+   "name": "Herb-Marinated Shrimp (4 oz)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 120,
+   "protein": 16,
+   "carbs": 0.5,
+   "fat": 4.5,
+   "note": "carbs published as <1 g; stored as 0.5"
+  },
+  {
+   "id": "chipotle-shrimp",
+   "name": "Chipotle Shrimp (4 oz)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 80,
+   "protein": 18,
+   "carbs": 0,
+   "fat": 0
+  },
+  {
+   "id": "baked-salmon",
+   "name": "Baked Salmon (4 oz)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 160,
+   "protein": 22,
+   "carbs": 0,
+   "fat": 17,
+   "asPublished": true,
+   "note": "Baked Salmon published as 160 kcal / 22 g P / 0 g C / 17 g F — copied as published (macros imply ~240 kcal)."
+  },
+  {
+   "id": "herb-krabmeat",
+   "name": "Herb-Marinated Krabmeat (4 oz)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 170,
+   "protein": 7,
+   "carbs": 22,
+   "fat": 7
+  },
+  {
+   "id": "seafood-mix",
+   "name": "Seafood Mix (4 oz)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 150,
+   "protein": 10,
+   "carbs": 15,
+   "fat": 6
+  },
+  {
+   "id": "grilled-tofu",
+   "name": "Grilled Tofu (5 pieces)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 170,
+   "protein": 7,
+   "carbs": 4,
+   "fat": 15
+  },
+  {
+   "id": "falafel",
+   "name": "Falafel (3 pieces)",
+   "role": "protein",
+   "group": "protein",
+   "kcal": 140,
+   "protein": 8,
+   "carbs": 23,
+   "fat": 2.5
+  },
+  {
+   "id": "quinoa",
+   "name": "Quinoa (4 oz)",
+   "role": "topping",
+   "kcal": 70,
+   "protein": 2,
+   "carbs": 12,
+   "fat": 1
+  },
+  {
+   "id": "chopped-egg",
+   "name": "Chopped Egg",
+   "role": "topping",
+   "kcal": 40,
+   "protein": 3,
+   "carbs": 0,
+   "fat": 2.5
+  },
+  {
+   "id": "chopped-bacon",
+   "name": "Chopped Bacon",
+   "role": "topping",
+   "kcal": 50,
+   "protein": 3,
+   "carbs": 0,
+   "fat": 4.5
+  },
+  {
+   "id": "avocado",
+   "name": "Avocado (1 half)",
+   "role": "topping",
+   "kcal": 130,
+   "protein": 2,
+   "carbs": 6,
+   "fat": 13
+  },
+  {
+   "id": "tomatoes",
+   "name": "Tomatoes",
+   "role": "topping",
+   "kcal": 10,
+   "protein": 1,
+   "carbs": 2,
+   "fat": 0
+  },
+  {
+   "id": "cucumbers",
+   "name": "Cucumbers",
+   "role": "topping",
+   "kcal": 5,
+   "protein": 0,
+   "carbs": 0.5,
+   "fat": 0,
+   "note": "carbs published as <1 g; stored as 0.5"
+  },
+  {
+   "id": "carrots",
+   "name": "Carrots",
+   "role": "topping",
+   "kcal": 5,
+   "protein": 0,
+   "carbs": 2,
+   "fat": 0
+  },
+  {
+   "id": "red-onions",
+   "name": "Red Onions",
+   "role": "topping",
+   "kcal": 10,
+   "protein": 0,
+   "carbs": 1,
+   "fat": 0
+  },
+  {
+   "id": "mixed-cabbage",
+   "name": "Mixed Cabbage",
+   "role": "topping",
+   "kcal": 5,
+   "protein": 0,
+   "carbs": 1,
+   "fat": 0
+  },
+  {
+   "id": "edamame",
+   "name": "Edamame",
+   "role": "topping",
+   "kcal": 20,
+   "protein": 2,
+   "carbs": 2,
+   "fat": 1
+  },
+  {
+   "id": "black-beans",
+   "name": "Black Beans",
+   "role": "beans",
+   "kcal": 20,
+   "protein": 1,
+   "carbs": 4,
+   "fat": 0
+  },
+  {
+   "id": "corn",
+   "name": "Corn",
+   "role": "topping",
+   "kcal": 20,
+   "protein": 1,
+   "carbs": 4,
+   "fat": 0
+  },
+  {
+   "id": "chick-peas",
+   "name": "Chick Peas",
+   "role": "topping",
+   "kcal": 30,
+   "protein": 2,
+   "carbs": 5,
+   "fat": 0
+  },
+  {
+   "id": "broccoli",
+   "name": "Broccoli",
+   "role": "topping",
+   "kcal": 5,
+   "protein": 0,
+   "carbs": 0.5,
+   "fat": 0,
+   "note": "carbs published as <1 g; stored as 0.5"
+  },
+  {
+   "id": "mushrooms",
+   "name": "Mushrooms",
+   "role": "topping",
+   "kcal": 5,
+   "protein": 1,
+   "carbs": 0.5,
+   "fat": 0,
+   "note": "carbs published as <1 g; stored as 0.5"
+  },
+  {
+   "id": "sun-dried-tomatoes",
+   "name": "Sun-Dried Tomatoes",
+   "role": "topping",
+   "kcal": 45,
+   "protein": 0,
+   "carbs": 9,
+   "fat": 0
+  },
+  {
+   "id": "dried-cranberries",
+   "name": "Dried Cranberries",
+   "role": "topping",
+   "kcal": 60,
+   "protein": 0,
+   "carbs": 16,
+   "fat": 0
+  },
+  {
+   "id": "pasta",
+   "name": "Pasta",
+   "role": "topping",
+   "kcal": 110,
+   "protein": 4,
+   "carbs": 22,
+   "fat": 1.5
+  },
+  {
+   "id": "almonds",
+   "name": "Almonds",
+   "role": "topping",
+   "kcal": 45,
+   "protein": 2,
+   "carbs": 2,
+   "fat": 3.5
+  },
+  {
+   "id": "walnuts",
+   "name": "Walnuts",
+   "role": "topping",
+   "kcal": 60,
+   "protein": 1,
+   "carbs": 1,
+   "fat": 5
+  },
+  {
+   "id": "pumpkin-seeds",
+   "name": "Pumpkin Seeds",
+   "role": "topping",
+   "kcal": 50,
+   "protein": 2,
+   "carbs": 0.5,
+   "fat": 4,
+   "note": "carbs published as <1 g; stored as 0.5"
+  },
+  {
+   "id": "tortilla-strips",
+   "name": "Tortilla Strips",
+   "role": "topping",
+   "kcal": 40,
+   "protein": 1,
+   "carbs": 7,
+   "fat": 1.5
+  },
+  {
+   "id": "sesame-sticks",
+   "name": "Sesame Sticks",
+   "role": "topping",
+   "kcal": 70,
+   "protein": 1,
+   "carbs": 6,
+   "fat": 5
+  },
+  {
+   "id": "baked-croutons",
+   "name": "Baked Croutons (28 g)",
+   "role": "topping",
+   "kcal": 120,
+   "protein": 3,
+   "carbs": 9,
+   "fat": 9
+  },
+  {
+   "id": "cheddar-jack",
+   "name": "Cheddar & Monterey Jack Cheese",
+   "role": "cheese",
+   "kcal": 40,
+   "protein": 2,
+   "carbs": 0,
+   "fat": 3
+  },
+  {
+   "id": "feta",
+   "name": "Feta Cheese",
+   "role": "cheese",
+   "kcal": 45,
+   "protein": 4,
+   "carbs": 0.5,
+   "fat": 3.5,
+   "note": "carbs published as <1 g; stored as 0.5"
+  },
+  {
+   "id": "blue-cheese",
+   "name": "Blue Cheese",
+   "role": "cheese",
+   "kcal": 60,
+   "protein": 4,
+   "carbs": 0,
+   "fat": 5
+  },
+  {
+   "id": "parmesan",
+   "name": "Parmesan Cheese",
+   "role": "cheese",
+   "kcal": 45,
+   "protein": 4,
+   "carbs": 0,
+   "fat": 3
+  },
+  {
+   "id": "fresh-herb-vinaigrette",
+   "name": "Fresh Herb Vinaigrette (2 oz)",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 250,
+   "protein": 0,
+   "carbs": 5,
+   "fat": 27
+  },
+  {
+   "id": "balsamic-vinaigrette",
+   "name": "Balsamic Vinaigrette (2 oz)",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 320,
+   "protein": 0,
+   "carbs": 6,
+   "fat": 32
+  },
+  {
+   "id": "lemon-vinaigrette",
+   "name": "Lemon Vinaigrette (2 oz)",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 250,
+   "protein": 0,
+   "carbs": 0,
+   "fat": 28
+  },
+  {
+   "id": "white-miso-vinaigrette",
+   "name": "White Miso Vinaigrette (2 oz)",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 180,
+   "protein": 1,
+   "carbs": 8,
+   "fat": 16
+  },
+  {
+   "id": "ff-sun-dried-tomato",
+   "name": "Fat-free Sun-Dried Tomato (2 oz)",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 10,
+   "protein": 1,
+   "carbs": 2,
+   "fat": 0
+  },
+  {
+   "id": "lemon-juice",
+   "name": "Lemon Juice (2 oz)",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 5,
+   "protein": 0,
+   "carbs": 2,
+   "fat": 0
+  },
+  {
+   "id": "buttermilk-ranch",
+   "name": "Buttermilk Ranch (2 oz)",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 200,
+   "protein": 0,
+   "carbs": 2,
+   "fat": 21
+  },
+  {
+   "id": "spicy-chipotle-ranch",
+   "name": "Spicy Chipotle Ranch (2 oz)",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 150,
+   "protein": 0,
+   "carbs": 2,
+   "fat": 15
+  },
+  {
+   "id": "honey-mustard",
+   "name": "Honey Mustard (2 oz)",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 230,
+   "protein": 0,
+   "carbs": 7,
+   "fat": 23
+  },
+  {
+   "id": "ginger-lime-vinaigrette",
+   "name": "Ginger Lime Vinaigrette (2 oz)",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 240,
+   "protein": 0,
+   "carbs": 6,
+   "fat": 24
+  },
+  {
+   "id": "jalapeno-avocado",
+   "name": "Jalapeño Avocado (2 oz)",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 170,
+   "protein": 0,
+   "carbs": 2,
+   "fat": 18
+  },
+  {
+   "id": "ff-mango",
+   "name": "Fat-free Mango (seasonal, 2 oz)",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 20,
+   "protein": 1,
+   "carbs": 5,
+   "fat": 0
+  },
+  {
+   "id": "classic-caesar",
+   "name": "Classic Caesar (2 oz)",
+   "role": "dressing",
+   "group": "dressing",
+   "kcal": 290,
+   "protein": 10,
+   "carbs": 1,
+   "fat": 28
+  }
+ ]
+}

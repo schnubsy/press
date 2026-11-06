@@ -1,0 +1,57 @@
+{
+ "chains": [
+  {
+   "slug": "chick-fil-a",
+   "restaurant": "Chick-fil-A",
+   "aliases": [
+    "chick-fil-a",
+    "chick fil a",
+    "chickfila",
+    "chick-fil-a restaurant"
+   ]
+  },
+  {
+   "slug": "chipotle",
+   "restaurant": "Chipotle Mexican Grill",
+   "aliases": [
+    "chipotle",
+    "chipotle mexican grill"
+   ]
+  },
+  {
+   "slug": "shake-shack",
+   "restaurant": "Shake Shack",
+   "aliases": [
+    "shake shack",
+    "shakeshack"
+   ]
+  },
+  {
+   "slug": "salata",
+   "restaurant": "Salata",
+   "aliases": [
+    "salata",
+    "salata salad kitchen",
+    "salata salad"
+   ]
+  },
+  {
+   "slug": "cava",
+   "restaurant": "CAVA",
+   "aliases": [
+    "cava",
+    "cava mezze",
+    "cava grill"
+   ]
+  },
+  {
+   "slug": "jimmy-johns",
+   "restaurant": "Jimmy John's",
+   "aliases": [
+    "jimmy john's",
+    "jimmy johns",
+    "jimmy john's gourmet sandwiches"
+   ]
+  }
+ ]
+}

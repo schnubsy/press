@@ -1,0 +1,460 @@
+{
+ "restaurant": "Shake Shack",
+ "aliases": [
+  "shake shack",
+  "shakeshack"
+ ],
+ "kind": "chain",
+ "buffer": 0.05,
+ "source": {
+  "url": "https://shakeshack.com/document/2451",
+  "fetched": "2026-11-06",
+  "sha256": "67d6b0e44732db2ec059c7735b9d39491091c7bee532fdf20ef190600300a720",
+  "hashOf": "rows"
+ },
+ "items": [
+  {
+   "id": "single-shackburger",
+   "name": "Single ShackBurger",
+   "category": "entree",
+   "kcal": 500,
+   "protein": 29,
+   "carbs": 26,
+   "fat": 30,
+   "components": [
+    "potato-roll",
+    "burger-patty",
+    "american-cheese",
+    "shacksauce"
+   ]
+  },
+  {
+   "id": "double-shackburger",
+   "name": "Double ShackBurger",
+   "category": "entree",
+   "kcal": 760,
+   "protein": 51,
+   "carbs": 27,
+   "fat": 48
+  },
+  {
+   "id": "shackburger-lettuce-wrap-single",
+   "name": "ShackBurger, Single Lettuce Wrap",
+   "category": "entree",
+   "kcal": 330,
+   "protein": 23,
+   "carbs": 3,
+   "fat": 25
+  },
+  {
+   "id": "shackburger-lettuce-wrap-double",
+   "name": "ShackBurger, Double Lettuce Wrap",
+   "category": "entree",
+   "kcal": 580,
+   "protein": 45,
+   "carbs": 3,
+   "fat": 43
+  },
+  {
+   "id": "single-hamburger",
+   "name": "Single Hamburger",
+   "category": "entree",
+   "kcal": 370,
+   "protein": 25,
+   "carbs": 24,
+   "fat": 18,
+   "components": [
+    "potato-roll",
+    "burger-patty"
+   ]
+  },
+  {
+   "id": "double-hamburger",
+   "name": "Double Hamburger",
+   "category": "entree",
+   "kcal": 560,
+   "protein": 44,
+   "carbs": 24,
+   "fat": 30
+  },
+  {
+   "id": "single-cheeseburger",
+   "name": "Single Cheeseburger",
+   "category": "entree",
+   "kcal": 440,
+   "protein": 29,
+   "carbs": 25,
+   "fat": 24,
+   "components": [
+    "potato-roll",
+    "burger-patty",
+    "american-cheese"
+   ]
+  },
+  {
+   "id": "double-cheeseburger",
+   "name": "Double Cheeseburger",
+   "category": "entree",
+   "kcal": 700,
+   "protein": 51,
+   "carbs": 25,
+   "fat": 42
+  },
+  {
+   "id": "single-smokeshack",
+   "name": "Single SmokeShack",
+   "category": "entree",
+   "kcal": 600,
+   "protein": 36,
+   "carbs": 28,
+   "fat": 38,
+   "components": [
+    "potato-roll",
+    "burger-patty",
+    "american-cheese",
+    "shacksauce",
+    "bacon",
+    "cherry-peppers"
+   ]
+  },
+  {
+   "id": "double-smokeshack",
+   "name": "Double SmokeShack",
+   "category": "entree",
+   "kcal": 860,
+   "protein": 58,
+   "carbs": 28,
+   "fat": 56
+  },
+  {
+   "id": "smokeshack-lettuce-wrap-single",
+   "name": "SmokeShack, Single Lettuce Wrap",
+   "category": "entree",
+   "kcal": 430,
+   "protein": 29,
+   "carbs": 5,
+   "fat": 32
+  },
+  {
+   "id": "bacon-cheeseburger-single",
+   "name": "Bacon Cheeseburger, Single",
+   "category": "entree",
+   "kcal": 530,
+   "protein": 35,
+   "carbs": 25,
+   "fat": 32
+  },
+  {
+   "id": "avocado-bacon-burger-single",
+   "name": "Avocado Bacon Burger, Single",
+   "category": "entree",
+   "kcal": 670,
+   "protein": 37,
+   "carbs": 30,
+   "fat": 45
+  },
+  {
+   "id": "avocado-bacon-burger-lettuce-wrap-single",
+   "name": "Avocado Bacon Burger Lettuce Wrap, Single",
+   "category": "entree",
+   "kcal": 430,
+   "protein": 29,
+   "carbs": 3,
+   "fat": 33
+  },
+  {
+   "id": "shack-stack",
+   "name": "Shack Stack",
+   "category": "entree",
+   "kcal": 770,
+   "protein": 40,
+   "carbs": 50,
+   "fat": 45
+  },
+  {
+   "id": "shroom-burger",
+   "name": "'Shroom Burger",
+   "category": "entree",
+   "kcal": 510,
+   "protein": 18,
+   "carbs": 49,
+   "fat": 27
+  },
+  {
+   "id": "chicken-shack",
+   "name": "Chicken Shack",
+   "category": "entree",
+   "kcal": 550,
+   "protein": 33,
+   "carbs": 34,
+   "fat": 31
+  },
+  {
+   "id": "chicken-shack-lettuce-wrap",
+   "name": "Chicken Shack Lettuce Wrap",
+   "category": "entree",
+   "kcal": 420,
+   "protein": 27,
+   "carbs": 11,
+   "fat": 30
+  },
+  {
+   "id": "avocado-bacon-chicken",
+   "name": "Avocado Bacon Chicken",
+   "category": "entree",
+   "kcal": 670,
+   "protein": 40,
+   "carbs": 35,
+   "fat": 41
+  },
+  {
+   "id": "chicken-bites-6",
+   "name": "Chicken Bites (6 piece)",
+   "category": "entree",
+   "kcal": 350,
+   "protein": 18,
+   "carbs": 28,
+   "fat": 18
+  },
+  {
+   "id": "chicken-bites-10",
+   "name": "Chicken Bites (10 piece)",
+   "category": "entree",
+   "kcal": 580,
+   "protein": 31,
+   "carbs": 47,
+   "fat": 30
+  },
+  {
+   "id": "hot-dog",
+   "name": "Hot Dog",
+   "category": "entree",
+   "kcal": 350,
+   "protein": 16,
+   "carbs": 25,
+   "fat": 22
+  },
+  {
+   "id": "cheese-dog",
+   "name": "Cheese Dog",
+   "category": "entree",
+   "kcal": 450,
+   "protein": 19,
+   "carbs": 25,
+   "fat": 31
+  },
+  {
+   "id": "fries",
+   "name": "Regular Fries",
+   "category": "side",
+   "kcal": 470,
+   "protein": 6,
+   "carbs": 63,
+   "fat": 22
+  },
+  {
+   "id": "cheese-fries",
+   "name": "Cheese Fries",
+   "category": "side",
+   "kcal": 710,
+   "protein": 12,
+   "carbs": 64,
+   "fat": 44
+  },
+  {
+   "id": "bacon-cheese-fries",
+   "name": "Bacon Cheese Fries",
+   "category": "side",
+   "kcal": 850,
+   "protein": 21,
+   "carbs": 65,
+   "fat": 55
+  },
+  {
+   "id": "onion-rings",
+   "name": "Beer Battered Onion Rings",
+   "category": "side",
+   "kcal": 570,
+   "protein": 6,
+   "carbs": 64,
+   "fat": 33
+  },
+  {
+   "id": "vanilla-shake",
+   "name": "Vanilla Shake",
+   "category": "staple",
+   "kcal": 680,
+   "protein": 18,
+   "carbs": 72,
+   "fat": 36
+  },
+  {
+   "id": "chocolate-shake",
+   "name": "Chocolate Shake",
+   "category": "staple",
+   "kcal": 750,
+   "protein": 16,
+   "carbs": 76,
+   "fat": 45
+  }
+ ],
+ "components": [
+  {
+   "id": "potato-roll",
+   "name": "Potato Roll",
+   "role": "bun",
+   "group": "bun",
+   "kcal": 180,
+   "protein": 7,
+   "carbs": 24,
+   "fat": 6
+  },
+  {
+   "id": "gluten-free-bun",
+   "name": "Gluten Free Bun",
+   "role": "bun",
+   "group": "bun",
+   "kcal": 160,
+   "protein": 3,
+   "carbs": 31,
+   "fat": 3
+  },
+  {
+   "id": "lettuce-wrap",
+   "name": "Lettuce Wrap",
+   "role": "bun",
+   "kcal": 5,
+   "protein": 1,
+   "carbs": 1,
+   "fat": 0
+  },
+  {
+   "id": "burger-patty",
+   "name": "Burger Patty",
+   "role": "protein",
+   "kcal": 190,
+   "protein": 19,
+   "carbs": 0,
+   "fat": 12
+  },
+  {
+   "id": "buttermilk-chicken-breast",
+   "name": "Buttermilk Chicken Breast",
+   "role": "protein",
+   "kcal": 280,
+   "protein": 26,
+   "carbs": 9,
+   "fat": 16
+  },
+  {
+   "id": "american-cheese",
+   "name": "American Cheese",
+   "role": "cheese",
+   "kcal": 70,
+   "protein": 4,
+   "carbs": 1,
+   "fat": 6
+  },
+  {
+   "id": "shacksauce",
+   "name": "ShackSauce",
+   "role": "sauce",
+   "kcal": 60,
+   "protein": 0,
+   "carbs": 0,
+   "fat": 6
+  },
+  {
+   "id": "bacon",
+   "name": "Bacon (2 Slices)",
+   "role": "topping",
+   "kcal": 90,
+   "protein": 6,
+   "carbs": 0,
+   "fat": 7
+  },
+  {
+   "id": "avocado",
+   "name": "Avocado",
+   "role": "topping",
+   "kcal": 60,
+   "protein": 1,
+   "carbs": 3,
+   "fat": 5
+  },
+  {
+   "id": "cherry-peppers",
+   "name": "Cherry Peppers",
+   "role": "topping",
+   "kcal": 10,
+   "protein": 0,
+   "carbs": 2,
+   "fat": 0
+  },
+  {
+   "id": "herb-mayo",
+   "name": "Herb Mayonnaise",
+   "role": "sauce",
+   "kcal": 90,
+   "protein": 0,
+   "carbs": 0,
+   "fat": 10
+  },
+  {
+   "id": "cheese-sauce",
+   "name": "Add Cheese Sauce",
+   "role": "sauce",
+   "kcal": 80,
+   "protein": 2,
+   "carbs": 1,
+   "fat": 7
+  },
+  {
+   "id": "ranch",
+   "name": "Ranch",
+   "role": "sauce",
+   "kcal": 140,
+   "protein": 1,
+   "carbs": 1,
+   "fat": 14
+  },
+  {
+   "id": "bbq-sauce",
+   "name": "BBQ Sauce",
+   "role": "sauce",
+   "kcal": 70,
+   "protein": 1,
+   "carbs": 16,
+   "fat": 0
+  },
+  {
+   "id": "honey-mustard",
+   "name": "Honey Mustard",
+   "role": "sauce",
+   "kcal": 180,
+   "protein": 1,
+   "carbs": 4,
+   "fat": 19
+  },
+  {
+   "id": "fries",
+   "name": "Regular Fries",
+   "role": "side",
+   "group": "side",
+   "kcal": 470,
+   "protein": 6,
+   "carbs": 63,
+   "fat": 22
+  },
+  {
+   "id": "onion-rings",
+   "name": "Beer Battered Onion Rings",
+   "role": "side",
+   "group": "side",
+   "kcal": 570,
+   "protein": 6,
+   "carbs": 64,
+   "fat": 33
+  }
+ ]
+}
