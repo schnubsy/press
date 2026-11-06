@@ -8,8 +8,8 @@
   <title>Macrowise</title>
   <meta name="page-title" content="Macrowise">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-  <script type="module" crossorigin src="./assets/index-q43gk84d.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-G8VEeRnE.css">
+  <script type="module" crossorigin src="./assets/index-D7bC0xbY.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-B40Rnhpo.css">
 </head>
 <body>
   <main id="app">
@@ -22,8 +22,11 @@
       <p id="notice" class="notice" role="status" hidden></p>
       <pre id="received" class="received" hidden></pre>
       <section id="left" class="left" aria-live="polite" aria-label="Remaining today"></section>
+      <div id="sort" class="sort" role="group" aria-label="Sort orders">
+        <button type="button" data-sort="kcal">Calories</button><button type="button" data-sort="protein">Protein</button><button type="button" data-sort="carbs">Carbs</button><button type="button" data-sort="fat">Fat</button><button type="button" data-sort="ratio">P/Cal</button>
+      </div>
     </header>
-    <ol id="list" class="list" aria-label="Orders, best golden ratio first"></ol>
+    <ol id="list" class="list" aria-label="Orders, protein per calorie highest first"></ol>
   </main>
   <dialog id="picker" class="picker" aria-labelledby="pickerTitle">
     <div class="sheet-head">
