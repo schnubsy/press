@@ -90,6 +90,15 @@ test('schedule words', () => {
   assert.equal(AM.schedText({ every: 1440 }), 'Daily');
   assert.equal(AM.schedText({ daily: ['07:00', '18:00'] }), 'Daily at 7:00 AM, 6:00 PM CT');
   assert.equal(AM.schedText({ weekly: { dow: 3, at: '12:00' } }), 'Every Wednesday at 12:00 PM CT');
+  assert.equal(AM.schedText({ weekly: { dow: [2, 6], at: '01:35' } }), 'Every Tuesday and Saturday at 1:35 AM CT');
+  assert.equal(AM.schedText({ weekly: { dow: [6, 2], at: '01:20' } }), 'Every Tuesday and Saturday at 1:20 AM CT');
+  assert.equal(AM.schedText({ weekly: { dow: [1, 3, 5], at: '09:00' } }), 'Every Monday, Wednesday and Friday at 9:00 AM CT');
+  assert.equal(AM.schedText({ weekly: { dow: [0], at: '23:30' } }), 'Every Sunday at 11:30 PM CT');
+  for (const dow of [[], [9], undefined, null]) {
+    const t = AM.schedText({ weekly: { dow, at: '01:35' } });
+    assert.equal(t, 'Weekly', JSON.stringify(dow));
+    assert.doesNotMatch(t, /undefined/);
+  }
   assert.equal(AM.schedText({ monthly: { dom: 2, at: '09:00' } }), 'Monthly on the 2nd at 9:00 AM CT');
 });
 

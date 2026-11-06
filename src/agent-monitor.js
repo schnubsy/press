@@ -165,7 +165,14 @@
     var fmt12 = function (hhmm) { var a = hhmm.split(':'), h = +a[0]; return ((h % 12) || 12) + ':' + a[1] + (h < 12 ? ' AM' : ' PM'); };
     if (s.daily) return 'Daily at ' + s.daily.map(fmt12).join(', ') + ' CT';
     var DOW = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    if (s.weekly) return 'Every ' + DOW[s.weekly.dow] + ' at ' + fmt12(s.weekly.at) + ' CT';
+    if (s.weekly) {
+      // weekly.dow: one weekday (0–6) or a list ([2,6] → "Every Tuesday and Saturday") — press_agent_due_times.
+      var days = [].concat(s.weekly.dow).filter(function (d) { return DOW[d] !== undefined; })
+        .filter(function (d, i, a) { return a.indexOf(d) === i; }).sort(function (x, y) { return x - y; }).map(function (d) { return DOW[d]; });
+      if (!days.length || !s.weekly.at) return 'Weekly';
+      var list = days.length < 3 ? days.join(' and ') : days.slice(0, -1).join(', ') + ' and ' + days[days.length - 1];
+      return 'Every ' + list + ' at ' + fmt12(s.weekly.at) + ' CT';
+    }
     if (s.monthly) { var n = s.monthly.dom, suf = n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
       return 'Monthly on the ' + n + suf + ' at ' + fmt12(s.monthly.at) + ' CT'; }
     return 'Scheduled';
