@@ -362,7 +362,7 @@
    "category": "entree",
    "kcal": 90,
    "protein": 17,
-   "carbs": 0,
+   "carbs": 0.5,
    "fat": 3,
    "components": [
     "unwich"
@@ -609,7 +609,7 @@
    "role": "bun",
    "kcal": 0,
    "protein": 0,
-   "carbs": 0,
+   "carbs": 0.5,
    "fat": 0,
    "note": "carbs published as <1"
   },
@@ -655,7 +655,7 @@
    "role": "cheese",
    "kcal": 120,
    "protein": 8,
-   "carbs": 0,
+   "carbs": 0.5,
    "fat": 9,
    "note": "carbs published as <1"
   },

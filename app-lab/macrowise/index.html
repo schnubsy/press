@@ -8,14 +8,16 @@
   <title>Macrowise</title>
   <meta name="page-title" content="Macrowise">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-  <script type="module" crossorigin src="./assets/index-pJjQxxYA.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CoWiAX2C.css">
+  <script type="module" crossorigin src="./assets/index-q43gk84d.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-G8VEeRnE.css">
 </head>
 <body>
   <main id="app">
     <header class="top">
       <h1><button id="place" class="place" aria-haspopup="dialog" aria-controls="picker"><span id="placeLead"></span> <strong id="placeName">Finding where you are…</strong> <span aria-hidden="true">▾</span></button></h1>
       <p id="noMenu" class="no-menu" role="status" hidden></p>
+      <p id="menuNote" class="menu-note" role="status" hidden></p>
+      <a id="menuLink" class="menu-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Nutrition source ↗</a>
       <p id="source" class="source"></p>
       <p id="notice" class="notice" role="status" hidden></p>
       <pre id="received" class="received" hidden></pre>
@@ -34,8 +36,38 @@
     <input id="search" class="search" type="search" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search" placeholder="Restaurant name">
     <p id="searchMsg" class="msg" role="status"></p>
     <ul id="searchList" class="rows" aria-label="Search results"></ul>
+    <button id="refreshMenu" class="refresh" type="button" hidden>Refresh menu</button>
+    <p id="refreshMsg" class="msg" role="status"></p>
+  </dialog>
+  <dialog id="settings" class="picker settings" aria-labelledby="settingsTitle">
+    <div class="sheet-head">
+      <h2 id="settingsTitle">Settings</h2>
+      <button id="settingsDone" class="done" type="button">Done</button>
+    </div>
+    <fieldset class="group">
+      <legend>Dinner reserve</legend>
+      <label class="toggle"><input type="checkbox" data-field="reserve.on"> Keep some back for dinner</label>
+      <div class="pair">
+        <label>Calories <input type="number" inputmode="numeric" min="0" max="3000" step="10" data-field="reserve.kcal"></label>
+        <label>Protein g <input type="number" inputmode="numeric" min="0" max="300" data-field="reserve.protein"></label>
+      </div>
+    </fieldset>
+    <fieldset class="group">
+      <legend>Golden-ratio target</legend>
+      <label>Protein share of calories, % <input type="number" inputmode="numeric" min="10" max="80" data-field="target"></label>
+    </fieldset>
+    <fieldset class="group">
+      <legend>Fallback daily targets</legend>
+      <p class="msg">Used only until MacroFactor sends today’s numbers.</p>
+      <div class="pair">
+        <label>Calories <input type="number" inputmode="numeric" min="500" max="6000" step="10" data-field="fallback.kcal"></label>
+        <label>Protein g <input type="number" inputmode="numeric" min="0" max="500" data-field="fallback.protein"></label>
+        <label>Carbs g <input type="number" inputmode="numeric" min="0" max="1000" data-field="fallback.carbs"></label>
+        <label>Fat g <input type="number" inputmode="numeric" min="0" max="400" data-field="fallback.fat"></label>
+      </div>
+    </fieldset>
   </dialog>
   <p id="toast" class="toast" role="status" hidden></p>
-  <nav class="dock" aria-label="Log"><a id="logIt" class="log-it" href="#" hidden>Log it to MacroFactor</a></nav>
+  <nav class="dock" aria-label="Log and settings"><button id="openSettings" class="gear" type="button" aria-haspopup="dialog" aria-controls="settings" aria-label="Settings">⚙︎</button><a id="logIt" class="log-it" href="#" hidden>Log it to MacroFactor</a></nav>
 </body>
 </html>

@@ -16,7 +16,7 @@
  "items": [
   {
    "id": "chicken-caesar-salad",
-   "name": "Grilled Chicken Caesar, small salad",
+   "name": "Grilled Chicken Caesar, small salad (built from parts)",
    "category": "salad",
    "kcal": 640,
    "protein": 36,
@@ -33,7 +33,7 @@
   },
   {
    "id": "turkey-egg-salad-ff",
-   "name": "Smoked Turkey & Egg, fat-free dressing, small salad",
+   "name": "Smoked Turkey & Egg, fat-free dressing, small salad (built from parts)",
    "category": "salad",
    "kcal": 215,
    "protein": 28,
@@ -51,7 +51,7 @@
   },
   {
    "id": "chipotle-shrimp-southwest",
-   "name": "Chipotle Shrimp Southwest, small salad",
+   "name": "Chipotle Shrimp Southwest, small salad (built from parts)",
    "category": "salad",
    "kcal": 325,
    "protein": 22,
@@ -69,7 +69,7 @@
   },
   {
    "id": "salmon-greek-salad",
-   "name": "Baked Salmon Greek, small salad",
+   "name": "Baked Salmon Greek, small salad (built from parts)",
    "category": "salad",
    "kcal": 510,
    "protein": 29,
@@ -90,7 +90,7 @@
   },
   {
    "id": "steak-blue-salad",
-   "name": "Steak & Blue Cheese, small salad",
+   "name": "Steak & Blue Cheese, small salad (built from parts)",
    "category": "salad",
    "kcal": 615,
    "protein": 22,
@@ -108,7 +108,7 @@
   },
   {
    "id": "tofu-miso-salad",
-   "name": "Grilled Tofu Miso, small salad",
+   "name": "Grilled Tofu Miso, small salad (built from parts)",
    "category": "salad",
    "kcal": 400,
    "protein": 12,
@@ -126,7 +126,7 @@
   },
   {
    "id": "chicken-ranch-wrap",
-   "name": "Grilled Chicken Ranch Wrap",
+   "name": "Grilled Chicken Ranch Wrap (built from parts)",
    "category": "entree",
    "kcal": 715,
    "protein": 30,

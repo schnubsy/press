@@ -8,6 +8,9 @@
     "chick fil a",
     "chickfila",
     "chick-fil-a restaurant"
+   ],
+   "domains": [
+    "chick-fil-a.com"
    ]
   },
   {
@@ -16,6 +19,9 @@
    "aliases": [
     "chipotle",
     "chipotle mexican grill"
+   ],
+   "domains": [
+    "chipotle.com"
    ]
   },
   {
@@ -24,6 +30,9 @@
    "aliases": [
     "shake shack",
     "shakeshack"
+   ],
+   "domains": [
+    "shakeshack.com"
    ]
   },
   {
@@ -33,15 +42,20 @@
     "salata",
     "salata salad kitchen",
     "salata salad"
+   ],
+   "domains": [
+    "salata.com"
    ]
   },
   {
    "slug": "cava",
    "restaurant": "CAVA",
    "aliases": [
-    "cava",
     "cava mezze",
     "cava grill"
+   ],
+   "domains": [
+    "cava.com"
    ]
   },
   {
@@ -51,6 +65,9 @@
     "jimmy john's",
     "jimmy johns",
     "jimmy john's gourmet sandwiches"
+   ],
+   "domains": [
+    "jimmyjohns.com"
    ]
   }
  ]
