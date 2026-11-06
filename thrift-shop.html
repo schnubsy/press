@@ -402,6 +402,14 @@
   .seg{display:inline-flex;gap:2px;padding:2px;border-radius:10px;background:var(--surface-2);flex:0 0 auto}
   .segbtn{min-height:44px;min-width:var(--tap);padding:0 var(--s3);border:0;border-radius:8px;background:transparent;color:var(--ink);font-weight:600;font-size:13px;cursor:pointer}
   .segbtn.on{background:var(--accent-soft);color:var(--accent-text);box-shadow:inset 0 0 0 1px var(--accent-text)}
+  /* run-days-page S1: store-check day chips — the label above, seven 44px chips on their own line (fits 320px) */
+  .lrow.daysrow{flex-wrap:wrap;row-gap:var(--s2);container-type:inline-size}
+  .lrow.daysrow .rl{flex:1 1 100%;display:flex;flex-direction:column}
+  .seg.days{display:flex;width:100%;justify-content:space-between}
+  .seg.days .segbtn{flex:1 1 0;min-width:var(--tap);padding:0}
+  /* Eye S1: when the ROW is narrower than seven 44px chips (7×44 + 6×2 + 4 = 324px), two rows of four — keyed on the
+     card's own width (container query), never the viewport, so no chip ever drops under the 44px target */
+  @container (max-width:324px){ .seg.days{display:grid;grid-template-columns:repeat(4,minmax(var(--tap),1fr));row-gap:4px} }
   .brandrow .fchip{padding:0 var(--s3);min-width:var(--tap);justify-content:center}
 
   /* ---------- Sources ---------- */
@@ -1376,7 +1384,7 @@
   // ---------- loads ----------
   function since30(){ var d=new Date(Date.now()-30*864e5); return d.toISOString(); }
   // D1 round 2: pending tap-to-change saves are written BEFORE rows are reloaded (never lost, never shown stale).
-  function refresh(){ return flushSaves().then(refreshNow,refreshNow); }
+  function refresh(){ var go=function(){ return (settingsChain||Promise.resolve()).then(refreshNow); }; return flushSaves().then(go,go); }
   function refreshNow(){
     sync("busy","Syncing…");
     // press_deals is header-gated on x-plan-id = the card-scout sync_id. With no sync_id the REST
@@ -2577,7 +2585,7 @@
   function saveBirthday(){
     var m=Number((el("bday-month")||{}).value)||5, d=Number((el("bday-day")||{}).value)||3;
     var dim=[31,29,31,30,31,30,31,31,30,31,30,31][m-1]; if(d>dim){ d=dim; var ds=el("bday-day"); if(ds) ds.value=String(d); }
-    state.settings.birthday=(m<10?"0":"")+m+"-"+(d<10?"0":"")+d; saveSettings();
+    state.settings.birthday=(m<10?"0":"")+m+"-"+(d<10?"0":"")+d; saveSettings("birthday");
   }
   function brandRows(){ return (state.offerBrands||[]).slice().sort(function(a,b){ return String(a.title||"").localeCompare(String(b.title||"")); }); }
   function renderBrandList(){
@@ -2866,6 +2874,17 @@
     return "three times a day (7am, noon, 6pm)"; // 3x-day default
   }
   function weekdayName(code){ for(var i=0;i<WEEKDAYS.length;i++) if(WEEKDAYS[i][0]===code) return WEEKDAYS[i][1]; return "Wednesday"; }
+  // run-days-page S1: settings.weekly_day is ONE code ('wed'), "tue,sat" or ["tue","sat"] — the same shapes the agent's
+  // weekly.mjs weeklyDays() reads; unset / nothing valid ⇒ ['wed']. Returned in week order (Mon…Sun), de-duplicated.
+  function runDays(v){
+    var raw=Array.isArray(v)?v:String(v==null?"":v).split(/[\s,;\/]+/), have={};
+    raw.forEach(function(x){ have[String(x==null?"":x).trim().slice(0,3).toLowerCase()]=1; });
+    var out=WEEKDAYS.filter(function(w){ return have[w[0]]; }).map(function(w){ return w[0]; });
+    return out.length?out:["wed"];
+  }
+  function shortDay(code){ return weekdayName(code).slice(0,3); }
+  // one day ⇒ "every Wednesday"; several ⇒ "Tue + Sat".
+  function runDaysPhrase(v){ var d=runDays(v); return d.length===1?"every "+weekdayName(d[0]):d.map(shortDay).join(" + "); }
   // Enhancements Slice 7 — "Current setup — at a glance": scannable bullets with bold keys (replaces prose).
   function lastRunIso(){
     var t=0;
@@ -2893,7 +2912,7 @@
     var lr=lastRunIso();
     var items=[
       ["Brands watched", brands+" brand"+(brands===1?"":"s")],
-      ["Stores", feeds+" deal feed"+(feeds===1?"":"s")+" "+cadencePhrase(s.feed_cadence)+" · "+shops+" shop"+(shops===1?"":"s")+" every "+weekdayName(s.weekly_day||"wed")],
+      ["Stores", feeds+" deal feed"+(feeds===1?"":"s")+" "+cadencePhrase(s.feed_cadence)+" · "+shops+" shop"+(shops===1?"":"s")+" "+runDaysPhrase(s.weekly_day)],
       ["Alerts", alerts],
       ["Quiet hours", quiet],
       ["Min card value", minv],
@@ -3031,6 +3050,17 @@
     }
     function field(id,label,ctl){ return '<div class="lrow field"><div class="rl"><label class="lab" for="'+id+'">'+label+'</label></div>'+ctl+'</div>'; }
     function opt(v,cur,txt){ return '<option value="'+v+'"'+(cur===v?" selected":"")+'>'+txt+'</option>'; }
+    // run-days-page S1: the store check's run days as day chips (multi-select, at least one stays on). The full day name is
+    // the accessible name (hidden text, not aria-label — axe label-content-name-mismatch: "Mo" ≠ the start of "Monday").
+    function runDaysRow(st){
+      var on=runDays(st.weekly_day);
+      return '<div class="lrow field daysrow"><div class="rl"><span class="lab" id="rundays-lab">Store check days</span>'
+        +'<span class="sub2" id="rundays-sum">'+esc(runDaysPhrase(st.weekly_day))+'</span></div>'
+        +'<div class="seg days" role="group" aria-labelledby="rundays-lab" aria-describedby="rundays-sum" id="rundays">'
+        +WEEKDAYS.map(function(w){ var p=on.indexOf(w[0])>=0;
+          return '<button type="button" class="segbtn'+(p?" on":"")+'" data-runday="'+w[0]+'" aria-pressed="'+p+'"><span aria-hidden="true">'+w[1].slice(0,2)+'</span><span class="vh">'+w[1]+'</span></button>'; }).join("")
+        +'</div></div>';
+    }
     var noChan=!t["alert-iphone"]&&!t["alert-gmail"];
     var html=tbar("alerts","");
     // appearance-switch: the first group — a per-device System · Dark · Light radiogroup (window.thriftTheme, in <head>).
@@ -3055,7 +3085,7 @@
     html+=groupHead("alerts","schedule","Schedule",null)
       +'<div class="group">'
       +field("feedcadence","Feed frequency",'<select id="feedcadence" data-set="feed_cadence">'+opt("3x-day",fc,"3× a day (best)")+opt("30m",fc,"Every 30 min ($$)")+opt("1x-day",fc,"Once a day, 7am")+'</select>')
-      +field("weeklyday","Weekly web check",'<select id="weeklyday" data-set="weekly_day">'+WEEKDAYS.map(function(w){ return opt(w[0],s.weekly_day||"wed",w[1]); }).join("")+'</select>')
+      +runDaysRow(s)
       // Thrift Shop Slice 4: when the Outlook "offers" folder is scanned (the agent reads settings.offer_cadence).
       +field("offercadence","Email offer scans",'<select id="offercadence" data-set="offer_cadence">'+[["2x-day","2×, 7am + 5pm"],["3x-day","3×, 7am · noon · 6pm"],["1x-day","Once, 7am"]].map(function(o){ return opt(o[0],s.offer_cadence||"2x-day",o[1]); }).join("")+'</select>')
       +'</div>'+secEnd();
@@ -3379,10 +3409,22 @@
     var f=ev.target.getAttribute && ev.target.getAttribute("data-set");
     if(!f) return;
     state.settings[f]=ev.target.value;
-    withSave(patchTask("settings",{extras:state.settings,updated_at:new Date().toISOString()}));
+    saveSettings(f);
     // every data-set control lives on the Alerts tab; re-render so the summary stays in sync, and
     // refresh the footer so a Feed-frequency change is reflected in its "checked …" line immediately.
     renderAlerts(); renderFooter(); if(f==="offer_cadence") renderSources();
+  });
+  // run-days-page S1: a day chip adds / removes that day; the last day on stays on (the agent would fall back to Wed).
+  // Saves the LIST in week order — only weekly_day is written (saveSettings merges it into the row read back).
+  document.addEventListener("click", function(ev){
+    var b=ev.target&&ev.target.closest&&ev.target.closest("[data-runday]"); if(!b) return;
+    var d=b.getAttribute("data-runday"), cur=runDays(state.settings.weekly_day), on=cur.indexOf(d)>=0;
+    if(on&&cur.length===1){ showToast("Keep at least one store check day",null); return; }
+    var next=on?cur.filter(function(x){ return x!==d; }):runDays(cur.concat([d]));
+    state.settings.weekly_day=next;
+    saveSettings("weekly_day");
+    renderAlerts();
+    var again=document.querySelector('[data-runday="'+d+'"]'); if(again) again.focus();
   });
   document.addEventListener("input", function(ev){
     if(ev.target && ev.target.id==="rulesearch"){ ruleQuery=ev.target.value||""; renderRulesList(); renderCashList(); renderBlockList(); }
@@ -3796,7 +3838,7 @@
   }
   function saveOfferNote(){
     var t=el("offernote"); if(!t) return; var v=String(t.value||"").slice(0,300);
-    state.settings.offer_note=v; saveSettings(); var c=el("offernote-count"); if(c) c.textContent=v.length+" / 300"; syncSalesNav();
+    state.settings.offer_note=v; saveSettings("offer_note"); var c=el("offernote-count"); if(c) c.textContent=v.length+" / 300"; syncSalesNav();
   }
   var brandSheetOpener=null;
   function ensureBrandSheet(){
@@ -3923,18 +3965,44 @@
     withSave(api("press_tasks?page=eq."+PAGE+"&item_id=eq."+encodeURIComponent(id),{method:"DELETE",headers:{Prefer:"return=minimal"}}));
   }
   // ---------- blocked stores (Slice 3) ----------
-  function saveSettings(){ return withSave(patchTask("settings",{extras:state.settings,updated_at:new Date().toISOString()})); }
+  // run-days-page S1: a settings save writes ONLY the keys it changed — merged into the settings row read back just now,
+  // never this tab's whole (possibly stale) blob, so an old tab can't put weekly_day (or any key) back. Saves queue in
+  // order so two quick edits never read the same base. No row back ⇒ the local blob (the row is seeded; never reached).
+  // D1 round 1: each save SNAPSHOTS its values when called (a later queued save never sends a value the read-back reset),
+  // and a key with a save still queued is never overwritten from the row read back.
+  var settingsChain=Promise.resolve(), settingsQueued={};
+  function saveSettings(keys){
+    keys=[].concat(keys||[]);
+    var vals={};
+    keys.forEach(function(k){ var v=state.settings[k]; vals[k]=v===undefined?undefined:JSON.parse(JSON.stringify(v)); settingsQueued[k]=(settingsQueued[k]||0)+1; });
+    var p=settingsChain.then(function(){
+      return api("press_tasks?page=eq."+PAGE+"&category=eq.settings&item_id=eq.settings&select=item_id,extras").then(function(r){
+        if(!r.ok) throw 0; return r.json();
+      }).then(function(rows){
+        var base=(rows&&rows[0]&&rows[0].extras&&typeof rows[0].extras==="object")?rows[0].extras:null;
+        var next=base?Object.assign({},base):Object.assign({},state.settings);
+        keys.forEach(function(k){ if(vals[k]===undefined) delete next[k]; else next[k]=vals[k]; });
+        // keep the keys this tab did NOT change (and has no save queued for) in step with the row it just merged into
+        if(base) Object.keys(base).forEach(function(k){ if(keys.indexOf(k)<0&&!settingsQueued[k]) state.settings[k]=base[k]; });
+        return patchTask("settings",{extras:next,updated_at:new Date().toISOString()});
+      });
+    });
+    var done=function(){ keys.forEach(function(k){ if(!--settingsQueued[k]) delete settingsQueued[k]; }); };
+    p.then(done,done);
+    settingsChain=p.catch(function(){});
+    return withSave(p);
+  }
   function addBlock(px){
     var inp=el((px||"")+"newblock"); var name=normBrand(inp&&inp.value); if(!name) return; // normalized to match the judge
     var list=blocklist().slice();
     if(list.indexOf(name)<0) list.push(name);
     state.settings.retailer_blocklist=list;
-    if(inp) inp.value=""; blockChanged(); saveSettings();
+    if(inp) inp.value=""; blockChanged(); saveSettings("retailer_blocklist");
     var again=el((px||"")+"newblock"); if(again) again.focus();
   }
   function removeBlock(entry,opts){
     state.settings.retailer_blocklist=blocklist().filter(function(e){ return e!==entry; });
-    blockChanged(); saveSettings();
+    blockChanged(); saveSettings("retailer_blocklist");
     if(!(opts&&opts.quiet)) showToast("Unblocked "+entry,function(){ blockBrand(entry,{quiet:true}); });
   }
   // S2 (R12): ⋯ → "Block <brand>" — adds the normalized name (the judge's matcher), hides that brand's cards at once,
@@ -3944,7 +4012,7 @@
     var list=blocklist().slice();
     if(list.indexOf(entry)>=0){ if(!(opts&&opts.quiet)) showToast(name+" is already blocked",null); return; }
     list.push(entry); state.settings.retailer_blocklist=list;
-    blockChanged(); saveSettings();
+    blockChanged(); saveSettings("retailer_blocklist");
     if(!(opts&&opts.quiet)) showToast("Blocked "+name+" — hidden from your feed",function(){ removeBlock(entry,{quiet:true}); });
   }
   function blockChanged(){ renderBlockList(); renderFeed(); renderFeedBadge(); syncSalesNav(); }
@@ -3956,15 +4024,15 @@
     var list=cashLike().slice();
     if(list.some(function(e){ return cashKey(e)===cashKey(name); })){ showToast(name+" is already cash-like",null); if(inp) inp.value=""; return; }
     list.push(name); state.settings.cash_like_cards=list;
-    if(inp) inp.value=""; renderCashList(); saveSettings();
+    if(inp) inp.value=""; renderCashList(); saveSettings("cash_like_cards");
     var again=el("newcash"); if(again) again.focus();
   }
   function removeCash(entry,opts){
     var before=cashLike().slice();
     state.settings.cash_like_cards=before.filter(function(e){ return e!==entry; });
-    renderCashList(); saveSettings();
+    renderCashList(); saveSettings("cash_like_cards");
     var next=document.querySelector('#cashlist .fchip'); if(next) next.focus(); else { var nc=el("newcash"); if(nc) nc.focus(); }
-    if(!(opts&&opts.quiet)) showToast(entry+" bonus cards now judged on the total",function(){ state.settings.cash_like_cards=before; renderCashList(); saveSettings(); });
+    if(!(opts&&opts.quiet)) showToast(entry+" bonus cards now judged on the total",function(){ state.settings.cash_like_cards=before; renderCashList(); saveSettings("cash_like_cards"); });
   }
   // ---------- sale watch (Slice 6) ----------
   function addWatch(){
