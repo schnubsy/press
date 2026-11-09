@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#D2EEE5" />
+    <title>Cookie Works</title>
+    <!-- installable PWA (ARC 2026-11-09 slice 3): the manifest, the code-painted icons (src/ui/art/icon.ts), iOS home screen -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Cookie Works" />
+    <style>
+      :root { color-scheme: light; --ink: #3A2B35;
+        /* the two bundled faces (src/ui/art/fonts/fonts.css): Fredoka for the sign, headings and keys; Rubik for body copy */
+        --display: Fredoka, "Arial Rounded MT Bold", ui-rounded, system-ui, sans-serif; --body: Rubik, system-ui, sans-serif;
+        font-family: var(--body);
+        /* Soft Clay (src/ui/stage/style.ts is the one home of these values): radial clay fills lit from the upper left,
+           soft #23413B shadows, inner occlusion away from the light and a lit rim toward it */
+        --shadow: 5px 5px 10px rgba(35,65,59,.32);
+        --clay-white: radial-gradient(120% 120% at 30% 25%, #FFFDF8 0%, #F6F0EA 50%, #DCD2CC 100%);
+        --clay-tray: radial-gradient(120% 120% at 30% 25%, #FFDA7E 0%, #F8C84E 50%, #D59E38 100%);
+        --clay-susan: radial-gradient(120% 120% at 30% 25%, #6DC27A 0%, #4AA562 50%, #317C57 100%);
+        --clay-platter: radial-gradient(120% 140% at 30% 20%, #FFF8EC 0%, #FBEEDA 50%, #E0CBB0 100%);
+        --clay-steel: radial-gradient(120% 120% at 30% 25%, #DCDDDC 0%, #C4C6C8 50%, #989BA3 100%);
+        --occl: inset -3px -4px 7px rgba(169,157,156,.45), inset 2px 2px 3px rgba(255,255,255,.75); }
+      html, body { margin: 0; height: 100%; background: #D2EEE5; color: var(--ink); overflow: hidden; }
+      #app { position: fixed; inset: 0; }
+      #stage { position: absolute; inset: 0; }
+      #stage canvas { display: block; touch-action: none; }
+      .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+      .hud { position: absolute; display: flex; gap: 10px; align-items: center; }
+      .hud-bottom { left: 16px; right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); justify-content: center; }
+      .hud-top { top: max(8px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); }
+      .speeds { display: flex; gap: 6px; }
+      .key, h1, h2, h3, .front { font-family: var(--display); }
+      .key { font: inherit; font-family: var(--display); font-weight: 700; font-size: 17px; color: var(--ink); min-width: 56px; min-height: 56px;
+        padding: 0 10px; border-radius: 18px; background: var(--clay-white); border: 3px solid var(--ink); box-shadow: var(--shadow), var(--occl);
+        display: inline-flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; }
+      .key:active, .key[aria-pressed="true"] { transform: translateY(2px); box-shadow: 2px 2px 4px rgba(35,65,59,.32), inset 2px 3px 6px rgba(110,74,28,.35); }
+      .key[aria-pressed="true"] { background: var(--clay-tray); }
+      .key:focus-visible { outline: 3px solid #2D6FD6; outline-offset: 3px; }
+      .key.sound[aria-pressed="true"] { background: var(--clay-white); transform: none; box-shadow: var(--shadow), var(--occl); }
+      .key.sound[aria-pressed="true"] .off, .key.sound[aria-pressed="false"] .on { display: none; }
+      .key.sound[aria-pressed="false"] { background: var(--clay-steel); }
+      .key.go { background: var(--clay-susan); min-width: 120px; min-height: 60px; border-radius: 20px;
+        box-shadow: var(--shadow), inset -3px -4px 8px rgba(32,83,69,.5), inset 2px 2px 3px rgba(184,230,172,.8); }
+      .key.go svg path { fill: #FFFDF8; }
+      /* the recipe editor (src/ui/editor.ts): stop buttons over the canvas, the station lift above Play */
+      .stops { position: absolute; inset: 0; pointer-events: none; }
+      .stop { position: absolute; pointer-events: auto; background: transparent; border: 0; padding: 0; border-radius: 18px;
+        touch-action: none; -webkit-tap-highlight-color: transparent; cursor: grab; }
+      .stop:focus-visible { outline: 3px solid #2D6FD6; outline-offset: -3px; }
+      #app[data-run="playing"] .stop { cursor: default; }
+      .lift-row { position: absolute; left: 12px; right: 12px; height: 64px; display: flex; justify-content: center;
+        bottom: calc(max(16px, env(safe-area-inset-bottom)) + 68px); transition: opacity .2s, transform .2s; }
+      .lift-row[data-locked="true"] { opacity: .4; transform: translateY(4px); }
+      .lift, .k-tray { display: flex; gap: 8px; align-items: center; padding: 0 6px; border-radius: 26px; background: var(--clay-platter);
+        border: 3px solid var(--ink); box-shadow: var(--shadow), inset -3px -4px 8px rgba(180,156,126,.45), inset 2px 2px 3px rgba(255,255,255,.8);
+        max-width: 100%; box-sizing: border-box; }
+      .lift[data-mode="chips"], .k-tray[data-mode="chips"] { gap: 4px; padding: 0 4px; }
+      .lift button, .k-tray button { font: inherit; color: var(--ink); background: var(--clay-white); border: 2.5px solid var(--ink); border-radius: 16px;
+        box-shadow: 3px 3px 6px rgba(35,65,59,.28), var(--occl);
+        width: min(56px, calc((100vw - 64px) / 5)); height: 56px; padding: 0; display: inline-flex; align-items: center;
+        justify-content: center; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; flex: none; }
+      .lift[data-mode="chips"] button, .k-tray[data-mode="chips"] button { width: min(56px, calc((100vw - 56px) / 6)); }
+      .lift button svg, .k-tray button svg { max-width: 92%; height: auto; }
+      .lift button[aria-pressed="true"] { background: var(--clay-tray); transform: translateY(-4px); box-shadow: 6px 8px 12px rgba(35,65,59,.26), var(--occl); }
+      .lift button:focus-visible, .k-tray button:focus-visible { outline: 3px solid #2D6FD6; outline-offset: 2px; }
+      .lift .bin { background: var(--clay-steel); margin-left: 4px; }
+      .lift .bin:disabled { opacity: .4; cursor: default; }
+      .lift-row[data-picked="lift"] .bin, .lift-row[data-drop="lift"] .bin, .lift-row[data-picked="stop"] .bin { background: var(--clay-tray); }
+      .lift-row[data-drop="lift"] .lift { background: var(--clay-tray); }
+      .lift.hop .lift-robot { animation: hop .5s ease-out 2; }
+      .shake { animation: shake .3s linear; }
+      @keyframes hop { 40% { transform: translateY(-10px); } }
+      @keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+      .lift-row[data-picked="lift"] .lift-robot[aria-pressed="true"] { animation: bob 1s ease-in-out infinite; }
+      @keyframes bob { 50% { transform: translateY(-8px); } }
+      /* Reduce Motion follows Settings (Device / On / Off): main.ts sets html[data-motion="reduce"] */
+      [data-motion="reduce"] .lift-row, [data-motion="reduce"] .lift button { transition: none; animation: none !important; }
+      .notice { position: absolute; left: 16px; right: 16px; top: 72px; margin: 0; padding: 10px 14px; background: var(--clay-white);
+        border: 3px solid var(--ink); border-radius: 18px; font-size: 16px; box-shadow: var(--shadow); }
+      /* the bakery front (src/ui/front.ts): the title art fills the screen; its parts animate (Reduce Motion: still) */
+      .front { position: absolute; inset: 0; z-index: 5; background: #2B2142; overflow: hidden; transition: opacity .25s; }
+      .front[data-state="closing"] { opacity: 0; pointer-events: none; }
+      .front-art, .front-art svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+      .front-keys { position: absolute; left: 16px; right: 16px; bottom: max(14%, calc(env(safe-area-inset-bottom) + 72px));
+        display: flex; justify-content: center; align-items: center; gap: 14px; }
+      .front-play { min-width: 200px; min-height: 76px; border-radius: 26px; gap: 12px; font-size: 30px; color: #FFFDF8;
+        text-shadow: 0 2px 0 #205345; border-color: #205345; animation: breathe 2.4s ease-in-out infinite; }
+      .front-settings { min-width: 64px; min-height: 64px; border-radius: 22px; }
+      .front .letter { animation: bob 2.6s ease-in-out infinite; animation-delay: calc(var(--i) * -0.23s); transform-box: fill-box; transform-origin: 50% 100%; }
+      .front .arm { animation: wave 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: 100% 50%; }
+      .front .guest { animation: bob 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+      @keyframes breathe { 50% { box-shadow: 5px 5px 10px rgba(35,65,59,.32), 0 0 0 8px rgba(255,231,163,.55), inset -3px -4px 8px rgba(32,83,69,.5), inset 2px 2px 3px rgba(184,230,172,.8); } } /* a glow, never a size change: Play stays put under a finger */
+      @keyframes wave { 50% { transform: rotate(-7deg); } }
+      [data-motion="reduce"] .front *, [data-motion="reduce"] .front-play { animation: none !important; } [data-motion="reduce"] .front { transition: none; }
+      [hidden] { display: none !important; }
+      /* modes (src/ui/modes/): the back key, full-screen layers (picker, shelf, result, cover), Test Kitchen's panel */
+      .key.back { position: absolute; top: max(8px, env(safe-area-inset-top)); left: max(16px, env(safe-area-inset-left)); min-width: 48px; padding: 0 4px; }
+      .layer { position: absolute; inset: 0; z-index: 6; display: flex; align-items: center; justify-content: center; padding: 16px;
+        box-sizing: border-box; background: rgba(43,33,66,.55); transition: opacity .22s; overflow-y: auto; }
+      .layer[data-state="closing"] { opacity: 0; pointer-events: none; }
+      .card { background: var(--clay-platter); border: 3px solid var(--ink); border-radius: 26px; padding: 18px 16px; box-sizing: border-box;
+        box-shadow: var(--shadow), inset -3px -4px 8px rgba(180,156,126,.45), inset 2px 2px 3px rgba(255,255,255,.8); width: min(420px, 100%); }
+      .card h2 { margin: 0 0 12px; font-size: 24px; text-align: center; }
+      /* the kitchen map (src/ui/modes/map.ts): one Soft Clay kitchen — tiled mint wall, a clay counter, four places */
+      .map { padding: 0; background: #A9CFC2; align-items: stretch; }
+      .map-scene { position: relative; flex: 1; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box; min-height: 100%;
+        padding: max(8px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+        background: radial-gradient(circle at 36% 30%, #E6F7F0 0, #D2EEE5 9px, #BBDDD2 17px, transparent 18px) 0 0 / 40px 40px, #A9CFC2; }
+      .map-head { display: flex; align-items: center; gap: 10px; }
+      .map-head h2 { flex: 1; margin: 0; font-size: 26px; text-align: center; }
+      .map-head .key.back { position: static; }
+      .map-places { position: relative; z-index: 1; flex: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto;
+        gap: 14px; max-width: 520px; width: 100%; margin: 0 auto; align-content: end; padding-bottom: 6vh; }
+      .place { font: inherit; color: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+        min-width: 0; min-height: 150px; padding-top: 12px; padding: 8px 6px 10px; border-radius: 24px; background: var(--clay-platter); border: 3px solid var(--ink);
+        box-shadow: var(--shadow), inset -3px -4px 8px rgba(180,156,126,.45), inset 2px 2px 3px rgba(255,255,255,.8); cursor: pointer;
+        touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+      .place:active { transform: translateY(2px); }
+      .place:focus-visible { outline: 3px solid #2D6FD6; outline-offset: 3px; }
+      .place[data-place="kitchen"] { background: var(--clay-tray); }
+      .place[data-place="orders"] { background: var(--clay-susan); }
+      .place[aria-disabled="true"] { background: var(--clay-steel); cursor: default; }
+      .place[aria-disabled="true"] .place-pic { opacity: .8; }
+      .place.nope { animation: shake .3s linear; }
+      .place-pic { display: block; width: min(150px, 100%); }
+      .place-art { display: block; width: 100%; height: auto; aspect-ratio: 120 / 84; }
+      .place-name { font-family: var(--display); font-weight: 700; font-size: clamp(15px, 4.6vw, 21px); line-height: 1.1; text-align: center; white-space: nowrap; }
+      .place-hint { font-size: clamp(13px, 4vw, 16px); white-space: nowrap; font-weight: 600; text-align: center; }
+      .map-counter { position: absolute; left: 0; right: 0; bottom: 0; height: 30%; z-index: 0;
+        background: linear-gradient(#D59E38 0, #D59E38 10px, #F8C84E 10px, #FFDA7E 40%, #F8C84E 100%); border-top: 3px solid var(--ink); }
+      .map-say { position: relative; z-index: 1; margin: 0; min-height: 22px; text-align: center; font-weight: 700; font-size: 17px; }
+      .map-settings { min-width: 56px; padding: 0 4px; }
+      /* iPad (ARC 2026-11-09 D2): portrait — the phone's 2 × 2 kitchen scaled up; landscape — the four places in one row */
+      @media (min-width: 700px) and (min-height: 700px) {
+        .map-places { max-width: 680px; gap: 22px; }
+        .place { min-height: 220px; border-radius: 30px; }
+        .place-pic { width: min(210px, 100%); }
+        .place-name { font-size: 26px; } .place-hint { font-size: 18px; }
+        .map-head h2 { font-size: 32px; } .map-say { font-size: 20px; }
+      }
+      @media (min-aspect-ratio: 1/1) and (min-width: 700px) {
+        .map-places { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 1100px; padding-bottom: 8vh; }
+      }
+      [data-motion="reduce"] .place.nope { animation: none; } [data-motion="reduce"] .place:active { transform: none; }
+      .kitchen { position: absolute; left: 12px; right: 12px; bottom: calc(max(16px, env(safe-area-inset-bottom)) + 68px);
+        display: flex; flex-direction: column-reverse; align-items: center; gap: 8px; transition: opacity .2s; }
+      .kitchen .k-tray { height: 64px; }
+      .kitchen[data-locked="true"] { opacity: .45; }
+      .kitchen button { touch-action: manipulation; }
+      .kitchen button[aria-pressed="true"] { background: var(--clay-tray); transform: translateY(-4px); box-shadow: 6px 8px 12px rgba(35,65,59,.26), var(--occl); }
+      [data-motion="reduce"] .layer { transition: none; } [data-motion="reduce"] .kitchen button[aria-pressed="true"] { transform: none; }
+      .key.ticket-key-top { position: absolute; top: max(8px, env(safe-area-inset-top)); left: calc(max(16px, env(safe-area-inset-left)) + 54px);
+        padding: 0 4px; background: var(--clay-platter); }
+      .shelf { align-items: flex-start; }
+      .shelf-card { margin: auto 0; }
+      .shelf-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+      .shelf-head h2 { margin: 0; flex: 1; text-align: left; }
+      .shelf-head .key.back { position: static; }
+      .shelf-total { font-weight: 700; font-size: 18px; }
+      .shelf h3 { margin: 12px 0 6px; font-size: 18px; }
+      .tickets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+      .ticket-key .cookie-card { width: min(58px, 100%); height: auto; }
+      .ticket-key { font: inherit; color: var(--ink); position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px;
+        padding: 6px 2px 4px; min-width: 0; min-height: 96px; border-radius: 16px; background: var(--clay-white); border: 2.5px solid var(--ink);
+        box-shadow: 3px 3px 6px rgba(35,65,59,.28), var(--occl); cursor: pointer; touch-action: manipulation; }
+      .ticket-key:focus-visible { outline: 3px solid #2D6FD6; outline-offset: 2px; }
+      .t-no { position: absolute; top: 2px; left: 6px; font-weight: 700; font-size: 13px; }
+      .t-stars, .stars { letter-spacing: 1px; }
+      .star { color: #B9AFA8; } .star.on { color: #E8A317; text-shadow: 0 1px 0 #8A5A10; }
+      .ticket { text-align: center; }
+      .ticket .cookie-card { display: block; margin: 4px auto; }
+      .t-who { margin: 0; font-weight: 700; font-size: 18px; }
+      .t-text { margin: 6px 0; font-size: 19px; line-height: 1.3; }
+      .t-par { margin: 4px 0 12px; font-weight: 700; color: #6B4F12; }
+      .key.wide { width: 100%; }
+      .result-card { text-align: center; }
+      .result-card p { margin: 6px 0; font-size: 18px; }
+      .result .stars { font-size: 52px; margin: 0; }
+      .result .stars .star { display: inline-block; animation: pop .45s cubic-bezier(.3,1.6,.5,1) both; animation-delay: calc(.15s + var(--i) * .3s); }
+      @keyframes pop { from { transform: scale(0); opacity: 0; } }
+      .result .hint { font-weight: 700; color: #6B4F12; }
+      .split { display: flex; gap: 10px; justify-content: center; }
+      .split figure { margin: 0; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+      .split figcaption { font-weight: 700; font-size: 16px; }
+      .split .cookie-card { background: #CFEEE4; border-radius: 16px; border: 2.5px solid var(--ink); width: min(132px, 38vw); height: auto; }
+      .result-keys { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+      .result-keys .key { flex: 1; min-width: 96px; }
+      [data-motion="reduce"] .result .stars .star { animation: none; }
+      .hud-bottom .challenge-key { min-width: 56px; padding: 0 6px; }
+      .cover { background: #2B2142; }
+      .cover-card { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+      .cover-card h2 { margin: 0; } .cover-card p { margin: 0 0 6px; font-size: 18px; }
+      /* Settings (src/ui/modes/settings.ts) and the order timer */
+      .settings-card { display: flex; flex-direction: column; gap: 8px; }
+      .settings-card h2 { margin: 0; }
+      .set-note { margin: 0 0 2px; text-align: center; font-size: 15px; }
+      .set-row { display: flex; flex-direction: column; gap: 4px; }
+      .set-name { font-weight: 600; font-size: 16px; }
+      .set-keys { display: flex; gap: 6px; }
+      .key.seg { flex: 1; min-width: 0; min-height: 48px; font-size: 17px; padding: 0 4px; }
+      .settings-card .go { margin-top: 6px; }
+      .order-clock { position: absolute; top: calc(max(8px, env(safe-area-inset-top)) + 64px); right: max(16px, env(safe-area-inset-right));
+        padding: 4px 12px; border-radius: 14px; background: var(--clay-white); border: 2.5px solid var(--ink); box-shadow: var(--shadow), var(--occl);
+        font-family: var(--display); font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; pointer-events: none; }
+      .t-time::after { content: attr(data-time); }
+      .t-time { font-size: 12px; font-weight: 700; color: #205345; font-variant-numeric: tabular-nums; }
+      /* the narrower phones (320–389 px, ARC 2026-11-09 D3): Back · the ticket · 1× 2× 4× · Reset in one row — 44 px keys,
+         tighter gaps; the order clock smaller, clear of the belt's top-right bend */
+      @media (max-width: 389px) {
+        .hud-top { gap: 6px; } .speeds { gap: 4px; }
+        .hud-top .key, .key.back, .key.ticket-key-top { min-width: 44px; padding: 0 2px; }
+        .key.ticket-key-top { left: calc(max(16px, env(safe-area-inset-left)) + 48px); }
+        .key.ticket-key-top .cookie-card { width: 36px; }
+        .order-clock { top: calc(max(8px, env(safe-area-inset-top)) + 60px); padding: 1px 8px; font-size: 15px; border-width: 2px; }
+      }
+      .boot-error { position: absolute; inset: auto 16px 40% 16px; margin: 0; padding: 16px; background: #fff; border: 3px solid var(--ink); border-radius: 16px; }
+    </style>
+    <script defer src="./assets/index-DPOSx4_F.js"></script>
+  </head>
+  <body>
+    <main id="app">
+      <h1 class="sr-only">Cookie Works</h1>
+      <div id="stage"></div>
+    </main>
+  </body>
+</html>
