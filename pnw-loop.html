@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pacific Northwest Loop</title>
+<meta name="page-title" content="Pacific Northwest Loop">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSI2NCIgeTI9IjY0IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjN0NDMkFEIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRTdBMjZGIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxMTE4MUIiLz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg4IDgpIHNjYWxlKDIpIiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjZykiIHN0cm9rZS13aWR0aD0iMi42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjEwIi8+PHBvbHlnb24gcG9pbnRzPSIxNi4yNCA3Ljc2IDE0LjEyIDE0LjEyIDcuNzYgMTYuMjQgOS44OCA5Ljg4IDE2LjI0IDcuNzYiLz48L2c+PC9zdmc+">
+<meta name="theme-color" content="#f3f5f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#11181b" media="(prefers-color-scheme: dark)">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;700&family=Public+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{
+  --bg:#f3f5f4; --surface:#ffffff; --ink:#18242a; --muted:#56656c; --line:#d5dddb;
+  --accent:#2f6b5e; --accent-soft:#e1ece8; --cedar:#9a5a2c; --rain:#3d6a8a;
+  --land:#e9ede3; --sea:#c4d9e5; --shore:#a9bcc4;
+  --d1:#6b7680; --d2:#2f7a68; --d3:#b5602a; --d4:#3d6a8a; --d5:#7a4d8c;
+  --display:"Zilla Slab",Georgia,serif; --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11181b; --surface:#182226; --ink:#e6ecea; --muted:#9aaab0; --line:#2b383d;
+  --accent:#7cc2ad; --accent-soft:#1f3330; --cedar:#e0a070; --rain:#8bb8d8;
+  --land:#27342f; --sea:#0e1920; --shore:#37505b;
+  --d1:#a3aeb5; --d2:#7cc2ad; --d3:#e7a26f; --d4:#8bb8d8; --d5:#c39ad6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11181b; --surface:#182226; --ink:#e6ecea; --muted:#9aaab0; --line:#2b383d;
+  --accent:#7cc2ad; --accent-soft:#1f3330; --cedar:#e0a070; --rain:#8bb8d8;
+  --land:#27342f; --sea:#0e1920; --shore:#37505b;
+  --d1:#a3aeb5; --d2:#7cc2ad; --d3:#e7a26f; --d4:#8bb8d8; --d5:#c39ad6; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding:28px 16px 56px;display:flex;flex-direction:column;gap:36px}
+h1,h2{font-family:var(--display);margin:0;line-height:1.15;text-wrap:balance}
+h1{font-size:2.2rem} h2{font-size:1.45rem}
+p{margin:0}
+a{color:var(--accent)}
+.eyebrow{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+header{display:flex;flex-direction:column;gap:10px}
+.lede{color:var(--muted)}
+.facts{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.86rem;color:var(--muted)}
+.facts b{color:var(--ink)}
+.howto{font-size:.9rem;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px}
+.day{display:flex;flex-direction:column;gap:10px}
+.dayhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;border-bottom:3px solid var(--dc);padding-bottom:6px}
+.dayhead .date{font-family:var(--mono);font-size:.85rem;color:var(--muted)}
+.dayhead .sleep{margin-left:auto;font-size:.82rem;color:var(--muted)}
+.block{display:grid;grid-template-columns:7.2rem 1fr;gap:4px 14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.when{font-family:var(--mono);font-size:.82rem;color:var(--dc);font-weight:500;padding-top:2px}
+.when small{display:block;color:var(--muted);font-family:var(--body);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+.main{font-weight:600}
+.opts{margin:4px 0 0;padding-left:1.05rem;color:var(--muted);font-size:.9rem;display:flex;flex-direction:column;gap:2px}
+.opts b{color:var(--ink);font-weight:600}
+.tag{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--cedar);border:1px solid var(--cedar);border-radius:4px;padding:0 4px;margin-right:4px;white-space:nowrap}
+.tag.opt{color:var(--rain);border-color:var(--rain)}
+details{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+summary{cursor:pointer;font-family:var(--display);font-weight:700;font-size:1.15rem}
+details > *:not(summary){margin-top:12px}
+.mapbox svg{display:block;width:100%;height:auto;border-radius:8px}
+.m-label{font:600 10.5px var(--body);fill:var(--ink);paint-order:stroke;stroke:var(--land);stroke-width:3px;stroke-linejoin:round}
+.m-num{font:700 9.5px var(--body);fill:#fff;text-anchor:middle}
+.m-h{fill:var(--land)}
+.m-city{font:700 12px var(--display);fill:var(--muted);paint-order:stroke;stroke:var(--land);stroke-width:3px}
+.m-town{font:500 10px var(--body);fill:var(--muted);paint-order:stroke;stroke:var(--land);stroke-width:3px}
+.m-water{font:italic 500 11px var(--display);fill:var(--rain);letter-spacing:.08em;text-anchor:middle;opacity:.85}
+.m-state{font:700 11px var(--body);fill:var(--muted);letter-spacing:.3em;text-anchor:middle;opacity:.55}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+td{padding:6px 0;border-bottom:1px solid var(--line)}
+td.n{text-align:right;font-family:var(--mono);font-size:.85rem;white-space:nowrap}
+tr.tot td{font-weight:700;border-top:2px solid var(--ink);border-bottom:0}
+h3.sub{font-family:var(--display);font-size:1.02rem;margin:14px 0 6px}
+.dim{color:var(--muted);font-size:.86rem}
+ul.check{margin:0;padding-left:1.1rem;display:flex;flex-direction:column;gap:5px;font-size:.92rem}
+footer{font-size:.8rem;color:var(--muted)}
+@media (max-width:520px){.block{grid-template-columns:1fr}.dayhead .sleep{margin-left:0;width:100%}h1{font-size:1.85rem}}
+</style></head><body>
+<div class="wrap">
+<header>
+  <p class="eyebrow">Family road trip · Nov 19–23, 2026</p>
+  <h1>Pacific Northwest Loop</h1>
+  <p class="lede">An easy-paced trip: a slow day in Seattle, the Washington and Oregon coast, a gentle look at Portland and the Gorge waterfalls on the way home.</p>
+  <div class="facts">
+    <span><b>UA2341</b> Thu IAH 7:55pm → SEA 10:51pm</span>
+    <span><b>UA1927</b> Mon PDX 12:57pm → IAH 7:05pm</span>
+<span><b>Avis</b> SEA → PDX</span>
+    <span>Sunset ~4:30pm</span>
+  </div>
+  <p class="howto">Each block has one main plan. The bullets underneath are options: swap one in, or skip them, depending on weather and energy. <span class="tag">snack</span> means a quick local bite to grab.</p>
+</header>
+
+<section class="day" style="--dc:var(--d1)">
+  <div class="dayhead"><h2>Thu · Arrive</h2><span class="date">Nov 19</span><span class="sleep">Sleep: Seattle Marriott Waterfront</span></div>
+  <div class="block"><div class="when"><small>Night</small>10:51pm</div><div>
+    <p class="main">Land at SEA, pick up the Avis car, drive 25 min to the hotel</p>
+    <ul class="opts"><li>Valet parking only, $60 a night.</li></ul>
+  </div></div>
+</section>
+
+<section class="day" style="--dc:var(--d2)">
+  <div class="dayhead"><h2>Fri · Seattle on foot</h2><span class="date">Nov 20</span><span class="sleep">No driving today · Sleep: Marriott Waterfront</span></div>
+  <div class="block"><div class="when"><small>Morning</small>8:30–11:30</div><div>
+    <p class="main">Slow breakfast, then wander Pike Place Market</p>
+    <ul class="opts">
+      <li><b>Breakfast:</b> Biscuit Bitch (biscuits and gravy) · or Le Panier (French pastries)</li>
+      <li>Fish-throwing at Pike Place Fish, the first Starbucks, the gum wall</li>
+    </ul>
+  </div></div>
+  <div class="block"><div class="when"><small>Lunch</small>12:00–1:30</div><div>
+    <p class="main">Pike Place Chowder (chowder in a sourdough bowl)</p>
+    <ul class="opts">
+      <li><b>Or:</b> Beecher's mac and cheese while you watch the cheesemaking</li>
+      <li><b>Or:</b> Seattle-style chicken teriyaki at Okinawa Teriyaki, 1100 Western Ave (a true local staple, under $15)</li>
+      <li><span class="tag">snack</span>Piroshky Piroshky smoked salmon piroshky · Daily Dozen mini doughnuts (cash only) · Pure Fish salmon candy</li>
+    </ul>
+  </div></div>
+  <div class="block"><div class="when"><small>Afternoon</small>1:30–3:15</div><div>
+    <p class="main">Free time</p>
+    <ul class="opts">
+      <li>Rest at the hotel</li>
+      <li>Stroll the new waterfront park</li>
+      <li>Space Needle: open-air glass deck plus The Loupe, the revolving glass floor (about $35+ per adult, timed tickets; allow about an hour)</li>
+      <li>Chihuly Garden and Glass next door (about $45 per person)</li>
+    </ul>
+  </div></div>
+  <div class="block"><div class="when"><small>Sunset</small>3:50–6:00</div><div>
+    <p class="main">3:50pm walk-on ferry to Bainbridge Island from Pier 52</p>
+    <ul class="opts">
+      <li>35 min each way: sunset on the water going out, the skyline lit up coming back</li>
+      <li>Back on the 5:20 or 5:35 sailing; browse Winslow's main street in between</li>
+      <li>No reservation; about $11 per adult, paid once in Seattle</li>
+    </ul>
+  </div></div>
+  <div class="block"><div class="when"><small>Evening</small>6:30–9:00</div><div>
+    <p class="main">Dinner at Ivar's Fish Bar, Pier 54 (fish and chips, chowder)</p>
+    <ul class="opts">
+      <li><b>Or:</b> Taylor Shellfish Oyster Bar, Pioneer Square</li>
+      <li>Kerry Park night view of the skyline (10 min drive)</li>
+      <li><span class="tag">snack</span>Dick's Drive-In on Queen Anne for a late burger and shake</li>
+    </ul>
+  </div></div>
+</section>
+
+<section class="day" style="--dc:var(--d3)">
+  <div class="dayhead"><h2>Sat · Down to the coast</h2><span class="date">Nov 21</span><span class="sleep">Sleep: Hallmark Resort, Cannon Beach</span></div>
+  <div class="block"><div class="when"><small>Morning</small>7:30–12:00</div><div>
+    <p class="main">Pastries to go from Le Panier, leave by 8:30, drive the Willapa Bay coast</p>
+    <ul class="opts">
+      <li>I-5 → US-12 → US-101, about 3 hours of driving</li>
+      <li><span class="tag">snack</span>Goose Point Oysters, Bay Center (call first: 360-875-6629)</li>
+    </ul>
+  </div></div>
+  <div class="block"><div class="when"><small>Midday</small>12:00–1:00</div><div>
+    <p class="main">Cape Disappointment, where the Columbia meets the Pacific</p>
+    <ul class="opts">
+      <li>Cliffs, lighthouse views and Waikiki Beach</li>
+      <li>Washington Discover Pass, $10 for the day</li>
+    </ul>
+  </div></div>
+  <div class="block"><div class="when"><small>Afternoon</small>1:15–3:30</div><div>
+    <p class="main">Astoria: lunch at Bowpicker (albacore fish and chips from a boat, cash preferred)</p>
+    <ul class="opts">
+      <li>Bowpicker is open 11–3 and shuts in bad weather. <b>Rain plan:</b> South Bay Wild Fish House or Fort George Brewery</li>
+      <li><span class="tag">snack</span>Josephson's Smokehouse salmon jerky</li>
+      <li><span class="tag opt">optional</span>Astoria Column view ($10 parking) · or the Columbia River Maritime Museum ($18, about an hour)</li>
+      <li>Peter Iredale shipwreck on the way south (Oregon day permit, $12)</li>
+      <li><span class="tag opt">optional</span>Seaside Promenade: a 30-minute stroll on the 1.5-mile oceanfront walk, right on US-101 between the wreck and Cannon Beach (free)</li>
+    </ul>
+  </div></div>
+  <div class="block"><div class="when"><small>Evening</small>4:00–8:00</div><div>
+    <p class="main">Check in, then sunset at Haystack Rock (about 4:35)</p>
+    <ul class="opts">
+      <li><span class="tag">snack</span>Saltwater taffy at Bruce's Candy Kitchen, before 5 to be safe</li>
+      <li><span class="tag">snack</span>Ecola Seafoods: the locals' fish market for chowder or a crab and shrimp cocktail</li>
+      <li><b>Dinner:</b> Pelican Brewing (chowder, fish and chips) · or Bill's Tavern</li>
+    </ul>
+  </div></div>
+</section>
+
+<section class="day" style="--dc:var(--d4)">
+  <div class="dayhead"><h2>Sun · Coast road, forest, Portland</h2><span class="date">Nov 22</span><span class="sleep">Sleep: Courtyard Portland East</span></div>
+  <div class="block"><div class="when"><small>Morning</small>8:00–11:00</div><div>
+    <p class="main">Breakfast, then the Ecola viewpoint over Cannon Beach</p>
+    <ul class="opts">
+      <li><b>Breakfast:</b> Lazy Susan Cafe (cash only; get the marionberry scone or gingerbread waffle) · or Sea Level Bakery</li>
+      <li><span class="tag opt">optional</span>Hug Point beach waterfall, at low tide only</li>
+      <li>Or just a slow walk on Cannon Beach before you leave</li>
+    </ul>
+  </div></div>
+  <div class="block"><div class="when"><small>Midday</small>11:00–1:00</div><div>
+    <p class="main">Coast road (US-101) to Tillamook Creamery for lunch</p>
+    <ul class="opts">
+      <li>Grilled cheese, cheese curds, ice cream; free factory tour</li>
+      <li>Photo stops at the Neahkahnie cliffs and Manzanita</li>
+    </ul>
+  </div></div>
+  <div class="block"><div class="when"><small>Drive</small>1:00–2:45</div><div>
+    <p class="main">Wilson River Highway (OR-6) through the forest to Portland</p>
+    <ul class="opts"><li>Check TripCheck.com for conditions that morning</li></ul>
+  </div></div>
+  <div class="block"><div class="when"><small>Afternoon</small>2:45–4:45</div><div>
+    <p class="main">Portland Japanese Garden, then the Pittock Mansion view at sunset</p>
+    <ul class="opts">
+      <li>Garden: timed tickets, $22.50 each; last entry 3:30. Leave by about 4:10 to catch sunset at Pittock</li>
+      <li>Pittock grounds are free: the city, Mt Hood on a clear day</li>
+      <li><span class="tag">snack</span>Salt &amp; Straw ice cream on NW 23rd</li>
+      <li><span class="tag opt">optional</span>Powell's City of Books in the Pearl District, the world's largest independent bookstore (free, open until 9pm; about 45 min before dinner)</li>
+    </ul>
+  </div></div>
+  <div class="block"><div class="when"><small>Evening</small>5:30–8:00</div><div>
+    <p class="main">Dinner at Prost! Marketplace food carts (N Mississippi Ave)</p>
+    <ul class="opts">
+      <li>Matt's BBQ brisket · Mole Mole Mexican; heated seating</li>
+      <li><span class="tag">snack</span>Voodoo Doughnut on NE Davis on the way to the hotel: fun for the pink box, though locals rate it a novelty</li>
+    </ul>
+  </div></div>
+</section>
+
+<section class="day" style="--dc:var(--d5)">
+  <div class="dayhead"><h2>Mon · Gorge waterfalls, fly home</h2><span class="date">Nov 23</span><span class="sleep">Car due 11:00 · flight 12:57</span></div>
+  <div class="block"><div class="when"><small>Early</small>7:00–7:40</div><div>
+    <p class="main">Coffee at the hotel, check out, leave by 7:40</p>
+    <ul class="opts"><li><b>Or:</b> full hotel breakfast if you'd rather skip brunch at the falls</li></ul>
+  </div></div>
+  <div class="block"><div class="when"><small>Gorge</small>7:55–9:00</div><div>
+    <p class="main">Vista House view, Latourell Falls, then the walk up to Benson Bridge at Multnomah</p>
+    <ul class="opts">
+      <li>Bridal Veil and Wahkeena falls from the road on the way</li>
+      <li>Oregon day permit, $12 (covers Vista House and Latourell)</li>
+      <li>Multnomah restrooms are portable toilets during renovation</li>
+    </ul>
+  </div></div>
+  <div class="block"><div class="when"><small>Brunch</small>9:00–9:55</div><div>
+    <p class="main">Multnomah Falls Lodge: hazelnut French toast with marionberries, or smoked salmon hash</p>
+    <ul class="opts"><li>Opens 9am; reservations encouraged, (503) 695-2376</li></ul>
+  </div></div>
+  <div class="block"><div class="when"><small>Airport</small>10:00–12:57</div><div>
+    <p class="main">Fill up, return the car at PDX by 11, through security by about 11:45</p>
+    <ul class="opts"><li><span class="tag">snack</span>Tillamook Market (Concourse E) · Blue Star Donuts kiosk (North Hall) · Country Cat deli (before security)</li></ul>
+  </div></div>
+</section>
+
+<details>
+  <summary>Route map</summary>
+  <div class="mapbox"><svg viewBox="0 0 600 734" role="img" aria-label="Road trip map from Seattle down the Washington and Oregon coast to Portland" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="734" fill="var(--sea)"/><path d="M219.0,473.7L240.5,491.1L231.5,490.5L220.3,482.9L217.7,479.0L219.0,473.7ZM214.8,468.9L214.0,471.1L208.1,467.5L206.1,464.1L205.5,457.9L207.5,458.3L213.2,464.1L214.8,468.9ZM106.4,393.7L107.0,408.0L103.0,411.4L100.8,401.1L95.9,397.0L97.5,386.2L99.4,383.4L106.4,393.7ZM100.9,734.4L104.3,717.4L105.3,717.9L103.7,728.7L107.2,725.3L112.7,716.6L105.0,711.9L101.5,706.0L101.7,692.9L104.2,686.2L105.1,676.3L106.3,673.5L108.3,691.2L112.0,692.8L113.9,696.3L118.6,698.8L117.8,696.7L120.2,691.2L116.5,679.3L117.4,672.6L111.3,674.5L104.3,667.7L107.2,653.8L107.7,645.4L112.2,641.0L112.7,632.7L114.4,632.2L119.3,634.8L122.7,630.1L119.6,631.3L117.2,630.8L114.9,626.9L112.9,628.1L112.1,630.3L110.2,631.5L109.7,639.2L108.6,641.6L107.8,621.2L106.5,618.4L103.1,615.9L101.9,613.1L102.2,610.7L99.4,610.9L99.2,608.6L102.1,604.3L104.1,593.8L104.6,576.0L103.9,568.6L101.8,562.0L97.4,556.1L101.2,551.5L103.0,547.1L109.4,543.2L111.7,532.6L108.8,511.7L105.9,499.9L97.4,475.0L90.6,465.7L94.8,463.6L97.9,467.0L96.5,469.0L98.6,472.1L105.8,473.6L111.6,478.1L113.2,481.2L115.8,481.3L116.5,484.9L123.6,487.6L130.4,486.8L132.5,488.5L133.9,491.5L135.2,501.7L138.1,505.3L137.7,492.6L142.4,494.6L142.4,492.7L136.3,485.2L128.6,483.5L123.9,479.4L138.2,477.2L144.9,473.9L153.2,484.3L157.7,484.2L177.2,479.4L180.3,477.7L175.9,476.2L175.8,473.7L178.6,472.4L184.1,473.2L192.5,467.1L193.7,464.7L197.3,464.3L204.6,465.9L207.1,469.8L214.7,475.7L216.2,482.4L225.7,491.8L238.3,494.1L243.9,493.4L248.6,495.6L253.1,495.8L258.0,494.6L263.8,486.1L269.2,481.6L263.4,481.9L250.3,490.5L244.3,490.1L224.0,473.9L210.8,454.5L205.9,451.8L179.5,456.7L166.9,453.5L164.3,446.1L160.5,442.7L154.0,444.2L153.5,447.4L148.9,447.1L145.3,452.6L142.5,452.3L139.7,449.6L136.4,449.5L133.9,454.0L130.6,454.0L122.3,462.8L111.3,459.3L106.3,453.6L102.4,446.1L98.6,441.5L93.4,440.2L90.6,439.9L85.1,445.4L84.5,448.7L86.9,450.2L86.6,452.7L82.3,451.5L79.3,454.1L78.4,453.1L81.4,432.4L82.2,417.3L82.1,353.0L80.0,338.7L82.1,334.8L87.8,342.3L86.1,344.5L91.6,361.5L89.8,385.0L90.7,407.4L92.4,418.1L104.3,420.2L106.5,412.6L109.8,408.8L110.9,401.1L114.4,404.7L121.7,407.6L127.9,414.5L129.2,408.6L125.8,405.3L117.0,400.6L116.3,395.8L109.0,391.2L109.2,384.3L114.9,380.1L117.4,376.1L117.4,368.9L104.6,344.6L117.7,350.9L113.2,343.0L111.8,333.9L114.3,326.5L121.4,323.4L128.6,321.9L132.2,323.3L135.3,332.5L138.9,333.0L142.8,331.0L145.4,327.6L138.7,326.5L129.4,315.5L116.6,306.3L114.0,308.3L113.9,312.3L105.6,313.2L100.5,308.2L99.2,314.6L100.7,317.5L103.2,318.7L101.2,320.5L90.1,317.0L89.1,314.7L75.6,307.6L74.1,301.9L73.9,287.4L67.7,263.5L68.5,259.7L71.7,255.4L76.1,259.2L74.7,266.0L79.0,271.9L80.0,276.8L83.1,276.3L90.9,280.1L92.5,276.9L92.3,274.3L88.7,268.4L83.3,270.9L85.5,261.9L88.4,259.8L94.0,259.4L103.3,253.6L135.0,241.0L131.8,239.1L128.3,240.4L123.4,237.7L106.0,238.1L104.8,236.9L111.9,234.5L92.7,233.4L91.3,230.2L92.7,225.5L89.5,219.7L81.5,216.8L70.6,215.1L65.9,217.4L64.0,220.8L66.4,227.8L66.4,238.2L69.2,244.8L73.2,245.4L73.0,248.9L66.1,245.4L62.9,247.5L62.9,249.9L57.6,251.3L58.9,234.1L59.0,215.4L57.4,195.4L53.0,170.5L50.5,158.4L43.9,138.8L41.6,135.3L36.9,135.0L32.0,120.9L37.8,122.6L35.4,120.0L28.0,118.1L21.5,74.1L21.0,59.6L14.1,32.1L8.3,16.0L5.9,0.0L339.1,0.0L336.7,2.1L331.5,16.0L327.8,20.6L326.5,27.7L319.8,32.4L303.0,53.8L293.6,76.1L282.1,89.6L279.1,101.1L273.8,113.5L273.2,118.2L279.8,123.2L291.7,122.0L327.5,106.5L334.6,101.9L341.5,95.1L335.5,93.7L327.1,97.6L312.4,107.7L296.3,115.1L287.9,115.0L283.4,107.7L284.0,103.3L294.0,87.4L302.6,67.0L318.2,44.1L334.3,33.6L355.0,24.5L357.6,21.9L363.6,0.0L401.2,0.0L401.6,3.5L399.7,8.5L396.5,12.9L393.1,14.8L381.3,2.3L379.3,2.9L379.9,6.8L386.2,14.5L393.9,44.1L392.3,46.2L393.9,48.5L388.6,51.2L382.9,44.5L374.9,27.3L372.2,32.7L371.7,36.1L373.1,44.2L383.9,50.3L382.2,54.8L376.1,62.4L374.9,65.6L385.8,60.4L402.2,48.3L404.3,53.4L404.6,61.4L406.2,65.6L411.7,67.8L411.4,73.2L402.5,100.6L401.5,107.4L405.5,114.0L401.7,121.4L395.2,124.5L400.6,135.4L401.3,140.5L398.9,146.9L395.7,146.8L379.3,139.5L373.9,135.4L374.5,132.6L377.5,129.8L380.9,120.6L386.3,111.1L385.2,103.5L383.6,109.2L380.9,112.2L373.5,115.9L368.8,121.8L365.5,123.7L364.9,129.4L360.7,137.2L359.8,141.6L360.9,145.9L366.1,154.8L365.8,156.6L360.3,162.7L361.9,169.2L355.6,174.9L350.1,165.1L346.7,150.9L346.7,143.7L350.8,141.7L352.7,137.0L353.2,131.1L353.1,122.6L351.7,115.9L347.5,109.9L348.6,105.6L345.6,110.1L340.1,130.9L335.0,136.0L325.8,140.3L324.3,142.6L318.1,165.9L314.8,172.4L309.4,177.4L292.9,183.3L290.7,188.1L298.7,183.8L302.8,183.8L303.6,188.1L301.2,190.8L293.0,193.6L290.7,198.7L314.0,182.8L319.7,173.4L322.2,174.5L321.3,179.0L311.9,197.0L305.2,202.9L310.1,203.3L314.9,200.6L318.9,195.3L321.1,188.1L322.8,194.5L321.1,200.8L323.2,204.2L324.8,211.0L326.9,213.4L330.0,213.8L330.1,210.6L326.9,202.9L329.5,199.8L328.4,188.1L330.2,184.5L338.6,177.4L339.7,183.3L337.2,188.1L345.4,184.5L345.0,178.9L346.2,177.2L350.2,179.7L355.6,188.9L363.4,193.9L366.3,200.8L374.0,196.1L381.1,188.8L398.2,163.8L402.8,153.6L405.6,142.4L405.5,130.9L424.4,145.5L427.6,146.6L434.5,141.6L428.8,136.8L428.4,134.3L430.0,130.9L436.5,125.4L447.5,121.4L449.8,118.1L450.8,113.4L450.5,107.7L442.9,95.7L441.7,91.9L440.9,74.9L437.1,67.6L432.7,50.9L436.7,45.1L439.3,44.4L446.1,54.8L447.4,43.5L446.2,39.5L443.2,35.9L431.8,30.3L428.5,24.6L431.7,22.4L433.2,17.5L437.9,9.6L438.6,6.1L437.9,0.0L600.0,0.0L600.0,734.4L100.9,734.4ZM375.9,185.3L369.6,190.1L362.1,184.0L361.2,180.9L364.8,178.3L367.2,172.6L374.1,172.6L376.2,173.9L377.1,177.4L375.9,185.3ZM339.6,160.4L339.6,168.7L337.2,173.5L334.2,176.5L333.0,175.2L330.6,166.5L324.0,157.8L326.1,145.1L327.6,142.5L330.6,142.5L339.9,136.4L338.7,140.3L335.7,142.5L335.1,153.4L339.6,160.4ZM441.7,110.0L430.9,113.9L420.0,124.5L418.8,120.5L419.0,116.4L420.6,113.2L425.7,110.3L426.2,107.1L424.8,104.7L421.3,105.6L422.8,107.7L416.5,111.1L415.6,113.0L415.1,122.1L412.7,126.0L409.5,124.3L406.8,118.2L409.7,110.9L411.3,87.7L415.8,79.4L422.8,73.8L421.5,78.1L425.9,84.3L427.2,97.0L429.9,102.2L441.7,110.0ZM417.6,47.3L413.7,52.1L409.0,51.2L404.4,44.6L398.5,44.4L396.9,42.7L399.1,34.1L396.6,28.2L396.4,23.8L400.3,16.8L401.2,8.1L405.4,7.8L411.1,13.6L412.2,23.7L413.5,28.2L415.6,30.5L411.1,34.7L413.4,37.2L414.9,45.0L417.6,47.3ZM352.1,17.1L347.3,19.0L343.8,17.5L343.6,14.2L346.0,8.3L347.6,0.0L356.7,0.0L353.8,14.8L352.1,17.1ZM417.5,0.0L414.9,1.5L408.6,0.0L417.5,0.0Z" fill="var(--land)" stroke="var(--shore)" stroke-width="0.6" fill-rule="evenodd"/><path d="M600.0,622.4L579.3,626.4L563.4,622.9L557.4,624.1L548.6,629.3L534.1,641.8L525.5,647.3L487.7,662.2M487.6,662.3L464.1,670.8L447.0,664.4L429.1,664.1L422.7,660.3L411.9,657.3L405.0,653.7L393.3,656.0L376.7,652.5L371.5,649.4L362.8,641.0L360.8,635.9L358.4,616.9L359.7,604.2L354.1,592.6L355.3,573.6L351.4,562.8L348.4,543.7L339.2,533.4L336.9,521.6L330.4,508.4L321.1,499.2L307.5,492.1L301.0,490.9L287.8,480.6L283.7,479.4L270.3,482.0L263.7,485.3" fill="none" stroke="var(--sea)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M388.1,734.4L392.8,730.4L394.7,725.5L393.3,718.8L386.3,710.1L384.6,703.4L385.5,691.5L384.8,685.7L381.7,679.1L363.8,663.2L358.3,653.0L363.8,642.9" fill="none" stroke="var(--sea)" stroke-width="1.4" stroke-linecap="round"/><path d="M599.8,624.2L591.0,623.9L544.4,632.7L501.4,659.5L487.6,662.3L476.5,663.1L400.5,652.6L381.7,651.9L365.5,637.6L361.2,614.1L340.6,543.7L319.7,501.5L298.5,487.5L281.8,481.7L260.7,489.5L254.1,485.3L249.8,484.8" fill="none" stroke="var(--muted)" stroke-width="0.8" stroke-dasharray="3 3" opacity=".7"/><text x="402.8" y="351.8" class="m-state">WASHINGTON</text><text x="318.0" y="614.1" class="m-state">OREGON</text><text x="38.2" y="305.5" class="m-water">PACIFIC</text><text x="38.2" y="324.0" class="m-water">OCEAN</text><text x="396.5" y="95.7" class="m-water">Puget Sound</text><text x="233.2" y="464.4" class="m-water">Columbia River</text><path d="M454.0,89.4L458.0,74.1L451.6,49.4L445.5,40.0" fill="none" stroke="var(--d1)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M445.5,40.0L455.8,89.5L426.1,151.2L381.6,197.5L328.6,216.0L275.6,228.3L222.6,228.3L135.7,236.1L137.8,271.5L152.7,324.0L137.8,333.3L133.6,382.6L135.7,422.7L106.0,435.1L86.9,441.3L83.7,451.7L86.9,441.3L106.0,453.6L125.1,458.2L127.2,475.2L131.4,478.6L116.6,484.5L99.2,481.7L110.2,506.1L112.4,540.0L108.1,558.5L103.5,572.7" fill="none" stroke="var(--d3)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M103.5,572.7L104.3,589.7L104.5,609.4L110.2,623.3L118.7,627.9L120.8,632.6L106.0,657.3L114.5,672.7L118.7,685.0L127.8,695.8L159.0,691.2L201.4,666.5L250.2,644.9L284.1,654.2L318.0,681.9L349.8,691.2L369.3,685.3L374.4,684.1L376.2,673.9L382.0,683.2L402.8,680.4L419.8,678.9" fill="none" stroke="var(--d4)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M103.5,572.7L103.9,566.2L101.1,561.3" fill="none" stroke="var(--d4)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M419.8,678.9L434.6,678.9L455.8,677.3L467.7,679.2L473.2,679.5L481.3,674.2L491.9,669.0L494.8,667.7L499.1,663.4L504.6,660.3L455.8,674.2L424.0,671.1L392.9,663.7" fill="none" stroke="var(--d5)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M447.6,42.4L430.4,40.1L411.3,36.0" fill="none" stroke="var(--d2)" stroke-width="2.4" stroke-dasharray="5 4" stroke-linecap="round"/><text x="334.6" y="220.0" class="m-city">Olympia</text><circle cx="135.7" cy="236.1" r="2" fill="var(--muted)"/><text x="141.7" y="240.1" class="m-town">Aberdeen</text><circle cx="426.1" cy="151.2" r="2" fill="var(--muted)"/><text x="432.1" y="155.2" class="m-town">Tacoma</text><circle cx="112.4" cy="540.0" r="2" fill="var(--muted)"/><text x="118.4" y="544.0" class="m-town">Seaside</text><circle cx="110.2" cy="623.3" r="2" fill="var(--muted)"/><text x="116.2" y="627.3" class="m-town">Manzanita</text><circle cx="114.5" cy="672.7" r="2" fill="var(--muted)"/><text x="120.5" y="676.7" class="m-town">Garibaldi</text><circle cx="454.0" cy="89.4" r="7" fill="var(--land)" stroke="var(--ink)" stroke-width="2"/><circle cx="454.0" cy="89.4" r="2.5" fill="var(--ink)"/><text x="464.0" y="93.4" text-anchor="start" class="m-label">SEA airport</text><rect x="437.5" y="32.0" width="16" height="16" rx="3" fill="var(--ink)" stroke="var(--land)" stroke-width="1.5"/><text x="445.5" y="44.0" class="m-num m-h">H</text><text x="445.5" y="27.0" text-anchor="middle" class="m-label">Seattle hotel · Pike Place · Kerry Park</text><circle cx="411.3" cy="36.0" r="8.5" fill="var(--d2)" stroke="var(--land)" stroke-width="1.5"/><text x="411.3" y="39.6" class="m-num">3</text><text x="399.3" y="40.0" text-anchor="end" class="m-label">Bainbridge Is.</text><circle cx="83.7" cy="451.7" r="8.5" fill="var(--d3)" stroke="var(--land)" stroke-width="1.5"/><text x="83.7" y="455.3" class="m-num">4</text><text x="95.7" y="445.7" text-anchor="start" class="m-label">Cape Disappointment</text><circle cx="131.4" cy="478.6" r="8.5" fill="var(--d3)" stroke="var(--land)" stroke-width="1.5"/><text x="131.4" y="482.20000000000005" class="m-num">5</text><text x="143.4" y="482.6" text-anchor="start" class="m-label">Astoria</text><circle cx="99.2" cy="481.7" r="8.5" fill="var(--d3)" stroke="var(--land)" stroke-width="1.5"/><text x="99.2" y="485.3" class="m-num">6</text><text x="99.2" y="502.7" text-anchor="middle" class="m-label">Peter Iredale wreck</text><circle cx="101.1" cy="561.3" r="8.5" fill="var(--d4)" stroke="var(--land)" stroke-width="1.5"/><text x="101.1" y="564.9" class="m-num">7</text><text x="89.1" y="565.3" text-anchor="end" class="m-label">Ecola SP</text><rect x="95.5" y="564.7" width="16" height="16" rx="3" fill="var(--ink)" stroke="var(--land)" stroke-width="1.5"/><text x="103.5" y="576.7" class="m-num m-h">H</text><text x="115.5" y="576.7" text-anchor="start" class="m-label">Hallmark (hotel)</text><circle cx="104.3" cy="589.7" r="8.5" fill="var(--d4)" stroke="var(--land)" stroke-width="1.5"/><text x="104.3" y="593.3000000000001" class="m-num">8</text><text x="92.3" y="593.7" text-anchor="end" class="m-label">Hug Point</text><circle cx="127.8" cy="695.8" r="8.5" fill="var(--d4)" stroke="var(--land)" stroke-width="1.5"/><text x="127.8" y="699.4" class="m-num">10</text><text x="139.8" y="699.8" text-anchor="start" class="m-label">Tillamook Creamery</text><circle cx="369.3" cy="685.3" r="8.5" fill="var(--d4)" stroke="var(--land)" stroke-width="1.5"/><text x="369.3" y="688.9" class="m-num">11</text><text x="357.3" y="691.3" text-anchor="end" class="m-label">Japanese Garden</text><rect x="411.8" y="670.9" width="16" height="16" rx="3" fill="var(--ink)" stroke="var(--land)" stroke-width="1.5"/><text x="419.8" y="682.9" class="m-num m-h">H</text><text x="419.8" y="666.9" text-anchor="middle" class="m-label">Courtyard East</text><circle cx="376.2" cy="673.9" r="8.5" fill="var(--d4)" stroke="var(--land)" stroke-width="1.5"/><text x="376.2" y="677.5" class="m-num">14</text><text x="364.2" y="665.9" text-anchor="end" class="m-label">Prost! food carts</text><circle cx="467.7" cy="679.2" r="8.5" fill="var(--d5)" stroke="var(--land)" stroke-width="1.5"/><text x="467.7" y="682.8000000000001" class="m-num">12</text><text x="467.7" y="702.2" text-anchor="middle" class="m-label">Vista House · Latourell</text><circle cx="494.8" cy="667.7" r="8.5" fill="var(--d5)" stroke="var(--land)" stroke-width="1.5"/><text x="494.8" y="671.3000000000001" class="m-num">13</text><text x="490.8" y="654.7" text-anchor="start" class="m-label">Gorge waterfalls</text><circle cx="392.9" cy="663.7" r="7" fill="var(--land)" stroke="var(--ink)" stroke-width="2"/><circle cx="392.9" cy="663.7" r="2.5" fill="var(--ink)"/><text x="392.9" y="651.7" text-anchor="middle" class="m-label">PDX airport</text></svg></div>
+  <p class="howto">Map lines are approximate. About 470 miles in total.</p>
+</details>
+
+<details>
+  <summary>Bookings and costs</summary>
+  <table>
+    <tr><td>Flights, United, 3 travelers</td><td class="n">$1,662.75</td></tr>
+    <tr><td>Avis Equinox, SEA → PDX (prepaid)</td><td class="n">$328.67</td></tr>
+    <tr><td>Seattle Marriott Waterfront, Thu–Fri · free cancel to Nov 16</td><td class="n">$489.71</td></tr>
+    <tr><td>Hallmark Resort, Sat · oceanfront 1BR · free cancel to Nov 18, 4pm</td><td class="n">$556.99</td></tr>
+    <tr><td>Courtyard Portland East, Sun · non-refundable</td><td class="n">$117.26</td></tr>
+    <tr class="tot"><td>Booked</td><td class="n">$3,155.38</td></tr>
+    <tr><td>Food, snacks, passes, valet, Japanese Garden</td><td class="n">~$1,105</td></tr>
+    <tr><td>Avis mileage (~470 mi at 30¢) and gas</td><td class="n">~$235</td></tr>
+    <tr class="tot"><td>Whole trip, about</td><td class="n">~$4,495</td></tr>
+  </table>
+</details>
+
+<details open>
+  <summary>Before you go</summary>
+  <h3 class="sub">Needs booking</h3>
+  <table>
+    <tr><td><b>Portland Japanese Garden</b> · <span class="tag">book now</span><br><span class="dim">Sun Nov 22, 2:45pm slot · 3 adults, $67.50 · non-refundable · japanesegarden.org</span></td></tr>
+    <tr><td><b>Multnomah Falls Lodge brunch</b> · <span class="tag opt">optional</span> book this week<br><span class="dim">Mon Nov 23, 9:00am, party of 3 · call (503) 695-2376</span></td></tr>
+    <tr><td><b>Space Needle</b> · <span class="tag opt">optional</span> buy on the day<br><span class="dim">Fri Nov 20, about 1:45pm slot, only if it's clear · about $35+ each · spaceneedle.com (combo with Chihuly about $74)</span></td></tr>
+    <tr><td><b>Chihuly Garden and Glass</b> · <span class="tag opt">optional</span> buy on the day<br><span class="dim">Fri Nov 20, early afternoon · about $45 each</span></td></tr>
+  </table>
+  <p class="dim">Everything else is walk-in or pay on site: the ferry, Ivar's, Pelican Brewing, the food carts and the Tillamook tour.</p>
+  <h3 class="sub">Park passes, explained</h3>
+  <ul class="check">
+    <li><b>They're parking fees, not road tolls.</b> You only need one when you park at a state park. Driving US-101, OR-6 or the Gorge highway needs nothing.</li>
+    <li><b>Saturday, Washington:</b> a one-day Discover Pass ($10) to park at Cape Disappointment. Easiest is the pay station at the park. Buying online gives a pass you have to print.</li>
+    <li><b>Oregon, Sat, Sun and Mon:</b> a day-use parking permit, $12 per car per day for out-of-state plates. One permit covers every Oregon state park that day: Fort Stevens (the shipwreck) on Saturday, Ecola on Sunday, Vista House and Latourell on Monday. Buy it at the yellow machine or by scanning the QR sign in the first lot of the day, or online that day. Keep the receipt on the dash.</li>
+    <li><b>No pass needed:</b> Multnomah Falls in November, Haystack Rock, the Astoria Column (just $10 parking), Pittock Mansion and the Japanese Garden (city meters).</li>
+  </ul>
+  <h3 class="sub">Checklist</h3>
+  <ul class="check">
+    <li>Cash for Bowpicker, Lazy Susan and the food carts.</li>
+    <li>Check the tide for Hug Point the night before, and TripCheck for OR-6 on Sunday morning.</li>
+    <li>Check Matt's BBQ and Mole Mole on Instagram on Sunday for hours.</li>
+    <li>Tell the Seattle Marriott you'll arrive around 12:30am; set maps to avoid tolls.</li>
+    <li>Rain jackets, waterproof shoes, warm layers.</li>
+  </ul>
+</details>
+
+<footer>Prices and hours checked November 2026.</footer>
+</div>
+</body></html>

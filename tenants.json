@@ -204,6 +204,17 @@
       "output": "dist/rebate-radar.html",
       "deterministic": true,
       "note": "Rebate Radar web lookup (arc web-lookup, 2026-10-21): type a website, see every cashback portal's rate, best first. Source web/rebate-radar.html; the vendored family gate is byte-identical to press src/family-gate.js. Calls the rebate-lookup Edge Function (this project; JWT + press_access_has('rebate-radar.html')). Access row: db/20261021_rebate_radar_access.sql."
+    },
+    "pnw-loop.html": {
+      "repo": null,
+      "tier": "public",
+      "gate": null,
+      "vendored": null,
+      "release": null,
+      "build": null,
+      "output": null,
+      "deterministic": false,
+      "note": "press-native page (static family trip itinerary, Nov 2026; redacted public copy of a private Claude artifact); no source repo."
     }
   },
   "redirects": {
