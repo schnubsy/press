@@ -22,8 +22,13 @@
  * (Cardsharp: gift-card numbers + PINs) never has its {sync_id, pass} in localStorage — the persisted
  * session carries a REDACTED stub for it; the full keyring lives only in this tab's memory (`_mem`) after a
  * passkey unlock in this tab. A Connect / add-device re-seal restores redacted entries from the decrypted
- * vault row, so redaction never erases a credential from the vault. A passkey unlock seals each MEMORY_ONLY page's
- * creds for the session's 7 days (quick-fixes S3), so one tap — in the wing or any gate — opens Cardsharp too.
+ * vault row, so redaction never erases a credential from the vault.
+ *
+ * OWN ORIGIN (cardsharp own-origin pilot, 2026-11-13): the quick-fixes S3 seal (a non-extractable key in IndexedDB
+ * `press:vault:seal` + the sealed creds in the session for 7 days) is RETIRED — any script on this origin could unseal
+ * it. Every load of this module deletes what an older page left (purgeSeal). An app on its OWN origin uses
+ * enrolOwn / unlockOwn (its own passkey, rpId = its own host, nothing persisted but a non-secret hint flag) and the
+ * one-time hand-over moveOut (the wing) → moveIn (the app): an exact-origin postMessage, never a URL or storage.
  * ========================================================================== */
 (function (root) {
   'use strict';
@@ -245,55 +250,32 @@
   }
   function everEnrolled() { var s = store(); if (!s) return false; try { return s.getItem(ENROLLED_FLAG) === '1'; } catch (e) { return false; } }
 
-  // --- SEALED 7-day unlock for MEMORY_ONLY pages (cardsharp Arc 7 slice 6; moved here from gate.js, quick-fixes S3) --
-  // A page's {sync_id, pass} are AES-GCM sealed under a fresh NON-EXTRACTABLE key kept in IndexedDB (`press:vault:seal`);
-  // the ciphertext rides INSIDE the session (`press:vault:v1`.seal), AAD-bound to its unlockedAt/expiresAt/vaultId, so
-  // any lock, expiry or new session kills it atomically. The gate unseals it on load (no prompt). No IndexedDB → none.
-  var SEAL_DB = 'press:vault:seal';
-  function hasIdb() { try { return !!globalThis.indexedDB && !!subtle; } catch (e) { return false; } }
-  function sealIdb(mode, fn) {
-    return new Promise(function (ok, no) {
-      var o = globalThis.indexedDB.open(SEAL_DB, 1);
-      o.onupgradeneeded = function () { o.result.createObjectStore('keys'); };
-      o.onerror = o.onblocked = function () { no(o.error); };
-      o.onsuccess = function () {
-        var db = o.result, t = db.transaction('keys', mode), r = fn(t.objectStore('keys'));
-        t.oncomplete = function () { db.close(); ok(r.result); };
-        t.onerror = t.onabort = function () { db.close(); no(t.error); };
-      };
-    });
-  }
-  function sealAad(page, s) { return new TextEncoder().encode(JSON.stringify([page, s.unlockedAt, s.expiresAt, s.vaultId || ''])); }
-  // seal `creds` ({syncId, passphrase}) for `page` onto the CURRENT session. true = a new session appeared meanwhile
-  // (the caller seals again); a lock meanwhile drops the key, so none is ever left behind.
-  async function sealPage(page, creds) {
-    var s = loadSession(); if (!s) return false;
-    var key = await subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
-    var iv = randomBytes(12);
-    var ct = await subtle.encrypt({ name: 'AES-GCM', iv: iv, additionalData: sealAad(page, s) }, key,
-      new TextEncoder().encode(JSON.stringify([creds.syncId, creds.passphrase])));
-    await sealIdb('readwrite', function (st) { return st.put({ key: key, at: s.unlockedAt }, page); });
-    var cur = loadSession();
-    if (!cur) { await sealIdb('readwrite', function (st) { return st.delete(page); }).catch(function () {}); return false; }
-    if (cur.unlockedAt !== s.unlockedAt) return true;
-    cur.seal = cur.seal || {};
-    cur.seal[page] = { ct: b64(ct), iv: b64(iv), at: cur.unlockedAt, exp: cur.expiresAt };
-    store().setItem(SESSION_KEY, JSON.stringify(cur));
-    return false;
-  }
-  // quick-fixes S3 (Mark 2026-11-02): a passkey unlock ANYWHERE (the private wing, any gate) holds the FULL keyring —
-  // seal every MEMORY_ONLY page's creds right then, so opening Cardsharp next needs no second tap. Nothing new in clear
-  // storage. Best effort: a failure only means that page's own gate asks, as before.
-  async function sealMemoryOnly(keyring) {
-    if (!hasIdb() || !keyring || !keyring.apps) return;
-    for (var i = 0; i < MEMORY_ONLY.length; i++) {
-      var p = MEMORY_ONLY[i], v = keyring.apps[p];
-      if (!v || v.redacted || !v.sync_id || !v.pass) continue;
-      for (var n = 0; n < 3; n++) {
-        try { if (!(await sealPage(p, { syncId: v.sync_id, passphrase: v.pass }))) break; } catch (e) { break; }
+  // --- RETIRED: the sealed 7-day unlock (cardsharp Arc 7 slice 6 / quick-fixes S3) — own-origin pilot, 2026-11-13 -------
+  // It kept a NON-EXTRACTABLE AES key in IndexedDB `press:vault:seal` and the sealed {sync_id, pass} of each MEMORY_ONLY
+  // page in the session (`press:vault:v1`.seal) for 7 days: any script on the origin could unseal it with no passkey.
+  // Nothing seals any more; purgeSeal() runs at every load of this module (the wing, every gate page) and kills both halves
+  // an older page left. Safe at boot: the seal was only ever a cache — the vault row still holds the creds.
+  // TOMBSTONE (D1 round 1): a page still carrying the OLD vault (a tenant not yet re-vendored — thrift-shop.html …) would
+  // re-seal at its next passkey unlock. So the store is not just deleted but RE-CREATED AT VERSION 2 WITH NO OBJECT STORE:
+  // the old code's indexedDB.open(SEAL_DB, 1) then fails (VersionError) → its sealPage throws before it writes either half
+  // (the key put comes first) → nothing is sealed, and its unseal finds nothing. An empty database holds nothing.
+  var SEAL_DB = 'press:vault:seal', SEAL_TOMBSTONE = 2;
+  function purgeSeal() {
+    try {
+      if (globalThis.indexedDB && typeof globalThis.indexedDB.open === 'function') {
+        var o = globalThis.indexedDB.open(SEAL_DB, SEAL_TOMBSTONE);
+        o.onupgradeneeded = function () { var db = o.result; for (var i = db.objectStoreNames.length - 1; i >= 0; i--) db.deleteObjectStore(db.objectStoreNames[i]); };
+        o.onsuccess = function () { try { o.result.close(); } catch (e) {} };
+        o.onerror = o.onblocked = function () {};
       }
-    }
+    } catch (e) {}
+    var s = store(); if (!s) return;
+    try {
+      var sess = JSON.parse(s.getItem(SESSION_KEY) || 'null');
+      if (sess && typeof sess === 'object' && 'seal' in sess) { delete sess.seal; s.setItem(SESSION_KEY, JSON.stringify(sess)); }
+    } catch (e) {}
   }
+  purgeSeal();
 
   // --- REST helpers (header-gated on x-vault-id) -----------------------------
   function headers(vaultId, extra) {
@@ -465,7 +447,6 @@
     if (!keyring) throw new Error('Could not open the personal space with this passkey.');
     _live = { key: key, vaultId: vaultId };
     saveSession(keyring, vaultId);
-    await sealMemoryOnly(keyring); // quick-fixes S3: one tap opens every MEMORY_ONLY page too
     return { vaultId: vaultId, keyring: keyring, record: record };
   }
 
@@ -519,6 +500,126 @@
     return Array.isArray(gone) && gone.length > 0;
   }
 
+  // --- OWN ORIGIN: an app with its own passkey on its own host (cardsharp own-origin pilot, 2026-11-13) ----------
+  // The app's keyring holds ONLY its own entry ({v:1, apps:{<page>: {sync_id, pass}}}) in its own press_vault row
+  // (id = sha256(credential id), RLS on x-vault-id — the same table, crypto and PRF salt as the wing). Nothing that can
+  // unlock is persisted: no session, no seal, no `_live` key — the caller holds the creds in memory. OWN_FLAG is a
+  // non-secret hint ("a passkey was made or used here") for the gate's wording only.
+  var OWN_FLAG = 'press:own:enrolled';
+  function ownEnrolled() { var s = store(); if (!s) return false; try { return s.getItem(OWN_FLAG) === '1'; } catch (e) { return false; } }
+  function markOwn() { var s = store(); if (s) try { s.setItem(OWN_FLAG, '1'); } catch (e) {} }
+  function credsOf(keyring, page) {
+    var v = keyring && keyring.apps && keyring.apps[page];
+    return (v && !v.redacted && v.sync_id && v.pass) ? { syncId: v.sync_id, passphrase: v.pass } : null;
+  }
+  // Prefer the device's own passkey store (iOS: Apple Passwords → a Face ID glance); a password-manager
+  // provider (1Password) is still offered by the OS when the user picks it.
+  var OWN_HINTS = ['client-device'];
+  async function enrolOwn(opts) {
+    opts = opts || {};
+    var page = opts.page, creds = opts.creds;
+    if (!page || !creds || !creds.syncId || !creds.passphrase) throw new Error('enrolOwn needs a page and its credentials.');
+    var cred = await navigator.credentials.create({
+      publicKey: {
+        rp: { id: RP_ID, name: opts.name || page },
+        user: { id: randomBytes(16), name: opts.name || page, displayName: opts.name || page },
+        challenge: randomBytes(32),
+        pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+        authenticatorSelection: { authenticatorAttachment: 'platform', residentKey: 'required', userVerification: 'required' },
+        hints: OWN_HINTS,
+        extensions: prfExt()
+      }
+    });
+    var prf = prfResult(cred);
+    if (!prf) prf = await prfViaGet(cred.rawId); // 1Password-style: PRF only at assertion
+    if (!prf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
+    var vaultId = await vaultIdFor(cred.rawId);
+    var salt = randomBytes(32);
+    var key = await deriveKey(prf, salt);
+    var keyring = { v: 1, apps: {} };
+    keyring.apps[page] = { sync_id: creds.syncId, pass: creds.passphrase };
+    var sealed = await sealKeyring(keyring, key); sealed.salt = b64(salt);
+    if (!(await putRow(vaultId, sealed, opts.label || null))) throw new Error('Could not save the new key to the vault.');
+    // read it back: the row must open under this key and give back exactly these creds — else fail closed
+    var back = await fetchRow(vaultId);
+    var got = credsOf(back && await openKeyring(back, key), page);
+    if (!got || got.syncId !== creds.syncId || got.passphrase !== creds.passphrase) throw new Error('Could not save the new key to the vault.');
+    markOwn();
+    return { vaultId: vaultId, creds: got };
+  }
+  async function unlockOwn(page) {
+    var assertion = await navigator.credentials.get({
+      publicKey: { rpId: RP_ID, challenge: randomBytes(32), allowCredentials: [], userVerification: 'required', hints: OWN_HINTS, extensions: prfExt() }
+    });
+    var prf = prfResult(assertion);
+    if (!prf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
+    var vaultId = await vaultIdFor(assertion.rawId);
+    var record = await fetchRow(vaultId);
+    if (!record) throw new Error('No enrolled passkey found for the personal space on this device.');
+    var keyring = await openKeyring(record, await deriveKey(prf, ub64(record.salt)));
+    if (!keyring) throw new Error('Could not open the personal space with this passkey.');
+    var creds = credsOf(keyring, page);
+    if (!creds) throw new Error('No credentials stored for this tool yet.');
+    markOwn();
+    return { vaultId: vaultId, creds: creds };
+  }
+
+  // --- the one-time MOVE: the wing hands an app's creds to its own origin (exact-origin postMessage) ----------
+  // moveIn (the app, opened by the wing) posts READY {page, nonce} to the wing's exact origin; moveOut (the wing) answers
+  // that window only, with CREDS {page, nonce, sync_id, pass} to the app's exact origin; the app saves its own passkey,
+  // then posts DONE {page, nonce}. Every message is checked for origin, source window, page and nonce. Nothing touches
+  // a URL, a fragment, a log or storage. The wing drops its copy only after DONE (the caller's job — updateKeyring).
+  var MOVE = { ready: 'press-move-ready', creds: 'press-move-creds', done: 'press-move-done' };
+  function originOf(u) { try { return new URL(u).origin; } catch (e) { return null; } }
+  // opts: {page, origin, url, creds:{syncId, passphrase}, timeoutMs}. CALL IT INSIDE THE CLICK (it opens the tab).
+  function moveOut(opts) {
+    opts = opts || {};
+    var origin = originOf(opts.origin), page = opts.page, c = opts.creds || {};
+    if (!origin || originOf(opts.url) !== origin || !page || !c.syncId || !c.passphrase) return Promise.reject(new Error('moveOut needs a page, its origin and its credentials.'));
+    var w = opts.win || globalThis.open(opts.url, 'press-move-' + page.replace(/[^a-z0-9]/gi, '-')); // a named tab: a re-run reuses it
+    if (!w) return Promise.reject(new Error('The new tab was blocked — allow pop-ups for this page and try again.'));
+    return new Promise(function (ok, no) {
+      var nonce = null, settled = false;
+      function end(err) { if (settled) return; settled = true; globalThis.removeEventListener('message', on); clearInterval(poll); clearTimeout(tm); err ? no(err) : ok({ page: page }); }
+      function on(ev) {
+        if (!ev || ev.origin !== origin || ev.source !== w) return;
+        var d = ev.data;
+        if (!d || typeof d !== 'object' || d.page !== page) return;
+        if (d.t === MOVE.ready && !nonce && typeof d.nonce === 'string' && /^[0-9a-f]{32}$/.test(d.nonce)) {
+          nonce = d.nonce;
+          w.postMessage({ t: MOVE.creds, page: page, nonce: nonce, sync_id: c.syncId, pass: c.passphrase }, origin);
+        } else if (d.t === MOVE.done && nonce && d.nonce === nonce) end(null);
+      }
+      globalThis.addEventListener('message', on);
+      var poll = setInterval(function () { try { if (w.closed) end(new Error('The move tab closed before it finished — nothing changed. Try again.')); } catch (e) {} }, 500);
+      var tm = setTimeout(function () { end(new Error('The move timed out — nothing changed. Try again.')); }, opts.timeoutMs || 10 * 60 * 1000);
+    });
+  }
+  // the app side: opts {page, wingOrigin}. → { creds: Promise<{syncId, passphrase}>, done() } ; null when not opened by the wing
+  function moveIn(opts) {
+    opts = opts || {};
+    var opener = globalThis.opener, origin = originOf(opts.wingOrigin), page = opts.page;
+    if (!opener || !origin || !page) return null;
+    var nonce = hex(randomBytes(16)), got = false, tries = 0, rt = null;
+    var creds = new Promise(function (ok) {
+      function on(ev) {
+        if (got || !ev || ev.origin !== origin || ev.source !== opener) return;
+        var d = ev.data;
+        if (!d || typeof d !== 'object' || d.t !== MOVE.creds || d.page !== page || d.nonce !== nonce) return;
+        if (typeof d.sync_id !== 'string' || typeof d.pass !== 'string' || !d.sync_id || !d.pass) return;
+        got = true; clearTimeout(rt); globalThis.removeEventListener('message', on);
+        ok({ syncId: d.sync_id, passphrase: d.pass });
+      }
+      globalThis.addEventListener('message', on);
+    });
+    // READY goes to the wing's exact origin only; repeated briefly in case the wing's listener was not up yet
+    (function ready() { if (got) return; try { opener.postMessage({ t: MOVE.ready, page: page, nonce: nonce }, origin); } catch (e) {} if (++tries < 40) rt = setTimeout(ready, 500); })();
+    return {
+      creds: creds,
+      done: function () { try { opener.postMessage({ t: MOVE.done, page: page, nonce: nonce }, origin); return true; } catch (e) { return false; } }
+    };
+  }
+
   root.PressVault = {
     // config / constants
     SUPA_URL: SUPA_URL, SUPA_KEY: SUPA_KEY, VAULT_EP: VAULT_EP, RP_ID: RP_ID, INFO: INFO,
@@ -534,8 +635,11 @@
     saveSession: saveSession, loadSession: loadSession, lock: lock, everEnrolled: everEnrolled,
     // MEMORY_ONLY redaction (cardsharp S1)
     MEMORY_ONLY: MEMORY_ONLY, memCreds: memCreds, fullKeyring: fullKeyring, redact: redact, restoreRedacted: restoreRedacted,
-    // the sealed 7-day unlock (cardsharp Arc 7 slice 6; quick-fixes S3 — sealed at every passkey unlock)
-    SEAL_DB: SEAL_DB, hasIdb: hasIdb, sealIdb: sealIdb, sealAad: sealAad, sealPage: sealPage, sealMemoryOnly: sealMemoryOnly,
+    // the RETIRED sealed 7-day unlock — its purge only
+    SEAL_DB: SEAL_DB, SEAL_TOMBSTONE: SEAL_TOMBSTONE, purgeSeal: purgeSeal,
+    // own origin + the one-time move (own-origin pilot)
+    OWN_FLAG: OWN_FLAG, ownEnrolled: ownEnrolled, credsOf: credsOf, enrolOwn: enrolOwn, unlockOwn: unlockOwn,
+    MOVE: MOVE, moveOut: moveOut, moveIn: moveIn, putRow: putRow,
     // webauthn + rest
     enrol: enrol, unlock: unlock, addPasskey: addPasskey, revoke: revoke, fetchRow: fetchRow,
     updateKeyring: updateKeyring,

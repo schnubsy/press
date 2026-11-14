@@ -9,16 +9,17 @@
  *                          `tools/inline-vault.mjs --check` against src/vault.js and
  *                          the inlined copy in index.html. NEVER hand-edit it here —
  *                          edit src/vault.js and re-run the tool.
- *   - window.PressGate   — a full-page passkey gate an app mounts on boot.
+ *   - window.PressGate   — a full-page passkey gate an app mounts on boot. Two modes:
+ *       guard(...)    — WING mode (an app beside the wing on schnubsy.github.io): unlock only, the wing's
+ *                       passkey + session; enrolment lives in the wing.
+ *       guardOwn(...) — OWN-ORIGIN mode (own-origin pilot, 2026-11-13 — an app on its own host, e.g. Cardsharp on
+ *                       schnubsy-cardsharp.github.io): its own passkey (rpId = its own host), creds in this tab's
+ *                       memory only, relock after 5 minutes hidden and on pagehide / reload; the one-time move from
+ *                       the wing (?move=1) enrols that passkey. Never a passphrase field.
  *
  * Design: this is a DELIBERATE duplicate of the wing's inline gate, not an
  * oversight. The crypto CORE is shared and guarded identical; the UI chrome is
- * intentionally its own thing (an app is not the marquee). The gate is UNLOCK
- * ONLY — never a passphrase field, never an enrol button. Enrolment lives in the
- * wing; an un-enrolled device sees a friendly line and a link back to the marquee.
- *
- * The apps read their {sync_id, pass} from the sealed keyring in memory only and
- * never surface them. This file re-keys nothing.
+ * intentionally its own thing (an app is not the marquee).
  * ========================================================================== */
 
 // @@VAULT_INLINE@@
@@ -47,8 +48,13 @@
  * (Cardsharp: gift-card numbers + PINs) never has its {sync_id, pass} in localStorage — the persisted
  * session carries a REDACTED stub for it; the full keyring lives only in this tab's memory (`_mem`) after a
  * passkey unlock in this tab. A Connect / add-device re-seal restores redacted entries from the decrypted
- * vault row, so redaction never erases a credential from the vault. A passkey unlock seals each MEMORY_ONLY page's
- * creds for the session's 7 days (quick-fixes S3), so one tap — in the wing or any gate — opens Cardsharp too.
+ * vault row, so redaction never erases a credential from the vault.
+ *
+ * OWN ORIGIN (cardsharp own-origin pilot, 2026-11-13): the quick-fixes S3 seal (a non-extractable key in IndexedDB
+ * `press:vault:seal` + the sealed creds in the session for 7 days) is RETIRED — any script on this origin could unseal
+ * it. Every load of this module deletes what an older page left (purgeSeal). An app on its OWN origin uses
+ * enrolOwn / unlockOwn (its own passkey, rpId = its own host, nothing persisted but a non-secret hint flag) and the
+ * one-time hand-over moveOut (the wing) → moveIn (the app): an exact-origin postMessage, never a URL or storage.
  * ========================================================================== */
 (function (root) {
   'use strict';
@@ -270,55 +276,32 @@
   }
   function everEnrolled() { var s = store(); if (!s) return false; try { return s.getItem(ENROLLED_FLAG) === '1'; } catch (e) { return false; } }
 
-  // --- SEALED 7-day unlock for MEMORY_ONLY pages (cardsharp Arc 7 slice 6; moved here from gate.js, quick-fixes S3) --
-  // A page's {sync_id, pass} are AES-GCM sealed under a fresh NON-EXTRACTABLE key kept in IndexedDB (`press:vault:seal`);
-  // the ciphertext rides INSIDE the session (`press:vault:v1`.seal), AAD-bound to its unlockedAt/expiresAt/vaultId, so
-  // any lock, expiry or new session kills it atomically. The gate unseals it on load (no prompt). No IndexedDB → none.
-  var SEAL_DB = 'press:vault:seal';
-  function hasIdb() { try { return !!globalThis.indexedDB && !!subtle; } catch (e) { return false; } }
-  function sealIdb(mode, fn) {
-    return new Promise(function (ok, no) {
-      var o = globalThis.indexedDB.open(SEAL_DB, 1);
-      o.onupgradeneeded = function () { o.result.createObjectStore('keys'); };
-      o.onerror = o.onblocked = function () { no(o.error); };
-      o.onsuccess = function () {
-        var db = o.result, t = db.transaction('keys', mode), r = fn(t.objectStore('keys'));
-        t.oncomplete = function () { db.close(); ok(r.result); };
-        t.onerror = t.onabort = function () { db.close(); no(t.error); };
-      };
-    });
-  }
-  function sealAad(page, s) { return new TextEncoder().encode(JSON.stringify([page, s.unlockedAt, s.expiresAt, s.vaultId || ''])); }
-  // seal `creds` ({syncId, passphrase}) for `page` onto the CURRENT session. true = a new session appeared meanwhile
-  // (the caller seals again); a lock meanwhile drops the key, so none is ever left behind.
-  async function sealPage(page, creds) {
-    var s = loadSession(); if (!s) return false;
-    var key = await subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
-    var iv = randomBytes(12);
-    var ct = await subtle.encrypt({ name: 'AES-GCM', iv: iv, additionalData: sealAad(page, s) }, key,
-      new TextEncoder().encode(JSON.stringify([creds.syncId, creds.passphrase])));
-    await sealIdb('readwrite', function (st) { return st.put({ key: key, at: s.unlockedAt }, page); });
-    var cur = loadSession();
-    if (!cur) { await sealIdb('readwrite', function (st) { return st.delete(page); }).catch(function () {}); return false; }
-    if (cur.unlockedAt !== s.unlockedAt) return true;
-    cur.seal = cur.seal || {};
-    cur.seal[page] = { ct: b64(ct), iv: b64(iv), at: cur.unlockedAt, exp: cur.expiresAt };
-    store().setItem(SESSION_KEY, JSON.stringify(cur));
-    return false;
-  }
-  // quick-fixes S3 (Mark 2026-11-02): a passkey unlock ANYWHERE (the private wing, any gate) holds the FULL keyring —
-  // seal every MEMORY_ONLY page's creds right then, so opening Cardsharp next needs no second tap. Nothing new in clear
-  // storage. Best effort: a failure only means that page's own gate asks, as before.
-  async function sealMemoryOnly(keyring) {
-    if (!hasIdb() || !keyring || !keyring.apps) return;
-    for (var i = 0; i < MEMORY_ONLY.length; i++) {
-      var p = MEMORY_ONLY[i], v = keyring.apps[p];
-      if (!v || v.redacted || !v.sync_id || !v.pass) continue;
-      for (var n = 0; n < 3; n++) {
-        try { if (!(await sealPage(p, { syncId: v.sync_id, passphrase: v.pass }))) break; } catch (e) { break; }
+  // --- RETIRED: the sealed 7-day unlock (cardsharp Arc 7 slice 6 / quick-fixes S3) — own-origin pilot, 2026-11-13 -------
+  // It kept a NON-EXTRACTABLE AES key in IndexedDB `press:vault:seal` and the sealed {sync_id, pass} of each MEMORY_ONLY
+  // page in the session (`press:vault:v1`.seal) for 7 days: any script on the origin could unseal it with no passkey.
+  // Nothing seals any more; purgeSeal() runs at every load of this module (the wing, every gate page) and kills both halves
+  // an older page left. Safe at boot: the seal was only ever a cache — the vault row still holds the creds.
+  // TOMBSTONE (D1 round 1): a page still carrying the OLD vault (a tenant not yet re-vendored — thrift-shop.html …) would
+  // re-seal at its next passkey unlock. So the store is not just deleted but RE-CREATED AT VERSION 2 WITH NO OBJECT STORE:
+  // the old code's indexedDB.open(SEAL_DB, 1) then fails (VersionError) → its sealPage throws before it writes either half
+  // (the key put comes first) → nothing is sealed, and its unseal finds nothing. An empty database holds nothing.
+  var SEAL_DB = 'press:vault:seal', SEAL_TOMBSTONE = 2;
+  function purgeSeal() {
+    try {
+      if (globalThis.indexedDB && typeof globalThis.indexedDB.open === 'function') {
+        var o = globalThis.indexedDB.open(SEAL_DB, SEAL_TOMBSTONE);
+        o.onupgradeneeded = function () { var db = o.result; for (var i = db.objectStoreNames.length - 1; i >= 0; i--) db.deleteObjectStore(db.objectStoreNames[i]); };
+        o.onsuccess = function () { try { o.result.close(); } catch (e) {} };
+        o.onerror = o.onblocked = function () {};
       }
-    }
+    } catch (e) {}
+    var s = store(); if (!s) return;
+    try {
+      var sess = JSON.parse(s.getItem(SESSION_KEY) || 'null');
+      if (sess && typeof sess === 'object' && 'seal' in sess) { delete sess.seal; s.setItem(SESSION_KEY, JSON.stringify(sess)); }
+    } catch (e) {}
   }
+  purgeSeal();
 
   // --- REST helpers (header-gated on x-vault-id) -----------------------------
   function headers(vaultId, extra) {
@@ -490,7 +473,6 @@
     if (!keyring) throw new Error('Could not open the personal space with this passkey.');
     _live = { key: key, vaultId: vaultId };
     saveSession(keyring, vaultId);
-    await sealMemoryOnly(keyring); // quick-fixes S3: one tap opens every MEMORY_ONLY page too
     return { vaultId: vaultId, keyring: keyring, record: record };
   }
 
@@ -544,6 +526,126 @@
     return Array.isArray(gone) && gone.length > 0;
   }
 
+  // --- OWN ORIGIN: an app with its own passkey on its own host (cardsharp own-origin pilot, 2026-11-13) ----------
+  // The app's keyring holds ONLY its own entry ({v:1, apps:{<page>: {sync_id, pass}}}) in its own press_vault row
+  // (id = sha256(credential id), RLS on x-vault-id — the same table, crypto and PRF salt as the wing). Nothing that can
+  // unlock is persisted: no session, no seal, no `_live` key — the caller holds the creds in memory. OWN_FLAG is a
+  // non-secret hint ("a passkey was made or used here") for the gate's wording only.
+  var OWN_FLAG = 'press:own:enrolled';
+  function ownEnrolled() { var s = store(); if (!s) return false; try { return s.getItem(OWN_FLAG) === '1'; } catch (e) { return false; } }
+  function markOwn() { var s = store(); if (s) try { s.setItem(OWN_FLAG, '1'); } catch (e) {} }
+  function credsOf(keyring, page) {
+    var v = keyring && keyring.apps && keyring.apps[page];
+    return (v && !v.redacted && v.sync_id && v.pass) ? { syncId: v.sync_id, passphrase: v.pass } : null;
+  }
+  // Prefer the device's own passkey store (iOS: Apple Passwords → a Face ID glance); a password-manager
+  // provider (1Password) is still offered by the OS when the user picks it.
+  var OWN_HINTS = ['client-device'];
+  async function enrolOwn(opts) {
+    opts = opts || {};
+    var page = opts.page, creds = opts.creds;
+    if (!page || !creds || !creds.syncId || !creds.passphrase) throw new Error('enrolOwn needs a page and its credentials.');
+    var cred = await navigator.credentials.create({
+      publicKey: {
+        rp: { id: RP_ID, name: opts.name || page },
+        user: { id: randomBytes(16), name: opts.name || page, displayName: opts.name || page },
+        challenge: randomBytes(32),
+        pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+        authenticatorSelection: { authenticatorAttachment: 'platform', residentKey: 'required', userVerification: 'required' },
+        hints: OWN_HINTS,
+        extensions: prfExt()
+      }
+    });
+    var prf = prfResult(cred);
+    if (!prf) prf = await prfViaGet(cred.rawId); // 1Password-style: PRF only at assertion
+    if (!prf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
+    var vaultId = await vaultIdFor(cred.rawId);
+    var salt = randomBytes(32);
+    var key = await deriveKey(prf, salt);
+    var keyring = { v: 1, apps: {} };
+    keyring.apps[page] = { sync_id: creds.syncId, pass: creds.passphrase };
+    var sealed = await sealKeyring(keyring, key); sealed.salt = b64(salt);
+    if (!(await putRow(vaultId, sealed, opts.label || null))) throw new Error('Could not save the new key to the vault.');
+    // read it back: the row must open under this key and give back exactly these creds — else fail closed
+    var back = await fetchRow(vaultId);
+    var got = credsOf(back && await openKeyring(back, key), page);
+    if (!got || got.syncId !== creds.syncId || got.passphrase !== creds.passphrase) throw new Error('Could not save the new key to the vault.');
+    markOwn();
+    return { vaultId: vaultId, creds: got };
+  }
+  async function unlockOwn(page) {
+    var assertion = await navigator.credentials.get({
+      publicKey: { rpId: RP_ID, challenge: randomBytes(32), allowCredentials: [], userVerification: 'required', hints: OWN_HINTS, extensions: prfExt() }
+    });
+    var prf = prfResult(assertion);
+    if (!prf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
+    var vaultId = await vaultIdFor(assertion.rawId);
+    var record = await fetchRow(vaultId);
+    if (!record) throw new Error('No enrolled passkey found for the personal space on this device.');
+    var keyring = await openKeyring(record, await deriveKey(prf, ub64(record.salt)));
+    if (!keyring) throw new Error('Could not open the personal space with this passkey.');
+    var creds = credsOf(keyring, page);
+    if (!creds) throw new Error('No credentials stored for this tool yet.');
+    markOwn();
+    return { vaultId: vaultId, creds: creds };
+  }
+
+  // --- the one-time MOVE: the wing hands an app's creds to its own origin (exact-origin postMessage) ----------
+  // moveIn (the app, opened by the wing) posts READY {page, nonce} to the wing's exact origin; moveOut (the wing) answers
+  // that window only, with CREDS {page, nonce, sync_id, pass} to the app's exact origin; the app saves its own passkey,
+  // then posts DONE {page, nonce}. Every message is checked for origin, source window, page and nonce. Nothing touches
+  // a URL, a fragment, a log or storage. The wing drops its copy only after DONE (the caller's job — updateKeyring).
+  var MOVE = { ready: 'press-move-ready', creds: 'press-move-creds', done: 'press-move-done' };
+  function originOf(u) { try { return new URL(u).origin; } catch (e) { return null; } }
+  // opts: {page, origin, url, creds:{syncId, passphrase}, timeoutMs}. CALL IT INSIDE THE CLICK (it opens the tab).
+  function moveOut(opts) {
+    opts = opts || {};
+    var origin = originOf(opts.origin), page = opts.page, c = opts.creds || {};
+    if (!origin || originOf(opts.url) !== origin || !page || !c.syncId || !c.passphrase) return Promise.reject(new Error('moveOut needs a page, its origin and its credentials.'));
+    var w = opts.win || globalThis.open(opts.url, 'press-move-' + page.replace(/[^a-z0-9]/gi, '-')); // a named tab: a re-run reuses it
+    if (!w) return Promise.reject(new Error('The new tab was blocked — allow pop-ups for this page and try again.'));
+    return new Promise(function (ok, no) {
+      var nonce = null, settled = false;
+      function end(err) { if (settled) return; settled = true; globalThis.removeEventListener('message', on); clearInterval(poll); clearTimeout(tm); err ? no(err) : ok({ page: page }); }
+      function on(ev) {
+        if (!ev || ev.origin !== origin || ev.source !== w) return;
+        var d = ev.data;
+        if (!d || typeof d !== 'object' || d.page !== page) return;
+        if (d.t === MOVE.ready && !nonce && typeof d.nonce === 'string' && /^[0-9a-f]{32}$/.test(d.nonce)) {
+          nonce = d.nonce;
+          w.postMessage({ t: MOVE.creds, page: page, nonce: nonce, sync_id: c.syncId, pass: c.passphrase }, origin);
+        } else if (d.t === MOVE.done && nonce && d.nonce === nonce) end(null);
+      }
+      globalThis.addEventListener('message', on);
+      var poll = setInterval(function () { try { if (w.closed) end(new Error('The move tab closed before it finished — nothing changed. Try again.')); } catch (e) {} }, 500);
+      var tm = setTimeout(function () { end(new Error('The move timed out — nothing changed. Try again.')); }, opts.timeoutMs || 10 * 60 * 1000);
+    });
+  }
+  // the app side: opts {page, wingOrigin}. → { creds: Promise<{syncId, passphrase}>, done() } ; null when not opened by the wing
+  function moveIn(opts) {
+    opts = opts || {};
+    var opener = globalThis.opener, origin = originOf(opts.wingOrigin), page = opts.page;
+    if (!opener || !origin || !page) return null;
+    var nonce = hex(randomBytes(16)), got = false, tries = 0, rt = null;
+    var creds = new Promise(function (ok) {
+      function on(ev) {
+        if (got || !ev || ev.origin !== origin || ev.source !== opener) return;
+        var d = ev.data;
+        if (!d || typeof d !== 'object' || d.t !== MOVE.creds || d.page !== page || d.nonce !== nonce) return;
+        if (typeof d.sync_id !== 'string' || typeof d.pass !== 'string' || !d.sync_id || !d.pass) return;
+        got = true; clearTimeout(rt); globalThis.removeEventListener('message', on);
+        ok({ syncId: d.sync_id, passphrase: d.pass });
+      }
+      globalThis.addEventListener('message', on);
+    });
+    // READY goes to the wing's exact origin only; repeated briefly in case the wing's listener was not up yet
+    (function ready() { if (got) return; try { opener.postMessage({ t: MOVE.ready, page: page, nonce: nonce }, origin); } catch (e) {} if (++tries < 40) rt = setTimeout(ready, 500); })();
+    return {
+      creds: creds,
+      done: function () { try { opener.postMessage({ t: MOVE.done, page: page, nonce: nonce }, origin); return true; } catch (e) { return false; } }
+    };
+  }
+
   root.PressVault = {
     // config / constants
     SUPA_URL: SUPA_URL, SUPA_KEY: SUPA_KEY, VAULT_EP: VAULT_EP, RP_ID: RP_ID, INFO: INFO,
@@ -559,8 +661,11 @@
     saveSession: saveSession, loadSession: loadSession, lock: lock, everEnrolled: everEnrolled,
     // MEMORY_ONLY redaction (cardsharp S1)
     MEMORY_ONLY: MEMORY_ONLY, memCreds: memCreds, fullKeyring: fullKeyring, redact: redact, restoreRedacted: restoreRedacted,
-    // the sealed 7-day unlock (cardsharp Arc 7 slice 6; quick-fixes S3 — sealed at every passkey unlock)
-    SEAL_DB: SEAL_DB, hasIdb: hasIdb, sealIdb: sealIdb, sealAad: sealAad, sealPage: sealPage, sealMemoryOnly: sealMemoryOnly,
+    // the RETIRED sealed 7-day unlock — its purge only
+    SEAL_DB: SEAL_DB, SEAL_TOMBSTONE: SEAL_TOMBSTONE, purgeSeal: purgeSeal,
+    // own origin + the one-time move (own-origin pilot)
+    OWN_FLAG: OWN_FLAG, ownEnrolled: ownEnrolled, credsOf: credsOf, enrolOwn: enrolOwn, unlockOwn: unlockOwn,
+    MOVE: MOVE, moveOut: moveOut, moveIn: moveIn, putRow: putRow,
     // webauthn + rest
     enrol: enrol, unlock: unlock, addPasskey: addPasskey, revoke: revoke, fetchRow: fetchRow,
     updateKeyring: updateKeyring,
@@ -576,9 +681,8 @@
   var V = root.PressVault;
   if (!V) { console.error('[press-gate] PressVault missing — gate.js must be inlined WITH the vault region'); return; }
 
-  // Where "← the marquee" and a not-enrolled device point. The apps live beside
-  // index.html on the same origin (…/press/<app>.html), so a relative link to the
-  // wing is correct on both the live site and a localhost test origin.
+  // Where "← the marquee" and a not-enrolled device point in WING mode. Those apps live beside index.html on the same
+  // origin (…/press/<app>.html), so a relative link to the wing is correct on both the live site and a localhost test.
   var MARQUEE = 'index.html?view=personal';
 
   // --- friendly errors — the SAME plain-language mapping the wing uses ---------
@@ -591,6 +695,7 @@
     return msg || 'Something went wrong. Try again.';
   }
   function notEnrolled(e) { return /No enrolled passkey/i.test((e && e.message) || ''); }
+  function escHtml(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
   // --- self-contained styles (injected once; scoped under #press-gate) ---------
   // Hardcoded palette (the wing's rose/violet) so the gate looks right over ANY
@@ -608,16 +713,19 @@
     '#press-gate .pg-icon svg{width:46px;height:46px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}' +
     '#press-gate h1{font-size:19px;font-weight:600;margin:0 0 8px;letter-spacing:.2px}' +
     '#press-gate p{font-size:13px;line-height:1.5;color:#b7aec8;margin:0 auto 22px;max-width:300px}' +
-    '#press-gate .pg-btn{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.08em;' +
+    '#press-gate .pg-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;gap:8px;font-size:12px;letter-spacing:.08em;' +
     'text-transform:uppercase;color:#fff;cursor:pointer;border:0;border-radius:999px;padding:13px 24px;' +
     'background:linear-gradient(92deg,#8e7be8,#e7a6c7);box-shadow:0 8px 24px rgba(142,123,232,.35)}' +
     '#press-gate .pg-btn:hover{filter:brightness(1.08)}' +
     '#press-gate .pg-btn[disabled]{opacity:.6;cursor:progress}' +
     '#press-gate .pg-msg{font-size:12.5px;margin-top:14px;min-height:1em;color:#efeaf6}' +
     '#press-gate .pg-msg.err{color:#f2a0be}' +
-    '#press-gate .pg-back{display:inline-block;margin-top:18px;font-size:12px;color:#b7aec8;text-decoration:none;' +
+    '#press-gate .pg-back{display:inline-flex;align-items:flex-end;min-height:44px;margin-top:4px;padding-top:12px;font-size:12px;color:#b7aec8;text-decoration:none;' +
     'border-bottom:1px solid rgba(183,174,200,.35)}' +
-    '#press-gate .pg-back:hover{color:#efeaf6}';
+    '#press-gate .pg-back:hover{color:#efeaf6}' +
+    '#press-gate .pg-alt{display:flex;align-items:flex-end;min-height:44px;margin:4px auto 0;font-size:12px;color:#b7aec8;' +
+    'background:none;border:0;border-bottom:1px solid rgba(183,174,200,.35);padding:12px 4px 2px;cursor:pointer;font-family:inherit}' +
+    '#press-gate p{text-wrap:balance}';
 
   // A lock icon (matches the wing's "Secure" glyph family).
   var ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2.5"></rect>' +
@@ -628,93 +736,62 @@
     var s = document.createElement('style'); s.id = STYLE_ID; s.textContent = CSS;
     (document.head || document.documentElement).appendChild(s);
   }
-
-  // --- the gate singleton ------------------------------------------------------
-  var current = null; // { page, onUnlock, onLock, el, wired }
-
-  // A MEMORY_ONLY page (cardsharp) is released from this tab's memory: the keyring of a passkey unlock here, or
-  // what this tab unsealed (below). Every other page from the persisted session, as before. A redacted stub is never
-  // a credential. Both memory copies live only while a session exists (a lock or expiry anywhere drops them).
-  function credsFor(page) {
-    var m = V.memCreds ? V.memCreds(page) : null;
-    if (m && m.sync_id && m.pass) return { syncId: m.sync_id, passphrase: m.pass };
-    if (_un && _un.page === page) { if (V.loadSession()) return _un.creds; _un = null; }
-    var sess = V.loadSession();
-    var v = sess && sess.keyring && sess.keyring.apps && sess.keyring.apps[page];
-    return (v && !v.redacted && v.sync_id && v.pass) ? { syncId: v.sync_id, passphrase: v.pass } : null;
-  }
-
-  // --- SEALED 7-day unlock, MEMORY_ONLY pages (cardsharp Arc 7 slice 6) ---
-  // After a passkey unlock the page's {sync_id, pass} are AES-GCM sealed under a fresh NON-EXTRACTABLE key kept in
-  // IndexedDB (`press:vault:seal`); the ciphertext rides INSIDE the session (`press:vault:v1`.seal), AAD-bound to its
-  // unlockedAt/expiresAt/vaultId, so any lock (the wing's only removes the session), expiry or new session kills it
-  // atomically; an orphaned key is deleted when a gate next sees it. Reloads unseal, no prompt. No IndexedDB → memory only.
-  // quick-fixes S3: seal / idb / aad are the vault core's (PressVault.sealPage …) — every passkey unlock (the wing's
-  // included) seals there, so a fresh unlock opens a MEMORY_ONLY page with no second tap; this gate reseals + unseals.
-  var SEAL_DB = V.SEAL_DB, _un = null, _sealing = 0, _timer = null; // the seal itself lives in the vault core (S3)
-  function sealable(page) { try { return V.MEMORY_ONLY.indexOf(page) >= 0 && V.hasIdb(); } catch (e) { return false; } }
-  var idb = V.sealIdb, aad = V.sealAad, seal = V.sealPage;
-  function sealOf(page) { var s = V.loadSession(), x = s && s.seal && s.seal[page]; return (x && x.at === s.unlockedAt && x.exp === s.expiresAt) ? x : null; }
-  function dropKey(page) { if (sealable(page)) idb('readwrite', function (st) { return st.delete(page); }).catch(function () {}); }
-  function maybeSeal(page, creds) {
-    if (!sealable(page) || _sealing || sealOf(page)) return;
-    _sealing = 1;
-    seal(page, creds).catch(function () {}).then(function (again) { _sealing = 0; if (again) maybeSeal(page, creds); });
-  }
-  async function unseal(page) {
-    try {
-      var s = V.loadSession(), x = sealOf(page);
-      var rec = await idb('readonly', function (st) { return st.get(page); });
-      if (!rec || rec.at !== x.at) return null;
-      var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: V.ub64(x.iv), additionalData: aad(page, s) }, rec.key, V.ub64(x.ct));
-      var a = JSON.parse(new TextDecoder().decode(pt));
-      return (a[0] && a[1]) ? { syncId: a[0], passphrase: a[1] } : null;
-    } catch (e) { return null; } // wrong/missing key, tampered or rebound blob — fail closed (the gate shows)
-  }
-  // re-check this page against the session: still unlocked → (re)seal + re-arm the expiry timer; else lock it
-  function check() {
-    if (!current) return;
-    var page = current.page, creds = credsFor(page);
-    clearTimeout(_timer);
-    if (creds) { // other tenants: unchanged (no seal, no timer)
-      var s = V.MEMORY_ONLY.indexOf(page) >= 0 && V.loadSession();
-      if (s) { maybeSeal(page, creds); _timer = setTimeout(check, Math.max(0, s.expiresAt - Date.now()) + 50); }
-      return;
-    }
-    if (!sealOf(page)) dropKey(page);
-    if (document.getElementById('press-gate')) return; // gate already up
-    try { if (current.onLock) current.onLock(); } catch (e) {}
-    render();
-  }
-
   function removeGate() {
     var el = document.getElementById('press-gate');
     if (el && el.parentNode) el.parentNode.removeChild(el);
   }
-
-  function render() {
+  // one gate card: {title, lede, button, back:{href,text}, alt}
+  function mount(o) {
     injectStyle();
     removeGate();
     var host = document.createElement('div');
     host.id = 'press-gate';
     host.setAttribute('role', 'dialog');
-    host.setAttribute('aria-label', 'Unlock the personal space');
+    host.setAttribute('aria-label', o.label || 'Unlock the personal space');
     host.innerHTML =
       '<div class="pg-card">' +
         '<div class="pg-icon">' + ICON + '</div>' +
-        '<h1>Behind the passkey.</h1>' +
-        '<p>Use your passkey to open this personal tool. Nothing here loads until you unlock.</p>' +
-        '<button class="pg-btn" id="pg-unlock" type="button">Use your passkey</button>' +
+        '<h1>' + escHtml(o.title) + '</h1>' +
+        '<p id="pg-lede">' + escHtml(o.lede) + '</p>' +
+        (o.button ? '<button class="pg-btn" id="pg-unlock" type="button">' + escHtml(o.button) + '</button>' : '') +
+        (o.alt ? '<button class="pg-alt" id="pg-alt" type="button" hidden>' + escHtml(o.alt) + '</button>' : '') +
         '<div class="pg-msg" id="pg-msg" aria-live="polite"></div>' +
-        '<a class="pg-back" href="' + MARQUEE + '">← the marquee</a>' +
+        '<a class="pg-back" href="' + escHtml(o.back.href) + '">' + escHtml(o.back.text) + '</a>' +
       '</div>';
     document.body.appendChild(host);
+    return host;
+  }
+
+  // =========================== WING mode ===========================================================================
+  var current = null; // { page, onUnlock, onLock, wired }
+
+  // A MEMORY_ONLY page is released from this tab's memory only (the keyring of a passkey unlock here); every other page
+  // from the persisted session, as before. A redacted stub is never a credential. (The 7-day seal is retired — vault.js.)
+  function credsFor(page) {
+    var m = V.memCreds ? V.memCreds(page) : null;
+    if (m && m.sync_id && m.pass) return { syncId: m.sync_id, passphrase: m.pass };
+    var sess = V.loadSession();
+    var v = sess && sess.keyring && sess.keyring.apps && sess.keyring.apps[page];
+    return (v && !v.redacted && v.sync_id && v.pass) ? { syncId: v.sync_id, passphrase: v.pass } : null;
+  }
+  // re-check this page against the session: still unlocked → nothing; else lock it
+  function check() {
+    if (!current || current.own) return;
+    if (credsFor(current.page)) return;
+    if (document.getElementById('press-gate')) return; // gate already up
+    try { if (current.onLock) current.onLock(); } catch (e) {}
+    render();
+  }
+
+  function render() {
+    var host = mount({ title: 'Behind the passkey.', lede: 'Use your passkey to open this personal tool. Nothing here loads until you unlock.',
+      button: 'Use your passkey', back: { href: MARQUEE, text: '← the marquee' } });
     var btn = host.querySelector('#pg-unlock'), msg = host.querySelector('#pg-msg');
     btn.addEventListener('click', function () {
       btn.disabled = true; msg.className = 'pg-msg'; msg.textContent = 'Waiting for your passkey…';
       V.unlock().then(function () {
         var creds = credsFor(current.page);
-        if (creds) { removeGate(); current.onUnlock(creds); check(); return; }
+        if (creds) { removeGate(); current.onUnlock(creds); return; }
         // The passkey OPENED the vault, but this tool has no stored credentials yet — a DISTINCT
         // state from a failed unlock (the space DID open). Point at the wing's Connect step; never
         // conflate this with "could not open the personal space".
@@ -738,11 +815,11 @@
     current.wired = true;
     root.addEventListener('storage', function (ev) {
       if (ev && ev.key && ev.key !== V.SESSION_KEY) return; // ignore unrelated keys
-      check(); // still unlocked → reseal if needed; else the gate
+      check();
     });
   }
 
-  // guard({page, onUnlock, onLock}) — the one call an app makes on boot.
+  // guard({page, onUnlock, onLock}) — the one call a WING-mode app makes on boot.
   //   live session with creds for `page` -> onUnlock(creds) immediately, no gate.
   //   otherwise                         -> mount the gate; on unlock -> onUnlock(creds).
   // onLock (optional) is called when a live session is later lost, before the gate
@@ -751,25 +828,117 @@
     opts = opts || {};
     current = { page: opts.page, onUnlock: opts.onUnlock || function () {}, onLock: opts.onLock || null, wired: false };
     wireLockWatch();
-    var me = current, page = me.page, creds = credsFor(page);
-    if (creds) { me.onUnlock(creds); check(); return { gated: false }; }
-    if (sealable(page) && sealOf(page)) { // a sealed unlock: no prompt, no gate flash
-      unseal(page).then(function (c) {
-        if (current !== me) return;
-        if (c && V.loadSession()) { _un = { page: page, creds: c }; me.onUnlock(c); check(); }
-        else if (!document.getElementById('press-gate')) render(); // unseal failed → the gate, as before
-      });
-      return { gated: false, pending: true };
-    }
-    dropKey(page);
+    var creds = credsFor(current.page);
+    if (creds) { current.onUnlock(creds); return { gated: false }; }
     render();
     return { gated: true };
   }
 
+  // =========================== OWN-ORIGIN mode (own-origin pilot, 2026-11-13) ======================================
+  // guardOwn({page, name, wing, onUnlock, onLock, relockMs}) — `wing` is the ABSOLUTE wing URL (the back link and the
+  // move's sender origin). The creds live in `own.creds` (this closure) and nowhere else; they are dropped — onLock(),
+  // then the gate — after `relockMs` (5 min) hidden, on pagehide (so a bfcache restore shows the gate) and by lockOwn().
+  var RELOCK_MS = 5 * 60 * 1000;
+  var own = null; // { page, name, wing, onUnlock, onLock, relockMs, creds, hiddenAt, wired }
+  function framed() { try { return root.top !== root.self; } catch (e) { return true; } }
+  function ownLede() {
+    return V.ownEnrolled() ? 'Use Face ID or your passkey to open ' + own.name + '. Nothing here loads until you unlock.'
+      : 'Use your ' + own.name + ' passkey to open it. First time on this address? Move ' + own.name + ' here from the Private Wing.';
+  }
+  function relockOwn() {
+    if (!own) return;
+    var had = !!own.creds;
+    own.creds = null; own.hiddenAt = 0;
+    if (had) { try { if (own.onLock) own.onLock(); } catch (e) {} }
+    if (!document.getElementById('press-gate')) renderOwn();
+  }
+  function releaseOwn(creds) {
+    own.creds = creds; own.hiddenAt = 0;
+    removeGate();
+    own.onUnlock({ syncId: creds.syncId, passphrase: creds.passphrase });
+  }
+  function renderOwn() {
+    var host = mount({ label: 'Unlock ' + own.name, title: 'Behind the passkey.', lede: ownLede(), button: 'Use your passkey',
+      back: { href: own.wing, text: '← Private Wing' } });
+    var btn = host.querySelector('#pg-unlock'), msg = host.querySelector('#pg-msg');
+    btn.addEventListener('click', function () {
+      btn.disabled = true; msg.className = 'pg-msg'; msg.textContent = 'Waiting for your passkey…';
+      V.unlockOwn(own.page).then(function (r) { releaseOwn(r.creds); }).catch(function (e) {
+        console.error('[press-gate] unlock failed:', e && e.name);
+        btn.disabled = false; msg.className = 'pg-msg err'; msg.textContent = friendlyErr(e);
+        if (notEnrolled(e) || /No credentials stored/i.test((e && e.message) || '')) msg.textContent = 'No ' + own.name + ' passkey here yet — open the Private Wing and tap “Move ' + own.name + ' to its own address”.';
+      });
+    });
+    return host;
+  }
+  // ?move=1, opened by the wing: wait for the hand-over, save this origin's passkey, confirm, open the app.
+  function renderMove(mv) {
+    var host = mount({ label: 'Move ' + own.name, title: 'Move ' + own.name + ' here.', lede: 'Waiting for the Private Wing…',
+      button: 'Save passkey', alt: 'Not now — just open ' + own.name, back: { href: own.wing, text: '← Private Wing' } });
+    var btn = host.querySelector('#pg-unlock'), alt = host.querySelector('#pg-alt'), msg = host.querySelector('#pg-msg'), lede = host.querySelector('#pg-lede');
+    btn.disabled = true;
+    try { history.replaceState(history.state, '', location.pathname + location.hash); } catch (e) {} // a reload never re-enters the move
+    mv.creds.then(function (creds) {
+      lede.textContent = 'Save a passkey for ' + own.name + '’s own address. From now on Face ID opens it — no Private Wing needed.';
+      btn.disabled = false; alt.hidden = false;
+      alt.addEventListener('click', function () { releaseOwn(creds); }); // this tab only; the wing keeps its copy
+      btn.addEventListener('click', function () {
+        btn.disabled = true; msg.className = 'pg-msg'; msg.textContent = 'Saving your passkey…';
+        // idempotent: a passkey made here before that already opens these exact creds is reused, not doubled. One that
+        // opens DIFFERENT creds is never shadowed by a second passkey (D1 round 1: any page on the wing's origin can open
+        // ?move=1 and hand over creds of its choosing) — the move stops; nothing is saved, the wing keeps its copy.
+        var reuse = V.ownEnrolled() ? V.unlockOwn(own.page).then(function (r) {
+          if (r.creds.syncId === creds.syncId && r.creds.passphrase === creds.passphrase) return r;
+          throw new Error('This address already opens a different ' + own.name + ' with its passkey — nothing was moved.');
+        }, function (e) { if (e && e.name === 'NotAllowedError') throw e; return null; }) : Promise.resolve(null);
+        reuse.then(function (r) {
+          return r || V.enrolOwn({ page: own.page, creds: creds, name: own.name, label: own.name.toLowerCase() + '-own-origin' });
+        }).then(function () {
+          mv.done(); // the wing drops its copy only now
+          releaseOwn(creds);
+        }).catch(function (e) {
+          console.error('[press-gate] move failed:', e && e.name);
+          btn.disabled = false; msg.className = 'pg-msg err';
+          msg.textContent = /already opens a different/.test((e && e.message) || '') ? e.message : friendlyErr(e) + ' Nothing moved yet — the Private Wing still has ' + own.name + '.';
+        });
+      });
+    });
+    return host;
+  }
+  function wireOwn() {
+    if (own.wired || typeof root.addEventListener !== 'function') return;
+    own.wired = true;
+    // capture on window: runs BEFORE the app's own visibilitychange handlers, so nothing repaints from stale creds
+    root.addEventListener('visibilitychange', function () {
+      if (!own || !own.creds) return;
+      if (document.visibilityState === 'hidden') { own.hiddenAt = Date.now(); return; }
+      if (own.hiddenAt && Date.now() - own.hiddenAt >= own.relockMs) relockOwn(); else own.hiddenAt = 0;
+    }, true);
+    root.addEventListener('pagehide', function () { relockOwn(); });
+  }
+  function guardOwn(opts) {
+    opts = opts || {};
+    if (framed()) { // never boot inside a frame: a clickjacking frame could steer taps onto the passkey prompt
+      try { document.body.textContent = (opts.name || 'This app') + ' can’t run inside a frame.'; } catch (e) {}
+      return { gated: true, framed: true };
+    }
+    own = { own: true, page: opts.page, name: opts.name || 'this tool', wing: opts.wing || MARQUEE, onUnlock: opts.onUnlock || function () {},
+      onLock: opts.onLock || null, relockMs: opts.relockMs || RELOCK_MS, creds: null, hiddenAt: 0, wired: false };
+    current = own;
+    wireOwn();
+    var wantsMove = /(?:^|[?&])move=1(?:&|$)/.test(location.search || '');
+    var mv = wantsMove ? V.moveIn({ page: own.page, wingOrigin: own.wing }) : null;
+    if (mv) { renderMove(mv); return { gated: true, move: true }; }
+    if (wantsMove) { try { history.replaceState(history.state, '', location.pathname + location.hash); } catch (e) {} }
+    renderOwn();
+    return { gated: true };
+  }
+  function lockOwn() { relockOwn(); }
+
   root.PressGate = {
-    guard: guard,
+    guard: guard, guardOwn: guardOwn, lockOwn: lockOwn,
     // exposed for tests / callers
-    credsFor: credsFor, friendlyErr: friendlyErr, MARQUEE: MARQUEE, SEAL_DB: SEAL_DB, seal: seal, unseal: unseal,
+    credsFor: credsFor, friendlyErr: friendlyErr, MARQUEE: MARQUEE, RELOCK_MS: RELOCK_MS,
     render: render, removeGate: removeGate
   };
 })(globalThis);

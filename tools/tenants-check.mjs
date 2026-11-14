@@ -5,7 +5,7 @@
 // three repo-owned registries (tenants.json, pages.json, spaces.json) and, per tenant, runs one
 // named check. Prints PASS / FAIL / SKIP / INFO / EMITTED + a reason; EXITS 1 on any FAIL.
 //
-//   node tools/tenants-check.mjs                 # T1–T4 + T6–T10 (no build); T1 parent = pages.json `parent` rule
+//   node tools/tenants-check.mjs                 # T1–T4 + T6–T11 (no build); T1 parent = pages.json `parent` rule; T11 own-origin
 //   node tools/tenants-check.mjs --rebuild       # + T5 rebuild-vs-live for deterministic tenants
 //   node tools/tenants-check.mjs --press <dir>   # override the press root (default: where this lives)
 //   CODE_ROOT=<dir> node tools/tenants-check.mjs   # override the source-repos parent (default = the parent of the press root (--press or this clone) — sibling clones)
@@ -326,6 +326,39 @@ for (const page of Object.keys(tenants)) {
   if (stray.length) say('FAIL', 'T10 redirects', '(root)', `root .html not in pages.json or redirects: ${stray.join(', ')}`);
   if (missing.length) say('FAIL', 'T10 redirects', '(root)', `registered but not a tracked root file: ${[...new Set(missing)].join(', ')}`);
   if (rootHtml.length && !stray.length && !missing.length) say('PASS', 'T10 redirects', '(root)', `${rootHtml.length} root .html = pages.json + redirects + index.html`);
+}
+
+// ---- T11 own-origin — an app that lives on its OWN origin (cardsharp own-origin pilot, 2026-11-13) ----------------
+// tenants.json `origin` ⇒ the app is published to its own Pages site with its own passkey; press keeps the page as the
+// wing card + keyring id, and press/<page> is a redirect stub to EXACTLY that origin: ≤ 2 KB, noindex, a query/hash-
+// preserving location.replace, no gate / vault / data code (it may only EMPTY the retired seal: its v2 tombstone + the
+// session's .seal). index.html OWN_ORIGIN maps the page to the same origin (its card links there) and lists nothing else.
+{
+  const indexPath = join(PRESS, 'index.html');
+  const src = existsSync(indexPath) ? readFileSync(indexPath, 'utf8') : '';
+  const om = src.match(/const OWN_ORIGIN\s*=\s*\{([^}]*)\}/);
+  const inIndex = new Map(om ? [...om[1].matchAll(/'([a-z0-9-]+\.html)'\s*:\s*'(https:\/\/[^']+)'/g)].map((m) => [m[1], m[2]]) : []);
+  const owned = Object.entries(tenants).filter(([, t]) => t && t.origin);
+  for (const [page, t] of owned) {
+    const errs = [];
+    const origin = t.origin;
+    if (!/^https:\/\/[a-z0-9.-]+\/$/.test(origin)) errs.push(`origin ${origin} is not https://<host>/`);
+    const p = join(PRESS, page);
+    if (!existsSync(p)) errs.push('stub file missing');
+    else {
+      const txt = readFileSync(p, 'utf8');
+      if (txt.length > 2048) errs.push(`${txt.length} bytes (> 2 KB)`);
+      if (!/<meta name="robots" content="noindex">/.test(txt)) errs.push('no noindex');
+      if (!txt.includes(`location.replace('${origin}' + location.search + location.hash)`)) errs.push(`no query/hash-preserving location.replace to ${origin}`);
+      if (/PressGate|PressVault|supabase|sb_publishable_|fetch\(|sync_id|getItem\('press:own/i.test(txt)) errs.push('carries gate/vault/data code');
+    }
+    if (inIndex.get(page) !== origin) errs.push(`index.html OWN_ORIGIN says ${inIndex.get(page) || 'nothing'}`);
+    if (!pages[page] || !personal.includes(page)) errs.push('not a personal pages.json page (the wing card)');
+    if (errs.length) say('FAIL', 'T11 own-origin', page, errs.join('; '));
+    else say('PASS', 'T11 own-origin', page, `→ ${origin} (press keeps the card + a redirect stub)`);
+  }
+  for (const [page] of inIndex) if (!tenants[page] || !tenants[page].origin) say('FAIL', 'T11 own-origin', page, 'in index.html OWN_ORIGIN but tenants.json has no origin');
+  if (!owned.length && !inIndex.size) say('SKIP', 'T11 own-origin', '(marquee)', 'no own-origin tenant');
 }
 
 // ---- T6 family grants (EMITTED — the script cannot reach the DB) ------------

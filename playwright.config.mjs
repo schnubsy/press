@@ -7,7 +7,7 @@ const CLOUD_CHROMIUM = process.env.PW_CHROMIUM;
 // Phone-only spec (touch drag) — never on desktop.
 const PHONE_ONLY = '**/wing-drag-iphone.spec.mjs';
 // The phone suite: the touch-drag spec + the pages whose phone layout press owns.
-const PHONE_SPECS = [PHONE_ONLY, '**/steward.spec.mjs', '**/family-gate.spec.mjs', '**/card-labels.spec.mjs', '**/thrift-shop-rename.spec.mjs'];
+const PHONE_SPECS = [PHONE_ONLY, '**/steward.spec.mjs', '**/family-gate.spec.mjs', '**/card-labels.spec.mjs', '**/thrift-shop-rename.spec.mjs', '**/own-origin.spec.mjs'];
 
 export default defineConfig({
   testDir: './test',

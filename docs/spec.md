@@ -162,6 +162,16 @@ why}}`) and mirrored by index.html `REDIRECT_STUBS` (the marquee never lists it)
 and appears in no page registry (pages.json, spaces.json, LABELS). Its source lives in the tenant repo and ships with the
 tenant's release. tenants-check **T10 `redirects`** enforces all of it, and that every root `.html` is a pages.json page,
 a redirect or `index.html`. Today: `card-scout.html` → `thrift-shop.html` (source `thrift-shop:redirect/card-scout.html`).
+**Own-origin apps (`origin`, cardsharp own-origin pilot 2026-11-13 — the pattern for every wing app).** An app whose data
+is instantly spendable (Cardsharp first) lives on its OWN origin (a free org's `<org>.github.io` Pages site) with its OWN
+passkey (src/gate.js `guardOwn`: rpId = its host, creds in tab memory only, relock after 5 min hidden / on pagehide), so
+no script on schnubsy.github.io can reach its credentials. press keeps the page as the wing card + keyring id (pages.json,
+spaces.json, LABELS stay); `tenants.json` `origin` names the address; index.html `OWN_ORIGIN` makes the card link there and
+offers the ONE-TIME move from the unlocked wing (src/vault.js `moveOut` → the app's `moveIn`: exact-origin postMessage;
+afterwards the keyring keeps only `{moved: <origin>}`); `press/<page>` is the tenant build's redirect stub to the origin
+(≤ 2 KB, noindex, query/hash kept, no gate/vault/data code — it may only delete the retired seal). tenants-check **T11
+`own-origin`** enforces it; T5 rebuilds the stub. The 7-day seal (quick-fixes S3) is retired: `purgeSeal()` deletes it at
+every vault load. Runbook: `schnubsy/cardsharp` `docs/runbooks/own-origin-move.md`.
 **Parented pages (`parent`, arc app-lab 2026-10-14).** A `pages.json` entry may carry `"parent": "<page>.html"`: the page
 is listed INSIDE that parent (today: `optimo.html` → `app-lab.html`, an App Lab prototype whose `optimo.html` is only its
 Family Wing sign-in step), so the portal renders **no card** for it on any surface (lobby, wing views, wing-door counts —

@@ -1,0 +1,182 @@
+// own-origin pilot (cardsharp, 2026-11-13) — the REAL wing (index.html) with an app on its OWN origin, end to end.
+// Replaces sealed-unlock.spec.mjs: the 7-day seal is retired (src/vault.js purgeSeal). Proves, in a real browser:
+//   · the wing's Cardsharp card links to https://schnubsy-cardsharp.github.io/ and navigation is seamless both ways
+//     (card → app → ← Private Wing → Back → Forward) — desktop + iphone-webkit;
+//   · the one-time MOVE from the unlocked wing: Unlock-to-move (creds redacted in this tab) → Move → the app's own tab
+//     (src/gate.js guardOwn, ?move=1) saves its OWN passkey → DONE → the wing's keyring keeps only {moved} → no Move
+//     block, Connect says "At its own address", the recovery kit names the new address — and no creds in storage;
+//   · the retired seal: one wing visit deletes an older page's IndexedDB `press:vault:seal` + the session's .seal, and a
+//     wing unlock creates neither.
+// Hermetic: both prod hosts are ROUTED inside the browser (real origins → real rpIds and postMessage origins); GitHub and
+// Supabase intercepted; press_vault is an in-memory RLS-gated mock; CDP virtual authenticators (PRF) per tab.
+import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const INDEX = readFileSync(join(ROOT, 'index.html'), 'utf8');
+const GATE = readFileSync(join(ROOT, 'src', 'gate.js'), 'utf8');
+const WING_ORIGIN = 'https://schnubsy.github.io', APP_ORIGIN = 'https://schnubsy-cardsharp.github.io';
+const WING = WING_ORIGIN + '/press/index.html?view=personal', APP = APP_ORIGIN + '/';
+const SYNC = 'c0ffee00c0ffee00c0ffee00c0ffee00'; // hermetic test-only values
+const PASS = 'test-only-pass-phrase-cardsharp';
+const APP_PAGE = `<!doctype html><meta charset="utf-8"><title>Cardsharp</title><body><main id="app" hidden><p>open</p></main>
+<script>${GATE.replace(/<\/script/gi, '<\\/script')}</script>
+<script>
+PressGate.guardOwn({ page: 'cardsharp.html', name: 'Cardsharp', wing: ${JSON.stringify(WING)},
+  onUnlock: function (c) { document.getElementById('app').hidden = false; document.body.dataset.unlocked = (c && c.syncId === ${JSON.stringify(SYNC)}) ? 'yes' : 'wrong'; },
+  onLock: function () { document.getElementById('app').hidden = true; delete document.body.dataset.unlocked; } });
+</script>`;
+
+async function routes(context) {
+  const vault = new Map();
+  await context.route('https://api.github.com/**', (r) => r.fulfill({ status: 200, contentType: 'application/json',
+    body: r.request().url().includes('/contents/archive') ? '[]' : JSON.stringify(['fsa.html', 'cardsharp.html', 'index.html'].map((name) => ({ type: 'file', name }))) }));
+  await context.route('https://raw.githubusercontent.com/**', (r) => {
+    const u = r.request().url();
+    if (u.endsWith('/spaces.json')) return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ v: 1, personal: ['fsa.html', 'cardsharp.html'] }) });
+    if (u.endsWith('/pages.json')) return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ 'fsa.html': { title: 'fsa' }, 'cardsharp.html': { title: 'Cardsharp' } }) });
+    return r.fulfill({ status: 404, body: 'nf' });
+  });
+  await context.route('**/rest/v1/**', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
+  await context.route('**/auth/v1/**', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '{}' }));
+  await context.route('**/rest/v1/press_vault**', (route) => {
+    const req = route.request(); const vid = req.headers()['x-vault-id'] || '';
+    if (req.method() === 'GET') { const row = vault.get(vid); return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(row ? [row] : []) }); }
+    if (req.method() === 'POST') {
+      const body = JSON.parse(req.postData() || '{}');
+      if (body.id !== vid) return route.fulfill({ status: 401, body: '{}' });
+      vault.set(vid, body); return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify([body]) });
+    }
+    return route.fulfill({ status: 204, body: '' });
+  });
+  await context.route(WING_ORIGIN + '/**', (r) => {
+    const p = new URL(r.request().url()).pathname;
+    if (p === '/press/' || p === '/press/index.html') return r.fulfill({ status: 200, contentType: 'text/html', body: INDEX });
+    if (p === '/press/blank.html') return r.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><title>blank</title>' });
+    return r.fulfill({ status: 404, body: 'nf' });
+  });
+  await context.route(APP_ORIGIN + '/**', (r) => {
+    const p = new URL(r.request().url()).pathname;
+    return p === '/' ? r.fulfill({ status: 200, contentType: 'text/html', body: APP_PAGE }) : r.fulfill({ status: 404, body: 'nf' });
+  });
+  return vault;
+}
+async function authenticator(context, page) {
+  const client = await context.newCDPSession(page);
+  await client.send('WebAuthn.enable');
+  await client.send('WebAuthn.addVirtualAuthenticator', { options: { protocol: 'ctap2', transport: 'internal',
+    hasResidentKey: true, hasUserVerification: true, hasPrf: true, isUserVerified: true, automaticPresenceSimulation: true } });
+}
+const lsDump = (page) => page.evaluate(() => { const o = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); o[k] = localStorage.getItem(k); } return o; });
+const idbNames = (page) => page.evaluate(async () => (await indexedDB.databases()).map((d) => d.name));
+const KEYRING = { v: 1, apps: { 'cardsharp.html': { sync_id: SYNC, pass: PASS }, 'fsa.html': { sync_id: 'a'.repeat(32), pass: 'fsa-test-pass' } } };
+const cardsharpCard = (page) => page.locator('#root a.tw-card[data-file="cardsharp.html"], a.tw-card[data-file="cardsharp.html"]').first();
+
+test('the wing card opens Cardsharp at its own address; ← Private Wing, Back and Forward all land right (Chromium + iPhone WebKit)', async ({ page, context }) => {
+  await routes(context);
+  await page.goto(WING);
+  await page.evaluate((kr) => { PressVault.saveSession(kr, 'nav-vid'); }, KEYRING); // an unlocked wing (no passkey needed to navigate)
+  await page.reload();
+  const card = cardsharpCard(page);
+  await expect(card).toHaveAttribute('href', APP);
+  await card.click();
+  await expect(page).toHaveURL(APP);
+  await expect(page.locator('#press-gate')).toBeVisible();
+  await expect(page.locator('#press-gate .pg-back')).toHaveAttribute('href', WING);
+  await page.locator('#press-gate .pg-back').click();
+  await expect(page).toHaveURL(WING);
+  await expect(cardsharpCard(page)).toBeVisible();
+  await page.goBack();
+  await expect(page).toHaveURL(APP);
+  await expect(page.locator('#press-gate')).toBeVisible();
+  await page.goForward();
+  await expect(page).toHaveURL(WING);
+  await expect(cardsharpCard(page)).toBeVisible();
+});
+
+test.describe('needs a passkey (CDP virtual authenticator — desktop Chromium)', () => {
+  test.skip(({ browserName }) => browserName !== 'chromium', 'CDP virtual authenticator');
+
+  test('move: Unlock to move → Move → the app saves its OWN passkey → the wing keeps only {moved}; no creds in storage anywhere', async ({ page, context }) => {
+    await routes(context);
+    await authenticator(context, page);
+    await page.goto(WING);
+    await page.evaluate(async (kr) => { await PressVault.enrol({ label: 'wing', keyring: kr }); }, KEYRING);
+    await page.reload(); // this tab's memory is gone: the session holds a REDACTED stub for Cardsharp
+    const btn = page.locator('.tw-move-btn');
+    await expect(btn).toHaveText('Unlock to move Cardsharp');
+    await btn.click(); // one wing passkey tap
+    await expect(btn).toHaveText('Move Cardsharp to its own address');
+    const [pop] = await Promise.all([context.waitForEvent('page'), btn.click()]);
+    await authenticator(context, pop);
+    await pop.waitForLoadState();
+    expect(pop.url()).toMatch(/^https:\/\/schnubsy-cardsharp\.github\.io\//);
+    await expect(pop.locator('#pg-unlock')).toHaveText('Save passkey');
+    await expect(pop.locator('#pg-unlock')).toBeEnabled();
+    await pop.locator('#pg-unlock').click();
+    await expect(pop.locator('#press-gate')).toHaveCount(0);
+    await expect(pop.locator('body')).toHaveAttribute('data-unlocked', 'yes');
+    await expect(page.locator('.tw-move-msg')).toContainText('moved ✓');
+    await expect(page.locator('.tw-move')).toHaveCount(0, { timeout: 5000 }); // repainted: nothing left to move
+    const apps = await page.evaluate(() => PressVault.fullKeyring().apps);
+    expect(apps['cardsharp.html']).toEqual({ moved: APP_ORIGIN });
+    expect(apps['fsa.html'].pass).toBe('fsa-test-pass');
+    await expect(page.locator('.tw-tool[data-f="cardsharp.html"] .tw-tool-status')).toHaveText('● At its own address');
+    await expect(page.locator('.tw-tool[data-f="cardsharp.html"] .tw-reconnect')).toHaveCount(0);
+    await page.locator('#kitBtn').click();
+    await expect(page.locator('#recoveryKit')).toContainText('moved to its own address (' + APP_ORIGIN + ')');
+    await expect(page.locator('#recoveryKit')).not.toContainText(PASS);
+    for (const p of [page, pop]) for (const [k, v] of Object.entries(await lsDump(p))) { expect(v, k).not.toContain(PASS); expect(v, k).not.toContain(SYNC); }
+    for (const p of [page, pop]) for (const d of await p.evaluate(async () => (await indexedDB.databases()).map((x) => x.name))) {
+      const st = await p.evaluate((n) => new Promise((ok) => { const o = indexedDB.open(n); o.onsuccess = () => { const r = [...o.result.objectStoreNames]; o.result.close(); ok(r); }; }), d);
+      expect(st, d).toEqual([]); // at most the empty tombstone
+    }
+    // the app stands alone: a reload asks for ITS passkey and opens
+    await pop.reload();
+    await expect(pop.locator('#press-gate')).toBeVisible();
+    await pop.locator('#pg-unlock').click();
+    await expect(pop.locator('body')).toHaveAttribute('data-unlocked', 'yes');
+  });
+
+  test('a second wing passkey row that still holds Cardsharp (this device moved it before) → "Finish moving" drops it in place, no tab', async ({ page, context }) => {
+    await routes(context);
+    await authenticator(context, page);
+    await page.goto(WING);
+    await page.evaluate(() => localStorage.setItem('press:own:moved', JSON.stringify(['cardsharp.html']))); // this device moved it before
+    await page.evaluate(async (kr) => { await PressVault.enrol({ label: 'another-device-row', keyring: kr }); }, KEYRING); // a row that still holds it
+    await page.goto(WING);
+    await page.evaluate(async () => { PressVault.lock(); await PressVault.unlock(); });
+    await page.goto(WING + '&r=1');
+    await page.locator('.tw-move-btn').click(); // 'unlock' state in a fresh tab memory → one tap
+    const btn = page.locator('.tw-move-btn');
+    await expect(btn).toHaveText('Finish moving Cardsharp off this passkey');
+    let opened = false; context.on('page', () => { opened = true; });
+    await btn.click();
+    await expect(page.locator('.tw-move-msg')).toContainText('this passkey no longer holds it');
+    expect(opened).toBe(false);
+    expect((await page.evaluate(() => PressVault.fullKeyring().apps))['cardsharp.html']).toEqual({ moved: APP_ORIGIN });
+  });
+
+  test('the retired seal: one wing visit empties an older page\'s IndexedDB key store into a v2 tombstone (old code cannot reopen it) + drops the session .seal; a wing unlock creates neither', async ({ page, context }) => {
+    await routes(context);
+    await authenticator(context, page);
+    await page.goto(WING_ORIGIN + '/press/blank.html');
+    await page.evaluate(async () => {
+      await new Promise((ok) => { const o = indexedDB.open('press:vault:seal', 1); o.onupgradeneeded = () => o.result.createObjectStore('keys');
+        o.onsuccess = () => { const t = o.result.transaction('keys', 'readwrite'); t.objectStore('keys').put({ key: 'x', at: 1 }, 'cardsharp.html'); t.oncomplete = () => { o.result.close(); ok(); }; }; });
+      localStorage.setItem('press:vault:v1', JSON.stringify({ keyring: { v: 1, apps: {} }, unlockedAt: 1, expiresAt: Date.now() + 864e5, vaultId: 'v', seal: { 'cardsharp.html': { ct: 'AA', iv: 'BB', at: 1, exp: 2 } } }));
+    });
+    expect(await idbNames(page)).toContain('press:vault:seal');
+    await page.goto(WING);
+    const stores = () => page.evaluate(() => new Promise((ok) => { const o = indexedDB.open('press:vault:seal'); o.onsuccess = () => { const r = { version: o.result.version, stores: [...o.result.objectStoreNames] }; o.result.close(); ok(r); }; }));
+    await expect.poll(stores).toEqual({ version: 2, stores: [] }); // emptied → a tombstone
+    const oldOpen = () => page.evaluate(() => new Promise((ok) => { const o = indexedDB.open('press:vault:seal', 1); o.onsuccess = () => { o.result.close(); ok('ok'); }; o.onerror = () => ok(o.error && o.error.name); }));
+    expect(await oldOpen()).toBe('VersionError'); // a page with the OLD vault (thrift-shop.html until re-vendored) cannot seal
+    expect('seal' in JSON.parse(await page.evaluate(() => localStorage.getItem('press:vault:v1')))).toBe(false);
+    await page.evaluate(async (kr) => { PressVault.lock(); await PressVault.enrol({ label: 'w', keyring: kr }); PressVault.lock(); await PressVault.unlock(); }, KEYRING);
+    expect(await stores()).toEqual({ version: 2, stores: [] });
+    expect(JSON.parse(await page.evaluate(() => localStorage.getItem('press:vault:v1'))).seal).toBeUndefined();
+  });
+});

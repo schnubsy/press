@@ -533,3 +533,42 @@ test('T1 parent FAIL — nested parent (the parent is itself parented)', () => {
   assert.equal(r.code, 1);
   e.cleanup();
 });
+
+// --- own-origin pilot (cardsharp, 2026-11-13): T11 — an app on its OWN origin; press keeps the card + a redirect stub ---
+const ORIGIN = 'https://schnubsy-cardsharp.github.io/';
+const OWN_STUB = (to = ORIGIN, extra = '') => `<!doctype html><meta name="robots" content="noindex"><script>var go=function(){location.replace('${to}' + location.search + location.hash);};try{indexedDB.deleteDatabase('press:vault:seal')}catch(e){}go();${extra}</script>`;
+const OWN_IDX = `const OWN_ORIGIN = { 'cardsharp.html': '${ORIGIN}' };\n`;
+
+test('T11 own-origin PASS — stub to the exact origin, index OWN_ORIGIN agrees, still a personal page', () => {
+  const e = estate();
+  e.page('cardsharp.html', OWN_STUB()).tier('cardsharp.html', 'personal').tenant('cardsharp.html', { repo: null, tier: 'personal', origin: ORIGIN }).write();
+  writeIndex(e.press, [], { extra: OWN_IDX });
+  const r = e.run();
+  assert.match(line(r.out, 'T11 own-origin', 'cardsharp.html'), /PASS.*→ https:\/\/schnubsy-cardsharp\.github\.io\//);
+  e.cleanup();
+});
+
+test('T11 own-origin FAIL — wrong target, gate/data code in the stub, index map missing, not a personal page, stray map entry', () => {
+  const cases = [
+    [(e) => e.page('cardsharp.html', OWN_STUB('https://evil.example/')).tier('cardsharp.html', 'personal'), OWN_IDX, /no query\/hash-preserving location\.replace/],
+    [(e) => e.page('cardsharp.html', OWN_STUB(ORIGIN, "fetch('https://x.supabase.co')")).tier('cardsharp.html', 'personal'), OWN_IDX, /carries gate\/vault\/data code/],
+    [(e) => e.page('cardsharp.html', OWN_STUB(ORIGIN, 'PressGate.guardOwn({})')).tier('cardsharp.html', 'personal'), OWN_IDX, /carries gate\/vault\/data code/],
+    [(e) => e.page('cardsharp.html', OWN_STUB()).tier('cardsharp.html', 'personal'), '', /OWN_ORIGIN says nothing/],
+    [(e) => e.page('cardsharp.html', OWN_STUB()), OWN_IDX, /not a personal pages\.json page/],
+  ];
+  for (const [setup, idx, re] of cases) {
+    const e = estate();
+    setup(e).tenant('cardsharp.html', { repo: null, tier: 'personal', origin: ORIGIN }).write();
+    writeIndex(e.press, [], { extra: idx });
+    const r = e.run();
+    assert.match(line(r.out, 'T11 own-origin', 'cardsharp.html'), /FAIL/);
+    assert.match(line(r.out, 'T11 own-origin', 'cardsharp.html'), re);
+    assert.equal(r.code, 1);
+    e.cleanup();
+  }
+  const e = estate();
+  e.page('fsa.html').tier('fsa.html', 'personal').tenant('fsa.html', { repo: null, tier: 'personal' }).write();
+  writeIndex(e.press, [], { extra: "const OWN_ORIGIN = { 'fsa.html': 'https://fsa.example/' };\n" });
+  assert.match(line(e.run().out, 'T11 own-origin', 'fsa.html'), /FAIL.*tenants\.json has no origin/);
+  e.cleanup();
+});
