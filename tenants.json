@@ -160,7 +160,8 @@
       "output": "dist/cardsharp.html",
       "deterministic": true,
       "note": "build id = content hash of the build inputs (src-<sha256 prefix>, no git sha, no timestamp), so a rebuild at any commit with the same sources is byte-identical to cardsharp.html — docs-only commits cannot break T5. Registered 2026-09-28 (cardsharp Arc 1); content-hash id 2026-10-01 (cardsharp PR #2). Own origin 2026-11-13 (cardsharp own-origin pilot): the app is published to schnubsy-cardsharp/schnubsy-cardsharp.github.io (its own passkey, gate.js guardOwn); press/cardsharp.html is the build's redirect stub (dist/cardsharp.html, T5) and stays the wing card + keyring id (tenants-check T11).",
-      "origin": "https://schnubsy-cardsharp.github.io/"
+      "origin": "https://schnubsy-cardsharp.github.io/",
+      "moveComplete": true
     },
     "steward.html": {
       "repo": null,

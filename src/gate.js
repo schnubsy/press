@@ -882,25 +882,30 @@
       lede.textContent = 'Save a passkey for ' + own.name + '’s own address. From now on Face ID opens it — no Private Wing needed.';
       btn.disabled = false; alt.hidden = false;
       alt.addEventListener('click', function () { releaseOwn(creds); }); // this tab only; the wing keeps its copy
+      // ONE passkey (cleanup S3): look first; create() only on a "Create passkey" tap after NotAllowedError, never if used here
+      var mode = 'find';
+      function finish() { mv.done(); releaseOwn(creds); } // the wing drops its copy after DONE
+      function fail(e) {
+        console.error('[press-gate] move failed:', e && e.name);
+        mode = 'find'; btn.textContent = 'Save passkey'; btn.disabled = false; msg.className = 'pg-msg err';
+        msg.textContent = /already opens a different/.test((e && e.message) || '') ? e.message : friendlyErr(e) + ' Nothing moved yet — the Private Wing still has ' + own.name + '.';
+      }
       btn.addEventListener('click', function () {
-        btn.disabled = true; msg.className = 'pg-msg'; msg.textContent = 'Saving your passkey…';
-        // idempotent: a passkey made here before that already opens these exact creds is reused, not doubled. One that
-        // opens DIFFERENT creds is never shadowed by a second passkey (D1 round 1: any page on the wing's origin can open
-        // ?move=1 and hand over creds of its choosing) — the move stops; nothing is saved, the wing keeps its copy.
-        var reuse = V.ownEnrolled() ? V.unlockOwn(own.page).then(function (r) {
-          if (r.creds.syncId === creds.syncId && r.creds.passphrase === creds.passphrase) return r;
-          throw new Error('This address already opens a different ' + own.name + ' with its passkey — nothing was moved.');
-        }, function (e) { if (e && e.name === 'NotAllowedError') throw e; return null; }) : Promise.resolve(null);
-        reuse.then(function (r) {
-          return r || V.enrolOwn({ page: own.page, creds: creds, name: own.name, label: own.name.toLowerCase() + '-own-origin' });
-        }).then(function () {
-          mv.done(); // the wing drops its copy only now
-          releaseOwn(creds);
-        }).catch(function (e) {
-          console.error('[press-gate] move failed:', e && e.name);
-          btn.disabled = false; msg.className = 'pg-msg err';
-          msg.textContent = /already opens a different/.test((e && e.message) || '') ? e.message : friendlyErr(e) + ' Nothing moved yet — the Private Wing still has ' + own.name + '.';
-        });
+        btn.disabled = true; msg.className = 'pg-msg';
+        if (mode === 'create') {
+          msg.textContent = 'Saving your passkey…';
+          V.enrolOwn({ page: own.page, creds: creds, name: own.name, label: own.name.toLowerCase() + '-own-origin' }).then(finish, fail);
+          return;
+        }
+        msg.textContent = 'Looking for your ' + own.name + ' passkey…';
+        V.unlockOwn(own.page).then(function (r) {
+          if (r.creds.syncId !== creds.syncId || r.creds.passphrase !== creds.passphrase) throw new Error('This address already opens a different ' + own.name + ' with its passkey — nothing was moved.');
+          finish();
+        }, function (e) {
+          if (!(e && e.name === 'NotAllowedError') || V.ownEnrolled()) throw e; // never create over an existing one
+          mode = 'create'; btn.textContent = 'Create passkey'; btn.disabled = false; msg.textContent = '';
+          lede.textContent = 'No ' + own.name + ' passkey on this device yet — create one.';
+        }).catch(fail);
       });
     });
     return host;

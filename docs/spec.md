@@ -171,7 +171,11 @@ offers the ONE-TIME move from the unlocked wing (src/vault.js `moveOut` → the 
 afterwards the keyring keeps only `{moved: <origin>}`); `press/<page>` is the tenant build's redirect stub to the origin
 (≤ 2 KB, noindex, query/hash kept, no gate/vault/data code — it may only delete the retired seal). tenants-check **T11
 `own-origin`** enforces it; T5 rebuilds the stub. The 7-day seal (quick-fixes S3) is retired: `purgeSeal()` deletes it at
-every vault load. Runbook: `schnubsy/cardsharp` `docs/runbooks/own-origin-move.md`.
+every vault load. **Move complete (`moveComplete: true`, cardsharp own-origin-cleanup 2026-11-14):** once the app holds
+its creds under its own passkey on ANY device, `tenants.json` marks it and index.html `OWN_MOVE_COMPLETE` mirrors it (T11
+`move-complete` pins the two equal): no device, row or tab shows move UI for it again, and every wing unlock silently
+re-seals the unlocked row with `{moved}` in place of any leftover creds (same key, no prompt). The app's gate looks for its
+passkey (discoverable assertion) before it ever creates one — one passkey per origin. Runbook: `schnubsy/cardsharp` `docs/runbooks/own-origin-move.md`.
 **Parented pages (`parent`, arc app-lab 2026-10-14).** A `pages.json` entry may carry `"parent": "<page>.html"`: the page
 is listed INSIDE that parent (today: `optimo.html` → `app-lab.html`, an App Lab prototype whose `optimo.html` is only its
 Family Wing sign-in step), so the portal renders **no card** for it on any surface (lobby, wing views, wing-door counts —

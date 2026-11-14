@@ -359,6 +359,22 @@ for (const page of Object.keys(tenants)) {
   }
   for (const [page] of inIndex) if (!tenants[page] || !tenants[page].origin) say('FAIL', 'T11 own-origin', page, 'in index.html OWN_ORIGIN but tenants.json has no origin');
   if (!owned.length && !inIndex.size) say('SKIP', 'T11 own-origin', '(marquee)', 'no own-origin tenant');
+  // T11 move-complete (own-origin-cleanup, 2026-11-14): tenants.json `moveComplete` is optional, boolean true only, and
+  // only on an own-origin tenant; index.html OWN_MOVE_COMPLETE lists EXACTLY the pages marked true (the wing's synchronous
+  // copy of the marker: no move UI on any device, silent cleanup of leftover creds on unlock).
+  const mc = src.match(/const OWN_MOVE_COMPLETE\s*=\s*\[([^\]]*)\]/);
+  const inMc = mc ? [...mc[1].matchAll(/'([a-z0-9-]+\.html)'/g)].map((m) => m[1]) : null;
+  const marked = Object.entries(tenants).filter(([, t]) => t && 'moveComplete' in t);
+  for (const [page, t] of marked) {
+    const errs = [];
+    if (t.moveComplete !== true) errs.push(`moveComplete must be true (or absent), got ${JSON.stringify(t.moveComplete)}`);
+    if (!t.origin) errs.push('moveComplete without an own origin');
+    if (t.moveComplete === true && !(inMc || []).includes(page)) errs.push('not in index.html OWN_MOVE_COMPLETE');
+    if (errs.length) say('FAIL', 'T11 move-complete', page, errs.join('; '));
+    else say('PASS', 'T11 move-complete', page, 'moved everywhere: no move UI on any device; leftover creds dropped on unlock');
+  }
+  for (const page of inMc || []) if (!tenants[page] || tenants[page].moveComplete !== true || !tenants[page].origin) say('FAIL', 'T11 move-complete', page, 'in index.html OWN_MOVE_COMPLETE but tenants.json has no origin + moveComplete: true');
+  if (owned.length && !inMc) say('FAIL', 'T11 move-complete', '(marquee)', 'index.html has no OWN_MOVE_COMPLETE list');
 }
 
 // ---- T6 family grants (EMITTED — the script cannot reach the DB) ------------

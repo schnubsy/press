@@ -572,3 +572,54 @@ test('T11 own-origin FAIL — wrong target, gate/data code in the stub, index ma
   assert.match(line(e.run().out, 'T11 own-origin', 'fsa.html'), /FAIL.*tenants\.json has no origin/);
   e.cleanup();
 });
+
+// --- own-origin-cleanup (cardsharp, 2026-11-14): T11 move-complete — the global, non-secret "moved everywhere" marker ---
+const MC_IDX = (list) => OWN_IDX + `const OWN_MOVE_COMPLETE = [${list.map((p) => `'${p}'`).join(', ')}];\n`;
+const ownTenant = (extra = {}) => ({ repo: null, tier: 'personal', origin: ORIGIN, ...extra });
+
+test('T11 move-complete PASS — tenants.json moveComplete: true and index.html OWN_MOVE_COMPLETE agree', () => {
+  const e = estate();
+  e.page('cardsharp.html', OWN_STUB()).tier('cardsharp.html', 'personal').tenant('cardsharp.html', ownTenant({ moveComplete: true })).write();
+  writeIndex(e.press, [], { extra: MC_IDX(['cardsharp.html']) });
+  const r = e.run();
+  assert.match(line(r.out, 'T11 move-complete', 'cardsharp.html'), /PASS.*moved everywhere/);
+  assert.match(line(r.out, 'T11 own-origin', 'cardsharp.html'), /PASS/);
+  e.cleanup();
+});
+
+test('T11 move-complete absent — no row, an empty list is fine (a future app still gets the one-time move)', () => {
+  const e = estate();
+  e.page('cardsharp.html', OWN_STUB()).tier('cardsharp.html', 'personal').tenant('cardsharp.html', ownTenant()).write();
+  writeIndex(e.press, [], { extra: MC_IDX([]) });
+  const r = e.run();
+  assert.equal(line(r.out, 'T11 move-complete', 'cardsharp.html'), '');
+  assert.equal(line(r.out, 'T11 move-complete', '(marquee)'), '');
+  e.cleanup();
+});
+
+test('T11 move-complete FAIL — not true, no origin, missing from the wing list, stray wing entry, no wing list', () => {
+  const cases = [
+    [ownTenant({ moveComplete: 'yes' }), MC_IDX(['cardsharp.html']), 'cardsharp.html', /moveComplete must be true/],
+    [{ repo: null, tier: 'personal', moveComplete: true }, MC_IDX(['cardsharp.html']), 'cardsharp.html', /moveComplete without an own origin/],
+    [ownTenant({ moveComplete: true }), MC_IDX([]), 'cardsharp.html', /not in index\.html OWN_MOVE_COMPLETE/],
+    [ownTenant(), MC_IDX(['cardsharp.html']), 'cardsharp.html', /in index\.html OWN_MOVE_COMPLETE but tenants\.json has no origin \+ moveComplete/],
+    [ownTenant({ moveComplete: true }), OWN_IDX, '(marquee)', /no OWN_MOVE_COMPLETE list/],
+  ];
+  for (const [t, idx, page, re] of cases) {
+    const e = estate();
+    e.page('cardsharp.html', OWN_STUB()).tier('cardsharp.html', 'personal').tenant('cardsharp.html', t).write();
+    writeIndex(e.press, [], { extra: idx });
+    const r = e.run();
+    assert.match(line(r.out, 'T11 move-complete', page), /FAIL/, String(re));
+    assert.match(line(r.out, 'T11 move-complete', page), re);
+    assert.equal(r.code, 1);
+    e.cleanup();
+  }
+});
+
+test('T11 move-complete — the REAL registries: cardsharp is marked moved in tenants.json and the wing', () => {
+  const t = JSON.parse(readFileSync(new URL('../tenants.json', import.meta.url), 'utf8')).tenants['cardsharp.html'];
+  assert.equal(t.moveComplete, true);
+  assert.equal(t.origin, ORIGIN);
+  assert.match(readFileSync(new URL('../index.html', import.meta.url), 'utf8'), /const OWN_MOVE_COMPLETE = \['cardsharp\.html'\];/);
+});

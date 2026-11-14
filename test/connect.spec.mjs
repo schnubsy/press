@@ -13,6 +13,11 @@ import { setupVirtualAuthenticator, buildEnvelope, enrolInPage } from '../src/ga
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const INDEX = readFileSync(join(ROOT, 'index.html'), 'utf8');
+// own-origin-cleanup (2026-11-14): the real wing marks Cardsharp move-complete (OWN_MOVE_COMPLETE) — its Connect row is then
+// "At its own address", never a form. These specs exercise the generic Connect flow WITH Cardsharp as a connectable tool,
+// so they get the wing with the marker list emptied; a request carrying `marked=1` gets the real page (the last spec).
+const INDEX_UNMARKED = INDEX.replace(/const OWN_MOVE_COMPLETE = \[[^\]]*\];/, 'const OWN_MOVE_COMPLETE = [];');
+if (INDEX_UNMARKED === INDEX) throw new Error('index.html has no OWN_MOVE_COMPLETE list');
 const PUBLIC_FILES = ['council-guide.html', 'agent-health.html'];
 const PERSONAL_FILES = ['fsa.html', 'giving.html', 'retirement.html', 'thrift-shop.html', 'cardsharp.html'];
 const MANIFEST = Object.fromEntries([...PUBLIC_FILES, ...PERSONAL_FILES].map((f) => [f, { title: f.replace(/\.html$/, '') }]));
@@ -30,7 +35,7 @@ const CARD_SCOUT_GATE_SENTINEL = 'not-a-secret:card-scout-has-no-passphrase:sent
 
 let server, base;
 test.beforeAll(async () => {
-  server = createServer((req, res) => { res.writeHead(200, { 'content-type': 'text/html' }); res.end(INDEX); });
+  server = createServer((req, res) => { res.writeHead(200, { 'content-type': 'text/html' }); res.end(/[?&]marked=1/.test(req.url) ? INDEX : INDEX_UNMARKED); });
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
   base = `http://localhost:${server.address().port}`;
 });
@@ -195,6 +200,20 @@ test('every tool connected: the section renders COLLAPSED; Manage expands, colla
   await expect(sect.locator('.tw-reconnect')).toHaveCount(5);        // each connected row offers Reconnect
   await toggle.click();                                             // collapse again
   await expect(sect.locator('.tw-tool')).toHaveCount(0);            // rows removed from the DOM
+});
+
+// own-origin-cleanup: with the real marker, a row that still holds Cardsharp's creds shows "At its own address" — no
+// fields, no Reconnect (which would copy the creds back into the wing) — and the other tools keep their Connect rows.
+test('move-complete: Cardsharp\'s Connect row is "At its own address" even when the row still holds its creds', async ({ page, context }) => {
+  const state = await harness(page, context);
+  await page.goto(base + '/?view=personal&marked=1');
+  await enrolInPage(page, { apps: { 'fsa.html': { sync_id: SYNC, pass: PASS }, 'cardsharp.html': { sync_id: CS_SYNC, pass: CS_PASS } } });
+  await page.reload();
+  const t = tool(page, 'cardsharp.html');
+  await expect(t.locator('.tw-tool-status')).toHaveText('● At its own address');
+  await expect(t.locator('.tw-sync, .tw-pass, .tw-reconnect, .tw-verify')).toHaveCount(0);
+  await expect(tool(page, 'giving.html').locator('.tw-sync')).toHaveCount(1);
+  expect(state.vault.size).toBe(1);
 });
 
 // ── Connect / collapse / Card Scout — run at desktop AND iPhone 15 width ────

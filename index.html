@@ -2283,14 +2283,61 @@ const ownHref = f => OWN_ORIGIN[f] || f;
 const OWN_MOVED = 'press:own:moved';
 function ownMoved(){ try{ return JSON.parse(localStorage.getItem(OWN_MOVED)||'[]'); }catch(e){ return []; } }
 function markMoved(f){ try{ const m=ownMoved(); if(!m.includes(f)){ m.push(f); localStorage.setItem(OWN_MOVED, JSON.stringify(m)); } }catch(e){} }
-function moveState(f){
-  if(!OWN_ORIGIN[f] || !window.PressVault || !PressVault.fullKeyring) return null;
-  const k = PressVault.fullKeyring(), v = k && k.apps && k.apps[keyringId(f)];
+/* OWN_MOVE_COMPLETE — the GLOBAL "move complete" marker (cardsharp own-origin-cleanup, 2026-11-14 — Mark: "if it's moved
+   it's moved"). Mirrors tenants.json `moveComplete: true` (tenants-check T11 pins the two equal). Non-secret, the same for
+   every device, passkey row and tab, and synchronous (no fetch races the first paint). For a page listed here NO device ever
+   shows move / unlock-to-move / finish UI again: its card opens its origin, Connect says "At its own address", and a wing
+   unlock silently drops any creds the unlocked row still holds for it (sweepMovedCreds). Absent ⇒ the one-time move below. */
+const OWN_MOVE_COMPLETE = ['cardsharp.html'];
+const ownMoveDone = f => !!OWN_ORIGIN[f] && OWN_MOVE_COMPLETE.includes(f);
+// ownMoveState — pure (test/own-move.test.mjs loads it out of this page): f, its keyring entry, "this device moved it".
+function ownMoveState(f, v, movedHere){
+  if(!OWN_ORIGIN[f] || ownMoveDone(f)) return null;
   if(!v || v.moved) return null;
   if(v.redacted) return 'unlock';
   if(!(v.sync_id && v.pass)) return null;
-  return ownMoved().includes(f) ? 'finish' : 'move';
+  return movedHere ? 'finish' : 'move';
 }
+function moveState(f){
+  if(!OWN_ORIGIN[f] || ownMoveDone(f) || !window.PressVault || !PressVault.fullKeyring) return null;
+  const k = PressVault.fullKeyring();
+  return ownMoveState(f, k && k.apps && k.apps[keyringId(f)], ownMoved().includes(f));
+}
+// sweepMovedKeyring — pure: every move-complete app's entry that is not {moved} (creds, or this tab's redacted stub of
+// them) becomes {moved: <origin>}; other apps untouched. → { kr, changed: [files] }
+function sweepMovedKeyring(k0){
+  const kr = JSON.parse(JSON.stringify(k0 || {})), changed = [];
+  if(kr.apps) for(const f of OWN_MOVE_COMPLETE){
+    if(!OWN_ORIGIN[f]) continue;
+    const id = keyringId(f), v = kr.apps[id];
+    if(v && !v.moved){ kr.apps[id] = { moved: new URL(OWN_ORIGIN[f]).origin }; changed.push(f); }
+  }
+  return { kr, changed };
+}
+// SILENT cleanup, right after a successful wing passkey unlock (or a new row's enrol) in THIS page load: the vault core
+// still holds the key it just derived (`_live`), so updateKeyring re-seals the SAME row with no prompt, no toast. Safe
+// because the marker means the app already holds its creds under its own passkey (Mark confirmed, 2026-11-14). A failure
+// changes nothing and is retried on the next unlock.
+async function sweepMovedCreds(){
+  try{
+    const k = window.PressVault && PressVault.fullKeyring && PressVault.fullKeyring();
+    if(!k || !k.apps) return false;
+    const { kr, changed } = sweepMovedKeyring(k);
+    if(!changed.length) return false;
+    await PressVault.updateKeyring(kr);
+    return true;
+  }catch(e){ console.error('[private-wing] moved-app cleanup deferred:', e && e.name); return false; }
+}
+// the per-device "this device moved it" list is dead weight for a move-complete app: drop it on every wing visit
+function clearOwnMovedMarks(){
+  try{
+    const m = ownMoved(), keep = m.filter(f=>!ownMoveDone(f));
+    if(keep.length === m.length) return;
+    if(keep.length) localStorage.setItem(OWN_MOVED, JSON.stringify(keep)); else localStorage.removeItem(OWN_MOVED);
+  }catch(e){}
+}
+// the wing's ONE unlock: a passkey unlock, then the silent sweep (before anything paints)
+async function wingUnlock(){ const r = await PressVault.unlock(); await sweepMovedCreds(); return r; }
 async function dropMovedCreds(f){ // the wing keeps NO creds for a moved app: only {moved: <origin>}
   const kr = JSON.parse(JSON.stringify(PressVault.fullKeyring()));
   kr.apps[keyringId(f)] = { moved: new URL(OWN_ORIGIN[f]).origin };
@@ -2310,7 +2357,7 @@ function wireMoves(root, man){
     const f = b.dataset.file, id = keyringId(f), msg = b.nextElementSibling, t = labelFor(f, man).title;
     if(b.dataset.state==='unlock'){ // the creds are redacted in this tab: one passkey tap here first (the next tap opens the tab)
       b.disabled = true; msg.textContent = 'Waiting for your passkey…';
-      PressVault.unlock().then(()=>paintPersonal(root, man)).catch(e=>{ b.disabled=false; msg.textContent=friendlyErr(e); });
+      wingUnlock().then(()=>paintPersonal(root, man)).catch(e=>{ b.disabled=false; msg.textContent=friendlyErr(e); });
       return;
     }
     if(b.dataset.state==='finish'){ // already at its own address (this device moved it): just drop this row's copy
@@ -2390,7 +2437,7 @@ function connectToolsHTML(){
       // own-origin pilot: a moved app is managed at its own address (its own passkey) — no Reconnect here, which
       // would copy its creds back into this wing's keyring
       const k=vaultState().sess, kv=k&&k.keyring&&k.keyring.apps&&k.keyring.apps[keyringId(f)];
-      if(kv&&kv.moved) return `<div class="tw-tool" data-f="${f}" data-kind="${cfg.kind}" data-moved="1"><div class="tw-tool-head"><span class="tw-tool-name">${esc(toolName(f))}</span>`+
+      if((kv&&kv.moved)||ownMoveDone(f)) return `<div class="tw-tool" data-f="${f}" data-kind="${cfg.kind}" data-moved="1"><div class="tw-tool-head"><span class="tw-tool-name">${esc(toolName(f))}</span>`+
         `<span class="tw-tool-status on">● At its own address</span></div></div>`;
       const head=`<div class="tw-tool-head"><span class="tw-tool-name">${esc(toolName(f))}</span>`+
         `<span class="tw-tool-status ${on?'on':'off'}">${on?'● Connected':'○ not connected'}</span></div>`;
@@ -2528,9 +2575,10 @@ function recoveryKitHTML(man){
   const when = new Date();
   const stamp = when.toLocaleString(undefined, {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
   const rows = Object.keys(apps).map(id=>{
-    const v = apps[id] || {};
+    let v = apps[id] || {};
     const f = linkFile(id);                     // keyring id → link file (KEYRING_ID), so a renamed tool keeps its card name
     const name = esc(labelFor(f, man).title);   // the marquee label map names the tool here too
+    if (ownMoveDone(f) && !v.moved) v = { moved: new URL(OWN_ORIGIN[f]).origin }; // a row not yet swept: never print or ask for it
     if (v.redacted) return `<tr><th scope="row">${name}</th><td colspan="2"><em>unlock with your passkey on this page to include it</em></td></tr>`;
     if (v.moved) return `<tr><th scope="row">${name}</th><td colspan="2"><em>moved to its own address (${esc(v.moved)}) — its own passkey opens it</em></td></tr>`;
     const sync = v.sync_id ? esc(v.sync_id) : '—';
@@ -2569,6 +2617,7 @@ function showRecoveryKit(root, man){
 }
 
 function paintPersonal(root, man){
+  clearOwnMovedMarks();
   const back=`<a class="tw-back" href="index.html">← the marquee</a>`;
   const top=`<div class="tw-top"><span>behind the <b>passkey</b></span><span>personal tools</span></div>`;
   const st=vaultState();
@@ -2595,7 +2644,7 @@ function paintPersonal(root, man){
     document.getElementById('addBtn').addEventListener('click', async ()=>{
       const m=document.getElementById('devMsg'); m.style.color=''; m.textContent='Creating a passkey for this device…';
       // Add-device carries the CURRENT (populated) keyring and re-seals it under the new credential — never an empty one.
-      try{ await PressVault.addPasskey({label: deviceLabel()}); m.style.color='var(--tw-violet)'; m.textContent='Device added.'; loadDevices(root, man); }
+      try{ await PressVault.addPasskey({label: deviceLabel()}); await sweepMovedCreds(); m.style.color='var(--tw-violet)'; m.textContent='Device added.'; loadDevices(root, man); }
       catch(e){ console.error('[private-wing] addPasskey failed:', e); m.style.color='var(--tw-rose)'; m.textContent=friendlyErr(e); }
     });
     wireConnect(root, man);
@@ -2617,7 +2666,7 @@ function paintPersonal(root, man){
     const btn=document.getElementById('unlockBtn'), msg=document.getElementById('secmsg');
     btn.addEventListener('click', async ()=>{
       btn.disabled=true; msg.style.color=''; msg.textContent='Waiting for your passkey…';
-      try{ await PressVault.unlock(); paintPersonal(root, man); }
+      try{ await wingUnlock(); paintPersonal(root, man); }
       catch(e){ console.error('[private-wing] unlock failed:', e); btn.disabled=false; msg.style.color='var(--tw-rose)';
         msg.textContent=friendlyErr(e)+(/No enrolled passkey/i.test((e&&e.message)||'')?' If this is a brand-new space, use “Set up a new passkey”.':''); }
     });
@@ -2626,7 +2675,7 @@ function paintPersonal(root, man){
       msg.style.color=''; msg.textContent='Checking for an existing passkey…';
       try{
         // Adopt a reachable row rather than create an empty one.
-        try{ await PressVault.unlock(); paintPersonal(root, man); return; }
+        try{ await wingUnlock(); paintPersonal(root, man); return; }
         catch(e){ if(!/No enrolled passkey|NotAllowed/i.test(((e&&e.name)||'')+' '+((e&&e.message)||''))) throw e; }
         msg.textContent='Creating your passkey…';
         await PressVault.enrol({label: deviceLabel()});
