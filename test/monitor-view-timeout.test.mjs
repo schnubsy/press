@@ -156,3 +156,78 @@ test('retry: 500 ×3 through the real die() ⇒ process exit 1 with the ::error:
   assert.match(r.stdout, /::error::The press status service answered HTTP 500\. Not reporting healthy on a failed check\./);
   assert.doesNotMatch(r.stdout, /UNREACHABLE|^OK/m);
 });
+
+// arc monitor-view-runs-branch, slice 2: each attempt has a timeout (a hang is transient, retried); a 200 whose body is not
+// JSON fails with the same "Not reporting healthy" wording — never an unhandled throw.
+const hangUntilAborted = (signal) => new Promise((_, rej) => signal.addEventListener('abort', () => rej(signal.reason), { once: true }));
+const instantTimeout = () => { const c = new AbortController(); setImmediate(() => c.abort(new DOMException('The operation was aborted due to timeout', 'TimeoutError'))); return c.signal; };
+const steps = (...s) => { let i = 0; const seen = []; const fn = async (_url, init) => { seen.push(init); const x = s[Math.min(i++, s.length - 1)]; if (x === 'hang') return hangUntilAborted(init.signal); if (x === 'badjson') return { ok: true, status: 200, json: async () => JSON.parse('<html>502 Bad Gateway</html>') }; return reply(x); }; fn.calls = () => i; fn.seen = seen; return fn; };
+
+test('timeout: every attempt carries an AbortSignal of TIMEOUT_MS (20 s by default)', async () => {
+  assert.equal(GH.TIMEOUT_MS, 20000);
+  const asked = [], h = harness(), f = steps(200);
+  await GH.fetchRows(f, { ...h.opts, timeoutSignal: (ms) => { asked.push(ms); return new AbortController().signal; } });
+  assert.deepEqual(asked, [20000]);
+  assert.ok(f.seen[0].signal instanceof AbortSignal);
+  assert.equal(f.seen[0].headers.apikey !== undefined, true);
+});
+
+test('timeout: a hang then 200 ⇒ rows; the hang is a ::warning:: retry like a network error', async () => {
+  const h = harness(), f = steps('hang', 200);
+  assert.deepEqual(await GH.fetchRows(f, { ...h.opts, timeoutSignal: instantTimeout }), ROWS);
+  assert.equal(f.calls(), 2);
+  assert.deepEqual(h.sleeps, [10000]);
+  assert.match(h.logs[0], /^::warning::Attempt 1 of 3: the press status service did not answer within 20 s — retrying in 10 s\.$/);
+});
+
+test('timeout: hang ×3 ⇒ the failure message after 3 attempts', async () => {
+  const h = harness(), f = steps('hang', 'hang', 'hang', 200);
+  await assert.rejects(GH.fetchRows(f, { ...h.opts, timeoutSignal: instantTimeout }),
+    /^Error: The press status service did not answer within 20 s\. Not reporting healthy on a failed check\.$/);
+  assert.equal(f.calls(), 3);
+  assert.equal(h.logs.length, 2);
+});
+
+test('timeout: hang ×3 through the real die() and a real AbortSignal.timeout ⇒ exit 1 with the ::error:: message', () => {
+  const mod = new URL('../.github/scripts/agent-health-check.mjs', import.meta.url).href;
+  const code = `import { fetchRows } from ${JSON.stringify(mod)};
+    setInterval(() => {}, 1000);   // a real hung request holds a socket open; AbortSignal.timeout's own timer is unref'd
+    const hang = (u, init) => new Promise((_, rej) => init.signal.addEventListener('abort', () => rej(init.signal.reason)));
+    await fetchRows(hang, { timeoutMs: 30, retryMs: 0, sleep: async () => {} });
+    console.log('UNREACHABLE');`;
+  const r = spawnSync(process.execPath, ['--input-type=module', '-e', code], { encoding: 'utf8', timeout: 10000 });
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /::warning::Attempt 2 of 3: the press status service did not answer within 0 s/);
+  assert.match(r.stdout, /::error::The press status service did not answer within 0 s\. Not reporting healthy on a failed check\./);
+  assert.doesNotMatch(r.stdout, /UNREACHABLE/);
+});
+
+test('bad body: 200 + a non-JSON body ⇒ fails at once with the existing wording (no retry, no unhandled throw)', async () => {
+  const h = harness(), f = steps('badjson', 200);
+  await assert.rejects(GH.fetchRows(f, h.opts),
+    /^Error: The press status service answered HTTP 200 with a body that is not JSON \(.+\)\. Not reporting healthy on a failed check\.$/);
+  assert.equal(f.calls(), 1);
+  assert.equal(h.logs.length, 0);
+});
+
+test('bad body: through the real die() ⇒ exit 1, an ::error:: line, no stack trace', () => {
+  const mod = new URL('../.github/scripts/agent-health-check.mjs', import.meta.url).href;
+  const code = `import { fetchRows } from ${JSON.stringify(mod)};
+    await fetchRows(async () => ({ ok: true, status: 200, json: async () => JSON.parse('not json') }), { retryMs: 0, sleep: async () => {} });
+    console.log('UNREACHABLE');`;
+  const r = spawnSync(process.execPath, ['--input-type=module', '-e', code], { encoding: 'utf8', timeout: 10000 });
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /::error::The press status service answered HTTP 200 with a body that is not JSON .*Not reporting healthy on a failed check\./);
+  assert.doesNotMatch(r.stdout + r.stderr, /UNREACHABLE|SyntaxError: Unexpected|at JSON\.parse/);
+});
+
+test('bad body: a body stream that times out is transient (retried), not "not JSON"', async () => {
+  const h = harness();
+  let i = 0;
+  const f = async () => (i++ === 0
+    ? { ok: true, status: 200, json: async () => { throw new DOMException('The operation was aborted due to timeout', 'TimeoutError'); } }
+    : reply(200));
+  assert.deepEqual(await GH.fetchRows(f, h.opts), ROWS);
+  assert.equal(i, 2);
+  assert.match(h.logs[0], /did not answer within 20 s — retrying/);
+});
