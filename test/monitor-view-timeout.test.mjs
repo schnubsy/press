@@ -56,3 +56,52 @@ test('prune: one daily job off the hour, registered on the monitor with an allow
   assert.ok(retry); assert.equal(retry[1], `cron:${name}`);
   assert.match(retry[1], /^cron:[a-z0-9_-]+$/);   // agent-fix's allowlist (supabase/functions/agent-fix/index.ts)
 });
+
+// slice 2: db/20261115_agent_monitor_view_v3.sql — the live definition with ONLY the cron (`cf`) branch rewritten
+const V3 = readFileSync(new URL('../db/20261115_agent_monitor_view_v3.sql', import.meta.url), 'utf8');
+const BEFORE = readFileSync(new URL('../docs/evidence/monitor-view-timeout-view-before.sql', import.meta.url), 'utf8');
+const HEAD = 'create or replace view public.press_agent_monitor_public as\n';
+const viewBody = (t) => { const i = t.indexOf(HEAD); assert.ok(i >= 0, 'create or replace view'); return t.slice(i + HEAD.length).split(';\n')[0] + ';'; };
+const ctes = (b) => b.split(/\n {8}\), /);   // the CTE boundaries of pg_get_viewdef's layout
+const ctename = (c) => (c.match(/^\s*(?:WITH )?(\w+) AS \(/) || [])[1];
+
+test('view v3: the rollback file is the captured live definition (md5 of 2026-11-15)', async () => {
+  const { createHash } = await import('node:crypto');
+  const live = viewBody(BEFORE);
+  assert.equal(createHash('md5').update(live).digest('hex'), '7b0ddf18fea7ae19e0eb8508e7507012');
+  assert.match(V3, /md5\(d\) <> '7b0ddf18fea7ae19e0eb8508e7507012'/);      // the guard pins the same capture
+  assert.match(V3, /position\('cf_jobs' in d\) = 0/);                      // … and lets a re-run through
+});
+
+test('view v3: every CTE but the cron branch and the final SELECT are byte-identical to the live view', () => {
+  const a = ctes(viewBody(BEFORE)), b = ctes(viewBody(V3));
+  const na = a.map(ctename), nb = b.map(ctename);
+  assert.deepEqual(na.filter((n) => n !== 'cf'), nb.filter((n) => n !== 'cf' && n !== 'cf_jobs'));
+  assert.deepEqual(nb.slice(0, 4), ['e', 'runs', 'rf', 'cf_jobs']);
+  for (const c of a) if (ctename(c) !== 'cf') assert.ok(b.includes(c), `unchanged: ${ctename(c) || 'final select'}`);
+  assert.equal(a.at(-1), b.at(-1));   // `s` + the column list
+});
+
+test('view v3: the cron branch reads per job (LATERAL), never sorts every run, same output columns', () => {
+  const cf = ctes(viewBody(V3)).find((c) => ctename(c) === 'cf');
+  const jobs = ctes(viewBody(V3)).find((c) => ctename(c) === 'cf_jobs');
+  assert.match(jobs, /JOIN cron\.job j ON j\.jobname = e\.cron_job/);
+  assert.match(jobs, /WHERE e\.source = 'cron'::text/);
+  assert.match(cf, /CROSS JOIN LATERAL/);
+  assert.match(cf, /WHERE d\.jobid = ANY \(cj\.jobids\) AND d\.start_time > \(now\(\) - '40 days'::interval\)/);
+  assert.match(cf, /WHERE m\.runid = a\.ok_runid\) AS last_msg/);
+  assert.doesNotMatch(viewBody(V3), /array_agg\(d\.return_message ORDER BY/);
+  assert.doesNotMatch(viewBody(V3), /LEFT JOIN cron\.job_run_details/);
+  const cols = (c) => [...c.matchAll(/ AS (\w+)(?=,|\n|$)/g)].map((m) => m[1]).filter((n) => !['ok_runid', 'jobids'].includes(n));
+  const old = ctes(viewBody(BEFORE)).find((c) => ctename(c) === 'cf');
+  for (const col of ['work_at', 'alive_at', 'fail_at', 'n_runs', 'active', 'last_msg']) {
+    assert.ok(cols(old).includes(col), `old cf.${col}`);
+    assert.match(cf, new RegExp(`(a\\.|cj\\.)${col}|AS ${col}\\b`), `v3 cf.${col}`);
+  }
+});
+
+test('view v3: grants as v2 (anon reads the public status view; nothing else widened)', () => {
+  assert.match(V3, /revoke all on public\.press_agent_monitor_public from anon, authenticated;/);
+  assert.match(V3, /grant select on public\.press_agent_monitor_public to anon, authenticated, service_role;/);
+  assert.doesNotMatch(V3, /grant (insert|update|delete|all)/i);
+});
