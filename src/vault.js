@@ -39,6 +39,9 @@
   var SUPA_URL = 'https://eepjhpyziczrxvirczio.supabase.co';
   var SUPA_KEY = 'sb_publishable__iv3bI7xDAsOdHUlXzbVZQ_2yyFS4uX';
   var VAULT_EP = SUPA_URL + '/rest/v1/press_vault';
+  // the vault's repeated errors, once (cardsharp-outstanding S5 — dist room); friendlyErr matches their wording
+  var E_PRF = "This browser or authenticator can't hold the key for the personal space.", E_NOROW = 'No enrolled passkey found for the personal space on this device.',
+    E_OPEN = 'Could not open the personal space with this passkey.', E_SAVE = 'Could not save the new key to the vault.';
 
   // rp.id is the origin's effective domain. In production that is 'schnubsy.github.io'
   // (so 1Password binds the passkey to the live site); under a localhost test origin it
@@ -289,11 +292,15 @@
     var rows = await r.json();
     return (rows && rows[0]) || null;
   }
-  async function putRow(vaultId, sealed, label) {
+  async function rowAbsent(vaultId) {
+    var r = await fetch(VAULT_EP + '?id=eq.' + encodeURIComponent(vaultId) + '&select=id', { headers: headers(vaultId) });
+    return r.ok && (await r.json()).length === 0;
+  }
+  async function putRow(vaultId, sealed, label, insertOnly) {
     var body = { id: vaultId, ciphertext: sealed.ciphertext, iv: sealed.iv, salt: sealed.salt, kdf: 'hkdf-sha256', version: 1, label: label || null };
     var r = await fetch(VAULT_EP, {
       method: 'POST',
-      headers: headers(vaultId, { 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=representation' }),
+      headers: headers(vaultId, { 'Content-Type': 'application/json', 'Prefer': (insertOnly ? '' : 'resolution=merge-duplicates,') + 'return=representation' }),
       body: JSON.stringify(body)
     });
     return r.ok;
@@ -372,7 +379,7 @@
     }
     if (bytes.length === 0) return null;      // a zero-length result is absent, not success
     if (bytes.length !== 32) {
-      if (isRealPrf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
+      if (isRealPrf) throw new Error(E_PRF);
       logShape(first);                        // wrong-length from an object shim -> unreadable, fall through
       return null;
     }
@@ -414,14 +421,14 @@
       // 1Password delivers the actual PRF at ASSERTION time — obtain it with one get().
       prf = await prfViaGet(cred.rawId);
     }
-    if (!prf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
+    if (!prf) throw new Error(E_PRF);
     var vaultId = await vaultIdFor(cred.rawId);
     var salt = randomBytes(32);
     var key = await deriveKey(prf, salt);
     var keyring = (opts.keyring && opts.keyring.apps) ? opts.keyring : emptyKeyring();
     var sealed = await sealKeyring(keyring, key); sealed.salt = b64(salt);
     var ok = await putRow(vaultId, sealed, opts.label || null);
-    if (!ok) throw new Error('Could not save the new key to the vault.');
+    if (!ok) throw new Error(E_SAVE);
     _live = { key: key, vaultId: vaultId };
     saveSession(keyring, vaultId);
     return { vaultId: vaultId, keyring: keyring };
@@ -438,13 +445,13 @@
       }
     });
     var prf = prfResult(assertion);
-    if (!prf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
+    if (!prf) throw new Error(E_PRF);
     var vaultId = await vaultIdFor(assertion.rawId);
     var record = await fetchRow(vaultId);
-    if (!record) throw new Error('No enrolled passkey found for the personal space on this device.');
+    if (!record) throw new Error(E_NOROW);
     var key = await deriveKey(prf, ub64(record.salt));
     var keyring = await openKeyring(record, key);
-    if (!keyring) throw new Error('Could not open the personal space with this passkey.');
+    if (!keyring) throw new Error(E_OPEN);
     _live = { key: key, vaultId: vaultId };
     saveSession(keyring, vaultId);
     return { vaultId: vaultId, keyring: keyring, record: record };
@@ -460,7 +467,7 @@
     if (!sess || !sess.vaultId) throw new Error('Unlock the personal space before saving.');
     var vaultId = sess.vaultId;
     var record = await fetchRow(vaultId);
-    if (!record) throw new Error('No enrolled passkey found for the personal space on this device.');
+    if (!record) throw new Error(E_NOROW);
     var key;
     if (_live && _live.vaultId === vaultId) {
       key = _live.key;
@@ -469,12 +476,12 @@
         publicKey: { rpId: RP_ID, challenge: randomBytes(32), allowCredentials: [], userVerification: 'required', extensions: prfExt() }
       });
       var prf = prfResult(assertion);
-      if (!prf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
+      if (!prf) throw new Error(E_PRF);
       key = await deriveKey(prf, ub64(record.salt));
       _live = { key: key, vaultId: vaultId };
     }
     var current = await openKeyring(record, key);
-    if (!current) throw new Error('Could not open the personal space with this passkey.');
+    if (!current) throw new Error(E_OPEN);
     newKeyring = restoreRedacted(newKeyring, current); // never seal a redacted stub over a real credential
     var sealed = await sealKeyring(newKeyring, key); sealed.salt = record.salt; // reuse the row's salt
     var ok = await putRow(vaultId, sealed, record.label || null);
@@ -532,32 +539,39 @@
     });
     var prf = prfResult(cred);
     if (!prf) prf = await prfViaGet(cred.rawId); // 1Password-style: PRF only at assertion
-    if (!prf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
-    var vaultId = await vaultIdFor(cred.rawId);
+    if (!prf) throw new Error(E_PRF);
+    return sealOwn(await vaultIdFor(cred.rawId), prf, page, creds, opts.label);
+  }
+  // seal {page: creds} under this passkey's key as its row, read it back (it must give back exactly these creds — else
+  // fail closed), mark the hint. insertOnly: never overwrite a row that exists (the orphan adopt below)
+  async function sealOwn(vaultId, prf, page, creds, label, insertOnly) {
     var salt = randomBytes(32);
     var key = await deriveKey(prf, salt);
     var keyring = { v: 1, apps: {} };
     keyring.apps[page] = { sync_id: creds.syncId, pass: creds.passphrase };
     var sealed = await sealKeyring(keyring, key); sealed.salt = b64(salt);
-    if (!(await putRow(vaultId, sealed, opts.label || null))) throw new Error('Could not save the new key to the vault.');
-    // read it back: the row must open under this key and give back exactly these creds — else fail closed
+    if (!(await putRow(vaultId, sealed, label || null, insertOnly))) throw new Error(E_SAVE);
     var back = await fetchRow(vaultId);
     var got = credsOf(back && await openKeyring(back, key), page);
-    if (!got || got.syncId !== creds.syncId || got.passphrase !== creds.passphrase) throw new Error('Could not save the new key to the vault.');
+    if (!got || got.syncId !== creds.syncId || got.passphrase !== creds.passphrase) throw new Error(E_SAVE);
     markOwn();
     return { vaultId: vaultId, creds: got };
   }
-  async function unlockOwn(page) {
+  // adopt {creds, label} (the move only): a passkey of this origin with NO vault row — an enrolOwn that died after
+  // create() — is ADOPTED (its row written, insert-only) instead of failing on every tap; only when the row is
+  // provably absent (a 200 with no rows), never on an error
+  async function unlockOwn(page, adopt) {
     var assertion = await navigator.credentials.get({
       publicKey: { rpId: RP_ID, challenge: randomBytes(32), allowCredentials: [], userVerification: 'required', hints: OWN_HINTS, extensions: prfExt() }
     });
     var prf = prfResult(assertion);
-    if (!prf) throw new Error("This browser or authenticator can't hold the key for the personal space.");
+    if (!prf) throw new Error(E_PRF);
     var vaultId = await vaultIdFor(assertion.rawId);
     var record = await fetchRow(vaultId);
-    if (!record) throw new Error('No enrolled passkey found for the personal space on this device.');
+    if (!record && adopt && await rowAbsent(vaultId)) return sealOwn(vaultId, prf, page, adopt.creds, adopt.label, true);
+    if (!record) throw new Error(E_NOROW);
     var keyring = await openKeyring(record, await deriveKey(prf, ub64(record.salt)));
-    if (!keyring) throw new Error('Could not open the personal space with this passkey.');
+    if (!keyring) throw new Error(E_OPEN);
     var creds = credsOf(keyring, page);
     if (!creds) throw new Error('No credentials stored for this tool yet.');
     markOwn();

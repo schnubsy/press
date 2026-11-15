@@ -50,10 +50,12 @@ Object.defineProperty(globalThis, "navigator", { configurable: true, writable: t
 } });
 // --- in-memory press_vault (RLS: x-vault-id == id) -----------------------------------------------------------------
 const rows = new Map();
-let tamper = null;
+let tamper = null, failGet = false; const posts = []; // cardsharp-outstanding S5: every POST's headers; a failing read
 globalThis.fetch = async (url, init = {}) => {
   const vid = (init.headers || {})['x-vault-id'];
   const method = init.method || 'GET';
+  if (method === 'POST') posts.push(init.headers || {});
+  if (method !== 'POST' && failGet) return { ok: false, json: async () => [] };
   if (method === 'POST') { const b = JSON.parse(init.body); if (b.id !== vid) return { ok: false, json: async () => [] }; rows.set(b.id, b); return { ok: true, json: async () => [b] }; }
   const r = rows.get(vid);
   return { ok: true, json: async () => (r ? [tamper ? tamper(r) : r] : []) };
@@ -65,7 +67,7 @@ const V = globalThis.PressVault;
 const PAGE = 'cardsharp.html';
 const C = { syncId: 'c0ffee00c0ffee00c0ffee00c0ffee00', passphrase: 'test-only-pass-phrase-own' };
 
-beforeEach(() => { pick = null; tamper = null; lastCreate = lastGet = null; });
+beforeEach(() => { pick = null; tamper = null; failGet = false; posts.length = 0; lastCreate = lastGet = null; });
 const storageHas = (needle) => { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (String(localStorage.getItem(k)).includes(needle) || k.includes(needle)) return k; } return null; };
 
 test('the retired seal: loading the module tombstoned the IndexedDB store (v2) and stripped the session .seal', () => {
@@ -121,6 +123,33 @@ test('unlockOwn fails CLOSED: wrong key, tampered row, no row, another page', as
   await assert.rejects(V.unlockOwn('fsa.html'), /No credentials stored/);
   rows.delete(vaultId);
   await assert.rejects(V.unlockOwn(PAGE), /No enrolled passkey/);
+});
+
+// cardsharp-outstanding S5: the move ADOPTS an orphan — a passkey of this origin whose row was never written (an enrolOwn
+// that died after create()) — instead of failing on every tap: insert-only, read back, only when the row is provably
+// absent; without `adopt` (the plain gate) nothing changes; a row that exists is never overwritten
+test('unlockOwn(page, adopt): an orphan passkey gets its row (insert-only, read back, flag set); never on a read error or over a row', async () => {
+  localStorage.clear();
+  await navigator.credentials.create({ publicKey: {} }); // the orphan: a credential, no row
+  await assert.rejects(V.unlockOwn(PAGE), /No enrolled passkey/, 'the plain gate never adopts');
+  assert.equal(posts.length, 0);
+  failGet = true;
+  await assert.rejects(V.unlockOwn(PAGE, { creds: C, label: 'cardsharp-own-origin' }), /No enrolled passkey/, 'a failed read is not "absent"');
+  assert.equal(posts.length, 0, 'nothing written on a read error');
+  failGet = false;
+  const r = await V.unlockOwn(PAGE, { creds: C, label: 'cardsharp-own-origin' });
+  assert.deepEqual(r.creds, C);
+  assert.equal(posts.length, 1);
+  assert.equal(posts[0].Prefer, 'return=representation', 'insert-only: no merge-duplicates');
+  assert.equal(rows.get(r.vaultId).label, 'cardsharp-own-origin');
+  assert.equal(V.ownEnrolled(), true);
+  assert.deepEqual((await V.unlockOwn(PAGE)).creds, C, 'the adopted row now opens with the plain gate');
+  // a passkey WITH a row: adopt is ignored — its stored creds come back, the row is untouched
+  const other = { syncId: 'ab'.repeat(16), passphrase: 'another-test-only-pass' };
+  const before = JSON.stringify(rows.get(r.vaultId));
+  assert.deepEqual((await V.unlockOwn(PAGE, { creds: other })).creds, C);
+  assert.equal(JSON.stringify(rows.get(r.vaultId)), before);
+  assert.equal(posts.length, 1);
 });
 
 test('enrolOwn refuses a row that does not read back as these creds (no flag set)', async () => {
