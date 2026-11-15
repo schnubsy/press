@@ -105,3 +105,54 @@ test('view v3: grants as v2 (anon reads the public status view; nothing else wid
   assert.match(V3, /grant select on public\.press_agent_monitor_public to anon, authenticated, service_role;/);
   assert.doesNotMatch(V3, /grant (insert|update|delete|all)/i);
 });
+
+// slice 3: .github/scripts/agent-health-check.mjs — one transient 5xx / network blip is retried, never reported healthy
+const GH = await import('../.github/scripts/agent-health-check.mjs');
+const { spawnSync } = await import('node:child_process');
+const ROWS = [{ id: 'agent-watch', enabled: true, status: 'healthy', last_real_work_at: new Date().toISOString() }];
+const reply = (status, body = ROWS) => ({ ok: status >= 200 && status < 300, status, json: async () => body });
+const scripted = (...steps) => { let i = 0; const fn = async () => { const s = steps[Math.min(i++, steps.length - 1)]; if (s instanceof Error) throw s; return reply(s); }; fn.calls = () => i; return fn; };
+const harness = () => { const logs = [], sleeps = []; return { logs, sleeps, opts: { sleep: async (ms) => { sleeps.push(ms); }, log: (l) => logs.push(l), fail: (m) => { throw new Error(m); } } }; };
+
+test('retry: 500 then 200 ⇒ rows; one ::warning:: with the attempt number; waits ~10 s', async () => {
+  const h = harness(), f = scripted(500, 200);
+  assert.deepEqual(await GH.fetchRows(f, h.opts), ROWS);
+  assert.equal(f.calls(), 2);
+  assert.deepEqual(h.sleeps, [10000]);
+  assert.equal(h.logs.length, 1);
+  assert.match(h.logs[0], /^::warning::Attempt 1 of 3: the press status service answered HTTP 500 — retrying in 10 s\.$/);
+});
+
+test('retry: a network error then 200 ⇒ rows', async () => {
+  const h = harness(), f = scripted(new Error('fetch failed'), 200);
+  assert.deepEqual(await GH.fetchRows(f, h.opts), ROWS);
+  assert.match(h.logs[0], /Attempt 1 of 3: the press status service could not be reached \(fetch failed\)/);
+});
+
+test('retry: 500 ×3 ⇒ the existing failure message after 3 attempts (2 retries)', async () => {
+  const h = harness(), f = scripted(500, 500, 500, 200);
+  await assert.rejects(GH.fetchRows(f, h.opts), /^Error: The press status service answered HTTP 500\. Not reporting healthy on a failed check\.$/);
+  assert.equal(f.calls(), 3);
+  assert.deepEqual(h.sleeps, [10000, 10000]);
+  assert.deepEqual(h.logs.map((l) => l.match(/Attempt (\d) of 3/)[1]), ['1', '2']);
+});
+
+test('retry: a 4xx is not transient — fails at once, no retry', async () => {
+  const h = harness(), f = scripted(401, 200);
+  await assert.rejects(GH.fetchRows(f, h.opts), /answered HTTP 401\. Not reporting healthy on a failed check\./);
+  assert.equal(f.calls(), 1);
+  assert.equal(h.logs.length, 0);
+});
+
+test('retry: 500 ×3 through the real die() ⇒ process exit 1 with the ::error:: message', () => {
+  const mod = new URL('../.github/scripts/agent-health-check.mjs', import.meta.url).href;
+  const code = `import { fetchRows } from ${JSON.stringify(mod)};
+    await fetchRows(async () => ({ ok: false, status: 500, json: async () => [] }), { retryMs: 0, sleep: async () => {} });
+    console.log('UNREACHABLE');`;
+  const r = spawnSync(process.execPath, ['--input-type=module', '-e', code], { encoding: 'utf8' });
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /::warning::Attempt 1 of 3/);
+  assert.match(r.stdout, /::warning::Attempt 2 of 3/);
+  assert.match(r.stdout, /::error::The press status service answered HTTP 500\. Not reporting healthy on a failed check\./);
+  assert.doesNotMatch(r.stdout, /UNREACHABLE|^OK/m);
+});
