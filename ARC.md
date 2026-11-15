@@ -43,6 +43,7 @@ CONTEXT (verified 2026-11-15 by the chat at verify of PR #63, read-only)
 - Index press_agent_runs_app_agent_finished_idx (app, agent, finished_at) exists and is under-used.
 
 === SLICE 1 — the runs branch, index-backed (db) ===
+Status: done 081a844
 Scope: rewrite only the `runs`-fed parts (rf, c, the last-note SubPlan, and anything else reading `runs`) so each monitored
 item does bounded, index-backed lookups (e.g. per-id LATERAL with order by finished_at desc limit 1 / filtered max,
 a 40-day bounded scan for costs, EXISTS for n_runs>0 where only =0 is tested) instead of materialising all-time rows.
