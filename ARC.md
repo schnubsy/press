@@ -1,1 +1,0 @@
-- 2026-11-13 · cardsharp arc/own-origin-pilot (Full; one writer on press — this patch): gate.js own-origin mode + the 7-day seal retired (vault.js), wing OWN_ORIGIN card + one-time Move, tenants.json `origin` + tenants-check T11, cardsharp.html → redirect stub. Source + runbook: schnubsy/cardsharp.

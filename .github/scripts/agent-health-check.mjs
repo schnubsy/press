@@ -24,17 +24,38 @@ const BAD = new Set(['late', 'failed']);
 
 function die(msg) { console.log(`::error::${msg}`); process.exit(1); }
 
-export async function fetchRows(fetchImpl = fetch) {
+// One transient blip (a network error or an HTTP 5xx — e.g. a 57014 statement timeout surfacing as 500) is retried:
+// up to ATTEMPTS tries, RETRY_MS apart, each retry a ::warning:: with its attempt number. Only then does the job die with
+// the same "Not reporting healthy on a failed check" message — a failed check is still never reported healthy.
+// A 4xx is not transient (key / URL problem) and dies at once. Arc monitor-view-timeout, slice 3.
+export const ATTEMPTS = 3;
+export const RETRY_MS = 10000;
+const wait = (ms) => new Promise((res) => setTimeout(res, ms));
+
+export async function fetchRows(fetchImpl = fetch, { attempts = ATTEMPTS, retryMs = RETRY_MS, sleep = wait, fail = die, log = console.log } = {}) {
   let r;
-  try {
-    r = await fetchImpl(`${SB_URL}/rest/v1/press_agent_monitor_public?select=id,app_label,label,enabled,status,status_reason,fix_hint,last_real_work_at,watch_status,watch_since,watch_notified_at&order=sort.asc`,
-      { headers: { apikey: SB_KEY } });
-  } catch (e) {
-    die(`Could not reach the press status service (${String((e && e.message) || e)}). Not reporting healthy on a failed check.`);
+  for (let attempt = 1; ; attempt++) {
+    let problem;
+    r = null;
+    try {
+      r = await fetchImpl(`${SB_URL}/rest/v1/press_agent_monitor_public?select=id,app_label,label,enabled,status,status_reason,fix_hint,last_real_work_at,watch_status,watch_since,watch_notified_at&order=sort.asc`,
+        { headers: { apikey: SB_KEY } });
+    } catch (e) {
+      const m = String((e && e.message) || e);
+      problem = { what: `could not be reached (${m})`, final: `Could not reach the press status service (${m}). Not reporting healthy on a failed check.` };
+    }
+    if (r) {
+      if (r.ok) break;
+      const final = `The press status service answered HTTP ${r.status}. Not reporting healthy on a failed check.`;
+      if (r.status < 500) return fail(final);
+      problem = { what: `answered HTTP ${r.status}`, final };
+    }
+    if (attempt >= attempts) return fail(problem.final);
+    log(`::warning::Attempt ${attempt} of ${attempts}: the press status service ${problem.what} — retrying in ${Math.round(retryMs / 1000)} s.`);
+    await sleep(retryMs);
   }
-  if (!r.ok) die(`The press status service answered HTTP ${r.status}. Not reporting healthy on a failed check.`);
   const rows = await r.json();
-  if (!Array.isArray(rows) || !rows.length) die('The status view returned no rows — the monitor registry is empty or unreadable.');
+  if (!Array.isArray(rows) || !rows.length) return fail('The status view returned no rows — the monitor registry is empty or unreadable.');
   return rows;
 }
 
