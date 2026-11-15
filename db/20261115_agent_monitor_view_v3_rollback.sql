@@ -1,4 +1,4 @@
--- docs/evidence/monitor-view-timeout-view-before.sql — ROLLBACK for arc monitor-view-timeout slice 2.
+-- db/20261115_agent_monitor_view_v3_rollback.sql — ROLLBACK (NOT a forward migration — apply only to undo v3) for arc monitor-view-timeout slice 2.
 -- The LIVE definition of public.press_agent_monitor_public, captured read-only on 2026-11-15 with
 -- pg_get_viewdef('public.press_agent_monitor_public', true) — md5 of the definition body (everything after the
 -- "as" line below, without the trailing newline) = 7b0ddf18fea7ae19e0eb8508e7507012 (13,719 bytes), verified against

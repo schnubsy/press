@@ -293,6 +293,9 @@ Statuses: `healthy` · `late` (missed its due time + grace) · `failed` (never r
 4× its window) · `no-data` (grey ring — never green) · `off`. Schedules (`sched`, America/Chicago):
 `{"every":min}` · `{"daily":["HH:MM",…]}` · `{"weekly":{"dow":0-6,"at":"HH:MM"}}` · `{"monthly":{"dom":1-28,"at":"HH:MM"}}` · `null` (on demand).
 Expectations start at `registered_at` — a new row is never "late" for a run due before it existed.
+**pg_cron history is bounded (arc monitor-view-timeout, 2026-11-15):** `cron-history-prune` (daily 09:41 UTC) keeps 45 days of
+`cron.job_run_details` (15 for jobs that run more often than hourly — the strip's window) and always a job's latest, latest
+succeeded and latest failed run; the view reads that history per job (LATERAL), never sorted whole.
 Month cost = CT month-to-date; **projected = MTD + avg(cost of the last 7 complete CT days) × CT days remaining
 (fractional)** (server per agent; `src/agent-monitor.js` `projectMonth` for the page total).
 

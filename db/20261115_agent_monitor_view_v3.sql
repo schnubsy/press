@@ -15,7 +15,7 @@
 -- (docs/evidence/monitor-view-timeout-slice-2-view-v3.md).
 -- Built from the LIVE definition (the view was string-patched by 20261013_agent_monitor_quiet_alerts.sql); the guard
 -- refuses to run if the live view has changed since that capture (unless it is already v3).
--- Rollback: docs/evidence/monitor-view-timeout-view-before.sql (the captured live definition).
+-- Rollback: db/20261115_agent_monitor_view_v3_rollback.sql (the captured live definition).
 -- Creates no table (no GRANT lines needed for a table); CREATE OR REPLACE keeps the grants, restated below as in v2.
 
 do $$

@@ -59,7 +59,7 @@ test('prune: one daily job off the hour, registered on the monitor with an allow
 
 // slice 2: db/20261115_agent_monitor_view_v3.sql — the live definition with ONLY the cron (`cf`) branch rewritten
 const V3 = readFileSync(new URL('../db/20261115_agent_monitor_view_v3.sql', import.meta.url), 'utf8');
-const BEFORE = readFileSync(new URL('../docs/evidence/monitor-view-timeout-view-before.sql', import.meta.url), 'utf8');
+const BEFORE = readFileSync(new URL('../db/20261115_agent_monitor_view_v3_rollback.sql', import.meta.url), 'utf8');
 const HEAD = 'create or replace view public.press_agent_monitor_public as\n';
 const viewBody = (t) => { const i = t.indexOf(HEAD); assert.ok(i >= 0, 'create or replace view'); return t.slice(i + HEAD.length).split(';\n')[0] + ';'; };
 const ctes = (b) => b.split(/\n {8}\), /);   // the CTE boundaries of pg_get_viewdef's layout

@@ -1,9 +1,10 @@
 # monitor-view-timeout — slice 2 — the view's cron branch, cheap (done-proof)
 
 Files: `db/20261115_agent_monitor_view_v3.sql` (guard + `create or replace view` + grants) · rollback
-`docs/evidence/monitor-view-timeout-view-before.sql` (the LIVE definition, `pg_get_viewdef(…, true)`, md5
+`db/20261115_agent_monitor_view_v3_rollback.sql` (the LIVE definition, `pg_get_viewdef(…, true)`, md5
 `7b0ddf18fea7ae19e0eb8508e7507012` — the local capture's md5 was checked equal to the live md5). Applied live only at
-verify (STAGED). Every read below was a SELECT / EXPLAIN on project `eepjhpyziczrxvirczio`; nothing was written.
+verify (STAGED). The rollback lives in `db/` (precedent `db/20260922_perth_rls_gate_rollback.sql`), not
+`docs/evidence/` as the order named, because evidence is cleared each arc and a code test reads it. Every read below was a SELECT / EXPLAIN on project `eepjhpyziczrxvirczio`; nothing was written.
 
 ## What changed
 Only the `cf` CTE (`cf_jobs` + `cf`); `e`, `runs`, `rf`, `costs`, `f`, `g`, `s` and the final SELECT are byte-identical to

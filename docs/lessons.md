@@ -442,3 +442,11 @@ around the scope.
   non-admin's call log contains no service key and no admin-users request. [tag: press] (2026-11-01)
 - **Stamp `invited_at` only when the mail went.** Stamping on a failed send would 429 the very retry the page offers.
   [tag: press] (2026-11-01)
+- **pg_cron keeps every run forever, and nothing here can index it.** `cron.job_run_details` grew to 80k rows (one
+  minutely job = 1,440/day) and the monitor view read it on every call until anon hit the 3 s timeout. It is owned by
+  `supabase_admin`, so `postgres` can DELETE but cannot add an index: bound it with `cron-history-prune`
+  (`db/20261115_cron_history_prune.sql`) and read it per job, never sorted whole. [tag: press] [tag: supabase] (2026-11-15)
+- **A view patched by string replacement has no db/ source — capture it before rewriting it.** v3 was built from
+  `pg_get_viewdef(…, true)` (md5-checked against live) with only one CTE changed, a guard refusing a drifted live view,
+  and the capture kept as `db/…_rollback.sql`; the proof of "same values" was one statement comparing `to_jsonb` md5s of
+  the live view and the new SELECT (one `now()`). [tag: press] [tag: supabase] (2026-11-15)
