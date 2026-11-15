@@ -66,6 +66,7 @@ Done-criteria: unit tests — hang then 200 ⇒ OK (fake timer/injected signal),
 200 + bad JSON ⇒ exit 1 with the message; scoped run cited.
 
 === SLICE 3 — db/ mirror drift ===
+Status: done d66d878
 Scope: the live migration `20261106185336 press_agent_due_times_multi_dow` has no db/ mirror (PR #63 gates evidence).
 Files in play: db/20261106_press_agent_due_times_multi_dow.sql (new — the live function definition, read-only via
 pg_get_functiondef / list_migrations), no live apply (it is already live).
