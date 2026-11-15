@@ -70,6 +70,7 @@ evidence); EXPLAIN ANALYZE (read-only) execution time < 200 ms with no external-
 The live `create or replace view` is a deploy → STAGED.
 
 === SLICE 3 — the watcher-of-the-watcher retries once (script) ===
+Status: done 849c2bd
 Scope: .github/scripts/agent-health-check.mjs must not fail the job on one transient 5xx / timeout.
 Files in play: .github/scripts/agent-health-check.mjs, its test (test/agent-monitor.test.mjs or a new *.test.mjs).
 Implementation: in fetchRows, on a network error or HTTP 5xx, wait ~10 s and retry up to 2 more times; only then die
