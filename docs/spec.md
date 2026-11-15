@@ -296,6 +296,10 @@ Expectations start at `registered_at` — a new row is never "late" for a run du
 **pg_cron history is bounded (arc monitor-view-timeout, 2026-11-15):** `cron-history-prune` (daily 09:41 UTC) keeps 45 days of
 `cron.job_run_details` (15 for jobs that run more often than hourly — the strip's window) and always a job's latest, latest
 succeeded and latest failed run; the view reads that history per job (LATERAL), never sorted whole.
+**Read cost (arc monitor-view-runs-branch, 2026-11-15):** the view never materialises all-time `press_agent_runs` — each
+item's last work / seen / failed run, last note and last ok run are LIMIT 1 lookups on `(app, agent, finished_at desc)`,
+cost is the 40-day window through the same index, `cron.job_run_details` is aggregated once by job, and the schedule
+math (`press_agent_last_due`) runs once per item (`g` materialised). Target: the whole view < 200 ms.
 Month cost = CT month-to-date; **projected = MTD + avg(cost of the last 7 complete CT days) × CT days remaining
 (fractional)** (server per agent; `src/agent-monitor.js` `projectMonth` for the page total).
 
@@ -307,7 +311,8 @@ are stored silently; an undelivered alert is retried every tick and logs the wat
 silence only after a day. An agent with `press_agent_expect.idle_is_work` (Card Scout's judge) counts a `skipped` run
 with the empty-input hash `h-811c9dc5` ("checked, nothing to judge") as real work. The GH Action
 `agent-health-notifier` (every 6 h) is the watcher of the watcher: it fails (GitHub emails) only if agent-watch has
-done no real work for > 24 h.
+done no real work for > 24 h. Its read retries a network error, a 5xx or no answer within 20 s (3 attempts, 10 s apart); a 4xx or a
+non-JSON 200 fails at once — never reported healthy on a failed check.
 
 **Fix.** Per-agent `fix_hint` + public-safe `fix_links` for everyone. Retry/Run now appears only when the Family
 Wing session in localStorage (`press:family:v1`) belongs to an admin; Edge Function `agent-fix` re-verifies the JWT
