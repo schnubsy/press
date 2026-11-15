@@ -450,3 +450,20 @@ around the scope.
   `pg_get_viewdef(…, true)` (md5-checked against live) with only one CTE changed, a guard refusing a drifted live view,
   and the capture kept as `db/…_rollback.sql`; the proof of "same values" was one statement comparing `to_jsonb` md5s of
   the live view and the new SELECT (one `now()`). [tag: press] [tag: supabase] (2026-11-15)
+
+## monitor-view-runs-branch (2026-11-15)
+
+- **An inlined CTE chain re-runs a STABLE SQL function once per textual use — and EXPLAIN never shows it.** `g → s →
+  SELECT` were each referenced once, so Postgres inlined them and `press_agent_last_due()` (~2 ms) ran ~20× per calendar
+  item through every `eff_due` / `status` reference. Same expressions: 113 ms inlined, 21 ms with `g AS MATERIALIZED`.
+  Look for expensive functions under a CTE before blaming the scans. [tag: press] [tag: supabase] (2026-11-15)
+- **Per-key LATERAL over an unindexable table multiplies seq scans.** v3 read `cron.job_run_details` once per job (7 ×
+  25k rows); aggregating it once by `jobid` in a MATERIALIZED CTE and combining per item (max of maxes, sum of counts)
+  is one scan. LATERAL pays only when each lookup can use an index. [tag: supabase] (2026-11-15)
+- **Benchmark candidates in ONE statement on this project.** Separate EXPLAIN ANALYZE reads of the same live view swung
+  317 → 1,831 ms; comparing `clock_timestamp()` around each candidate, interleaved (v3, v4, v3) in one read-only statement,
+  gives a fair ratio and the md5 same-values proof in the same `now()`. Through the connector: `begin read only; …;
+  commit;` returns only the last result, and a PREPAREd statement does not survive to the next call. [tag: supabase] (2026-11-15)
+- **`AbortSignal.timeout()`'s timer is unref'd.** A child-process test whose only pending work is a fake hung fetch exits 13
+  (unsettled top-level await) before the timeout fires; hold the loop open in the test (a real hung request keeps its
+  socket). [tag: press] (2026-11-15)

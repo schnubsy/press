@@ -1,7 +1,7 @@
-press gauntlet — LANE=full PRIMARY=iphone-webkit VIEWS= EXTRAS=db — 2026-11-15T20:52:17Z — HEAD 403d8e0 — node v22.23.4
+press gauntlet — LANE=full PRIMARY=iphone-webkit VIEWS= EXTRAS=db — 2026-11-15T21:26:59Z — HEAD c226645 — node v22.23.4
 npm ci
 
-added 5 packages, and audited 6 packages in 684ms
+added 5 packages, and audited 6 packages in 674ms
 
 found 0 vulnerabilities
 npm notice
@@ -14,22 +14,22 @@ Get:1 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
 Get:2 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
 Get:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
 Get:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
-Get:5 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [2211 kB]
-Get:6 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
-Get:7 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
-Get:8 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1471 kB]
-Get:9 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [55.6 kB]
+Get:5 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1471 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+Get:9 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [2211 kB]
 Get:10 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1557 kB]
-Get:11 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
-Get:12 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
-Get:13 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [61.7 kB]
-Get:14 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [2324 kB]
+Get:11 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [55.6 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [2324 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [61.7 kB]
 Get:15 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1792 kB]
 Get:16 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2179 kB]
-Get:17 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [669 B]
-Get:18 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.0 kB]
+Get:17 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.0 kB]
+Get:18 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [669 B]
 Get:19 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [36.0 kB]
-Fetched 33.9 MB in 3s (11.4 MB/s)
+Fetched 33.9 MB in 3s (11.7 MB/s)
 Reading package lists...
 Reading package lists...
 Building dependency tree...
@@ -106,7 +106,7 @@ Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libgstreamer-plu
 Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gstreamer1.0-plugins-base amd64 1.24.2-1ubuntu0.6 [721 kB]
 Get:3 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libgstreamer-gl1.0-0 amd64 1.24.2-1ubuntu0.6 [214 kB]
 debconf: delaying package configuration, since apt-utils is not installed
-Fetched 1797 kB in 1s (1602 kB/s)
+Fetched 1797 kB in 0s (4123 kB/s)
 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 87641 files and directories currently installed.)
 Preparing to unpack .../libgstreamer-plugins-base1.0-0_1.24.2-1ubuntu0.6_amd64.deb ...
 Unpacking libgstreamer-plugins-base1.0-0:amd64 (1.24.2-1ubuntu0.6) over (1.24.2-1ubuntu0.5) ...
@@ -134,679 +134,781 @@ WebKit 26.6 (playwright webkit v2359) downloaded to /opt/pw-browsers/webkit-2359
 == run_unit
 
 > press@1.0.0 test
-> node --test test/vault.test.mjs test/own-origin.test.mjs test/own-move.test.mjs test/family-gate.test.mjs test/auth-email.test.mjs test/tenants-check.test.mjs test/page-diff.test.mjs test/agent-monitor.test.mjs test/access-names.test.mjs test/steward-reports.test.mjs test/safari-ui.test.mjs test/portal-parent.test.mjs test/access-invite.test.mjs test/winston-read.test.mjs test/winston-direct.test.mjs test/winston-draft.test.mjs test/monitor-view-timeout.test.mjs
+> node --test test/vault.test.mjs test/own-origin.test.mjs test/own-move.test.mjs test/family-gate.test.mjs test/auth-email.test.mjs test/tenants-check.test.mjs test/page-diff.test.mjs test/agent-monitor.test.mjs test/access-names.test.mjs test/steward-reports.test.mjs test/safari-ui.test.mjs test/portal-parent.test.mjs test/access-invite.test.mjs test/winston-read.test.mjs test/winston-direct.test.mjs test/winston-draft.test.mjs test/monitor-view-timeout.test.mjs test/monitor-view-runs-branch.test.mjs
 
 TAP version 13
 # Subtest: cleanEmail / cleanName
 ok 1 - cleanEmail / cleanName
   ---
-  duration_ms: 1.911946
+  duration_ms: 1.649313
   type: 'test'
   ...
 # Subtest: no token / the anon key → 401, nothing else called
 ok 2 - no token / the anon key → 401, nothing else called
   ---
-  duration_ms: 0.623911
+  duration_ms: 0.510757
   type: 'test'
   ...
 # Subtest: expired / invalid JWT → 401, no admin check, no admin-users call
 ok 3 - expired / invalid JWT → 401, no admin check, no admin-users call
   ---
-  duration_ms: 0.839552
+  duration_ms: 0.628697
   type: 'test'
   ...
 # Subtest: signed-in NON-admin → 403 and NEVER reaches the service role or admin-users
 ok 4 - signed-in NON-admin → 403 and NEVER reaches the service role or admin-users
   ---
-  duration_ms: 0.286022
+  duration_ms: 0.247657
   type: 'test'
   ...
 # Subtest: bad address → 400 (after the admin check, before any write)
 ok 5 - bad address → 400 (after the admin check, before any write)
   ---
-  duration_ms: 0.143165
+  duration_ms: 0.1031
   type: 'test'
   ...
 # Subtest: rate limit: invited <10 min ago → 429, no account call, no mail
 ok 6 - rate limit: invited <10 min ago → 429, no account call, no mail
   ---
-  duration_ms: 0.548876
+  duration_ms: 0.343877
   type: 'test'
   ...
 # Subtest: happy path (new person): row first, then account, then mail, then stamp → created:true emailed:true
 ok 7 - happy path (new person): row first, then account, then mail, then stamp → created:true emailed:true
   ---
-  duration_ms: 0.645017
+  duration_ms: 0.474145
   type: 'test'
   ...
 # Subtest: name omitted → the row carries no name key (existing name kept)
 ok 8 - name omitted → the row carries no name key (existing name kept)
   ---
-  duration_ms: 0.390154
+  duration_ms: 0.377952
   type: 'test'
   ...
 # Subtest: existing account (422 email_exists) → created:false, still emailed
 ok 9 - existing account (422 email_exists) → created:false, still emailed
   ---
-  duration_ms: 0.404637
+  duration_ms: 0.424465
   type: 'test'
   ...
 # Subtest: other account-creation failure → 502, no mail
 ok 10 - other account-creation failure → 502, no mail
   ---
-  duration_ms: 0.491682
+  duration_ms: 0.372661
   type: 'test'
   ...
 # Subtest: mailer failure (not ok / throws) → ok:true emailed:false, account + row stand, NO stamp, no secret leaked
 ok 11 - mailer failure (not ok / throws) → ok:true emailed:false, account + row stand, NO stamp, no secret leaked
   ---
-  duration_ms: 1.67426
+  duration_ms: 1.529408
   type: 'test'
   ...
 # Subtest: row upsert failure → 502 before any account is made
 ok 12 - row upsert failure → 502 before any account is made
   ---
-  duration_ms: 0.172719
+  duration_ms: 0.141094
   type: 'test'
   ...
 # Subtest: an existing ADMIN row is never rewritten by an invite (no upsert), the rest still runs
 ok 13 - an existing ADMIN row is never rewritten by an invite (no upsert), the rest still runs
   ---
-  duration_ms: 0.188072
+  duration_ms: 0.133263
   type: 'test'
   ...
 # Subtest: rate-limit lookup failure fails CLOSED (502), nothing created or sent
 ok 14 - rate-limit lookup failure fails CLOSED (502), nothing created or sent
   ---
-  duration_ms: 0.149133
+  duration_ms: 0.109605
   type: 'test'
   ...
 # Subtest: a network throw anywhere → clean 502, never an uncaught error
 ok 15 - a network throw anywhere → clean 502, never an uncaught error
   ---
-  duration_ms: 0.106599
+  duration_ms: 0.081806
   type: 'test'
   ...
 # Subtest: inviteText: plain, friendly, no app names, no secrets
 ok 16 - inviteText: plain, friendly, no app names, no secrets
   ---
-  duration_ms: 0.05239
+  duration_ms: 0.038947
   type: 'test'
   ...
 # Subtest: access.html APP_NAMES match the marquee LABELS titles for every family page
 ok 17 - access.html APP_NAMES match the marquee LABELS titles for every family page
   ---
-  duration_ms: 1.238126
+  duration_ms: 0.941046
   type: 'test'
   ...
 # Subtest: CT day keys: 03:00 UTC on Oct 13 is still Oct 12 in Chicago
 ok 18 - CT day keys: 03:00 UTC on Oct 13 is still Oct 12 in Chicago
   ---
-  duration_ms: 15.969464
+  duration_ms: 11.764976
   type: 'test'
   ...
 # Subtest: CT midnight handles CDT and CST
 ok 19 - CT midnight handles CDT and CST
   ---
-  duration_ms: 0.586459
+  duration_ms: 0.437999
   type: 'test'
   ...
 # Subtest: last 7 complete CT days exclude today
 ok 20 - last 7 complete CT days exclude today
   ---
-  duration_ms: 0.832453
+  duration_ms: 0.60247
   type: 'test'
   ...
 # Subtest: remaining days are fractional to the next CT month start
 ok 21 - remaining days are fractional to the next CT month start
   ---
-  duration_ms: 0.289974
+  duration_ms: 0.254039
   type: 'test'
   ...
 # Subtest: projection = MTD + avg(last 7 complete days) × remaining days
 ok 22 - projection = MTD + avg(last 7 complete days) × remaining days
   ---
-  duration_ms: 0.295516
+  duration_ms: 0.215928
   type: 'test'
   ...
 # Subtest: projection: a quiet week projects only what is already spent
 ok 23 - projection: a quiet week projects only what is already spent
   ---
-  duration_ms: 0.258496
+  duration_ms: 0.141527
   type: 'test'
   ...
 # Subtest: status mapping: server status → dot; unknown never shows green
 ok 24 - status mapping: server status → dot; unknown never shows green
   ---
-  duration_ms: 0.187288
+  duration_ms: 0.116171
   type: 'test'
   ...
 # Subtest: overall verdict: failed → red, late → amber, otherwise green; off rows ignored
 ok 25 - overall verdict: failed → red, late → amber, otherwise green; off rows ignored
   ---
-  duration_ms: 0.296462
+  duration_ms: 0.207308
   type: 'test'
   ...
 # Subtest: groupByApp: worst app first, off rows set aside
 ok 26 - groupByApp: worst app first, off rows set aside
   ---
-  duration_ms: 0.41892
+  duration_ms: 0.318433
   type: 'test'
   ...
 # Subtest: schedule words
 ok 27 - schedule words
   ---
-  duration_ms: 0.633481
+  duration_ms: 0.491698
   type: 'test'
   ...
 # Subtest: admin session: reads press:family:v1, rejects junk
 ok 28 - admin session: reads press:family:v1, rejects junk
   ---
-  duration_ms: 0.251386
+  duration_ms: 0.262192
   type: 'test'
   ...
 # Subtest: watcher (quiet-alerts): a blip under 24h is stored silently, never alerted
 ok 29 - watcher (quiet-alerts): a blip under 24h is stored silently, never alerted
   ---
-  duration_ms: 0.354768
+  duration_ms: 0.258674
   type: 'test'
   ...
 # Subtest: watcher (quiet-alerts): down 24h+ alerts once, then one "working again" note
 ok 30 - watcher (quiet-alerts): down 24h+ alerts once, then one "working again" note
   ---
-  duration_ms: 0.355278
+  duration_ms: 0.278036
   type: 'test'
   ...
 # Subtest: watcher (quiet nights): a push 22:00–07:00 America/Chicago goes out at -1; daytime unchanged; DST-safe
 ok 31 - watcher (quiet nights): a push 22:00–07:00 America/Chicago goes out at -1; daytime unchanged; DST-safe
   ---
-  duration_ms: 1.406518
+  duration_ms: 1.088595
   type: 'test'
   ...
 # Subtest: watcher: notices its own gap only after a day
 ok 32 - watcher: notices its own gap only after a day
   ---
-  duration_ms: 0.132618
+  duration_ms: 0.099209
   type: 'test'
   ...
 # Subtest: GH notifier runs: a run that flagged a problem still did its job
 ok 33 - GH notifier runs: a run that flagged a problem still did its job
   ---
-  duration_ms: 0.111606
+  duration_ms: 0.126733
   type: 'test'
   ...
 # Subtest: GH watcher-of-the-watcher: a watcher silent for a day (or missing) fails the job
 ok 34 - GH watcher-of-the-watcher: a watcher silent for a day (or missing) fails the job
   ---
-  duration_ms: 0.245516
+  duration_ms: 0.211469
   type: 'test'
   ...
 # Subtest: GH watcher: late/failed agents only warn (the watcher alerts after a day); STRICT fails all
 ok 35 - GH watcher: late/failed agents only warn (the watcher alerts after a day); STRICT fails all
   ---
-  duration_ms: 0.112749
+  duration_ms: 0.088873
   type: 'test'
   ...
 # Subtest: subject is the wing-level "Your Family Wing sign-in code"
 ok 36 - subject is the wing-level "Your Family Wing sign-in code"
   ---
-  duration_ms: 1.783963
+  duration_ms: 1.624142
   type: 'test'
   ...
 # Subtest: template carries the OTP {{ .Token }} (primary) and keeps the magic link (the gate also lands links)
 ok 37 - template carries the OTP {{ .Token }} (primary) and keeps the magic link (the gate also lands links)
   ---
-  duration_ms: 0.226409
+  duration_ms: 0.168942
   type: 'test'
   ...
 # Subtest: template + subject name NO family-wing app (remit / perth / runway / optimo)
 ok 38 - template + subject name NO family-wing app (remit / perth / runway / optimo)
   ---
-  duration_ms: 0.332356
+  duration_ms: 0.251633
   type: 'test'
   ...
 # Subtest: buildPayload maps to the Management API magic-link fields, project eepjhpyziczrxvirczio
 ok 39 - buildPayload maps to the Management API magic-link fields, project eepjhpyziczrxvirczio
   ---
-  duration_ms: 1.028092
+  duration_ms: 0.826065
   type: 'test'
   ...
 # Subtest: buildPayload refuses a template without the token, or one naming an app
 ok 40 - buildPayload refuses a template without the token, or one naming an app
   ---
-  duration_ms: 1.019218
+  duration_ms: 0.870137
   type: 'test'
   ...
 # Subtest: the workflow runs the sync on docs/auth changes and fails clearly without the secret
 ok 41 - the workflow runs the sync on docs/auth changes and fails clearly without the secret
   ---
-  duration_ms: 0.234057
+  duration_ms: 0.578716
   type: 'test'
   ...
 # Subtest: gatedDecision — the fail-closed union
 ok 42 - gatedDecision — the fail-closed union
   ---
-  duration_ms: 0.94705
+  duration_ms: 6.861611
   type: 'test'
   ...
 # Subtest: sessionFromToken — expires_in seconds and expires_at epoch seconds
 ok 43 - sessionFromToken — expires_in seconds and expires_at epoch seconds
   ---
-  duration_ms: 0.28459
+  duration_ms: 0.245418
   type: 'test'
   ...
 # Subtest: normSession — rejects malformed, round-trips good
 ok 44 - normSession — rejects malformed, round-trips good
   ---
-  duration_ms: 0.661667
+  duration_ms: 0.463343
   type: 'test'
   ...
 # Subtest: isExpired — honours the skew
 ok 45 - isExpired — honours the skew
   ---
-  duration_ms: 0.122838
+  duration_ms: 0.088137
   type: 'test'
   ...
 # Subtest: isGated — spaces.family short-circuits before any apps read
 ok 46 - isGated — spaces.family short-circuits before any apps read
   ---
-  duration_ms: 0.480305
+  duration_ms: 0.380925
   type: 'test'
   ...
 # Subtest: isGated — not in family: apps 401 fails closed, apps gated:false opens
 ok 47 - isGated — not in family: apps 401 fails closed, apps gated:false opens
   ---
-  duration_ms: 0.383911
+  duration_ms: 0.296159
   type: 'test'
   ...
 # Subtest: isGated — spaces.json unreadable fails closed
 ok 48 - isGated — spaces.json unreadable fails closed
   ---
-  duration_ms: 0.191897
+  duration_ms: 0.126738
   type: 'test'
   ...
 # Subtest: verifyCode — structured result carries the status and GoTrue error code
 ok 49 - verifyCode — structured result carries the status and GoTrue error code
   ---
-  duration_ms: 0.326862
+  duration_ms: 0.197361
   type: 'test'
   ...
 # Subtest: verifyErr — a bad/expired code blames the CODE, never the family list
 ok 50 - verifyErr — a bad/expired code blames the CODE, never the family list
   ---
-  duration_ms: 0.417136
+  duration_ms: 2.764933
   type: 'test'
   ...
 # Subtest: friendlyAuthErr — the family-list wording stays on the send-code path
 ok 51 - friendlyAuthErr — the family-list wording stays on the send-code path
   ---
-  duration_ms: 0.382074
+  duration_ms: 0.317227
   type: 'test'
   ...
 # Subtest: isValidCode — accepts any 6–10 digit code, not just 6
 ok 52 - isValidCode — accepts any 6–10 digit code, not just 6
   ---
-  duration_ms: 1.00288
+  duration_ms: 3.993722
   type: 'test'
   ...
 # Subtest: parseHashParams — reads a fragment, tolerates the leading \# and junk
 ok 53 - parseHashParams — reads a fragment, tolerates the leading \# and junk
   ---
-  duration_ms: 0.23742
+  duration_ms: 0.223569
   type: 'test'
   ...
 # Subtest: b64urlToJson — decodes a JWT payload segment, null on garbage
 ok 54 - b64urlToJson — decodes a JWT payload segment, null on garbage
   ---
-  duration_ms: 0.272885
+  duration_ms: 0.240043
   type: 'test'
   ...
 # Subtest: sessionFromHash — a GoTrue token fragment becomes a normal session
 ok 55 - sessionFromHash — a GoTrue token fragment becomes a normal session
   ---
-  duration_ms: 0.196662
+  duration_ms: 0.145249
   type: 'test'
   ...
 # Subtest: sessionFromHash — expires_in falls back to now + seconds
 ok 56 - sessionFromHash — expires_in falls back to now + seconds
   ---
-  duration_ms: 0.140854
+  duration_ms: 0.065614
   type: 'test'
   ...
 # Subtest: sessionFromHash — malformed fragments return null (falls through to sign-in)
 ok 57 - sessionFromHash — malformed fragments return null (falls through to sign-in)
   ---
-  duration_ms: 0.107321
+  duration_ms: 0.129559
   type: 'test'
   ...
 # Subtest: ensureFresh — valid stays, expired refreshes, failed refresh clears
 ok 58 - ensureFresh — valid stays, expired refreshes, failed refresh clears
   ---
-  duration_ms: 0.423332
+  duration_ms: 0.331274
   type: 'test'
   ...
 # Subtest: requestAccess — POSTs rpc/press_access_request with the caller JWT and returns the text verdict
 ok 59 - requestAccess — POSTs rpc/press_access_request with the caller JWT and returns the text verdict
   ---
-  duration_ms: 0.238684
+  duration_ms: 0.201269
   type: 'test'
   ...
 # Subtest: requestAccess — an HTTP error is a result, not a throw
 ok 60 - requestAccess — an HTTP error is a result, not a throw
   ---
-  duration_ms: 0.170981
+  duration_ms: 0.10245
   type: 'test'
   ...
 # Subtest: requestView — maps every verdict to the blocked-screen state
 ok 61 - requestView — maps every verdict to the blocked-screen state
   ---
-  duration_ms: 0.216522
+  duration_ms: 0.186824
   type: 'test'
   ...
 # Subtest: index.html + perth.html inline src/family-gate.js byte-for-byte
 ok 62 - index.html + perth.html inline src/family-gate.js byte-for-byte
   ---
-  duration_ms: 4.138823
+  duration_ms: 2.50061
+  type: 'test'
+  ...
+# Subtest: view v4: the rollback file is the captured live v3 (md5 of 2026-11-15) and the guard pins it
+ok 63 - view v4: the rollback file is the captured live v3 (md5 of 2026-11-15) and the guard pins it
+  ---
+  duration_ms: 1.317525
+  type: 'test'
+  ...
+# Subtest: view v4: the CTE list — runs replaced by ek, cf_runs added, g materialised; nothing else renamed
+ok 64 - view v4: the CTE list — runs replaced by ek, cf_runs added, g materialised; nothing else renamed
+  ---
+  duration_ms: 1.09712
+  type: 'test'
+  ...
+# Subtest: view v4: e, cf_jobs and f are byte-identical; g differs only by MATERIALIZED
+ok 65 - view v4: e, cf_jobs and f are byte-identical; g differs only by MATERIALIZED
+  ---
+  duration_ms: 1.505644
+  type: 'test'
+  ...
+# Subtest: view v4: s and the final SELECT are byte-identical outside the two last-run SubPlans
+ok 66 - view v4: s and the final SELECT are byte-identical outside the two last-run SubPlans
+  ---
+  duration_ms: 0.354302
+  type: 'test'
+  ...
+# Subtest: view v4: no all-time runs CTE — every press_agent_runs read is keyed by (app, agent)
+ok 67 - view v4: no all-time runs CTE — every press_agent_runs read is keyed by (app, agent)
+  ---
+  duration_ms: 0.484958
+  type: 'test'
+  ...
+# Subtest: view v4: the run key selects what the two UNION ALL branches of runs selected
+ok 68 - view v4: the run key selects what the two UNION ALL branches of runs selected
+  ---
+  duration_ms: 0.395797
+  type: 'test'
+  ...
+# Subtest: view v4: n_runs is not a view column and is only tested = 0 (the cap cannot change the output)
+ok 69 - view v4: n_runs is not a view column and is only tested = 0 (the cap cannot change the output)
+  ---
+  duration_ms: 0.798802
+  type: 'test'
+  ...
+# Subtest: view v4: the cron branch aggregates job history ONCE (cf_runs) and keeps cf's six columns
+ok 70 - view v4: the cron branch aggregates job history ONCE (cf_runs) and keeps cf's six columns
+  ---
+  duration_ms: 0.40433
+  type: 'test'
+  ...
+# Subtest: view v4: grants as v3 (anon reads the public status view; nothing else widened)
+ok 71 - view v4: grants as v3 (anon reads the public status view; nothing else widened)
+  ---
+  duration_ms: 0.386775
+  type: 'test'
+  ...
+# Subtest: mirror: db/20261106_press_agent_due_times_multi_dow.sql is the live definition (md5 of pg_get_functiondef, 2026-11-15)
+ok 72 - mirror: db/20261106_press_agent_due_times_multi_dow.sql is the live definition (md5 of pg_get_functiondef, 2026-11-15)
+  ---
+  duration_ms: 0.456073
   type: 'test'
   ...
 # Subtest: prune: idempotent, off the Data API, search_path pinned
-ok 63 - prune: idempotent, off the Data API, search_path pinned
+ok 73 - prune: idempotent, off the Data API, search_path pinned
   ---
-  duration_ms: 1.111278
+  duration_ms: 1.072474
   type: 'test'
   ...
 # Subtest: prune: 45 days for every job, 15 days (the strip window) for sub-hourly jobs
-ok 64 - prune: 45 days for every job, 15 days (the strip window) for sub-hourly jobs
+ok 74 - prune: 45 days for every job, 15 days (the strip window) for sub-hourly jobs
   ---
-  duration_ms: 0.489896
+  duration_ms: 0.488575
   type: 'test'
   ...
 # Subtest: prune: a job's latest, latest succeeded and latest failed run are never deleted
-ok 65 - prune: a job's latest, latest succeeded and latest failed run are never deleted
+ok 75 - prune: a job's latest, latest succeeded and latest failed run are never deleted
   ---
-  duration_ms: 0.13494
+  duration_ms: 0.184421
   type: 'test'
   ...
 # Subtest: prune: "more often than hourly" = minute field not a single number, or a seconds schedule
-ok 66 - prune: "more often than hourly" = minute field not a single number, or a seconds schedule
+ok 76 - prune: "more often than hourly" = minute field not a single number, or a seconds schedule
   ---
-  duration_ms: 0.730979
+  duration_ms: 0.933698
   type: 'test'
   ...
 # Subtest: prune: one daily job off the hour, registered on the monitor with an allowlisted retry
-ok 67 - prune: one daily job off the hour, registered on the monitor with an allowlisted retry
+ok 77 - prune: one daily job off the hour, registered on the monitor with an allowlisted retry
   ---
-  duration_ms: 0.964155
+  duration_ms: 0.90862
   type: 'test'
   ...
 # Subtest: view v3: the rollback file is the captured live definition (md5 of 2026-11-15)
-ok 68 - view v3: the rollback file is the captured live definition (md5 of 2026-11-15)
+ok 78 - view v3: the rollback file is the captured live definition (md5 of 2026-11-15)
   ---
-  duration_ms: 3.539599
+  duration_ms: 3.667168
   type: 'test'
   ...
 # Subtest: view v3: every CTE but the cron branch and the final SELECT are byte-identical to the live view
-ok 69 - view v3: every CTE but the cron branch and the final SELECT are byte-identical to the live view
+ok 79 - view v3: every CTE but the cron branch and the final SELECT are byte-identical to the live view
   ---
-  duration_ms: 0.461592
+  duration_ms: 0.382309
   type: 'test'
   ...
 # Subtest: view v3: the cron branch reads per job (LATERAL), never sorts every run, same output columns
-ok 70 - view v3: the cron branch reads per job (LATERAL), never sorts every run, same output columns
+ok 80 - view v3: the cron branch reads per job (LATERAL), never sorts every run, same output columns
   ---
-  duration_ms: 0.619637
+  duration_ms: 0.637106
   type: 'test'
   ...
 # Subtest: view v3: grants as v2 (anon reads the public status view; nothing else widened)
-ok 71 - view v3: grants as v2 (anon reads the public status view; nothing else widened)
+ok 81 - view v3: grants as v2 (anon reads the public status view; nothing else widened)
   ---
-  duration_ms: 0.313385
+  duration_ms: 0.279329
   type: 'test'
   ...
 # Subtest: retry: 500 then 200 ⇒ rows; one ::warning:: with the attempt number; waits ~10 s
-ok 72 - retry: 500 then 200 ⇒ rows; one ::warning:: with the attempt number; waits ~10 s
+ok 82 - retry: 500 then 200 ⇒ rows; one ::warning:: with the attempt number; waits ~10 s
   ---
-  duration_ms: 0.619096
+  duration_ms: 0.771898
   type: 'test'
   ...
 # Subtest: retry: a network error then 200 ⇒ rows
-ok 73 - retry: a network error then 200 ⇒ rows
+ok 83 - retry: a network error then 200 ⇒ rows
   ---
-  duration_ms: 0.234595
+  duration_ms: 0.263058
   type: 'test'
   ...
 # Subtest: retry: 500 ×3 ⇒ the existing failure message after 3 attempts (2 retries)
-ok 74 - retry: 500 ×3 ⇒ the existing failure message after 3 attempts (2 retries)
+ok 84 - retry: 500 ×3 ⇒ the existing failure message after 3 attempts (2 retries)
   ---
-  duration_ms: 0.510604
+  duration_ms: 0.583889
   type: 'test'
   ...
 # Subtest: retry: a 4xx is not transient — fails at once, no retry
-ok 75 - retry: a 4xx is not transient — fails at once, no retry
+ok 85 - retry: a 4xx is not transient — fails at once, no retry
   ---
-  duration_ms: 0.179455
+  duration_ms: 0.124753
   type: 'test'
   ...
 # Subtest: retry: 500 ×3 through the real die() ⇒ process exit 1 with the ::error:: message
-ok 76 - retry: 500 ×3 through the real die() ⇒ process exit 1 with the ::error:: message
+ok 86 - retry: 500 ×3 through the real die() ⇒ process exit 1 with the ::error:: message
   ---
-  duration_ms: 36.813116
+  duration_ms: 33.772836
+  type: 'test'
+  ...
+# Subtest: timeout: every attempt carries an AbortSignal of TIMEOUT_MS (20 s by default)
+ok 87 - timeout: every attempt carries an AbortSignal of TIMEOUT_MS (20 s by default)
+  ---
+  duration_ms: 0.313566
+  type: 'test'
+  ...
+# Subtest: timeout: a hang then 200 ⇒ rows; the hang is a ::warning:: retry like a network error
+ok 88 - timeout: a hang then 200 ⇒ rows; the hang is a ::warning:: retry like a network error
+  ---
+  duration_ms: 13.88014
+  type: 'test'
+  ...
+# Subtest: timeout: hang ×3 ⇒ the failure message after 3 attempts
+ok 89 - timeout: hang ×3 ⇒ the failure message after 3 attempts
+  ---
+  duration_ms: 0.712856
+  type: 'test'
+  ...
+# Subtest: timeout: hang ×3 through the real die() and a real AbortSignal.timeout ⇒ exit 1 with the ::error:: message
+ok 90 - timeout: hang ×3 through the real die() and a real AbortSignal.timeout ⇒ exit 1 with the ::error:: message
+  ---
+  duration_ms: 118.496129
+  type: 'test'
+  ...
+# Subtest: bad body: 200 + a non-JSON body ⇒ fails at once with the existing wording (no retry, no unhandled throw)
+ok 91 - bad body: 200 + a non-JSON body ⇒ fails at once with the existing wording (no retry, no unhandled throw)
+  ---
+  duration_ms: 0.678844
+  type: 'test'
+  ...
+# Subtest: bad body: through the real die() ⇒ exit 1, an ::error:: line, no stack trace
+ok 92 - bad body: through the real die() ⇒ exit 1, an ::error:: line, no stack trace
+  ---
+  duration_ms: 38.959615
+  type: 'test'
+  ...
+# Subtest: bad body: a body stream that times out is transient (retried), not "not JSON"
+ok 93 - bad body: a body stream that times out is transient (retried), not "not JSON"
+  ---
+  duration_ms: 0.497292
   type: 'test'
   ...
 # Subtest: the real wing marks Cardsharp moved
-ok 77 - the real wing marks Cardsharp moved
+ok 94 - the real wing marks Cardsharp moved
   ---
-  duration_ms: 1.140657
+  duration_ms: 1.080864
   type: 'test'
   ...
 # Subtest: marker present ⇒ ownMoveState is null for every state, on every device
-ok 78 - marker present ⇒ ownMoveState is null for every state, on every device
+ok 95 - marker present ⇒ ownMoveState is null for every state, on every device
   ---
-  duration_ms: 0.205151
+  duration_ms: 0.243653
   type: 'test'
   ...
 # Subtest: marker absent ⇒ today's one-time move (a future app still gets it)
-ok 79 - marker absent ⇒ today's one-time move (a future app still gets it)
+ok 96 - marker absent ⇒ today's one-time move (a future app still gets it)
   ---
-  duration_ms: 0.229436
+  duration_ms: 0.181142
   type: 'test'
   ...
 # Subtest: sweep: a marked app's creds or stub become {moved}; other apps and an already-moved entry are untouched
-ok 80 - sweep: a marked app's creds or stub become {moved}; other apps and an already-moved entry are untouched
+ok 97 - sweep: a marked app's creds or stub become {moved}; other apps and an already-moved entry are untouched
   ---
-  duration_ms: 0.509373
+  duration_ms: 0.481579
   type: 'test'
   ...
 # Subtest: every wing unlock goes through wingUnlock (unlock → silent sweep); add-device sweeps the new row
-ok 81 - every wing unlock goes through wingUnlock (unlock → silent sweep); add-device sweeps the new row
+ok 98 - every wing unlock goes through wingUnlock (unlock → silent sweep); add-device sweeps the new row
   ---
-  duration_ms: 0.370307
+  duration_ms: 0.41652
   type: 'test'
   ...
 # Subtest: the retired seal: loading the module tombstoned the IndexedDB store (v2) and stripped the session .seal
-ok 82 - the retired seal: loading the module tombstoned the IndexedDB store (v2) and stripped the session .seal
+ok 99 - the retired seal: loading the module tombstoned the IndexedDB store (v2) and stripped the session .seal
   ---
-  duration_ms: 1.569527
+  duration_ms: 1.394706
   type: 'test'
   ...
 # Subtest: enrolOwn: own rpId, platform + client-device hints, PRF; the row reads back; only the hint flag persists
-ok 83 - enrolOwn: own rpId, platform + client-device hints, PRF; the row reads back; only the hint flag persists
+ok 100 - enrolOwn: own rpId, platform + client-device hints, PRF; the row reads back; only the hint flag persists
   ---
-  duration_ms: 9.773023
+  duration_ms: 11.32107
   type: 'test'
   ...
 # Subtest: unlockOwn: the same passkey opens the creds; nothing new persists
-ok 84 - unlockOwn: the same passkey opens the creds; nothing new persists
+ok 101 - unlockOwn: the same passkey opens the creds; nothing new persists
   ---
-  duration_ms: 2.146144
+  duration_ms: 4.278093
   type: 'test'
   ...
 # Subtest: unlockOwn fails CLOSED: wrong key, tampered row, no row, another page
-ok 85 - unlockOwn fails CLOSED: wrong key, tampered row, no row, another page
+ok 102 - unlockOwn fails CLOSED: wrong key, tampered row, no row, another page
   ---
-  duration_ms: 5.108548
+  duration_ms: 5.488482
   type: 'test'
   ...
 # Subtest: unlockOwn(page, adopt): an orphan passkey gets its row (insert-only, read back, flag set); never on a read error or over a row
-ok 86 - unlockOwn(page, adopt): an orphan passkey gets its row (insert-only, read back, flag set); never on a read error or over a row
+ok 103 - unlockOwn(page, adopt): an orphan passkey gets its row (insert-only, read back, flag set); never on a read error or over a row
   ---
-  duration_ms: 3.144256
+  duration_ms: 3.154076
   type: 'test'
   ...
 # Subtest: enrolOwn refuses a row that does not read back as these creds (no flag set)
-ok 87 - enrolOwn refuses a row that does not read back as these creds (no flag set)
+ok 104 - enrolOwn refuses a row that does not read back as these creds (no flag set)
   ---
-  duration_ms: 2.794005
+  duration_ms: 2.953179
   type: 'test'
   ...
 # Subtest: wing unlock() no longer seals anything (no IndexedDB open, no .seal)
-ok 88 - wing unlock() no longer seals anything (no IndexedDB open, no .seal)
+ok 105 - wing unlock() no longer seals anything (no IndexedDB open, no .seal)
   ---
-  duration_ms: 2.217411
+  duration_ms: 2.549034
   type: 'test'
   ...
 # Subtest: moveOut: answers only the opened window at its exact origin, after READY; resolves on DONE with the same nonce
-ok 89 - moveOut: answers only the opened window at its exact origin, after READY; resolves on DONE with the same nonce
+ok 106 - moveOut: answers only the opened window at its exact origin, after READY; resolves on DONE with the same nonce
   ---
-  duration_ms: 6.349169
+  duration_ms: 6.325806
   type: 'test'
   ...
 # Subtest: moveOut: a closed tab rejects (nothing changed); bad args reject; a blocked popup rejects
-ok 90 - moveOut: a closed tab rejects (nothing changed); bad args reject; a blocked popup rejects
+ok 107 - moveOut: a closed tab rejects (nothing changed); bad args reject; a blocked popup rejects
   ---
-  duration_ms: 501.242021
+  duration_ms: 501.333323
   type: 'test'
   ...
 # Subtest: moveIn: READY to the wing's exact origin; accepts creds only from the opener at that origin with its nonce
-ok 91 - moveIn: READY to the wing's exact origin; accepts creds only from the opener at that origin with its nonce
+ok 108 - moveIn: READY to the wing's exact origin; accepts creds only from the opener at that origin with its nonce
   ---
-  duration_ms: 5.981696
+  duration_ms: 6.941509
   type: 'test'
   ...
 # Subtest: viewports are the train gate pair: 1280×800 + 390×844
-ok 92 - viewports are the train gate pair: 1280×800 + 390×844
+ok 109 - viewports are the train gate pair: 1280×800 + 390×844
   ---
-  duration_ms: 1.169507
+  duration_ms: 0.888656
   type: 'test'
   ...
 # Subtest: identical renders diff 0%
-ok 93 - identical renders diff 0%
+ok 110 - identical renders diff 0%
   ---
-  duration_ms: 9.88499
+  duration_ms: 5.709841
   type: 'test'
   ...
 # Subtest: a painted block is counted as its share of pixels
-ok 94 - a painted block is counted as its share of pixels
+ok 111 - a painted block is counted as its share of pixels
   ---
-  duration_ms: 11.276029
+  duration_ms: 10.429451
   type: 'test'
   ...
 # Subtest: a height change counts: the shorter render is padded white, the extra dark rows differ
-ok 95 - a height change counts: the shorter render is padded white, the extra dark rows differ
+ok 112 - a height change counts: the shorter render is padded white, the extra dark rows differ
   ---
-  duration_ms: 4.498433
+  duration_ms: 4.513905
   type: 'test'
   ...
 # Subtest: a parented family page gets no card; non-parented family pages still do
-ok 96 - a parented family page gets no card; non-parented family pages still do
+ok 113 - a parented family page gets no card; non-parented family pages still do
   ---
-  duration_ms: 1.153594
+  duration_ms: 1.34852
   type: 'test'
   ...
 # Subtest: the real registries: optimo.html has no card but keeps its family tier; App Lab is carded
-ok 97 - the real registries: optimo.html has no card but keeps its family tier; App Lab is carded
+ok 114 - the real registries: optimo.html has no card but keeps its family tier; App Lab is carded
   ---
-  duration_ms: 0.214568
+  duration_ms: 0.236698
   type: 'test'
   ...
 # Subtest: every portal card list goes through cardFiles (lobby, wing-door counts, private wing, family wing)
-ok 98 - every portal card list goes through cardFiles (lobby, wing-door counts, private wing, family wing)
+ok 115 - every portal card list goes through cardFiles (lobby, wing-door counts, private wing, family wing)
   ---
-  duration_ms: 0.691647
+  duration_ms: 0.676873
   type: 'test'
   ...
 # Subtest: the vendored ui-audit pair carries the council stamp (re-vendor the pair together)
-ok 99 - the vendored ui-audit pair carries the council stamp (re-vendor the pair together)
+ok 116 - the vendored ui-audit pair carries the council stamp (re-vendor the pair together)
   ---
-  duration_ms: 2.000124
+  duration_ms: 1.71641
   type: 'test'
   ...
 # Subtest: every press mini control is a real <button> — no clickable <span> the audit cannot gate
-ok 100 - every press mini control is a real <button> — no clickable <span> the audit cannot gate
+ok 117 - every press mini control is a real <button> — no clickable <span> the audit cannot gate
   ---
-  duration_ms: 2.510839
+  duration_ms: 1.795073
   type: 'test'
   ...
 # Subtest: no text-entry field under 16px on a press-native page (iOS zoom-on-focus)
-ok 101 - no text-entry field under 16px on a press-native page (iOS zoom-on-focus)
+ok 118 - no text-entry field under 16px on a press-native page (iOS zoom-on-focus)
   ---
-  duration_ms: 0.790296
+  duration_ms: 0.866167
   type: 'test'
   ...
 # Subtest: the shared gates stay byte-identical to press/src — the 44px gate fixes are page-level overrides
-ok 102 - the shared gates stay byte-identical to press/src — the 44px gate fixes are page-level overrides
+ok 119 - the shared gates stay byte-identical to press/src — the 44px gate fixes are page-level overrides
   ---
-  duration_ms: 1.700236
+  duration_ms: 1.826645
   type: 'test'
   ...
 # Subtest: cleanPlanId accepts only 32 lowercase-hex (trimmed, case-folded)
-ok 103 - cleanPlanId accepts only 32 lowercase-hex (trimmed, case-folded)
+ok 120 - cleanPlanId accepts only 32 lowercase-hex (trimmed, case-folded)
   ---
-  duration_ms: 0.839815
+  duration_ms: 0.875909
   type: 'test'
   ...
 # Subtest: ungated request (no x-plan-id) → 401 with NO lookup
-ok 104 - ungated request (no x-plan-id) → 401 with NO lookup
+ok 121 - ungated request (no x-plan-id) → 401 with NO lookup
   ---
-  duration_ms: 0.709266
+  duration_ms: 0.744496
   type: 'test'
   ...
 # Subtest: malformed id (filter-injection shape) → 401 with NO lookup
-ok 105 - malformed id (filter-injection shape) → 401 with NO lookup
+ok 122 - malformed id (filter-injection shape) → 401 with NO lookup
   ---
-  duration_ms: 0.188359
+  duration_ms: 0.208304
   type: 'test'
   ...
 # Subtest: wrong capability → 401; the ONLY lookup is the server-held-default RPC (POST, id in the body)
-ok 106 - wrong capability → 401; the ONLY lookup is the server-held-default RPC (POST, id in the body)
+ok 123 - wrong capability → 401; the ONLY lookup is the server-held-default RPC (POST, id in the body)
   ---
-  duration_ms: 0.275777
+  duration_ms: 0.228948
   type: 'test'
   ...
 # Subtest: review 🔴: a FORGED press_deals row for an attacker id does not open the reports
-ok 107 - review 🔴: a FORGED press_deals row for an attacker id does not open the reports
+ok 124 - review 🔴: a FORGED press_deals row for an attacker id does not open the reports
   ---
-  duration_ms: 0.239406
+  duration_ms: 0.262968
   type: 'test'
   ...
 # Subtest: right capability → ok
-ok 108 - right capability → ok
+ok 125 - right capability → ok
   ---
-  duration_ms: 0.140149
+  duration_ms: 0.12837
   type: 'test'
   ...
 # Subtest: only a literal true passes (truthy look-alikes fail closed)
-ok 109 - only a literal true passes (truthy look-alikes fail closed)
+ok 126 - only a literal true passes (truthy look-alikes fail closed)
   ---
-  duration_ms: 0.260606
+  duration_ms: 0.235486
   type: 'test'
   ...
 # Subtest: lookup failures fail closed (503, never ok)
-ok 110 - lookup failures fail closed (503, never ok)
+ok 127 - lookup failures fail closed (503, never ok)
   ---
-  duration_ms: 0.252493
+  duration_ms: 0.262058
   type: 'test'
   ...
 # Subtest: reportsPath reads 12 weeks, newest first, bounded
-ok 111 - reportsPath reads 12 weeks, newest first, bounded
+ok 128 - reportsPath reads 12 weeks, newest first, bounded
   ---
-  duration_ms: 0.483419
+  duration_ms: 0.519182
   type: 'test'
   ...
 # Subtest: shape: latest in full, history light (no sections), empty-safe
-ok 112 - shape: latest in full, history light (no sections), empty-safe
+ok 129 - shape: latest in full, history light (no sections), empty-safe
   ---
-  duration_ms: 0.403415
+  duration_ms: 0.362722
   type: 'test'
   ...
 # fatal: not a git repository (or any of the parent directories): .git
@@ -870,369 +972,369 @@ ok 112 - shape: latest in full, history light (no sections), empty-safe
 # fatal: not a git repository (or any of the parent directories): .git
 # fatal: not a git repository (or any of the parent directories): .git
 # Subtest: T1 registry PASS — tier matches spaces.json
-ok 113 - T1 registry PASS — tier matches spaces.json
+ok 130 - T1 registry PASS — tier matches spaces.json
   ---
-  duration_ms: 43.765438
+  duration_ms: 46.020492
   type: 'test'
   ...
 # Subtest: T1 registry FAIL — tenants tier disagrees with spaces.json
-ok 114 - T1 registry FAIL — tenants tier disagrees with spaces.json
+ok 131 - T1 registry FAIL — tenants tier disagrees with spaces.json
   ---
-  duration_ms: 47.927055
+  duration_ms: 43.424243
   type: 'test'
   ...
 # Subtest: T1 registry FAIL — page in BOTH personal[] and family[]
-ok 115 - T1 registry FAIL — page in BOTH personal[] and family[]
+ok 132 - T1 registry FAIL — page in BOTH personal[] and family[]
   ---
-  duration_ms: 48.556575
+  duration_ms: 41.239033
   type: 'test'
   ...
 # Subtest: T2 source PASS — repo present + git
-ok 116 - T2 source PASS — repo present + git
+ok 133 - T2 source PASS — repo present + git
   ---
-  duration_ms: 49.930132
+  duration_ms: 38.679638
   type: 'test'
   ...
 # Subtest: T2 source FAIL — repo missing but coupling declared
-ok 117 - T2 source FAIL — repo missing but coupling declared
+ok 134 - T2 source FAIL — repo missing but coupling declared
   ---
-  duration_ms: 61.036691
+  duration_ms: 43.086166
   type: 'test'
   ...
 # Subtest: T3 gate PASS — vendored byte-identical to canonical
-ok 118 - T3 gate PASS — vendored byte-identical to canonical
+ok 135 - T3 gate PASS — vendored byte-identical to canonical
   ---
-  duration_ms: 55.719456
+  duration_ms: 40.845097
   type: 'test'
   ...
 # Subtest: T3 gate FAIL — vendored drift
-ok 119 - T3 gate FAIL — vendored drift
+ok 136 - T3 gate FAIL — vendored drift
   ---
-  duration_ms: 49.921054
+  duration_ms: 45.904916
   type: 'test'
   ...
 # Subtest: T3 gate FAIL — vendored MISSING (not SKIP)
-ok 120 - T3 gate FAIL — vendored MISSING (not SKIP)
+ok 137 - T3 gate FAIL — vendored MISSING (not SKIP)
   ---
-  duration_ms: 45.245049
+  duration_ms: 36.003136
   type: 'test'
   ...
 # Subtest: T4 release PASS — PRESS_DIR + spaces.json + gate compare, no writes
-ok 121 - T4 release PASS — PRESS_DIR + spaces.json + gate compare, no writes
+ok 138 - T4 release PASS — PRESS_DIR + spaces.json + gate compare, no writes
   ---
-  duration_ms: 41.99498
+  duration_ms: 36.388977
   type: 'test'
   ...
 # Subtest: T4 release FAIL — missing PRESS_DIR
-ok 122 - T4 release FAIL — missing PRESS_DIR
+ok 139 - T4 release FAIL — missing PRESS_DIR
   ---
-  duration_ms: 43.358169
+  duration_ms: 38.868743
   type: 'test'
   ...
 # Subtest: T4 release FAIL — writes spaces.json (registry is read-only)
-ok 123 - T4 release FAIL — writes spaces.json (registry is read-only)
+ok 140 - T4 release FAIL — writes spaces.json (registry is read-only)
   ---
-  duration_ms: 41.666433
+  duration_ms: 39.180916
   type: 'test'
   ...
 # Subtest: T5 rebuild PASS — deterministic build reproduces the live page
-ok 124 - T5 rebuild PASS — deterministic build reproduces the live page
+ok 141 - T5 rebuild PASS — deterministic build reproduces the live page
   ---
-  duration_ms: 76.363967
+  duration_ms: 66.105675
   type: 'test'
   ...
 # Subtest: T5 rebuild FAIL — deterministic build differs from the live page
-ok 125 - T5 rebuild FAIL — deterministic build differs from the live page
+ok 142 - T5 rebuild FAIL — deterministic build differs from the live page
   ---
-  duration_ms: 69.325158
+  duration_ms: 65.599435
   type: 'test'
   ...
 # Subtest: T6 family-grants EMITTED — SQL printed for family pages
-ok 126 - T6 family-grants EMITTED — SQL printed for family pages
+ok 143 - T6 family-grants EMITTED — SQL printed for family pages
   ---
-  duration_ms: 41.855717
+  duration_ms: 40.689282
   type: 'test'
   ...
 # Subtest: T7 tool-cfg PASS — every personal data (keyring) page is in TOOL_CFG
-ok 127 - T7 tool-cfg PASS — every personal data (keyring) page is in TOOL_CFG
+ok 144 - T7 tool-cfg PASS — every personal data (keyring) page is in TOOL_CFG
   ---
-  duration_ms: 40.247519
+  duration_ms: 42.642651
   type: 'test'
   ...
 # Subtest: T7 tool-cfg FAIL — a personal data page is missing from TOOL_CFG
-ok 128 - T7 tool-cfg FAIL — a personal data page is missing from TOOL_CFG
+ok 145 - T7 tool-cfg FAIL — a personal data page is missing from TOOL_CFG
   ---
-  duration_ms: 40.998913
+  duration_ms: 43.279192
   type: 'test'
   ...
 # Subtest: T7 tool-cfg — a personal NON-data page (no keyring entry) is exempt, not required in TOOL_CFG
-ok 129 - T7 tool-cfg — a personal NON-data page (no keyring entry) is exempt, not required in TOOL_CFG
+ok 146 - T7 tool-cfg — a personal NON-data page (no keyring entry) is exempt, not required in TOOL_CFG
   ---
-  duration_ms: 44.635276
+  duration_ms: 41.620942
   type: 'test'
   ...
 # Subtest: T7 tool-cfg SKIP — no vault.js / index.html to audit
-ok 130 - T7 tool-cfg SKIP — no vault.js / index.html to audit
+ok 147 - T7 tool-cfg SKIP — no vault.js / index.html to audit
   ---
-  duration_ms: 52.802787
+  duration_ms: 40.513081
   type: 'test'
   ...
 # Subtest: clean estate exits 0; a single FAIL flips the exit to 1
-ok 131 - clean estate exits 0; a single FAIL flips the exit to 1
+ok 148 - clean estate exits 0; a single FAIL flips the exit to 1
   ---
-  duration_ms: 50.461189
+  duration_ms: 46.180484
   type: 'test'
   ...
 # Subtest: T8 registry-parity PASS — every tenant page has a snag-registry row with the same repo
-ok 132 - T8 registry-parity PASS — every tenant page has a snag-registry row with the same repo
+ok 149 - T8 registry-parity PASS — every tenant page has a snag-registry row with the same repo
   ---
-  duration_ms: 42.97479
+  duration_ms: 45.847726
   type: 'test'
   ...
 # Subtest: T8 registry-parity FAIL — a tenant page with no registry row
-ok 133 - T8 registry-parity FAIL — a tenant page with no registry row
+ok 150 - T8 registry-parity FAIL — a tenant page with no registry row
   ---
-  duration_ms: 42.526863
+  duration_ms: 48.602616
   type: 'test'
   ...
 # Subtest: T8 registry-parity FAIL — registry repo differs from tenants.json
-ok 134 - T8 registry-parity FAIL — registry repo differs from tenants.json
+ok 151 - T8 registry-parity FAIL — registry repo differs from tenants.json
   ---
-  duration_ms: 49.543728
+  duration_ms: 44.120102
   type: 'test'
   ...
 # Subtest: T8 registry-parity FAIL (not SKIP) — the council registry file is missing
-ok 135 - T8 registry-parity FAIL (not SKIP) — the council registry file is missing
+ok 152 - T8 registry-parity FAIL (not SKIP) — the council registry file is missing
   ---
-  duration_ms: 40.911198
+  duration_ms: 47.19556
   type: 'test'
   ...
 # Subtest: T9 labels PASS — every pages.json page has a LABELS entry with a known icon
-ok 136 - T9 labels PASS — every pages.json page has a LABELS entry with a known icon
+ok 153 - T9 labels PASS — every pages.json page has a LABELS entry with a known icon
   ---
-  duration_ms: 60.68007
+  duration_ms: 53.581581
   type: 'test'
   ...
 # Subtest: T9 labels FAIL — a pages.json page has no LABELS entry (published without coordinating naming)
-ok 137 - T9 labels FAIL — a pages.json page has no LABELS entry (published without coordinating naming)
+ok 154 - T9 labels FAIL — a pages.json page has no LABELS entry (published without coordinating naming)
   ---
-  duration_ms: 52.666741
+  duration_ms: 42.970863
   type: 'test'
   ...
 # Subtest: T9 labels FAIL — an entry missing a field, or naming an icon not in ICONS
-ok 138 - T9 labels FAIL — an entry missing a field, or naming an icon not in ICONS
+ok 155 - T9 labels FAIL — an entry missing a field, or naming an icon not in ICONS
   ---
-  duration_ms: 50.011265
+  duration_ms: 40.83981
   type: 'test'
   ...
 # Subtest: T9 labels FAIL — index.html without a LABELS block; SKIP with no index.html
-ok 139 - T9 labels FAIL — index.html without a LABELS block; SKIP with no index.html
+ok 156 - T9 labels FAIL — index.html without a LABELS block; SKIP with no index.html
   ---
-  duration_ms: 83.297435
+  duration_ms: 77.817346
   type: 'test'
   ...
 # Subtest: T7 tool-cfg — a RENAMED data page counts via KEYRING_ID (link file → enrolled keyring id)
-ok 140 - T7 tool-cfg — a RENAMED data page counts via KEYRING_ID (link file → enrolled keyring id)
+ok 157 - T7 tool-cfg — a RENAMED data page counts via KEYRING_ID (link file → enrolled keyring id)
   ---
-  duration_ms: 90.988191
+  duration_ms: 80.320291
   type: 'test'
   ...
 # Subtest: T8 registry-parity — a renamed tenant passes on its FORMER registry row (said out loud); a wrong former repo FAILs
-ok 141 - T8 registry-parity — a renamed tenant passes on its FORMER registry row (said out loud); a wrong former repo FAILs
+ok 158 - T8 registry-parity — a renamed tenant passes on its FORMER registry row (said out loud); a wrong former repo FAILs
   ---
-  duration_ms: 108.466223
+  duration_ms: 84.4627
   type: 'test'
   ...
 # Subtest: T10 redirects PASS — a conforming stub is a named exception (no card, no registry entry)
-ok 142 - T10 redirects PASS — a conforming stub is a named exception (no card, no registry entry)
+ok 159 - T10 redirects PASS — a conforming stub is a named exception (no card, no registry entry)
   ---
-  duration_ms: 45.728947
+  duration_ms: 39.162978
   type: 'test'
   ...
 # Subtest: T10 redirects FAIL — stub also a page, index map disagrees, no hash-preserving replace, oversize
-ok 143 - T10 redirects FAIL — stub also a page, index map disagrees, no hash-preserving replace, oversize
+ok 160 - T10 redirects FAIL — stub also a page, index map disagrees, no hash-preserving replace, oversize
   ---
-  duration_ms: 222.938977
+  duration_ms: 212.170537
   type: 'test'
   ...
 # Subtest: T7 tool-cfg FAIL — a keyring id with no personal page (a rename without KEYRING_ID)
-ok 144 - T7 tool-cfg FAIL — a keyring id with no personal page (a rename without KEYRING_ID)
+ok 161 - T7 tool-cfg FAIL — a keyring id with no personal page (a rename without KEYRING_ID)
   ---
-  duration_ms: 42.224315
+  duration_ms: 42.448092
   type: 'test'
   ...
 # Subtest: T10 root — in a git checkout every root .html is registered AND every page / redirect target is tracked
-ok 145 - T10 root — in a git checkout every root .html is registered AND every page / redirect target is tracked
+ok 162 - T10 root — in a git checkout every root .html is registered AND every page / redirect target is tracked
   ---
-  duration_ms: 154.733991
+  duration_ms: 130.752396
   type: 'test'
   ...
 # Subtest: defaults (arc/unpin-the-mac): CODE_ROOT + COUNCIL_DIR are sibling clones of the press clone, never homedir()/Documents
-ok 146 - defaults (arc/unpin-the-mac): CODE_ROOT + COUNCIL_DIR are sibling clones of the press clone, never homedir()/Documents
+ok 163 - defaults (arc/unpin-the-mac): CODE_ROOT + COUNCIL_DIR are sibling clones of the press clone, never homedir()/Documents
   ---
-  duration_ms: 158.994849
+  duration_ms: 118.927453
   type: 'test'
   ...
 # Subtest: T1 parent PASS — family page parented under a family page
-ok 147 - T1 parent PASS — family page parented under a family page
+ok 164 - T1 parent PASS — family page parented under a family page
   ---
-  duration_ms: 62.107811
+  duration_ms: 42.095595
   type: 'test'
   ...
 # Subtest: T1 parent FAIL — parent not in pages.json
-ok 148 - T1 parent FAIL — parent not in pages.json
+ok 165 - T1 parent FAIL — parent not in pages.json
   ---
-  duration_ms: 51.373087
+  duration_ms: 36.173493
   type: 'test'
   ...
 # Subtest: T1 parent FAIL — parent in a different space tier
-ok 149 - T1 parent FAIL — parent in a different space tier
+ok 166 - T1 parent FAIL — parent in a different space tier
   ---
-  duration_ms: 44.402632
+  duration_ms: 35.753256
   type: 'test'
   ...
 # Subtest: T1 parent FAIL — nested parent (the parent is itself parented)
-ok 150 - T1 parent FAIL — nested parent (the parent is itself parented)
+ok 167 - T1 parent FAIL — nested parent (the parent is itself parented)
   ---
-  duration_ms: 42.831292
+  duration_ms: 44.993204
   type: 'test'
   ...
 # Subtest: T11 own-origin PASS — stub to the exact origin, index OWN_ORIGIN agrees, still a personal page
-ok 151 - T11 own-origin PASS — stub to the exact origin, index OWN_ORIGIN agrees, still a personal page
+ok 168 - T11 own-origin PASS — stub to the exact origin, index OWN_ORIGIN agrees, still a personal page
   ---
-  duration_ms: 46.142866
+  duration_ms: 38.244316
   type: 'test'
   ...
 # Subtest: T11 own-origin FAIL — wrong target, gate/data code in the stub, index map missing, not a personal page, stray map entry
-ok 152 - T11 own-origin FAIL — wrong target, gate/data code in the stub, index map missing, not a personal page, stray map entry
+ok 169 - T11 own-origin FAIL — wrong target, gate/data code in the stub, index map missing, not a personal page, stray map entry
   ---
-  duration_ms: 269.958201
+  duration_ms: 240.506677
   type: 'test'
   ...
 # Subtest: T11 move-complete PASS — tenants.json moveComplete: true and index.html OWN_MOVE_COMPLETE agree
-ok 153 - T11 move-complete PASS — tenants.json moveComplete: true and index.html OWN_MOVE_COMPLETE agree
+ok 170 - T11 move-complete PASS — tenants.json moveComplete: true and index.html OWN_MOVE_COMPLETE agree
   ---
-  duration_ms: 46.805825
+  duration_ms: 37.785573
   type: 'test'
   ...
 # Subtest: T11 move-complete absent — no row, an empty list is fine (a future app still gets the one-time move)
-ok 154 - T11 move-complete absent — no row, an empty list is fine (a future app still gets the one-time move)
+ok 171 - T11 move-complete absent — no row, an empty list is fine (a future app still gets the one-time move)
   ---
-  duration_ms: 43.488619
+  duration_ms: 32.615178
   type: 'test'
   ...
 # Subtest: T11 move-complete FAIL — not true, no origin, missing from the wing list, stray wing entry, no wing list
-ok 155 - T11 move-complete FAIL — not true, no origin, missing from the wing list, stray wing entry, no wing list
+ok 172 - T11 move-complete FAIL — not true, no origin, missing from the wing list, stray wing entry, no wing list
   ---
-  duration_ms: 223.675531
+  duration_ms: 190.166989
   type: 'test'
   ...
 # Subtest: T11 move-complete — the REAL registries: cardsharp is marked moved in tenants.json and the wing
-ok 156 - T11 move-complete — the REAL registries: cardsharp is marked moved in tenants.json and the wing
+ok 173 - T11 move-complete — the REAL registries: cardsharp is marked moved in tenants.json and the wing
   ---
-  duration_ms: 2.062913
+  duration_ms: 0.937429
   type: 'test'
   ...
 # Subtest: vaultIdFor is 64-hex and deterministic
-ok 157 - vaultIdFor is 64-hex and deterministic
+ok 174 - vaultIdFor is 64-hex and deterministic
   ---
-  duration_ms: 7.0913
+  duration_ms: 7.461684
   type: 'test'
   ...
 # Subtest: different raw credential ids give different vault ids
-ok 158 - different raw credential ids give different vault ids
+ok 175 - different raw credential ids give different vault ids
   ---
-  duration_ms: 1.939906
+  duration_ms: 2.654352
   type: 'test'
   ...
 # Subtest: round-trip: seal then open with the same key returns the keyring
-ok 159 - round-trip: seal then open with the same key returns the keyring
+ok 176 - round-trip: seal then open with the same key returns the keyring
   ---
-  duration_ms: 3.788407
+  duration_ms: 3.447448
   type: 'test'
   ...
 # Subtest: the SAME PRF output + salt derives the identical key (the property the design rests on)
-ok 160 - the SAME PRF output + salt derives the identical key (the property the design rests on)
+ok 177 - the SAME PRF output + salt derives the identical key (the property the design rests on)
   ---
-  duration_ms: 1.508208
+  duration_ms: 1.520896
   type: 'test'
   ...
 # Subtest: two different PRF outputs derive different keys (wrong PRF => null)
-ok 161 - two different PRF outputs derive different keys (wrong PRF => null)
+ok 178 - two different PRF outputs derive different keys (wrong PRF => null)
   ---
-  duration_ms: 1.675745
+  duration_ms: 1.410667
   type: 'test'
   ...
 # Subtest: a different salt derives a different key (wrong salt => null)
-ok 162 - a different salt derives a different key (wrong salt => null)
+ok 179 - a different salt derives a different key (wrong salt => null)
   ---
-  duration_ms: 1.376492
+  duration_ms: 1.062423
   type: 'test'
   ...
 # Subtest: a flipped ciphertext byte fails closed (GCM auth) => null
-ok 163 - a flipped ciphertext byte fails closed (GCM auth) => null
+ok 180 - a flipped ciphertext byte fails closed (GCM auth) => null
   ---
-  duration_ms: 1.171085
+  duration_ms: 1.002812
   type: 'test'
   ...
 # Subtest: a truncated record (missing iv) => null
-ok 164 - a truncated record (missing iv) => null
+ok 181 - a truncated record (missing iv) => null
   ---
-  duration_ms: 1.041854
+  duration_ms: 0.958533
   type: 'test'
   ...
 # Subtest: a malformed record (garbage ciphertext) => null
-ok 165 - a malformed record (garbage ciphertext) => null
+ok 182 - a malformed record (garbage ciphertext) => null
   ---
-  duration_ms: 1.69507
+  duration_ms: 2.932934
   type: 'test'
   ...
 # Subtest: openKeyring(null) and openKeyring({}) => null (never throws)
-ok 166 - openKeyring(null) and openKeyring({}) => null (never throws)
+ok 183 - openKeyring(null) and openKeyring({}) => null (never throws)
   ---
-  duration_ms: 1.207143
+  duration_ms: 0.783968
   type: 'test'
   ...
 # Subtest: session: save then load returns keyring + vaultId within TTL
-ok 167 - session: save then load returns keyring + vaultId within TTL
+ok 184 - session: save then load returns keyring + vaultId within TTL
   ---
-  duration_ms: 0.510961
+  duration_ms: 0.487865
   type: 'test'
   ...
 # Subtest: arc/wings-polish slice 1: the private-wing TTL is 7 days, fixed from unlock
-ok 168 - arc/wings-polish slice 1: the private-wing TTL is 7 days, fixed from unlock
+ok 185 - arc/wings-polish slice 1: the private-wing TTL is 7 days, fixed from unlock
   ---
-  duration_ms: 0.148746
+  duration_ms: 0.195984
   type: 'test'
   ...
 # Subtest: arc/wings-polish slice 1: loadSession does NOT slide the expiry on use (fixed from unlock)
-ok 169 - arc/wings-polish slice 1: loadSession does NOT slide the expiry on use (fixed from unlock)
+ok 186 - arc/wings-polish slice 1: loadSession does NOT slide the expiry on use (fixed from unlock)
   ---
-  duration_ms: 0.18775
+  duration_ms: 0.191519
   type: 'test'
   ...
 # Subtest: session: an expired session loads as null and is removed
-ok 170 - session: an expired session loads as null and is removed
+ok 187 - session: an expired session loads as null and is removed
   ---
-  duration_ms: 0.218255
+  duration_ms: 0.12585
   type: 'test'
   ...
 # Subtest: lock() clears the session
-ok 171 - lock() clears the session
+ok 188 - lock() clears the session
   ---
-  duration_ms: 0.375039
+  duration_ms: 0.165489
   type: 'test'
   ...
 # Subtest: everEnrolled flag is set after a save and survives lock()
-ok 172 - everEnrolled flag is set after a save and survives lock()
+ok 189 - everEnrolled flag is set after a save and survives lock()
   ---
-  duration_ms: 0.12741
+  duration_ms: 0.208342
   type: 'test'
   ...
 # Subtest: GUARD ON THE GUARD: the sealed record leaks ZERO keyring values; the plaintext has all
-ok 173 - GUARD ON THE GUARD: the sealed record leaks ZERO keyring values; the plaintext has all
+ok 190 - GUARD ON THE GUARD: the sealed record leaks ZERO keyring values; the plaintext has all
   ---
-  duration_ms: 4.946459
+  duration_ms: 4.258111
   type: 'test'
   ...
 # [private-wing] prf shape [object Object] []
@@ -1240,260 +1342,260 @@ ok 173 - GUARD ON THE GUARD: the sealed record leaks ZERO keyring values; the pl
 # [private-wing] prf shape [object String] string
 # [private-wing] prf shape [object Object] []
 # Subtest: a base64url STRING PRF output derives the SAME key as the equivalent Uint8Array
-ok 174 - a base64url STRING PRF output derives the SAME key as the equivalent Uint8Array
+ok 191 - a base64url STRING PRF output derives the SAME key as the equivalent Uint8Array
   ---
-  duration_ms: 3.276375
+  duration_ms: 1.104245
   type: 'test'
   ...
 # Subtest: prfResult normalises a base64url STRING to the SAME bytes as an ArrayBuffer
-ok 175 - prfResult normalises a base64url STRING to the SAME bytes as an ArrayBuffer
+ok 192 - prfResult normalises a base64url STRING to the SAME bytes as an ArrayBuffer
   ---
-  duration_ms: 0.402636
+  duration_ms: 0.36327
   type: 'test'
   ...
 # Subtest: prfResult: a zero-length or missing PRF result is treated as ABSENT (null), not success
-ok 176 - prfResult: a zero-length or missing PRF result is treated as ABSENT (null), not success
+ok 193 - prfResult: a zero-length or missing PRF result is treated as ABSENT (null), not success
   ---
-  duration_ms: 0.118428
+  duration_ms: 0.102704
   type: 'test'
   ...
 # Subtest: prfResult: a wrong-length PRF output is REJECTED with the human message
-ok 177 - prfResult: a wrong-length PRF output is REJECTED with the human message
+ok 194 - prfResult: a wrong-length PRF output is REJECTED with the human message
   ---
-  duration_ms: 0.518737
+  duration_ms: 0.560457
   type: 'test'
   ...
 # Subtest: asBytes: base64url string decodes to the exact bytes; arbitrary objects still throw
-ok 178 - asBytes: base64url string decodes to the exact bytes; arbitrary objects still throw
+ok 195 - asBytes: base64url string decodes to the exact bytes; arbitrary objects still throw
   ---
-  duration_ms: 0.272035
+  duration_ms: 0.214849
   type: 'test'
   ...
 # Subtest: REGRESSION: prfResult returns null (never throws) for every unreadable shape
-ok 179 - REGRESSION: prfResult returns null (never throws) for every unreadable shape
+ok 196 - REGRESSION: prfResult returns null (never throws) for every unreadable shape
   ---
-  duration_ms: 1.006138
+  duration_ms: 0.644155
   type: 'test'
   ...
 # Subtest: asBytes recovers a shim that wraps bytes in an object (.buffer view-like AND numeric-keyed)
-ok 180 - asBytes recovers a shim that wraps bytes in an object (.buffer view-like AND numeric-keyed)
+ok 197 - asBytes recovers a shim that wraps bytes in an object (.buffer view-like AND numeric-keyed)
   ---
-  duration_ms: 0.206464
+  duration_ms: 0.190259
   type: 'test'
   ...
 # Subtest: a REAL PRF container of the wrong length is still REJECTED (kept green)
-ok 181 - a REAL PRF container of the wrong length is still REJECTED (kept green)
+ok 198 - a REAL PRF container of the wrong length is still REJECTED (kept green)
   ---
-  duration_ms: 0.148409
+  duration_ms: 0.158777
   type: 'test'
   ...
 # Subtest: dealsVerdict: a 200 with >=1 row is VERIFIED
-ok 182 - dealsVerdict: a 200 with >=1 row is VERIFIED
+ok 199 - dealsVerdict: a 200 with >=1 row is VERIFIED
   ---
-  duration_ms: 0.08459
+  duration_ms: 0.074283
   type: 'test'
   ...
 # Subtest: dealsVerdict: a 200 with ZERO rows is a WRONG key (the silent-failure trap), NOT success
-ok 183 - dealsVerdict: a 200 with ZERO rows is a WRONG key (the silent-failure trap), NOT success
+ok 200 - dealsVerdict: a 200 with ZERO rows is a WRONG key (the silent-failure trap), NOT success
   ---
-  duration_ms: 0.052244
+  duration_ms: 0.042798
   type: 'test'
   ...
 # Subtest: dealsVerdict: a non-200 / non-array body is UNREACHABLE or wrong, never verified
-ok 184 - dealsVerdict: a non-200 / non-array body is UNREACHABLE or wrong, never verified
+ok 201 - dealsVerdict: a non-200 / non-array body is UNREACHABLE or wrong, never verified
   ---
-  duration_ms: 0.05905
+  duration_ms: 0.047229
   type: 'test'
   ...
 # Subtest: verifyCardScout: a correct key (200 + a row) => verified; the probe sends x-plan-id and hits press_deals
-ok 185 - verifyCardScout: a correct key (200 + a row) => verified; the probe sends x-plan-id and hits press_deals
+ok 202 - verifyCardScout: a correct key (200 + a row) => verified; the probe sends x-plan-id and hits press_deals
   ---
-  duration_ms: 0.283304
+  duration_ms: 0.161558
   type: 'test'
   ...
 # Subtest: verifyCardScout: 200 with ZERO rows => WRONG (must NOT be read as success)
-ok 186 - verifyCardScout: 200 with ZERO rows => WRONG (must NOT be read as success)
+ok 203 - verifyCardScout: 200 with ZERO rows => WRONG (must NOT be read as success)
   ---
-  duration_ms: 0.113471
+  duration_ms: 0.073661
   type: 'test'
   ...
 # Subtest: verifyCardScout: a non-200 response => unreachable (surfaced as a plain retry, never a status code)
-ok 187 - verifyCardScout: a non-200 response => unreachable (surfaced as a plain retry, never a status code)
+ok 204 - verifyCardScout: a non-200 response => unreachable (surfaced as a plain retry, never a status code)
   ---
-  duration_ms: 0.103793
+  duration_ms: 0.085639
   type: 'test'
   ...
 # Subtest: verifyCardScout: a thrown fetch or an empty sync id => unreachable, never a crash
-ok 188 - verifyCardScout: a thrown fetch or an empty sync id => unreachable, never a crash
+ok 205 - verifyCardScout: a thrown fetch or an empty sync id => unreachable, never a crash
   ---
-  duration_ms: 0.232592
+  duration_ms: 0.216129
   type: 'test'
   ...
 # Subtest: REGRESSION: enrol falls through to prfViaGet when CREATE yields an unusable value, then succeeds from the assertion
-ok 189 - REGRESSION: enrol falls through to prfViaGet when CREATE yields an unusable value, then succeeds from the assertion
+ok 206 - REGRESSION: enrol falls through to prfViaGet when CREATE yields an unusable value, then succeeds from the assertion
   ---
-  duration_ms: 11.932268
+  duration_ms: 7.149362
   type: 'test'
   ...
 # Subtest: S1: saveSession persists cardsharp as a redacted stub; this tab keeps the full creds in memory only
-ok 190 - S1: saveSession persists cardsharp as a redacted stub; this tab keeps the full creds in memory only
+ok 207 - S1: saveSession persists cardsharp as a redacted stub; this tab keeps the full creds in memory only
   ---
-  duration_ms: 0.280236
+  duration_ms: 0.271129
   type: 'test'
   ...
 # Subtest: S1: a pre-redaction (plaintext) session is scrubbed in place on the next read
-ok 191 - S1: a pre-redaction (plaintext) session is scrubbed in place on the next read
+ok 208 - S1: a pre-redaction (plaintext) session is scrubbed in place on the next read
   ---
-  duration_ms: 0.206797
+  duration_ms: 0.145098
   type: 'test'
   ...
 # Subtest: S1: lock() (or a vanished session) drops the in-memory creds
-ok 192 - S1: lock() (or a vanished session) drops the in-memory creds
+ok 209 - S1: lock() (or a vanished session) drops the in-memory creds
   ---
-  duration_ms: 0.118903
+  duration_ms: 0.11561
   type: 'test'
   ...
 # Subtest: S1: restoreRedacted puts the real entry back from the decrypted row; a filled stub just loses its flag
-ok 193 - S1: restoreRedacted puts the real entry back from the decrypted row; a filled stub just loses its flag
+ok 210 - S1: restoreRedacted puts the real entry back from the decrypted row; a filled stub just loses its flag
   ---
-  duration_ms: 0.169574
+  duration_ms: 0.206209
   type: 'test'
   ...
 # Subtest: S1: sealing never writes a redacted stub over the vault row (updateKeyring restores before sealing)
-ok 194 - S1: sealing never writes a redacted stub over the vault row (updateKeyring restores before sealing)
+ok 211 - S1: sealing never writes a redacted stub over the vault row (updateKeyring restores before sealing)
   ---
-  duration_ms: 1.909952
+  duration_ms: 6.539794
   type: 'test'
   ...
 # Subtest: absent, malformed or unknown ticket → 401; a malformed one never reaches the database; the mailbox is never called
-ok 195 - absent, malformed or unknown ticket → 401; a malformed one never reaches the database; the mailbox is never called
+ok 212 - absent, malformed or unknown ticket → 401; a malformed one never reaches the database; the mailbox is never called
   ---
-  duration_ms: 1.886377
+  duration_ms: 1.430653
   type: 'test'
   ...
 # Subtest: a ticket is spent: reuse refused after its uses; expiry refused; the wrong scope refused
-ok 196 - a ticket is spent: reuse refused after its uses; expiry refused; the wrong scope refused
+ok 213 - a ticket is spent: reuse refused after its uses; expiry refused; the wrong scope refused
   ---
-  duration_ms: 0.510962
+  duration_ms: 0.365738
   type: 'test'
   ...
 # Subtest: an unknown action is refused without spending a use
-ok 197 - an unknown action is refused without spending a use
+ok 214 - an unknown action is refused without spending a use
   ---
-  duration_ms: 0.237141
+  duration_ms: 0.113687
   type: 'test'
   ...
 # Subtest: JSON paths unchanged: search/thread return the script JSON; the SQL secret path still works alongside
-ok 198 - JSON paths unchanged: search/thread return the script JSON; the SQL secret path still works alongside
+ok 215 - JSON paths unchanged: search/thread return the script JSON; the SQL secret path still works alongside
   ---
-  duration_ms: 0.516833
+  duration_ms: 0.463738
   type: 'test'
   ...
 # Subtest: read.attachment over a ticket = the raw bytes, byte-identical to the fixture (sha256), with safe headers
-ok 199 - read.attachment over a ticket = the raw bytes, byte-identical to the fixture (sha256), with safe headers
+ok 216 - read.attachment over a ticket = the raw bytes, byte-identical to the fixture (sha256), with safe headers
   ---
-  duration_ms: 6.643543
+  duration_ms: 6.194771
   type: 'test'
   ...
 # Subtest: attachment errors stay JSON (never a half file): script refusal, size mismatch, bad encoding
-ok 200 - attachment errors stay JSON (never a half file): script refusal, size mismatch, bad encoding
+ok 217 - attachment errors stay JSON (never a half file): script refusal, size mismatch, bad encoding
   ---
-  duration_ms: 0.764156
+  duration_ms: 0.448775
   type: 'test'
   ...
 # Subtest: header helpers: no CRLF / quote injection; odd content types fall back to octet-stream
-ok 201 - header helpers: no CRLF / quote injection; odd content types fall back to octet-stream
+ok 218 - header helpers: no CRLF / quote injection; odd content types fall back to octet-stream
   ---
-  duration_ms: 0.270687
+  duration_ms: 0.198667
   type: 'test'
   ...
 # Subtest: index.ts wires the ticket header and returns the file body; migration: hash-only, scoped, service_role only
-ok 202 - index.ts wires the ticket header and returns the file body; migration: hash-only, scoped, service_role only
+ok 219 - index.ts wires the ticket header and returns the file body; migration: hash-only, scoped, service_role only
   ---
-  duration_ms: 0.507765
+  duration_ms: 0.385041
   type: 'test'
   ...
 # Subtest: scopes never cross: a read ticket drafts nothing, a draft ticket never sends, a send ticket never drafts
-ok 203 - scopes never cross: a read ticket drafts nothing, a draft ticket never sends, a send ticket never drafts
+ok 220 - scopes never cross: a read ticket drafts nothing, a draft ticket never sends, a send ticket never drafts
   ---
-  duration_ms: 2.774879
+  duration_ms: 2.40483
   type: 'test'
   ...
 # Subtest: absent / malformed ticket → 401 before any fetch; unknown action → 400 without spending a use
-ok 204 - absent / malformed ticket → 401 before any fetch; unknown action → 400 without spending a use
+ok 221 - absent / malformed ticket → 401 before any fetch; unknown action → 400 without spending a use
   ---
-  duration_ms: 0.405139
+  duration_ms: 0.365616
   type: 'test'
   ...
 # Subtest: only whitelisted params travel, with the SEND key; draft.send forwards only the id
-ok 205 - only whitelisted params travel, with the SEND key; draft.send forwards only the id
+ok 222 - only whitelisted params travel, with the SEND key; draft.send forwards only the id
   ---
-  duration_ms: 0.372613
+  duration_ms: 0.339083
   type: 'test'
   ...
 # Subtest: replies pass through (ok → 200, refusal → 502); errors leak no URL or key; missing config → 500
-ok 206 - replies pass through (ok → 200, refusal → 502); errors leak no URL or key; missing config → 500
+ok 223 - replies pass through (ok → 200, refusal → 502); errors leak no URL or key; missing config → 500
   ---
-  duration_ms: 0.470076
+  duration_ms: 0.514962
   type: 'test'
   ...
 # Subtest: the draft function uses the send key, never the read key; the read function never names the send key
-ok 207 - the draft function uses the send key, never the read key; the read function never names the send key
+ok 224 - the draft function uses the send key, never the read key; the read function never names the send key
   ---
-  duration_ms: 0.719559
+  duration_ms: 0.48445
   type: 'test'
   ...
 # Subtest: no or wrong header secret → 401, the mailer is never called
-ok 208 - no or wrong header secret → 401, the mailer is never called
+ok 225 - no or wrong header secret → 401, the mailer is never called
   ---
-  duration_ms: 2.081898
+  duration_ms: 1.777109
   type: 'test'
   ...
 # Subtest: unknown action (incl. a send body) → 400, nothing forwarded
-ok 209 - unknown action (incl. a send body) → 400, nothing forwarded
+ok 226 - unknown action (incl. a send body) → 400, nothing forwarded
   ---
-  duration_ms: 0.331335
+  duration_ms: 0.284766
   type: 'test'
   ...
 # Subtest: each action forwards ONLY its params, with the read key, following the redirect
-ok 210 - each action forwards ONLY its params, with the read key, following the redirect
+ok 227 - each action forwards ONLY its params, with the read key, following the redirect
   ---
-  duration_ms: 1.002552
+  duration_ms: 0.780986
   type: 'test'
   ...
 # Subtest: the script reply is returned as-is: ok → 200, not ok → 502
-ok 211 - the script reply is returned as-is: ok → 200, not ok → 502
+ok 228 - the script reply is returned as-is: ok → 200, not ok → 502
   ---
-  duration_ms: 0.427636
+  duration_ms: 0.318087
   type: 'test'
   ...
 # Subtest: unreachable / non-JSON mailer / missing config → plain errors, no URL or key leaks
-ok 212 - unreachable / non-JSON mailer / missing config → plain errors, no URL or key leaks
+ok 229 - unreachable / non-JSON mailer / missing config → plain errors, no URL or key leaks
   ---
-  duration_ms: 0.402036
+  duration_ms: 0.306582
   type: 'test'
   ...
 # Subtest: the send function and its secrets are untouched; the reader never names the send key
-ok 213 - the send function and its secrets are untouched; the reader never names the send key
+ok 230 - the send function and its secrets are untouched; the reader never names the send key
   ---
-  duration_ms: 0.385591
+  duration_ms: 0.298622
   type: 'test'
   ...
 # Subtest: migration: grants in the same file, service_role only, result deletes the response row
-ok 214 - migration: grants in the same file, service_role only, result deletes the response row
+ok 231 - migration: grants in the same file, service_role only, result deletes the response row
   ---
-  duration_ms: 0.346975
+  duration_ms: 0.380349
   type: 'test'
   ...
-1..214
-# tests 214
+1..231
+# tests 231
 # suites 0
-# pass 214
+# pass 231
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 4993.764504
+# duration_ms 4755.176936
 == run_build
 inline-vault: index.html is in sync with src/vault.js
 inline-vault: src/gate.js is in sync with src/vault.js
@@ -1537,7 +1639,7 @@ Running 34 tests using 1 worker
 [32/34] [iphone-webkit] › test/wing-drag-iphone.spec.mjs:43:3 › iPhone 15 (webkit) private: touch long-press drag reorders and persists
 [33/34] [iphone-webkit] › test/wing-drag-iphone.spec.mjs:43:3 › iPhone 15 (webkit) family: touch long-press drag reorders and persists
 [34/34] [iphone-webkit] › test/wing-drag-iphone.spec.mjs:62:1 › iPhone 15 (webkit) private: a touch that moves before the hold scrolls — no reorder
-  34 passed (35.8s)
+  34 passed (32.8s)
 == npx playwright test --project=desktop
 
 Running 124 tests using 1 worker
@@ -1666,7 +1768,7 @@ Running 124 tests using 1 worker
 [122/124] [desktop] › test/wing-drag.spec.mjs:86:1 › private: moving >10px before the hold is a scroll intent — no lift, no reorder, no write
 [123/124] [desktop] › test/wing-drag.spec.mjs:104:1 › legacy {order, archived} row: public paint unchanged; a wing write keeps both keys intact
 [124/124] [desktop] › test/wing-drag.spec.mjs:121:1 › a wing order never adds or drops a page — stale/foreign entries are ignored
-  124 passed (1.6m)
+  124 passed (1.5m)
 == run_db_readback
 db: read back db/*.sql against the Supabase connector's list_migrations and cite it (lessons RULE [press] [supabase])
 
@@ -1676,4 +1778,4 @@ db: read back db/*.sql against the Supabase connector's list_migrations and cite
 🟢 npx playwright test --project=iphone-webkit
 🟢 npx playwright test --project=desktop
 🟡 run_db_readback — PARTIAL
-GAUNTLET PARTIAL (other) — exit 2 — log docs/evidence/monitor-view-timeout-gauntlet.txt
+GAUNTLET PARTIAL (other) — exit 2 — log docs/evidence/monitor-view-runs-branch-gauntlet.txt

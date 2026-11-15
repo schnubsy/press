@@ -24,39 +24,57 @@ const BAD = new Set(['late', 'failed']);
 
 function die(msg) { console.log(`::error::${msg}`); process.exit(1); }
 
-// One transient blip (a network error or an HTTP 5xx — e.g. a 57014 statement timeout surfacing as 500) is retried:
-// up to ATTEMPTS tries, RETRY_MS apart, each retry a ::warning:: with its attempt number. Only then does the job die with
-// the same "Not reporting healthy on a failed check" message — a failed check is still never reported healthy.
-// A 4xx is not transient (key / URL problem) and dies at once. Arc monitor-view-timeout, slice 3.
+// One transient blip (a network error, an HTTP 5xx — e.g. a 57014 statement timeout surfacing as 500 — or no answer
+// within TIMEOUT_MS) is retried: up to ATTEMPTS tries, RETRY_MS apart, each retry a ::warning:: with its attempt number.
+// Only then does the job die with the same "Not reporting healthy on a failed check" message — a failed check is still
+// never reported healthy. A 4xx is not transient (key / URL problem) and dies at once; so does a 200 whose body is not
+// JSON. Arc monitor-view-timeout, slice 3; the per-attempt timeout + bad-body handling: arc monitor-view-runs-branch, slice 2.
 export const ATTEMPTS = 3;
 export const RETRY_MS = 10000;
+export const TIMEOUT_MS = 20000;
 const wait = (ms) => new Promise((res) => setTimeout(res, ms));
+const isTimeout = (e) => !!e && (e.name === 'TimeoutError' || e.name === 'AbortError');
 
-export async function fetchRows(fetchImpl = fetch, { attempts = ATTEMPTS, retryMs = RETRY_MS, sleep = wait, fail = die, log = console.log } = {}) {
-  let r;
+export async function fetchRows(fetchImpl = fetch, { attempts = ATTEMPTS, retryMs = RETRY_MS, timeoutMs = TIMEOUT_MS,
+  timeoutSignal = (ms) => AbortSignal.timeout(ms), sleep = wait, fail = die, log = console.log } = {}) {
+  let rows;
   for (let attempt = 1; ; attempt++) {
-    let problem;
-    r = null;
+    let problem, r = null;
+    const signal = timeoutSignal(timeoutMs);
     try {
       r = await fetchImpl(`${SB_URL}/rest/v1/press_agent_monitor_public?select=id,app_label,label,enabled,status,status_reason,fix_hint,last_real_work_at,watch_status,watch_since,watch_notified_at&order=sort.asc`,
-        { headers: { apikey: SB_KEY } });
+        { headers: { apikey: SB_KEY }, signal });
     } catch (e) {
-      const m = String((e && e.message) || e);
-      problem = { what: `could not be reached (${m})`, final: `Could not reach the press status service (${m}). Not reporting healthy on a failed check.` };
+      problem = unreachable(e, timeoutMs);
     }
     if (r) {
-      if (r.ok) break;
-      const final = `The press status service answered HTTP ${r.status}. Not reporting healthy on a failed check.`;
-      if (r.status < 500) return fail(final);
-      problem = { what: `answered HTTP ${r.status}`, final };
+      if (r.ok) {
+        try { rows = await r.json(); break; } catch (e) {
+          // the body stream timed out or broke ⇒ transient, retried; a body that arrived but is not JSON ⇒ fail now
+          if (!(e instanceof SyntaxError)) problem = unreachable(e, timeoutMs);
+          else return fail(`The press status service answered HTTP ${r.status} with a body that is not JSON (${String(e.message).slice(0, 120)}). Not reporting healthy on a failed check.`);
+        }
+      } else {
+        const final = `The press status service answered HTTP ${r.status}. Not reporting healthy on a failed check.`;
+        if (r.status < 500) return fail(final);
+        problem = { what: `answered HTTP ${r.status}`, final };
+      }
     }
     if (attempt >= attempts) return fail(problem.final);
     log(`::warning::Attempt ${attempt} of ${attempts}: the press status service ${problem.what} — retrying in ${Math.round(retryMs / 1000)} s.`);
     await sleep(retryMs);
   }
-  const rows = await r.json();
   if (!Array.isArray(rows) || !rows.length) return fail('The status view returned no rows — the monitor registry is empty or unreadable.');
   return rows;
+}
+
+function unreachable(e, timeoutMs) {
+  if (isTimeout(e)) {
+    const s = `${Math.round(timeoutMs / 1000)} s`;
+    return { what: `did not answer within ${s}`, final: `The press status service did not answer within ${s}. Not reporting healthy on a failed check.` };
+  }
+  const m = String((e && e.message) || e);
+  return { what: `could not be reached (${m})`, final: `Could not reach the press status service (${m}). Not reporting healthy on a failed check.` };
 }
 
 export function assess(rows, nowMs, { staleMin = STALE_MIN, strict = STRICT } = {}) {
