@@ -87,14 +87,27 @@ for (const page of Object.keys(tenants)) {
   } else if (!isGitRepo(repoPath)) say('FAIL', 'T2 source', page, `${repoPath} is not a git repo`);
   else say('PASS', 'T2 source', page, `${t.repo} present`);
 
-  // T3 vendored gate — vendored ≠ null ⇒ byte-identical to press/src/<gate>. Missing = FAIL.
+  // T3 vendored gate — vendored ≠ null ⇒ byte-identical to press/src/<gate> (or, with vendoredSubset, a checked subset). Missing = FAIL.
   if (t.vendored == null) say('SKIP', 'T3 gate', page, 'no vendored gate');
   else {
     const canonical = join(PRESS, t.gate);
     const vend = join(repoPath, t.vendored);
     if (!existsSync(vend)) say('FAIL', 'T3 gate', page, `vendored gate MISSING at ${vend}`);
     else if (!existsSync(canonical)) say('FAIL', 'T3 gate', page, `canonical ${t.gate} missing in press`);
-    else {
+    else if (t.vendoredSubset) {
+      // a CHECKED SUBSET (cardsharp, 2026-11-15 — own-origin unlock only): the tenant's own checker proves every kept
+      // function / line / export traces to press/<gate> (its named owned functions excepted)
+      try {
+        const mod = await import(new URL(`file://${join(repoPath, t.vendoredSubset)}`).href);
+        const probs = mod.gateSubsetProblems(readFileSync(vend, 'utf8'), readFileSync(canonical, 'utf8'));
+        // press's own pin (not the tenant's code): the vendored file's blob must be the one press recorded — a re-trim
+        // (or a weakened checker) needs a deliberate tenants.json update here
+        const blob = gitBlobHash(vend);
+        if (t.vendoredBlob && blob !== t.vendoredBlob) say('FAIL', 'T3 gate', page, `PIN: ${t.vendored} blob ${blob.slice(0, 8)} != tenants.json vendoredBlob ${t.vendoredBlob.slice(0, 8)} — re-pin on purpose`);
+        else if (!probs.length) say('PASS', 'T3 gate', page, `${t.vendored} ⊂ press/${t.gate} (checked subset, ${t.vendoredSubset}; blob ${blob.slice(0, 8)} pinned)`);
+        else say('FAIL', 'T3 gate', page, `SUBSET DRIFT: ${probs.slice(0, 3).join(' · ')}`);
+      } catch (e) { say('FAIL', 'T3 gate', page, `subset check ${t.vendoredSubset} failed to run: ${e.message}`); }
+    } else {
       const a = gitBlobHash(vend), b = gitBlobHash(canonical);
       if (a === b) say('PASS', 'T3 gate', page, `${t.vendored} == press/${t.gate} (${a.slice(0, 8)})`);
       else say('FAIL', 'T3 gate', page, `DRIFT: ${t.vendored} (${a.slice(0, 8)}) != press/${t.gate} (${b.slice(0, 8)}) — re-vendor in the SOURCE repo`);

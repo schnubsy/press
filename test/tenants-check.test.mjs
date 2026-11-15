@@ -134,6 +134,25 @@ test('T3 gate FAIL — vendored drift', () => {
   e.cleanup();
 });
 
+// cardsharp 2026-11-15: vendoredSubset ⇒ T3 runs the tenant's own subset checker (gateSubsetProblems → [] = PASS)
+for (const [title, probs, want] of [['PASS — checked subset', '[]', /PASS.*checked subset/], ['FAIL — subset drift', "['foreign line']", /FAIL.*SUBSET DRIFT.*foreign line/]]) {
+  test(`T3 gate ${title}`, () => {
+    const e = estate();
+    e.page('a.html').tier('a.html', 'personal').repo('appa', { gate: '// a trimmed copy\n' }).tenant('a.html', { repo: 'appa', tier: 'personal', gate: 'src/gate.js', vendored: 'src/vendor/press-gate.js', vendoredSubset: 'tools/subset.mjs', release: 'tools/release.js' }).write();
+    writeFileSync(join(e.vscode, 'appa', 'tools', 'subset.mjs'), `export function gateSubsetProblems() { return ${probs}; }\n`);
+    assert.match(line(e.run().out, 'T3 gate', 'a.html'), want);
+    e.cleanup();
+  });
+}
+
+test('T3 gate FAIL — subset pinned blob mismatch (press pins the vendored file, not the tenant)', () => {
+  const e = estate();
+  e.page('a.html').tier('a.html', 'personal').repo('appa', { gate: '// a trimmed copy\n' }).tenant('a.html', { repo: 'appa', tier: 'personal', gate: 'src/gate.js', vendored: 'src/vendor/press-gate.js', vendoredSubset: 'tools/subset.mjs', vendoredBlob: '0000000000000000000000000000000000000000', release: 'tools/release.js' }).write();
+  writeFileSync(join(e.vscode, 'appa', 'tools', 'subset.mjs'), 'export function gateSubsetProblems() { return []; }\n');
+  assert.match(line(e.run().out, 'T3 gate', 'a.html'), /FAIL.*PIN/);
+  e.cleanup();
+});
+
 test('T3 gate FAIL — vendored MISSING (not SKIP)', () => {
   const e = estate();
   e.page('a.html').tier('a.html', 'personal').repo('appa', { vendored: null }).tenant('a.html', { repo: 'appa', tier: 'personal', gate: 'src/gate.js', vendored: 'src/vendor/press-gate.js', release: 'tools/release.js' }).write();

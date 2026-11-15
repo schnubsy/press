@@ -155,6 +155,8 @@
       "tier": "personal",
       "gate": "src/gate.js",
       "vendored": "src/vendor/press-gate.js",
+      "vendoredSubset": "tools/publish-checks.mjs",
+      "vendoredBlob": "ac8833b0f5735bc94603c0470f9ecc44a8bf409b",
       "release": "tools/release.js",
       "build": "node build.js",
       "output": "dist/cardsharp.html",
