@@ -98,3 +98,14 @@ test('view v4: grants as v3 (anon reads the public status view; nothing else wid
   assert.doesNotMatch(V4, /grant (insert|update|delete|all)/i);
   assert.doesNotMatch(V4, /create (unique )?index|create table|drop /i);
 });
+
+// slice 3: the db/ mirror of live migration 20261106185336 press_agent_due_times_multi_dow
+test('mirror: db/20261106_press_agent_due_times_multi_dow.sql is the live definition (md5 of pg_get_functiondef, 2026-11-15)', () => {
+  const t = read('db/20261106_press_agent_due_times_multi_dow.sql');
+  const i = t.indexOf('CREATE OR REPLACE FUNCTION public.press_agent_due_times('), j = t.indexOf('$function$;', i);
+  assert.ok(i > 0 && j > i, 'one CREATE OR REPLACE FUNCTION … $function$;');
+  assert.equal(md5(t.slice(i, j) + '$function$\n'), '646435c0d3c0bfdcdd166a114c7252b0');
+  assert.match(t, /20261106185336/);                       // names the live migration it mirrors
+  assert.match(t, /SET search_path TO ''/);
+  assert.doesNotMatch(t.replace(/^--.*$/gm, ''), /grant|revoke|drop /i);   // a mirror, no ACL change
+});
