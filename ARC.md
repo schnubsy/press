@@ -46,6 +46,7 @@ CONTEXT (verified 2026-11-15 by the chat, read-only — Supabase project eepjhpy
 - The view's 40-day window exists for monthly schedules (press_agent_due_times looks back 40 days).
 
 === SLICE 1 — prune pg_cron history (db) ===
+Status: done 8f76e34
 Scope: bound cron.job_run_details so the view's cron branch stays small, without changing any monitor status.
 Files in play: db/2026111X_cron_history_prune.sql (new), test for it.
 Implementation: a pg_cron job (e.g. `cron-history-prune`, daily, off the hour) that deletes `cron.job_run_details`
