@@ -57,6 +57,7 @@ If n_runs semantics must change to get there, keep the output value identical (e
 never shows it — prove where n_runs is read: view, agent-health.html, agent-watch).
 
 === SLICE 2 — fetchRows hardening (script) ===
+Status: done 9b9ca5a
 Scope: .github/scripts/agent-health-check.mjs — (a) each fetch attempt gets an AbortSignal timeout (~20 s) and a timeout
 counts as a transient error (retried like a network error); (b) a 200 with an unparseable / non-JSON body fails with the
 existing "Not reporting healthy on a failed check" wording (via fail()), never an unhandled throw.
