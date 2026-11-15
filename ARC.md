@@ -58,6 +58,7 @@ set BEFORE == what it computes against the post-prune predicate (prove with a re
 evidence committed. The live DELETE/cron.schedule is a deploy → STAGED.
 
 === SLICE 2 — make the view's cron branch cheap (db) ===
+Status: done 8625e1a
 Scope: restrict the cron subquery to the jobs press_agent_expect actually names before it touches job_run_details,
 and only the rows it needs (latest per job + the due-time window), so it no longer sorts every row to disk.
 Files in play: db/2026111X_agent_monitor_view_v3.sql (new; `create or replace view`, same columns, same grants), test/agent-monitor.test.mjs.
