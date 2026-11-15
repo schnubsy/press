@@ -100,7 +100,11 @@ for (const page of Object.keys(tenants)) {
       try {
         const mod = await import(new URL(`file://${join(repoPath, t.vendoredSubset)}`).href);
         const probs = mod.gateSubsetProblems(readFileSync(vend, 'utf8'), readFileSync(canonical, 'utf8'));
-        if (!probs.length) say('PASS', 'T3 gate', page, `${t.vendored} ⊂ press/${t.gate} (checked subset, ${t.vendoredSubset})`);
+        // press's own pin (not the tenant's code): the vendored file's blob must be the one press recorded — a re-trim
+        // (or a weakened checker) needs a deliberate tenants.json update here
+        const blob = gitBlobHash(vend);
+        if (t.vendoredBlob && blob !== t.vendoredBlob) say('FAIL', 'T3 gate', page, `PIN: ${t.vendored} blob ${blob.slice(0, 8)} != tenants.json vendoredBlob ${t.vendoredBlob.slice(0, 8)} — re-pin on purpose`);
+        else if (!probs.length) say('PASS', 'T3 gate', page, `${t.vendored} ⊂ press/${t.gate} (checked subset, ${t.vendoredSubset}; blob ${blob.slice(0, 8)} pinned)`);
         else say('FAIL', 'T3 gate', page, `SUBSET DRIFT: ${probs.slice(0, 3).join(' · ')}`);
       } catch (e) { say('FAIL', 'T3 gate', page, `subset check ${t.vendoredSubset} failed to run: ${e.message}`); }
     } else {
