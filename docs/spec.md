@@ -167,14 +167,13 @@ is instantly spendable (Cardsharp first) lives on its OWN origin (a free org's `
 passkey (src/gate.js `guardOwn`: rpId = its host, creds in tab memory only, relock after 5 min hidden / on pagehide), so
 no script on schnubsy.github.io can reach its credentials. press keeps the page as the wing card + keyring id (pages.json,
 spaces.json, LABELS stay); `tenants.json` `origin` names the address; index.html `OWN_ORIGIN` makes the card link there and
-offers the ONE-TIME move from the unlocked wing (src/vault.js `moveOut` → the app's `moveIn`: exact-origin postMessage;
-afterwards the keyring keeps only `{moved: <origin>}`); `press/<page>` is the tenant build's redirect stub to the origin
+keeps NO creds for it (the keyring holds only `{moved: <origin>}`; Connect says "At its own address"); `press/<page>` is the tenant build's redirect stub to the origin
 (≤ 2 KB, noindex, query/hash kept, no gate/vault/data code — it may only delete the retired seal). tenants-check **T11
 `own-origin`** enforces it; T5 rebuilds the stub. The 7-day seal (quick-fixes S3) is retired: `purgeSeal()` deletes it at
-every vault load. **Move complete (`moveComplete: true`, cardsharp own-origin-cleanup 2026-11-14):** once the app holds
-its creds under its own passkey on ANY device, `tenants.json` marks it and index.html `OWN_MOVE_COMPLETE` mirrors it (T11
-`move-complete` pins the two equal): no device, row or tab shows move UI for it again, and every wing unlock silently
-re-seals the unlocked row with `{moved}` in place of any leftover creds (same key, no prompt). The app's gate looks for its
+every vault load. **No move UI (marquee-move-cleanup 2026-11-15):** Cardsharp's one-time move (2026-11-13/14) is done
+everywhere, so the wing's move machinery and `tenants.json` `moveComplete` are retired: every wing unlock silently re-seals
+the unlocked row with `{moved}` in place of any leftover creds of an `OWN_ORIGIN` app (same key, no prompt). The shared
+vault core keeps its generic `moveOut`/`moveIn` (src/vault.js, vendored byte-identically by other tenants). The app's gate looks for its
 passkey (discoverable assertion) before it ever creates one — one passkey per origin. Runbook: `schnubsy/cardsharp` `docs/runbooks/own-origin-move.md`.
 **Parented pages (`parent`, arc app-lab 2026-10-14).** A `pages.json` entry may carry `"parent": "<page>.html"`: the page
 is listed INSIDE that parent (today: `optimo.html` → `app-lab.html`, an App Lab prototype whose `optimo.html` is only its

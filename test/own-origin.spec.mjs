@@ -2,9 +2,9 @@
 // Replaces sealed-unlock.spec.mjs: the 7-day seal is retired (src/vault.js purgeSeal). Proves, in a real browser:
 //   · the wing's Cardsharp card links to https://schnubsy-cardsharp.github.io/ and navigation is seamless both ways
 //     (card → app → ← Private Wing → Back → Forward) — desktop + iphone-webkit;
-//   · the one-time MOVE from the unlocked wing: Unlock-to-move (creds redacted in this tab) → Move → the app's own tab
-//     (src/gate.js guardOwn, ?move=1) saves its OWN passkey → DONE → the wing's keyring keeps only {moved} → no Move
-//     block, Connect says "At its own address", the recovery kit names the new address — and no creds in storage;
+//   · no move UI ever (the one-time move is retired, marquee-move-cleanup 2026-11-15): a wing row that still holds
+//     Cardsharp's creds is silently re-sealed with only {moved} on its next unlock; Connect says "At its own address",
+//     the recovery kit names the new address — and no creds in storage;
 //   · the retired seal: one wing visit deletes an older page's IndexedDB `press:vault:seal` + the session's .seal, and a
 //     wing unlock creates neither.
 // Hermetic: both prod hosts are ROUTED inside the browser (real origins → real rpIds and postMessage origins); GitHub and
@@ -16,10 +16,6 @@ import { dirname, join } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const INDEX = readFileSync(join(ROOT, 'index.html'), 'utf8');
-// own-origin-cleanup (2026-11-14): the real wing marks Cardsharp move-complete (OWN_MOVE_COMPLETE). The one-time MOVE specs
-// below run the wing with that marker list EMPTIED — the state of a future own-origin app that has not moved yet.
-const INDEX_UNMARKED = INDEX.replace(/const OWN_MOVE_COMPLETE = \[[^\]]*\];/, 'const OWN_MOVE_COMPLETE = [];');
-if (INDEX_UNMARKED === INDEX) throw new Error('index.html has no OWN_MOVE_COMPLETE list');
 const GATE = readFileSync(join(ROOT, 'src', 'gate.js'), 'utf8');
 const WING_ORIGIN = 'https://schnubsy.github.io', APP_ORIGIN = 'https://schnubsy-cardsharp.github.io';
 const WING = WING_ORIGIN + '/press/index.html?view=personal', APP = APP_ORIGIN + '/';
@@ -33,7 +29,7 @@ PressGate.guardOwn({ page: 'cardsharp.html', name: 'Cardsharp', wing: ${JSON.str
   onLock: function () { document.getElementById('app').hidden = true; delete document.body.dataset.unlocked; } });
 </script>`;
 
-async function routes(context, { vault = new Map(), index = INDEX } = {}) {
+async function routes(context, { vault = new Map() } = {}) {
   await context.route('https://api.github.com/**', (r) => r.fulfill({ status: 200, contentType: 'application/json',
     body: r.request().url().includes('/contents/archive') ? '[]' : JSON.stringify(['fsa.html', 'cardsharp.html', 'index.html'].map((name) => ({ type: 'file', name }))) }));
   await context.route('https://raw.githubusercontent.com/**', (r) => {
@@ -56,7 +52,7 @@ async function routes(context, { vault = new Map(), index = INDEX } = {}) {
   });
   await context.route(WING_ORIGIN + '/**', (r) => {
     const p = new URL(r.request().url()).pathname;
-    if (p === '/press/' || p === '/press/index.html') return r.fulfill({ status: 200, contentType: 'text/html', body: index });
+    if (p === '/press/' || p === '/press/index.html') return r.fulfill({ status: 200, contentType: 'text/html', body: INDEX });
     if (p === '/press/blank.html') return r.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><title>blank</title>' });
     return r.fulfill({ status: 404, body: 'nf' });
   });
@@ -102,74 +98,11 @@ test('the wing card opens Cardsharp at its own address; ← Private Wing, Back a
 test.describe('needs a passkey (CDP virtual authenticator — desktop Chromium)', () => {
   test.skip(({ browserName }) => browserName !== 'chromium', 'CDP virtual authenticator');
 
-  test('move: Unlock to move → Move → the app saves its OWN passkey → the wing keeps only {moved}; no creds in storage anywhere', async ({ page, context }) => {
-    await routes(context, { index: INDEX_UNMARKED }); // a not-yet-moved app
-    await authenticator(context, page);
-    await page.goto(WING);
-    await page.evaluate(async (kr) => { await PressVault.enrol({ label: 'wing', keyring: kr }); }, KEYRING);
-    await page.reload(); // this tab's memory is gone: the session holds a REDACTED stub for Cardsharp
-    const btn = page.locator('.tw-move-btn');
-    await expect(btn).toHaveText('Unlock to move Cardsharp');
-    await btn.click(); // one wing passkey tap
-    await expect(btn).toHaveText('Move Cardsharp to its own address');
-    const [pop] = await Promise.all([context.waitForEvent('page'), btn.click()]);
-    await authenticator(context, pop);
-    await pop.waitForLoadState();
-    expect(pop.url()).toMatch(/^https:\/\/schnubsy-cardsharp\.github\.io\//);
-    await expect(pop.locator('#pg-unlock')).toHaveText('Save passkey');
-    await expect(pop.locator('#pg-unlock')).toBeEnabled();
-    await pop.locator('#pg-unlock').click(); // looks for this origin's passkey first (own-origin-cleanup slice 3) — none here
-    await expect(pop.locator('#pg-unlock')).toHaveText('Create passkey');
-    await pop.locator('#pg-unlock').click();
-    await expect(pop.locator('#press-gate')).toHaveCount(0);
-    await expect(pop.locator('body')).toHaveAttribute('data-unlocked', 'yes');
-    await expect(page.locator('.tw-move-msg')).toContainText('moved ✓');
-    await expect(page.locator('.tw-move')).toHaveCount(0, { timeout: 5000 }); // repainted: nothing left to move
-    const apps = await page.evaluate(() => PressVault.fullKeyring().apps);
-    expect(apps['cardsharp.html']).toEqual({ moved: APP_ORIGIN });
-    expect(apps['fsa.html'].pass).toBe('fsa-test-pass');
-    await expect(page.locator('.tw-tool[data-f="cardsharp.html"] .tw-tool-status')).toHaveText('● At its own address');
-    await expect(page.locator('.tw-tool[data-f="cardsharp.html"] .tw-reconnect')).toHaveCount(0);
-    await page.locator('#kitBtn').click();
-    await expect(page.locator('#recoveryKit')).toContainText('moved to its own address (' + APP_ORIGIN + ')');
-    await expect(page.locator('#recoveryKit')).not.toContainText(PASS);
-    for (const p of [page, pop]) for (const [k, v] of Object.entries(await lsDump(p))) { expect(v, k).not.toContain(PASS); expect(v, k).not.toContain(SYNC); }
-    for (const p of [page, pop]) for (const d of await p.evaluate(async () => (await indexedDB.databases()).map((x) => x.name))) {
-      const st = await p.evaluate((n) => new Promise((ok) => { const o = indexedDB.open(n); o.onsuccess = () => { const r = [...o.result.objectStoreNames]; o.result.close(); ok(r); }; }), d);
-      expect(st, d).toEqual([]); // at most the empty tombstone
-    }
-    // the app stands alone: a reload asks for ITS passkey and opens
-    await pop.reload();
-    await expect(pop.locator('#press-gate')).toBeVisible();
-    await pop.locator('#pg-unlock').click();
-    await expect(pop.locator('body')).toHaveAttribute('data-unlocked', 'yes');
-  });
-
-  test('a second wing passkey row that still holds Cardsharp (this device moved it before) → "Finish moving" drops it in place, no tab', async ({ page, context }) => {
-    await routes(context, { index: INDEX_UNMARKED }); // a not-yet-moved app
-    await authenticator(context, page);
-    await page.goto(WING);
-    await page.evaluate(() => localStorage.setItem('press:own:moved', JSON.stringify(['cardsharp.html']))); // this device moved it before
-    await page.evaluate(async (kr) => { await PressVault.enrol({ label: 'another-device-row', keyring: kr }); }, KEYRING); // a row that still holds it
-    await page.goto(WING);
-    await page.evaluate(async () => { PressVault.lock(); await PressVault.unlock(); });
-    await page.goto(WING + '&r=1');
-    await page.locator('.tw-move-btn').click(); // 'unlock' state in a fresh tab memory → one tap
-    const btn = page.locator('.tw-move-btn');
-    await expect(btn).toHaveText('Finish moving Cardsharp off this passkey');
-    let opened = false; context.on('page', () => { opened = true; });
-    await btn.click();
-    await expect(page.locator('.tw-move-msg')).toContainText('this passkey no longer holds it');
-    expect(opened).toBe(false);
-    expect((await page.evaluate(() => PressVault.fullKeyring().apps))['cardsharp.html']).toEqual({ moved: APP_ORIGIN });
-  });
-
-  // own-origin-cleanup (2026-11-14, Mark: "if it's moved it's moved"): two devices = two virtual authenticators = two wing
-  // rows in ONE press_vault. Device A ran the move (its row holds {moved}); device B's row still holds Cardsharp's creds
-  // (the iPhone). With the marker, device B never paints move UI — not on a restored session, not locked, not after
-  // unlock — its ordinary unlock re-seals its own row without Cardsharp (one passkey prompt total, no toast), the card
-  // opens the own origin, and nothing unlock-capable is left in storage.
-  test('marker: device B with a stale row — no move UI ever painted; its normal unlock silently drops Cardsharp from its row', async ({ browser }) => {
+  // Two devices = two virtual authenticators = two wing rows in ONE press_vault. Device A's row holds {moved}; device B's
+  // row still holds Cardsharp's creds (a leftover from before the move). Device B never paints move UI — not on a restored
+  // session, not locked, not after unlock — its ordinary unlock re-seals its own row without Cardsharp (one passkey prompt
+  // total, no toast), the card opens the own origin, and nothing unlock-capable is left in storage.
+  test('own origin: device B with a stale row — no move UI ever painted; its normal unlock silently drops Cardsharp from its row', async ({ browser }) => {
     const vault = new Map();
     const watch = () => { // records every passkey call + any move UI ever painted (from the first byte of every load)
       window.__calls = { get: 0, create: 0 }; window.__moveUI = [];
@@ -206,7 +139,11 @@ test.describe('needs a passkey (CDP virtual authenticator — desktop Chromium)'
     await expect(cardsharpCard(B.page)).toBeVisible();
     await expect(B.page.locator('.tw-move')).toHaveCount(0);
     await expect(B.page.locator('.tw-tool[data-f="cardsharp.html"] .tw-tool-status')).toHaveText('● At its own address');
-    expect(await B.page.evaluate(() => localStorage.getItem('press:own:moved'))).toBeNull(); // the per-device mark is gone
+    expect(await B.page.evaluate(() => localStorage.getItem('press:own:moved'))).toBeNull(); // the retired per-device mark is gone
+    await B.page.locator('#kitBtn').click(); // the not-yet-swept row: the kit names the address, never asks to unlock for it
+    await expect(B.page.locator('#recoveryKit')).toContainText('moved to its own address (' + APP_ORIGIN + ')');
+    await expect(B.page.locator('#recoveryKit')).not.toContainText(PASS);
+    await B.page.locator('#kitDone').click();
     // 2) locked → the ordinary wing unlock
     await B.page.evaluate(() => PressVault.lock());
     await B.page.reload();
