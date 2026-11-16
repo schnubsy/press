@@ -13,11 +13,7 @@ import { setupVirtualAuthenticator, buildEnvelope, enrolInPage } from '../src/ga
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const INDEX = readFileSync(join(ROOT, 'index.html'), 'utf8');
-// own-origin-cleanup (2026-11-14): the real wing marks Cardsharp move-complete (OWN_MOVE_COMPLETE) — its Connect row is then
-// "At its own address", never a form. These specs exercise the generic Connect flow WITH Cardsharp as a connectable tool,
-// so they get the wing with the marker list emptied; a request carrying `marked=1` gets the real page (the last spec).
-const INDEX_UNMARKED = INDEX.replace(/const OWN_MOVE_COMPLETE = \[[^\]]*\];/, 'const OWN_MOVE_COMPLETE = [];');
-if (INDEX_UNMARKED === INDEX) throw new Error('index.html has no OWN_MOVE_COMPLETE list');
+// Cardsharp lives at its own origin (index.html OWN_ORIGIN): its Connect row is always "At its own address", never a form.
 const PUBLIC_FILES = ['council-guide.html', 'agent-health.html'];
 const PERSONAL_FILES = ['fsa.html', 'giving.html', 'retirement.html', 'thrift-shop.html', 'cardsharp.html'];
 const MANIFEST = Object.fromEntries([...PUBLIC_FILES, ...PERSONAL_FILES].map((f) => [f, { title: f.replace(/\.html$/, '') }]));
@@ -30,12 +26,11 @@ const CARD_SYNC = 'c1a2r3d4e5f6a7b8c9d0e1f2a3b4c5d6';  // throwaway card-scout s
 const CARD_WRONG = '00000000000000000000000000000000';
 const CS_SYNC = 'c0ffee00c0ffee00c0ffee00c0ffee00';   // cardsharp sync id (throwaway)
 const CS_PASS = 'test-only-pass-phrase-cardsharp';   // cardsharp passphrase (throwaway)
-const CS_DOC = { v: 1, retailers: [], cards: [], entries: [] };
 const CARD_SCOUT_GATE_SENTINEL = 'not-a-secret:card-scout-has-no-passphrase:sentinel-only-to-satisfy-credsFor'; // MUST match index.html
 
 let server, base;
 test.beforeAll(async () => {
-  server = createServer((req, res) => { res.writeHead(200, { 'content-type': 'text/html' }); res.end(/[?&]marked=1/.test(req.url) ? INDEX : INDEX_UNMARKED); });
+  server = createServer((req, res) => { res.writeHead(200, { 'content-type': 'text/html' }); res.end(INDEX); });
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
   base = `http://localhost:${server.address().port}`;
 });
@@ -145,35 +140,8 @@ test('Connect rows carry the marquee LABELS titles (same naming as the cards)', 
                  'thrift-shop.html': 'Thrift Shop', 'cardsharp.html': 'Cardsharp' };
   for (const [f, name] of Object.entries(want)) {
     await expect(tool(page, f).locator('.tw-tool-name')).toHaveText(name);
-    await expect(tool(page, f).locator('.tw-sync')).toHaveAttribute('aria-label', `${name} sync id`);
+    if (f !== 'cardsharp.html') await expect(tool(page, f).locator('.tw-sync')).toHaveAttribute('aria-label', `${name} sync id`);
   }
-});
-
-// cardsharp (2026-09-28): an app-kind tool on press_cardsharp — verified by decrypting its real row
-// (sync_id column, envelope in `doc`) before anything is sealed into the keyring.
-test('Cardsharp connects only after its press_cardsharp row decrypts; a wrong passphrase stores nothing', async ({ page, context }) => {
-  const state = await harness(page, context);
-  await enrolEmptyAndOpen(page, state);
-  state.csEnv = await buildEnvelope(page, { doc: CS_DOC, passphrase: CS_PASS });
-  const t = tool(page, 'cardsharp.html');
-  await expect(t.locator('.tw-tool-name')).toHaveText('Cardsharp');
-  await expect(t.locator('.tw-pass')).toHaveCount(1);
-  await t.locator('.tw-sync').fill(CS_SYNC);
-  await t.locator('.tw-pass').fill('not-the-passphrase');
-  await t.locator('.tw-verify').click();
-  await expect(t.locator('.tw-tool-msg')).toContainText('did not open');
-  let kr = await page.evaluate(() => window.PressVault.loadSession().keyring.apps['cardsharp.html']);
-  expect(kr && kr.sync_id).toBeFalsy();
-  await t.locator('.tw-pass').fill(CS_PASS);
-  await t.locator('.tw-verify').click();
-  await expect(t.locator('.tw-tool-msg')).toContainText('Connected');
-  // cardsharp security audit (S1): sealed into the vault + this tab's memory; the persisted session holds a redacted stub
-  kr = await page.evaluate(() => window.PressVault.loadSession().keyring.apps['cardsharp.html']);
-  expect(kr).toEqual({ sync_id: '', pass: '', redacted: true });
-  expect(await page.evaluate(() => window.PressVault.memCreds('cardsharp.html'))).toEqual({ sync_id: CS_SYNC, pass: CS_PASS });
-  expect(await page.evaluate(() => localStorage.getItem('press:vault:v1'))).not.toContain(CS_PASS);
-  await expect(t.locator('.tw-tool-msg')).toContainText('Connected');
-  expect(state.csGets).toBeGreaterThanOrEqual(2);
 });
 
 // Phase 5 (slice 3): the "Connect your tools" section collapses once EVERY tool is connected — a quiet
@@ -197,16 +165,17 @@ test('every tool connected: the section renders COLLAPSED; Manage expands, colla
   await toggle.click();                                             // expand
   await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   await expect(sect.locator('.tw-tool')).toHaveCount(5);            // all five rows rebuilt
-  await expect(sect.locator('.tw-reconnect')).toHaveCount(5);        // each connected row offers Reconnect
+  await expect(sect.locator('.tw-reconnect')).toHaveCount(4);        // each connected row offers Reconnect…
+  await expect(tool(page, 'cardsharp.html').locator('.tw-reconnect')).toHaveCount(0); // …but Cardsharp is at its own address
   await toggle.click();                                             // collapse again
   await expect(sect.locator('.tw-tool')).toHaveCount(0);            // rows removed from the DOM
 });
 
-// own-origin-cleanup: with the real marker, a row that still holds Cardsharp's creds shows "At its own address" — no
-// fields, no Reconnect (which would copy the creds back into the wing) — and the other tools keep their Connect rows.
-test('move-complete: Cardsharp\'s Connect row is "At its own address" even when the row still holds its creds', async ({ page, context }) => {
+// own origin: a row that still holds Cardsharp's creds shows "At its own address" — no fields, no Reconnect (which would
+// copy the creds back into the wing) — the other tools keep their Connect rows, and the wing never reads press_cardsharp.
+test('own origin: Cardsharp\'s Connect row is "At its own address" even when the row still holds its creds', async ({ page, context }) => {
   const state = await harness(page, context);
-  await page.goto(base + '/?view=personal&marked=1');
+  await page.goto(base + '/?view=personal');
   await enrolInPage(page, { apps: { 'fsa.html': { sync_id: SYNC, pass: PASS }, 'cardsharp.html': { sync_id: CS_SYNC, pass: CS_PASS } } });
   await page.reload();
   const t = tool(page, 'cardsharp.html');
@@ -214,6 +183,7 @@ test('move-complete: Cardsharp\'s Connect row is "At its own address" even when 
   await expect(t.locator('.tw-sync, .tw-pass, .tw-reconnect, .tw-verify')).toHaveCount(0);
   await expect(tool(page, 'giving.html').locator('.tw-sync')).toHaveCount(1);
   expect(state.vault.size).toBe(1);
+  expect(state.csGets).toBe(0);
 });
 
 // snag-train-2026-11 slice 5 (#32): collapsed, the page ends ≤32px under the Manage row (was the 40px page pad + a void);

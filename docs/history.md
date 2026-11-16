@@ -4,6 +4,12 @@ Dated milestones, newest first.
 
 ---
 
+## 2026-11-15 — arc/marquee-move-cleanup (the switch-over machinery removed)
+
+Cardsharp's move to its own origin is complete, so the wing drops the one-time move UI and state (`OWN_MOVE_COMPLETE`, the per-device `press:own:moved` mark — now just deleted on a wing visit — `moveHTML`/`wireMoves`, `.tw-move*` CSS) and `tenants.json` `moveComplete` (T11 now FAILs the retired field). Kept: `OWN_ORIGIN` card links, the redirect stub, "At its own address", the silent leftover-creds sweep on unlock, the recovery-kit guard; src/vault.js `moveOut`/`moveIn` untouched.
+
+---
+
 ## 2026-11-01 — arc/family-wing-invites (one-tap Invite; Full lane)
 
 Barb was added to `press_access_people` on 10/31 but had no `auth.users` row; the wing sends `create_user:false`, so GoTrue
