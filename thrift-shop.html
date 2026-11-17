@@ -357,8 +357,11 @@
   .ovfmenu button{display:flex;align-items:center;gap:var(--s2);width:100%;min-height:44px;border:0;background:none;color:var(--ink);font-size:15px;font-weight:500;text-align:left;
     padding:0 var(--s3);border-radius:8px;cursor:pointer;white-space:nowrap}
   .ovfmenu button:hover,.ovfmenu button:focus{background:var(--surface-2);outline:none}
+  .ovfmenu button[role="menuitemcheckbox"]{line-height:1.3;padding:var(--s2) var(--s3)}
+  .ovfmenu .brest-t{display:flex;flex-direction:column}
+  .ovfmenu .brest-s{font-size:13px;color:var(--ink-2)}
   .ovfmenu button.ovf-block{white-space:normal;overflow-wrap:anywhere;padding:var(--s2) var(--s3);line-height:1.3}
-  .ovfmenu button[role="menuitemradio"]::before{content:"";width:16px;flex:0 0 auto;color:var(--accent-text);font-weight:800}
+  .ovfmenu button[role="menuitemradio"]::before,.ovfmenu button[role="menuitemcheckbox"]::before{content:"";width:16px;flex:0 0 auto;color:var(--accent-text);font-weight:800}
   .ovfmenu button[aria-checked="true"]::before{content:"✓"}
   .ovfmenu-sep{height:1px;background:var(--line);margin:var(--s2) var(--s1)}
   .ovfmenu button.ovf-danger{color:var(--danger)}
@@ -1683,10 +1686,10 @@
     "rules:retail":"Tap a % to step 5% at a time (5–50%). Tap a $ to step through Any · $10 · $25 · $50 · $75 · $100 · $150 · $200 — the smallest card worth alerting.",
     "rules:other":"Tap a % to step 5% at a time (5–50%). Tap a $ to step through Any · $10 · $25 · $50 · $75 · $100 · $150 · $200. A bonus booster (HEB) adds a free card’s value to the card you buy, judged against that brand’s rule.",
     "rules:retailer":"Warehouse and retailer rules (stack only: a warehouse price stacked with an instant saving).",
-    "rules:cashlike":"A free bonus card from these stores counts as cash — $10 free on $50 is 20%. Any other store’s bonus card is judged on the total: $10 on $50 is 17%. A brand’s own bonus card counts for nothing.",
+    "rules:cashlike":"A free bonus card from these stores counts as cash — $10 free on $50 is 20%. Any other bonus card — a brand’s own included — is judged on the total: $10 on $50 is 17%, or 0% when it has restrictions.",
     "rules:blocked":"Deals from these stores and brands are never shown or alerted — gift cards, sale finds and email offers. The same list is on Sales &amp; offers. Block one from any deal’s ⋯ menu too.",
     "sales:watch":"Each term is searched 3× a day (up to 10 terms). The minimum is the % off a find must reach (tap to step: Any, ≥5% … ≥50%). Hold a row — or focus it and press Alt+↑/↓ — to reorder.",
-    "sales:counts":"Which email offers count as a deal. <strong>Free meal</strong>: a free meal, entrée or main. <strong>BOGO free</strong>: second item free (buy 2 get 1 = 33%). <strong>Expiring</strong>: your $10+ reward, about to expire (tap the window: 3 · 7 · 14 · 30 days). <strong>$ off</strong>: with a minimum it is a percent — $5 off $25 = 20%; tap the minimum $ off. <strong>Big % off</strong>: any offer at least this % off (tap: 5–50%). <strong>Birthday</strong>: only within 30 days of your birthday. <strong>Bonus gift card</strong>: judged by your Gift cards rules.",
+    "sales:counts":"Which email offers count as a deal. <strong>Free meal</strong>: a free meal, entrée or main. <strong>BOGO free</strong>: second item free (buy 2 get 1 = 33%). <strong>Expiring</strong>: your $10+ reward, about to expire (tap the window: 3 · 7 · 14 · 30 days). <strong>$ off</strong>: with a minimum it is a percent — $5 off $25 = 20%; tap the minimum $ off. <strong>Big % off</strong>: any offer at least this % off (tap: 5–50%). <strong>Birthday</strong>: only within 30 days of your birthday. <strong>Bonus gift card</strong>: judged by your Gift cards rules — on the total, or 0% when the bonus card has restrictions.",
     "sales:brands":"<strong>Always</strong> counts every offer from a brand; <strong>Never</strong> mutes it — whatever the offer type.",
     "sales:note":"Anything else that should count — read with each email (300 characters).",
     "sales:blocked":"Deals from these stores and brands are never shown or alerted — gift cards, sale finds and email offers. The same list is on Gift cards.",
@@ -2680,13 +2683,21 @@
         +esc(o[0]==="retailer"?"Warehouse":o[1])+'</button>';
     }).join("");
     // Slice 3: Delete rule… (danger), below a separator — omitted for protected rules.
+    // #57 (Mark 2026-11-17, "Only restricted ones are 0%"): a brand whose OWN bonus card is restricted — the judge counts
+    // that bonus as 0% (R22, extras.bonus_restricted). Every other bonus card is judged on the total (R1). Brand % rules only.
+    var x0=r.extras||{};
+    var brest=((x0.mode||"pct")==="pct"&&!x0.container&&!PROTECTED_RULES[r.item_id])
+      ? '<div class="ovfmenu-sep" role="separator"></div>'
+        +'<button role="menuitemcheckbox" aria-checked="'+(x0.bonus_restricted===true)+'" data-brest="'+esc(r.item_id)+'" aria-label="Bonus card has restrictions — count as 0%">'
+          +'<span class="brest-t"><span>Bonus card has restrictions</span><span class="brest-s">count as 0%</span></span></button>'
+      : '';
     var del=PROTECTED_RULES[r.item_id] ? '' :
       '<div class="ovfmenu-sep" role="separator"></div>'
       +'<button class="ovf-danger" role="menuitem" data-del="'+esc(r.item_id)+'">Delete rule…</button>';
     return '<div class="rulehead-actions">'
       +'<button class="ovf" data-ovf="'+esc(r.item_id)+'" aria-haspopup="menu" aria-expanded="false" aria-label="Options for '+label+'">⋯</button>'
       +'<div class="ovfmenu" id="ovfmenu-'+esc(r.item_id)+'" role="menu" aria-label="Options for '+label+'" hidden>'
-      +'<div class="ovfmenu-label">Move to…</div>'+items+del+'</div>'
+      +'<div class="ovfmenu-label">Move to…</div>'+items+brest+del+'</div>'
       +'</div>';
   }
   function denomVal(x){ var v=x&&x.min_denom; return (v==null||v==="")?25:Number(v); }
@@ -2697,7 +2708,7 @@
     // Slice 10: HEB is a bonus booster — a free HEB card adds to the discount on the card you buy,
     // judged against THAT brand's rule. Show that instead of hunting HEB itself.
     var modeBadge=mode==="stack"?"stack only":mode==="bonus-booster"?"bonus booster":mode==="bonus"?"bonus":"";
-    var sub=[x.note?esc(x.note):"",modeBadge?'<span class="badge">'+modeBadge+'</span>'+(mode==="bonus-booster"?' adds to the card you buy':""):""].filter(Boolean).join(" · ");
+    var sub=[x.note?esc(x.note):"",modeBadge?'<span class="badge">'+modeBadge+'</span>'+(mode==="bonus-booster"?' adds to the card you buy':""):""].filter(Boolean).join(" · "); // #57 state shows as the ✓ on the ⋯ item (a row badge has no room at 320px)
     var vals="";
     // Mark 2026-11-02: a multi-brand card (One4all, Happy Cards) has NO minimum % of its own — it is judged only by the
     // brands it carries (each brand's own %), so its row shows no % control, just the card-value floor.
@@ -3377,7 +3388,7 @@
   // bad-flag-learning S4 — Settings → "What I've learned": the rules Thrift Shop now judges by, in plain words, with how
   // many of Mark's Bad flags taught each. LEARNED is generated from the flags by tools/bad-to-fixtures.mjs.
   /* LEARNED:BEGIN — generated by tools/bad-to-fixtures.mjs */
-  var LEARNED=[{"rule":"R1","text":"Gift-card bonus offers are judged on the total: a $50 bonus for $250 is about 17% off, not 20% — except a free card from a store on your cash-like list (HEB, Amazon, Walmart, Target, Kroger): that is cash, so $10 on $50 is 20%. A brand’s own bonus card counts for nothing (R22).","flags":1},{"rule":"R2","text":"Bonus points, double points and points days never count — and points are never dollars.","flags":8},{"rule":"R3","text":"A balance or credit notice isn’t a deal. A reward only counts when it expires soon and is worth $10 or more.","flags":2},{"rule":"R4","text":"Birthday rewards count only around your birthday. A brand’s own birthday sale is judged like any offer.","flags":2},{"rule":"R5","text":"$ off with a minimum is a percent: $5 off $25 is 20%, held to the 40% bar.","flags":1},{"rule":"R6","text":"Buy one, get one 50% off is really 25% off — and so is 50% off one item when you buy another (“50% off a sandwich with a bowl purchase”).","flags":4},{"rule":"R7","text":"Buy N, get M free is M ÷ (N + M): buy 3 get the 4th free is 25%. Only a true BOGO free (50%) counts.","flags":2},{"rule":"R8","text":"A free item must be worth the same as the one you buy — a kids meal or a side doesn’t count.","flags":2},{"rule":"R9","text":"A set price (“3 for $15”, “$6 sandwich”, “Whopper $3.98 Wednesdays”) isn’t a discount.","flags":8},{"rule":"R10","text":"Drinks-only discounts never count, at any percent.","flags":1},{"rule":"R11","text":"A small % coupon stays small, even when it’s “a reward that expires soon”.","flags":1},{"rule":"R12","text":"Brands you block are never shown — email offers, sales and gift cards.","flags":1},{"rule":"R13","text":"A deal’s link is the feed’s own link — never one the model wrote.","flags":1},{"rule":"R14","text":"A discount on one add-on — a dessert, a side, an appetizer — doesn’t count, even at half price.","flags":3},{"rule":"R15","text":"A watch find must be the product itself — ear pads or a case “for” it don’t count, and nor does another product that throws it in free (a TV “with Game Pass”).","flags":2},{"rule":"R16","text":"A price written in a watch find’s title is its price — never “Price unknown”.","flags":1},{"rule":"R17","text":"An offer only for a group you’re not in — veterans, military, students, seniors — doesn’t count.","flags":4},{"rule":"R18","text":"Vacation and travel offers — getaways, hotel stays, cruises, flights — never count.","flags":1},{"rule":"R19","text":"$ off one item (“$5 off a cake”) isn’t $ off your order — it doesn’t count.","flags":2},{"rule":"R20","text":"A multi-brand gift card with no brands read and no link is never shown — there’s nothing to check.","flags":1},{"rule":"R21","text":"An offer good for one day only (today only, this Friday only, one date, a code named for the day) doesn’t count — you want 2 days minimum.","flags":1},{"rule":"R22","text":"A brand’s own bonus card (“$100 bonus card with $400”) isn’t counted — it has too many restrictions. Another store’s gift card as the bonus stays on the total (R1).","flags":1},{"rule":"R23","text":"Card-linked offers for a card you don’t have (Citi Offers) never count.","flags":1},{"rule":"R24","text":"A multi-brand card’s brands are read off the card picture — the store check must name them, not leave them unknown.","flags":8}];
+  var LEARNED=[{"rule":"R1","text":"Gift-card bonus offers are judged on the total: a $50 bonus for $250 is about 17% off, not 20% — a brand’s own bonus card included, unless it has restrictions (R22). A free card from a store on your cash-like list (HEB, Amazon, Walmart, Target, Kroger) is cash, so $10 on $50 is 20%.","flags":1},{"rule":"R2","text":"Bonus points, double points and points days never count — and points are never dollars.","flags":8},{"rule":"R3","text":"A balance or credit notice isn’t a deal. A reward only counts when it expires soon and is worth $10 or more.","flags":2},{"rule":"R4","text":"Birthday rewards count only around your birthday. A brand’s own birthday sale is judged like any offer.","flags":2},{"rule":"R5","text":"$ off with a minimum is a percent: $5 off $25 is 20%, held to the 40% bar.","flags":1},{"rule":"R6","text":"Buy one, get one 50% off is really 25% off — and so is 50% off one item when you buy another (“50% off a sandwich with a bowl purchase”).","flags":4},{"rule":"R7","text":"Buy N, get M free is M ÷ (N + M): buy 3 get the 4th free is 25%. Only a true BOGO free (50%) counts.","flags":2},{"rule":"R8","text":"A free item must be worth the same as the one you buy — a kids meal or a side doesn’t count.","flags":2},{"rule":"R9","text":"A set price (“3 for $15”, “$6 sandwich”, “Whopper $3.98 Wednesdays”) isn’t a discount.","flags":8},{"rule":"R10","text":"Drinks-only discounts never count, at any percent.","flags":1},{"rule":"R11","text":"A small % coupon stays small, even when it’s “a reward that expires soon”.","flags":1},{"rule":"R12","text":"Brands you block are never shown — email offers, sales and gift cards.","flags":1},{"rule":"R13","text":"A deal’s link is the feed’s own link — never one the model wrote.","flags":1},{"rule":"R14","text":"A discount on one add-on — a dessert, a side, an appetizer — doesn’t count, even at half price.","flags":3},{"rule":"R15","text":"A watch find must be the product itself — ear pads or a case “for” it don’t count, and nor does another product that throws it in free (a TV “with Game Pass”).","flags":2},{"rule":"R16","text":"A price written in a watch find’s title is its price — never “Price unknown”.","flags":1},{"rule":"R17","text":"An offer only for a group you’re not in — veterans, military, students, seniors — doesn’t count.","flags":4},{"rule":"R18","text":"Vacation and travel offers — getaways, hotel stays, cruises, flights — never count.","flags":1},{"rule":"R19","text":"$ off one item (“$5 off a cake”) isn’t $ off your order — it doesn’t count.","flags":2},{"rule":"R20","text":"A multi-brand gift card with no brands read and no link is never shown — there’s nothing to check.","flags":1},{"rule":"R21","text":"An offer good for one day only (today only, this Friday only, one date, a code named for the day) doesn’t count — you want 2 days minimum.","flags":1},{"rule":"R22","text":"A bonus card with restrictions — usable only on certain dates or days, dine-in only, expiring within about 60 days, or a brand you mark “Bonus card has restrictions” (Fogo de Chão) — counts as 0%. Any other bonus card stays on the total (R1).","flags":1},{"rule":"R23","text":"Card-linked offers for a card you don’t have (Citi Offers) never count.","flags":1},{"rule":"R24","text":"A multi-brand card’s brands are read off the card picture — the store check must name them, not leave them unknown.","flags":8}];
   /* LEARNED:END */
   function learnedCard(){
     var total=0; LEARNED.forEach(function(r){ total+=r.flags; });
@@ -3478,6 +3489,8 @@
     var ub=b.getAttribute("data-unblock"); if(ub){ removeBlock(ub); return; }
     // recategorize a rule (Slice 4)
     var grp=b.getAttribute("data-grp"); if(grp){ setRuleGroup(grp,b.getAttribute("data-grpval")); return; }
+    // #57: ⋯ → "Bonus card has restrictions — count as 0%" (extras.bonus_restricted)
+    var brs=b.getAttribute("data-brest"); if(brs){ toggleBonusRestricted(brs); return; }
     // delete a rule (Slice 3): ⋯ → "Delete rule…" swaps the menu to an inline confirm.
     var del=b.getAttribute("data-del"); if(del){ showDeleteConfirm(del); return; }
     var delok=b.getAttribute("data-delok"); if(delok){ deleteRule(delok); return; }
@@ -3626,7 +3639,7 @@
     closeOverflowMenus(id);
     if(open){ btn.setAttribute("aria-expanded","false"); m.hidden=true; }
     else{ btn.setAttribute("aria-expanded","true"); m.hidden=false;
-      var first=m.querySelector("button[role='menuitemradio'],button[role='menuitem']"); if(first) first.focus(); }
+      var first=m.querySelector("button[role='menuitemradio'],button[role='menuitemcheckbox'],button[role='menuitem']"); if(first) first.focus(); }
   }
   document.addEventListener("click", function(ev){
     // isConnected guard: an in-menu action (e.g. Slice 3 "Delete rule…" swapping the menu to a
@@ -3640,7 +3653,7 @@
     var btn=document.querySelector(".ovf[data-ovf='"+id+"']");
     if(ev.key==="Escape"){ closeOverflowMenus(); if(btn) btn.focus(); ev.preventDefault(); return; }
     if(ev.key==="ArrowDown"||ev.key==="ArrowUp"){
-      var items=[].slice.call(menu.querySelectorAll("button[role='menuitemradio'],button[role='menuitem']"));
+      var items=[].slice.call(menu.querySelectorAll("button[role='menuitemradio'],button[role='menuitemcheckbox'],button[role='menuitem']"));
       var i=items.indexOf(ev.target); if(i<0){ if(items[0]) items[0].focus(); ev.preventDefault(); return; }
       var n=ev.key==="ArrowDown"?(i+1)%items.length:(i-1+items.length)%items.length;
       items[n].focus(); ev.preventDefault();
@@ -3690,6 +3703,16 @@
   function flushOnExit(){ flushingOnExit=true; try{ flushSaves(); } finally { flushingOnExit=false; } }
   document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="hidden") flushOnExit(); });
   window.addEventListener("pagehide",flushOnExit);
+  // #57 — the brand's own bonus card is restricted (R22: counted as 0%) or not (R1 total math). Writes extras.bonus_restricted.
+  function toggleBonusRestricted(id){
+    var r=find(state.rules,id); if(!r) return; r.extras=Object.assign({}, r.extras||{});
+    var on=r.extras.bonus_restricted!==true;
+    if(on) r.extras.bonus_restricted=true; else delete r.extras.bonus_restricted;
+    closeOverflowMenus(); renderRulesList();
+    var nb=document.querySelector('.ovf[data-ovf="'+id.replace(/["\\]/g,"")+'"]'); if(nb) nb.focus();
+    showToast(on?(r.title+": its bonus card now counts as 0%"):(r.title+": its bonus card counts on the total again"),null);
+    withSave(patchTask(id,{extras:r.extras,updated_at:new Date().toISOString()}));
+  }
   // A6 — a tap moves a rule's minimum % off to the next value (5 → 10 … 50 → 5). Writes extras.min_pct as before.
   function stepRule(id,btn){
     var r=find(state.rules,id); if(!r) return; r.extras=r.extras||{}; var v=nextIn(PCT_CYCLE,Number(r.extras.min_pct)||0);
