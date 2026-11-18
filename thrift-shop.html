@@ -1614,7 +1614,9 @@
     }).then(function(d){
       // black-friday-ready S3 (Mark 2026-11-15 22:52): Black Friday-only sources (extras.bf_only) live ONLY in Settings →
       // Black Friday — never in the regular Sources list, its counts or "need you".
-      state.bfSources=d[0].filter(function(x){ return x.extras&&x.extras.bf_only; });
+      // bf-coverage S2: a source retired from the agent's allowlist (Ben's Bargains — its feed fails at the site) is hidden:
+      // its row stays 'off' in the DB, and a switch for something nothing checks would be a false green.
+      state.bfSources=d[0].filter(function(x){ return x.extras&&x.extras.bf_only&&BF_RETIRED.indexOf(x.item_id)<0; });
       state.sources=d[0].filter(function(x){ return !(x.extras&&x.extras.bf_only); }); state.rules=d[1];
       state.settings=(d[2][0]&&d[2][0].extras)||{};
       state.toggles={}; state.feedSeenAt=null;
@@ -1688,7 +1690,7 @@
     "rules:retailer":"Warehouse and retailer rules (stack only: a warehouse price stacked with an instant saving).",
     "rules:cashlike":"A free bonus card from these stores counts as cash — $10 free on $50 is 20%. Any other bonus card — a brand’s own included — is judged on the total: $10 on $50 is 17%, or 0% when it has restrictions.",
     "rules:blocked":"Deals from these stores and brands are never shown or alerted — gift cards, sale finds and email offers. The same list is on Sales &amp; offers. Block one from any deal’s ⋯ menu too.",
-    "sales:watch":"Each term is searched 3× a day (up to 10 terms). The minimum is the % off a find must reach (tap to step: Any, ≥5% … ≥50%). Hold a row — or focus it and press Alt+↑/↓ — to reorder.",
+    "sales:watch":"Each term is searched 3× a day, hourly in Black Friday mode (up to 25 terms, in this order). The minimum is the % off a find must reach (tap to step: Any, ≥5% … ≥50%). Hold a row — or focus it and press Alt+↑/↓ — to reorder.",
     "sales:counts":"Which email offers count as a deal. <strong>Free meal</strong>: a free meal, entrée or main. <strong>BOGO free</strong>: second item free (buy 2 get 1 = 33%). <strong>Expiring</strong>: your $10+ reward, about to expire (tap the window: 3 · 7 · 14 · 30 days). <strong>$ off</strong>: with a minimum it is a percent — $5 off $25 = 20%; tap the minimum $ off. <strong>Big % off</strong>: any offer at least this % off (tap: 5–50%). <strong>Birthday</strong>: only within 30 days of your birthday. <strong>Bonus gift card</strong>: judged by your Gift cards rules — on the total, or 0% when the bonus card has restrictions.",
     "sales:brands":"<strong>Always</strong> counts every offer from a brand; <strong>Never</strong> mutes it — whatever the offer type.",
     "sales:note":"Anything else that should count — read with each email (300 characters).",
@@ -2863,7 +2865,7 @@
     var sc=el("salesclear"); if(sc) sc.hidden=!salesQuery;
     syncCollapse("sales");
   }
-  // The sale-watch terms (press_tasks category='watch') as removable chips + an add row (cap 10).
+  // The sale-watch terms (press_tasks category='watch') as removable chips + an add row (cap 25 enabled — bf-coverage S1).
   // Inbox arc Slice 10: Mark's own order — press_tasks.position first, then created_at for rows never
   // positioned (and title as a last tie-break). The DB is the source of truth (read back on every load).
   function watchPos(w){ var n=Number(w&&w.position); return (w&&w.position!=null&&isFinite(n))?n:Infinity; }
@@ -2877,9 +2879,18 @@
   // Slice 4d: watch status from the row's extras (stamped by the tick). Eye P1/P2 (truth-up Slice 4):
   // never-checked reads "Not yet checked" (not "last never"); and the "0 matches in 30 days" clause is
   // dropped when there are none, because the line below already shows "No matches yet" (no redundancy).
-  function watchStatusLine(w){
+  // bf-coverage S1: the agent searches the first WATCH_CAP enabled terms in this order (sources.mjs MAX_WATCH_TERMS);
+  // any enabled term past it says so — never silently skipped.
+  var WATCH_CAP=25;
+  function watchOverCapIds(){
+    var n=0, out={};
+    watchTerms().forEach(function(w){ if(w.status==="off"||!String(w.title||"").trim()) return; n++; if(n>WATCH_CAP) out[w.item_id]=true; });
+    return out;
+  }
+  function watchStatusLine(w,over){
     var e=w.extras||{};
     if(w.status==="off") return "Paused — not checked";
+    if(over) return "Not checked — over the "+WATCH_CAP+"-term limit (move it up or pause another)";
     if(!e.last_checked) return "Not yet checked";
     var n=Number(e.matches_30d)||0;
     return n>0 ? n+" match"+(n===1?"":"es")+" in 30 days" : "No matches yet";
@@ -2894,14 +2905,15 @@
     var all=watchTerms(), items=all.filter(function(w){ return salesMatch(w.title); });
     if(!all.length){ host.innerHTML='<div class="sub rowx">No sale watches.</div>'; return; }
     if(!items.length){ host.innerHTML='<div class="sub rowx">No watches match “'+esc(salesQuery)+'”.</div>'; return; }
-    host.innerHTML=items.map(function(w){
-      var e=w.extras||{}, on=w.status!=="off", n=Number(e.matches_30d)||0, id=esc(w.item_id);
-      var match=on&&e.last_match_url;
+    var overIds=watchOverCapIds(), overN=Object.keys(overIds).length;
+    host.innerHTML=(overN?'<div class="sub rowx" id="watch-overcap" role="note">'+overN+' term'+(overN===1?" is":"s are")+' past the '+WATCH_CAP+'-term limit and not checked — the first '+WATCH_CAP+' on are.</div>':'')+items.map(function(w){
+      var e=w.extras||{}, on=w.status!=="off", n=Number(e.matches_30d)||0, id=esc(w.item_id), over=!!overIds[w.item_id];
+      var match=on&&!over&&e.last_match_url;
       var line=match
         ? '<a class="deal wmatch" href="'+esc(e.last_match_url)+'" target="_blank" rel="noopener" aria-label="Last match: '+esc(e.last_match_title||"view")+'">'+esc(e.last_match_title||"View the last match")+'</a>'
-        : '<div class="sub wline"><span class="wstatus">'+watchStatusLine(w)+'</span></div>';
+        : '<div class="sub wline"><span class="wstatus">'+watchStatusLine(w,over)+'</span></div>';
       var wx=[];
-      if(on&&e.last_checked) wx.push("checked "+esc(relTime(e.last_checked)));
+      if(on&&!over&&e.last_checked) wx.push("checked "+esc(relTime(e.last_checked)));
       var xl=watchExcludes(w); if(xl.length) wx.push("not: "+esc(xl.join(", ")));
       var tp=watchTarget(w); if(tp) wx.push("hit at ≤ $"+esc(fmtTarget(tp)));
       if(match&&n>0) wx.push(n+" match"+(n===1?"":"es")+" in 30 days");
@@ -3256,6 +3268,7 @@
   // off ⇒ null; past that instant it reads Off by itself) + the Black Friday-only sources under it. Master off ⇒ those
   // sources and the extra frequency stop. Nothing about it reaches the feed, cards, alerts or emails.
   var BF_UNTIL="2026-12-02T06:00:00.000Z";
+  var BF_RETIRED=["src-bf-bensbargains"]; // bf-coverage S2 — not in sources.mjs SOURCES any more
   function bfOn(st,now){ var u=Date.parse((st||state.settings||{}).bf_mode_until||""); return !isNaN(u)&&(now==null?Date.now():now)<u; }
   function bfSourceLine(x,on){
     if(!on) return "Off — Black Friday mode is off";
@@ -3270,7 +3283,8 @@
   }
   function bfSection(st){
     var on=bfOn(st), list=state.bfSources||[];
-    var sub=on?"On until Dec 2 — hourly feed checks, the sources below, a daily store check":"Off — the regular schedule";
+    // bf-coverage S3: while on, every priced sale-watch match is sent (Mark judges the price) — the vetoes still apply
+    var sub=on?"On until Dec 2 — hourly checks, every priced watch match sent, the sources below, a daily store check":"Off — the regular schedule";
     var html=groupHead("alerts","bf","Black Friday",null)+'<div class="group">'
       +'<div class="lrow"><div class="rl"><span class="lab title" id="bf-lab">Black Friday mode</span><span class="sub2" id="bf-sub">'+esc(sub)+'</span></div>'
       +'<div class="rc"><button class="sw" role="switch" id="bf-master" aria-checked="'+on+'" aria-labelledby="bf-lab" aria-describedby="bf-sub"></button></div></div>';
@@ -4320,7 +4334,8 @@
   // ---------- sale watch (Slice 6) ----------
   function addWatch(){
     var inp=el("newwatch"); var term=(inp&&inp.value||"").trim(); if(!term) return;
-    if(watchTerms().length>=10) return; // cap so a tick can't fan out unboundedly
+    // bf-coverage S1: cap 25 ENABLED terms (the agent's MAX_WATCH_TERMS) — say so, never a silent no-op
+    if(watchTerms().filter(function(w){ return w.status!=="off"; }).length>=WATCH_CAP){ showToast("25 terms is the limit — pause or remove one first",null); return; }
     var slug="watch-"+term.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
     // Inbox arc Slice 1: a term that differs only in spacing/hyphens/apostrophes is the same watch.
     var dup=watchTerms().some(function(w){ return compactBrand(w.title)===compactBrand(term); });
