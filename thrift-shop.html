@@ -3261,6 +3261,8 @@
     if(!on) return "Off — Black Friday mode is off";
     if(x.status!=="on") return "Off";
     var e=x.extras||{}, t=Date.parse(e.last_checked||"");
+    // bf-item-sources S1: a site that stopped itself (3 failed checks in a row) is never shown as waiting or OK
+    if(e.health==="blocked"||e.blocked===true) return "Stopped — 3 checks in a row found nothing usable";
     // S5 review: a stamp older than 2 h is from an earlier on-period (or a missed hour) — never shown as OK
     if(isNaN(t)||Date.now()-t>2*3600e3) return "Waiting for the next hourly check";
     var h=e.health==="error"?"Error":(e.health==="empty"?"Empty":"OK");
