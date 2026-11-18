@@ -1690,7 +1690,7 @@
     "rules:retailer":"Warehouse and retailer rules (stack only: a warehouse price stacked with an instant saving).",
     "rules:cashlike":"A free bonus card from these stores counts as cash — $10 free on $50 is 20%. Any other bonus card — a brand’s own included — is judged on the total: $10 on $50 is 17%, or 0% when it has restrictions.",
     "rules:blocked":"Deals from these stores and brands are never shown or alerted — gift cards, sale finds and email offers. The same list is on Sales &amp; offers. Block one from any deal’s ⋯ menu too.",
-    "sales:watch":"Each term is searched 3× a day, hourly in Black Friday mode (up to 25 terms, in this order). The minimum is the % off a find must reach (tap to step: Any, ≥5% … ≥50%). Hold a row — or focus it and press Alt+↑/↓ — to reorder.",
+    "sales:watch":"Each term is searched 3× a day, 5× a day in Black Friday mode (up to 25 terms, in this order). The minimum is the % off a find must reach (tap to step: Any, ≥5% … ≥50%). Hold a row — or focus it and press Alt+↑/↓ — to reorder.",
     "sales:counts":"Which email offers count as a deal. <strong>Free meal</strong>: a free meal, entrée or main. <strong>BOGO free</strong>: second item free (buy 2 get 1 = 33%). <strong>Expiring</strong>: your $10+ reward, about to expire (tap the window: 3 · 7 · 14 · 30 days). <strong>$ off</strong>: with a minimum it is a percent — $5 off $25 = 20%; tap the minimum $ off. <strong>Big % off</strong>: any offer at least this % off (tap: 5–50%). <strong>Birthday</strong>: only within 30 days of your birthday. <strong>Bonus gift card</strong>: judged by your Gift cards rules — on the total, or 0% when the bonus card has restrictions.",
     "sales:brands":"<strong>Always</strong> counts every offer from a brand; <strong>Never</strong> mutes it — whatever the offer type.",
     "sales:note":"Anything else that should count — read with each email (300 characters).",
@@ -2423,6 +2423,8 @@
     if(st==="needs"){ var hn=rh==="signin_needed"?"signin":rh; return {h:hn,word:HWORD[hn],need:true}; }
     if(st==="awaiting") return {h:"pending",word:rh==="unverified"?"Awaiting an honest run":"Awaiting first run",need:false};
     if(st==="stale") return (x.blocked||x.health==="error")?{h:"blocked",word:x.health==="error"?"Error":"Blocked",need:true}:{h:"stale",word:"Stale",need:false}; // a Blocked tile always names its source in "need you"
+    // bf-unwind S3: one deadline miss = 'slow' — checked, answering slowly; green-ish (the OK glyph), never "need you"
+    if(x.health==="slow") return {h:"ok",word:"Slow",need:false};
     return (rh==="empty"||x.health==="empty")?{h:"empty",word:"Empty",need:false}:{h:"ok",word:"OK",need:false};
   }
   function needYou(){ return (state.sources||[]).filter(function(s){ return srcHealth(s).need; }); }
@@ -2435,7 +2437,8 @@
     var laneStr=[LANE_NAME[x.lane]||x.lane||"",CAD_NAME[x.cadence]||x.cadence||""].filter(Boolean).join(" · ")+(x.bookmark?" · bookmark":"");
     var reason=st==="coming" ? (x.dormant_reason||"not wired up yet — can't be turned on")
       : (x.blocked ? "needs the browser lane — "+(x.browser_only_reason||x.last_error||"blocked to a server fetch")
-      : (x.health==="error"&&x.last_error ? String(x.last_error) : (rh&&rh!=="unverified"&&x.note ? String(x.note) : "")));
+      : (x.health==="error"&&x.last_error ? String(x.last_error)
+      : (x.health==="slow" ? "answered slowly last check — tried again at the next one" : (rh&&rh!=="unverified"&&x.note ? String(x.note) : ""))));
     var disabled=st==="coming";
     return '<div class="lrow srow'+(st==="coming"?" coming":"")+'" data-srcrow="'+esc(s.item_id)+'" data-h="'+hs.h+'">'
       +'<div class="rl"><span class="lab title">'+esc(s.title)+'</span>'
@@ -3268,7 +3271,20 @@
   // off ⇒ null; past that instant it reads Off by itself) + the Black Friday-only sources under it. Master off ⇒ those
   // sources and the extra frequency stop. Nothing about it reaches the feed, cards, alerts or emails.
   var BF_UNTIL="2026-12-02T06:00:00.000Z";
-  var BF_RETIRED=["src-bf-bensbargains"]; // bf-coverage S2 — not in sources.mjs SOURCES any more
+  // bf-coverage S2 — Ben's Bargains; bf-unwind S1 (Mark 2026-11-18: BF mode is sale items only) — the two BF gift-card feeds.
+  // None is in sources.mjs SOURCES any more; their rows stay 'off' and the section lists only the item sites.
+  var BF_RETIRED=["src-bf-bensbargains","src-bf-slickdeals-gift-cards-all","src-bf-frequent-miler"];
+  // bf-unwind S2 (Mark 2026-11-18): in BF mode the watch searches + item sites run 5× a day — mirrors sources.mjs BF_WATCH_HOURS
+  var BF_HOURS=[7,10,13,16,20], BF_HOURS_TXT="7am, 10am, 1pm, 4pm, 8pm";
+  // the latest slot that has started and had its 30-min tick window (CT wall clock via Intl; DST-correct), as ms epoch
+  function bfLastSlotMs(now){
+    var p=new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date(now));
+    var g=function(k){ for(var i=0;i<p.length;i++) if(p[i].type===k) return Number(p[i].value); return 0; };
+    var mins=(g("hour")%24)*60+g("minute"), back=null;
+    for(var j=BF_HOURS.length-1;j>=0;j--){ if(mins>=BF_HOURS[j]*60+30){ back=mins-BF_HOURS[j]*60; break; } }
+    if(back==null) back=mins+(24-BF_HOURS[BF_HOURS.length-1])*60; // before 07:30 ⇒ yesterday's 20:00 slot
+    return now-back*60e3;
+  }
   function bfOn(st,now){ var u=Date.parse((st||state.settings||{}).bf_mode_until||""); return !isNaN(u)&&(now==null?Date.now():now)<u; }
   function bfSourceLine(x,on){
     if(!on) return "Off — Black Friday mode is off";
@@ -3276,15 +3292,16 @@
     var e=x.extras||{}, t=Date.parse(e.last_checked||"");
     // bf-item-sources S1: a site that stopped itself (3 failed checks in a row) is never shown as waiting or OK
     if(e.health==="blocked"||e.blocked===true) return "Stopped — 3 checks in a row found nothing usable";
-    // S5 review: a stamp older than 2 h is from an earlier on-period (or a missed hour) — never shown as OK
-    if(isNaN(t)||Date.now()-t>2*3600e3) return "Waiting for the next hourly check";
+    // S5 review: a stamp from before the latest BF watch slot is from an earlier on-period (or a missed slot) — never OK.
+    // bf-unwind S2: the slots are 5 a day (BF_HOURS, CT), so "fresh" = checked at or after the latest slot.
+    if(isNaN(t)||t<bfLastSlotMs(Date.now())-10*60e3) return "Waiting for the next check ("+BF_HOURS_TXT+")";
     var h=e.health==="error"?"Error":(e.health==="empty"?"Empty":"OK");
     return h+" · checked "+relTime(new Date(t).toISOString());
   }
   function bfSection(st){
     var on=bfOn(st), list=state.bfSources||[];
     // bf-coverage S3: while on, every priced sale-watch match is sent (Mark judges the price) — the vetoes still apply
-    var sub=on?"On until Dec 2 — hourly checks, every priced watch match sent, the sources below, a daily store check":"Off — the regular schedule";
+    var sub=on?"On until Dec 2 — item searches 5× a day ("+BF_HOURS_TXT+"), every priced watch match sent, the sources below; gift cards and the Wed + Sat store check unchanged":"Off — the regular schedule";
     var html=groupHead("alerts","bf","Black Friday",null)+'<div class="group">'
       +'<div class="lrow"><div class="rl"><span class="lab title" id="bf-lab">Black Friday mode</span><span class="sub2" id="bf-sub">'+esc(sub)+'</span></div>'
       +'<div class="rc"><button class="sw" role="switch" id="bf-master" aria-checked="'+on+'" aria-labelledby="bf-lab" aria-describedby="bf-sub"></button></div></div>';
@@ -3299,7 +3316,7 @@
     var on=!bfOn();
     // S5 review: after Dec 2 2026 00:00 CT turning it on would write a past date and read Off — say so, write nothing
     if(on&&Date.now()>=Date.parse(BF_UNTIL)){ showToast("Black Friday 2026 has ended"); return; }
-    // bf_mode_on_at: when it went on — the store check counts a day as a daily run day only if on by its 01:35 CT
+    // bf_mode_on_at: when it went on — the BF dedupe keepers start then (judge.mjs bfDedupe; bf-unwind: no store-check use)
     state.settings.bf_mode_until=on?BF_UNTIL:null; state.settings.bf_mode_on_at=on?new Date().toISOString():null; saveSettings(["bf_mode_until","bf_mode_on_at"]); renderAlerts();
     var b=el("bf-master"); if(b) b.focus();
     showToast(on?"Black Friday mode on until Dec 2":"Black Friday mode off");
