@@ -1794,8 +1794,12 @@ async function loadManifest(dir){
   try{const r=await fetch(`${RAW}/${path}`);if(!r.ok)return null;return await r.json();}catch(e){return null;}
 }
 /* ── cache fallback: last good marquee list survives an outage ── */
-const CACHE_KEY='press:marquee:v3';
-function cacheSave(files, man, spaces){ try{ localStorage.setItem(CACHE_KEY, JSON.stringify({files, man, spaces})); }catch(e){} }
+// v4 (wings-fail-closed, 2026-11-20): v3 could hold an EMPTY spaces written after a failed spaces.json read — that cache
+// painted every private/family page on the public lobby. v4 only ever stores a spaces that passed validSpaces(); v3 is
+// dropped unread. cacheSave REFUSES a spaces that is not valid, so a bad read can never poison the cache again.
+const CACHE_KEY='press:marquee:v4';
+try{ localStorage.removeItem('press:marquee:v3'); }catch(e){}
+function cacheSave(files, man, spaces){ if(!validSpaces(spaces)) return; try{ localStorage.setItem(CACHE_KEY, JSON.stringify({files, man, spaces})); }catch(e){} }
 function cacheLoad(){ try{ return JSON.parse(localStorage.getItem(CACHE_KEY)||'null'); }catch(e){ return null; } }
 
 /* ══ two spaces — public + personal wing ════════════════════════════════════
@@ -1817,6 +1821,14 @@ function isFamilyFile(f){ return (SPACES.family||[]).includes(f); }
    asserts the parent exists, shares the tier and is not itself parented. */
 function cardFiles(files, man){ return files.filter(f=>!(man&&man[f]&&man[f].parent)); }
 async function loadSpaces(){ try{ const r=await fetch(`${RAW}/spaces.json`); if(!r.ok) return null; return await r.json(); }catch(e){ return null; } }
+/* FAIL CLOSED (wings-fail-closed, 2026-11-20). A spaces.json that is unreachable, non-2xx, not JSON, or has no
+   non-empty `personal` list is NOT "both wings empty" — it is an outage. The lobby and archive must never paint from it
+   (on 2026-11-19 a plane's Wi-Fi reached api.github.com but not raw.githubusercontent.com: listPages worked, spaces
+   came back null, normSpaces(null) emptied both wings and every private/family page rendered as a public card).
+   validSpaces is the one test; loadSpacesStrict throws so the caller drops to the cache path / the error screen. */
+function validSpaces(s){ return !!(s && Array.isArray(s.personal) && s.personal.length &&
+  s.personal.every(f=>typeof f==='string') && (s.family===undefined || (Array.isArray(s.family) && s.family.every(f=>typeof f==='string')))); }
+async function loadSpacesStrict(){ const s=await loadSpaces(); if(!validSpaces(s)) throw new Error('spaces.json unreadable — failing closed'); return s; }
 function vaultState(){
   const sess = (window.PressVault && PressVault.loadSession) ? PressVault.loadSession() : null; // localStorage only
   const enrolled = (window.PressVault && PressVault.everEnrolled) ? PressVault.everEnrolled() : false;
@@ -2134,7 +2146,7 @@ async function renderMarquee(root){
   root.innerHTML = skelHTML;
   pLocalLoad();
   try{
-    const results = await Promise.all([listPages(''), loadManifest(''), loadSpaces(), pCloudLoad().catch(()=>{})]);
+    const results = await Promise.all([listPages(''), loadManifest(''), loadSpacesStrict(), pCloudLoad().catch(()=>{})]);
     const files = results[0], man = results[1];
     SPACES = normSpaces(results[2]);
     let physCount = 0; try{ physCount=(await listPages('archive')).length; }catch(e){}
@@ -2142,7 +2154,8 @@ async function renderMarquee(root){
     paintMarquee(root, files, man, physCount, false);
   }catch(e){
     const cached = cacheLoad();
-    if(cached && Array.isArray(cached.files) && cached.files.length){
+    // the cache is used only when its spaces passed validSpaces() — never paint the lobby without a real wing split
+    if(cached && Array.isArray(cached.files) && cached.files.length && validSpaces(cached.spaces)){
       SPACES = normSpaces(cached.spaces);
       paintMarquee(root, cached.files, cached.man, 0, true);
     } else {
@@ -2162,11 +2175,11 @@ async function renderArchive(root){
   pLocalLoad();
   try{
     const results = await Promise.all([listPages('archive').catch(()=>[]), loadManifest('archive'),
-                                       listPages(''), loadManifest(''), loadSpaces(), pCloudLoad().catch(()=>{})]);
+                                       listPages(''), loadManifest(''), loadSpacesStrict(), pCloudLoad().catch(()=>{})]);
     const physFiles=results[0], physMan=results[1], rootFiles=results[2], rootMan=results[3];
     SPACES = normSpaces(results[4]);
     // personal-wing pages never appear in the archive either — fail-safe filter
-    const stateArchived = rootFiles.filter(f=>PSTATE.archived.includes(f) && !isPersonalFile(f));
+    const stateArchived = rootFiles.filter(f=>PSTATE.archived.includes(f) && !isPersonalFile(f) && !isFamilyFile(f));
     const back = `<a class="tw-back" href="index.html">← the marquee</a>`;
     const total = physFiles.length + stateArchived.length;
     if(!total){
