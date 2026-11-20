@@ -6539,7 +6539,9 @@ window.__def("src/sim/ss-timing.js", function(module, exports, require){
  * include both 'annuity' and 'lump' (on the reference plan that is the APF). The lump uses
  * the existing `lump` election (rolled to pre-tax at retirement) — no new lump logic.
  * A kids-gift plan holds the CURRENT plan's gift scale fixed (IN._familyScale) so a combo
- * compares the same gifts; the floor bisection is not re-run per combination.
+ * compares the same gifts; the floor bisection is not re-run per combination. That scale depends
+ * on the current claim ages + election, so a kids-gift plan's grid is cached PER current combo
+ * (an Apply or a stepper change re-derives it — "Your plan now" always matches the headline).
  *
  * PERF (budget ≤ 1.5 s per full sweep on tools/perf.js): mode 'full' = 81×2 combos × 2 runs;
  * mode 'coarse' = ages {62,64,66,67,68,69,70} first, then every age ±1 around the top 3.
@@ -6631,6 +6633,7 @@ function compare(a, b, cur) {
 const keyOf = c => c.ssAgeP1 + '/' + c.ssAgeP2 + '/' + (c.apf == null ? '-' : c.apf);
 
 const _cache = new Map();
+const MISS = {};   // cacheOnly sentinel
 const CACHE_MAX = 8;
 
 // sweep(F, IN, opts) → { current, recommended, anchors[], grid[], path, builds, ms, apfSourceId, slots[], cached }
@@ -6645,7 +6648,9 @@ function sweep(F, IN, opts) {
   const slots = ssSlots(F);
   const cur = { ssAgeP1: IN.ssAgeP1, ssAgeP2: IN.ssAgeP2, apf: currentApf(F, IN, apf) };
   const mode = opts.mode === 'coarse' ? 'coarse' : 'full';
-  const ck = (opts.noCache || opts.build) ? null : cacheKey(F, IN, apf) + '|' + mode;
+  let fam = false;
+  try { const fm = engine.familyGifts; fam = !!(fm && fm.isActive && fm.isActive(F, Object.assign({}, IN)) && IN._familyScale == null); } catch (e) { fam = false; }
+  const ck = (opts.noCache || opts.build) ? null : cacheKey(F, IN, apf) + '|' + mode + (fam ? '|cur:' + keyOf(cur) : '');
   let memo = ck && _cache.get(ck);
   const cached = !!memo;
   if (opts.cacheOnly && !cached) return null;   // the card asks "is it already worked out?" without paying for a sweep
@@ -6653,13 +6658,14 @@ function sweep(F, IN, opts) {
   // A kids-gift plan: hold the current plan's gift scale fixed for every combination.
   if (memo.scale === undefined) {
     memo.scale = null;
-    try { const fm = engine.familyGifts; const INn = Object.assign({}, IN); if (fm && fm.isActive && fm.isActive(F, INn) && IN._familyScale == null) { const m0 = build(F, IN); memo.builds++; memo.scale = (m0.family && m0.family.scale != null) ? m0.family.scale : null; } }
+    try { if (fam) { const m0 = build(F, IN); memo.builds++; memo.scale = (m0.family && m0.family.scale != null) ? m0.family.scale : null; } }
     catch (e) { memo.scale = null; }
   }
   function run(combo) {
     const k = keyOf(combo);
     let e = memo.entries.get(k);
     if (e) return e;
+    if (opts.cacheOnly) throw MISS;   // a combination not worked out yet (e.g. the APF moved to 'deferred') — never a hidden sweep
     const inC = Object.assign({}, IN, { ssAgeP1: combo.ssAgeP1, ssAgeP2: combo.ssAgeP2 });
     if (apf && combo.apf != null) {
       inC.election = Object.assign({}, IN.election, { [apf.id]: combo.apf });
@@ -6673,6 +6679,8 @@ function sweep(F, IN, opts) {
     memo.entries.set(k, e);
     return e;
   }
+  try { return finish(); } catch (x) { if (x === MISS) return null; throw x; }
+  function finish() {   // (body kept at the sweep's indent)
   const axis = slot => slots.includes(slot) ? AGES : [slot === 'p1' ? cur.ssAgeP1 : cur.ssAgeP2];
   const apfAxis = apf ? APF_CHOICES.slice() : [cur.apf];
   if (apf && cur.apf != null && !apfAxis.includes(cur.apf)) apfAxis.push(cur.apf);   // e.g. 'deferred' — compared, kept as-is
@@ -6713,6 +6721,7 @@ function sweep(F, IN, opts) {
     path: mode, builds: memo.builds, ms: Date.now() - t0, cached,
     apfSourceId: apf ? apf.id : null, slots, higherEarner: slots.length ? higher : null,
   };
+  } // finish
 }
 
 // The plain-English steps for a recommendation (the card lists them; names are plan data).
