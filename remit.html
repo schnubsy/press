@@ -359,6 +359,9 @@ border-radius:5px;padding:11px 13px;background:rgba(194,104,110,.08)}
 .delconfirm .acts2{display:flex;gap:8px;justify-content:flex-end}
 .curmenu.delconfirm button{display:inline-flex;justify-content:center;min-height:44px;padding:0 14px;border-radius:4px;font:600 14px/1 var(--sans);box-shadow:inset 0 0 0 1px var(--brass-dim)}
 .curmenu.delconfirm [data-yes]{color:var(--rejected);box-shadow:inset 0 0 0 1px var(--rejected)}
+.delconfirm.choose{max-width:340px}
+.delconfirm.choose .acts2{flex-wrap:wrap}
+.curmenu.delconfirm.choose [data-yes]{color:var(--brass);box-shadow:inset 0 0 0 1px var(--brass)}
 .addsec .linkbtn{font:600 12px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:var(--brass);min-height:44px}
 .cpx{font-size:.7em;letter-spacing:0;vertical-align:baseline}
 .erow{grid-template-columns:14px 22px minmax(0,1fr) auto max-content 32px}
@@ -1892,7 +1895,7 @@ this.state = {
 people: d.people || [], periods: d.periods || [], budgets: d.budgets || [],
 items: readItems(d.items), messages: d.messages || [], transfers: d.transfers || [], rates: d.rates || [],
 commitments: d.commitments || [], sections: d.sections || [],
-ynab_settings: d.ynab_settings || [], ynab_outbox: d.ynab_outbox || [], ynab_mode: d.ynab_mode, ynab_config: d.ynab_config,
+ynab_settings: d.ynab_settings || [], ynab_outbox: d.ynab_outbox || [], ynab_mode: d.ynab_mode, ynab_edit_mode: d.ynab_edit_mode, ynab_matches: d.ynab_matches, ynab_remove_mode: d.ynab_remove_mode, ynab_config: d.ynab_config,
 is_parent: typeof d.is_parent === 'boolean' ? d.is_parent : null, quiet_write_ms: d.quiet_write_ms || 0,
 };
 this._viewer = d.viewer || (this.state.people[0] && this.state.people[0].email) || 'unknown';
@@ -2075,10 +2078,45 @@ var d = this.state, mode = d.ynab_mode || 'dry_run';
 if (action === 'config') return { status: 200, json: Object.assign({ ok: true, posting: mode !== 'dry_run', configured: true }, d.ynab_config || { accounts: [], categories: [] }) };
 var t = d.transfers.find((x) => x.id === body.transfer_id);
 if (!t) return { status: 404, json: { ok: false, error: 'transfer not found' } };
+d.ynab_calls = d.ynab_calls || []; d.ynab_calls.push([action, Object.assign({}, body, { transfer_id: undefined })]);
+var pr0 = (d.ynab_outbox || []).find(function (o) { return o.transfer_id === t.id && (o.kind || 'post') === 'post'; });
+if (action === 'match') return { status: 200, json: { ok: true, posting: mode !== 'dry_run', days: 50, matches: mode === 'dry_run' ? [] : (d.ynab_matches || []).slice() } };
+if (action === 'remove') {
+if (!pr0 || pr0.status !== 'posted' || !pr0.ynab_txn_id) return { status: 200, json: { ok: true, removed: 'none' } };
+if (d.ynab_remove_mode === 'fail') return { status: 503, json: { ok: false, error: 'YNAB did not confirm the removal — nothing deleted', retryable: true } };
+var own = /^(matched|import)/.test(String((pr0.payload || {}).mode || ''));
+await this.upsertOutbox({ transfer_id: t.id, status: 'failed', ynab_txn_id: null, last_error: own ? 'unlinked from YNAB — kept there' : 'removed from YNAB', payload: Object.assign({}, pr0.payload, { removed: { id: pr0.ynab_txn_id, how: own ? 'unlinked' : 'deleted' } }) });
+return { status: 200, json: own ? { ok: true, removed: 'unlinked', kept: true, text: 'YNAB keeps it (the bank’s own) — Remit no longer links it' } : { ok: true, removed: 'deleted' } };
+}
 if (!t.breakdown || !t.breakdown.usd_split) { await this.upsertOutbox({ transfer_id: t.id, status: 'failed', last_error: 'no $' }); return { status: 409, json: { ok: false, error: 'no $' } }; }
 if (mode === 'ambiguous' && body.search) mode = d.ynab_mode = 'posted';   // the search finds the one that landed
 if (mode === 'in_progress') return { status: 409, json: { ok: false, error: 'already in progress', in_progress: true, status: 'in_flight', retryable: true } };
-if (mode === 'posted') { await this.upsertOutbox({ transfer_id: t.id, status: 'posted', ynab_txn_id: 'ynab-' + t.id, last_error: null }); return { status: 200, json: { ok: true, status: 'posted', transaction_id: 'ynab-' + t.id } }; }
+var c = function (n) { return Math.round(Number(n || 0) * 100); }, u = t.breakdown.usd_split;
+var sent = { amount: -c(t.amount_sent_usd != null ? t.amount_sent_usd : t.breakdown.usd) * 10, subtransactions: [u.living, u.tuition, u.dad].filter(function (x) { return c(x); }).map(function (x) { return { amount: -c(x) * 10 }; }) };
+var prior = (d.ynab_outbox || []).find(function (o) { return o.transfer_id === t.id && (o.kind || 'post') === 'post'; });
+var editing = action === 'edit' && prior && (prior.status === 'posted' || (prior.payload && prior.payload.edit));
+if (action === 'post' && prior && prior.status !== 'posted' && prior.payload && prior.payload.edit) editing = true;
+if (editing) {
+d.ynab_edits = (d.ynab_edits || 0) + 1;
+var from = prior.payload && prior.payload.edit ? prior.payload.edit.from : prior.ynab_txn_id, old = prior.payload && prior.payload.edit ? prior.payload.edit.old_payload : prior.payload;
+var emode = d.ynab_edit_mode || mode;
+if (emode === 'ambiguous' && body.search) emode = d.ynab_edit_mode = 'posted';
+if (emode === 'posted') {
+var nid = 'ynab-' + t.id + '-e' + d.ynab_edits;
+await this.upsertOutbox({ transfer_id: t.id, status: 'posted', ynab_txn_id: nid, last_error: null, payload: Object.assign({}, sent, { replaced: ((prior.payload || {}).replaced || []).concat([from]) }) });
+return { status: 200, json: { ok: true, status: 'posted', transaction_id: nid, edited: 'replace' } };
+}
+if (emode === 'fail') { await this.upsertOutbox({ transfer_id: t.id, status: 'posted', ynab_txn_id: from, payload: old, last_error: 'ynab rejected the request' }); return { status: 502, json: { ok: false, error: 'ynab rejected the request', unchanged: true, status: 'failed' } }; }
+if (emode === 'ambiguous') { await this.upsertOutbox({ transfer_id: t.id, status: 'ambiguous', last_error: 'ynab unavailable', payload: Object.assign({}, sent, { edit: { from: from, phase: 'deleted', old_payload: old } }) }); return { status: 503, json: { ok: false, error: 'ynab unavailable', retryable: true, ambiguous: true, status: 'ambiguous' } }; }
+return { status: 200, json: { ok: true, status: 'dry_run', dry_run: true, edit: true } };
+}
+if (mode === 'posted' && body.use) { await this.upsertOutbox({ transfer_id: t.id, status: 'posted', ynab_txn_id: body.use, last_error: null, payload: Object.assign({}, sent, { mode: 'matched', target: body.use, choice: 'use' }) }); return { status: 200, json: { ok: true, status: 'posted', transaction_id: body.use, matched: true } }; }
+if (mode === 'posted') {
+d.ynab_posts = (d.ynab_posts || 0) + 1;
+var pid = 'ynab-' + t.id + (d.ynab_posts > 1 ? '-p' + d.ynab_posts : '');
+await this.upsertOutbox({ transfer_id: t.id, status: 'posted', ynab_txn_id: pid, last_error: null, payload: Object.assign({}, sent, body.fresh ? { choice: 'fresh' } : {}, body.note ? { note: body.note } : {}) });
+return { status: 200, json: { ok: true, status: 'posted', transaction_id: pid } };
+}
 if (mode === 'fail' || mode === 'ambiguous') { await this.upsertOutbox({ transfer_id: t.id, status: mode === 'fail' ? 'failed' : 'ambiguous', last_error: 'ynab unavailable' }); return { status: 503, json: { ok: false, error: 'ynab unavailable', retryable: true, ambiguous: mode === 'ambiguous' } }; }
 await this.upsertOutbox({ transfer_id: t.id, status: 'dry_run', last_error: null }); return { status: 200, json: { ok: true, status: 'dry_run', dry_run: true } };
 };
@@ -2571,6 +2609,28 @@ m.querySelector('[data-yes]').addEventListener('click', function () { close(true
 setTimeout(function () { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); m.querySelector('[data-no]').focus(); }, 0);
 });
 }
+function choose(btn, opts) {
+return new Promise(function (resolve) {
+var old = document.querySelector('.curmenu'); if (old) old.__close(null);
+var m = document.createElement('div');
+m.className = 'curmenu delconfirm choose'; m.setAttribute('role', 'alertdialog'); m.setAttribute('aria-label', opts.label || 'Choose');
+m.innerHTML = '<p>' + opts.q + '</p><div class="acts2"><button type="button" data-no>Cancel</button><button type="button" data-alt>' + esc(opts.alt) + '</button><button type="button" class="pri" data-yes>' + esc(opts.yes) + '</button></div>';
+document.body.appendChild(m);
+var r = btn.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
+var foot = document.querySelector('.foot'), floor = foot ? foot.getBoundingClientRect().top : innerHeight;
+m.style.left = Math.max(12, Math.min(r.right - mw, innerWidth - mw - 12)) + 'px';
+m.style.top = ((r.bottom + 6 + mh < floor) ? r.bottom + 6 : Math.max(12, r.top - 6 - mh)) + 'px';
+function close(v) { m.remove(); document.removeEventListener('pointerdown', outside, true); document.removeEventListener('keydown', onKey, true); resolve(v); }
+function outside(e) { if (!m.contains(e.target)) { if (btn.contains(e.target)) e.stopPropagation(); close(null); } }
+function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); close(null); btn.focus(); } }
+m.__close = close;
+m.querySelectorAll('button').forEach(function (b) { b.addEventListener('pointerdown', function (e) { e.preventDefault(); }); b.addEventListener('mousedown', function (e) { e.preventDefault(); }); });
+m.querySelector('[data-no]').addEventListener('click', function () { close(null); });
+m.querySelector('[data-alt]').addEventListener('click', function () { close('alt'); });
+m.querySelector('[data-yes]').addEventListener('click', function () { close('yes'); });
+setTimeout(function () { document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true); m.querySelector('[data-yes]').focus(); }, 0);
+});
+}
 function tagChip(it, tagCtx, addCtx) {
 if (tagCtx && !it && addCtx && addCtx.bucket === 'mine') {
 return '<button type="button" class="tagchip addtag" data-addtag data-tag="" aria-haspopup="menu" aria-label="Tag for the new line: none — change">Tag</button>';
@@ -2776,10 +2836,10 @@ var body = (has('living') ? line('living', kid + '’s Living') + subs : '') +
 (has('dad') ? line('dad', 'Dad') : '');
 var st = !derived && Remit.ui.ynabState ? Remit.ui.ynabState(ctrl, t) : null;
 var ok = st && st.posted && inUsd ? (st.differs
-? '<span class="rstate warn" data-ynab="differs">In YNAB at ' + symHTML(esc(money.fmt(st.ynabAmount, 'USD'))) + ' — fix it there</span>'
+? '<span class="rstate warn" data-ynab="differs">' + (st.splitOnly ? 'YNAB has the old split' : 'In YNAB at ' + symHTML(esc(money.fmt(st.ynabAmount, 'USD')))) + '</span>'
 : '<span class="rstate ok" data-ynab="posted">✓ matches YNAB</span>') : '';
 var tail = derived ? '' : !inUsd ? (local ? '<span class="rstate muted">Add the $ that left the bank to send it to YNAB</span>' : '')
-: !st ? '' : st.posted ? ''
+: !st ? '' : st.posted ? (st.differs ? (st.manual ? '<span class="rstate warn" data-ynab="manual">' + symHTML(esc(st.manual)) + '</span> ' : '') + resendBtn(t, st, 'ynabpill rstate', st.manual ? 'Check again' : 'Re-send to YNAB') : '')
 : st.sending ? '<span class="rstate muted" data-ynab="sending">Sending to YNAB…</span>'
 : st.manual ? '<span class="rstate warn" data-ynab="manual">' + symHTML(esc(st.manual)) + '</span> <button type="button" class="ynabpill rstate" data-ynabretry="' + esc(t.id) + '" aria-label="Check YNAB again">Check again</button>'
 : '<button type="button" class="ynabpill rstate" data-ynabretry="' + esc(t.id) + '" aria-label="Not in YNAB yet (' + esc(st.why) + ') — retry">Not in YNAB yet · Retry</button>';
@@ -2790,10 +2850,15 @@ return '<div class="receipt srow' + (derived ? ' computed' : '') + '" data-xfer=
 '<div class="rchead">' + head + '</div>' + body +
 (tail ? '<div class="rfoot">' + tail + '</div>' : '') + note + xferActs(t) + '</div>';
 }
+function resendBtn(t, st, cls, label) {
+var what = st.splitOnly ? 'YNAB has the old split' : 'In YNAB at ' + money.fmt(st.ynabAmount, 'USD');
+return '<button type="button" class="' + cls + '"' + (label ? '' : ' data-ynab="differs"') + ' data-ynabresend="' + esc(t.id) + '" aria-label="' + esc(what + ' — re-send to YNAB') + '">' +
+(label ? esc(label) : symHTML(esc(what)) + ' · Re-send') + '</button>';
+}
 function ynabPill(ctrl, t) {
 var st = Remit.ui.ynabState ? Remit.ui.ynabState(ctrl, t) : null;
 if (!st) return '';
-if (st.posted && st.differs) return '<span class="ynabok warn" data-ynab="differs">In YNAB at ' + symHTML(esc(money.fmt(st.ynabAmount, 'USD'))) + '</span>';   // S4 Y4
+if (st.posted && st.differs) return resendBtn(t, st, 'ynabpill warn');   // S4 Y4 → arc/edit-posted-payments D4
 if (st.posted) return '<span class="ynabok" data-ynab="posted">✓ in YNAB</span>';
 if (st.sending) return '<span class="ynabok sending" data-ynab="sending">Sending to YNAB…</span>';   // S4: another call holds it
 if (st.manual) return '<button type="button" class="ynabpill warn" data-ynab="manual" data-ynabretry="' + esc(t.id) + '" aria-label="' + esc(st.manual) + ' — check again">YNAB needs a hand edit · Check again</button>';
@@ -2949,10 +3014,11 @@ if (await confirmDel(b, secName, { q: 'Delete section “' + esc(secName) + '”
 }));
 root.querySelectorAll('.srow[data-xfer]').forEach((rowEl) => {
 var xid = rowEl.getAttribute('data-xfer');
-rowEl.addEventListener('click', (e) => { if (e.target.closest('.swacts, [data-ynabretry]')) return; ctrl.editTransfer(xid); });
+rowEl.addEventListener('click', (e) => { if (e.target.closest('.swacts, [data-ynabretry], [data-ynabresend]')) return; ctrl.editTransfer(xid); });
 rowEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target === rowEl) { e.preventDefault(); ctrl.editTransfer(xid); } });
 });
 root.querySelectorAll('[data-ynabretry]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); if (Remit.ui.retryYnab) Remit.ui.retryYnab(ctrl, b.getAttribute('data-ynabretry')); }));
+root.querySelectorAll('[data-ynabresend]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); if (Remit.ui.resendYnab) Remit.ui.resendYnab(ctrl, b.getAttribute('data-ynabresend'), b); }));
 var rec = root.querySelector('#recordTransfer'); if (rec) rec.addEventListener('click', () => ctrl.recordTransfer());
 var more = root.querySelector('#moreBtn');
 if (more) more.addEventListener('click', () => openMore(ctrl, more));
@@ -3296,15 +3362,23 @@ Remit.ui.toast('Payment deleted' + (credits.length ? ' (with its sent-ahead cred
 try {
 for (var j = 0; j < snaps.length; j++) await store.createTransfer(snaps[j]);   // the same ids
 for (var k = 0; k < obSnap.length; k++) { var o = Object.assign({}, obSnap[k]); delete o.updated_at; delete o.attempts; delete o.last_error; await store.upsertOutbox(o); }
+if (Remit.ui.relinkYnab) for (var q = 0; q < obSnap.length; q++) { var tq = snaps.find(function (x) { return x.id === obSnap[q].transfer_id; }); if (tq) await Remit.ui.relinkYnab(Object.assign({}, ctrl, { outbox: {} }), tq, obSnap[q]); }
+if (ctrl.refresh) ctrl.refresh();
 } catch (e) { Remit.ui.toast('Could not restore it all — refresh and check the payment.'); ctrl.refresh(); }
 } });
 };
 ctrl.removeTransfer = async function (id, anchor) {
 var t = (ctrl.model.transfers || []).find((x) => x.id === id); if (!t) return;
 var label = money.fmt(t.amount_delivered || 0, t.currency) + ' payment';
-if (Remit.ui.ynabPosted && Remit.ui.ynabPosted(ctrl, t)) {
+if (Remit.ui.ynabPosted && Remit.ui.ynabPosted(ctrl, t) && Remit.ui.ynabOn && Remit.ui.ynabOn(store)) {
 var at = (anchor && anchor.isConnected) ? anchor : ctrl.root.querySelector('.srow[data-xfer="' + id + '"]');
-if (!(await confirmDel(at, label, { q: 'This ' + esc(label) + ' is already in YNAB — deleting it here does not remove it there. Delete it from Remit?' }))) return;
+var pick = await choose(at, { q: 'This ' + esc(label) + ' is already in YNAB. Take it out of YNAB too?', alt: 'Leave it in YNAB', yes: 'Remove from YNAB', label: 'Delete a payment that is in YNAB' });
+if (!pick) return;
+if (pick === 'yes') {
+var rm = await Remit.ui.removeYnab(ctrl, t);
+if (!rm.ok) { Remit.ui.toast(rm.ambiguous ? 'YNAB may have taken it out (no clear answer) — the payment stays; Retry it, then delete again.' : 'Could not take it out of YNAB (' + (rm.error || 'try again') + ') — nothing deleted.'); if (ctrl.refresh) ctrl.refresh(); return; }
+if (rm.text) Remit.ui.toast(rm.text + '.', { duration: 10000 });
+}
 }
 return ctrl.deleteTransfer(id);
 };
@@ -3459,7 +3533,8 @@ Remit.ui.fitAmt = fitAmt;
 Remit.ui.lockScroll = lockScroll;
 Remit.ui.unlockScroll = unlockScroll;
 Remit.ui.swallow = swallow;
-Remit.ui.confirm = confirmDel;   // arc/payment-sheet-and-polish S1: the in-app Yes/No (never window.confirm)
+Remit.ui.confirm = confirmDel;
+Remit.ui.choose = choose;   // arc/edit-posted-payments S5   // arc/payment-sheet-and-polish S1: the in-app Yes/No (never window.confirm)
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 </script>
 <!-- src/ui/rows.js -->
@@ -3721,7 +3796,7 @@ row.addEventListener('pointerdown', function (e) {
 if (e.button != null && e.button !== 0) return;
 if (xMoving) return;
 if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;   // the swipe is a touch gesture; desktop right-clicks
-if (e.target.closest('.swacts, [data-ynabretry], .cpy')) return;
+if (e.target.closest('.swacts, [data-ynabretry], [data-ynabresend], .cpy')) return;
 clear();
 st = { id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, mode: null, base: row.classList.contains('swiped') ? -OPEN_W : 0 };
 document.addEventListener('pointermove', onMove, true); document.addEventListener('pointerup', onUp, true);
@@ -4001,6 +4076,24 @@ var best = null, bestVal = -Infinity;
 Object.keys(remaining || {}).forEach(function (c) { var v = money.cents(remaining[c]); if (v > bestVal) { bestVal = v; best = c; } });
 return best;
 }
+function refRate(ctrl, c, excludeId) {
+var rr = fx.rateFor(ctrl.store.getRates ? ctrl.store.getRates() : [], c);
+if (rr && Number(rr.rate) > 0) return Number(rr.rate);
+var last = (ctrl.model.transfers || []).filter(function (t) { return t.id !== excludeId && t.currency === c && t.breakdown && Number(t.breakdown.rate) > 0; })
+.sort(function (a, b) { return String(b.sent_on || '').localeCompare(String(a.sent_on || '')); })[0];
+return last ? Number(last.breakdown.rate) : null;
+}
+function rateOff(ctrl, c, amt, usd, excludeId) {
+if (c === 'USD' || !(Number(amt) > 0) || !(Number(usd) > 0)) return null;
+var rate = Number(amt) / Number(usd), ref = refRate(ctrl, c, excludeId);
+if (!ref) return null;
+return (rate / ref > 3 || ref / rate > 3) ? rate : null;
+}
+async function rateGuard(ctrl, btn, c, amt, usd, excludeId) {
+var r = rateOff(ctrl, c, amt, usd, excludeId);
+if (r == null) return true;
+return Remit.ui.confirm(btn, '', { q: 'Rate looks off (' + esc(r.toFixed(2) + ' ' + money.symbol(c) + '/$') + '). Save anyway?', yes: 'Save anyway', label: 'Confirm the rate' });
+}
 function openTransfer(ctrl, currency, existing) {
 var store = ctrl.store, model = ctrl.model;
 var remaining = model.remaining || {};
@@ -4037,13 +4130,17 @@ sheet.innerHTML =   // arc/sheet-and-speed S2: no grab bar (it did nothing on iP
 var $ = (id) => sheet.querySelector(id);
 function selCur() { return $('#t-cur').value; }
 var logged = editing && existing.breakdown && existing.breakdown.kind === 'log';
-var lockWhy = logged && Remit.ui.ynabLock ? Remit.ui.ynabLock(ctrl, existing) : (logged && Remit.ui.ynabPosted && Remit.ui.ynabPosted(ctrl, existing) ? 'posted' : null);
+var lockWhy = logged && Remit.ui.ynabLock ? Remit.ui.ynabLock(ctrl, existing) : null;
 var locked = !!lockWhy;
+var inYnab = logged && !locked && Remit.ui.ynabPosted && Remit.ui.ynabPosted(ctrl, existing) && Remit.ui.ynabOn && Remit.ui.ynabOn(store);
+var differs = inYnab && Remit.ui.ynabDiffers ? Remit.ui.ynabDiffers(ctrl, existing) : null;
+if (differs) $('[data-act="save"]').textContent = 'Re-send to YNAB';
 if (logged) $('#t-cur').disabled = true;
 if (locked) {
 ['#t-amt', '#t-sent', '#t-rate', '#t-date'].forEach(function (q) { $(q).disabled = true; });
 var lockNote = document.createElement('p'); lockNote.className = 'ynabnote'; lockNote.id = 't-locked';
-lockNote.textContent = lockWhy === 'posted' ? 'Already in YNAB — the amounts and date are fixed here. Change them in YNAB, or delete this payment and log it again.'
+lockNote.textContent = lockWhy === 'posted' ? 'Re-split onto the bank’s own YNAB transaction — the amounts and date are fixed here. Change them in YNAB, or delete this payment and log it again.'
+: lockWhy === 'parents' ? 'Already in YNAB — Mark or Barbara can change its amounts and date (YNAB is theirs). The note still edits.'
 : lockWhy === 'sending' ? 'Sending to YNAB right now — the amounts and date are fixed until it finishes.'
 : 'This may already be in YNAB (the last send had no clear answer) — the amounts and date are fixed until a Retry settles it. Or delete this payment and log it again.';
 sheet.querySelector('.acts').before(lockNote);
@@ -4120,13 +4217,30 @@ provider: ($('#t-prov').value || '').trim() || null, note: ($('#t-note').value |
 };
 if (locked) {   // in YNAB already: only the words change (the disabled fields cannot, but never trust the DOM)
 if (money.cents(amt) !== money.cents(existing.amount_delivered) || money.cents(sent || 0) !== money.cents(existing.amount_sent_usd || 0) || fields.sent_on !== existing.sent_on || c !== existing.currency) {
-Remit.ui.toast(lockWhy === 'posted' ? 'Already in YNAB — change the amount there, or delete and log it again.' : 'Not now — YNAB may already have this amount. Retry first.'); return;
+Remit.ui.toast(lockWhy === 'parents' ? 'Already in YNAB — Mark or Barbara can change the amount.' : lockWhy === 'posted' ? 'Already in YNAB — change the amount there, or delete and log it again.' : 'Not now — YNAB may already have this amount. Retry first.'); return;
 }
 fields = { provider: fields.provider, note: fields.note };
-} else if (logged) {
+}
+var amtsChanged = !editing || money.cents(amt) !== money.cents(existing.amount_delivered) || (c !== 'USD' && money.cents(sent || 0) !== money.cents(existing.amount_sent_usd || 0));
+if (!locked && logged) {
 fields.currency = existing.currency;
 if (c === 'USD') fields.amount_sent_usd = amt;
-fields.breakdown = money.replanLog(existing.breakdown, amt, c === 'USD' ? amt : (sent || null));
+if (amtsChanged) fields.breakdown = money.replanLog(existing.breakdown, amt, c === 'USD' ? amt : (sent || null));
+}
+if (!locked && amtsChanged && c !== 'USD') {
+saving = true; var rok = await rateGuard(ctrl, $('[data-act="save"]'), c, amt, sent, editing ? existing.id : null); saving = false;
+if (!rok) return;
+}
+var ynabEdit = false;
+if (inYnab) {
+var newUsd = c === 'USD' ? amt : sent;
+ynabEdit = !!differs || amtsChanged || fields.sent_on !== existing.sent_on;
+if (ynabEdit && !(newUsd > 0)) { Remit.ui.toast('This payment is in YNAB — it needs its $ amount.'); $('#t-sent').focus(); return; }
+if (ynabEdit) {
+saving = true; var pick = await Remit.ui.chooseYnab($('[data-act="save"]'), Remit.ui.ynabHeld(ctrl, existing), newUsd); saving = false;
+if (!pick) return;
+if (pick === 'alt') ynabEdit = false;
+}
 }
 var basis = editing ? null : chosenBasis(), extra = 0, tickIds = [];
 if (!editing) {
@@ -4152,7 +4266,8 @@ if (editing) await store.updateTransfer(existing.id, fields);
 else await store.createTransfer(fields);
 } catch (e) { saving = false; throw e; }
 close(host);
-if (logged && !locked && Remit.ui.requeueYnab) Remit.ui.requeueYnab(ctrl, Object.assign({}, existing, fields));
+if (ynabEdit && Remit.ui.editYnab) Remit.ui.editYnab(ctrl, Object.assign({}, existing, fields));
+else if (logged && !locked && !inYnab && Remit.ui.requeueYnab) Remit.ui.requeueYnab(ctrl, Object.assign({}, existing, fields));
 Remit.ui.toast(money.fmt(amt, c) + (editing ? ' payment updated.' : ' payment recorded.') +
 (money.cents(extra) ? ' Added an Extra line of ' + money.fmt(extra, c) + '.' : '') +
 (tickIds.length ? ' Ticked ' + tickIds.length + (tickIds.length === 1 ? ' line.' : ' lines.') : ''));
@@ -4316,6 +4431,10 @@ if (missing.length) { var s0 = sheet.querySelector('[data-tagline="' + missing[0
 var m2 = model;
 if (Object.keys(tg).length) m2 = Object.assign({}, model, { mine: Object.assign({}, model.mine, { rows: model.mine.rows.map(function (r) { return tg[r.id] ? Object.assign({}, r, { tag: tg[r.id] }) : r; }) }) });
 var p = money.logPlan(m2, input());
+if (c !== 'USD' && p.usd != null) {   // D5: the rate typo guard
+saving = true; var rok = await rateGuard(ctrl, $('[data-act="save"]'), c, p.arrived, p.usd, null); saving = false;
+if (!rok) return;
+}
 if (money.cents(p.extra) < 0) {
 saving = true;
 var ok = await Remit.ui.confirm($('[data-act="save"]'), '', {
@@ -4361,10 +4480,10 @@ var Remit = root.Remit = root.Remit || {};
 var esc = function (s) { return Remit.ui.esc(s); };
 function ynabBound(t) { return !!(t && t.kind !== 'sent_ahead_credit' && t.breakdown && t.breakdown.usd_split); }
 function ynabOn(store) { return !!(store.caps && store.caps.ynab && store.callYnab && (!store.isParent || store.isParent())); }
-async function post(ctrl, t, search) {
+async function post(ctrl, t, search, extra) {
 var store = ctrl.store;
 if (!ynabOn(store) || !ynabBound(t)) return null;
-var r = await store.callYnab('post', { transfer_id: t.id, search: !!search });
+var r = await store.callYnab('post', Object.assign({ transfer_id: t.id, search: !!search }, extra || {}));
 if (r.status === 0) { try { await store.upsertOutbox({ transfer_id: t.id, status: 'ambiguous' }); } catch (e) {} }
 if (ctrl.refresh) ctrl.refresh();
 return r;
@@ -4373,15 +4492,66 @@ async function queueYnab(ctrl, t) {
 if (!ynabOn(ctrl.store) || !ynabBound(t)) return;
 var made;
 try { made = await ctrl.store.insertOutbox({ transfer_id: t.id, status: 'pending' }); } catch (e) { return; }
-return post(ctrl, t, !made);
+return made ? matchFlow(ctrl, t) : post(ctrl, t, true);
+}
+var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function dayLabel(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? (+p[2]) + ' ' + MON[+p[1] - 1] : String(iso || ''); }
+function usdOfMilli(m) { return Remit.money.fmt(Math.abs(m) / 1000, 'USD'); }
+async function matchFlow(ctrl, t) {
+var store = ctrl.store;
+if (!ynabOn(store) || !ynabBound(t)) return null;
+var m = null;
+try { m = await store.callYnab('match', { transfer_id: t.id }); } catch (e) { m = null; }
+var j = (m && m.json) || {}, list = Array.isArray(j.matches) ? j.matches : null;
+if (!m || m.status !== 200 || !list || j.posting === false) return post(ctrl, t, true);   // no answer / posting off: as before
+if (list.length === 1) {
+var pick = await askUse(list[0]);
+if (pick === 'use') return note(await post(ctrl, t, false, { use: list[0].id }));
+if (pick === 'new') return note(await post(ctrl, t, false, { fresh: true, note: 'Mark chose a new one over ' + usdOfMilli(list[0].amount) + ' · ' + (list[0].payee_name || 'no payee') + ' · ' + dayLabel(list[0].date) }));
+Remit.ui.toast('Not sent to YNAB yet — tap Retry when you’re ready.');
+if (ctrl.refresh) ctrl.refresh();
+return null;
+}
+var why = list.length ? list.length + ' YNAB transactions match ' + usdOfMilli(list[0].amount) + ' — posted a new one (unsure ⇒ new).'
+: 'No matching YNAB transaction in the last ' + (j.days || 50) + ' days — posted a new one.';
+var r = await post(ctrl, t, false, { fresh: true, note: why });
+if (r && r.json && r.json.status === 'posted') Remit.ui.toast(why);
+return note(r);
+}
+function note(r) { if (r && r.json && r.json.note && r.json.flag) Remit.ui.toast(r.json.note + '.', { duration: 12000 }); return r; }
+function askUse(x) {
+return new Promise(function (resolve) {
+var wrap = document.createElement('div'), scrim = document.createElement('div'), sheet = document.createElement('div');
+scrim.className = 'scrim'; sheet.className = 'sheet usesheet'; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true'); sheet.setAttribute('aria-label', 'Already in YNAB?');
+sheet.innerHTML = '<div class="f2" style="border-bottom-width:2px"><label>Already in YNAB?</label><div class="v">' +
+esc('Found ' + usdOfMilli(x.amount) + ' · ' + (x.payee_name || 'no payee') + ' · ' + dayLabel(x.date) + ' already in YNAB. Use it?') + '</div></div>' +
+'<p class="ynabnote">Use it puts Remit’s split on that transaction (its date and bank details stay). Add a new one posts a second transaction.</p>' +
+'<div class="acts"><button class="btn ghost" data-act="new">Add a new one</button><button class="btn" data-act="use">Use it</button></div>';
+Remit.ui.lockScroll(); wrap.appendChild(scrim); wrap.appendChild(sheet); document.body.appendChild(wrap);
+var done = false;
+function end(v) { if (done) return; done = true; Remit.ui.unlockScroll(); scrim.classList.remove('open'); sheet.classList.remove('open'); document.removeEventListener('keydown', onKey); setTimeout(function () { wrap.remove(); }, 240); resolve(v); }
+function onKey(e) { if (e.key === 'Escape') end(null); }
+document.addEventListener('keydown', onKey); scrim.addEventListener('click', function () { end(null); }); Remit.ui.swallow(scrim);
+sheet.querySelector('[data-act="use"]').addEventListener('click', function () { end('use'); });
+sheet.querySelector('[data-act="new"]').addEventListener('click', function () { end('new'); });
+requestAnimationFrame(function () { scrim.classList.add('open'); sheet.classList.add('open'); sheet.querySelector('[data-act="use"]').focus(); });
+});
 }
 async function requeueYnab(ctrl, t) {
 if (!ynabOn(ctrl.store) || !ynabBound(t)) return null;
 var ob = (ctrl.outbox || {})[t.id];
 if (ob && ob.status === 'posted') return null;
 if (ob && ob.kind === 'resplit') return null;
-if (ob) return post(ctrl, t, true);
+if (ob) return resend(ctrl, t, ob);
 return queueYnab(ctrl, t);
+}
+function resend(ctrl, t, ob) {
+var p = (ob && ob.payload) || {};
+if (/^matched/.test(String(p.mode || '')) && p.target) return post(ctrl, t, false, { use: p.target });
+if (ob && (ob.status === 'ambiguous' || p.edit)) return post(ctrl, t, true);
+if (p.choice === 'fresh') return post(ctrl, t, true, { fresh: true });
+if (ob && ob.status === 'pending' && (ob.attempts || 0) > 0) return post(ctrl, t, true);
+return matchFlow(ctrl, t);
 }
 async function retryYnab(ctrl, tid) {
 if (!ynabOn(ctrl.store)) return;
@@ -4389,7 +4559,7 @@ var t = (ctrl.model.transfers || []).find(function (x) { return x.id === tid; })
 var ob = (ctrl.outbox || {})[tid], r;
 if (ob && ob.kind === 'resplit') {   // D6: a re-split of an EXISTING YNAB transaction — never posted as a new one
 r = await ctrl.store.callYnab('resplit', { transfer_id: tid }); if (ctrl.refresh) ctrl.refresh();
-} else r = await post(ctrl, t, !!(ob && (ob.status === 'ambiguous' || ob.status === 'pending')));
+} else r = await resend(ctrl, t, ob);
 if (r && r.json) Remit.ui.toast(r.json.status === 'posted' ? 'Sent to YNAB.' : r.json.status === 'needs_manual' ? r.json.error + '.' : r.json.status === 'dry_run' ? 'Ready for YNAB — posting is off for now.' : r.json.in_progress ? 'Sending to YNAB… (already under way)' : 'Not in YNAB yet: ' + (r.json.error || 'try again later') + '.');
 }
 var LEASE = 'in_flight until ';
@@ -4399,10 +4569,51 @@ var until = Date.parse(e.slice(LEASE.length)); return isFinite(until) && until >
 }
 function ynabLock(ctrl, t) {
 var ob = (ctrl.outbox || {})[t && t.id]; if (!ob || ob.kind === 'resplit') return ob && ob.status === 'posted' ? 'posted' : null;
-if (ob.status === 'posted') return 'posted';
+if (ob.status === 'posted') return ynabOn(ctrl.store) ? null : 'parents';
 if (sending(ob)) return 'sending';
 if (ob.status === 'ambiguous') return 'ambiguous';
 return null;
+}
+function planned(t) {
+var b = t.breakdown || {}, u = b.usd_split || {}, c = function (n) { return Math.round(Number(n || 0) * 100); };
+return { amount: -c(t.amount_sent_usd != null ? t.amount_sent_usd : b.usd) * 10, lines: [c(u.living), c(u.tuition), c(u.dad)].filter(function (x) { return x; }).map(function (x) { return -x * 10; }).sort() };
+}
+function ynabDiffers(ob, t) {
+var p = (ob && ob.payload) || {};
+if (typeof p.amount !== 'number' || !ynabBound(t)) return null;
+var want = planned(t);
+if (p.amount !== want.amount) return { ynabAmount: Math.abs(p.amount) / 1000, splitOnly: false };
+var have = Array.isArray(p.subtransactions) && p.subtransactions.length ? p.subtransactions.map(function (x) { return x.amount; }) : p.category_id ? [p.amount] : null;
+if (have && have.slice().sort().join(',') !== want.lines.join(',')) return { ynabAmount: Math.abs(p.amount) / 1000, splitOnly: true };
+return null;
+}
+async function editYnab(ctrl, t) {
+var store = ctrl.store;
+if (!ynabOn(store) || !ynabBound(t)) return null;
+var r = await store.callYnab('edit', { transfer_id: t.id });
+if (r.status === 0) { try { await store.upsertOutbox({ transfer_id: t.id, status: 'ambiguous' }); } catch (e) {} }
+if (ctrl.refresh) ctrl.refresh();
+var j = r.json || {};
+Remit.ui.toast(j.status === 'posted' ? 'YNAB updated — it matches Remit.' : j.status === 'needs_manual' ? j.error + '.' : j.status === 'dry_run' ? 'Ready for YNAB — posting is off for now.'
+: j.in_progress ? 'Sending to YNAB… (already under way)' : j.unchanged ? 'YNAB was not changed (' + (j.error || 'try again') + ') — tap “Re-send” to try again.' : 'YNAB may not match yet: ' + (j.error || 'try again later') + ' — Retry.');
+return r;
+}
+function usdFmt(n) { return Remit.money.fmt(n, 'USD'); }
+function confirmYnab(btn, oldUsd, newUsd) {
+var same = oldUsd != null && Math.round(oldUsd * 100) === Math.round(newUsd * 100);
+return Remit.ui.confirm(btn, '', { q: 'This updates YNAB too: ' + (same ? 'the split of ' + esc(usdFmt(newUsd)) : esc(oldUsd == null ? '—' : usdFmt(oldUsd)) + ' → ' + esc(usdFmt(newUsd))) + '.',
+yes: 'Yes, update YNAB', label: 'Confirm YNAB update' });
+}
+function chooseYnab(btn, oldUsd, newUsd) {
+var same = oldUsd != null && Math.round(oldUsd * 100) === Math.round(newUsd * 100);
+return Remit.ui.choose(btn, { q: 'This payment is in YNAB. Update YNAB too? ' + (same ? 'The split of ' + esc(usdFmt(newUsd)) : esc(oldUsd == null ? '—' : usdFmt(oldUsd)) + ' → ' + esc(usdFmt(newUsd))) + '.',
+alt: 'Leave YNAB alone', yes: 'Update YNAB', label: 'Update YNAB too?' });
+}
+async function resendYnab(ctrl, tid, btn) {
+var t = (ctrl.model.transfers || []).find(function (x) { return x.id === tid; }); if (!t) return;
+var b = t.breakdown || {}, now = t.amount_sent_usd != null ? Number(t.amount_sent_usd) : Number(b.usd);
+if (!(await confirmYnab(btn, Remit.ui.ynabHeld(ctrl, t), now))) return;
+return editYnab(ctrl, t);
 }
 function ynabState(ctrl, t) {
 if (!ynabOn(ctrl.store) || !ynabBound(t)) return null;
@@ -4410,6 +4621,8 @@ var ob = (ctrl.outbox || {})[t.id];
 if (ob && ob.status === 'posted') {
 var p = ob.payload || {};
 if (p.amount_differs && typeof p.ynab_amount === 'number') return { posted: true, differs: true, ynabAmount: Math.abs(p.ynab_amount) / 1000 };
+var d = ob.kind === 'resplit' ? null : ynabDiffers(ob, t);   // S1 (D4): Remit was edited since YNAB got it
+if (d) return { posted: true, differs: true, ynabAmount: d.ynabAmount, splitOnly: d.splitOnly, manual: p.manual && p.manual.text ? p.manual.text : null };
 return { posted: true };
 }
 if (sending(ob)) return { posted: false, sending: true, why: 'sending' };
@@ -4483,6 +4696,22 @@ Remit.ui.retryYnab = retryYnab;
 Remit.ui.requeueYnab = requeueYnab;
 Remit.ui.ynabPosted = function (ctrl, t) { var ob = (ctrl.outbox || {})[t && t.id]; return !!(ob && ob.status === 'posted'); };
 Remit.ui.ynabState = ynabState;
+Remit.ui.editYnab = editYnab;
+Remit.ui.matchFlow = matchFlow;
+Remit.ui.removeYnab = async function (ctrl, t) {
+var r = await ctrl.store.callYnab('remove', { transfer_id: t.id }), j = (r && r.json) || {};
+return { ok: r && r.status === 200 && j.ok !== false, how: j.removed || null, text: j.text || null, error: j.error || null, ambiguous: !!j.ambiguous };
+};
+Remit.ui.relinkYnab = function (ctrl, t, row) {
+var rm = row && row.payload && row.payload.removed;
+if (!rm || !ynabOn(ctrl.store)) return null;
+return rm.how === 'unlinked' ? post(ctrl, t, false, { use: rm.id }) : post(ctrl, t, true, { fresh: true });
+};
+Remit.ui.confirmYnab = confirmYnab;
+Remit.ui.chooseYnab = chooseYnab;
+Remit.ui.resendYnab = resendYnab;
+Remit.ui.ynabDiffers = function (ctrl, t) { var ob = (ctrl.outbox || {})[t && t.id]; return ob && ob.status === 'posted' && ob.kind !== 'resplit' ? ynabDiffers(ob, t) : null; };
+Remit.ui.ynabHeld = function (ctrl, t) { var ob = (ctrl.outbox || {})[t && t.id], p = (ob && ob.payload) || {}; return typeof p.amount === 'number' ? Math.abs(p.amount) / 1000 : (t && t.amount_sent_usd != null ? Number(t.amount_sent_usd) : null); };
 Remit.ui.ynabLock = ynabLock;
 Remit.ui.ynabOn = ynabOn;
 Remit.ui.openYnabSettings = function (ctrl) { if (ynabOn(ctrl.store)) return openYnabSettings(ctrl); Remit.ui.toast(ctrl.store.caps && ctrl.store.caps.ynab ? 'YNAB settings are for Mark and Barbara.' : 'YNAB settings arrive with the next database update.'); };
