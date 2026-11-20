@@ -144,6 +144,40 @@ html.rd-cloudload .wrap>*:not(#cloudLoading):not(.pagehead){display:none!importa
 @media (max-width:820px){ .kids-figs{grid-template-columns:repeat(2,minmax(0,1fr))} .kids-chart{height:220px}
   #kidsPreset{display:grid;grid-template-columns:1fr 1fr;width:100%;height:auto;border-radius:var(--r2)} #kidsPreset button{white-space:normal;min-height:40px;border-radius:var(--r2)} }
 
+/* arc/ss-timing slice 2 — "When to claim Social Security" (the kids card's .kids-rec pattern for the box). */
+.sst-ctrls{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end;margin-bottom:12px}
+.sst-who{display:flex;flex-direction:column;gap:4px}
+.sst-who .k{font-size:12px;color:var(--mut)}
+.sst-step{display:inline-flex;align-items:center;gap:4px}
+.sst-step button{min-width:44px;min-height:44px;border-radius:var(--r2);border:1px solid var(--line2);background:var(--sf2);color:var(--ink);font-size:18px;line-height:1;cursor:pointer}
+.sst-step button:disabled{opacity:.4;cursor:default}
+.sst-step output{min-width:44px;text-align:center;font-size:18px;font-weight:650}
+#sstApf button{white-space:nowrap}
+.sst-run{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 4px;color:var(--mut);font-size:13px}
+.sst-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+.sst-table th{font-size:11.5px;font-weight:600;color:var(--mut);text-align:right;padding:6px 8px;border-bottom:1px solid var(--line2);vertical-align:bottom}
+.sst-table th:first-child,.sst-table td:first-child{text-align:left}
+.sst-table td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.sst-table td:first-child{white-space:normal}
+.sst-table td .sub{display:block;font-size:11.5px;color:var(--faint)}
+.sst-table tr.rec td{background:rgba(123,192,172,.12)}
+.sst-table tr.rec td:first-child{box-shadow:inset 3px 0 0 var(--ac)}
+.sst-table .ok{color:var(--good)} .sst-table .bad{color:var(--bad-soft)}
+.sst-note{font-size:12.5px;color:var(--mut);margin-top:10px;line-height:1.45}
+/* phone: the two pension choices stack one per row, never wrapping a label (ui-audit 2-line wrap) */
+@media (max-width:820px){ .sst-ctrls>.sst-who:last-child{width:100%} #sstApf{display:grid;grid-template-columns:1fr;width:100%;height:auto;border-radius:var(--r2)} #sstApf button{white-space:nowrap;min-height:44px;border-radius:var(--r2);justify-content:center} }
+@media (max-width:430px){
+  .sst-table thead{display:none}
+  .sst-table,.sst-table tbody,.sst-table tr,.sst-table td{display:block;width:100%}
+  .sst-table tr{border:1px solid var(--line2);border-radius:var(--r2);margin-bottom:8px;padding:4px 0}
+  .sst-table td{display:flex;justify-content:space-between;gap:12px;border-bottom:0;padding:4px 10px;white-space:normal;text-align:right}
+  .sst-table td::before{content:attr(data-label);color:var(--mut);text-align:left;font-size:12px}
+  .sst-table td:first-child{display:block;text-align:left;font-weight:600}
+  .sst-table td:first-child::before{content:none}
+  .sst-table tr.rec td:first-child{box-shadow:none}
+  .sst-table tr.rec{border-color:var(--ac)}
+}
+
 /* ---------- PAGE HEADER (WO6-B2: currency toggle + reset live here) ---------- */
 .pagehead{display:flex;align-items:center;gap:14px;margin:2px 2px 14px}
 /* Persistent back-to-Private-Wing link in the app chrome (marquee UI batch) */
@@ -1029,6 +1063,10 @@ html:not(.rd-ready) .wrap{visibility:hidden;animation:rdReveal 0s 3s forwards}
   <!-- family-plan slice 9 (D11 #4) — "Helping the kids": early inheritance. -->
   <div class="sec-head" id="secKids"><h2>Helping the kids</h2><div class="sub">Giving while you’re alive — what it does for them, and what it costs you.</div></div>
   <section class="kids-row"><div class="card kids-card" id="kidsCard" role="region" aria-label="Helping the kids"></div></section>
+
+  <!-- arc/ss-timing slice 2 — "When to claim Social Security": the claim-timing impact + recommendation. -->
+  <div class="sec-head" id="secSsTiming"><h2>When to claim Social Security</h2><div class="sub">Claiming later means a bigger cheque for life — and it rises with prices.</div></div>
+  <section class="kids-row" id="ssTimingRow"><div class="card kids-card" id="ssTimingCard" role="region" aria-label="When to claim Social Security"></div></section>
 
   <div class="sec-head" id="secWhy"><h2>Why the plan does what it does</h2><div class="sub" id="hero3sub"></div></div>
   <section class="prow">
@@ -6476,6 +6514,231 @@ module.exports = { runSensitivity, deriveSpecs, rangeFor, trustFundScenario };
 
 });
 
+/* ---- src/sim/ss-timing.js ---- */
+window.__def("src/sim/ss-timing.js", function(module, exports, require){
+'use strict';
+/* =============================================================================
+ * src/sim/ss-timing.js — "When to claim Social Security" recommender (arc/ss-timing slice 1).
+ *
+ * PURE: sweeps every whole-year claim age 62..70 for each person who has a Social Security
+ * source, × the APF election {annuity, lump} when the plan has one, runs the deterministic
+ * engine for the BASE path and the bad-decade STRESS path (IN.stress=true) per combination,
+ * and ranks them by the owner's D2 rule — SAFEST TO 95:
+ *   (a) safe = no shortfall in the base run AND in the stress run;
+ *   (b) then the highest stress-case LOWEST real savings (min over rows of totalBal/infl —
+ *       the kids card's "Your safety (bad decade)" measure);
+ *   (c) tie-break: the highest kpis.legacyAfterTaxToday;
+ *   (d) final tie-break: the combination closest to the current plan (fewest levers changed,
+ *       then the fewest years moved, then enumeration order — deterministic).
+ * D3: the result is SHOWN, never applied — nothing here writes IN or F.
+ * D4: the ONLY levers varied are ssAgeP1, ssAgeP2 and election[<apf source id>]. Inflation,
+ *     growth, pension_cola, death ages, the trust-fund toggle and every other key pass through
+ *     unchanged (whatever haircut setting is on is honoured). Monte Carlo is never used.
+ *
+ * The APF source is found by DATA, never by id: the first enabled db_pension whose elections
+ * include both 'annuity' and 'lump' (on the reference plan that is the APF). The lump uses
+ * the existing `lump` election (rolled to pre-tax at retirement) — no new lump logic.
+ * A kids-gift plan holds the CURRENT plan's gift scale fixed (IN._familyScale) so a combo
+ * compares the same gifts; the floor bisection is not re-run per combination.
+ *
+ * PERF (budget ≤ 1.5 s per full sweep on tools/perf.js): mode 'full' = 81×2 combos × 2 runs;
+ * mode 'coarse' = ages {62,64,66,67,68,69,70} first, then every age ±1 around the top 3.
+ * mode 'auto' (default) = 'full'. The grid is cached by a hash of (plan facts, IN minus the
+ * swept levers), so a lever change elsewhere re-sweeps and an Apply click does not.
+ * ========================================================================== */
+
+const engine = require('../core/engine.js');
+const ssMod = require('../income/social-security.js');
+
+const AGES = [62, 63, 64, 65, 66, 67, 68, 69, 70];
+const COARSE = [62, 64, 66, 67, 68, 69, 70];
+const APF_CHOICES = ['annuity', 'lump'];
+
+function apfSourceOf(F) {
+  const src = (F && F.sources) || [];
+  return src.find(s => s && s.type === 'db_pension' && s.enabled !== false &&
+    (s.elections || []).some(e => e.id === 'annuity') && (s.elections || []).some(e => e.id === 'lump')) || null;
+}
+function ssSlots(F) {
+  const slots = [];
+  for (const slot of ['p1', 'p2']) {
+    if (slot === 'p2' && !engine.hasPerson(F, 'p2')) continue;
+    if (((F && F.sources) || []).some(s => s && s.type === 'social_security' && s.enabled !== false && (s.owner === slot || (slot === 'p1' && s.owner !== 'p2')))) slots.push(slot);
+  }
+  return slots;
+}
+// The APF election the plan is on now (explicit IN.election, the legacy apfMode lever, or the default).
+function currentApf(F, IN, apf) {
+  if (!apf) return null;
+  const e = IN && IN.election && IN.election[apf.id];
+  if (e != null) return e;
+  if (apf.legacy_lever && IN && IN[apf.legacy_lever] != null) { const m = (apf.legacy_map || {})[IN[apf.legacy_lever]]; if (m != null) return m; }
+  return apf.default_election || ((apf.elections || [])[0] || {}).id || null;
+}
+
+// FNV-1a over a stable (sorted-key) JSON — the cache key.
+function stable(v) {
+  if (v === null || typeof v !== 'object') return JSON.stringify(v === undefined ? null : v);
+  if (Array.isArray(v)) return '[' + v.map(stable).join(',') + ']';
+  return '{' + Object.keys(v).sort().filter(k => v[k] !== undefined && typeof v[k] !== 'function').map(k => JSON.stringify(k) + ':' + stable(v[k])).join(',') + '}';
+}
+function hash(s) { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16) + ':' + s.length; }
+function cacheKey(F, IN, apf) {
+  const rest = Object.assign({}, IN); delete rest.ssAgeP1; delete rest.ssAgeP2;
+  if (apf) { rest.election = Object.assign({}, rest.election); delete rest.election[apf.id]; if (apf.legacy_lever) delete rest[apf.legacy_lever]; }
+  return hash(stable(F) + '|' + stable(rest));
+}
+
+const minReal = m => m.rows.reduce((lo, r) => Math.min(lo, r.totalBal / r.infl), Infinity);
+const guarOf = r => r.income.pension + r.income.apf + r.income.ssP1 + r.income.ssP2 + r.income.ukP1 + r.income.ukP2;
+
+// Score one model pair (base + stress) into the entry shape.
+function entryOf(F, combo, base, stress) {
+  const k = base.kpis, rows = base.rows;
+  const byYear = {}; rows.forEach(r => { byYear[r.year] = r; });
+  const by = engine.primaryBirthYear(F);
+  const r75 = by != null ? byYear[by + 75] : null;
+  let survivorIncomeReal = null;
+  if (engine.hasPerson(F, 'p2') && k.deathYearP1 != null) {
+    const y = k.deathYearP1 + 1, r = byYear[y];
+    if (r && (k.deathYearP2 == null || k.deathYearP2 > y)) survivorIncomeReal = guarOf(r) / r.infl;
+  }
+  const stressMinReal = minReal(stress);
+  return {
+    ssAgeP1: combo.ssAgeP1, ssAgeP2: combo.ssAgeP2, apf: combo.apf,
+    safe: k.firstShortfall == null && stress.kpis.firstShortfall == null,
+    shortfallYear: k.firstShortfall, stressShortfallYear: stress.kpis.firstShortfall,
+    stressMinReal: Number.isFinite(stressMinReal) ? stressMinReal : 0,
+    legacyReal: k.legacyAfterTaxToday,
+    guaranteedIncomeAt75Real: r75 ? guarOf(r75) / r75.infl : null,
+    survivorIncomeReal,
+    lifetimeSSReal: rows.reduce((s, r) => s + (r.income.ssP1 + r.income.ssP2) / r.infl, 0),
+  };
+}
+
+// D2 — a negative result ranks `a` above `b`. `cur` = the current combo (for tie-break d).
+function changes(e, cur) { return (e.ssAgeP1 !== cur.ssAgeP1) + (e.ssAgeP2 !== cur.ssAgeP2) + (e.apf !== cur.apf); }
+function moved(e, cur) { return Math.abs(e.ssAgeP1 - cur.ssAgeP1) + Math.abs(e.ssAgeP2 - cur.ssAgeP2); }
+const EPS = 0.5;   // half a dollar: float noise never decides a rank
+function compare(a, b, cur) {
+  if (a.safe !== b.safe) return a.safe ? -1 : 1;
+  if (Math.abs(a.stressMinReal - b.stressMinReal) > EPS) return b.stressMinReal - a.stressMinReal;
+  if (Math.abs(a.legacyReal - b.legacyReal) > EPS) return b.legacyReal - a.legacyReal;
+  const c = changes(a, cur) - changes(b, cur); if (c) return c;
+  const m = moved(a, cur) - moved(b, cur); if (m) return m;
+  return (a._ord || 0) - (b._ord || 0);
+}
+const keyOf = c => c.ssAgeP1 + '/' + c.ssAgeP2 + '/' + (c.apf == null ? '-' : c.apf);
+
+const _cache = new Map();
+const CACHE_MAX = 8;
+
+// sweep(F, IN, opts) → { current, recommended, anchors[], grid[], path, builds, ms, apfSourceId, slots[], cached }
+//   opts.mode: 'auto' | 'full' | 'coarse'   opts.build: (F, IN) → model (test hook; defaults to engine.buildModel)
+//   opts.noCache: bypass the cache   opts.cacheOnly: return null unless the grid is already cached
+function sweep(F, IN, opts) {
+  opts = opts || {};
+  const t0 = Date.now();
+  IN = IN || engine.defaultInputs(F);
+  const build = opts.build || engine.buildModel;
+  const apf = apfSourceOf(F);
+  const slots = ssSlots(F);
+  const cur = { ssAgeP1: IN.ssAgeP1, ssAgeP2: IN.ssAgeP2, apf: currentApf(F, IN, apf) };
+  const mode = opts.mode === 'coarse' ? 'coarse' : 'full';
+  const ck = (opts.noCache || opts.build) ? null : cacheKey(F, IN, apf) + '|' + mode;
+  let memo = ck && _cache.get(ck);
+  const cached = !!memo;
+  if (opts.cacheOnly && !cached) return null;   // the card asks "is it already worked out?" without paying for a sweep
+  if (!memo) memo = { entries: new Map(), builds: 0, scale: undefined };
+  // A kids-gift plan: hold the current plan's gift scale fixed for every combination.
+  if (memo.scale === undefined) {
+    memo.scale = null;
+    try { const fm = engine.familyGifts; const INn = Object.assign({}, IN); if (fm && fm.isActive && fm.isActive(F, INn) && IN._familyScale == null) { const m0 = build(F, IN); memo.builds++; memo.scale = (m0.family && m0.family.scale != null) ? m0.family.scale : null; } }
+    catch (e) { memo.scale = null; }
+  }
+  function run(combo) {
+    const k = keyOf(combo);
+    let e = memo.entries.get(k);
+    if (e) return e;
+    const inC = Object.assign({}, IN, { ssAgeP1: combo.ssAgeP1, ssAgeP2: combo.ssAgeP2 });
+    if (apf && combo.apf != null) {
+      inC.election = Object.assign({}, IN.election, { [apf.id]: combo.apf });
+      if (apf.legacy_lever && inC[apf.legacy_lever] != null) delete inC[apf.legacy_lever];   // the explicit election wins
+    }
+    if (memo.scale != null) inC._familyScale = memo.scale;
+    const base = build(F, inC);
+    const stress = build(F, Object.assign({}, inC, { stress: true }));
+    memo.builds += 2;
+    e = entryOf(F, combo, base, stress);
+    memo.entries.set(k, e);
+    return e;
+  }
+  const axis = slot => slots.includes(slot) ? AGES : [slot === 'p1' ? cur.ssAgeP1 : cur.ssAgeP2];
+  const apfAxis = apf ? APF_CHOICES.slice() : [cur.apf];
+  if (apf && cur.apf != null && !apfAxis.includes(cur.apf)) apfAxis.push(cur.apf);   // e.g. 'deferred' — compared, kept as-is
+  const gridOf = (a1, a2) => { const out = []; for (const x of a1) for (const y of a2) for (const p of apfAxis) out.push({ ssAgeP1: x, ssAgeP2: y, apf: p }); return out; };
+
+  let grid;
+  if (mode === 'full') {
+    grid = gridOf(axis('p1'), axis('p2')).map(run);
+  } else {
+    const coarse = s => slots.includes(s) ? COARSE : axis(s);
+    const first = gridOf(coarse('p1'), coarse('p2')).map(run);
+    first.forEach((e, i) => { e._ord = i; });
+    const top = first.slice().sort((a, b) => compare(a, b, cur)).slice(0, 3);
+    const seen = new Set(first.map(keyOf)); grid = first.slice();
+    for (const t of top) {
+      const near = (s, v) => slots.includes(s) ? AGES.filter(a => Math.abs(a - v) <= 1) : [v];
+      for (const x of near('p1', t.ssAgeP1)) for (const y of near('p2', t.ssAgeP2)) for (const p of apfAxis) {
+        const c = { ssAgeP1: x, ssAgeP2: y, apf: p }; if (seen.has(keyOf(c))) continue; seen.add(keyOf(c)); grid.push(run(c));
+      }
+    }
+  }
+  grid.forEach((e, i) => { e._ord = i; });
+
+  // Anchors (always returned, even if dominated). The anchors keep the current APF election.
+  const pia = { p1: slots.includes('p1') ? ssMod.personPIA(F, 'p1') : -1, p2: slots.includes('p2') ? ssMod.personPIA(F, 'p2') : -1 };
+  const higher = pia.p2 > pia.p1 ? 'p2' : 'p1';
+  const both = a => ({ ssAgeP1: slots.includes('p1') ? a : cur.ssAgeP1, ssAgeP2: slots.includes('p2') ? a : cur.ssAgeP2, apf: cur.apf });
+  const he = { ssAgeP1: slots.includes('p1') ? (higher === 'p1' ? 70 : 67) : cur.ssAgeP1, ssAgeP2: slots.includes('p2') ? (higher === 'p2' ? 70 : 67) : cur.ssAgeP2, apf: cur.apf };
+  const strip = e => { const o = Object.assign({}, e); delete o._ord; return o; };
+  const anchorDefs = [['current', 'Your plan now', cur], ['both62', 'Both at 62', both(62)], ['both67', 'Both at 67', both(67)],
+    ['both70', 'Both at 70', both(70)], ['higher70', 'Higher earner at 70, other at 67', he]];
+  const anchors = anchorDefs.map(([id, label, c]) => Object.assign({ id, label }, strip(run(c))));
+  const ranked = grid.slice().sort((a, b) => compare(a, b, cur));
+  const recommended = strip(ranked[0]);
+  if (ck) { _cache.set(ck, memo); if (_cache.size > CACHE_MAX) _cache.delete(_cache.keys().next().value); }
+  return {
+    current: anchors[0], recommended, anchors, grid: grid.map(strip), ranked: ranked.slice(0, 5).map(strip),
+    path: mode, builds: memo.builds, ms: Date.now() - t0, cached,
+    apfSourceId: apf ? apf.id : null, slots, higherEarner: slots.length ? higher : null,
+  };
+}
+
+// The plain-English steps for a recommendation (the card lists them; names are plan data).
+function steps(F, res) {
+  if (!res || !res.recommended) return [];
+  const r = res.recommended, cur = res.current, out = [];
+  const nm = s => engine.nameOf(F, s);
+  for (const s of res.slots) {
+    const age = s === 'p1' ? r.ssAgeP1 : r.ssAgeP2;
+    out.push(nm(s) + ' claims Social Security at ' + age + (age === (s === 'p1' ? cur.ssAgeP1 : cur.ssAgeP2) ? ' (as now).' : '.'));
+  }
+  if (res.apfSourceId && r.apf) {
+    const apf = (F.sources || []).find(x => x.id === res.apfSourceId), lbl = (apf && apf.label) || 'the pension';
+    if (r.apf === 'lump') out.push('Take the ' + lbl + ' as a lump sum into the IRA, and draw on it for the years before Social Security starts.');
+    else if (r.apf === 'annuity') out.push('Take the ' + lbl + ' monthly for life.');
+  }
+  return out;
+}
+// true when the plan already sits on the recommendation (the card shows the teal tag instead of the button)
+function matches(res) { const a = res && res.recommended, b = res && res.current; return !!(a && b && a.ssAgeP1 === b.ssAgeP1 && a.ssAgeP2 === b.ssAgeP2 && a.apf === b.apf); }
+function clearCache() { _cache.clear(); }
+
+module.exports = { sweep, steps, matches, compare, apfSourceOf, ssSlots, currentApf, clearCache, AGES, COARSE };
+
+});
+
 /* ---- src/sim/stress.js ---- */
 window.__def("src/sim/stress.js", function(module, exports, require){
 'use strict';
@@ -10698,6 +10961,7 @@ const stressMod = window.__require('src/sim/stress.js');
 const MCARLO = window.__require('src/sim/montecarlo.js');
 const SENSITIVITY = window.__require('src/sim/sensitivity.js'); // WO15 Phase 3
 const SS = window.__require('src/income/social-security.js'); // WO16 — spousal report / factor notes
+const SST = window.__require('src/sim/ss-timing.js');         // arc/ss-timing — claim-timing sweep (shown, never applied)
 const UKSP = window.__require('src/income/uk-state-pension.js'); // WO18 Phase 6 — pro-rata entitlement note
 const STORY = window.__require('src/view/story.js');
 
@@ -11001,6 +11265,7 @@ function redraw(){
   renderUncertainty();       // WO15 Phase 3 — "What we don't know yet"
   renderCallouts();          // family-plan slice 7 (D10) — undated warnings beside their chart
   try{ renderKids(); }catch(e){ const kc=document.getElementById('kidsCard'); if(kc) kc.innerHTML='<div class="faint">This section could not be drawn.</div>'; }   // family-plan slice 9
+  try{ renderSsTiming(); }catch(e){ const sc=document.getElementById('ssTimingCard'); if(sc) sc.innerHTML='<div class="faint">This section could not be drawn.</div>'; }   // arc/ss-timing slice 2
   renderTable(); renderFootnote();
   updateSimStatusSpans();   // refresh the sim status text (never rebuilds inputs)
   syncScrollers();
@@ -11235,6 +11500,78 @@ function renderKids(){
   const ap=document.getElementById('kidsApply'); if(ap) ap.addEventListener('click',()=>{ IN.familyPreset=rec.preset; gSet('targetConversionBracket',null,rec.targetConversionBracket); buildControls(); recompute(); });   // band lever via its single writer (gSet)
   drawKidsChart(f);
 }
+/* arc/ss-timing slice 2 — "When to claim Social Security". The steppers + the pension choice drive the
+   SAME IN.ssAgeP1/P2 + IN.election the Advanced panel drives (one source of truth: each writes IN, then
+   buildControls() + recompute(), so both stay in sync). The sweep (src/sim/ss-timing.js) is SHOWN, never
+   applied — "Apply the recommendation" writes ONLY the two claim ages + the pension election (D3/D4).
+   The full sweep costs ~0.6 s (tools/perf.js, > 300 ms), so it runs on a button, once, then from cache. */
+let sstBusy=false;
+function sstApfSource(){ try{ return SST.apfSourceOf(FACTS); }catch(e){ return null; } }
+function sstSetAge(slot,v){ const k=slot==='p2'?'ssAgeP2':'ssAgeP1'; IN[k]=Math.max(62,Math.min(70,Math.round(v))); buildControls(); recompute(); }
+function sstSetApf(v){ const a=sstApfSource(); if(!a) return; IN.election=Object.assign({},IN.election); IN.election[a.id]=v; buildControls(); recompute(); }
+function ssTimingApply(rec){ IN.ssAgeP1=rec.ssAgeP1; IN.ssAgeP2=rec.ssAgeP2; const a=sstApfSource(); if(a&&rec.apf!=null){ IN.election=Object.assign({},IN.election); IN.election[a.id]=rec.apf; } buildControls(); recompute(); }
+function sstWorkOut(){
+  if(sstBusy) return; sstBusy=true; renderSsTiming();
+  setTimeout(()=>{ try{ SST.sweep(FACTS, IN); }catch(e){ if(typeof console!=='undefined'&&console.error) console.error('ss-timing sweep failed:', (e&&e.message)||e); } sstBusy=false; renderSsTiming(); }, 30);
+}
+function sstFixedNote(){
+  const fixed=(FACTS.sources||[]).filter(s=>s.type==='db_pension'&&s.enabled!==false&&!(s.cola>0)).map(s=>s.label||'pension');
+  const cola=RD.leaf(((FACTS.global||{}).pension_cola))||0;
+  const uk=(FACTS.sources||[]).some(s=>s.type==='state_pension'&&s.enabled!==false);
+  const rises='Social Security'+(uk?' and the UK State Pension':'');
+  if(fixed.length&&!(cola>0)) return 'Your '+esc(fixed[0])+(fixed.length>1?' and other work pensions are':' is')+' fixed in dollars — it does not rise with prices. '+rises+(uk?' do':' does')+', so delaying Social Security buys more inflation-proof income.';
+  return rises+(uk?' rise':' rises')+' with prices, so delaying Social Security buys more inflation-proof income.';
+}
+function renderSsTiming(){
+  const el=document.getElementById('ssTimingCard'), head=document.getElementById('secSsTiming'), row=document.getElementById('ssTimingRow'); if(!el) return;
+  const slots=SST.ssSlots(FACTS);
+  const show=slots.length>0; if(head) head.hidden=!show; if(row) row.hidden=!show; if(!show){ el.innerHTML=''; return; }
+  const apf=sstApfSource(), curApf=apf?SST.currentApf(FACTS, IN, apf):null;
+  const ageOf=s=>s==='p2'?IN.ssAgeP2:IN.ssAgeP1;
+  const stepper=s=>'<div class="sst-who"><span class="k" id="sstLbl_'+s+'">'+esc(NM(s))+' claims at</span><div class="sst-step" role="group" aria-labelledby="sstLbl_'+s+'">'
+    +'<button type="button" class="sst-minus" data-slot="'+s+'" aria-label="'+esc(NM(s))+': claim a year earlier"'+(ageOf(s)<=62?' disabled':'')+'>−</button>'
+    +'<output id="sstAge_'+s+'" aria-live="polite">'+ageOf(s)+'</output>'
+    +'<button type="button" class="sst-plus" data-slot="'+s+'" aria-label="'+esc(NM(s))+': claim a year later"'+(ageOf(s)>=70?' disabled':'')+'>+</button></div></div>';
+  const apfSeg=apf?'<div class="sst-who"><span class="k">'+esc(apf.label||'Pension')+'</span><div class="seg" id="sstApf" role="group" aria-label="'+esc(apf.label||'Pension')+': how to take it">'
+    +[['annuity','Monthly for life'],['lump','Lump sum into the IRA']].map(o=>'<button type="button" data-apf="'+o[0]+'" aria-pressed="'+(curApf===o[0])+'">'+o[1]+'</button>').join('')+'</div></div>':'';
+  let body='';
+  const res=sstBusy?null:SST.sweep(FACTS, IN, { cacheOnly:true });
+  if(sstBusy) body='<div class="sst-run" role="status">Working it out…</div>';
+  else if(!res) body='<div class="sst-run"><button class="btn primary" id="sstGo" type="button">Work out the best timing</button><span class="faint" style="font-size:12px">Tries every claim age from 62 to 70'+(apf?' and both ways of taking the '+esc(apf.label||'pension'):'')+' — takes a second.</span></div>';
+  else {
+    const two=slots.length>1, hasP2=hasP2Now();
+    const endAge=Math.max(IN.ageOfDeathP1||95, hasP2?(IN.ageOfDeathP2||95):0);
+    const apfWord=a=>a==='lump'?'lump sum':a==='annuity'?'monthly':a==='deferred'?'deferred':'';
+    const ages=e=>slots.map(s=>esc(NM(s))+' '+(s==='p2'?e.ssAgeP2:e.ssAgeP1)).join(' · ')+(apf&&e.apf?' · '+esc(apf.label||'pension')+' '+apfWord(e.apf):'');
+    const byId={}; res.anchors.forEach(a=>{ byId[a.id]=a; });
+    const higher=res.higherEarner, other=higher==='p1'?'p2':'p1';
+    const rows=[['Your plan now',byId.current],['Recommended',res.recommended],[two?'Both at 62':'At 62',byId.both62],[two?'Both at 67':'At 67',byId.both67],[two?'Both at 70':'At 70',byId.both70]];
+    if(two) rows.push([esc(NM(higher))+' at 70, '+esc(NM(other))+' at 67',byId.higher70]);
+    const H=['','Guaranteed income at 75','Lowest savings in a bad decade','Left for the kids'].concat(hasP2?[esc(NM('p2'))+'’s income if alone']:[]).concat(['Safe to '+endAge]);
+    const isRec=e=>e.ssAgeP1===res.recommended.ssAgeP1&&e.ssAgeP2===res.recommended.ssAgeP2&&e.apf===res.recommended.apf;
+    const yr=v=>v==null?'—':moneyK(v)+' a year';
+    const tr=([lbl,e],i)=>'<tr'+(i===1?' class="rec"':'')+'><td>'+lbl+(i!==1&&isRec(e)?' <span class="faint">(= recommended)</span>':'')+'<span class="sub">'+ages(e)+'</span></td>'
+      +'<td data-label="'+H[1]+'">'+yr(e.guaranteedIncomeAt75Real)+'</td>'
+      +'<td data-label="'+H[2]+'">'+moneyK(e.stressMinReal)+'</td>'
+      +'<td data-label="'+H[3]+'">'+moneyK(e.legacyReal)+'</td>'
+      +(hasP2?'<td data-label="'+H[4]+'">'+yr(e.survivorIncomeReal)+'</td>':'')
+      +'<td data-label="'+H[H.length-1]+'" class="'+(e.safe?'ok':'bad')+'">'+(e.safe?'✓ Yes':'✗ No')+'</td></tr>';
+    const table='<table class="sst-table" id="sstTable" aria-label="Claim timing compared, in today’s dollars"><thead><tr>'+H.map((h,i)=>(i===0?'<th scope="col" aria-label="Option"></th>':'<th scope="col">'+h+'</th>')).join('')+'</tr></thead><tbody>'+rows.map(tr).join('')+'</tbody></table>';
+    const matches=SST.matches(res);
+    const steps=SST.steps(FACTS, res);
+    const rec='<div class="kids-rec" id="sstRec"><h3>Recommended for you'+(matches?' <span class="kids-rec-tag">Showing: Recommended ✓</span>':'')+'</h3><ol>'+steps.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>'
+      +'<div class="faint" style="font-size:12px;margin-bottom:8px">Safest to '+endAge+': no shortfall even in a bad decade, then the most savings left at the lowest point, then the most left for the kids.</div>'
+      +(matches?'':'<button class="btn primary" id="sstApply" type="button">Apply the recommendation</button> <span class="faint" style="font-size:12px">Nothing changes until you click.</span>')+'</div>';
+    body='<div class="faint" style="font-size:12px">All figures in today’s dollars.</div>'+table+rec;
+  }
+  el.innerHTML='<div class="sst-ctrls">'+slots.map(stepper).join('')+apfSeg+'</div>'+body+'<div class="sst-note">'+sstFixedNote()+'</div>';
+  el.querySelectorAll('.sst-minus').forEach(b=>b.addEventListener('click',()=>sstSetAge(b.dataset.slot, ageOf(b.dataset.slot)-1)));
+  el.querySelectorAll('.sst-plus').forEach(b=>b.addEventListener('click',()=>sstSetAge(b.dataset.slot, ageOf(b.dataset.slot)+1)));
+  el.querySelectorAll('#sstApf button').forEach(b=>b.addEventListener('click',()=>sstSetApf(b.dataset.apf)));
+  const go=document.getElementById('sstGo'); if(go) go.addEventListener('click',sstWorkOut);
+  const ap=document.getElementById('sstApply'); if(ap&&res) ap.addEventListener('click',()=>ssTimingApply(res.recommended));
+}
+/* ss-timing end */
 // Issue #6 F7 — "nice" axis step (1/2/2.5/5 × 10ⁿ) instead of raw max÷4, which gave
 // uneven, hard-to-read labels (e.g. $967k/$1.9M/$2.9M/$3.9M).
 function niceAxisStep(rough){
