@@ -467,3 +467,7 @@ around the scope.
 - **`AbortSignal.timeout()`'s timer is unref'd.** A child-process test whose only pending work is a fake hung fetch exits 13
   (unsettled top-level await) before the timeout fires; hold the loop open in the test (a real hung request keeps its
   socket). [tag: press] (2026-11-15)
+- **A tier split that fails to load is an outage, not "empty".** The lobby normalised a null `spaces.json` to two empty
+  wings, so a one-host network failure (raw CDN down, GitHub API up — plane Wi-Fi) painted every wing page public, and the
+  bad split was then cached. Any read that decides what is hidden must validate (non-empty `personal`) and THROW to the
+  error/cache path; never cache an unvalidated split. Test it by blocking only that one URL. [tag: press] (2026-11-20)
